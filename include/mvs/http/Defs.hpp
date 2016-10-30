@@ -27,6 +27,8 @@
  */
 #define MVS_API __attribute__((visibility("default")))
 
+#define LOG_HTTP "http"
+
 /** @} */
 
 #endif // MVS_ASH_DEFS_HPP

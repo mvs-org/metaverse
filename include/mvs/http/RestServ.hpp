@@ -6,7 +6,6 @@
 
 #include <bitcoin/client.hpp>
 
-
 namespace http{
 
 using namespace mg;
@@ -35,44 +34,48 @@ public:
 
     //reset
     void reset(mg::HttpMessage data) noexcept;
+
+    //request
     void httpStatic(mg_connection& nc, HttpMessage data);
     void httpRequest(mg_connection& nc, HttpMessage data);
+    void broadcast(mg_connection& nc, const char *msg, size_t len);
 
 protected:
-     std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data){
-        auto rpcuser = data.header("rpcuser");
-        auto rpcpassword = data.header("rpcpassword");
+    std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data)
+    {
+       auto rpcuser = data.header("rpcuser");
+       auto rpcpassword = data.header("rpcpassword");
     
-        if (rpcuser.empty() || rpcpassword.empty()) {
-       	    throw InvalidException{"rpc authorisation required"_sv};
-        }
-        return std::make_pair(rpcuser, rpcpassword);
-     }
+       if (rpcuser.empty() || rpcpassword.empty()) {
+      	    throw InvalidException{"rpc authorisation required"_sv};
+       }
+       return std::make_pair(rpcuser, rpcpassword);
+    }
 
-     void rpc_auth(std::string_view rpcuser, std::string_view rpcpassword) const {
-        if( rpcuser_ == rpcuser and rpcpassword_ == rpcpassword) {
-        } else {
-            throw InvalidException("rpc authorisation failed"_sv);
-        }
-     }
+    void rpc_auth(std::string_view rpcuser, std::string_view rpcpassword) const 
+    {
+       if( rpcuser_ == rpcuser and rpcpassword_ == rpcpassword){
+       } else {
+           throw InvalidException("rpc authorisation failed"_sv);
+       }
+    }
 
 private:
-
-  enum : int {
-    // Method values are represented as powers of two for simplicity.
-    MethodGet = 1 << 0,
-    MethodPost = 1 << 1,
-    MethodPut = 1 << 2,
-    MethodDelete = 1 << 3,
-    // Method value mask.
-    MethodMask = MethodGet | MethodPost | MethodPut | MethodDelete,
-
-    // Subsequent bits represent matching components.
-    MatchMethod = 1 << 4,
-    MatchUri = 1 << 5,
-    // Match result mask.
-    MatchMask = MatchMethod | MatchUri
-  };
+    enum : int {
+      // Method values are represented as powers of two for simplicity.
+      MethodGet = 1 << 0,
+      MethodPost = 1 << 1,
+      MethodPut = 1 << 2,
+      MethodDelete = 1 << 3,
+      // Method value mask.
+      MethodMask = MethodGet | MethodPost | MethodPut | MethodDelete,
+    
+      // Subsequent bits represent matching components.
+      MatchMethod = 1 << 4,
+      MatchUri = 1 << 5,
+      // Match result mask.
+      MatchMask = MatchMethod | MatchUri
+    };
 
     bool isSet(int bs) const noexcept { return (state_ & bs) == bs; }
 

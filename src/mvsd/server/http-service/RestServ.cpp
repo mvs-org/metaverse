@@ -29,10 +29,25 @@ void RestServ::reset(HttpMessage data) noexcept
   uri_.reset(uri);
 }
 
-#include <iostream>
 void RestServ::httpStatic(mg_connection& nc, HttpMessage data)
 {
     mg_serve_http(&nc, data.get(), httpoptions_);
+}
+
+#include <iostream>
+#include <cstring>
+void RestServ::broadcast(mg_connection& nc, const char *msg, size_t len) 
+{
+  mg_connection* iter;
+  char buf[500];
+
+  memset(buf, 0x00, 500);
+  memcpy(buf, msg, len);
+  log::debug(LOG_HTTP)<<"websock msg:"<<buf;
+  for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
+  {
+    mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, buf, strlen(buf));
+  }
 }
 
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
@@ -41,11 +56,8 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     using namespace bc::client;
     using namespace bc::protocol;
 
-    std::cout<<"req body:"<<data.body()<<std::endl;
-
     reset(data);
-
-    std::cout<<"req uri:"<<uri_.top()<<std::endl;
+    log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
 
     if (uri_.empty() || uri_.top() != "api") {
         StreamBuf buf{nc.send_mbuf};
@@ -63,7 +75,6 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     const auto completion_handler = [this](size_t height)
     {
-        std::cout << "height: " << height << std::endl;
         this->out_<<"{\"result\":"<<height<<"}";
         this->out_.setContentLength(); 
     };
@@ -122,42 +133,3 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
   }
   out_.setContentLength(); 
 }
-#if 0
-void RestServ::restRequest(HttpMessage data, Millis now)
-{
-  if (uri_.empty()) {
-    // /api
-    return;
-  }
-
-  const auto tok = uri_.top();
-  uri_.pop();
-
-  if (tok == "rec") {
-    // /api/rec
-    recRequest(data, now);
-  } else if (tok == "sess") {
-    // /api/sess
-    sessRequest(data, now);
-  } else if (tok == "view") {
-    // /api/view
-    viewRequest(data, now);
-  } else if (tok == "shutdown")
-  {
-
-	  if (uri_.empty())
-	  {
-		  state_|= MatchUri;
-		  if (isSet(MethodGet))
-		  {
-			  std::string_view  trader,sig;
-			  std::tie(trader,sig) = authCheck(data);
-			  authAdmin(trader,sig);
-			  dump();
-			  LOG_INFO << "dump success,begin to exit" ;
-			  exit(0);
-		  }
-	  }
-  }
-}
-#endif

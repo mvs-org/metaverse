@@ -17,6 +17,8 @@
 #ifndef MVSD_MONGOOSE_HPP
 #define MVSD_MONGOOSE_HPP
 
+#include <bitcoin/bitcoin.hpp> // log
+
 #include "mvs/http/Exception_error.hpp"
 
 #include "mongoose/mongoose.h"
@@ -90,27 +92,43 @@ protected:
     Mgr() noexcept { mg_mgr_init(&mgr_, this); }
     ~Mgr() noexcept { mg_mgr_free(&mgr_); }
 
- private:
+private:
     static void handler(mg_connection* conn, int event, void* data)
     {
        http_message* hm = static_cast<http_message*>(data);
+       websocket_message* wm = static_cast<websocket_message*>(data);
        auto* self = static_cast<DerivedT*>(conn->user_data);
 
        switch (event) {
        case MG_EV_CLOSE:
-            conn->user_data = nullptr;
+            if (conn->flags & MG_F_IS_WEBSOCKET) {
+                self->broadcast(*conn, "left", 4);
+            }else{
+                conn->user_data = nullptr;
+            }
             break;
+
        case MG_EV_HTTP_REQUEST:
             if (mg_ncasecmp((&hm->uri)->p, "/api", 4u) == 0) {
                 self->httpRequest(*conn, hm);
             }else{
                 self->httpStatic(*conn, hm);
+                //conn->flags |= MG_F_SEND_AND_CLOSE;
             }
             break;
+
+        case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
+            self->broadcast(*conn, "joined", 6);
+            break;
+
+        case MG_EV_WEBSOCKET_FRAME:
+            self->broadcast(*conn, (const char *) wm->data, wm->size);
+            break;
+
        }
     }
 
-  mg_mgr mgr_;
+    mg_mgr mgr_;
 };
 
 } // mg
