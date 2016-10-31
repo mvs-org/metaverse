@@ -34,20 +34,27 @@ void RestServ::httpStatic(mg_connection& nc, HttpMessage data)
     mg_serve_http(&nc, data.get(), httpoptions_);
 }
 
-#include <iostream>
-#include <cstring>
-void RestServ::broadcast(mg_connection& nc, const char *msg, size_t len) 
+void RestServ::websocketBroadcast(mg_connection& nc, const char* msg, size_t len) 
 {
   mg_connection* iter;
-  char buf[500];
 
-  memset(buf, 0x00, 500);
-  memcpy(buf, msg, len);
-  log::debug(LOG_HTTP)<<"websock msg:"<<buf;
+  log::debug(LOG_HTTP)<<"websock msg:"<<msg;
   for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
   {
-    mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, buf, strlen(buf));
+    mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);
   }
+}
+
+void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws) 
+{
+    using namespace bc;
+    //process here
+
+    std::ostringstream ss;
+    bc::explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), bc::cin, ss, ss);
+
+//    mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, ss.str().c_str(), ss.str().size());
+    websocketBroadcast(nc, ss.str().c_str(), ss.str().size() - 1);
 }
 
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)

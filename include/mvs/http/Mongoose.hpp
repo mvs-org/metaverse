@@ -18,6 +18,7 @@
 #define MVSD_MONGOOSE_HPP
 
 #include <bitcoin/bitcoin.hpp> // log
+#include <bitcoin/explorer.hpp> // command-line
 
 #include "mvs/http/Exception_error.hpp"
 
@@ -35,7 +36,12 @@ namespace mg {
 
 inline std::string_view operator+(const mg_str& str) noexcept
 {
-  return {str.p, str.len};
+    return {str.p, str.len};
+}
+
+inline std::string_view operator+(const websocket_message& msg) noexcept
+{
+    return {reinterpret_cast<char*>(msg.data), msg.size};
 }
 
 class HttpMessage {
@@ -66,6 +72,37 @@ public:
 private:
     http_message* impl_;
 };
+
+class WebsocketMessage { // to bx command-tool
+public:
+    WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {
+        data_to_arg();
+    }
+    ~WebsocketMessage() noexcept = default;
+    
+    // Copy.
+    WebsocketMessage(const WebsocketMessage&) noexcept = default;
+    WebsocketMessage& operator=(const WebsocketMessage&) noexcept = default;
+    
+    // Move.
+    WebsocketMessage(WebsocketMessage&&) noexcept = default;
+    WebsocketMessage& operator=(WebsocketMessage&&) noexcept = default;
+    
+    auto get() const noexcept { return impl_; }
+    auto data() const noexcept { return reinterpret_cast<char*>(impl_->data); }
+    auto argv() const noexcept { return argv_; }
+    auto argc() const noexcept { return argc_; }
+    auto size() const noexcept { return impl_->size; }
+   
+private:
+    void data_to_arg() noexcept;
+    const char* argv_[12];
+    int argc_{0};
+
+    std::vector<std::string> vargv_;
+    websocket_message* impl_;
+};
+
 
 template <typename DerivedT>
 class Mgr {
@@ -102,7 +139,7 @@ private:
        switch (event) {
        case MG_EV_CLOSE:
             if (conn->flags & MG_F_IS_WEBSOCKET) {
-                self->broadcast(*conn, "left", 4);
+                self->websocketBroadcast(*conn, "left", 4);
             }else{
                 conn->user_data = nullptr;
             }
@@ -118,11 +155,11 @@ private:
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
-            self->broadcast(*conn, "joined", 6);
+            self->websocketBroadcast(*conn, "joined", 6);
             break;
 
         case MG_EV_WEBSOCKET_FRAME:
-            self->broadcast(*conn, (const char *) wm->data, wm->size);
+            self->websocketBroadcast(*conn, wm);
             break;
 
        }

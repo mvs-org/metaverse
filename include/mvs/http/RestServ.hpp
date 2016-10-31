@@ -36,9 +36,10 @@ public:
     void reset(mg::HttpMessage data) noexcept;
 
     //request
-    void httpStatic(mg_connection& nc, HttpMessage data);
-    void httpRequest(mg_connection& nc, HttpMessage data);
-    void broadcast(mg_connection& nc, const char *msg, size_t len);
+    void httpStatic (mg_connection& nc, HttpMessage data);
+    void httpRequest (mg_connection& nc, HttpMessage data);
+    void websocketBroadcast (mg_connection& nc, WebsocketMessage ws);
+    void websocketBroadcast (mg_connection& nc, const char* msg, size_t len);
 
 protected:
     std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data)
