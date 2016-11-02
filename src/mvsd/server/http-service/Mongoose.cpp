@@ -24,7 +24,9 @@ void WebsocketMessage::data_to_arg()noexcept{
     Tokeniser<' '> args;
     args.reset(+*impl_);
 
+    // store args from ws message
     do {
+        //skip spaces
         if(args.top().front() != ' '){
             vargv_.push_back({args.top().data(), args.top().size()});
             argc_++;
@@ -32,15 +34,16 @@ void WebsocketMessage::data_to_arg()noexcept{
         args.pop();
     }while(!args.empty());
 
+    // convert to char** argv
     int i = 0;
     for(auto& iter : vargv_){
+        if (i >= max_paramters){
+            break;
+        }
         argv_[i++] = iter.c_str();
     }
 
-    //for(i = 0; i < argc_;  i++){
-    //    bc::log::debug(LOG_HTTP)<<"argc_ "<<i<<":"<<argv_[i];
-    //}
-    bc::log::debug(LOG_HTTP)<<"ws got "<<argc_<<" paramters";
+    bc::log::debug(LOG_HTTP)<<"ws got cmd:["<<argv_[0]<<"],paramters["<<argc_-1<<"]";
 }
 
 } // mg

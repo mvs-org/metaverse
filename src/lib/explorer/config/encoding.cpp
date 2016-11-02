@@ -37,7 +37,7 @@ static auto encoding_json = "json";
 static auto encoding_xml = "xml";
 
 encoding::encoding()
-  : encoding(encoding_engine::info)
+  : encoding(encoding_engine::json)
 {
 }
 

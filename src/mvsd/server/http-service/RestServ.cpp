@@ -8,25 +8,25 @@ using namespace http;
 
 void RestServ::reset(HttpMessage data) noexcept
 {
-  state_ = 0;
+    state_ = 0;
 
-  const auto method = data.method();
-  if (method == "GET") {
-    state_ |= MethodGet;
-  } else if (method == "POST") {
-    state_ |= MethodPost;
-  } else if (method == "PUT") {
-    state_ |= MethodPut;
-  } else if (method == "DELETE") {
-    state_ |= MethodDelete;
-  }
+    const auto method = data.method();
+    if (method == "GET") {
+      state_ |= MethodGet;
+    } else if (method == "POST") {
+      state_ |= MethodPost;
+    } else if (method == "PUT") {
+      state_ |= MethodPut;
+    } else if (method == "DELETE") {
+      state_ |= MethodDelete;
+    }
 
-  auto uri = data.uri();
-  // Remove leading slash.
-  if (uri.front() == '/') {
-    uri.remove_prefix(1);
-  }
-  uri_.reset(uri);
+    auto uri = data.uri();
+    // Remove leading slash.
+    if (uri.front() == '/') {
+      uri.remove_prefix(1);
+    }
+    uri_.reset(uri);
 }
 
 void RestServ::httpStatic(mg_connection& nc, HttpMessage data)
@@ -36,13 +36,13 @@ void RestServ::httpStatic(mg_connection& nc, HttpMessage data)
 
 void RestServ::websocketBroadcast(mg_connection& nc, const char* msg, size_t len) 
 {
-  mg_connection* iter;
+    mg_connection* iter;
 
-  log::debug(LOG_HTTP)<<"websock msg:"<<msg;
-  for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
-  {
-    mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);
-  }
+    log::debug(LOG_HTTP)<<"ws snd msg:"<<msg;
+    for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
+    {
+      mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);
+    }
 }
 
 void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws) 
@@ -51,9 +51,9 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
     //process here
 
     std::ostringstream ss;
-    bc::explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), bc::cin, ss, ss);
+    bc::explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
+        bc::cin, ss, ss);
 
-//    mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, ss.str().c_str(), ss.str().size());
     websocketBroadcast(nc, ss.str().c_str(), ss.str().size() - 1);
 }
 

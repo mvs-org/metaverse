@@ -73,7 +73,7 @@ private:
     http_message* impl_;
 };
 
-class WebsocketMessage { // to bx command-tool
+class WebsocketMessage { // connect to bx command-tool
 public:
     WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {
         data_to_arg();
@@ -93,10 +93,12 @@ public:
     auto argv() const noexcept { return argv_; }
     auto argc() const noexcept { return argc_; }
     auto size() const noexcept { return impl_->size; }
+
+    static const size_t max_paramters{8};
    
 private:
     void data_to_arg() noexcept;
-    const char* argv_[12];
+    const char* argv_[max_paramters];
     int argc_{0};
 
     std::vector<std::string> vargv_;
