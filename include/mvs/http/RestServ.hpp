@@ -33,11 +33,12 @@ public:
     RestServ& operator=(RestServ&&) = delete;
 
     //reset
-    void reset(mg::HttpMessage data) noexcept;
+    void reset(mg::HttpMessage& data) noexcept;
 
     //request
     void httpStatic (mg_connection& nc, HttpMessage data);
     void httpRequest (mg_connection& nc, HttpMessage data);
+    void httpRpcRequest (mg_connection& nc, HttpMessage data);
     void websocketBroadcast (mg_connection& nc, WebsocketMessage ws);
     void websocketBroadcast (mg_connection& nc, const char* msg, size_t len);
 

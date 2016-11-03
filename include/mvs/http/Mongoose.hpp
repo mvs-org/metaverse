@@ -44,12 +44,38 @@ inline std::string_view operator+(const websocket_message& msg) noexcept
     return {reinterpret_cast<char*>(msg.data), msg.size};
 }
 
-class HttpMessage {
+class ToCommandArg{
 public:
-    HttpMessage(http_message* impl) noexcept : impl_{impl} {}
+    ToCommandArg() noexcept = default;
+    virtual ~ToCommandArg() noexcept = default;
+    ToCommandArg(const ToCommandArg&) noexcept = default;
+    ToCommandArg(ToCommandArg&&) noexcept = default;
+    ToCommandArg& operator=(const ToCommandArg&) noexcept = default;
+    ToCommandArg& operator=(ToCommandArg&&) noexcept = default;
+
+    auto argv() const noexcept { return argv_; }
+    auto argc() const noexcept { return argc_; }
+
+    static const int max_paramters{8};
+protected:
+
+    virtual void data_to_arg() noexcept = 0;
+    const char* argv_[max_paramters]{{nullptr}};
+    int argc_{0};
+
+    std::vector<std::string> vargv_;
+};
+
+
+//class HttpMessage {
+class HttpMessage : public ToCommandArg{
+public:
+    HttpMessage(http_message* impl) noexcept : impl_{impl} {data_to_arg();}
     ~HttpMessage() noexcept = default;
     
     // Copy.
+    //http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1778
+    //exception-specification in explicitly-defaulted functions for ToCommandArg constructor
     HttpMessage(const HttpMessage&) noexcept = default;
     HttpMessage& operator=(const HttpMessage&) noexcept = default;
     
@@ -68,12 +94,16 @@ public:
       return val ? +*val : std::string_view{};
     }
     auto body() const noexcept { return +impl_->body; }
+
+    //void data_to_arg() noexcept ;
+    void data_to_arg() noexcept override;
     
 private:
+
     http_message* impl_;
 };
 
-class WebsocketMessage { // connect to bx command-tool
+class WebsocketMessage:public ToCommandArg { // connect to bx command-tool
 public:
     WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {
         data_to_arg();
@@ -90,18 +120,10 @@ public:
     
     auto get() const noexcept { return impl_; }
     auto data() const noexcept { return reinterpret_cast<char*>(impl_->data); }
-    auto argv() const noexcept { return argv_; }
-    auto argc() const noexcept { return argc_; }
     auto size() const noexcept { return impl_->size; }
-
-    static const size_t max_paramters{8};
    
+    void data_to_arg() noexcept override;
 private:
-    void data_to_arg() noexcept;
-    const char* argv_[max_paramters];
-    int argc_{0};
-
-    std::vector<std::string> vargv_;
     websocket_message* impl_;
 };
 
@@ -150,6 +172,8 @@ private:
        case MG_EV_HTTP_REQUEST:
             if (mg_ncasecmp((&hm->uri)->p, "/api", 4u) == 0) {
                 self->httpRequest(*conn, hm);
+            }else if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
+                self->httpRpcRequest(*conn, hm);
             }else{
                 self->httpStatic(*conn, hm);
                 //conn->flags |= MG_F_SEND_AND_CLOSE;
@@ -161,8 +185,7 @@ private:
             break;
 
         case MG_EV_WEBSOCKET_FRAME:
-            self->websocketBroadcast(*conn, wm);
-            break;
+            self->websocketBroadcast(*conn, wm); break;
 
        }
     }

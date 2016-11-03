@@ -20,7 +20,58 @@
 namespace http {
 namespace mg {
 
-void WebsocketMessage::data_to_arg()noexcept{
+void HttpMessage::data_to_arg() noexcept {
+
+    bc::log::debug(LOG_HTTP)<<"uri "<<uri();
+
+    auto convert_to_arg = [this](std::string_view data){
+        Tokeniser<' '> args;
+        args.reset(data);
+
+        // store args from ws message
+        do {
+            //skip spaces
+            if(args.top().front() != ' '){
+                this->vargv_.push_back({args.top().data(), args.top().size()});
+                this->argc_++;
+            }
+            args.pop();
+        }while(!args.empty());
+
+        // convert to char** argv
+        int i = 0;
+        for(auto& iter : this->vargv_){
+            if (i >= max_paramters){
+                break;
+            }
+            this->argv_[i++] = iter.c_str();
+        }
+
+    };
+
+    /* application/json
+     * {"method":"xxx", "params":[]"}
+     */
+    if (uri() == "/rpc")
+    {
+    }
+
+    /* application/x-www-form-urlencoded
+     * method=xxx&params=xxx
+     */
+    if (uri() == "/api")
+    {
+        char n1[128]="";
+        char n2[128]="";
+
+        mg_get_http_var(&impl_->body, "method", n1, sizeof(n1));
+        mg_get_http_var(&impl_->body, "params", n2, sizeof(n2));
+        convert_to_arg({n1, 128});
+    }
+
+}
+
+void WebsocketMessage::data_to_arg() noexcept {
     Tokeniser<' '> args;
     args.reset(+*impl_);
 

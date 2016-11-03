@@ -6,7 +6,7 @@
 
 using namespace http;
 
-void RestServ::reset(HttpMessage data) noexcept
+void RestServ::reset(HttpMessage& data) noexcept
 {
     state_ = 0;
 
@@ -57,6 +57,48 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
     websocketBroadcast(nc, ss.str().c_str(), ss.str().size() - 1);
 }
 
+void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
+{
+    using namespace mg;
+    using namespace bc::client;
+    using namespace bc::protocol;
+
+    reset(data);
+    log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
+
+    StreamBuf buf{nc.send_mbuf};
+    out_.rdbuf(&buf);
+    out_.reset(200, "OK");
+    try {
+    	if (uri_.empty() || uri_.top() != "rpc") {
+    	    throw ForbiddenException{"Uri not support"_sv};
+    	}
+        //process here
+
+        std::stringstream ss;
+        log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
+        log::info(LOG_HTTP)<<"data.argv:"<<data.argv();
+
+        bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+            bc::cin, ss, ss);
+
+        log::info(LOG_HTTP)<<"ss:"<<ss.rdbuf();
+
+    	out_<<ss.rdbuf();
+
+    } catch (const ServException& e) {
+    	out_.reset(e.httpStatus(), e.httpReason());
+    	out_ << e;
+  	} catch (const std::exception& e) {
+    	const int status{500};
+    	const char* const reason{"Internal Server Error"};
+    	out_.reset(status, reason);
+    	ServException::toJson(status, reason, e.what(), out_);
+  	} 
+
+    out_.setContentLength(); 
+}
+
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 {
     using namespace mg;
@@ -64,6 +106,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     using namespace bc::protocol;
 
     reset(data);
+
     log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
 
     if (uri_.empty() || uri_.top() != "api") {
@@ -80,45 +123,24 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
 
-    const auto completion_handler = [this](size_t height)
-    {
-        this->out_<<"{\"result\":"<<height<<"}";
-        this->out_.setContentLength(); 
-    };
-
-    const auto error_handler = [](const code& code)
-    {
-        std::cout << "error: " << code.message() << std::endl;
-    };
-
-    const auto unknown_handler = [](const std::string& command)
-    {
-        std::cout << "unknown command: " << command << std::endl;
-    };
-
-    auto func = [&](){
-    	socket_stream stream(socket_);
-        proxy proxy(stream, unknown_handler, 2000, 0);
-
-    	// Make the request.
-    	proxy.blockchain_fetch_last_height(error_handler, completion_handler);
-
-    	zmq::poller poller;
-    	poller.add(socket_);
-
-    	// Wait 1 second for the response.
-    	if (poller.wait(1000).contains(socket_.id()))
-    	    stream.read(proxy); 
-    };
-
-    func();
-    return;
-
     try {
     const auto body = data.body();
     if (!body.empty()) {
+        std::stringstream ss;
+        log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
+        log::info(LOG_HTTP)<<"data.argv:"<<data.argv();
+
+        bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+            bc::cin, ss, ss);
+
+        log::info(LOG_HTTP)<<"ss:"<<ss.rdbuf();
+
+    	out_<<ss.str();
+        state_|= MatchUri;
+        state_|= MatchMethod;
+
 //      if (!request_.parse(data.body())) {
-        throw BadRequestException{"request body is incomplete"_sv};
+    //    throw BadRequestException{"request body is incomplete"_sv};
  //     }
     }
 //    restRequest(data, now);
