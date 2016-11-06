@@ -67,15 +67,13 @@ protected:
 };
 
 
-//class HttpMessage {
 class HttpMessage : public ToCommandArg{
 public:
     HttpMessage(http_message* impl) noexcept : impl_{impl} {data_to_arg();}
     ~HttpMessage() noexcept = default;
     
     // Copy.
-    //http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1778
-    //exception-specification in explicitly-defaulted functions for ToCommandArg constructor
+    // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1778
     HttpMessage(const HttpMessage&) noexcept = default;
     HttpMessage& operator=(const HttpMessage&) noexcept = default;
     
@@ -95,7 +93,6 @@ public:
     }
     auto body() const noexcept { return +impl_->body; }
 
-    //void data_to_arg() noexcept ;
     void data_to_arg() noexcept override;
     
 private:

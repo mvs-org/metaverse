@@ -107,7 +107,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     reset(data);
 
-    log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
+    log::info(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
 
     if (uri_.empty() || uri_.top() != "api") {
         StreamBuf buf{nc.send_mbuf};
@@ -128,7 +128,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     if (!body.empty()) {
         std::stringstream ss;
         log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
-        log::info(LOG_HTTP)<<"data.argv:"<<data.argv();
+        log::info(LOG_HTTP)<<"data.argv:"<<*(data.argv());
 
         bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
             bc::cin, ss, ss);

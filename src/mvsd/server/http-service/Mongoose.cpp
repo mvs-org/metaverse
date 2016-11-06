@@ -16,6 +16,7 @@
  */
 #include "mvs/http/Mongoose.hpp"
 #include "mvs/http/Tokeniser.hpp"
+#include "json/minijson_reader.hpp"
 
 namespace http {
 namespace mg {
@@ -24,19 +25,25 @@ void HttpMessage::data_to_arg() noexcept {
 
     bc::log::debug(LOG_HTTP)<<"uri "<<uri();
 
-    auto convert_to_arg = [this](std::string_view data){
-        Tokeniser<' '> args;
-        args.reset(data);
+    auto convert = [this](std::string_view method, std::string_view pramas){
 
-        // store args from ws message
-        do {
-            //skip spaces
-            if(args.top().front() != ' '){
-                this->vargv_.push_back({args.top().data(), args.top().size()});
-                this->argc_++;
-            }
-            args.pop();
-        }while(!args.empty());
+        this->vargv_.push_back({method.data(), method.size()});
+        this->argc_++;
+
+        if (!pramas.empty()){
+            Tokeniser<' '> args;
+            args.reset(pramas);
+
+            // store args from ws message
+            do {
+                //skip spaces
+                if(args.top().front() != ' '){
+                    this->vargv_.push_back({args.top().data(), args.top().size()});
+                    this->argc_++;
+                }
+                args.pop();
+            }while(!args.empty());
+        }
 
         // convert to char** argv
         int i = 0;
@@ -54,6 +61,17 @@ void HttpMessage::data_to_arg() noexcept {
      */
     if (uri() == "/rpc")
     {
+        std::string method, params;
+        minijson::const_buffer_context ctx(body().data(), body().size());
+        minijson::parse_object(ctx, 
+            [&](const char* key, minijson::value value){
+            minijson::dispatch (key)
+            <<"method">> [&]{ method = value.as_string(); }
+            <<"params">> [&]{ params = value.as_string(); }
+            <<minijson::any>> [&]{ minijson::ignore(ctx); };
+        });
+
+        convert({method.c_str(), method.size()}, {params.c_str(), params.size()});
     }
 
     /* application/x-www-form-urlencoded
@@ -61,12 +79,11 @@ void HttpMessage::data_to_arg() noexcept {
      */
     if (uri() == "/api")
     {
-        char n1[128]="";
-        char n2[128]="";
-
-        mg_get_http_var(&impl_->body, "method", n1, sizeof(n1));
-        mg_get_http_var(&impl_->body, "params", n2, sizeof(n2));
-        convert_to_arg({n1, 128});
+        char method[128]{0x00};
+        char params[1024]{0x00};
+        mg_get_http_var(&impl_->body, "method", method, sizeof(method));
+        mg_get_http_var(&impl_->body, "params", params, sizeof(params));
+        convert({method, 128}, {params, 1024});
     }
 
 }
