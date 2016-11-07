@@ -125,11 +125,11 @@ namespace explorer {
  * Various shared localizable strings.
  */
 #define BX_COMMANDS_HEADER \
-    "Info: The bx commands are:"
+    "Info: The commands are:"
 #define BX_COMMANDS_HOME_PAGE \
     "Bitcoin Explorer home page:"
 #define BX_COMMAND_USAGE \
-    "Usage: bx COMMAND [--help]"
+    "Usage: COMMAND [--help]"
 #define BX_CONFIG_DESCRIPTION \
     "The path to the configuration settings file."
 #define BX_CONNECTION_FAILURE \
@@ -139,7 +139,7 @@ namespace explorer {
 #define BX_HELP_DESCRIPTION \
     "Get a description and instructions for this command."
 #define BX_INVALID_COMMAND \
-    "'%1%' is not a bx command. Enter 'bx help' for a list of commands."
+    "'%1%' is not a command. Enter 'help' for a list of commands."
 #define BX_INVALID_PARAMETER \
     "Error: %1%"
 #define BX_PRINTER_ARGUMENT_TABLE_HEADER \

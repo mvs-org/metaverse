@@ -53,10 +53,10 @@
 namespace libbitcoin {
 namespace explorer {
 
-#define BX_PROGRAM_NAME "bx"
+#define BX_PROGRAM_NAME "mvs"
 #define BX_HELP_VARIABLE "help"
 #define BX_CONFIG_VARIABLE "config"
-BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / BX_PROGRAM_NAME ".cfg")
+BC_DECLARE_CONFIG_DEFAULT_PATH("conf" / BX_PROGRAM_NAME ".conf")
 
 /**
  * Base class for definition of each Bitcoin Explorer command.

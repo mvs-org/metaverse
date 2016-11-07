@@ -47,7 +47,7 @@
 /**
  * The name of this program.
  */
-#define BX_PROGRAM_NAME "bx"
+#define BX_PROGRAM_NAME "mvs"
 
 /**
  * Delimiter for use in word splitting serialized input and output points.
@@ -62,7 +62,7 @@
 /**
  * Environment variable prefix for integrated environment variables.
  */
-#define BX_ENVIRONMENT_VARIABLE_PREFIX "BX_"
+#define BX_ENVIRONMENT_VARIABLE_PREFIX "MVS_"
 
 /**
  * Conventional command line argument sentinel for indicating that a file
