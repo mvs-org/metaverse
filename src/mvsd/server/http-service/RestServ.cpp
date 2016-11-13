@@ -38,7 +38,7 @@ void RestServ::websocketBroadcast(mg_connection& nc, const char* msg, size_t len
 {
     mg_connection* iter;
 
-    log::debug(LOG_HTTP)<<"ws snd msg:"<<msg;
+    log::debug(LOG_HTTP)<<"ws snd len "<<len<<" msg:["<<msg<<"]";
     for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
     {
       mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);

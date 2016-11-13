@@ -28,6 +28,8 @@
 #include <bitcoin/explorer/command_extension.hpp>      
 #include <bitcoin/explorer/command_extension_func.hpp>
 
+#include <bitcoin/explorer/commands/fetch-balance.hpp>
+
 using namespace std;
 
 namespace libbitcoin {
@@ -130,7 +132,7 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == getbalance::symbol())
         return make_shared<getbalance>();
     if (symbol == getaddressbalance::symbol())
-        return make_shared<getaddressbalance>();
+        return make_shared<fetch_balance>(); //alias
     if (symbol == getaccountbalance::symbol())
         return make_shared<getaccountbalance>();
     if (symbol == getaddresstransaction::symbol())
