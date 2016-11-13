@@ -110,6 +110,12 @@ void session_header_sync::handle_connect(const code& ec, channel::ptr channel,
     {
         log::debug(LOG_NODE)
             << "Failure connecting header sync channel: " << ec.message();
+        if(ec.value() == error::not_satisfied)
+		{
+        	handler(ec);
+        	log::debug(LOG_NETWORK) << "session header sync handle connect, not satified";
+			return;
+		}
         new_connection(connect, handler);
         return;
     }
@@ -134,7 +140,7 @@ void session_header_sync::handle_channel_start(const code& ec,
     // Treat a start failure just like a completion failure.
     if (ec)
     {
-        handle_complete(ec, connect, handler);
+        handle_complete(ec, channel, connect, handler);
         return;
     }
 
@@ -147,14 +153,17 @@ void session_header_sync::attach_protocols(channel::ptr channel,
     attach<protocol_ping>(channel)->start();
     attach<protocol_address>(channel)->start();
     attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
-        ->start(BIND3(handle_complete, _1, connect, handler));
+        ->start(BIND4(handle_complete, _1, channel, connect, handler));
 }
 
-void session_header_sync::handle_complete(const code& ec,
+void session_header_sync::handle_complete(const code& ec, channel::ptr channel,
     network::connector::ptr connect, result_handler handler)
 {
+	channel->stop(error::channel_stopped);
     if (!ec)
     {
+    	log::debug(LOG_NODE)
+    	    	<< "header sync handle complete successfully," << ec.message() ;
         // This is the end of the header sync sequence.
         handler(ec);
         return;
@@ -162,6 +171,9 @@ void session_header_sync::handle_complete(const code& ec,
 
     // Reduce the rate minimum so that we don't get hung up.
     minimum_rate_ = static_cast<uint32_t>(minimum_rate_ * back_off_factor);
+
+    log::debug(LOG_NODE)
+    	<< "handle complete failed," << ec.message() ;
 
     // There is no failure scenario, we ignore the result code here.
     new_connection(connect, handler);

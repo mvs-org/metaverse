@@ -173,7 +173,10 @@ public:
     // ------------------------------------------------------------------------
 
     /// Get a randomly-selected address.
-    virtual void fetch_address(address_handler handler);
+    virtual void fetch_address(const config::authority::list& excluded_list, address_handler handler);
+
+    ///Get authority of all connections
+    config::authority::list authority_list();
 
     /// Store an address.
     virtual void store(const address& address, result_handler handler);
@@ -186,6 +189,8 @@ public:
 
     /// Get the number of addresses.
     virtual void address_count(count_handler handler);
+
+    address::list address_list();
 
 protected:
 

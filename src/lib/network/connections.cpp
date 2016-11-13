@@ -100,6 +100,18 @@ void connections::exists(const authority& address, truth_handler handler) const
     handler(safe_exists(address));
 }
 
+config::authority::list connections::authority_list()
+{
+	config::authority::list address_list{channels_.size()};
+	mutex_.lock_upgrade();
+	std::find_if(channels_.begin(), channels_.end(), [&address_list](channel::ptr channel){
+		address_list.push_back(channel->authority());
+		return false;
+	});
+	mutex_.unlock_upgrade();
+	return address_list;
+}
+
 bool connections::safe_remove(channel::ptr channel)
 {
     // Critical Section

@@ -61,23 +61,61 @@ size_t hosts::count() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-code hosts::fetch(address& out)
+code hosts::fetch(address& out, const config::authority::list& excluded_list)
 {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-    shared_lock lock(mutex_);
+//    shared_lock lock(mutex_);
+	mutex_.lock_upgrade();
 
     if (stopped_)
+    {
+    	mutex_.unlock_upgrade();
         return error::service_stopped;
+    }
 
+    mutex_.unlock_upgrade_and_lock();
     if (buffer_.empty())
+    {
+    	mutex_.unlock();
         return error::not_found;
+    }
 
     // Randomly select an address from the buffer.
-    const auto index = static_cast<size_t>(pseudo_random() % buffer_.size());
-    out = buffer_[index];
+//    const auto index = static_cast<size_t>(pseudo_random() % buffer_.size());
+    auto result = false;
+
+    for(auto entry: buffer_)
+    {
+		auto iter = std::find(excluded_list.begin(), excluded_list.end(), config::authority(entry) );
+		if(iter == excluded_list.end())
+		{
+			out = entry;
+			result = true;
+			break;
+		}
+    }
+    mutex_.unlock();
+
+    if(not result){
+    	return error::not_satisfied;
+    }
+//    out = buffer_[index];
     return error::success;
     ///////////////////////////////////////////////////////////////////////////
+}
+
+hosts::address::list hosts::copy()
+{
+	address::list copy;
+
+	shared_lock lock{mutex_};
+	copy.reserve(buffer_.size());
+	std::find_if(buffer_.begin(), buffer_.end(), [&copy](const address& addr){
+		copy.push_back(addr);
+		return false;
+	});
+	return copy;
 }
 
 // load

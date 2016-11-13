@@ -51,12 +51,13 @@ void protocol_address::start()
 
     // Must have a handler to capture a shared self pointer in stop subscriber.
     protocol_events::start(BIND1(handle_stop, _1));
-
+#if 0
     if (settings.self.port() != 0)
     {
         self_ = address({ { settings.self.to_network_address() } });
         SEND2(self_, handle_send, _1, self_.command);
     }
+#endif
 
     // If we can't store addresses we don't ask for or handle them.
     if (settings.host_pool_capacity == 0)
@@ -90,7 +91,7 @@ bool protocol_address::handle_receive_address(const code& ec,
         << message->addresses.size() << ")";
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).
-    network_.store(message->addresses, BIND1(handle_store_addresses, _1));
+    network_.store(message->addresses, BIND2(handle_store_addresses, _1, message));
 
     // RESUBSCRIBE
     return true;
@@ -115,20 +116,25 @@ bool protocol_address::handle_receive_get_address(const code& ec,
     // TODO: pull active hosts from host cache (currently just resending self).
     // TODO: need to distort for privacy, don't send currently-connected peers.
 
-    if (self_.addresses.empty())
-        return false;
+    auto address_list = std::move(network_.address_list() );
+    if(address_list.empty())
+    {
+    	return false;
+    }
+//    if (self_.addresses.empty())
+//        return false;
 
     log::debug(LOG_NETWORK)
         << "Sending addresses to [" << authority() << "] ("
-        << self_.addresses.size() << ")";
-
-    SEND2(self_, handle_send, _1, self_.command);
+        << address_list.size() << ")";
+    message::address self_address = {address_list};
+    SEND2(self_address, handle_send, _1, self_address.command);
 
     // RESUBSCRIBE
     return true;
 }
 
-void protocol_address::handle_store_addresses(const code& ec)
+void protocol_address::handle_store_addresses(const code& ec, address::ptr message)
 {
     if (stopped())
         return;

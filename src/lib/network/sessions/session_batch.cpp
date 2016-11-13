@@ -75,7 +75,11 @@ void session_batch::converge(const code& ec, channel::ptr channel,
     if (cleared)
     {
         // If the last connection attempt is an error, normalize the code.
-        const auto result = ec ? error::operation_failed : error::success;
+        auto result = ec ? error::operation_failed : error::success;
+        if (ec == error::not_satisfied)
+        {
+        	result = error::not_satisfied;
+        }
         handler(result, channel);
     }
 }
@@ -107,7 +111,6 @@ void session_batch::new_connect(connector::ptr connect,
 
     if (counter->load() == batch_size_)
         return;
-
     fetch_address(BIND5(start_connect, _1, _2, connect, counter, handler));
 }
 
@@ -121,7 +124,7 @@ void session_batch::start_connect(const code& ec, const authority& host,
     if (ec)
     {
         log::warning(LOG_NETWORK)
-            << "Failure fetching new address: " << ec.message();
+            << "Failure fetching new address: ";// << ec.message();
         handler(ec, nullptr);
         return;
     }

@@ -63,7 +63,7 @@ private:
         network::connector::ptr connect, result_handler handler);
     void handle_connect(const code& ec, network::channel::ptr channel,
         network::connector::ptr connect, result_handler handler);
-    void handle_complete(const code& ec, network::connector::ptr connect,
+    void handle_complete(const code& ec, network::channel::ptr channel, network::connector::ptr connect,
         result_handler handler);
     void handle_channel_start(const code& ec, network::connector::ptr connect,
         network::channel::ptr channel, result_handler handler);

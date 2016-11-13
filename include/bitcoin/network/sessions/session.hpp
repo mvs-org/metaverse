@@ -33,6 +33,7 @@
 #include <bitcoin/network/pending_channels.hpp>
 #include <bitcoin/network/proxy.hpp>
 #include <bitcoin/network/settings.hpp>
+#include <bitcoin/bitcoin/message/network_address.hpp>
 
 namespace libbitcoin {
 namespace network {

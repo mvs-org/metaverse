@@ -61,11 +61,11 @@ public:
     virtual code stop();
 
     virtual size_t count() const;
-    virtual code fetch(address& out);
+    virtual code fetch(address& out, const config::authority::list& excluded_list);
     virtual code remove(const address& host);
     virtual code store(const address& host);
     virtual void store(const address::list& hosts, result_handler handler);
-
+    address::list copy();
 private:
     typedef boost::circular_buffer<address> list;
     typedef list::iterator iterator;

@@ -93,7 +93,12 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     {
         log::debug(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
-        //new_connection(connect); //FIXME.chenhao, always connecting if failure
+        if(ec.value() == error::not_satisfied)
+		{
+        	log::debug(LOG_NETWORK) << "session outbound handle connect, not satified";
+			return;
+		}
+        new_connection(connect);
         return;
     }
 
@@ -108,7 +113,6 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 void session_outbound::handle_channel_start(const code& ec,
     connector::ptr connect, channel::ptr channel)
 {
-    static int k = 5;
     // Treat a start failure just like a stop.
     if (ec)
     {
@@ -116,10 +120,7 @@ void session_outbound::handle_channel_start(const code& ec,
             << "Outbound channel failed to start ["
             << channel->authority() << "] " << ec.message();
 
-        if (k-- > 0)
-        {
-            new_connection(connect);
-        }
+        new_connection(connect);
         return;
     }
 

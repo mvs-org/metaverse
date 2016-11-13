@@ -22,6 +22,7 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <bitcoin/bitcoin/compat.hpp>
+#include <bitcoin/bitcoin/utility/log.hpp>
 
 using namespace bc;
 
@@ -166,6 +167,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "address is blocked by policy";
         case error::channel_stopped:
             return "channel is stopped";
+        case error::not_satisfied:
+        	return "not satisfied";
 
         // unknown errors
         case error::unknown:

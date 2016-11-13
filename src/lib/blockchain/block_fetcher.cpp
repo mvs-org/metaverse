@@ -84,6 +84,7 @@ private:
 
         // Set the block transaction size.
         const auto count = hashes.size();
+        block->header.transaction_count = count;
         block->transactions.resize(count);
 
         // This will be called exactly once by the synchronizer.

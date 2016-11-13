@@ -55,7 +55,7 @@ public:
 
 private:
     void handle_stop(const code& ec);
-    void handle_store_addresses(const code& ec);
+    void handle_store_addresses(const code& ec, message::address::ptr message);
 
     bool handle_receive_address(const code& ec, message::address::ptr address);
     bool handle_receive_get_address(const code& ec,

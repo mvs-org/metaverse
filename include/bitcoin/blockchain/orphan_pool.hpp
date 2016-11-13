@@ -55,7 +55,8 @@ public:
     block_detail::list unprocessed() const;
 
 private:
-    typedef boost::circular_buffer<block_detail::ptr> buffer;
+//    typedef boost::circular_buffer<block_detail::ptr> buffer;
+    typedef std::vector<block_detail::ptr> buffer;
     typedef buffer::const_iterator const_iterator;
 
     bool exists(const hash_digest& hash) const;

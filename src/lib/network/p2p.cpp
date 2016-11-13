@@ -399,10 +399,15 @@ void p2p::connected_count(count_handler handler)
 // Hosts collection.
 // ----------------------------------------------------------------------------
 
-void p2p::fetch_address(address_handler handler)
+void p2p::fetch_address(const config::authority::list& excluded_list, address_handler handler)
 {
     address out;
-    handler(hosts_->fetch(out), out);
+    handler(hosts_->fetch(out, excluded_list), out);
+}
+
+config::authority::list p2p::authority_list()
+{
+    return connections_->authority_list();
 }
 
 void p2p::store(const address& address, result_handler handler)
@@ -424,6 +429,11 @@ void p2p::remove(const address& address, result_handler handler)
 void p2p::address_count(count_handler handler)
 {
     handler(hosts_->count());
+}
+
+p2p::address::list p2p::address_list()
+{
+	return hosts_->copy();
 }
 
 } // namespace network

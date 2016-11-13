@@ -27,8 +27,8 @@ namespace libbitcoin {
 namespace blockchain {
 
 orphan_pool::orphan_pool(size_t capacity)
-  : buffer_(capacity)
 {
+	buffer_.reserve(capacity == 0 ? 1 : capacity);
 }
 
 // There is no validation whatsoever of the block up to this pont.

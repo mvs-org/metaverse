@@ -43,6 +43,12 @@ public:
     /// Start the protocol.
     virtual void start();
 
+    protocol_block_in& set_name(const std::string name)
+    {
+    	name_ = name;
+    	return *this;
+    }
+
 private:
     // Local type aliases.
     typedef message::get_data::ptr get_data_ptr;
@@ -71,6 +77,7 @@ private:
     bc::atomic<hash_digest> last_locator_top_;
     bc::atomic<hash_digest> current_chain_top_;
     const bool headers_from_peer_;
+    std::string name_;
 };
 
 } // namespace node

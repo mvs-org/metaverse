@@ -117,7 +117,8 @@ enum error_code_t
 
     // network errors (more)
     address_blocked,
-    channel_stopped
+    channel_stopped,
+	not_satisfied
 };
 
 enum error_condition_t

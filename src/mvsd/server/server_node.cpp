@@ -71,7 +71,7 @@ const settings& server_node::server_settings() const
 // static
 void server_node::run_mongoose(server_node& node)
 {
-    auto& conn = node.rest_server().bind("8821");
+    auto& conn = node.rest_server().bind("8820");
     mg_set_protocol_http_websocket(&conn);
     for (;;)
         node.rest_server().poll(1000);

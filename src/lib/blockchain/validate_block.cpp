@@ -286,7 +286,8 @@ bool validate_block::is_valid_proof_of_work(hash_digest hash, uint32_t bits)
 
     hash_number our_value;
     our_value.set_hash(hash);
-    return (our_value <= target_value);
+//    return (our_value <= target_value);  #FIXME jianglh
+    return true;
 }
 
 // TODO: move to bc::chain::opcode.

@@ -46,6 +46,7 @@ protected:
 
     blockchain::block_chain& blockchain_;
     blockchain::transaction_pool& pool_;
+    /*mine::miner& miner_*/
 };
 
 } // namespace node

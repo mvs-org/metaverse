@@ -56,11 +56,14 @@ protected:
         network::connector::ptr connect, reservation::ptr row,
         result_handler handler);
 
+    void add_2_dustbin(reservation::ptr row, result_handler handler);
+    void get_from_dustbin(network::channel::ptr channel, network::connector::ptr connect, result_handler handler);
+
 private:
     void handle_started(const code& ec, result_handler handler);
     void new_connection(network::connector::ptr connect,
         reservation::ptr row, result_handler handler);
-    void handle_complete(const code& ec, network::connector::ptr connect,
+    void handle_complete(const code& ec, network::channel::ptr channel, network::connector::ptr connect,
         reservation::ptr row, result_handler handler);
     void handle_connect(const code& ec, network::channel::ptr channel,
         network::connector::ptr connect, reservation::ptr row,
@@ -77,6 +80,7 @@ private:
     blockchain::simple_chain& blockchain_;
     reservations reservations_;
     deadline::ptr timer_;
+    std::set<reservation::ptr> pending_;
 
     const settings& settings_;
 };

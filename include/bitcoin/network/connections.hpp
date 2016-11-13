@@ -30,6 +30,7 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/network/channel.hpp>
 #include <bitcoin/network/define.hpp>
+#include <bitcoin/bitcoin/message/address.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -94,6 +95,7 @@ public:
     virtual void remove(channel::ptr channel, result_handler handler);
     virtual void exists(const config::authority& authority,
         truth_handler handler) const;
+    config::authority::list authority_list();
 
 private:
     typedef std::vector<channel::ptr> list;

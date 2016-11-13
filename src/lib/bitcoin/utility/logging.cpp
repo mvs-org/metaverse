@@ -42,7 +42,9 @@ static inline void do_logging(T& ofs, log::level level, const std::string& domai
     const std::string& body)
 {
     if (body.empty())
-        return; 
+    {
+        return;
+    }
 
 	static uint8_t flush_times = 0;
     static const auto form = "%1% %2% [%3%] %4%\n";

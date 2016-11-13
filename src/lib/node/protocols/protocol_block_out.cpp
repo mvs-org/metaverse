@@ -168,6 +168,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     const header_list& headers)
 {
+	log::debug(LOG_NODE) << "get headersssssssssssss";
     if (stopped() || ec == error::service_stopped)
         return;
 
@@ -179,6 +180,11 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         stop(ec);
         return;
     }
+
+    log::debug(LOG_NODE) << "get headersssssssssssss========================";
+
+    log::debug(LOG_NODE)
+    	<< "handle fetch locator headers size," << headers.size();
 
     // Respond to get_headers with headers.
     const message::headers response(headers);
@@ -293,7 +299,7 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
     if (ec == error::not_found)
     {
         log::debug(LOG_NODE)
-            << "Block requested by [" << authority() << "] not found.";
+            << "Block requested by [" << authority() << "] not found." << encode_hash(hash);
 
         const not_found reply{ { inventory::type_id::block, hash } };
         SEND2(reply, handle_send, _1, reply.command);

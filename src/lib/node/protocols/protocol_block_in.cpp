@@ -60,7 +60,16 @@ protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
 void protocol_block_in::start()
 {
     // Use perpetual protocol timer to prevent stall (our heartbeat).
+#if 1
     protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
+#else
+    auto pthis = enable_shared_from_base();
+	protocol_events::start([pthis](const code& ec){
+		if(ec){
+			log::debug(LOG_NODE) << "protocol block in handle stop," << ec.message();
+ 		}
+	});
+#endif
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -192,8 +201,12 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 bool protocol_block_in::handle_receive_inventory(const code& ec,
     inventory_ptr message)
 {
+	log::info(LOG_NODE) << name_ << ",666666666666666," << ec.message();
     if (stopped())
+    {
+    	log::info(LOG_NODE) << "666666666666666 stopped";
         return false;
+    }
 
     if (ec)
     {
@@ -204,8 +217,14 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
         return false;
     }
 
+    log::debug(LOG_NODE) << "protocol block in, handle receive inventory,size," << message->inventories.size() ;
+
     const auto response = std::make_shared<get_data>();
     message->reduce(response->inventories, inventory::type_id::block);
+    if(response->inventories.empty())
+    {
+    	return true;
+    }
 
     // Remove block hashes found in the orphan pool.
     blockchain_.filter_orphans(response,
@@ -310,6 +329,8 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
     // We will pick this up in handle_reorganized.
     message->set_originator(nonce());
 
+    log::debug(LOG_NODE) << "receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count ;
+
     blockchain_.store(message, BIND2(handle_store_block, _1, message));
     return true;
 }
@@ -371,6 +392,18 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 
     // Ask the peer for blocks above our top (we also do this via stall timer).
     send_get_blocks(null_hash);
+
+    /*
+    hash_list hashes;
+    hashes.reserve(incoming.size());
+    std::transform(incoming.begin(), incoming.end(), hashes.begin(), [](const block_ptr block){
+    	return block->header.hash();
+    });
+    const inventory broadcast(hashes, inventory::type_id::block);
+	SEND2(broadcast, handle_send, _1, inventory::command);
+
+	log::debug(LOG_NODE) << "broadcast block too peer, size," << hashes.size();
+	*/
 
     // Report the blocks that originated from this peer.
     // If originating peer is dropped there will be no report here.
