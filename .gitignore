@@ -1,4 +1,5 @@
 build/*
+*commandgen.sh
 # Compiled Object files
 *.slo
 *.lo

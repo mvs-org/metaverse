@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 #include <bitcoin/explorer/command.hpp>
+#include <bitcoin/explorer/command_extension.hpp>
+#include <bitcoin/explorer/command_extension_func.hpp>
 
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 
@@ -127,6 +129,9 @@ void broadcast(const function<void(shared_ptr<command>)> func)
     func(make_shared<wif_to_public>());
     func(make_shared<wrap_decode>());
     func(make_shared<wrap_encode>());
+
+    broadcast_extension(func);
+
 }
 
 shared_ptr<command> find(const string& symbol)
@@ -312,7 +317,8 @@ shared_ptr<command> find(const string& symbol)
     if (symbol == wrap_encode::symbol())
         return make_shared<wrap_encode>();
 
-    return nullptr;
+    return find_extension(symbol);
+
 }
 
 std::string formerly(const string& former)
@@ -393,6 +399,7 @@ std::string formerly(const string& former)
         return wrap_encode::symbol();
 
     return "";
+
 }
 
 } // namespace explorer
