@@ -41,6 +41,8 @@ public:
 
     /// Required to call before calling accept_block or connect_block.
     void initialize_context();
+    static size_t legacy_sigops_count(const chain::transaction& tx);
+    static bool script_hash_signature_operations_count(size_t& out_count, const chain::script& output_script, const chain::script& input_script);
 
 protected:
     typedef std::vector<uint8_t> versions;
@@ -82,7 +84,7 @@ protected:
     static bool is_valid_proof_of_work(hash_digest hash, uint32_t bits);
     static bool is_valid_coinbase_height(size_t height,
         const chain::block& block);
-    static size_t legacy_sigops_count(const chain::transaction& tx);
+    //static size_t legacy_sigops_count(const chain::transaction& tx);
     static size_t legacy_sigops_count(const chain::transaction::list& txs);
 
 private:

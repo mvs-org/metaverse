@@ -280,6 +280,7 @@ bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
 
 bool validate_block::is_valid_proof_of_work(hash_digest hash, uint32_t bits)
 {
+	return true;
     hash_number target_value;
     if (!target_value.set_compact(bits) || target_value > max_target())
         return false;
@@ -413,6 +414,8 @@ code validate_block::accept_block() const
 
 uint32_t validate_block::work_required(bool is_testnet) const
 {
+	return current_block_.header.bits; 
+	return 0;
     if (height_ == 0)
         return max_work_bits;
 
@@ -598,7 +601,7 @@ bool validate_block::validate_inputs(const transaction& tx,
     return true;
 }
 
-bool script_hash_signature_operations_count(size_t& out_count,
+bool validate_block::script_hash_signature_operations_count(size_t& out_count,
     const script& output_script, const script& input_script)
 {
     using namespace chain;
