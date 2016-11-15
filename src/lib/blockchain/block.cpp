@@ -36,6 +36,7 @@ uint64_t block_subsidy(size_t height)
 
 hash_number block_work(uint32_t bits)
 {
+	return bits;
     hash_number target;
 
     if (!target.set_compact(bits))

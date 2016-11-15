@@ -201,10 +201,10 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 bool protocol_block_in::handle_receive_inventory(const code& ec,
     inventory_ptr message)
 {
-	log::info(LOG_NODE) << name_ << ",666666666666666," << ec.message();
+	log::info(LOG_NODE) << name_ << " on receive inventory " << ec.message();
     if (stopped())
     {
-    	log::info(LOG_NODE) << "666666666666666 stopped";
+    	log::info(LOG_NODE) << " on receive inventory stopped";
         return false;
     }
 

@@ -31,6 +31,7 @@
 #include <boost/format.hpp>
 #include <bitcoin/server.hpp>
 #include <bitcoin/bitcoin/utility/backtrace.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 namespace libbitcoin {
 namespace server {
@@ -178,6 +179,9 @@ bool executor::run()
     node_->start(
         std::bind(&executor::handle_started,
             this, _1));
+
+    consensus::miner miner(*node_);
+    miner.start();
 
     // Wait for stop.
     stopping_.get_future().wait();

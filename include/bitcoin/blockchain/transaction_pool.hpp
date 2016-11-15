@@ -43,6 +43,7 @@ public:
 
     typedef handle0 result_handler;
     typedef handle1<transaction_ptr> fetch_handler;
+    typedef handle1<std::vector<transaction_ptr>> fetch_all_handler;
     typedef handle1<transaction_ptr> confirm_handler;
     typedef handle2<transaction_ptr, indexes> validate_handler;
     typedef std::function<bool(const code&, const indexes&, transaction_ptr)>
@@ -72,6 +73,7 @@ public:
 
     void inventory(message::inventory::ptr inventory);
     void fetch(const hash_digest& tx_hash, fetch_handler handler);
+    void fetch(fetch_all_handler handler);
     void fetch_history(const wallet::payment_address& address, size_t limit,
         size_t from_height, block_chain::history_fetch_handler handler);
     void exists(const hash_digest& tx_hash, result_handler handler);

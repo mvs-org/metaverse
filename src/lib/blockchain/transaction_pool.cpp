@@ -199,6 +199,28 @@ void transaction_pool::do_store(const code& ec, transaction_ptr tx,
     index_.add(*tx, handle_indexed);
 }
 
+void transaction_pool::fetch(fetch_all_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto tx_fetcher = [this, handler]()
+    {
+		std::vector<transaction_ptr> transactions;
+		for(auto item : buffer_)
+		{
+			if(item.tx)
+				transactions.push_back(item.tx);	
+		} 
+		handler(error::success, transactions);
+    };
+
+    dispatch_.ordered(tx_fetcher);
+}
+
 void transaction_pool::fetch(const hash_digest& transaction_hash,
     fetch_handler handler)
 {
