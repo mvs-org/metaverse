@@ -142,12 +142,12 @@ void session_batch::start_connect(const code& ec, const authority& host,
         << "Connecting to [" << host << "]";
 
     // CONNECT
-    connect->connect(host, BIND6(handle_connect, _1, _2, host, connect,
-        counter, handler));
+    connect->connect(host, BIND7(handle_connect, _1, _2, host, connect,
+        counter, 3, handler));
 }
 
 void session_batch::handle_connect(const code& ec, channel::ptr channel,
-    const authority& host, connector::ptr connect, atomic_counter_ptr counter,
+    const authority& host, connector::ptr connect, atomic_counter_ptr counter, std::size_t count,
     channel_handler handler)
 {
     if (counter->load() == batch_size_)
@@ -156,8 +156,24 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
     if (ec)
     {
         log::debug(LOG_NETWORK)
-            << "Failure connecting to [" << host << "] "
+            << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
+        if(count)
+        {
+        	connect->connect(host, BIND7(handle_connect, _1, _2, host, connect,
+        			counter, --count, handler));
+        	return;
+        }
+        else{
+        	remove(host.to_network_address(), [&host](const code& ec){
+        		if(ec)
+				{
+        			log::debug(LOG_NETWORK) << "remove host " << host << " failed," << ec.message() ;
+				}
+        		log::debug(LOG_NETWORK) << "remove host failed," << ec.message() ;
+        	});
+        }
+
         handler(ec, nullptr);
         return;
     }

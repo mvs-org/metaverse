@@ -19,6 +19,7 @@
  */
 #include <iostream>
 #include <bitcoin/server.hpp>
+#include <bitcoin/bitcoin/utility/backtrace.hpp>
 #include "executor.hpp"
 
 BC_USE_LIBBITCOIN_MAIN
@@ -35,13 +36,25 @@ int bc::main(int argc, char* argv[])
     using namespace bc;
     using namespace bc::server;
 
-    set_utf8_stdio();
-    server::parser metadata(bc::settings::mainnet);
-    const auto& args = const_cast<const char**>(argv);
+    try{
+		set_utf8_stdio();
+		server::parser metadata(bc::settings::mainnet);
+		const auto& args = const_cast<const char**>(argv);
 
-    if (!metadata.parse(argc, args, cerr))
-        return console_result::failure;
+		if (!metadata.parse(argc, args, cerr))
+			return console_result::failure;
 
-    executor host(metadata, cin, cout, cerr);
-    return host.menu() ? console_result::okay : console_result::failure;
+		executor host(metadata, cin, cout, cerr);
+		return host.menu() ? console_result::okay : console_result::failure;
+    }
+	catch(const std::exception& e)
+	{
+		do_backtrace("exception.out");
+	}
+	catch(...)
+	{
+		do_backtrace("exception.out");
+	}
+    return console_result::failure;
+
 }

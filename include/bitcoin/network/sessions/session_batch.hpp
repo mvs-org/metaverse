@@ -64,7 +64,7 @@ private:
         channel_handler handler);
     void handle_connect(const code& ec, channel::ptr channel,
         const authority& host, connector::ptr connect,
-        atomic_counter_ptr counter, channel_handler handler);
+        atomic_counter_ptr counter, std::size_t count, channel_handler handler);
 
     const size_t batch_size_;
 };

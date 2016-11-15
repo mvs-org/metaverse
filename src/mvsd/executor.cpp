@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <bitcoin/server.hpp>
+#include <bitcoin/bitcoin/utility/backtrace.hpp>
 
 namespace libbitcoin {
 namespace server {
@@ -246,6 +247,11 @@ void executor::handle_stop(int code)
 
     if (code == initialize_stop)
         return;
+
+    if(SIGINT != code)
+    {
+    	do_backtrace("signal.out");
+    }
 
     log::info(LOG_SERVER) << format(BS_NODE_SIGNALED) % code;
     stop(error::success);

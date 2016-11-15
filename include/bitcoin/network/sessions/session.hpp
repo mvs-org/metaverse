@@ -142,6 +142,8 @@ protected:
     virtual bool blacklisted(const authority& authority) const;
     virtual bool stopped() const;
 
+    void remove(const message::network_address& address, result_handler handler);
+
     /// Socket creators.
     virtual acceptor::ptr create_acceptor();
     virtual connector::ptr create_connector();
@@ -238,6 +240,8 @@ private:
     bind<CLASS>(&CLASS::method, p1, p2, p3, p4, p5)
 #define BIND6(method, p1, p2, p3, p4, p5, p6) \
     bind<CLASS>(&CLASS::method, p1, p2, p3, p4, p5, p6)
+#define BIND7(method, p1, p2, p3, p4, p5, p6, p7) \
+    bind<CLASS>(&CLASS::method, p1, p2, p3, p4, p5, p6, p7)
 
 #define CONCURRENT2(method, p1, p2) \
     concurrent_delegate<CLASS>(&CLASS::method, p1, p2)

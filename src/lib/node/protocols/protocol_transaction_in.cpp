@@ -66,6 +66,7 @@ void protocol_transaction_in::start()
     // Prior to this level the mempool message is not available.
     if (refresh_pool_)
     {
+    	log::debug(LOG_NODE) << "protocol transaction in refresh pool";
         // Refresh transaction pool on connect.
         SEND2(memory_pool(), handle_send, _1, memory_pool::command);
 
@@ -109,6 +110,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
         return false;
     }
 
+    log::debug(LOG_NODE) << "protocol_transaction_in::handle_receive_inventory pool filter";
     // This is returned on a new thread.
     // Remove matching transaction hashes found in the transaction pool.
     pool_.filter(response, BIND2(handle_filter_floaters, _1, response));
@@ -151,7 +153,7 @@ void protocol_transaction_in::send_get_data(const code& ec,
         stop(ec);
         return;
     }
-
+    log::debug(LOG_NODE) << "protocol_transaction_in::send_get_data";
     // inventory->get_data[transaction]
     SEND2(*message, handle_send, _1, message->command);
 }

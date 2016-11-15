@@ -168,7 +168,6 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     const header_list& headers)
 {
-	log::debug(LOG_NODE) << "get headersssssssssssss";
     if (stopped() || ec == error::service_stopped)
         return;
 
@@ -180,8 +179,6 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         stop(ec);
         return;
     }
-
-    log::debug(LOG_NODE) << "get headersssssssssssss========================";
 
     log::debug(LOG_NODE)
     	<< "handle fetch locator headers size," << headers.size();

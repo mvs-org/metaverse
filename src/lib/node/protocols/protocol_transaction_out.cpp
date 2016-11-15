@@ -103,6 +103,7 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 void protocol_transaction_out::handle_receive_memory_pool(const code& ec,
     memory_pool_ptr)
 {
+	log::debug(LOG_NODE) << "tx out handle receive memory pool,code is " << ec.message();
     auto message = std::make_shared<inventory>();
     pool_.inventory(message);
     SEND2(*message, handle_send, _1, message->command);

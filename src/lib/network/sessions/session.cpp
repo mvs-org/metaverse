@@ -99,6 +99,11 @@ bool session::blacklisted(const authority& authority) const
     return it != blocked.end();
 }
 
+void session::remove(const message::network_address& address, result_handler handler)
+{
+	network_.remove(address, handler);
+}
+
 // Socket creators.
 // ----------------------------------------------------------------------------
 // Must not change context in the stop handlers (must use bind).
