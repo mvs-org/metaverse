@@ -51,8 +51,15 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
     //process here
 
     std::ostringstream ss;
-    bc::explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-        bc::cin, ss, ss);
+    try{
+        ws.data_to_arg();
+
+        explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
+            bc::cin, ss, ss);
+
+    }catch(...){
+        log::error(LOG_HTTP)<<__func__<<":"<<ss.rdbuf();
+    }
 
     websocketBroadcast(nc, ss.str().c_str(), ss.str().size() - 1);
 }
@@ -126,6 +133,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     try {
     const auto body = data.body();
     if (!body.empty()) {
+        data.data_to_arg();
         std::stringstream ss;
         log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
         log::info(LOG_HTTP)<<"data.argv:"<<*(data.argv());

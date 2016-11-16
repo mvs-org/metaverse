@@ -69,7 +69,7 @@ protected:
 
 class HttpMessage : public ToCommandArg{
 public:
-    HttpMessage(http_message* impl) noexcept : impl_{impl} {data_to_arg();}
+    HttpMessage(http_message* impl) noexcept : impl_{impl} {}
     ~HttpMessage() noexcept = default;
     
     // Copy.
@@ -102,9 +102,7 @@ private:
 
 class WebsocketMessage:public ToCommandArg { // connect to bx command-tool
 public:
-    WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {
-        data_to_arg();
-    }
+    WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {}
     ~WebsocketMessage() noexcept = default;
     
     // Copy.

@@ -79,11 +79,15 @@ void HttpMessage::data_to_arg() noexcept {
      */
     if (uri() == "/api")
     {
-        char method[128]{0x00};
-        char params[1024]{0x00};
-        mg_get_http_var(&impl_->body, "method", method, sizeof(method));
-        mg_get_http_var(&impl_->body, "params", params, sizeof(params));
-        convert({method, 128}, {params, 1024});
+        std::array<char, 256> method{0x00};
+        std::array<char, 4096> params{0x00};
+        mg_get_http_var(&impl_->body, "method", method.begin(), method.max_size());
+        mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
+
+        std::cout<<"method:["<<method.data()<<"]\n";
+        std::cout<<"pramas:["<<params.data()<<"]\n";
+        convert({method.data(), std::strlen(method.data())}, 
+                {params.data(), std::strlen(method.data())});
     }
 
 }
