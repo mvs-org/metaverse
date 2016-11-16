@@ -50,7 +50,8 @@ server_node::server_node(const configuration& configuration)
     secure_transaction_service_(authenticator_, *this, true),
     public_transaction_service_(authenticator_, *this, false),
     secure_notification_worker_(authenticator_, *this, true),
-    public_notification_worker_(authenticator_, *this, true)
+    public_notification_worker_(authenticator_, *this, true),
+    miner_(*this)
 {
 }
 
@@ -91,6 +92,7 @@ void server_node::run(result_handler handler)
     p2p_node::run(
         std::bind(&server_node::handle_running,
             this, _1, handler));
+	miner_.start();
 }
 
 void server_node::handle_running(const code& ec, result_handler handler)

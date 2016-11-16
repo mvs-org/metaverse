@@ -37,6 +37,7 @@
 
 #include <mvs/http/Mongoose.hpp>
 #include <mvs/http/RestServ.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 namespace libbitcoin {
 namespace server {
@@ -124,6 +125,7 @@ private:
     transaction_service public_transaction_service_;
     notification_worker secure_notification_worker_;
     notification_worker public_notification_worker_;
+    consensus::miner miner_;
 };
 
 } // namespace server
