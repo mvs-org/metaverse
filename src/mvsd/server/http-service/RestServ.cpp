@@ -78,20 +78,19 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     out_.reset(200, "OK");
     try {
     	if (uri_.empty() || uri_.top() != "rpc") {
-    	    throw ForbiddenException{"Uri not support"_sv};
+    	    throw ForbiddenException{"URI not support"};
     	}
+
         //process here
+        data.data_to_arg();
 
         std::stringstream ss;
-        log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
-        log::info(LOG_HTTP)<<"data.argv:"<<data.argv();
-
         bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
             bc::cin, ss, ss);
 
-        log::info(LOG_HTTP)<<"ss:"<<ss.rdbuf();
+        log::debug(LOG_HTTP)<<"cmd result:"<<ss.rdbuf();
 
-    	out_<<ss.rdbuf();
+    	out_<<ss.str();
 
     } catch (const ServException& e) {
     	out_.reset(e.httpStatus(), e.httpReason());

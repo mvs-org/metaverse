@@ -23,8 +23,6 @@ namespace mg {
 
 void HttpMessage::data_to_arg() noexcept {
 
-    bc::log::debug(LOG_HTTP)<<"uri "<<uri();
-
     auto convert = [this](std::string_view method, std::string_view pramas){
 
         this->vargv_.push_back({method.data(), method.size()});
@@ -56,9 +54,10 @@ void HttpMessage::data_to_arg() noexcept {
 
     };
 
-    /* application/json
-     * {"method":"xxx", "params":[]"}
-     */
+    /* *******************************************
+     * application/json
+     * {"method":"xxx", "params":""}
+     * ******************************************/
     if (uri() == "/rpc")
     {
         std::string method, params;
@@ -74,9 +73,10 @@ void HttpMessage::data_to_arg() noexcept {
         convert({method.c_str(), method.size()}, {params.c_str(), params.size()});
     }
 
-    /* application/x-www-form-urlencoded
+    /* *******************************************
+     * application/x-www-form-urlencoded
      * method=xxx&params=xxx
-     */
+     * ******************************************/
     if (uri() == "/api")
     {
         std::array<char, 256> method{0x00};
@@ -84,12 +84,11 @@ void HttpMessage::data_to_arg() noexcept {
         mg_get_http_var(&impl_->body, "method", method.begin(), method.max_size());
         mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
 
-        std::cout<<"method:["<<method.data()<<"]\n";
-        std::cout<<"pramas:["<<params.data()<<"]\n";
         convert({method.data(), std::strlen(method.data())}, 
-                {params.data(), std::strlen(method.data())});
+                {params.data(), std::strlen(params.data())});
     }
 
+    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
 }
 
 void WebsocketMessage::data_to_arg() noexcept {
@@ -115,7 +114,7 @@ void WebsocketMessage::data_to_arg() noexcept {
         argv_[i++] = iter.c_str();
     }
 
-    bc::log::debug(LOG_HTTP)<<"ws got cmd:["<<argv_[0]<<"],paramters["<<argc_-1<<"]";
+    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
 }
 
 } // mg
