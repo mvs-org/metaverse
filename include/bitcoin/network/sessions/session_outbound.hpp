@@ -49,6 +49,7 @@ public:
 protected:
     /// Override to attach specialized protocols upon channel start.
     virtual void attach_protocols(channel::ptr channel);
+    void delay_new_connect(connector::ptr connect);
 
 private:
     void new_connection(connector::ptr connect);

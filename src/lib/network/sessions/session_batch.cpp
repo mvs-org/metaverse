@@ -158,6 +158,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
         log::debug(LOG_NETWORK)
             << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
+#if 0
         if(count)
         {
         	connect->connect(host, BIND7(handle_connect, _1, _2, host, connect,
@@ -173,7 +174,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
         		log::debug(LOG_NETWORK) << "remove host failed," << ec.message() ;
         	});
         }
-
+#endif
         handler(ec, nullptr);
         return;
     }

@@ -102,6 +102,11 @@ void server_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
+    if (ec)
+    {
+    	handler(ec);
+    }
+
     if (!start_services())
     {
         handler(error::operation_failed);

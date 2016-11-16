@@ -82,25 +82,24 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
     }
 
     // Randomly select an address from the buffer.
-//    const auto index = static_cast<size_t>(pseudo_random() % buffer_.size());
-    auto result = false;
+
+    config::authority::list addresses;
 
     for(auto entry: buffer_)
     {
 		auto iter = std::find(excluded_list.begin(), excluded_list.end(), config::authority(entry) );
 		if(iter == excluded_list.end())
 		{
-			out = entry;
-			result = true;
-			break;
+			addresses.push_back(config::authority(entry));
 		}
     }
     mutex_.unlock();
 
-    if(not result){
+    if(addresses.empty()){
     	return error::not_satisfied;
     }
-//    out = buffer_[index];
+    const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
+    out = addresses[index].to_network_address();
     return error::success;
     ///////////////////////////////////////////////////////////////////////////
 }

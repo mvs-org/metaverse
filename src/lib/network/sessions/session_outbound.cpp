@@ -25,6 +25,7 @@
 #include <bitcoin/network/p2p.hpp>
 #include <bitcoin/network/protocols/protocol_address.hpp>
 #include <bitcoin/network/protocols/protocol_ping.hpp>
+#include <bitcoin/bitcoin/utility/deadline.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -86,6 +87,26 @@ void session_outbound::new_connection(connector::ptr connect)
     this->connect(connect, BIND3(handle_connect, _1, _2, connect));
 }
 
+void session_outbound::delay_new_connect(connector::ptr connect)
+{
+	log::debug(LOG_NETWORK) << "delay new connect" ;
+	auto timer = std::make_shared<deadline>(pool_, asio::seconds(5));
+	auto self = shared_from_this();
+	timer->start([this, connect, timer, self](const code& ec){
+		if (ec)
+		{
+			log::debug(LOG_NETWORK) << "delay new connect, " << ec.message() ;
+		}
+
+		if (stopped())
+		{
+			log::debug(LOG_NETWORK) << "delay new connect, session stopped" ;
+			return;
+		}
+		new_connection(connect);
+	});
+}
+
 void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     connector::ptr connect)
 {
@@ -98,7 +119,8 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
         	log::debug(LOG_NETWORK) << "session outbound handle connect, not satified";
 			return;
 		}
-        new_connection(connect);
+        delay_new_connect(connect);
+//        new_connection(connect);
         return;
     }
 
