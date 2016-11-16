@@ -84,6 +84,7 @@ private:
 	uint64_t store_block(block_ptr block);
 	uint64_t get_height();
 	bool is_block_chain_height_changed();
+	bool is_stop_miner();
 
 private:
 	p2p_node& node_;

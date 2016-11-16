@@ -16,7 +16,7 @@ namespace libbitcoin{
 namespace consensus{
 typedef boost::tuple<double, double, boost::int64_t, miner::transaction_ptr> transaction_priority;
 
-miner::miner(p2p_node& node) : node_(node)
+miner::miner(p2p_node& node) : node_(node), state_(state::init_)
 {
 }
 
@@ -53,14 +53,14 @@ boost::int64_t miner::calculate_fee(int height, boost::int64_t fees)
 
 bool miner::script_hash_signature_operations_count(size_t &count, chain::input& input)
 {
-	bool ret = false;
-  	const auto& previous_output = input.previous_output;
+	bool ret = false; 
+	const auto& previous_output = input.previous_output;
 	transaction previous_tx;
 	boost::uint64_t h;
 	if(dynamic_cast<block_chain_impl&>(node_.chain()).get_transaction(previous_tx, h, input.previous_output.hash))
-	{
-    		const auto& previous_tx_out = previous_tx.outputs[previous_output.index];
-    		ret = blockchain::validate_block::script_hash_signature_operations_count(count, previous_tx_out.script, input.script);
+	{ 
+		const auto& previous_tx_out = previous_tx.outputs[previous_output.index]; 
+		ret = blockchain::validate_block::script_hash_signature_operations_count(count, previous_tx_out.script, input.script);
 	}
 
 	return ret;
@@ -90,28 +90,28 @@ miner::block_ptr miner::create_genesis_block()
 	string text = "it is test";
 	block_ptr pblock = make_shared<block>();
 
-    	// Create coinbase tx
+	// Create coinbase tx
 	transaction tx_new;
-    	tx_new.inputs.resize(1);
-    	tx_new.inputs[0].previous_output = {null_hash, max_uint32};
+	tx_new.inputs.resize(1);
+	tx_new.inputs[0].previous_output = {null_hash, max_uint32};
 	tx_new.inputs[0].script.operations = {{chain::opcode::raw_data,{text.begin(), text.end()}}};
-    	tx_new.outputs.resize(1);
+	tx_new.outputs.resize(1);
 	tx_new.outputs[0].script.operations = {{chain::opcode::special, {pub_key.begin(), pub_key.end()}}, {chain::opcode::checksig, {}}};
-    	//tx_new.output[0].scriptPubKey << pubkey << OP_CHECKSIG;
-    	tx_new.outputs[0].value = 50000000 * coin;
+	//tx_new.output[0].scriptPubKey << pubkey << OP_CHECKSIG;
+	tx_new.outputs[0].value = 50000000 * coin;
 
-    	// Add our coinbase tx as first transaction
-    	pblock->transactions.push_back(tx_new);
+	// Add our coinbase tx as first transaction
+	pblock->transactions.push_back(tx_new);
 
-	// Fill in header
-       	pblock->header.previous_block_hash = {};
-	pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+	// Fill in header 
+	pblock->header.previous_block_hash = {}; 
+	pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
 	pblock->header.timestamp = get_adjust_time();
-       	//pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
-       	pblock->header.nonce = 0;
-	pblock->header.transaction_count = 1;
-	pblock->header.version = version;
-
+	//pblock->nBits = GetNextWorkRequired(pindexPrev, pblock); 
+	pblock->header.nonce = 0; 
+	pblock->header.transaction_count = 1; 
+	pblock->header.version = version; 
+	
 	return pblock;
 }
 
@@ -129,47 +129,47 @@ miner::block_ptr miner::create_new_block(const string& address)
 	boost::uint64_t current_block_height = 0;
 	pblock_chain->get_last_height(current_block_height);
 
-    	// Create coinbase tx
-	transaction tx_new;
-    	tx_new.inputs.resize(1);
-    	tx_new.inputs[0].previous_output = {null_hash, max_uint32};
+	// Create coinbase tx
+	transaction tx_new; 
+	tx_new.inputs.resize(1); 
+	tx_new.inputs[0].previous_output = {null_hash, max_uint32}; 
 	script_number number(height_ + 1); 
 	tx_new.inputs[0].script.operations.push_back({ chain::opcode::special, number.data() }); 
-
-    	tx_new.outputs.resize(1);
+	
+	tx_new.outputs.resize(1); 
 	tx_new.outputs[0].script.operations = {{chain::opcode::special, {address.begin(), address.end()}}, {chain::opcode::checksig, {}}};
-    	//tx_new.output[0].scriptPubKey << pubkey << OP_CHECKSIG;
+	//tx_new.output[0].scriptPubKey << pubkey << OP_CHECKSIG;
 
-    	// Add our coinbase tx as first transaction
-    	pblock->transactions.push_back(tx_new);
+	// Add our coinbase tx as first transaction 
+	pblock->transactions.push_back(tx_new); 
 	pblock->header.transaction_count = 1;
 
-    	// Largest block you're willing to create:
-    	unsigned int block_max_size = max_block_size_gen/2;
-    	// Limit to betweeen 1K and max_block_size-1K for sanity:
-    	block_max_size = max((unsigned int)1000, min((unsigned int)(max_block_size-1000), block_max_size));
+	// Largest block you're willing to create:
+	unsigned int block_max_size = max_block_size_gen/2;
+	// Limit to betweeen 1K and max_block_size-1K for sanity:
+	block_max_size = max((unsigned int)1000, min((unsigned int)(max_block_size-1000), block_max_size));
 
-    	// How much of the block should be dedicated to high-priority transactions,
-    	// included regardless of the fees they pay
-    	unsigned int block_priority_size = 27000;
-    	block_priority_size = min(block_max_size, block_priority_size);
+	// How much of the block should be dedicated to high-priority transactions,
+	// included regardless of the fees they pay
+	unsigned int block_priority_size = 27000;
+	block_priority_size = min(block_max_size, block_priority_size);
 
-    	// Minimum block size you want to create; block will be filled with free transactions
-    	// until there are no more or the block reaches this size:
-    	unsigned int block_min_size = 0;
-    	block_min_size = min(block_max_size, block_min_size);
+	// Minimum block size you want to create; block will be filled with free transactions
+	// until there are no more or the block reaches this size:
+	unsigned int block_min_size = 0; 
+	block_min_size = min(block_max_size, block_min_size);
 
-    	// Collect memory pool transactions into the block
-	boost::int64_t total_fee = 0;
-	unsigned int block_size = 0;
-     	unsigned int block_tx_count = 0;
-        unsigned int total_tx_sig_length = 0;
-	for(auto tx : transactions)
-	{
-		boost::int64_t total_inputs = 0;
+	// Collect memory pool transactions into the block
+	boost::int64_t total_fee = 0; 
+	unsigned int block_size = 0; 
+	unsigned int block_tx_count = 0; 
+	unsigned int total_tx_sig_length = 0; 
+	for(auto tx : transactions) 
+	{ 
+		boost::int64_t total_inputs = 0; 
 		double priority = 0;
-		for(auto input : tx->inputs)
-		{
+		for(auto input : tx->inputs) 
+		{ 
 			transaction t;
 			boost::uint64_t h;
 			pblock_chain->get_transaction(t, h, input.previous_output.hash);
@@ -182,103 +182,102 @@ miner::block_ptr miner::create_new_block(const string& address)
 		boost::int64_t serialized_size = tx->serialized_size(0);
 		
 		// Priority is sum(valuein * age) / txsize
-        	priority /= serialized_size;
+		priority /= serialized_size;
 
-	   	// This is a more accurate fee-per-kilobyte than is used by the client code, because the
-        	// client code rounds up the size to the nearest 1K. That's good, because it gives an
-        	// incentive to create smaller transactions.
-        	double fee_per_kb =  double(total_inputs - tx->total_output_value()) / (double(serialized_size)/1000.0);
-		transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, total_inputs - tx->total_output_value(), tx));
+		// This is a more accurate fee-per-kilobyte than is used by the client code, because the
+		// client code rounds up the size to the nearest 1K. That's good, because it gives an
+		// incentive to create smaller transactions.
+		double fee_per_kb = double(total_inputs - tx->total_output_value()) / (double(serialized_size)/1000.0);
+		transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, total_inputs - tx->total_output_value(), tx)); 
 	}
 
-	auto sort_by_priority = [](const transaction_priority& a, const transaction_priority& b) -> bool
-	{
-		if (a.get<1>() == b.get<1>())
-        		return a.get<0>() < b.get<0>();
-      		return a.get<1>() < b.get<1>();
+	auto sort_by_priority = [](const transaction_priority& a, const transaction_priority& b) -> bool 
+	{ 
+		if (a.get<1>() == b.get<1>()) 
+			return a.get<0>() < b.get<0>(); 
+		return a.get<1>() < b.get<1>(); 
 	};
 
-	auto sort_by_fee = [](const transaction_priority& a, const transaction_priority& b) -> bool
-	{
-    		if (a.get<0>() == b.get<0>())
-        		return a.get<1>() < b.get<1>();
-      		return a.get<0>() < b.get<0>();
+	auto sort_by_fee = [](const transaction_priority& a, const transaction_priority& b) -> bool 
+	{ 
+		if (a.get<0>() == b.get<0>()) 
+			return a.get<1>() < b.get<1>(); 
+		return a.get<0>() < b.get<0>(); 
 	};
 
-	function<bool(const transaction_priority&, const transaction_priority&)> sort_func = sort_by_priority;
-	bool is_resort = false;
-    	make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
+	function<bool(const transaction_priority&, const transaction_priority&)> sort_func = sort_by_priority; 
+	bool is_resort = false; 
+	make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 
-	while (!transaction_prioritys.empty())
-    	{
-        	double priority = transaction_prioritys.front().get<0>();
-        	double fee_per_kb = transaction_prioritys.front().get<1>();
-		boost::int64_t fee = transaction_prioritys.front().get<2>();
+	while (!transaction_prioritys.empty()) 
+	{ 
+		double priority = transaction_prioritys.front().get<0>(); 
+		double fee_per_kb = transaction_prioritys.front().get<1>(); 
+		boost::int64_t fee = transaction_prioritys.front().get<2>(); 
 		transaction& tx = *(transaction_prioritys.front().get<3>());
 
-        	pop_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
-        	transaction_prioritys.pop_back();
+		pop_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func); 
+		transaction_prioritys.pop_back();
 
-        	// Size limits
-        	boost::int64_t serialized_size = tx.serialized_size(); 
-        	if (block_size + serialized_size >= block_max_size)
-        		continue;
-
-            	// Legacy limits on sigOps:
-		unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(tx);
-            	if (total_tx_sig_length + tx_sig_length >= max_block_sigops)
-                	continue;
-
-       		// Skip free transactions if we're past the minimum block size:
-        	if (is_resort && (fee_per_kb < min_tx_fee) && (block_size + serialized_size >= block_min_size))
-        		break;
-
-       		// Prioritize by fee once past the priority size or we run out of high-priority
-        	// transactions:
-        	if (is_resort == false &&
-                	((block_size + serialized_size >= block_priority_size) || (priority < coin * 144 / 250)))
-        	{
-        		sort_func = sort_by_fee;
-			is_resort = true;
-            		make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
-        	}
-
-		size_t c;
-		if(!miner::script_hash_signature_operations_count(c, tx.inputs)
-			&& total_tx_sig_length + tx_sig_length + c >= max_block_sigops)
+		// Size limits
+		boost::int64_t serialized_size = tx.serialized_size(); 
+		if (block_size + serialized_size >= block_max_size) 
 			continue;
+
+		// Legacy limits on sigOps:
+		unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(tx); 
+		if (total_tx_sig_length + tx_sig_length >= max_block_sigops) 
+			continue;
+
+		// Skip free transactions if we're past the minimum block size: 
+		if (is_resort && (fee_per_kb < min_tx_fee) && (block_size + serialized_size >= block_min_size)) 
+			break;
+
+		// Prioritize by fee once past the priority size or we run out of high-priority
+		// transactions:
+		if (is_resort == false &&
+			((block_size + serialized_size >= block_priority_size) || (priority < coin * 144 / 250))) 
+		{ 
+			sort_func = sort_by_fee; 
+			is_resort = true; 
+			make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func); 
+		}
+
+		size_t c; 
+		if(!miner::script_hash_signature_operations_count(c, tx.inputs) 
+			&& total_tx_sig_length + tx_sig_length + c >= max_block_sigops) 
+			continue; 
 		tx_sig_length += c;
 
-      		// Added
-        	pblock->transactions.push_back(tx);
+		// Added
+		pblock->transactions.push_back(tx); 
 		++pblock->header.transaction_count;
 
-        	block_size += serialized_size;
-        	++block_tx_count;
-        	total_tx_sig_length += tx_sig_length;
-        	total_fee += fee;
- 	}
+		block_size += serialized_size; 
+		++block_tx_count; 
+		total_tx_sig_length += tx_sig_length; 
+		total_fee += fee; 
+	}
 		
-    	pblock->transactions[0].outputs[0].value = calculate_fee(current_block_height + 1, total_fee);
+	pblock->transactions[0].outputs[0].value = calculate_fee(current_block_height + 1, total_fee);
 	//pblock->transactions[0].intput[0].script = CScript() << OP_0 << OP_0;
 
-	header prev_header;
-	if(pblock_chain->get_header(prev_header, current_block_height))
+	header prev_header; 
+	if(pblock_chain->get_header(prev_header, current_block_height)) 
 	{
 		// Fill in header
-       		pblock->header.previous_block_hash = prev_header.hash();
-		pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-		pblock->header.timestamp = get_adjust_time();
-       		pblock->header.bits = 0;
-       		pblock->header.nonce = 0;
-		pblock->header.version = version;
-	}
-	else
-	{
-		pblock.reset();
-	}
-
-	return pblock;
+		pblock->header.previous_block_hash = prev_header.hash(); 
+		pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
+		pblock->header.timestamp = get_adjust_time(); 
+		pblock->header.bits = 0; 
+		pblock->header.nonce = 0; 
+		pblock->header.version = version; 
+	} 
+	else 
+	{ 
+		pblock.reset(); 
+	} 
+	return pblock; 
 }
 
 unsigned int miner::get_adjust_time()
@@ -301,13 +300,13 @@ unsigned int miner::get_median_time_past()
 	{
 		header header;
 		if(block_chain.get_header(header, num - i))
-		{
-			times.push_back(header.timestamp);
+		{ 
+			times.push_back(header.timestamp); 
 		}
 	}
 
 	sort(times.begin(), times.end());	
-	return times.empty() ? 0 : times[times.size() / 2];
+	return times.empty() ? 0 : times[times.size() / 2]; 
 }
 
 uint64_t miner::store_block(block_ptr block)
@@ -327,27 +326,37 @@ uint64_t miner::store_block(block_ptr block)
 }
 
 void miner::work()
-{
-	while(state_ != state::exit_)
-	{
-		height_ = get_height();
-		string pub_key = "1A1xPfGXEVSNg8dHCgsbhiWunYqjKm7RE7";
+{ 
+	while(state_ != state::exit_) 
+	{ 
+		height_ = get_height(); 
+		string pub_key = "1A1xPfGXEVSNg8dHCgsbhiWunYqjKm7RE7"; 
 		block_ptr block = create_new_block(pub_key);
 		//TODO
-		sleep(6);
-       		block->header.bits = height_*1000  + (unsigned char)random();
+		for(int i=0; i < 60; i++) 
+		{ 
+			if(is_stop_miner()) 
+			{ 
+				break;	
+			} 
+			sleep(1); 
+		} 
 		
-		if(block && is_block_chain_height_changed() == false)
-		{
-			boost::uint64_t height = store_block(block);
-		}
-	}
+		block->header.bits = height_*1000 + (unsigned char)random(); 
+		if(block) 
+		{ 
+			boost::uint64_t height = store_block(block); 
+		} 
+	} 
+}
+
+bool miner::is_stop_miner()
+{
+	return state_ == state::exit_ || is_block_chain_height_changed();
 }
 
 bool miner::start()
 {
-	work();
-	state_ = state::init_;
 	thread_.reset(new boost::thread(bind(&miner::work, this)));	
 	return true;
 }
