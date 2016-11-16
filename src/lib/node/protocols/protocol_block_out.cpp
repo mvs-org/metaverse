@@ -249,7 +249,8 @@ void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
     SEND2(response, handle_send, _1, response.command);
 
     // Save the locator top to limit an overlapping future request.
-    last_locator_top_.store(hashes.front());
+    if(not hashes.empty())
+        last_locator_top_.store(hashes.front());
 }
 
 // Receive get_data sequence.

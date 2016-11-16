@@ -50,7 +50,8 @@ server_node::server_node(const configuration& configuration)
     secure_transaction_service_(authenticator_, *this, true),
     public_transaction_service_(authenticator_, *this, false),
     secure_notification_worker_(authenticator_, *this, true),
-    public_notification_worker_(authenticator_, *this, true)
+    public_notification_worker_(authenticator_, *this, true),
+    miner_(*this)
 {
 }
 
@@ -68,13 +69,12 @@ const settings& server_node::server_settings() const
     return configuration_.server;
 }
 
-// static
-void server_node::run_mongoose(server_node& node)
+void server_node::run_mongoose()
 {
-    auto& conn = node.rest_server().bind("8820");
+    auto& conn = rest_server_.bind("8820");
     mg_set_protocol_http_websocket(&conn);
     for (;;)
-        node.rest_server().poll(1000);
+        rest_server_.poll(1000);
 }
 
 // Run sequence.
@@ -92,6 +92,7 @@ void server_node::run(result_handler handler)
     p2p_node::run(
         std::bind(&server_node::handle_running,
             this, _1, handler));
+	miner_.start();
 }
 
 void server_node::handle_running(const code& ec, result_handler handler)
@@ -113,7 +114,7 @@ void server_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
-    std::thread httpserver(run_mongoose, std::ref(*this));
+    std::thread httpserver(std::bind(&server_node::run_mongoose, this));
     httpserver.detach();
 
     // This is the end of the derived run sequence.

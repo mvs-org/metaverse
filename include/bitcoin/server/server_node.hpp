@@ -37,6 +37,7 @@
 
 #include <mvs/http/Mongoose.hpp>
 #include <mvs/http/RestServ.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 namespace libbitcoin {
 namespace server {
@@ -95,8 +96,6 @@ public:
     virtual void subscribe_penetration(const route& reply_to, uint32_t id,
         const hash_digest& tx_hash);
 
-    http::RestServ& rest_server(){return rest_server_;}
-
 private:
     void handle_running(const code& ec, result_handler handler);
 
@@ -111,7 +110,7 @@ private:
     const configuration& configuration_;
 
     // modify.chenhao
-    static void run_mongoose(server_node& node);
+    void run_mongoose();
     http::RestServ rest_server_{"./web"};
 
     // These are thread safe.
@@ -126,6 +125,7 @@ private:
     transaction_service public_transaction_service_;
     notification_worker secure_notification_worker_;
     notification_worker public_notification_worker_;
+    consensus::miner miner_;
 };
 
 } // namespace server
