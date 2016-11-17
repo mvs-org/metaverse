@@ -91,10 +91,6 @@ bool parser::parse(std::string& out_error, std::istream& input,
         // Don't load rest if help is specified.
         if (!get_option(variables, BX_HELP_VARIABLE))
         {
-        	for(auto i=0;i<argc;++i)
-        	{
-        		log::debug(LOG_NETWORK) << "<<<<<<<<<<<<<<<<<" << argv[i];
-        	}
             // Must store before configuration in order to specify the path.
             load_environment_variables(variables,
                 BX_ENVIRONMENT_VARIABLE_PREFIX);
