@@ -55,6 +55,7 @@ public:
 
     auto argv() const noexcept { return argv_; }
     auto argc() const noexcept { return argc_; }
+    void setargv0(std::string&& outside);
 
     static const int max_paramters{8};
 protected:
@@ -158,7 +159,7 @@ private:
        switch (event) {
        case MG_EV_CLOSE:
             if (conn->flags & MG_F_IS_WEBSOCKET) {
-                self->websocketBroadcast(*conn, "left", 4);
+                //self->websocketBroadcast(*conn, "left", 4);
             }else{
                 conn->user_data = nullptr;
             }
@@ -176,11 +177,12 @@ private:
             break;
 
         case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
-            self->websocketBroadcast(*conn, "joined", 6);
+            self->websocketSend(conn, "connected", 9);
             break;
 
         case MG_EV_WEBSOCKET_FRAME:
-            self->websocketBroadcast(*conn, wm); break;
+            self->websocketBroadcast(*conn, wm);
+            break;
 
        }
     }

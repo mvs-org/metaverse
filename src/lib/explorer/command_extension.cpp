@@ -30,6 +30,8 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 
 #include <bitcoin/explorer/dispatch.hpp>
+#include <algorithm> // for_each
+#include <array>
 
 using namespace bc;
 using namespace bc::chain;
@@ -174,28 +176,18 @@ console_result getaddresses::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    const char* cmds[]={"seed", "ec-new", "ec-to-public", "ec-to-address"};
+    std::array<const char*, 4> cmds{"seed", "ec-new", "ec-to-public", "ec-to-address"};
+    std::ostringstream sout{""};
+    std::istringstream sin;
 
-    // -- 0
-    std::stringstream ss;
-    dispatch_command(1, cmds, bc::cin, ss, ss);
+    //pipe executing
+    std::for_each(cmds.begin(), cmds.end(), [&sout, &sin](const char* cmd){
+        sin.str(sout.str());
+        sout.str("");
+        dispatch_command(1, &cmd, sin, sout, sout);
+    });
 
-    // -- 1
-    std::istringstream sin(ss.str());
-    ss.str("");
-    dispatch_command(1, cmds + 1, sin, ss, ss);
-
-    // -- 2
-    sin.str(ss.str());
-    ss.str("");
-    dispatch_command(1, cmds + 2, sin, ss, ss);
-
-    // -- 3
-    sin.str(ss.str());
-    ss.str("");
-    dispatch_command(1, cmds + 3, sin, ss, ss);
-
-    output<<ss.rdbuf();
+    output<<sout.str();
 
     return console_result::okay;
 }

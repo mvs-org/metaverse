@@ -44,26 +44,36 @@ void RestServ::websocketBroadcast(mg_connection& nc, const char* msg, size_t len
       mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);
     }
 }
+void RestServ::websocketSend(mg_connection* nc, const char* msg, size_t len) 
+{
+    log::debug(LOG_HTTP)<<"ws snd len "<<len<<" msg:["<<msg<<"]";
+    mg_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, msg, len);
+}
 
+
+// --------------------- websocket interface -----------------------
 void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws) 
 {
     using namespace bc;
-    //process here
 
-    std::ostringstream ss;
+    //process here
+    std::ostringstream sout;
+    std::istringstream sin;
     try{
         ws.data_to_arg();
 
         explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-            bc::cin, ss, ss);
+            sin, sout, sout);
 
     }catch(...){
-        log::error(LOG_HTTP)<<__func__<<":"<<ss.rdbuf();
+        log::error(LOG_HTTP)<<__func__<<":"<<sout.rdbuf();
     }
 
-    websocketBroadcast(nc, ss.str().c_str(), ss.str().size() - 1);
+    //websocketBroadcast(nc, sout.str().c_str(), sout.str().size() - 1);
+    websocketSend(&nc, sout.str().c_str(), sout.str().size() - 1);
 }
 
+// --------------------- json rpc interface -----------------------
 void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 {
     using namespace mg;
@@ -84,13 +94,14 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
         //process here
         data.data_to_arg();
 
-        std::stringstream ss;
+        std::stringstream sout;
+        std::istringstream sin;
         bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-            bc::cin, ss, ss);
+            sin, sout, sout);
 
-        log::debug(LOG_HTTP)<<"cmd result:"<<ss.rdbuf();
+        log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
 
-    	out_<<ss.str();
+    	out_<<sout.str();
 
     } catch (const ServException& e) {
     	out_.reset(e.httpStatus(), e.httpReason());
@@ -105,6 +116,7 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     out_.setContentLength(); 
 }
 
+// --------------------- Restful-api interface -----------------------
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 {
     using namespace mg;
@@ -113,50 +125,44 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     reset(data);
 
-    log::info(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
-
-    if (uri_.empty() || uri_.top() != "api") {
-        StreamBuf buf{nc.send_mbuf};
-        out_.rdbuf(&buf);
-        out_.reset(200, "OK");
-        out_<<"chen hao test-error rpc top";
-        out_.setContentLength(); 
-        return;
-    }
-    uri_.pop();
+    log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
 
     StreamBuf buf{nc.send_mbuf};
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
 
     try {
-    const auto body = data.body();
-    if (!body.empty()) {
-        data.data_to_arg();
-        std::stringstream ss;
-        log::info(LOG_HTTP)<<"data.argc:"<<data.argc();
-        log::info(LOG_HTTP)<<"data.argv:"<<*(data.argv());
+        if (uri_.empty() || uri_.top() != "api") {
+        	throw ForbiddenException{"URI not support"};
+        }
+        uri_.pop();
 
-        bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-            bc::cin, ss, ss);
+        if (!uri_.empty()) {
+            data.data_to_arg();
+            // let uri as method
+            data.setargv0({uri_.top().data(), uri_.top().size()});
 
-        log::info(LOG_HTTP)<<"ss:"<<ss.rdbuf();
+            //process here
+            std::stringstream sout;
+            std::istringstream sin;
 
-    	out_<<ss.str();
-        state_|= MatchUri;
-        state_|= MatchMethod;
+            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+                sin, sout, sout);
 
-//      if (!request_.parse(data.body())) {
-    //    throw BadRequestException{"request body is incomplete"_sv};
- //     }
-    }
-//    restRequest(data, now);
-    if (!isSet(MatchUri)) {
-      throw NotFoundException{errMsg() << "resource '" << data.uri() << "' does not exist"};
-    }
-    if (!isSet(MatchMethod)) {
-      throw MethodNotAllowedException{errMsg() << "method '" << data.method()
-          << "' is not allowed"};
+            log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
+
+        	out_<<sout.str();
+            state_|= MatchUri;
+            state_|= MatchMethod;
+
+        }
+
+        if (!isSet(MatchUri)) {
+          throw NotFoundException{errMsg() << "resource '" << data.uri() << "' does not exist"};
+        }
+        if (!isSet(MatchMethod)) {
+          throw MethodNotAllowedException{errMsg() << "method '" << data.method()
+              << "' is not allowed"};
     }
   } catch (const ServException& e) {
     out_.reset(e.httpStatus(), e.httpReason());
@@ -168,4 +174,6 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     ServException::toJson(status, reason, e.what(), out_);
   }
   out_.setContentLength(); 
+
 }
+

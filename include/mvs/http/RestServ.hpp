@@ -41,6 +41,7 @@ public:
     void httpRpcRequest (mg_connection& nc, HttpMessage data);
     void websocketBroadcast (mg_connection& nc, WebsocketMessage ws);
     void websocketBroadcast (mg_connection& nc, const char* msg, size_t len);
+    void websocketSend(mg_connection* nc, const char* msg, size_t len);
 
 protected:
     std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data)
@@ -49,7 +50,7 @@ protected:
        auto rpcpassword = data.header("rpcpassword");
     
        if (rpcuser.empty() || rpcpassword.empty()) {
-      	    throw InvalidException{"rpc authorisation required"_sv};
+      	    throw InvalidException{"authorisation required"_sv};
        }
        return std::make_pair(rpcuser, rpcpassword);
     }
@@ -58,7 +59,7 @@ protected:
     {
        if( rpcuser_ == rpcuser and rpcpassword_ == rpcpassword){
        } else {
-           throw InvalidException("rpc authorisation failed"_sv);
+           throw InvalidException("authorisation failed"_sv);
        }
     }
 

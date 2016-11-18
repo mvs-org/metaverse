@@ -70,7 +70,8 @@ void HttpMessage::data_to_arg() noexcept {
             <<minijson::any>> [&]{ minijson::ignore(ctx); };
         });
 
-        convert({method.c_str(), method.size()}, {params.c_str(), params.size()});
+        convert({method.c_str(), method.size()}, 
+                {params.c_str(), params.size()});
     }
 
     /* *******************************************
@@ -115,6 +116,18 @@ void WebsocketMessage::data_to_arg() noexcept {
     }
 
     bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
+}
+
+void ToCommandArg::setargv0(std::string&& outside)
+{
+    if (vargv_.empty())
+    {
+        vargv_.push_back(outside); 
+        argc_++; 
+        argv_[0] = vargv_[0].c_str();
+    } else { 
+        vargv_[0] = outside; 
+    }
 }
 
 } // mg
