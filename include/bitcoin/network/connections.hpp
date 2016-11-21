@@ -85,8 +85,12 @@ public:
     void subscribe(message_handler<Message>&& handler)
     {
         for (const auto channel: safe_copy())
-            channel->subscribe(
-                std::forward<message_handler<Message>>(handler));
+        {
+        	auto handler_copy = handler;
+        	channel->subscribe(std::move(handler_copy));//by jianglh
+//            channel->subscribe(
+//                std::forward<message_handler<Message>>(handler));
+        }
     }
 
     virtual void stop(const code& ec);
