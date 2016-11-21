@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2015 mvs developers 
+ * Copyright (c) 2016 mvs developers 
  *
  * This file is part of libbitcoin-explorer.
  *
@@ -54,7 +54,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("stop", 1);
+            .add("STOP", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -62,7 +62,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_stop_argument(), "stop", variables, input, raw);
+        //load_input(argument_.xxx, "STOP", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -72,33 +91,153 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_stop_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_stop_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ start *************************/
+
+class start: public command
+{
+public:
+    start() = default; 
+    virtual ~start() = default; 
+    start(const start&) = default; 
+    start(start&&) = default; 
+    start& operator=(start&&) = default; 
+    start& operator=(const start&) = default; 
+
+public:
+    static const char* symbol(){ return "start";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "start "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("START", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "START", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ setadmin *************************/
+
+class setadmin: public command
+{
+public:
+    setadmin() = default; 
+    virtual ~setadmin() = default; 
+    setadmin(const setadmin&) = default; 
+    setadmin(setadmin&&) = default; 
+    setadmin& operator=(setadmin&&) = default; 
+    setadmin& operator=(const setadmin&) = default; 
+
+public:
+    static const char* symbol(){ return "setadmin";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "setadmin "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SETADMIN", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SETADMIN", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -125,7 +264,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getinfo", 1);
+            .add("GETINFO", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -133,7 +272,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getinfo_argument(), "getinfo", variables, input, raw);
+        //load_input(argument_.xxx, "GETINFO", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -143,33 +301,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getinfo_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getinfo_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -196,7 +334,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getpeerinfo", 1);
+            .add("GETPEERINFO", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -204,7 +342,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getpeerinfo_argument(), "getpeerinfo", variables, input, raw);
+        //load_input(argument_.xxx, "GETPEERINFO", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -214,33 +371,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getpeerinfo_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getpeerinfo_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -267,7 +404,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ping", 1);
+            .add("PING", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -275,7 +412,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_ping_argument(), "ping", variables, input, raw);
+        //load_input(argument_.xxx, "PING", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -285,33 +441,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_ping_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_ping_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -338,7 +474,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("addnode", 1);
+            .add("ADDNODE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -346,7 +482,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_addnode_argument(), "addnode", variables, input, raw);
+        //load_input(argument_.xxx, "ADDNODE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -356,33 +511,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_addnode_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_addnode_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -409,7 +544,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getmininginfo", 1);
+            .add("GETMININGINFO", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -417,7 +552,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getmininginfo_argument(), "getmininginfo", variables, input, raw);
+        //load_input(argument_.xxx, "GETMININGINFO", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -427,33 +581,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getmininginfo_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getmininginfo_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -480,7 +614,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("backupwallet", 1);
+            .add("BACKUPWALLET", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -488,7 +622,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_backupwallet_argument(), "backupwallet", variables, input, raw);
+        //load_input(argument_.xxx, "BACKUPWALLET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -498,33 +651,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_backupwallet_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_backupwallet_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -551,7 +684,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("importwallet", 1);
+            .add("IMPORTWALLET", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -559,7 +692,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_importwallet_argument(), "importwallet", variables, input, raw);
+        //load_input(argument_.xxx, "IMPORTWALLET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -569,60 +721,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_importwallet_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_importwallet_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ dumpprivkey *************************/
+/************************ lockwallet *************************/
 
-class dumpprivkey: public command
+class lockwallet: public command
 {
 public:
-    dumpprivkey() = default; 
-    virtual ~dumpprivkey() = default; 
-    dumpprivkey(const dumpprivkey&) = default; 
-    dumpprivkey(dumpprivkey&&) = default; 
-    dumpprivkey& operator=(dumpprivkey&&) = default; 
-    dumpprivkey& operator=(const dumpprivkey&) = default; 
+    lockwallet() = default; 
+    virtual ~lockwallet() = default; 
+    lockwallet(const lockwallet&) = default; 
+    lockwallet(lockwallet&&) = default; 
+    lockwallet& operator=(lockwallet&&) = default; 
+    lockwallet& operator=(const lockwallet&) = default; 
 
 public:
-    static const char* symbol(){ return "dumpprivkey";}
+    static const char* symbol(){ return "lockwallet";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "dumpprivkey "; }
+    const char* description() override { return "lockwallet "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("dumpprivkey", 1);
+            .add("LOCKWALLET", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -630,7 +762,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_dumpprivkey_argument(), "dumpprivkey", variables, input, raw);
+        //load_input(argument_.xxx, "LOCKWALLET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -640,60 +791,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_dumpprivkey_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_dumpprivkey_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ importprivkey *************************/
+/************************ backupaccount *************************/
 
-class importprivkey: public command
+class backupaccount: public command
 {
 public:
-    importprivkey() = default; 
-    virtual ~importprivkey() = default; 
-    importprivkey(const importprivkey&) = default; 
-    importprivkey(importprivkey&&) = default; 
-    importprivkey& operator=(importprivkey&&) = default; 
-    importprivkey& operator=(const importprivkey&) = default; 
+    backupaccount() = default; 
+    virtual ~backupaccount() = default; 
+    backupaccount(const backupaccount&) = default; 
+    backupaccount(backupaccount&&) = default; 
+    backupaccount& operator=(backupaccount&&) = default; 
+    backupaccount& operator=(const backupaccount&) = default; 
 
 public:
-    static const char* symbol(){ return "importprivkey";}
+    static const char* symbol(){ return "backupaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "importprivkey "; }
+    const char* description() override { return "backupaccount "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("importprivkey", 1);
+            .add("BACKUPACCOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -701,7 +832,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_importprivkey_argument(), "importprivkey", variables, input, raw);
+        //load_input(argument_.xxx, "BACKUPACCOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -711,60 +861,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_importprivkey_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_importprivkey_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ switchaccout *************************/
+/************************ importaccount *************************/
 
-class switchaccout: public command
+class importaccount: public command
 {
 public:
-    switchaccout() = default; 
-    virtual ~switchaccout() = default; 
-    switchaccout(const switchaccout&) = default; 
-    switchaccout(switchaccout&&) = default; 
-    switchaccout& operator=(switchaccout&&) = default; 
-    switchaccout& operator=(const switchaccout&) = default; 
+    importaccount() = default; 
+    virtual ~importaccount() = default; 
+    importaccount(const importaccount&) = default; 
+    importaccount(importaccount&&) = default; 
+    importaccount& operator=(importaccount&&) = default; 
+    importaccount& operator=(const importaccount&) = default; 
 
 public:
-    static const char* symbol(){ return "switchaccout";}
+    static const char* symbol(){ return "importaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "switchaccout "; }
+    const char* description() override { return "importaccount "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("switchaccout", 1);
+            .add("IMPORTACCOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -772,7 +902,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_switchaccout_argument(), "switchaccout", variables, input, raw);
+        //load_input(argument_.xxx, "IMPORTACCOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -782,33 +931,153 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_switchaccout_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_switchaccout_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ switchaccount *************************/
+
+class switchaccount: public command
+{
+public:
+    switchaccount() = default; 
+    virtual ~switchaccount() = default; 
+    switchaccount(const switchaccount&) = default; 
+    switchaccount(switchaccount&&) = default; 
+    switchaccount& operator=(switchaccount&&) = default; 
+    switchaccount& operator=(const switchaccount&) = default; 
+
+public:
+    static const char* symbol(){ return "switchaccount";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "switchaccount "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SWITCHACCOUNT", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SWITCHACCOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ listaccounts *************************/
+
+class listaccounts: public command
+{
+public:
+    listaccounts() = default; 
+    virtual ~listaccounts() = default; 
+    listaccounts(const listaccounts&) = default; 
+    listaccounts(listaccounts&&) = default; 
+    listaccounts& operator=(listaccounts&&) = default; 
+    listaccounts& operator=(const listaccounts&) = default; 
+
+public:
+    static const char* symbol(){ return "listaccounts";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "listaccounts "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("LISTACCOUNTS", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "LISTACCOUNTS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -835,15 +1104,45 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getnewaccount", 1);
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_getnewaccount_argument(), "getnewaccount", variables, input, raw);
+        load_input(argument_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(argument_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+	    )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&argument_.name)->required(),
+            "account name."
+	    )
+	    (
+            "ACCOUNTAUTH",
+            value<std::string>(&argument_.auth)->required(),
+            "account auth."
+    	);
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -853,33 +1152,15 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getnewaccount_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getnewaccount_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
+	    std::string name;
+	    std::string auth;
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -906,7 +1187,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getaccount", 1);
+            .add("GETACCOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -914,7 +1195,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getaccount_argument(), "getaccount", variables, input, raw);
+        //load_input(argument_.xxx, "GETACCOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -924,60 +1224,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getaccount_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getaccount_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ getaddresses *************************/
+/************************ lockaccount *************************/
 
-class getaddresses: public command
+class lockaccount: public command
 {
 public:
-    getaddresses() = default; 
-    virtual ~getaddresses() = default; 
-    getaddresses(const getaddresses&) = default; 
-    getaddresses(getaddresses&&) = default; 
-    getaddresses& operator=(getaddresses&&) = default; 
-    getaddresses& operator=(const getaddresses&) = default; 
+    lockaccount() = default; 
+    virtual ~lockaccount() = default; 
+    lockaccount(const lockaccount&) = default; 
+    lockaccount(lockaccount&&) = default; 
+    lockaccount& operator=(lockaccount&&) = default; 
+    lockaccount& operator=(const lockaccount&) = default; 
 
 public:
-    static const char* symbol(){ return "getaddresses";}
+    static const char* symbol(){ return "lockaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getaddresses "; }
+    const char* description() override { return "lockaccount "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getaddresses", 1);
+            .add("LOCKACCOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -985,7 +1265,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getaddresses_argument(), "getaddresses", variables, input, raw);
+        //load_input(argument_.xxx, "LOCKACCOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -995,33 +1294,153 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getaddresses_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getaddresses_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ setaccountinfo *************************/
+
+class setaccountinfo: public command
+{
+public:
+    setaccountinfo() = default; 
+    virtual ~setaccountinfo() = default; 
+    setaccountinfo(const setaccountinfo&) = default; 
+    setaccountinfo(setaccountinfo&&) = default; 
+    setaccountinfo& operator=(setaccountinfo&&) = default; 
+    setaccountinfo& operator=(const setaccountinfo&) = default; 
+
+public:
+    static const char* symbol(){ return "setaccountinfo";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "setaccountinfo "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SETACCOUNTINFO", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SETACCOUNTINFO", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ listaddresses *************************/
+
+class listaddresses: public command
+{
+public:
+    listaddresses() = default; 
+    virtual ~listaddresses() = default; 
+    listaddresses(const listaddresses&) = default; 
+    listaddresses(listaddresses&&) = default; 
+    listaddresses& operator=(listaddresses&&) = default; 
+    listaddresses& operator=(const listaddresses&) = default; 
+
+public:
+    static const char* symbol(){ return "listaddresses";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "listaddresses "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("LISTADDRESSES", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "LISTADDRESSES", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -1048,7 +1467,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getnewaddress", 1);
+            .add("GETNEWADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1056,7 +1475,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getnewaddress_argument(), "getnewaddress", variables, input, raw);
+        //load_input(argument_.xxx, "GETNEWADDRESS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1066,33 +1504,83 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getnewaddress_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getnewaddress_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ getaddress *************************/
+
+class getaddress: public command
+{
+public:
+    getaddress() = default; 
+    virtual ~getaddress() = default; 
+    getaddress(const getaddress&) = default; 
+    getaddress(getaddress&&) = default; 
+    getaddress& operator=(getaddress&&) = default; 
+    getaddress& operator=(const getaddress&) = default; 
+
+public:
+    static const char* symbol(){ return "getaddress";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getaddress "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETADDRESS", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETADDRESS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -1119,7 +1607,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getblock", 1);
+            .add("GETBLOCK", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1127,7 +1615,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getblock_argument(), "getblock", variables, input, raw);
+        //load_input(argument_.xxx, "GETBLOCK", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1137,33 +1644,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getblock_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getblock_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1190,7 +1677,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("signmessage", 1);
+            .add("SIGNMESSAGE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1198,7 +1685,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_signmessage_argument(), "signmessage", variables, input, raw);
+        //load_input(argument_.xxx, "SIGNMESSAGE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1208,33 +1714,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_signmessage_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_signmessage_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1261,7 +1747,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("verifymessage", 1);
+            .add("VERIFYMESSAGE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1269,7 +1755,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_verifymessage_argument(), "verifymessage", variables, input, raw);
+        //load_input(argument_.xxx, "VERIFYMESSAGE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1279,33 +1784,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_verifymessage_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_verifymessage_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1332,7 +1817,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("createmultisig", 1);
+            .add("CREATEMULTISIG", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1340,7 +1825,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_createmultisig_argument(), "createmultisig", variables, input, raw);
+        //load_input(argument_.xxx, "CREATEMULTISIG", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1350,33 +1854,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_createmultisig_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_createmultisig_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1403,7 +1887,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("addmultisigaddress", 1);
+            .add("ADDMULTISIGADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1411,7 +1895,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_addmultisigaddress_argument(), "addmultisigaddress", variables, input, raw);
+        //load_input(argument_.xxx, "ADDMULTISIGADDRESS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1421,33 +1924,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_addmultisigaddress_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_addmultisigaddress_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1474,7 +1957,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("validateaddress", 1);
+            .add("VALIDATEADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1482,7 +1965,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_validateaddress_argument(), "validateaddress", variables, input, raw);
+        //load_input(argument_.xxx, "VALIDATEADDRESS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1492,33 +1994,83 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_validateaddress_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_validateaddress_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ listbalances *************************/
+
+class listbalances: public command
+{
+public:
+    listbalances() = default; 
+    virtual ~listbalances() = default; 
+    listbalances(const listbalances&) = default; 
+    listbalances(listbalances&&) = default; 
+    listbalances& operator=(listbalances&&) = default; 
+    listbalances& operator=(const listbalances&) = default; 
+
+public:
+    static const char* symbol(){ return "listbalances";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "listbalances "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("LISTBALANCES", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "LISTBALANCES", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -1545,7 +2097,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getbalance", 1);
+            .add("GETBALANCE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1553,7 +2105,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getbalance_argument(), "getbalance", variables, input, raw);
+        //load_input(argument_.xxx, "GETBALANCE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1563,33 +2134,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getbalance_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getbalance_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1616,7 +2167,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getaddressbalance", 1);
+            .add("GETADDRESSBALANCE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1624,7 +2175,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getaddressbalance_argument(), "getaddressbalance", variables, input, raw);
+        //load_input(argument_.xxx, "GETADDRESSBALANCE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1634,33 +2204,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getaddressbalance_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getaddressbalance_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -1687,7 +2237,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getaccountbalance", 1);
+            .add("GETACCOUNTBALANCE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1695,7 +2245,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getaccountbalance_argument(), "getaccountbalance", variables, input, raw);
+        //load_input(argument_.xxx, "GETACCOUNTBALANCE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1705,60 +2274,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getaccountbalance_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getaccountbalance_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ getaddresstransaction *************************/
+/************************ listtxs *************************/
 
-class getaddresstransaction: public command
+class listtxs: public command
 {
 public:
-    getaddresstransaction() = default; 
-    virtual ~getaddresstransaction() = default; 
-    getaddresstransaction(const getaddresstransaction&) = default; 
-    getaddresstransaction(getaddresstransaction&&) = default; 
-    getaddresstransaction& operator=(getaddresstransaction&&) = default; 
-    getaddresstransaction& operator=(const getaddresstransaction&) = default; 
+    listtxs() = default; 
+    virtual ~listtxs() = default; 
+    listtxs(const listtxs&) = default; 
+    listtxs(listtxs&&) = default; 
+    listtxs& operator=(listtxs&&) = default; 
+    listtxs& operator=(const listtxs&) = default; 
 
 public:
-    static const char* symbol(){ return "getaddresstransaction";}
+    static const char* symbol(){ return "listtxs";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getaddresstransaction "; }
+    const char* description() override { return "listtxs "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("getaddresstransaction", 1);
+            .add("LISTTXS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1766,7 +2315,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_getaddresstransaction_argument(), "getaddresstransaction", variables, input, raw);
+        //load_input(argument_.xxx, "LISTTXS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1776,60 +2344,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_getaddresstransaction_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_getaddresstransaction_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ listaddresstransactions *************************/
+/************************ gettx *************************/
 
-class listaddresstransactions: public command
+class gettx: public command
 {
 public:
-    listaddresstransactions() = default; 
-    virtual ~listaddresstransactions() = default; 
-    listaddresstransactions(const listaddresstransactions&) = default; 
-    listaddresstransactions(listaddresstransactions&&) = default; 
-    listaddresstransactions& operator=(listaddresstransactions&&) = default; 
-    listaddresstransactions& operator=(const listaddresstransactions&) = default; 
+    gettx() = default; 
+    virtual ~gettx() = default; 
+    gettx(const gettx&) = default; 
+    gettx(gettx&&) = default; 
+    gettx& operator=(gettx&&) = default; 
+    gettx& operator=(const gettx&) = default; 
 
 public:
-    static const char* symbol(){ return "listaddresstransactions";}
+    static const char* symbol(){ return "gettx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listaddresstransactions "; }
+    const char* description() override { return "gettx "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("listaddresstransactions", 1);
+            .add("GETTX", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1837,7 +2385,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_listaddresstransactions_argument(), "listaddresstransactions", variables, input, raw);
+        //load_input(argument_.xxx, "GETTX", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1847,60 +2414,40 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_listaddresstransactions_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_listaddresstransactions_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
 
 
-/************************ listaccounttransactions *************************/
+/************************ getaddresstx *************************/
 
-class listaccounttransactions: public command
+class getaddresstx: public command
 {
 public:
-    listaccounttransactions() = default; 
-    virtual ~listaccounttransactions() = default; 
-    listaccounttransactions(const listaccounttransactions&) = default; 
-    listaccounttransactions(listaccounttransactions&&) = default; 
-    listaccounttransactions& operator=(listaccounttransactions&&) = default; 
-    listaccounttransactions& operator=(const listaccounttransactions&) = default; 
+    getaddresstx() = default; 
+    virtual ~getaddresstx() = default; 
+    getaddresstx(const getaddresstx&) = default; 
+    getaddresstx(getaddresstx&&) = default; 
+    getaddresstx& operator=(getaddresstx&&) = default; 
+    getaddresstx& operator=(const getaddresstx&) = default; 
 
 public:
-    static const char* symbol(){ return "listaccounttransactions";}
+    static const char* symbol(){ return "getaddresstx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listaccounttransactions "; }
+    const char* description() override { return "getaddresstx "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("listaccounttransactions", 1);
+            .add("GETADDRESSTX", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1908,7 +2455,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_listaccounttransactions_argument(), "listaccounttransactions", variables, input, raw);
+        //load_input(argument_.xxx, "GETADDRESSTX", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1918,33 +2484,83 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_listaccounttransactions_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_listaccounttransactions_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ getaccounttx *************************/
+
+class getaccounttx: public command
+{
+public:
+    getaccounttx() = default; 
+    virtual ~getaccounttx() = default; 
+    getaccounttx(const getaccounttx&) = default; 
+    getaccounttx(getaccounttx&&) = default; 
+    getaccounttx& operator=(getaccounttx&&) = default; 
+    getaccounttx& operator=(const getaccounttx&) = default; 
+
+public:
+    static const char* symbol(){ return "getaccounttx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getaccounttx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETACCOUNTTX", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETACCOUNTTX", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -1971,7 +2587,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("send", 1);
+            .add("SEND", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1979,7 +2595,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_send_argument(), "send", variables, input, raw);
+        //load_input(argument_.xxx, "SEND", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -1989,33 +2624,83 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_send_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_send_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ sendmore *************************/
+
+class sendmore: public command
+{
+public:
+    sendmore() = default; 
+    virtual ~sendmore() = default; 
+    sendmore(const sendmore&) = default; 
+    sendmore(sendmore&&) = default; 
+    sendmore& operator=(sendmore&&) = default; 
+    sendmore& operator=(const sendmore&) = default; 
+
+public:
+    static const char* symbol(){ return "sendmore";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendmore "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SENDMORE", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SENDMORE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -2042,7 +2727,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("sendfrom", 1);
+            .add("SENDFROM", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2050,7 +2735,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_sendfrom_argument(), "sendfrom", variables, input, raw);
+        //load_input(argument_.xxx, "SENDFROM", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -2060,814 +2764,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_sendfrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendfrom_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
-
-};
-
-
-
-/************************ sendmessage *************************/
-
-class sendmessage: public command
-{
-public:
-    sendmessage() = default; 
-    virtual ~sendmessage() = default; 
-    sendmessage(const sendmessage&) = default; 
-    sendmessage(sendmessage&&) = default; 
-    sendmessage& operator=(sendmessage&&) = default; 
-    sendmessage& operator=(const sendmessage&) = default; 
-
-public:
-    static const char* symbol(){ return "sendmessage";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendmessage "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("sendmessage", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_sendmessage_argument(), "sendmessage", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_sendmessage_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendmessage_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ sendmessagefrom *************************/
-
-class sendmessagefrom: public command
-{
-public:
-    sendmessagefrom() = default; 
-    virtual ~sendmessagefrom() = default; 
-    sendmessagefrom(const sendmessagefrom&) = default; 
-    sendmessagefrom(sendmessagefrom&&) = default; 
-    sendmessagefrom& operator=(sendmessagefrom&&) = default; 
-    sendmessagefrom& operator=(const sendmessagefrom&) = default; 
-
-public:
-    static const char* symbol(){ return "sendmessagefrom";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendmessagefrom "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("sendmessagefrom", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_sendmessagefrom_argument(), "sendmessagefrom", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_sendmessagefrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendmessagefrom_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ startmining *************************/
-
-class startmining: public command
-{
-public:
-    startmining() = default; 
-    virtual ~startmining() = default; 
-    startmining(const startmining&) = default; 
-    startmining(startmining&&) = default; 
-    startmining& operator=(startmining&&) = default; 
-    startmining& operator=(const startmining&) = default; 
-
-public:
-    static const char* symbol(){ return "startmining";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "startmining "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("startmining", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_startmining_argument(), "startmining", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_startmining_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_startmining_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ stopmining *************************/
-
-class stopmining: public command
-{
-public:
-    stopmining() = default; 
-    virtual ~stopmining() = default; 
-    stopmining(const stopmining&) = default; 
-    stopmining(stopmining&&) = default; 
-    stopmining& operator=(stopmining&&) = default; 
-    stopmining& operator=(const stopmining&) = default; 
-
-public:
-    static const char* symbol(){ return "stopmining";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "stopmining "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("stopmining", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_stopmining_argument(), "stopmining", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_stopmining_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_stopmining_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ listassets *************************/
-
-class listassets: public command
-{
-public:
-    listassets() = default; 
-    virtual ~listassets() = default; 
-    listassets(const listassets&) = default; 
-    listassets(listassets&&) = default; 
-    listassets& operator=(listassets&&) = default; 
-    listassets& operator=(const listassets&) = default; 
-
-public:
-    static const char* symbol(){ return "listassets";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listassets "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("listassets", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_listassets_argument(), "listassets", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_listassets_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_listassets_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ issue *************************/
-
-class issue: public command
-{
-public:
-    issue() = default; 
-    virtual ~issue() = default; 
-    issue(const issue&) = default; 
-    issue(issue&&) = default; 
-    issue& operator=(issue&&) = default; 
-    issue& operator=(const issue&) = default; 
-
-public:
-    static const char* symbol(){ return "issue";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "issue "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("issue", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_issue_argument(), "issue", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_issue_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_issue_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ issuefrom *************************/
-
-class issuefrom: public command
-{
-public:
-    issuefrom() = default; 
-    virtual ~issuefrom() = default; 
-    issuefrom(const issuefrom&) = default; 
-    issuefrom(issuefrom&&) = default; 
-    issuefrom& operator=(issuefrom&&) = default; 
-    issuefrom& operator=(const issuefrom&) = default; 
-
-public:
-    static const char* symbol(){ return "issuefrom";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "issuefrom "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("issuefrom", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_issuefrom_argument(), "issuefrom", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_issuefrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_issuefrom_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ issuemore *************************/
-
-class issuemore: public command
-{
-public:
-    issuemore() = default; 
-    virtual ~issuemore() = default; 
-    issuemore(const issuemore&) = default; 
-    issuemore(issuemore&&) = default; 
-    issuemore& operator=(issuemore&&) = default; 
-    issuemore& operator=(const issuemore&) = default; 
-
-public:
-    static const char* symbol(){ return "issuemore";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "issuemore "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("issuemore", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_issuemore_argument(), "issuemore", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_issuemore_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_issuemore_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ issuemorefrom *************************/
-
-class issuemorefrom: public command
-{
-public:
-    issuemorefrom() = default; 
-    virtual ~issuemorefrom() = default; 
-    issuemorefrom(const issuemorefrom&) = default; 
-    issuemorefrom(issuemorefrom&&) = default; 
-    issuemorefrom& operator=(issuemorefrom&&) = default; 
-    issuemorefrom& operator=(const issuemorefrom&) = default; 
-
-public:
-    static const char* symbol(){ return "issuemorefrom";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "issuemorefrom "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("issuemorefrom", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_issuemorefrom_argument(), "issuemorefrom", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_issuemorefrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_issuemorefrom_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ sendasset *************************/
-
-class sendasset: public command
-{
-public:
-    sendasset() = default; 
-    virtual ~sendasset() = default; 
-    sendasset(const sendasset&) = default; 
-    sendasset(sendasset&&) = default; 
-    sendasset& operator=(sendasset&&) = default; 
-    sendasset& operator=(const sendasset&) = default; 
-
-public:
-    static const char* symbol(){ return "sendasset";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendasset "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("sendasset", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_sendasset_argument(), "sendasset", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_sendasset_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendasset_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
-
-};
-
-
-
-/************************ sendassetfrom *************************/
-
-class sendassetfrom: public command
-{
-public:
-    sendassetfrom() = default; 
-    virtual ~sendassetfrom() = default; 
-    sendassetfrom(const sendassetfrom&) = default; 
-    sendassetfrom(sendassetfrom&&) = default; 
-    sendassetfrom& operator=(sendassetfrom&&) = default; 
-    sendassetfrom& operator=(const sendassetfrom&) = default; 
-
-public:
-    static const char* symbol(){ return "sendassetfrom";}
-    const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendassetfrom "; }
-
-    arguments_metadata& load_arguments() override
-    {
-        return get_argument_metadata()
-            .add("sendassetfrom", 1);
-    }
-
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
-    {
-        const auto raw = requires_raw_input();
-        //fixme
-        //load_input(get_sendassetfrom_argument(), "sendassetfrom", variables, input, raw);
-    }
-
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
-
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr) override;
-
-	//fixme
-    virtual void get_sendassetfrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendassetfrom_option()
-    {
-    }
-
-    struct argument
-    {
-        argument()
-        {
-        }
-
-    } argument_;
-
-    struct option
-    {
-        option()
-        {
-        }
-
-    } option_;
-
-private:
 
 };
 
@@ -2894,7 +2797,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("sendwithmsg", 1);
+            .add("SENDWITHMSG", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2902,7 +2805,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_sendwithmsg_argument(), "sendwithmsg", variables, input, raw);
+        //load_input(argument_.xxx, "SENDWITHMSG", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -2912,33 +2834,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_sendwithmsg_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendwithmsg_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 
@@ -2965,7 +2867,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("sendwithmsgfrom", 1);
+            .add("SENDWITHMSGFROM", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2973,7 +2875,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_sendwithmsgfrom_argument(), "sendwithmsgfrom", variables, input, raw);
+        //load_input(argument_.xxx, "SENDWITHMSGFROM", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -2983,33 +2904,853 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_sendwithmsgfrom_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_sendwithmsgfrom_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
 
-private:
+};
+
+
+
+/************************ listassets *************************/
+
+class listassets: public command
+{
+public:
+    listassets() = default; 
+    virtual ~listassets() = default; 
+    listassets(const listassets&) = default; 
+    listassets(listassets&&) = default; 
+    listassets& operator=(listassets&&) = default; 
+    listassets& operator=(const listassets&) = default; 
+
+public:
+    static const char* symbol(){ return "listassets";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "listassets "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("LISTASSETS", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "LISTASSETS", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ getasset *************************/
+
+class getasset: public command
+{
+public:
+    getasset() = default; 
+    virtual ~getasset() = default; 
+    getasset(const getasset&) = default; 
+    getasset(getasset&&) = default; 
+    getasset& operator=(getasset&&) = default; 
+    getasset& operator=(const getasset&) = default; 
+
+public:
+    static const char* symbol(){ return "getasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETASSET", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETASSET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ getaddressasset *************************/
+
+class getaddressasset: public command
+{
+public:
+    getaddressasset() = default; 
+    virtual ~getaddressasset() = default; 
+    getaddressasset(const getaddressasset&) = default; 
+    getaddressasset(getaddressasset&&) = default; 
+    getaddressasset& operator=(getaddressasset&&) = default; 
+    getaddressasset& operator=(const getaddressasset&) = default; 
+
+public:
+    static const char* symbol(){ return "getaddressasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getaddressasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETADDRESSASSET", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETADDRESSASSET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ getaccountasset *************************/
+
+class getaccountasset: public command
+{
+public:
+    getaccountasset() = default; 
+    virtual ~getaccountasset() = default; 
+    getaccountasset(const getaccountasset&) = default; 
+    getaccountasset(getaccountasset&&) = default; 
+    getaccountasset& operator=(getaccountasset&&) = default; 
+    getaccountasset& operator=(const getaccountasset&) = default; 
+
+public:
+    static const char* symbol(){ return "getaccountasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getaccountasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETACCOUNTASSET", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETACCOUNTASSET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ createasset *************************/
+
+class createasset: public command
+{
+public:
+    createasset() = default; 
+    virtual ~createasset() = default; 
+    createasset(const createasset&) = default; 
+    createasset(createasset&&) = default; 
+    createasset& operator=(createasset&&) = default; 
+    createasset& operator=(const createasset&) = default; 
+
+public:
+    static const char* symbol(){ return "createasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "createasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("CREATEASSET", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "CREATEASSET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issue *************************/
+
+class issue: public command
+{
+public:
+    issue() = default; 
+    virtual ~issue() = default; 
+    issue(const issue&) = default; 
+    issue(issue&&) = default; 
+    issue& operator=(issue&&) = default; 
+    issue& operator=(const issue&) = default; 
+
+public:
+    static const char* symbol(){ return "issue";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issue "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ISSUE", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "ISSUE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuefrom *************************/
+
+class issuefrom: public command
+{
+public:
+    issuefrom() = default; 
+    virtual ~issuefrom() = default; 
+    issuefrom(const issuefrom&) = default; 
+    issuefrom(issuefrom&&) = default; 
+    issuefrom& operator=(issuefrom&&) = default; 
+    issuefrom& operator=(const issuefrom&) = default; 
+
+public:
+    static const char* symbol(){ return "issuefrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuefrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ISSUEFROM", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "ISSUEFROM", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuemore *************************/
+
+class issuemore: public command
+{
+public:
+    issuemore() = default; 
+    virtual ~issuemore() = default; 
+    issuemore(const issuemore&) = default; 
+    issuemore(issuemore&&) = default; 
+    issuemore& operator=(issuemore&&) = default; 
+    issuemore& operator=(const issuemore&) = default; 
+
+public:
+    static const char* symbol(){ return "issuemore";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuemore "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ISSUEMORE", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "ISSUEMORE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuemorefrom *************************/
+
+class issuemorefrom: public command
+{
+public:
+    issuemorefrom() = default; 
+    virtual ~issuemorefrom() = default; 
+    issuemorefrom(const issuemorefrom&) = default; 
+    issuemorefrom(issuemorefrom&&) = default; 
+    issuemorefrom& operator=(issuemorefrom&&) = default; 
+    issuemorefrom& operator=(const issuemorefrom&) = default; 
+
+public:
+    static const char* symbol(){ return "issuemorefrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuemorefrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ISSUEMOREFROM", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "ISSUEMOREFROM", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ getdid *************************/
+
+class getdid: public command
+{
+public:
+    getdid() = default; 
+    virtual ~getdid() = default; 
+    getdid(const getdid&) = default; 
+    getdid(getdid&&) = default; 
+    getdid& operator=(getdid&&) = default; 
+    getdid& operator=(const getdid&) = default; 
+
+public:
+    static const char* symbol(){ return "getdid";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getdid "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("GETDID", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "GETDID", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ setdid *************************/
+
+class setdid: public command
+{
+public:
+    setdid() = default; 
+    virtual ~setdid() = default; 
+    setdid(const setdid&) = default; 
+    setdid(setdid&&) = default; 
+    setdid& operator=(setdid&&) = default; 
+    setdid& operator=(const setdid&) = default; 
+
+public:
+    static const char* symbol(){ return "setdid";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "setdid "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SETDID", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SETDID", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ sendwithdid *************************/
+
+class sendwithdid: public command
+{
+public:
+    sendwithdid() = default; 
+    virtual ~sendwithdid() = default; 
+    sendwithdid(const sendwithdid&) = default; 
+    sendwithdid(sendwithdid&&) = default; 
+    sendwithdid& operator=(sendwithdid&&) = default; 
+    sendwithdid& operator=(const sendwithdid&) = default; 
+
+public:
+    static const char* symbol(){ return "sendwithdid";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendwithdid "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SENDWITHDID", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SENDWITHDID", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
 
 };
 
@@ -3036,7 +3777,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("settxfee", 1);
+            .add("SETTXFEE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3044,7 +3785,26 @@ public:
     {
         const auto raw = requires_raw_input();
         //fixme
-        //load_input(get_settxfee_argument(), "settxfee", variables, input, raw);
+        //load_input(argument_.xxx, "SETTXFEE", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
     }
 
     void set_defaults_from_config (po::variables_map& variables) override
@@ -3054,33 +3814,13 @@ public:
     console_result invoke (std::ostream& output,
         std::ostream& cerr) override;
 
-	//fixme
-    virtual void get_settxfee_argument() 
-    {
-    }
-
-	//fixme
-	virtual void set_settxfee_option()
-    {
-    }
-
     struct argument
     {
-        argument()
-        {
-        }
-
     } argument_;
 
     struct option
     {
-        option()
-        {
-        }
-
     } option_;
-
-private:
 
 };
 

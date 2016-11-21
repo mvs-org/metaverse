@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2015 mvs developers 
+ * Copyright (c) 2016 mvs developers 
  *
  * This file is part of libbitcoin-explorer.
  *
@@ -24,14 +24,10 @@
 #include <iostream>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client.hpp>
-#include <bitcoin/explorer/callback_state.hpp>
 #include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/display.hpp>
-#include <bitcoin/explorer/prop_tree.hpp>
-
-#include <bitcoin/explorer/dispatch.hpp>
-#include <algorithm> // for_each
-#include <array>
+//#include <bitcoin/explorer/callback_state.hpp>
+//#include <bitcoin/explorer/display.hpp>
+//#include <bitcoin/explorer/prop_tree.hpp>
 
 using namespace bc;
 using namespace bc::chain;
@@ -55,11 +51,28 @@ console_result stop::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
+/************************ start *************************/
+console_result start::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ setadmin *************************/
+console_result setadmin::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
 /************************ getinfo *************************/
 console_result getinfo::invoke (std::ostream& output, std::ostream& cerr)
 {
 
-//    output << "getinfo called"<< std::endl;
     return console_result::okay;
 }
 
@@ -119,8 +132,8 @@ console_result importwallet::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ dumpprivkey *************************/
-console_result dumpprivkey::invoke (std::ostream& output, std::ostream& cerr)
+/************************ lockwallet *************************/
+console_result lockwallet::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -128,8 +141,8 @@ console_result dumpprivkey::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ importprivkey *************************/
-console_result importprivkey::invoke (std::ostream& output, std::ostream& cerr)
+/************************ backupaccount *************************/
+console_result backupaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -137,8 +150,26 @@ console_result importprivkey::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ switchaccout *************************/
-console_result switchaccout::invoke (std::ostream& output, std::ostream& cerr)
+/************************ importaccount *************************/
+console_result importaccount::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ switchaccount *************************/
+console_result switchaccount::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ listaccounts *************************/
+console_result listaccounts::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -149,7 +180,7 @@ console_result switchaccout::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaccount *************************/
 console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-
+    output<<argument_.name<<":"<<argument_.auth;
     return console_result::okay;
 }
 
@@ -164,8 +195,26 @@ console_result getaccount::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ getaddresses *************************/
-console_result getaddresses::invoke (std::ostream& output, std::ostream& cerr)
+/************************ lockaccount *************************/
+console_result lockaccount::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ setaccountinfo *************************/
+console_result setaccountinfo::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ listaddresses *************************/
+console_result listaddresses::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -176,18 +225,15 @@ console_result getaddresses::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    std::array<const char*, 4> cmds{"seed", "ec-new", "ec-to-public", "ec-to-address"};
-    std::ostringstream sout{""};
-    std::istringstream sin;
 
-    //pipe executing
-    std::for_each(cmds.begin(), cmds.end(), [&sout, &sin](const char* cmd){
-        sin.str(sout.str());
-        sout.str("");
-        dispatch_command(1, &cmd, sin, sout, sout);
-    });
+    return console_result::okay;
+}
 
-    output<<sout.str();
+
+
+/************************ getaddress *************************/
+console_result getaddress::invoke (std::ostream& output, std::ostream& cerr)
+{
 
     return console_result::okay;
 }
@@ -248,6 +294,15 @@ console_result validateaddress::invoke (std::ostream& output, std::ostream& cerr
 
 
 
+/************************ listbalances *************************/
+console_result listbalances::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
 /************************ getbalance *************************/
 console_result getbalance::invoke (std::ostream& output, std::ostream& cerr)
 {
@@ -275,8 +330,8 @@ console_result getaccountbalance::invoke (std::ostream& output, std::ostream& ce
 
 
 
-/************************ getaddresstransaction *************************/
-console_result getaddresstransaction::invoke (std::ostream& output, std::ostream& cerr)
+/************************ listtxs *************************/
+console_result listtxs::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -284,8 +339,8 @@ console_result getaddresstransaction::invoke (std::ostream& output, std::ostream
 
 
 
-/************************ listaddresstransactions *************************/
-console_result listaddresstransactions::invoke (std::ostream& output, std::ostream& cerr)
+/************************ gettx *************************/
+console_result gettx::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -293,8 +348,17 @@ console_result listaddresstransactions::invoke (std::ostream& output, std::ostre
 
 
 
-/************************ listaccounttransactions *************************/
-console_result listaccounttransactions::invoke (std::ostream& output, std::ostream& cerr)
+/************************ getaddresstx *************************/
+console_result getaddresstx::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ getaccounttx *************************/
+console_result getaccounttx::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -311,6 +375,15 @@ console_result send::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
+/************************ sendmore *************************/
+console_result sendmore::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
 /************************ sendfrom *************************/
 console_result sendfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
@@ -320,8 +393,8 @@ console_result sendfrom::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ sendmessage *************************/
-console_result sendmessage::invoke (std::ostream& output, std::ostream& cerr)
+/************************ sendwithmsg *************************/
+console_result sendwithmsg::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -329,26 +402,8 @@ console_result sendmessage::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ sendmessagefrom *************************/
-console_result sendmessagefrom::invoke (std::ostream& output, std::ostream& cerr)
-{
-
-    return console_result::okay;
-}
-
-
-
-/************************ startmining *************************/
-console_result startmining::invoke (std::ostream& output, std::ostream& cerr)
-{
-
-    return console_result::okay;
-}
-
-
-
-/************************ stopmining *************************/
-console_result stopmining::invoke (std::ostream& output, std::ostream& cerr)
+/************************ sendwithmsgfrom *************************/
+console_result sendwithmsgfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -358,6 +413,42 @@ console_result stopmining::invoke (std::ostream& output, std::ostream& cerr)
 
 /************************ listassets *************************/
 console_result listassets::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ getasset *************************/
+console_result getasset::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ getaddressasset *************************/
+console_result getaddressasset::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ getaccountasset *************************/
+console_result getaccountasset::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ createasset *************************/
+console_result createasset::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -401,8 +492,8 @@ console_result issuemorefrom::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ sendasset *************************/
-console_result sendasset::invoke (std::ostream& output, std::ostream& cerr)
+/************************ getdid *************************/
+console_result getdid::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -410,8 +501,8 @@ console_result sendasset::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ sendassetfrom *************************/
-console_result sendassetfrom::invoke (std::ostream& output, std::ostream& cerr)
+/************************ setdid *************************/
+console_result setdid::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;
@@ -419,17 +510,8 @@ console_result sendassetfrom::invoke (std::ostream& output, std::ostream& cerr)
 
 
 
-/************************ sendwithmsg *************************/
-console_result sendwithmsg::invoke (std::ostream& output, std::ostream& cerr)
-{
-
-    return console_result::okay;
-}
-
-
-
-/************************ sendwithmsgfrom *************************/
-console_result sendwithmsgfrom::invoke (std::ostream& output, std::ostream& cerr)
+/************************ sendwithdid *************************/
+console_result sendwithdid::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;

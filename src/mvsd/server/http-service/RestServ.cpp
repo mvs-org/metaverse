@@ -70,7 +70,7 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
     }
 
     //websocketBroadcast(nc, sout.str().c_str(), sout.str().size() - 1);
-    websocketSend(&nc, sout.str().c_str(), sout.str().size() - 1);
+    websocketSend(&nc, sout.str().c_str(), sout.str().size());
 }
 
 // --------------------- json rpc interface -----------------------
