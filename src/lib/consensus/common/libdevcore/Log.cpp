@@ -32,12 +32,12 @@
 #endif
 #include <bitcoin/consensus/libdevcore/Guards.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
 //⊳⊲◀▶■▣▢□▷◁▧▨▩▲◆◉◈◇◎●◍◌○◼☑☒☎☢☣☰☀♽♥♠✩✭❓✔✓✖✕✘✓✔✅⚒⚡⦸⬌∅⁕«««»»»⚙
 
 // Logging
-int dev::g_logVerbosity = 5;
+int libbitcoin::g_logVerbosity = 5;
 mutex x_logOverride;
 
 /// Map of Log Channel types to bool, false forces the channel to be disabled, true forces it to be enabled.
@@ -45,7 +45,7 @@ mutex x_logOverride;
 /// or equal to the currently output verbosity (g_logVerbosity).
 static map<type_info const*, bool> s_logOverride;
 
-bool dev::isChannelVisible(std::type_info const* _ch, bool _default)
+bool libbitcoin::isChannelVisible(std::type_info const* _ch, bool _default)
 {
 	Guard l(x_logOverride);
 	if (s_logOverride.count(_ch))
@@ -157,17 +157,17 @@ ThreadLocalLogContext g_logThreadContext;
 
 ThreadLocalLogName g_logThreadName("main");
 
-void dev::ThreadContext::push(string const& _n)
+void libbitcoin::ThreadContext::push(string const& _n)
 {
 	g_logThreadContext.push(_n);
 }
 
-void dev::ThreadContext::pop()
+void libbitcoin::ThreadContext::pop()
 {
 	g_logThreadContext.pop();
 }
 
-string dev::ThreadContext::join(string const& _prior)
+string libbitcoin::ThreadContext::join(string const& _prior)
 {
 	return g_logThreadContext.join(_prior);
 }
@@ -177,7 +177,7 @@ string dev::ThreadContext::join(string const& _prior)
 extern "C" __declspec(dllimport) void __stdcall OutputDebugStringA(const char* lpOutputString);
 #endif
 
-string dev::getThreadName()
+string libbitcoin::getThreadName()
 {
 #if defined(__GLIBC__) || defined(__APPLE__)
 	char buffer[128];
@@ -189,7 +189,7 @@ string dev::getThreadName()
 #endif
 }
 
-void dev::setThreadName(string const& _n)
+void libbitcoin::setThreadName(string const& _n)
 {
 #if defined(__GLIBC__)
 	pthread_setname_np(pthread_self(), _n.c_str());
@@ -200,7 +200,7 @@ void dev::setThreadName(string const& _n)
 #endif
 }
 
-void dev::simpleDebugOut(std::string const& _s, char const*)
+void libbitcoin::simpleDebugOut(std::string const& _s, char const*)
 {
 	static SpinLock s_lock;
 	SpinGuard l(s_lock);
@@ -216,4 +216,4 @@ void dev::simpleDebugOut(std::string const& _s, char const*)
 	#endif
 }
 
-std::function<void(std::string const&, char const*)> dev::g_logPost = simpleDebugOut;
+std::function<void(std::string const&, char const*)> libbitcoin::g_logPost = simpleDebugOut;

@@ -1,6 +1,6 @@
 #include <bitcoin/consensus/libdevcore/BasicType.h>
 
-using namespace dev;
+using namespace libbitcoin;
 
 /*****************************/
 WorkPackage::WorkPackage(libbitcoin::chain::header& _bh):
@@ -56,7 +56,7 @@ FullAllocation::~FullAllocation()
 }
 /*****************************/
 
-HeaderAux* dev::HeaderAux::s_this = nullptr;
+HeaderAux* libbitcoin::HeaderAux::s_this = nullptr;
 
 
 HeaderAux* HeaderAux::get()
@@ -133,6 +133,10 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 	return ethash_get_datasize(_blockNumber);
 }
 
+//static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
+//{
+//
+//}
 
 /*****************************/
 

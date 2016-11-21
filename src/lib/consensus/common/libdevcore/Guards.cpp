@@ -21,7 +21,7 @@
 
 #include <bitcoin/consensus/libdevcore/Guards.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
 namespace dev
 {

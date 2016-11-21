@@ -30,7 +30,7 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/functional/hash.hpp>
 #include "CommonData.h"
-namespace dev
+namespace libbitcoin
 {
 
 /// Compile-time calculation of Log2 of constant values.
@@ -83,7 +83,7 @@ public:
 	explicit FixedHash(byte const* _bs, ConstructFromPointerType) { memcpy(m_data.data(), _bs, N); }
 
 	/// Explicitly construct, copying from a  string.
-	explicit FixedHash(std::string const& _s, ConstructFromStringType _t = FromHex, ConstructFromHashType _ht = FailIfDifferent): FixedHash(_t == FromHex ? fromHex(_s, WhenError::Throw) : dev::asBytes(_s), _ht) {}
+	explicit FixedHash(std::string const& _s, ConstructFromStringType _t = FromHex, ConstructFromHashType _ht = FailIfDifferent): FixedHash(_t == FromHex ? fromHex(_s, WhenError::Throw) : libbitcoin::asBytes(_s), _ht) {}
 
 	/// Convert to arithmetic type.
 	operator Arith() const { return fromBigEndian<Arith>(m_data); }
@@ -386,9 +386,9 @@ inline std::string toString(h256s const& _bs)
 namespace std
 {
 	/// Forward std::hash<dev::FixedHash> to dev::FixedHash::hash.
-	template<> struct hash<dev::h64>: dev::h64::hash {};
-	template<> struct hash<dev::h128>: dev::h128::hash {};
-	template<> struct hash<dev::h160>: dev::h160::hash {};
-	template<> struct hash<dev::h256>: dev::h256::hash {};
-	template<> struct hash<dev::h512>: dev::h512::hash {};
+	template<> struct hash<libbitcoin::h64>: libbitcoin::h64::hash {};
+	template<> struct hash<libbitcoin::h128>: libbitcoin::h128::hash {};
+	template<> struct hash<libbitcoin::h160>: libbitcoin::h160::hash {};
+	template<> struct hash<libbitcoin::h256>: libbitcoin::h256::hash {};
+	template<> struct hash<libbitcoin::h512>: libbitcoin::h512::hash {};
 }

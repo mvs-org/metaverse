@@ -27,7 +27,7 @@
 #include <bitcoin/consensus/libdevcore/RLP.h>
 #include <bitcoin/consensus/libdevcore/picosha2.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
 namespace dev
 {

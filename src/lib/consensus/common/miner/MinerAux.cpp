@@ -11,10 +11,10 @@
 #include <bitcoin/consensus/miner/MinerAux.h>
 
 
-using namespace dev;
+using namespace libbitcoin;
 using namespace std;
 
-MinerAux* dev::MinerAux::s_this = nullptr;
+MinerAux* libbitcoin::MinerAux::s_this = nullptr;
 
 MinerAux::~MinerAux()
 {
@@ -94,7 +94,7 @@ ethash_return_value_t MinerAux::search(libbitcoin::chain::header& header, std::f
 
 bool MinerAux::verifySeal(libbitcoin::chain::header& _header)
 {
-	dev::Result result;
+	Result result;
 	h256 seedHash = HeaderAux::seedHash(_header);
 	h256 headerHash  = HeaderAux::hashHead(_header);
 	Nonce nonce = _header.getNonce();
@@ -102,10 +102,10 @@ bool MinerAux::verifySeal(libbitcoin::chain::header& _header)
 	if (FullType dag = get()->m_fulls[seedHash].lock())
 	{
 		result = dag->compute(headerHash, nonce);
-		return ( result.value <= dev::HeaderAux::boundary(_header) && result.mixHash == _header.getMixhash() );
+		return ( result.value <= HeaderAux::boundary(_header) && result.mixHash == _header.getMixhash() );
 	}
 	result = get()->get_light(seedHash)->compute(headerHash, nonce);
-	return ( result.value <= dev::HeaderAux::boundary(_header) && result.mixHash == _header.getMixhash() );
+	return ( result.value <= HeaderAux::boundary(_header) && result.mixHash == _header.getMixhash() );
 }
 
 

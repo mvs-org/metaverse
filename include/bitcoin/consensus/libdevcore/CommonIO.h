@@ -39,7 +39,7 @@
 #include "Common.h"
 #include "Base64.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 /// Requests the user to enter a password on the console.

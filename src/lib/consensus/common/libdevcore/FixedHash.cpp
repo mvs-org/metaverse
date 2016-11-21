@@ -23,11 +23,11 @@
 #include <ctime>
 #include <boost/algorithm/string.hpp>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
-boost::random_device dev::s_fixedHashEngine;
+boost::random_device libbitcoin::s_fixedHashEngine;
 
-h128 dev::fromUUID(std::string const& _uuid)
+h128 libbitcoin::fromUUID(std::string const& _uuid)
 {
 	try
 	{
@@ -39,7 +39,7 @@ h128 dev::fromUUID(std::string const& _uuid)
 	}
 }
 
-std::string dev::toUUID(h128 const& _uuid)
+std::string libbitcoin::toUUID(h128 const& _uuid)
 {
 	std::string ret = toHex(_uuid.ref());
 	for (unsigned i: {20, 16, 12, 8})

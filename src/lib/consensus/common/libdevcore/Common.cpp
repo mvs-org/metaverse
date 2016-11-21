@@ -24,9 +24,9 @@
 #include <bitcoin/consensus/libdevcore/Log.h>
 #include <bitcoin/consensus/libdevcore/BuildInfo.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
-namespace dev
+namespace libbitcoin
 {
 
 char const* Version = ETH_PROJECT_VERSION;

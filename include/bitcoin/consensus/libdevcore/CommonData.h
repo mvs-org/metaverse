@@ -31,7 +31,7 @@
 #include <string>
 #include "Common.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 // String conversion functions, mainly to/from hex/nibble/byte representations.
