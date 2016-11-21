@@ -1,4 +1,5 @@
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/clone")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/common")
 
 FILE(GLOB_RECURSE consensus_SOURCES "*.cpp")
 
