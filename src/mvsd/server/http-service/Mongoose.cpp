@@ -58,7 +58,7 @@ void HttpMessage::data_to_arg() noexcept {
      * application/json
      * {"method":"xxx", "params":""}
      * ******************************************/
-    if (uri() == "/rpc")
+    if (uri() == "/rpc" or uri() == "/rpc/")
     {
         std::string method, params;
         minijson::const_buffer_context ctx(body().data(), body().size());
@@ -78,14 +78,13 @@ void HttpMessage::data_to_arg() noexcept {
      * application/x-www-form-urlencoded
      * method=xxx&params=xxx
      * ******************************************/
-    if (uri() == "/api")
+    if (uri().substr(0,4) == "/api")
     {
-        std::array<char, 256> method{0x00};
+        static const char* placeholder {"hello"};
         std::array<char, 4096> params{0x00};
-        mg_get_http_var(&impl_->body, "method", method.begin(), method.max_size());
         mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
 
-        convert({method.data(), std::strlen(method.data())}, 
+        convert({placeholder, 6u}, 
                 {params.data(), std::strlen(params.data())});
     }
 

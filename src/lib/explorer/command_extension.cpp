@@ -25,9 +25,13 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/client.hpp>
 #include <bitcoin/explorer/define.hpp>
-//#include <bitcoin/explorer/callback_state.hpp>
-//#include <bitcoin/explorer/display.hpp>
-//#include <bitcoin/explorer/prop_tree.hpp>
+#include <bitcoin/explorer/callback_state.hpp>
+#include <bitcoin/explorer/display.hpp>
+#include <bitcoin/explorer/prop_tree.hpp>
+
+#include <bitcoin/explorer/dispatch.hpp>
+#include <array>
+#include <algorithm>
 
 using namespace bc;
 using namespace bc::chain;
@@ -176,11 +180,21 @@ console_result listaccounts::invoke (std::ostream& output, std::ostream& cerr)
 }
 
 
-
 /************************ getnewaccount *************************/
 console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    output<<argument_.name<<":"<<argument_.auth;
+    std::array<const char*, 4> cmds {"seed", "hd-new", "hd-to-ec", "ec-to-address"};
+    std::ostringstream sout("");
+    std::istringstream sin;
+
+    std::for_each(cmds.begin(), cmds.end(), [&sin, &sout](const char* cmd){
+            sin.str(sout.str());
+            sout.str("");
+            bc::explorer::dispatch_command(1, &cmd, sin, sout, sout);
+    });
+
+    output<<sout.str();
+
     return console_result::okay;
 }
 
@@ -225,6 +239,20 @@ console_result listaddresses::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
+    std::array<const char*, 4> cmds{"seed", "ec-new", "ec-to-public", "ec-to-address"};
+    std::ostringstream sout{""};
+    std::istringstream sin;
+
+    //pipe executing
+    std::for_each(cmds.begin(), cmds.end(), [&sout, &sin](const char* cmd){
+        sin.str(sout.str());
+        sout.str("");
+        dispatch_command(1, &cmd, sin, sout, sout);
+    });
+
+    output<<sout.str();
+
+    return console_result::okay;
 
     return console_result::okay;
 }
