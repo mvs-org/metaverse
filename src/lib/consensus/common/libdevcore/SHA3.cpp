@@ -29,7 +29,7 @@
 using namespace std;
 using namespace libbitcoin;
 
-namespace dev
+namespace libbitcoin
 {
 
 h256 EmptySHA3 = sha3(bytesConstRef());
