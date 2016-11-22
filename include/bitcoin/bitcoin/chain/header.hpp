@@ -36,7 +36,6 @@
 #include <bitcoin/consensus/libdevcore/Common.h>
 #include <bitcoin/consensus/libdevcore/RLP.h>
 #include <bitcoin/consensus/libdevcore/SHA3.h>
-using namespace dev;
 namespace libbitcoin {
 namespace chain {
 

@@ -32,9 +32,9 @@
 #include <boost/filesystem.hpp>
 #include <bitcoin/consensus/libdevcore/Exceptions.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
-string dev::memDump(bytes const& _bytes, unsigned _width, bool _html)
+string libbitcoin::memDump(bytes const& _bytes, unsigned _width, bool _html)
 {
 	stringstream ret;
 	if (_html)
@@ -86,12 +86,12 @@ inline _T contentsGeneric(std::string const& _file)
 	return ret;
 }
 
-bytes dev::contents(string const& _file)
+bytes libbitcoin::contents(string const& _file)
 {
 	return contentsGeneric<bytes>(_file);
 }
 
-bytesSec dev::contentsSec(string const& _file)
+bytesSec libbitcoin::contentsSec(string const& _file)
 {
 	bytes b = contentsGeneric<bytes>(_file);
 	bytesSec ret(b);
@@ -99,12 +99,12 @@ bytesSec dev::contentsSec(string const& _file)
 	return ret;
 }
 
-string dev::contentsString(string const& _file)
+string libbitcoin::contentsString(string const& _file)
 {
 	return contentsGeneric<string>(_file);
 }
 
-void dev::writeFile(std::string const& _file, bytesConstRef _data, bool _writeDeleteRename)
+void libbitcoin::writeFile(std::string const& _file, bytesConstRef _data, bool _writeDeleteRename)
 {
 	namespace fs = boost::filesystem;
 	if (_writeDeleteRename)
@@ -132,7 +132,7 @@ void dev::writeFile(std::string const& _file, bytesConstRef _data, bool _writeDe
 	}
 }
 
-std::string dev::getPassword(std::string const& _prompt)
+std::string libbitcoin::getPassword(std::string const& _prompt)
 {
 #if defined(_WIN32)
 	cout << _prompt << flush;

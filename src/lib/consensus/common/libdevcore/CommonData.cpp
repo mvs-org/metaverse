@@ -36,7 +36,7 @@
 #include <bitcoin/consensus/libdevcore/Exceptions.h>
 #include <bitcoin/consensus/libdevcore/Log.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
 namespace
 {
@@ -52,7 +52,7 @@ int fromHexChar(char _i) noexcept
 }
 }
 
-bool dev::isHex(string const& _s) noexcept
+bool libbitcoin::isHex(string const& _s) noexcept
 {
 	auto it = _s.begin();
 	if (_s.compare(0, 2, "0x") == 0)
@@ -60,7 +60,7 @@ bool dev::isHex(string const& _s) noexcept
 	return std::all_of(it, _s.end(), [](char c){ return fromHexChar(c) != -1; });
 }
 
-std::string dev::escaped(std::string const& _s, bool _all)
+std::string libbitcoin::escaped(std::string const& _s, bool _all)
 {
 	static const map<char, char> prettyEscapes{{'\r', 'r'}, {'\n', 'n'}, {'\t', 't'}, {'\v', 'v'}};
 	std::string ret;
@@ -88,7 +88,7 @@ std::string dev::escaped(std::string const& _s, bool _all)
 	return ret;
 }
 
-std::string dev::randomWord()
+std::string libbitcoin::randomWord()
 {
 	static std::mt19937_64 s_eng(0);
 	std::string ret(boost::random::uniform_int_distribution<int>(1, 5)(s_eng), ' ');
@@ -99,7 +99,7 @@ std::string dev::randomWord()
 	return ret;
 }
 
-bytes dev::fromHex(std::string const& _s, WhenError _throw)
+bytes libbitcoin::fromHex(std::string const& _s, WhenError _throw)
 {
 	unsigned s = (_s.size() >= 2 && _s[0] == '0' && _s[1] == 'x') ? 2 : 0;
 	std::vector<uint8_t> ret;
@@ -129,7 +129,7 @@ bytes dev::fromHex(std::string const& _s, WhenError _throw)
 	return ret;
 }
 
-bytes dev::asNibbles(bytesConstRef const& _s)
+bytes libbitcoin::asNibbles(bytesConstRef const& _s)
 {
 	std::vector<uint8_t> ret;
 	ret.reserve(_s.size() * 2);
@@ -141,7 +141,7 @@ bytes dev::asNibbles(bytesConstRef const& _s)
 	return ret;
 }
 
-std::string dev::toString(string32 const& _s)
+std::string libbitcoin::toString(string32 const& _s)
 {
 	std::string ret;
 	for (unsigned i = 0; i < 32 && _s[i]; ++i)

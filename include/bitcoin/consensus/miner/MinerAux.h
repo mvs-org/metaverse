@@ -8,8 +8,7 @@
 #include <bitcoin/bitcoin/chain/header.hpp>
 #include <bitcoin/consensus/libdevcore/FixedHash.h>
 #include <bitcoin/consensus/libdevcore/Guards.h>
-using namespace libbitcoin;
-namespace dev
+namespace libbitcoin
 {
 
 
@@ -24,7 +23,8 @@ public:
 	static LightType get_light(h256& _seedHash);
 	static FullType get_full(h256& _seedHash);
 	static bool verifySeal(chain::header& header);
-	static ethash_return_value_t search(libbitcoin::chain::header& header, std::function<bool (void)> is_exit);
+	static ethash_return_value_t search(chain::header& header, std::function<bool (void)> is_exit);
+
 
 
 private:

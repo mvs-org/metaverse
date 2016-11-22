@@ -33,7 +33,7 @@
 #include "Exceptions.h"
 #include "FixedHash.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 class RLP;
@@ -482,6 +482,6 @@ extern bytes RLPNull;
 extern bytes RLPEmptyList;
 
 /// Human readable version of RLP.
-std::ostream& operator<<(std::ostream& _out, dev::RLP const& _d);
+std::ostream& operator<<(std::ostream& _out, libbitcoin::RLP const& _d);
 
 }

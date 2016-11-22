@@ -31,7 +31,7 @@
 //#pragma warning(pop)
 #pragma GCC diagnostic pop
 
-namespace dev
+namespace libbitcoin
 {
 
 using Mutex = std::mutex;

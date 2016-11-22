@@ -70,7 +70,7 @@ using byte = uint8_t;
 #define DEV_IF_NO_ELSE(X) if(!(X)){}else
 #define DEV_IF_THROWS(X) try{X;}catch(...)
 
-namespace dev
+namespace libbitcoin
 {
 
 extern char const* Version;
@@ -317,14 +317,14 @@ uint64_t utcTime();
 namespace std
 {
 
-inline dev::WithExisting max(dev::WithExisting _a, dev::WithExisting _b)
+inline libbitcoin::WithExisting max(libbitcoin::WithExisting _a, libbitcoin::WithExisting _b)
 {
-	return static_cast<dev::WithExisting>(max(static_cast<int>(_a), static_cast<int>(_b)));
+	return static_cast<libbitcoin::WithExisting>(max(static_cast<int>(_a), static_cast<int>(_b)));
 }
 
-template <> struct hash<dev::u256>
+template <> struct hash<libbitcoin::u256>
 {
-	size_t operator()(dev::u256 const& _a) const
+	size_t operator()(libbitcoin::u256 const& _a) const
 	{
 		unsigned size = _a.backend().size();
 		auto limbs = _a.backend().limbs();

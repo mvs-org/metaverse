@@ -30,7 +30,7 @@
 #include <bitcoin/consensus/libdevcore/Base64.h>
 
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
 static inline bool is_base64(byte c)
 {
@@ -47,7 +47,7 @@ static inline byte find_base64_char_index(byte c)
 	else return 1 + find_base64_char_index('/');
 }
 
-string dev::toBase64(bytesConstRef _in)
+string libbitcoin::toBase64(bytesConstRef _in)
 {
 	static const char base64_chars[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -99,7 +99,7 @@ string dev::toBase64(bytesConstRef _in)
 	return ret;
 }
 
-bytes dev::fromBase64(string const& encoded_string)
+bytes libbitcoin::fromBase64(string const& encoded_string)
 {
 	auto in_len = encoded_string.size();
 	int i = 0;

@@ -32,7 +32,7 @@
 #include "Common.h"
 #include "FixedHash.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 std::string toBase64(bytesConstRef _in);

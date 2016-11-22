@@ -32,7 +32,7 @@
 #include "CommonData.h"
 #include "FixedHash.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 /// Base class for all exceptions.

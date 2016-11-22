@@ -27,7 +27,7 @@
 #include "FixedHash.h"
 #include "vector_ref.h"
 
-namespace dev
+namespace libbitcoin
 {
 
 // SHA-3 convenience routines.

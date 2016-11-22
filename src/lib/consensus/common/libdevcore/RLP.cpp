@@ -21,10 +21,10 @@
 
 #include <bitcoin/consensus/libdevcore/RLP.h>
 using namespace std;
-using namespace dev;
+using namespace libbitcoin;
 
-bytes dev::RLPNull = rlp("");
-bytes dev::RLPEmptyList = rlpList();
+bytes libbitcoin::RLPNull = rlp("");
+bytes libbitcoin::RLPEmptyList = rlpList();
 
 RLP::RLP(bytesConstRef _d, Strictness _s):
 	m_data(_d)
@@ -348,7 +348,7 @@ void RLPStream::pushCount(size_t _count, byte _base)
 	pushInt(_count, br);
 }
 
-static void streamOut(std::ostream& _out, dev::RLP const& _d, unsigned _depth = 0)
+static void streamOut(std::ostream& _out, libbitcoin::RLP const& _d, unsigned _depth = 0)
 {
 	if (_depth > 64)
 		_out << "<max-depth-reached>";
@@ -371,7 +371,7 @@ static void streamOut(std::ostream& _out, dev::RLP const& _d, unsigned _depth = 
 	}
 }
 
-std::ostream& dev::operator<<(std::ostream& _out, RLP const& _d)
+std::ostream& libbitcoin::operator<<(std::ostream& _out, RLP const& _d)
 {
 	streamOut(_out, _d);
 	return _out;

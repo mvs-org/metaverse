@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dev
+namespace libbitcoin
 {
 namespace con
 {

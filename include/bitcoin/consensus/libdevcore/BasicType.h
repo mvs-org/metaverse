@@ -11,7 +11,7 @@
 #include <bitcoin/consensus/libethash/ethash.h>
 
 
-namespace dev
+namespace libbitcoin
 {
 
 class HeaderAux
@@ -21,6 +21,7 @@ public:
 	static h256 seedHash(libbitcoin::chain::header& _bi);
 	static h256 hashHead(libbitcoin::chain::header& _bi);
 	static h256 boundary(libbitcoin::chain::header& _bi) { auto d = _bi.getDifficulty(); return d ? (h256)u256((bigint(1) << 256) / d) : h256(); }
+	static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent);
 	static uint64_t number(h256& _seedHash);
 	static uint64_t cacheSize(libbitcoin::chain::header& _header);
 	static uint64_t dataSize(uint64_t _blockNumber);

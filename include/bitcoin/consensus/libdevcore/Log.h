@@ -34,7 +34,7 @@
 
 namespace boost { namespace asio { namespace ip { template<class T>class basic_endpoint; class tcp; } } }
 
-namespace dev
+namespace libbitcoin
 {
 
 /// The null output stream. Used when logging is disabled.
@@ -84,7 +84,7 @@ struct VerbosityHolder
 	int oldLogVerbosity;
 };
 
-#define ETH_THREAD_CONTEXT(name) for (std::pair<dev::ThreadContext, bool> __eth_thread_context(name, true); p.second; p.second = false)
+#define ETH_THREAD_CONTEXT(name) for (std::pair<libbitcoin::ThreadContext, bool> __eth_thread_context(name, true); p.second; p.second = false)
 
 class ThreadContext
 {
@@ -292,24 +292,24 @@ public:
 #define cslog(X) nslog(X)
 #else
 #if NDEBUG
-#define clog(X) DEV_STATEMENT_IF(!(X::debug)) dev::LogOutputStream<X, true>()
-#define cslog(X) DEV_STATEMENT_IF(!(X::debug)) dev::LogOutputStream<X, false>()
+#define clog(X) DEV_STATEMENT_IF(!(X::debug)) libbitcoin::LogOutputStream<X, true>()
+#define cslog(X) DEV_STATEMENT_IF(!(X::debug)) libbitcoin::LogOutputStream<X, false>()
 #else
-#define clog(X) dev::LogOutputStream<X, true>()
-#define cslog(X) dev::LogOutputStream<X, false>()
+#define clog(X) libbitcoin::LogOutputStream<X, true>()
+#define cslog(X) libbitcoin::LogOutputStream<X, false>()
 #endif
 #endif
 
 // Simple cout-like stream objects for accessing common log channels.
 // Dirties the global namespace, but oh so convenient...
-#define cdebug clog(dev::DebugChannel)
-#define cnote clog(dev::NoteChannel)
-#define cwarn clog(dev::WarnChannel)
-#define ctrace clog(dev::TraceChannel)
+#define cdebug clog(libbitcoin::DebugChannel)
+#define cnote clog(libbitcoin::NoteChannel)
+#define cwarn clog(libbitcoin::WarnChannel)
+#define ctrace clog(libbitcoin::TraceChannel)
 
 // Null stream-like objects.
-#define ndebug DEV_STATEMENT_SKIP() dev::NullOutputStream()
-#define nlog(X) DEV_STATEMENT_SKIP() dev::NullOutputStream()
-#define nslog(X) DEV_STATEMENT_SKIP() dev::NullOutputStream()
+#define ndebug DEV_STATEMENT_SKIP() libbitcoin::NullOutputStream()
+#define nlog(X) DEV_STATEMENT_SKIP() libbitcoin::NullOutputStream()
+#define nslog(X) DEV_STATEMENT_SKIP() libbitcoin::NullOutputStream()
 
 }
