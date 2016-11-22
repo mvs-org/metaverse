@@ -30,8 +30,8 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 
 #include <bitcoin/explorer/dispatch.hpp>
+#include <json/minijson_writer.hpp>
 #include <array>
-#include <algorithm>
 
 using namespace bc;
 using namespace bc::chain;
@@ -183,17 +183,27 @@ console_result listaccounts::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaccount *************************/
 console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    std::array<const char*, 4> cmds {"seed", "hd-new", "hd-to-ec", "ec-to-address"};
+    const char* cmds[]{"seed", "mnemonic-new", "mnemonic-to-seed", "hd-new", "hd-to-public"};
     std::ostringstream sout("");
     std::istringstream sin;
+    minijson::object_writer json_writer(output);
 
-    std::for_each(cmds.begin(), cmds.end(), [&sin, &sout](const char* cmd){
-            sin.str(sout.str());
-            sout.str("");
-            bc::explorer::dispatch_command(1, &cmd, sin, sout, sout);
-    });
+    auto execwith = [&](int i){
+        sin.str(sout.str());
+        sout.str("");
+        dispatch_command(1, cmds + i, sin, sout, sout);
+    };
 
-    output<<sout.str();
+    execwith(0);
+    execwith(1);
+    json_writer.write("mnemonic", sout.str());
+    //here set to db
+    
+    execwith(2);
+    execwith(3);
+    execwith(4);
+    json_writer.write("publickey", sout.str());
+    json_writer.close();
 
     return console_result::okay;
 }
