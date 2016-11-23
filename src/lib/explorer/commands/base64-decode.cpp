@@ -35,7 +35,7 @@ console_result base64_decode::invoke(std::ostream& output, std::ostream& error)
     const auto& base64 = get_base64_argument();
 
     // Do not add terminator to raw (non-textual) output stream.
-    output << raw(base64) /* << std::endl */;
+    output << raw(base64) /* << std::flush */;
 
     return console_result::okay;
 }

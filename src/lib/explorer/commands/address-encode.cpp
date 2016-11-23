@@ -35,6 +35,6 @@ console_result address_encode::invoke(std::ostream& output,
     const auto& ripemd160 = get_ripemd160_argument();
     const auto& version = get_version_option();
 
-    output << payment_address(ripemd160, version) << std::endl;
+    output << payment_address(ripemd160, version) << std::flush;
     return console_result::okay;
 }

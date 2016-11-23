@@ -39,10 +39,10 @@ console_result cert_new::invoke(std::ostream& output, std::ostream& error)
 
     if (!certificate)
     {
-        error << BX_CERT_NEW_FAILURE << std::endl;
+        error << BX_CERT_NEW_FAILURE << std::flush;
         return console_result::failure;
     }
 
-    output << certificate.private_key() << std::endl;
+    output << certificate.private_key() << std::flush;
     return console_result::okay;
 }

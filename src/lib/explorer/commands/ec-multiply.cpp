@@ -40,11 +40,11 @@ console_result ec_multiply::invoke(std::ostream& output, std::ostream& error)
     // Elliptic curve product (POINT * INTEGER).
     if (!bc::ec_multiply(product, secret))
     {
-        error << BX_EC_MULITPLY_OUT_OF_RANGE << std::endl;
+        error << BX_EC_MULITPLY_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
     // Serialize to the original compression state.
-    output << ec_public(product, point.compressed()) << std::endl;
+    output << ec_public(product, point.compressed()) << std::flush;
     return console_result::okay;
 }

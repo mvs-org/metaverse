@@ -33,6 +33,6 @@ console_result base58_encode::invoke(std::ostream& output, std::ostream& error)
     // Bound parameters.
     const auto& base16 = get_base16_argument();
     
-    output << base58(base16) << std::endl;
+    output << base58(base16) << std::flush;
     return console_result::okay;
 }

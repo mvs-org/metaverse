@@ -40,10 +40,10 @@ console_result hd_private::invoke(std::ostream& output, std::ostream& error)
 
     if (!child_private_key)
     {
-        output << "ERROR" << std::endl;
+        output << "ERROR" << std::flush;
         return console_result::failure;
     }
     
-    output << child_private_key << std::endl;
+    output << child_private_key << std::flush;
     return console_result::okay;
 }

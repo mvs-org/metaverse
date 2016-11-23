@@ -42,14 +42,14 @@ console_result ek_to_ec::invoke(std::ostream& output, std::ostream& error)
     ec_secret secret;
     if (!decrypt(secret, unused2, unused1, key, passphrase))
     {
-        error << BX_EK_TO_EC_INVALID_PASSPHRASE << std::endl;
+        error << BX_EK_TO_EC_INVALID_PASSPHRASE << std::flush;
         return console_result::failure;
     }
 
-    output << config::ec_private(secret) << std::endl;
+    output << config::ec_private(secret) << std::flush;
     return console_result::okay;
 #else
-    error << BX_EK_TO_EC_REQUIRES_ICU << std::endl;
+    error << BX_EK_TO_EC_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
 }

@@ -44,18 +44,18 @@ console_result stealth_encode::invoke(std::ostream& output,
 
     if (signatures > maximum)
     {
-        error << BX_STEALTH_ENCODE_SIGNATURES_OVERFLOW << std::endl;
+        error << BX_STEALTH_ENCODE_SIGNATURES_OVERFLOW << std::flush;
         return console_result::failure;
     }
 
     // TODO: finish stealth multisig implemetation.
     // Issue a warning but don't prevent experimentation.
     if (spend_pubkeys.size() > 1u)
-        error << BX_STEALTH_ENCODE_MULTISIG_NOT_SUPPORTED << std::endl;
+        error << BX_STEALTH_ENCODE_MULTISIG_NOT_SUPPORTED << std::flush;
 
     if (filter.size() > stealth_address::max_filter_bits)
     {
-        error << BX_STEALTH_ENCODE_FILTER_TOO_LONG << std::endl;
+        error << BX_STEALTH_ENCODE_FILTER_TOO_LONG << std::flush;
         return console_result::failure;
     }
 
@@ -63,6 +63,6 @@ console_result stealth_encode::invoke(std::ostream& output,
     const stealth_address address(filter, scan_pubkey, spend_points,
         signatures, version);
 
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
 }

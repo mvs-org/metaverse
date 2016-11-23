@@ -35,6 +35,6 @@ console_result wrap_encode::invoke(std::ostream& output, std::ostream& error)
     const auto version = get_version_option();
     const auto& payload = get_payload_argument();
     
-    output << wrapper(version, payload) << std::endl;
+    output << wrapper(version, payload) << std::flush;
     return console_result::okay;
 }

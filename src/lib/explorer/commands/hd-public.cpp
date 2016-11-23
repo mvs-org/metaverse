@@ -39,13 +39,13 @@ console_result hd_public::invoke(std::ostream& output, std::ostream& error)
     const auto key_version = key.version();
     if (key_version != private_version && key_version != public_version)
     {
-        output << "ERROR_VERSION" << std::endl;
+        output << "ERROR_VERSION" << std::flush;
         return console_result::failure;
     }
 
     if (hard && key_version != private_version)
     {
-        error << BX_HD_PUBLIC_HARD_OPTION_CONFLICT << std::endl;
+        error << BX_HD_PUBLIC_HARD_OPTION_CONFLICT << std::flush;
         return console_result::failure;
     }
     
@@ -64,7 +64,7 @@ console_result hd_public::invoke(std::ostream& output, std::ostream& error)
             const auto child_public_key = private_key.derive_public(position);
             if (child_public_key)
             {
-                output << child_public_key << std::endl;
+                output << child_public_key << std::flush;
                 return console_result::okay;
             }
         }
@@ -78,13 +78,13 @@ console_result hd_public::invoke(std::ostream& output, std::ostream& error)
             const auto child_public_key = public_key.derive_public(index);
             if (child_public_key)
             {
-                output << child_public_key << std::endl;
+                output << child_public_key << std::flush;
                 return console_result::okay;
             }
         }
     }
 
 
-    output << "ERROR_KEY" << std::endl;
+    output << "ERROR_KEY" << std::flush;
     return console_result::okay;
 }

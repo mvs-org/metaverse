@@ -93,17 +93,17 @@ console_result tx_encode::invoke(std::ostream& output, std::ostream& error)
     {
         if (!push_scripts(tx.outputs, output, script_version))
         {
-            error << BX_TX_ENCODE_INVALID_OUTPUT << std::endl;
+            error << BX_TX_ENCODE_INVALID_OUTPUT << std::flush;
             return console_result::failure;
         }
     }
 
     if (tx.is_locktime_conflict())
     {
-        error << BX_TX_ENCODE_LOCKTIME_CONFLICT << std::endl;
+        error << BX_TX_ENCODE_LOCKTIME_CONFLICT << std::flush;
         return console_result::failure;
     }
 
-    output << transaction(tx) << std::endl;
+    output << transaction(tx) << std::flush;
     return console_result::okay;
 }

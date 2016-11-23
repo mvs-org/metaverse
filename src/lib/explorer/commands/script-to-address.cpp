@@ -36,6 +36,6 @@ console_result script_to_address::invoke(std::ostream& output, std::ostream& err
 
     const payment_address address(script, version);
 
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
 }

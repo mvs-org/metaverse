@@ -35,6 +35,6 @@ console_result satoshi_to_btc::invoke(std::ostream& output,
     // Bound parameters.
     const auto satoshi = get_satoshi_argument();
 
-    output << btc(satoshi) << std::endl;
+    output << btc(satoshi) << std::flush;
     return console_result::okay;
 }

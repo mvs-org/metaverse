@@ -37,6 +37,6 @@ console_result btc_to_satoshi::invoke(std::ostream& output,
 
     const uint64_t satoshi = btc;
 
-    output << satoshi << std::endl;
+    output << satoshi << std::flush;
     return console_result::okay;
 }

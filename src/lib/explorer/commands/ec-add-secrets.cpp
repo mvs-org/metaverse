@@ -46,13 +46,13 @@ console_result ec_add_secrets::invoke(std::ostream& output, std::ostream& error)
         // Elliptic curve function (INTEGER + INTEGER) % curve-order.
         if (!bc::ec_add(sum, secret))
         {
-            error << BX_EC_ADD_SECRETS_OUT_OF_RANGE << std::endl;
+            error << BX_EC_ADD_SECRETS_OUT_OF_RANGE << std::flush;
             return console_result::failure;
         }
     }
 
     // We don't use bc::ec_private serialization (WIF) here.
-    output << config::ec_private(sum) << std::endl;
+    output << config::ec_private(sum) << std::flush;
     return console_result::okay;
 }
 

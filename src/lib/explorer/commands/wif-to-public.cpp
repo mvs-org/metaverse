@@ -34,6 +34,6 @@ console_result wif_to_public::invoke(std::ostream& output, std::ostream& error)
     // Bound parameters.
     const auto& secret = get_wif_argument();
 
-    output << ec_public(secret) << std::endl;
+    output << ec_public(secret) << std::flush;
     return console_result::okay;
 }

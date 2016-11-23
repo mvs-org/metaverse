@@ -45,10 +45,10 @@ console_result hd_to_public::invoke(std::ostream& output, std::ostream& error)
 
     if (!versioned)
     {
-        output << "ERROR" << std::endl;
+        output << "ERROR" << std::flush;
         return console_result::failure;
     }
 
-    output << versioned.to_public() << std::endl;
+    output << versioned.to_public() << std::flush;
     return console_result::okay;
 }

@@ -38,7 +38,7 @@ console_result ek_address::invoke(std::ostream& output, std::ostream& error)
 
     if (seed.size() < ek_seed_size)
     {
-        error << BX_EK_ADDRESS_SHORT_SEED << std::endl;
+        error << BX_EK_ADDRESS_SHORT_SEED << std::flush;
         return console_result::failure;
     }
     
@@ -51,6 +51,6 @@ console_result ek_address::invoke(std::ostream& output, std::ostream& error)
     create_key_pair(unused, point, token, bytes, version, compressed);
     const payment_address address({ point, compressed }, version);
     
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
 }

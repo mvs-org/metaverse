@@ -41,6 +41,6 @@ console_result base58check_encode::invoke(std::ostream& output,
     const auto encoded_wrapper = wrapped.to_data();
     const base58 base58check(encoded_wrapper);
 
-    output << base58check << std::endl;
+    output << base58check << std::flush;
     return console_result::okay;
 }

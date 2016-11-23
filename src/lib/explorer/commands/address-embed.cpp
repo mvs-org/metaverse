@@ -45,6 +45,6 @@ console_result address_embed::invoke(std::ostream& output, std::ostream& error)
     const auto hash = ripemd160_hash(script.to_data(false));
     
     // Make address (money sent here is lost forever).
-    output << payment_address(hash, version) << std::endl;
+    output << payment_address(hash, version) << std::flush;
     return console_result::okay;
 }

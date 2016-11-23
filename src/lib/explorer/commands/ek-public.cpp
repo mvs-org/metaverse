@@ -39,7 +39,7 @@ console_result commands::ek_public::invoke(std::ostream& output,
 
     if (seed.size() < ek_seed_size)
     {
-        error << BX_EK_PUBLIC_SHORT_SEED << std::endl;
+        error << BX_EK_PUBLIC_SHORT_SEED << std::flush;
         return console_result::failure;
     }
     
@@ -52,6 +52,6 @@ console_result commands::ek_public::invoke(std::ostream& output,
     ec_compressed unused2;
     create_key_pair(unused1, key, unused2, token, bytes, version, compressed);
     
-    output << bc::wallet::ek_public(key) << std::endl;
+    output << bc::wallet::ek_public(key) << std::flush;
     return console_result::okay;
 }

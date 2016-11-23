@@ -41,16 +41,16 @@ console_result ek_public_to_address::invoke(std::ostream& output,
     ec_compressed point;
     if (!decrypt(point, version, compressed, key, passphrase))
     {
-        error << BX_EK_PUBLIC_TO_ADDRESS_INVALID_PASSPHRASE << std::endl;
+        error << BX_EK_PUBLIC_TO_ADDRESS_INVALID_PASSPHRASE << std::flush;
         return console_result::failure;
     }
 
     const payment_address address({ point, compressed }, version);
 
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
 #else
-    error << BX_EK_PUBLIC_TO_ADDRESS_REQUIRES_ICU << std::endl;
+    error << BX_EK_PUBLIC_TO_ADDRESS_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
 }

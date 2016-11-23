@@ -35,6 +35,6 @@ console_result base16_decode::invoke(std::ostream& output, std::ostream& error)
     const auto& base16 = get_base16_argument();
 
     // Do not add terminator to raw (non-textual) output stream.
-    output << raw(base16) /* << std::endl */;
+    output << raw(base16) /* << std::flush */;
     return console_result::okay;
 }

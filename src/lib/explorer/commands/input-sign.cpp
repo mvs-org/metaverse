@@ -44,7 +44,7 @@ console_result input_sign::invoke(std::ostream& output, std::ostream& error)
 
     if (index >= tx.inputs.size())
     {
-        error << BX_INPUT_SIGN_INDEX_OUT_OF_RANGE << std::endl;
+        error << BX_INPUT_SIGN_INDEX_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
@@ -56,10 +56,10 @@ console_result input_sign::invoke(std::ostream& output, std::ostream& error)
     if (!chain::script::create_endorsement(endorse, private_key,
         contract, tx, index, hash_type))
     {
-        error << BX_INPUT_SIGN_FAILED << std::endl;
+        error << BX_INPUT_SIGN_FAILED << std::flush;
         return console_result::failure;
     }
 
-    output << base16(endorse) << std::endl;
+    output << base16(endorse) << std::flush;
     return console_result::okay;
 }

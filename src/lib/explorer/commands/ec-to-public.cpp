@@ -38,6 +38,6 @@ console_result ec_to_public::invoke(std::ostream& output, std::ostream& error)
     secret_to_public(point, secret);
 
     // Serialize to the original compression state.
-    output << ec_public(point, !uncompressed) << std::endl;
+    output << ec_public(point, !uncompressed) << std::flush;
     return console_result::okay;
 }

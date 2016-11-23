@@ -39,7 +39,7 @@ console_result mnemonic_new::invoke(std::ostream& output,
 
     if ((entropy_size % bc::wallet::mnemonic_seed_multiple) != 0)
     {
-        error << BX_EC_MNEMONIC_NEW_INVALID_ENTROPY << std::endl;
+        error << BX_EC_MNEMONIC_NEW_INVALID_ENTROPY << std::flush;
         return console_result::failure;
     }
 
@@ -47,6 +47,6 @@ console_result mnemonic_new::invoke(std::ostream& output,
     const auto dictionary = language.front();
     const auto words = create_mnemonic(entropy, *dictionary);
 
-    output << join(words) << std::endl;
+    output << join(words) << std::flush;
     return console_result::okay;
 }

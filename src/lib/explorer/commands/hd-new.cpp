@@ -37,7 +37,7 @@ console_result hd_new::invoke(std::ostream& output, std::ostream& error)
 
     if (seed.size() < minimum_seed_size)
     {
-        error << BX_HD_NEW_SHORT_SEED << std::endl;
+        error << BX_HD_NEW_SHORT_SEED << std::flush;
         return console_result::failure;
     }
 
@@ -47,10 +47,10 @@ console_result hd_new::invoke(std::ostream& output, std::ostream& error)
 
     if (!private_key)
     {
-        error << BX_HD_NEW_INVALID_KEY << std::endl;
+        error << BX_HD_NEW_INVALID_KEY << std::flush;
         return console_result::failure;
     }
 
-    output << private_key << std::endl;
+    output << private_key << std::flush;
     return console_result::okay;
 }

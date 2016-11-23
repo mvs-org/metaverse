@@ -29,6 +29,6 @@ using namespace bc::wallet;
 
 console_result hd_to_wif::invoke(std::ostream& output, std::ostream& error)
 {
-    error << BX_HD_TO_WIF_OBSOLETE << std::endl;
+    error << BX_HD_TO_WIF_OBSOLETE << std::flush;
     return console_result::failure;
 }

@@ -35,6 +35,6 @@ console_result script_decode::invoke(std::ostream& output, std::ostream& error)
     const auto& base16 = get_base16_argument();
     
     // Any array of bytes produces a valid script.
-    output << script(base16) << std::endl;
+    output << script(base16) << std::flush;
     return console_result::okay;
 }

@@ -39,19 +39,19 @@ console_result token_new::invoke(std::ostream& output, std::ostream& error)
 
     if (salt.size() < ek_salt_size)
     {
-        error << BX_TOKEN_NEW_SHORT_SALT << std::endl;
+        error << BX_TOKEN_NEW_SHORT_SALT << std::flush;
         return console_result::failure;
     }
 
     if (lot > ek_max_lot)
     {
-        error << BX_TOKEN_NEW_MAXIMUM_LOT << std::endl;
+        error << BX_TOKEN_NEW_MAXIMUM_LOT << std::flush;
         return console_result::failure;
     }
 
     if (sequence > ek_max_sequence)
     {
-        error << BX_TOKEN_NEW_MAXIMUM_SEQUENCE << std::endl;
+        error << BX_TOKEN_NEW_MAXIMUM_SEQUENCE << std::flush;
         return console_result::failure;
     }
 
@@ -69,10 +69,10 @@ console_result token_new::invoke(std::ostream& output, std::ostream& error)
         create_token(token, passphrase, bytes, lot, sequence);
     }
 
-    output << ek_token(token) << std::endl;
+    output << ek_token(token) << std::flush;
     return console_result::okay;
 #else
-    error << BX_TOKEN_NEW_REQUIRES_ICU << std::endl;
+    error << BX_TOKEN_NEW_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
 }

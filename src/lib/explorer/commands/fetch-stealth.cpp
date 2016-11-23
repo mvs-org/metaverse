@@ -53,7 +53,7 @@ console_result fetch_stealth::invoke(std::ostream& output, std::ostream& error)
 
     if (filter.size() > stealth_address::max_filter_bits)
     {
-        error << BX_FETCH_STEALTH_FILTER_TOO_LONG << std::endl;
+        error << BX_FETCH_STEALTH_FILTER_TOO_LONG << std::flush;
         return console_result::failure;
     }
 

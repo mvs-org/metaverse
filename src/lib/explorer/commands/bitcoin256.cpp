@@ -36,6 +36,6 @@ console_result bitcoin256::invoke(std::ostream& output, std::ostream& error)
 
     const auto hash = bitcoin_hash(data);
 
-    output << hash256(hash) << std::endl;
+    output << hash256(hash) << std::flush;
     return console_result::okay;
 }

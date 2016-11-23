@@ -46,13 +46,13 @@ console_result ec_multiply_secrets::invoke(std::ostream& output, std::ostream& e
         // Elliptic curve function (INTEGER * INTEGER) % curve-order.
         if (!bc::ec_multiply(product, secret))
         {
-            error << BX_EC_MULITPLY_SECRETS_OUT_OF_RANGE << std::endl;
+            error << BX_EC_MULITPLY_SECRETS_OUT_OF_RANGE << std::flush;
             return console_result::failure;
         }
     }
 
     // We don't use bc::ec_private serialization (WIF) here.
-    output << config::ec_private(product) << std::endl;
+    output << config::ec_private(product) << std::flush;
     return console_result::okay;
 }
 

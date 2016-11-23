@@ -38,10 +38,10 @@ console_result message_validate::invoke(std::ostream& output,
     if (!verify_message(message, address, sign))
     {
         // We do not return a failure here, as this is a validity test.
-        output << BX_MESSAGE_VALIDATE_INDEX_INVALID_SIGNATURE << std::endl;
+        output << BX_MESSAGE_VALIDATE_INDEX_INVALID_SIGNATURE << std::flush;
         return console_result::invalid;
     }
 
-    output << BX_MESSAGE_VALIDATE_INDEX_VALID_SIGNATURE << std::endl;
+    output << BX_MESSAGE_VALIDATE_INDEX_VALID_SIGNATURE << std::flush;
     return console_result::okay;
 }

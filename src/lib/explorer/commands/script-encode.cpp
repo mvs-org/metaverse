@@ -36,6 +36,6 @@ console_result script_encode::invoke(std::ostream& output, std::ostream& error)
 
     const auto encoded_script = script.to_data();
 
-    output << base16(encoded_script) << std::endl;
+    output << base16(encoded_script) << std::flush;
     return console_result::okay;
 }

@@ -35,6 +35,6 @@ console_result sha256::invoke(std::ostream& output, std::ostream& error)
 
     const auto hash = sha256_hash(data);
 
-    output << base16(hash) << std::endl;
+    output << base16(hash) << std::flush;
     return console_result::okay;
 }

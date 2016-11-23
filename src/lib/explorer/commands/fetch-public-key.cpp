@@ -67,6 +67,6 @@ console_result fetch_public_key::invoke(std::ostream& output, std::ostream& erro
 
     //return state.get_result();
 
-    error << BX_FETCH_PUBLIC_KEY_NOT_IMPLEMENTED << std::endl;
+    error << BX_FETCH_PUBLIC_KEY_NOT_IMPLEMENTED << std::flush;
     return console_result::failure;
 }

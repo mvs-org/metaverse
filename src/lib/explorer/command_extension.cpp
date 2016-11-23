@@ -188,20 +188,20 @@ console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
     std::istringstream sin;
     minijson::object_writer json_writer(output);
 
-    auto execwith = [&](int i){
+    auto exec_with = [&](int i){
         sin.str(sout.str());
         sout.str("");
         dispatch_command(1, cmds + i, sin, sout, sout);
     };
 
-    execwith(0);
-    execwith(1);
+    exec_with(0);
+    exec_with(1);
     json_writer.write("mnemonic", sout.str());
     //here set to db
     
-    execwith(2);
-    execwith(3);
-    execwith(4);
+    exec_with(2);
+    exec_with(3);
+    exec_with(4);
     json_writer.write("publickey", sout.str());
     json_writer.close();
 

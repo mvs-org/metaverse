@@ -31,6 +31,6 @@ using namespace bc::explorer::commands;
 console_result mnemonic_encode::invoke(std::ostream& output,
     std::ostream& error)
 {
-    error << BX_MNEMONIC_ENCODE_OBSOLETE << std::endl;
+    error << BX_MNEMONIC_ENCODE_OBSOLETE << std::flush;
     return console_result::failure;
 }
