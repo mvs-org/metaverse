@@ -15,44 +15,13 @@
  * 02110-1301, USA.
  */
 #include "mvs/http/Mongoose.hpp"
-#include "mvs/http/Tokeniser.hpp"
 #include "json/minijson_reader.hpp"
+#include "mvs/http/Tokeniser.hpp"
 
 namespace http {
 namespace mg {
 
 void HttpMessage::data_to_arg() noexcept {
-
-    auto convert = [this](std::string_view method, std::string_view pramas){
-
-        this->vargv_.push_back({method.data(), method.size()});
-        this->argc_++;
-
-        if (!pramas.empty()){
-            Tokeniser<' '> args;
-            args.reset(pramas);
-
-            // store args from ws message
-            do {
-                //skip spaces
-                if(args.top().front() != ' '){
-                    this->vargv_.push_back({args.top().data(), args.top().size()});
-                    this->argc_++;
-                }
-                args.pop();
-            }while(!args.empty());
-        }
-
-        // convert to char** argv
-        int i = 0;
-        for(auto& iter : this->vargv_){
-            if (i >= max_paramters){
-                break;
-            }
-            this->argv_[i++] = iter.c_str();
-        }
-
-    };
 
     /* *******************************************
      * application/json
@@ -60,18 +29,15 @@ void HttpMessage::data_to_arg() noexcept {
      * ******************************************/
     if (uri() == "/rpc" or uri() == "/rpc/")
     {
-        std::string method, params;
         minijson::const_buffer_context ctx(body().data(), body().size());
         minijson::parse_object(ctx, 
             [&](const char* key, minijson::value value){
             minijson::dispatch (key)
-            <<"method">> [&]{ method = value.as_string(); }
-            <<"params">> [&]{ params = value.as_string(); }
+            <<"method">> [&]{ mvs_method_ = value.as_string(); }
+            <<"params">> [&]{ mvs_params_ = value.as_string(); }
             <<minijson::any>> [&]{ minijson::ignore(ctx); };
         });
 
-        convert({method.c_str(), method.size()}, 
-                {params.c_str(), params.size()});
     }
 
     /* *******************************************
@@ -80,15 +46,10 @@ void HttpMessage::data_to_arg() noexcept {
      * ******************************************/
     if (uri().substr(0,4) == "/api")
     {
-        static const char* placeholder {"hello"};
         std::array<char, 4096> params{0x00};
         mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
-
-        convert({placeholder, 6u}, 
-                {params.data(), std::strlen(params.data())});
+        mvs_params_ = std::string(params.data(), std::strlen(params.data()));
     }
-
-    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
 }
 
 void WebsocketMessage::data_to_arg() noexcept {
@@ -99,34 +60,14 @@ void WebsocketMessage::data_to_arg() noexcept {
     do {
         //skip spaces
         if(args.top().front() != ' '){
-            vargv_.push_back({args.top().data(), args.top().size()});
-            argc_++;
+            mvs_method_ = std::string({args.top().data(), args.top().size()});
+            break;
         }
         args.pop();
     }while(!args.empty());
 
-    // convert to char** argv
-    int i = 0;
-    for(auto& iter : vargv_){
-        if (i >= max_paramters){
-            break;
-        }
-        argv_[i++] = iter.c_str();
-    }
-
-    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
-}
-
-void ToCommandArg::setargv0(std::string&& outside)
-{
-    if (vargv_.empty())
-    {
-        vargv_.push_back(outside); 
-        argc_++; 
-        argv_[0] = vargv_[0].c_str();
-    } else { 
-        vargv_[0] = outside; 
-    }
+    mvs_params_ = std::string{reinterpret_cast<char*>(impl_->data + mvs_method_.size()), 
+            impl_->size - mvs_method_.size()};
 }
 
 } // mg

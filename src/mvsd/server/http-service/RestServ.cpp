@@ -56,13 +56,15 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
 {
     using namespace bc;
 
-    //process here
     std::ostringstream sout;
     std::istringstream sin;
+    //process here
     try{
         ws.data_to_arg();
+        sin.str(ws.mvs_params());
+        const char* mm = ws.mvs_method().c_str();
 
-        explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
+        explorer::dispatch_command(1, &mm, 
             sin, sout, sout);
 
     }catch(...){
@@ -96,7 +98,10 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 
         std::stringstream sout;
         std::istringstream sin;
-        bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+        sin.str(data.mvs_params());
+        const char* mm = data.mvs_method().c_str();
+
+        bc::explorer::dispatch_command(1, &mm,
             sin, sout, sout);
 
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
@@ -140,13 +145,15 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
         if (!uri_.empty()) {
             data.data_to_arg();
             // let uri as method
-            data.setargv0({uri_.top().data(), uri_.top().size()});
+            data.set_mvs_method({uri_.top().data(), uri_.top().size()});
 
             //process here
             std::stringstream sout;
             std::istringstream sin;
+            sin.str(data.mvs_params());
+            const char* mm = data.mvs_method().c_str();
 
-            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+            bc::explorer::dispatch_command(1, &mm,
                 sin, sout, sout);
 
             log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
