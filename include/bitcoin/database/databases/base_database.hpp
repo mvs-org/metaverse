@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2015 mvs developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of mvs-node.
  *
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -17,43 +17,39 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_SPEND_DATABASE_HPP
-#define LIBBITCOIN_DATABASE_SPEND_DATABASE_HPP
+#ifndef LIBBITCOIN_DATABASE_BASE_DATABASE_HPP
+#define LIBBITCOIN_DATABASE_BASE_DATABASE_HPP
 
-#include <cstddef>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/database/define.hpp>
-#include <bitcoin/database/primitives/record_hash_table.hpp>
 #include <bitcoin/database/memory/memory_map.hpp>
+#include <bitcoin/database/result/base_result.hpp>
+#include <bitcoin/database/primitives/slab_hash_table.hpp>
+#include <bitcoin/database/primitives/slab_manager.hpp>
 
 namespace libbitcoin {
 namespace database {
 
-struct BCD_API spend_statinfo
-{
-    /// Number of buckets used in the hashtable.
-    /// load factor = rows / buckets
-    const size_t buckets;
-
-    /// Total number of spend rows.
-    const size_t rows;
-};
-
-/// This enables you to lookup the spend of an output point, returning
-/// the input point. It is a simple map.
-class BCD_API spend_database
+/// This enables lookups of bases by hash.
+/// An alternative and faster method is lookup from a unique index
+/// that is assigned upon storage.
+/// This is so we can quickly reconstruct blocks given a list of tx indexes
+/// belonging to that block. These are stored with the block.
+class BCD_API base_database
 {
 public:
+	
+    typedef slab_hash_table<hash_digest> slab_map;
     /// Construct the database.
-    spend_database(const boost::filesystem::path& filename,
+    base_database(const boost::filesystem::path& map_filename,
         std::shared_ptr<shared_mutex> mutex=nullptr);
 
     /// Close the database (all threads must first be stopped).
-    ~spend_database();
+    ~base_database();
 
-    /// Initialize a new spend database.
+    /// Initialize a new base database.
     bool create();
 
     /// Call before using the database.
@@ -65,31 +61,25 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-    /// Get input spend of an output point.
-    chain::spend get(const chain::output_point& outpoint) const;
+    /// Fetch base from its hash.
+    memory_ptr get(const hash_digest& hash) const;
 
-    /// Store a spend in the database.
-    void store(const chain::output_point& outpoint,
-        const chain::input_point& spend);
+    /// every subclass should have its own store method, so store method is not define in this class
 
-    /// Delete outpoint spend item from database.
-    void remove(const chain::output_point& outpoint);
+    /// Delete a base from database.
+    void remove(const hash_digest& hash);
 
     /// Synchronise storage with disk so things are consistent.
     /// Should be done at the end of every block write.
     void sync();
-
-    /// Return statistical info about the database.
-    spend_statinfo statinfo() const;
-
+	slab_map get_lookup_map() const;
 private:
-    typedef record_hash_table<chain::point> record_map;
 
-    // Hash table used for looking up inpoint spends by outpoint.
+    // Hash table used for looking up txs by hash.
     memory_map lookup_file_;
-    record_hash_table_header lookup_header_;
-    record_manager lookup_manager_;
-    record_map lookup_map_;
+    slab_hash_table_header lookup_header_;
+    slab_manager lookup_manager_;
+    slab_map lookup_map_;
 };
 
 } // namespace database

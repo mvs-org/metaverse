@@ -28,6 +28,8 @@
 #include <bitcoin/database/memory/memory_map.hpp>
 #include <bitcoin/database/settings.hpp>
 
+#include <algorithm> 
+
 namespace libbitcoin {
 namespace database {
 
@@ -77,6 +79,12 @@ data_base::store::store(const path& prefix)
     history_lookup = prefix / "history_table";
     spends_lookup = prefix / "spend_table";
     transactions_lookup = prefix / "transaction_table";
+	/* begin database for account, asset, account_asset relationship */
+	accounts_lookup = prefix / "account_table";
+	assets_lookup = prefix / "asset_table";
+	account_assets_lookup = prefix / "account_asset_table";
+	account_addresses_lookup = prefix / "account_address_table";
+	/* end database for account, asset, account_asset relationship */
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -99,7 +107,13 @@ bool data_base::store::touch_all() const
         touch_file(history_rows) &&
         touch_file(stealth_rows) &&
         touch_file(spends_lookup) &&
-        touch_file(transactions_lookup);
+        touch_file(transactions_lookup)&&
+		/* begin database for account, asset, account_asset relationship */
+        touch_file(accounts_lookup)&&
+        touch_file(assets_lookup)&&
+        touch_file(account_assets_lookup)&&
+		touch_file(account_addresses_lookup);
+		/* end database for account, asset, account_asset relationship */
 }
 
 data_base::file_lock data_base::initialize_lock(const path& lock)
@@ -145,7 +159,13 @@ data_base::data_base(const store& paths, size_t history_height,
     history(paths.history_lookup, paths.history_rows, mutex_),
     stealth(paths.stealth_rows, mutex_),
     spends(paths.spends_lookup, mutex_),
-    transactions(paths.transactions_lookup, mutex_)
+    transactions(paths.transactions_lookup, mutex_),
+	/* begin database for account, asset, account_asset relationship */
+	accounts(paths.accounts_lookup, mutex_),
+	assets(paths.assets_lookup, mutex_),
+	account_assets(paths.account_assets_lookup, mutex_),
+	account_addresses(paths.account_addresses_lookup, mutex_)
+	/* end database for account, asset, account_asset relationship */
 {
 }
 
@@ -170,7 +190,14 @@ bool data_base::create()
         history.create() &&
         spends.create() &&
         stealth.create() &&
-        transactions.create();
+        transactions.create()&&
+		/* begin database for account, asset, account_asset relationship */
+		accounts.create()&&
+		assets.create()&&
+		account_assets.create()&&
+		account_addresses.create()
+		/* end database for account, asset, account_asset relationship */
+		;
 }
 
 // Start must be called before performing queries.
@@ -197,7 +224,14 @@ bool data_base::start()
         history.start() &&
         spends.start() &&
         stealth.start() &&
-        transactions.start();
+        transactions.start()&&
+		/* begin database for account, asset, account_asset relationship */
+		accounts.start()&&
+		assets.start()&&
+		account_assets.start()&&
+		account_addresses.start()
+		/* end database for account, asset, account_asset relationship */
+        ;
     const auto end_exclusive = end_write();
 
     // Return the result of the database start.
@@ -213,6 +247,12 @@ bool data_base::stop()
     const auto spends_stop = spends.stop();
     const auto stealth_stop = stealth.stop();
     const auto transactions_stop = transactions.stop();
+	/* begin database for account, asset, account_asset relationship */
+	const auto accounts_stop = accounts.stop();
+	const auto assets_stop = assets.stop();
+	const auto account_assets_stop = account_assets.stop();
+	const auto account_addresses_stop = account_addresses.stop();
+	/* end database for account, asset, account_asset relationship */
     const auto end_exclusive = end_write();
 
     // This should remove the lock file. This is not important for locking
@@ -228,6 +268,12 @@ bool data_base::stop()
         spends_stop &&
         stealth_stop &&
         transactions_stop &&
+		/* begin database for account, asset, account_asset relationship */
+		accounts_stop &&
+		assets_stop &&
+		account_assets_stop &&
+		account_addresses_stop &&
+		/* end database for account, asset, account_asset relationship */
         end_exclusive;
 }
 
@@ -239,6 +285,12 @@ bool data_base::close()
     const auto spends_close = spends.close();
     const auto stealth_close = stealth.close();
     const auto transactions_close = transactions.close();
+	/* begin database for account, asset, account_asset relationship */
+	const auto accounts_close = accounts.close();
+	const auto assets_close = assets.close();
+	const auto account_assets_close = account_assets.close();
+	const auto account_addresses_close = account_addresses.close();
+	/* end database for account, asset, account_asset relationship */
 
     // Return the cumulative result of the database closes.
     return
@@ -246,7 +298,14 @@ bool data_base::close()
         history_close &&
         spends_close &&
         stealth_close &&
-        transactions_close;
+        transactions_close&&
+		/* begin database for account, asset, account_asset relationship */
+		accounts_close &&
+		assets_close &&
+		account_assets_close&&
+		account_addresses_close
+		/* end database for account, asset, account_asset relationship */
+        ;
 }
 
 // Locking.
@@ -306,6 +365,12 @@ void data_base::synchronize()
     history.sync();
     stealth.sync();
     transactions.sync();
+	/* begin database for account, asset, account_asset relationship */
+	accounts.sync();
+	assets.sync();
+	account_assets.sync();
+	account_addresses.sync();
+	/* end database for account, asset, account_asset relationship */
     blocks.sync();
 }
 
@@ -515,6 +580,59 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             history.delete_last_row(address.hash());
     }
 }
+/* begin store asset related info into database */
+
+//#include <bitcoin/bitcoin/config/base16.hpp>
+//using namespace libbitcoin::config;
+void data_base::process_attachemnt(attachment& attach, payment_address& address)
+{
+	if(0 == attach.type) { // not process etp business now
+		#if 0
+		std::cout << "push etp="<<address<<std::endl;
+		std::cout << address.encoded() << std::endl;
+		//const data_chunk& data = data_chunk(address.encoded().begin(), address.encoded().end());
+		std::string ss = "1111111111111111111114oLvT2";
+		data_chunk data(ss.begin(), ss.end());
+		const auto hash = sha256_hash(data);
+		std::cout << base16(hash) << std::endl;
+		//std::cout << sp_detail.symbol << std::endl;
+		account value("hello", "word list", "lala", 1000, 1);
+		accounts.store(hash, value);
+
+		account_address address("dongyun", "xprv-key", "xpub-key" ,1000);
+		account_addresses.store(hash, address);
+		#endif
+		return ;
+	}
+	auto visitor = attachment_visitor(address, this);
+	boost::apply_visitor(visitor, attach.attach);
+}
+void data_base::process_asset(asset& sp, payment_address address) // sp = smart property
+{
+	auto visitor = asset_visitor(address, this);
+	boost::apply_visitor(visitor, sp.data);
+}
+
+void data_base::push_asset_detail(asset_detail& sp_detail)
+{
+	const data_chunk& data = data_chunk(sp_detail.symbol.begin(), sp_detail.symbol.end());
+    const auto hash = sha256_hash(data);
+    //std::cout << base16(hash) << std::endl;
+    //std::cout << sp_detail.symbol << std::endl;
+	assets.store(hash, sp_detail);
+}
+void data_base::push_asset_transfer(asset_transfer& sp_transfer, payment_address& address)
+{
+	data_chunk  addr(sp_transfer.address.begin(), sp_transfer.address.end());
+	data_chunk& data = addr;
+	std::copy(address.encoded().begin(), address.encoded().end(), std::back_inserter(data));
+    const auto hash = sha256_hash(data);
+    //std::cout << base16(hash) << std::endl;
+    //std::cout << sp_transfer.address << std::endl;
+    //std::cout << address.encoded() << std::endl;
+	account_assets.store(hash, sp_transfer);
+}
+/* end store asset related info into database */
 
 } // namespace data_base
 } // namespace libbitcoin

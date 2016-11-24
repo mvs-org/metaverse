@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2015 metaverse developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of mvs-node.
  *
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -17,41 +17,40 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-#define LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-
+#include <bitcoin/database/result/account_result.hpp>
+#include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/define.hpp>
 #include <bitcoin/database/memory/memory.hpp>
 
 namespace libbitcoin {
 namespace database {
-    
-/// Deferred read transaction result.
-class BCD_API transaction_result
+
+template <typename Iterator>
+std::shared_ptr<account> deserialize_account_detail(const Iterator first)
 {
-public:
-    transaction_result(const memory_ptr slab);
+	auto detail = std::make_shared<account>();
+    auto deserial = make_deserializer_unsafe(first);
+    detail->from_data(deserial);
+    return detail;
+}
+account_result::account_result(const memory_ptr slab)
+  : base_result(slab)
+{
+}
 
-    /// True if this transaction result is valid (found).
-    operator bool() const;
-
-    /// The height of the block which includes the transaction.
-    size_t height() const;
-
-    /// The position of the transaction within its block.
-    size_t index() const;
-
-    /// The transaction.
-    chain::transaction transaction() const;
-
-private:
-    const memory_ptr slab_;
-};
-
+std::shared_ptr<account> account_result::get_account_detail() const
+{
+    //BITCOIN_ASSERT(get_slab());
+	std::shared_ptr<account> sp_acc(nullptr);
+	if(get_slab()) 
+	{
+	    const auto memory = REMAP_ADDRESS(get_slab());
+	    sp_acc = deserialize_account_detail(memory);
+	}
+	return sp_acc;
+}
 } // namespace database
 } // namespace libbitcoin
 
-#endif

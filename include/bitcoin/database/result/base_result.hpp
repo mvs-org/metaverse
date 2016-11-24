@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-#define LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
+#ifndef LIBBITCOIN_DATABASE_BASE_RESULT_HPP
+#define LIBBITCOIN_DATABASE_BASE_RESULT_HPP
 
 #include <cstddef>
 #include <cstdint>
@@ -29,27 +29,42 @@
 namespace libbitcoin {
 namespace database {
     
-/// Deferred read transaction result.
-class BCD_API transaction_result
+/// Deferred read base result.
+class BCD_API base_result
 {
 public:
-    transaction_result(const memory_ptr slab);
+    base_result(const memory_ptr slab): slab_(slab)
+	{
+	}
 
-    /// True if this transaction result is valid (found).
-    operator bool() const;
-
-    /// The height of the block which includes the transaction.
-    size_t height() const;
-
-    /// The position of the transaction within its block.
-    size_t index() const;
-
-    /// The transaction.
-    chain::transaction transaction() const;
-
+    /// True if this base result is valid (found).
+    operator bool() const
+	{
+		return slab_ != nullptr;
+	}
+	memory_ptr get_slab() const
+	{
+		return slab_;
+	}
 private:
     const memory_ptr slab_;
 };
+#if 0
+base_result::base_result(const memory_ptr slab)
+  : slab_(slab)
+{
+}
+
+base_result::operator bool() const
+{
+    return slab_ != nullptr;
+}
+
+memory_ptr base_result::get_slab() const
+{
+	return slab_;
+}
+#endif
 
 } // namespace database
 } // namespace libbitcoin
