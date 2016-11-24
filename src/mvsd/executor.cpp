@@ -94,8 +94,8 @@ void executor::do_version()
 bool executor::do_initchain()
 {
     initialize_output();
-
-    error_code ec;
+    
+    boost::system::error_code ec;
     const auto& directory = metadata_.configured.database.directory;
 
     if (create_directories(directory, ec))
@@ -286,7 +286,7 @@ void executor::initialize_output()
 // Use missing directory as a sentinel indicating lack of initialization.
 bool executor::verify_directory()
 {
-    error_code ec;
+    boost::system::error_code ec;
     const auto& directory = metadata_.configured.database.directory;
 
     if (exists(directory, ec))
