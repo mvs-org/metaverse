@@ -40,7 +40,7 @@ std::string parser::format_invalid_parameter(const std::string& message)
 {
     std::string clean_message(message);
     boost::replace_all(clean_message, "for option is invalid", "is invalid");
-    return "Error: " + clean_message;
+    return "{\"error\":\"parser " + clean_message +"\"}";
 }
 
 path parser::get_config_option(variables_map& variables,

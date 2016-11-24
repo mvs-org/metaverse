@@ -87,7 +87,7 @@ console_result dispatch(int argc, const char* argv[],
 
     auto ret = dispatch_command(argc - 1, &argv[1], input, output, error);
     output<<std::endl;
-    error<<std::endl;
+    //error<<std::endl; // once \n is okay
     return ret;
 }
 
