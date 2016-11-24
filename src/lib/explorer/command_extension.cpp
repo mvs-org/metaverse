@@ -180,6 +180,7 @@ console_result listaccounts::invoke (std::ostream& output, std::ostream& cerr)
 }
 
 
+
 /************************ getnewaccount *************************/
 console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
@@ -249,20 +250,6 @@ console_result listaddresses::invoke (std::ostream& output, std::ostream& cerr)
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    std::array<const char*, 4> cmds{"seed", "ec-new", "ec-to-public", "ec-to-address"};
-    std::ostringstream sout{""};
-    std::istringstream sin;
-
-    //pipe executing
-    std::for_each(cmds.begin(), cmds.end(), [&sout, &sin](const char* cmd){
-        sin.str(sout.str());
-        sout.str("");
-        dispatch_command(1, &cmd, sin, sout, sout);
-    });
-
-    output<<sout.str();
-
-    return console_result::okay;
 
     return console_result::okay;
 }
@@ -523,6 +510,24 @@ console_result issuemore::invoke (std::ostream& output, std::ostream& cerr)
 
 /************************ issuemorefrom *************************/
 console_result issuemorefrom::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ sendasset *************************/
+console_result sendasset::invoke (std::ostream& output, std::ostream& cerr)
+{
+
+    return console_result::okay;
+}
+
+
+
+/************************ sendassetfrom *************************/
+console_result sendassetfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
 
     return console_result::okay;

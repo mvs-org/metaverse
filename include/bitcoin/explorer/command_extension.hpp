@@ -31,11 +31,20 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+class command_extension:public command{
+protected:
+    struct argument_base
+    {
+        std::string name;
+        std::string auth;
+    } auth_;
+};
+
 
 
 /************************ stop *************************/
 
-class stop: public command
+class stop: public command_extension
 {
 public:
     stop() = default; 
@@ -105,7 +114,7 @@ public:
 
 /************************ start *************************/
 
-class start: public command
+class start: public command_extension
 {
 public:
     start() = default; 
@@ -175,7 +184,7 @@ public:
 
 /************************ setadmin *************************/
 
-class setadmin: public command
+class setadmin: public command_extension
 {
 public:
     setadmin() = default; 
@@ -245,7 +254,7 @@ public:
 
 /************************ getinfo *************************/
 
-class getinfo: public command
+class getinfo: public command_extension
 {
 public:
     getinfo() = default; 
@@ -315,7 +324,7 @@ public:
 
 /************************ getpeerinfo *************************/
 
-class getpeerinfo: public command
+class getpeerinfo: public command_extension
 {
 public:
     getpeerinfo() = default; 
@@ -385,7 +394,7 @@ public:
 
 /************************ ping *************************/
 
-class ping: public command
+class ping: public command_extension
 {
 public:
     ping() = default; 
@@ -455,7 +464,7 @@ public:
 
 /************************ addnode *************************/
 
-class addnode: public command
+class addnode: public command_extension
 {
 public:
     addnode() = default; 
@@ -525,7 +534,7 @@ public:
 
 /************************ getmininginfo *************************/
 
-class getmininginfo: public command
+class getmininginfo: public command_extension
 {
 public:
     getmininginfo() = default; 
@@ -595,7 +604,7 @@ public:
 
 /************************ backupwallet *************************/
 
-class backupwallet: public command
+class backupwallet: public command_extension
 {
 public:
     backupwallet() = default; 
@@ -665,7 +674,7 @@ public:
 
 /************************ importwallet *************************/
 
-class importwallet: public command
+class importwallet: public command_extension
 {
 public:
     importwallet() = default; 
@@ -735,7 +744,7 @@ public:
 
 /************************ lockwallet *************************/
 
-class lockwallet: public command
+class lockwallet: public command_extension
 {
 public:
     lockwallet() = default; 
@@ -805,7 +814,7 @@ public:
 
 /************************ backupaccount *************************/
 
-class backupaccount: public command
+class backupaccount: public command_extension
 {
 public:
     backupaccount() = default; 
@@ -875,7 +884,7 @@ public:
 
 /************************ importaccount *************************/
 
-class importaccount: public command
+class importaccount: public command_extension
 {
 public:
     importaccount() = default; 
@@ -945,7 +954,7 @@ public:
 
 /************************ switchaccount *************************/
 
-class switchaccount: public command
+class switchaccount: public command_extension
 {
 public:
     switchaccount() = default; 
@@ -1015,7 +1024,7 @@ public:
 
 /************************ listaccounts *************************/
 
-class listaccounts: public command
+class listaccounts: public command_extension
 {
 public:
     listaccounts() = default; 
@@ -1085,7 +1094,7 @@ public:
 
 /************************ getnewaccount *************************/
 
-class getnewaccount: public command
+class getnewaccount: public command_extension
 {
 public:
     getnewaccount() = default; 
@@ -1112,8 +1121,8 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(argument_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(argument_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1133,12 +1142,12 @@ public:
 	    )
 	    (
             "ACCOUNTNAME",
-            value<std::string>(&argument_.name)->required(),
+            value<std::string>(&auth_.name)->required(),
             "account name."
 	    )
 	    (
             "ACCOUNTAUTH",
-            value<std::string>(&argument_.auth)->required(),
+            value<std::string>(&auth_.auth)->required(),
             "account auth."
     	);
 
@@ -1154,8 +1163,6 @@ public:
 
     struct argument
     {
-	    std::string name;
-	    std::string auth;
     } argument_;
 
     struct option
@@ -1168,7 +1175,7 @@ public:
 
 /************************ getaccount *************************/
 
-class getaccount: public command
+class getaccount: public command_extension
 {
 public:
     getaccount() = default; 
@@ -1238,7 +1245,7 @@ public:
 
 /************************ lockaccount *************************/
 
-class lockaccount: public command
+class lockaccount: public command_extension
 {
 public:
     lockaccount() = default; 
@@ -1308,7 +1315,7 @@ public:
 
 /************************ setaccountinfo *************************/
 
-class setaccountinfo: public command
+class setaccountinfo: public command_extension
 {
 public:
     setaccountinfo() = default; 
@@ -1378,7 +1385,7 @@ public:
 
 /************************ listaddresses *************************/
 
-class listaddresses: public command
+class listaddresses: public command_extension
 {
 public:
     listaddresses() = default; 
@@ -1448,7 +1455,7 @@ public:
 
 /************************ getnewaddress *************************/
 
-class getnewaddress: public command
+class getnewaddress: public command_extension
 {
 public:
     getnewaddress() = default; 
@@ -1518,7 +1525,7 @@ public:
 
 /************************ getaddress *************************/
 
-class getaddress: public command
+class getaddress: public command_extension
 {
 public:
     getaddress() = default; 
@@ -1588,7 +1595,7 @@ public:
 
 /************************ getblock *************************/
 
-class getblock: public command
+class getblock: public command_extension
 {
 public:
     getblock() = default; 
@@ -1658,7 +1665,7 @@ public:
 
 /************************ signmessage *************************/
 
-class signmessage: public command
+class signmessage: public command_extension
 {
 public:
     signmessage() = default; 
@@ -1728,7 +1735,7 @@ public:
 
 /************************ verifymessage *************************/
 
-class verifymessage: public command
+class verifymessage: public command_extension
 {
 public:
     verifymessage() = default; 
@@ -1798,7 +1805,7 @@ public:
 
 /************************ createmultisig *************************/
 
-class createmultisig: public command
+class createmultisig: public command_extension
 {
 public:
     createmultisig() = default; 
@@ -1868,7 +1875,7 @@ public:
 
 /************************ addmultisigaddress *************************/
 
-class addmultisigaddress: public command
+class addmultisigaddress: public command_extension
 {
 public:
     addmultisigaddress() = default; 
@@ -1938,7 +1945,7 @@ public:
 
 /************************ validateaddress *************************/
 
-class validateaddress: public command
+class validateaddress: public command_extension
 {
 public:
     validateaddress() = default; 
@@ -2008,7 +2015,7 @@ public:
 
 /************************ listbalances *************************/
 
-class listbalances: public command
+class listbalances: public command_extension
 {
 public:
     listbalances() = default; 
@@ -2078,7 +2085,7 @@ public:
 
 /************************ getbalance *************************/
 
-class getbalance: public command
+class getbalance: public command_extension
 {
 public:
     getbalance() = default; 
@@ -2148,7 +2155,7 @@ public:
 
 /************************ getaddressbalance *************************/
 
-class getaddressbalance: public command
+class getaddressbalance: public command_extension
 {
 public:
     getaddressbalance() = default; 
@@ -2218,7 +2225,7 @@ public:
 
 /************************ getaccountbalance *************************/
 
-class getaccountbalance: public command
+class getaccountbalance: public command_extension
 {
 public:
     getaccountbalance() = default; 
@@ -2288,7 +2295,7 @@ public:
 
 /************************ listtxs *************************/
 
-class listtxs: public command
+class listtxs: public command_extension
 {
 public:
     listtxs() = default; 
@@ -2358,7 +2365,7 @@ public:
 
 /************************ gettx *************************/
 
-class gettx: public command
+class gettx: public command_extension
 {
 public:
     gettx() = default; 
@@ -2428,7 +2435,7 @@ public:
 
 /************************ getaddresstx *************************/
 
-class getaddresstx: public command
+class getaddresstx: public command_extension
 {
 public:
     getaddresstx() = default; 
@@ -2498,7 +2505,7 @@ public:
 
 /************************ getaccounttx *************************/
 
-class getaccounttx: public command
+class getaccounttx: public command_extension
 {
 public:
     getaccounttx() = default; 
@@ -2568,7 +2575,7 @@ public:
 
 /************************ send *************************/
 
-class send: public command
+class send: public command_extension
 {
 public:
     send() = default; 
@@ -2638,7 +2645,7 @@ public:
 
 /************************ sendmore *************************/
 
-class sendmore: public command
+class sendmore: public command_extension
 {
 public:
     sendmore() = default; 
@@ -2708,7 +2715,7 @@ public:
 
 /************************ sendfrom *************************/
 
-class sendfrom: public command
+class sendfrom: public command_extension
 {
 public:
     sendfrom() = default; 
@@ -2778,7 +2785,7 @@ public:
 
 /************************ sendwithmsg *************************/
 
-class sendwithmsg: public command
+class sendwithmsg: public command_extension
 {
 public:
     sendwithmsg() = default; 
@@ -2848,7 +2855,7 @@ public:
 
 /************************ sendwithmsgfrom *************************/
 
-class sendwithmsgfrom: public command
+class sendwithmsgfrom: public command_extension
 {
 public:
     sendwithmsgfrom() = default; 
@@ -2918,7 +2925,7 @@ public:
 
 /************************ listassets *************************/
 
-class listassets: public command
+class listassets: public command_extension
 {
 public:
     listassets() = default; 
@@ -2988,7 +2995,7 @@ public:
 
 /************************ getasset *************************/
 
-class getasset: public command
+class getasset: public command_extension
 {
 public:
     getasset() = default; 
@@ -3058,7 +3065,7 @@ public:
 
 /************************ getaddressasset *************************/
 
-class getaddressasset: public command
+class getaddressasset: public command_extension
 {
 public:
     getaddressasset() = default; 
@@ -3128,7 +3135,7 @@ public:
 
 /************************ getaccountasset *************************/
 
-class getaccountasset: public command
+class getaccountasset: public command_extension
 {
 public:
     getaccountasset() = default; 
@@ -3198,7 +3205,7 @@ public:
 
 /************************ createasset *************************/
 
-class createasset: public command
+class createasset: public command_extension
 {
 public:
     createasset() = default; 
@@ -3268,7 +3275,7 @@ public:
 
 /************************ issue *************************/
 
-class issue: public command
+class issue: public command_extension
 {
 public:
     issue() = default; 
@@ -3338,7 +3345,7 @@ public:
 
 /************************ issuefrom *************************/
 
-class issuefrom: public command
+class issuefrom: public command_extension
 {
 public:
     issuefrom() = default; 
@@ -3408,7 +3415,7 @@ public:
 
 /************************ issuemore *************************/
 
-class issuemore: public command
+class issuemore: public command_extension
 {
 public:
     issuemore() = default; 
@@ -3478,7 +3485,7 @@ public:
 
 /************************ issuemorefrom *************************/
 
-class issuemorefrom: public command
+class issuemorefrom: public command_extension
 {
 public:
     issuemorefrom() = default; 
@@ -3546,9 +3553,149 @@ public:
 
 
 
+/************************ sendasset *************************/
+
+class sendasset: public command_extension
+{
+public:
+    sendasset() = default; 
+    virtual ~sendasset() = default; 
+    sendasset(const sendasset&) = default; 
+    sendasset(sendasset&&) = default; 
+    sendasset& operator=(sendasset&&) = default; 
+    sendasset& operator=(const sendasset&) = default; 
+
+public:
+    static const char* symbol(){ return "sendasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SENDASSET", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SENDASSET", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ sendassetfrom *************************/
+
+class sendassetfrom: public command_extension
+{
+public:
+    sendassetfrom() = default; 
+    virtual ~sendassetfrom() = default; 
+    sendassetfrom(const sendassetfrom&) = default; 
+    sendassetfrom(sendassetfrom&&) = default; 
+    sendassetfrom& operator=(sendassetfrom&&) = default; 
+    sendassetfrom& operator=(const sendassetfrom&) = default; 
+
+public:
+    static const char* symbol(){ return "sendassetfrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendassetfrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("SENDASSETFROM", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //fixme
+        //load_input(argument_.xxx, "SENDASSETFROM", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
 /************************ getdid *************************/
 
-class getdid: public command
+class getdid: public command_extension
 {
 public:
     getdid() = default; 
@@ -3618,7 +3765,7 @@ public:
 
 /************************ setdid *************************/
 
-class setdid: public command
+class setdid: public command_extension
 {
 public:
     setdid() = default; 
@@ -3688,7 +3835,7 @@ public:
 
 /************************ sendwithdid *************************/
 
-class sendwithdid: public command
+class sendwithdid: public command_extension
 {
 public:
     sendwithdid() = default; 
@@ -3758,7 +3905,7 @@ public:
 
 /************************ settxfee *************************/
 
-class settxfee: public command
+class settxfee: public command_extension
 {
 public:
     settxfee() = default; 
