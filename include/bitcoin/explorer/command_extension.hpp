@@ -47,14 +47,6 @@ protected:
 class stop: public command_extension
 {
 public:
-    stop() = default; 
-    virtual ~stop() = default; 
-    stop(const stop&) = default; 
-    stop(stop&&) = default; 
-    stop& operator=(stop&&) = default; 
-    stop& operator=(const stop&) = default; 
-
-public:
     static const char* symbol(){ return "stop";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -63,6 +55,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("STOP", 1);
     }
 
@@ -70,7 +63,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "STOP", variables, input, raw);
     }
 
@@ -88,7 +81,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -117,14 +115,6 @@ public:
 class start: public command_extension
 {
 public:
-    start() = default; 
-    virtual ~start() = default; 
-    start(const start&) = default; 
-    start(start&&) = default; 
-    start& operator=(start&&) = default; 
-    start& operator=(const start&) = default; 
-
-public:
     static const char* symbol(){ return "start";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -133,6 +123,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("START", 1);
     }
 
@@ -140,7 +131,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "START", variables, input, raw);
     }
 
@@ -158,7 +149,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -187,14 +183,6 @@ public:
 class setadmin: public command_extension
 {
 public:
-    setadmin() = default; 
-    virtual ~setadmin() = default; 
-    setadmin(const setadmin&) = default; 
-    setadmin(setadmin&&) = default; 
-    setadmin& operator=(setadmin&&) = default; 
-    setadmin& operator=(const setadmin&) = default; 
-
-public:
     static const char* symbol(){ return "setadmin";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -203,6 +191,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SETADMIN", 1);
     }
 
@@ -210,7 +199,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SETADMIN", variables, input, raw);
     }
 
@@ -228,7 +217,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -257,14 +251,6 @@ public:
 class getinfo: public command_extension
 {
 public:
-    getinfo() = default; 
-    virtual ~getinfo() = default; 
-    getinfo(const getinfo&) = default; 
-    getinfo(getinfo&&) = default; 
-    getinfo& operator=(getinfo&&) = default; 
-    getinfo& operator=(const getinfo&) = default; 
-
-public:
     static const char* symbol(){ return "getinfo";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -273,6 +259,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETINFO", 1);
     }
 
@@ -280,7 +267,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETINFO", variables, input, raw);
     }
 
@@ -298,7 +285,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -327,14 +319,6 @@ public:
 class getpeerinfo: public command_extension
 {
 public:
-    getpeerinfo() = default; 
-    virtual ~getpeerinfo() = default; 
-    getpeerinfo(const getpeerinfo&) = default; 
-    getpeerinfo(getpeerinfo&&) = default; 
-    getpeerinfo& operator=(getpeerinfo&&) = default; 
-    getpeerinfo& operator=(const getpeerinfo&) = default; 
-
-public:
     static const char* symbol(){ return "getpeerinfo";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -343,6 +327,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETPEERINFO", 1);
     }
 
@@ -350,7 +335,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETPEERINFO", variables, input, raw);
     }
 
@@ -368,7 +353,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -397,14 +387,6 @@ public:
 class ping: public command_extension
 {
 public:
-    ping() = default; 
-    virtual ~ping() = default; 
-    ping(const ping&) = default; 
-    ping(ping&&) = default; 
-    ping& operator=(ping&&) = default; 
-    ping& operator=(const ping&) = default; 
-
-public:
     static const char* symbol(){ return "ping";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -413,6 +395,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("PING", 1);
     }
 
@@ -420,7 +403,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "PING", variables, input, raw);
     }
 
@@ -438,7 +421,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -467,14 +455,6 @@ public:
 class addnode: public command_extension
 {
 public:
-    addnode() = default; 
-    virtual ~addnode() = default; 
-    addnode(const addnode&) = default; 
-    addnode(addnode&&) = default; 
-    addnode& operator=(addnode&&) = default; 
-    addnode& operator=(const addnode&) = default; 
-
-public:
     static const char* symbol(){ return "addnode";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -483,6 +463,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ADDNODE", 1);
     }
 
@@ -490,7 +471,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ADDNODE", variables, input, raw);
     }
 
@@ -508,7 +489,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -537,14 +523,6 @@ public:
 class getmininginfo: public command_extension
 {
 public:
-    getmininginfo() = default; 
-    virtual ~getmininginfo() = default; 
-    getmininginfo(const getmininginfo&) = default; 
-    getmininginfo(getmininginfo&&) = default; 
-    getmininginfo& operator=(getmininginfo&&) = default; 
-    getmininginfo& operator=(const getmininginfo&) = default; 
-
-public:
     static const char* symbol(){ return "getmininginfo";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -553,6 +531,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETMININGINFO", 1);
     }
 
@@ -560,7 +539,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETMININGINFO", variables, input, raw);
     }
 
@@ -578,7 +557,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -607,14 +591,6 @@ public:
 class backupwallet: public command_extension
 {
 public:
-    backupwallet() = default; 
-    virtual ~backupwallet() = default; 
-    backupwallet(const backupwallet&) = default; 
-    backupwallet(backupwallet&&) = default; 
-    backupwallet& operator=(backupwallet&&) = default; 
-    backupwallet& operator=(const backupwallet&) = default; 
-
-public:
     static const char* symbol(){ return "backupwallet";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -623,6 +599,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("BACKUPWALLET", 1);
     }
 
@@ -630,7 +607,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "BACKUPWALLET", variables, input, raw);
     }
 
@@ -648,7 +625,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -677,14 +659,6 @@ public:
 class importwallet: public command_extension
 {
 public:
-    importwallet() = default; 
-    virtual ~importwallet() = default; 
-    importwallet(const importwallet&) = default; 
-    importwallet(importwallet&&) = default; 
-    importwallet& operator=(importwallet&&) = default; 
-    importwallet& operator=(const importwallet&) = default; 
-
-public:
     static const char* symbol(){ return "importwallet";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -693,6 +667,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("IMPORTWALLET", 1);
     }
 
@@ -700,7 +675,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "IMPORTWALLET", variables, input, raw);
     }
 
@@ -718,7 +693,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -747,14 +727,6 @@ public:
 class lockwallet: public command_extension
 {
 public:
-    lockwallet() = default; 
-    virtual ~lockwallet() = default; 
-    lockwallet(const lockwallet&) = default; 
-    lockwallet(lockwallet&&) = default; 
-    lockwallet& operator=(lockwallet&&) = default; 
-    lockwallet& operator=(const lockwallet&) = default; 
-
-public:
     static const char* symbol(){ return "lockwallet";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -763,6 +735,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LOCKWALLET", 1);
     }
 
@@ -770,7 +743,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LOCKWALLET", variables, input, raw);
     }
 
@@ -788,7 +761,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -817,14 +795,6 @@ public:
 class backupaccount: public command_extension
 {
 public:
-    backupaccount() = default; 
-    virtual ~backupaccount() = default; 
-    backupaccount(const backupaccount&) = default; 
-    backupaccount(backupaccount&&) = default; 
-    backupaccount& operator=(backupaccount&&) = default; 
-    backupaccount& operator=(const backupaccount&) = default; 
-
-public:
     static const char* symbol(){ return "backupaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -833,6 +803,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("BACKUPACCOUNT", 1);
     }
 
@@ -840,7 +811,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "BACKUPACCOUNT", variables, input, raw);
     }
 
@@ -858,7 +829,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -887,14 +863,6 @@ public:
 class importaccount: public command_extension
 {
 public:
-    importaccount() = default; 
-    virtual ~importaccount() = default; 
-    importaccount(const importaccount&) = default; 
-    importaccount(importaccount&&) = default; 
-    importaccount& operator=(importaccount&&) = default; 
-    importaccount& operator=(const importaccount&) = default; 
-
-public:
     static const char* symbol(){ return "importaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -903,6 +871,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("IMPORTACCOUNT", 1);
     }
 
@@ -910,7 +879,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "IMPORTACCOUNT", variables, input, raw);
     }
 
@@ -928,7 +897,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -957,14 +931,6 @@ public:
 class switchaccount: public command_extension
 {
 public:
-    switchaccount() = default; 
-    virtual ~switchaccount() = default; 
-    switchaccount(const switchaccount&) = default; 
-    switchaccount(switchaccount&&) = default; 
-    switchaccount& operator=(switchaccount&&) = default; 
-    switchaccount& operator=(const switchaccount&) = default; 
-
-public:
     static const char* symbol(){ return "switchaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -973,6 +939,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SWITCHACCOUNT", 1);
     }
 
@@ -980,7 +947,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SWITCHACCOUNT", variables, input, raw);
     }
 
@@ -998,7 +965,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1027,14 +999,6 @@ public:
 class listaccounts: public command_extension
 {
 public:
-    listaccounts() = default; 
-    virtual ~listaccounts() = default; 
-    listaccounts(const listaccounts&) = default; 
-    listaccounts(listaccounts&&) = default; 
-    listaccounts& operator=(listaccounts&&) = default; 
-    listaccounts& operator=(const listaccounts&) = default; 
-
-public:
     static const char* symbol(){ return "listaccounts";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1043,6 +1007,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LISTACCOUNTS", 1);
     }
 
@@ -1050,7 +1015,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LISTACCOUNTS", variables, input, raw);
     }
 
@@ -1068,7 +1033,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1096,14 +1066,6 @@ public:
 
 class getnewaccount: public command_extension
 {
-public:
-    getnewaccount() = default; 
-    virtual ~getnewaccount() = default; 
-    getnewaccount(const getnewaccount&) = default; 
-    getnewaccount(getnewaccount&&) = default; 
-    getnewaccount& operator=(getnewaccount&&) = default; 
-    getnewaccount& operator=(const getnewaccount&) = default; 
-
 public:
     static const char* symbol(){ return "getnewaccount";}
     const char* name() override { return symbol();} 
@@ -1178,14 +1140,6 @@ public:
 class getaccount: public command_extension
 {
 public:
-    getaccount() = default; 
-    virtual ~getaccount() = default; 
-    getaccount(const getaccount&) = default; 
-    getaccount(getaccount&&) = default; 
-    getaccount& operator=(getaccount&&) = default; 
-    getaccount& operator=(const getaccount&) = default; 
-
-public:
     static const char* symbol(){ return "getaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1194,6 +1148,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETACCOUNT", 1);
     }
 
@@ -1201,7 +1156,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETACCOUNT", variables, input, raw);
     }
 
@@ -1219,7 +1174,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1248,14 +1208,6 @@ public:
 class lockaccount: public command_extension
 {
 public:
-    lockaccount() = default; 
-    virtual ~lockaccount() = default; 
-    lockaccount(const lockaccount&) = default; 
-    lockaccount(lockaccount&&) = default; 
-    lockaccount& operator=(lockaccount&&) = default; 
-    lockaccount& operator=(const lockaccount&) = default; 
-
-public:
     static const char* symbol(){ return "lockaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1264,6 +1216,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LOCKACCOUNT", 1);
     }
 
@@ -1271,7 +1224,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LOCKACCOUNT", variables, input, raw);
     }
 
@@ -1289,7 +1242,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1318,14 +1276,6 @@ public:
 class setaccountinfo: public command_extension
 {
 public:
-    setaccountinfo() = default; 
-    virtual ~setaccountinfo() = default; 
-    setaccountinfo(const setaccountinfo&) = default; 
-    setaccountinfo(setaccountinfo&&) = default; 
-    setaccountinfo& operator=(setaccountinfo&&) = default; 
-    setaccountinfo& operator=(const setaccountinfo&) = default; 
-
-public:
     static const char* symbol(){ return "setaccountinfo";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1334,6 +1284,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SETACCOUNTINFO", 1);
     }
 
@@ -1341,7 +1292,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SETACCOUNTINFO", variables, input, raw);
     }
 
@@ -1359,7 +1310,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1388,14 +1344,6 @@ public:
 class listaddresses: public command_extension
 {
 public:
-    listaddresses() = default; 
-    virtual ~listaddresses() = default; 
-    listaddresses(const listaddresses&) = default; 
-    listaddresses(listaddresses&&) = default; 
-    listaddresses& operator=(listaddresses&&) = default; 
-    listaddresses& operator=(const listaddresses&) = default; 
-
-public:
     static const char* symbol(){ return "listaddresses";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1404,6 +1352,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LISTADDRESSES", 1);
     }
 
@@ -1411,7 +1360,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LISTADDRESSES", variables, input, raw);
     }
 
@@ -1429,7 +1378,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1458,14 +1412,6 @@ public:
 class getnewaddress: public command_extension
 {
 public:
-    getnewaddress() = default; 
-    virtual ~getnewaddress() = default; 
-    getnewaddress(const getnewaddress&) = default; 
-    getnewaddress(getnewaddress&&) = default; 
-    getnewaddress& operator=(getnewaddress&&) = default; 
-    getnewaddress& operator=(const getnewaddress&) = default; 
-
-public:
     static const char* symbol(){ return "getnewaddress";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1474,6 +1420,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETNEWADDRESS", 1);
     }
 
@@ -1481,7 +1428,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETNEWADDRESS", variables, input, raw);
     }
 
@@ -1499,7 +1446,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1528,14 +1480,6 @@ public:
 class getaddress: public command_extension
 {
 public:
-    getaddress() = default; 
-    virtual ~getaddress() = default; 
-    getaddress(const getaddress&) = default; 
-    getaddress(getaddress&&) = default; 
-    getaddress& operator=(getaddress&&) = default; 
-    getaddress& operator=(const getaddress&) = default; 
-
-public:
     static const char* symbol(){ return "getaddress";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1544,6 +1488,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETADDRESS", 1);
     }
 
@@ -1551,7 +1496,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETADDRESS", variables, input, raw);
     }
 
@@ -1569,7 +1514,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1598,14 +1548,6 @@ public:
 class getblock: public command_extension
 {
 public:
-    getblock() = default; 
-    virtual ~getblock() = default; 
-    getblock(const getblock&) = default; 
-    getblock(getblock&&) = default; 
-    getblock& operator=(getblock&&) = default; 
-    getblock& operator=(const getblock&) = default; 
-
-public:
     static const char* symbol(){ return "getblock";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1614,6 +1556,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETBLOCK", 1);
     }
 
@@ -1621,7 +1564,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETBLOCK", variables, input, raw);
     }
 
@@ -1639,7 +1582,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1668,14 +1616,6 @@ public:
 class signmessage: public command_extension
 {
 public:
-    signmessage() = default; 
-    virtual ~signmessage() = default; 
-    signmessage(const signmessage&) = default; 
-    signmessage(signmessage&&) = default; 
-    signmessage& operator=(signmessage&&) = default; 
-    signmessage& operator=(const signmessage&) = default; 
-
-public:
     static const char* symbol(){ return "signmessage";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1684,6 +1624,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SIGNMESSAGE", 1);
     }
 
@@ -1691,7 +1632,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SIGNMESSAGE", variables, input, raw);
     }
 
@@ -1709,7 +1650,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1738,14 +1684,6 @@ public:
 class verifymessage: public command_extension
 {
 public:
-    verifymessage() = default; 
-    virtual ~verifymessage() = default; 
-    verifymessage(const verifymessage&) = default; 
-    verifymessage(verifymessage&&) = default; 
-    verifymessage& operator=(verifymessage&&) = default; 
-    verifymessage& operator=(const verifymessage&) = default; 
-
-public:
     static const char* symbol(){ return "verifymessage";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1754,6 +1692,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("VERIFYMESSAGE", 1);
     }
 
@@ -1761,7 +1700,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "VERIFYMESSAGE", variables, input, raw);
     }
 
@@ -1779,7 +1718,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1808,14 +1752,6 @@ public:
 class createmultisig: public command_extension
 {
 public:
-    createmultisig() = default; 
-    virtual ~createmultisig() = default; 
-    createmultisig(const createmultisig&) = default; 
-    createmultisig(createmultisig&&) = default; 
-    createmultisig& operator=(createmultisig&&) = default; 
-    createmultisig& operator=(const createmultisig&) = default; 
-
-public:
     static const char* symbol(){ return "createmultisig";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1824,6 +1760,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("CREATEMULTISIG", 1);
     }
 
@@ -1831,7 +1768,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "CREATEMULTISIG", variables, input, raw);
     }
 
@@ -1849,7 +1786,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1878,14 +1820,6 @@ public:
 class addmultisigaddress: public command_extension
 {
 public:
-    addmultisigaddress() = default; 
-    virtual ~addmultisigaddress() = default; 
-    addmultisigaddress(const addmultisigaddress&) = default; 
-    addmultisigaddress(addmultisigaddress&&) = default; 
-    addmultisigaddress& operator=(addmultisigaddress&&) = default; 
-    addmultisigaddress& operator=(const addmultisigaddress&) = default; 
-
-public:
     static const char* symbol(){ return "addmultisigaddress";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1894,6 +1828,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ADDMULTISIGADDRESS", 1);
     }
 
@@ -1901,7 +1836,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ADDMULTISIGADDRESS", variables, input, raw);
     }
 
@@ -1919,7 +1854,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -1948,14 +1888,6 @@ public:
 class validateaddress: public command_extension
 {
 public:
-    validateaddress() = default; 
-    virtual ~validateaddress() = default; 
-    validateaddress(const validateaddress&) = default; 
-    validateaddress(validateaddress&&) = default; 
-    validateaddress& operator=(validateaddress&&) = default; 
-    validateaddress& operator=(const validateaddress&) = default; 
-
-public:
     static const char* symbol(){ return "validateaddress";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -1964,6 +1896,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("VALIDATEADDRESS", 1);
     }
 
@@ -1971,7 +1904,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "VALIDATEADDRESS", variables, input, raw);
     }
 
@@ -1989,7 +1922,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2018,14 +1956,6 @@ public:
 class listbalances: public command_extension
 {
 public:
-    listbalances() = default; 
-    virtual ~listbalances() = default; 
-    listbalances(const listbalances&) = default; 
-    listbalances(listbalances&&) = default; 
-    listbalances& operator=(listbalances&&) = default; 
-    listbalances& operator=(const listbalances&) = default; 
-
-public:
     static const char* symbol(){ return "listbalances";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2034,6 +1964,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LISTBALANCES", 1);
     }
 
@@ -2041,7 +1972,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LISTBALANCES", variables, input, raw);
     }
 
@@ -2059,7 +1990,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2088,14 +2024,6 @@ public:
 class getbalance: public command_extension
 {
 public:
-    getbalance() = default; 
-    virtual ~getbalance() = default; 
-    getbalance(const getbalance&) = default; 
-    getbalance(getbalance&&) = default; 
-    getbalance& operator=(getbalance&&) = default; 
-    getbalance& operator=(const getbalance&) = default; 
-
-public:
     static const char* symbol(){ return "getbalance";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2104,6 +2032,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETBALANCE", 1);
     }
 
@@ -2111,7 +2040,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETBALANCE", variables, input, raw);
     }
 
@@ -2129,7 +2058,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2158,14 +2092,6 @@ public:
 class getaddressbalance: public command_extension
 {
 public:
-    getaddressbalance() = default; 
-    virtual ~getaddressbalance() = default; 
-    getaddressbalance(const getaddressbalance&) = default; 
-    getaddressbalance(getaddressbalance&&) = default; 
-    getaddressbalance& operator=(getaddressbalance&&) = default; 
-    getaddressbalance& operator=(const getaddressbalance&) = default; 
-
-public:
     static const char* symbol(){ return "getaddressbalance";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2174,6 +2100,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETADDRESSBALANCE", 1);
     }
 
@@ -2181,7 +2108,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETADDRESSBALANCE", variables, input, raw);
     }
 
@@ -2199,7 +2126,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2228,14 +2160,6 @@ public:
 class getaccountbalance: public command_extension
 {
 public:
-    getaccountbalance() = default; 
-    virtual ~getaccountbalance() = default; 
-    getaccountbalance(const getaccountbalance&) = default; 
-    getaccountbalance(getaccountbalance&&) = default; 
-    getaccountbalance& operator=(getaccountbalance&&) = default; 
-    getaccountbalance& operator=(const getaccountbalance&) = default; 
-
-public:
     static const char* symbol(){ return "getaccountbalance";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2244,6 +2168,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETACCOUNTBALANCE", 1);
     }
 
@@ -2251,7 +2176,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETACCOUNTBALANCE", variables, input, raw);
     }
 
@@ -2269,7 +2194,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2298,14 +2228,6 @@ public:
 class listtxs: public command_extension
 {
 public:
-    listtxs() = default; 
-    virtual ~listtxs() = default; 
-    listtxs(const listtxs&) = default; 
-    listtxs(listtxs&&) = default; 
-    listtxs& operator=(listtxs&&) = default; 
-    listtxs& operator=(const listtxs&) = default; 
-
-public:
     static const char* symbol(){ return "listtxs";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2314,6 +2236,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LISTTXS", 1);
     }
 
@@ -2321,7 +2244,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LISTTXS", variables, input, raw);
     }
 
@@ -2339,7 +2262,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2368,14 +2296,6 @@ public:
 class gettx: public command_extension
 {
 public:
-    gettx() = default; 
-    virtual ~gettx() = default; 
-    gettx(const gettx&) = default; 
-    gettx(gettx&&) = default; 
-    gettx& operator=(gettx&&) = default; 
-    gettx& operator=(const gettx&) = default; 
-
-public:
     static const char* symbol(){ return "gettx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2384,6 +2304,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETTX", 1);
     }
 
@@ -2391,7 +2312,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETTX", variables, input, raw);
     }
 
@@ -2409,7 +2330,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2438,14 +2364,6 @@ public:
 class getaddresstx: public command_extension
 {
 public:
-    getaddresstx() = default; 
-    virtual ~getaddresstx() = default; 
-    getaddresstx(const getaddresstx&) = default; 
-    getaddresstx(getaddresstx&&) = default; 
-    getaddresstx& operator=(getaddresstx&&) = default; 
-    getaddresstx& operator=(const getaddresstx&) = default; 
-
-public:
     static const char* symbol(){ return "getaddresstx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2454,6 +2372,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETADDRESSTX", 1);
     }
 
@@ -2461,7 +2380,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETADDRESSTX", variables, input, raw);
     }
 
@@ -2479,7 +2398,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2508,14 +2432,6 @@ public:
 class getaccounttx: public command_extension
 {
 public:
-    getaccounttx() = default; 
-    virtual ~getaccounttx() = default; 
-    getaccounttx(const getaccounttx&) = default; 
-    getaccounttx(getaccounttx&&) = default; 
-    getaccounttx& operator=(getaccounttx&&) = default; 
-    getaccounttx& operator=(const getaccounttx&) = default; 
-
-public:
     static const char* symbol(){ return "getaccounttx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2524,6 +2440,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETACCOUNTTX", 1);
     }
 
@@ -2531,7 +2448,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETACCOUNTTX", variables, input, raw);
     }
 
@@ -2549,7 +2466,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2578,14 +2500,6 @@ public:
 class send: public command_extension
 {
 public:
-    send() = default; 
-    virtual ~send() = default; 
-    send(const send&) = default; 
-    send(send&&) = default; 
-    send& operator=(send&&) = default; 
-    send& operator=(const send&) = default; 
-
-public:
     static const char* symbol(){ return "send";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2594,6 +2508,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SEND", 1);
     }
 
@@ -2601,7 +2516,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SEND", variables, input, raw);
     }
 
@@ -2619,7 +2534,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2648,14 +2568,6 @@ public:
 class sendmore: public command_extension
 {
 public:
-    sendmore() = default; 
-    virtual ~sendmore() = default; 
-    sendmore(const sendmore&) = default; 
-    sendmore(sendmore&&) = default; 
-    sendmore& operator=(sendmore&&) = default; 
-    sendmore& operator=(const sendmore&) = default; 
-
-public:
     static const char* symbol(){ return "sendmore";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2664,6 +2576,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDMORE", 1);
     }
 
@@ -2671,7 +2584,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDMORE", variables, input, raw);
     }
 
@@ -2689,7 +2602,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2718,14 +2636,6 @@ public:
 class sendfrom: public command_extension
 {
 public:
-    sendfrom() = default; 
-    virtual ~sendfrom() = default; 
-    sendfrom(const sendfrom&) = default; 
-    sendfrom(sendfrom&&) = default; 
-    sendfrom& operator=(sendfrom&&) = default; 
-    sendfrom& operator=(const sendfrom&) = default; 
-
-public:
     static const char* symbol(){ return "sendfrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2734,6 +2644,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDFROM", 1);
     }
 
@@ -2741,7 +2652,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDFROM", variables, input, raw);
     }
 
@@ -2759,7 +2670,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2788,14 +2704,6 @@ public:
 class sendwithmsg: public command_extension
 {
 public:
-    sendwithmsg() = default; 
-    virtual ~sendwithmsg() = default; 
-    sendwithmsg(const sendwithmsg&) = default; 
-    sendwithmsg(sendwithmsg&&) = default; 
-    sendwithmsg& operator=(sendwithmsg&&) = default; 
-    sendwithmsg& operator=(const sendwithmsg&) = default; 
-
-public:
     static const char* symbol(){ return "sendwithmsg";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2804,6 +2712,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDWITHMSG", 1);
     }
 
@@ -2811,7 +2720,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDWITHMSG", variables, input, raw);
     }
 
@@ -2829,7 +2738,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2858,14 +2772,6 @@ public:
 class sendwithmsgfrom: public command_extension
 {
 public:
-    sendwithmsgfrom() = default; 
-    virtual ~sendwithmsgfrom() = default; 
-    sendwithmsgfrom(const sendwithmsgfrom&) = default; 
-    sendwithmsgfrom(sendwithmsgfrom&&) = default; 
-    sendwithmsgfrom& operator=(sendwithmsgfrom&&) = default; 
-    sendwithmsgfrom& operator=(const sendwithmsgfrom&) = default; 
-
-public:
     static const char* symbol(){ return "sendwithmsgfrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2874,6 +2780,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDWITHMSGFROM", 1);
     }
 
@@ -2881,7 +2788,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDWITHMSGFROM", variables, input, raw);
     }
 
@@ -2899,7 +2806,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2928,14 +2840,6 @@ public:
 class listassets: public command_extension
 {
 public:
-    listassets() = default; 
-    virtual ~listassets() = default; 
-    listassets(const listassets&) = default; 
-    listassets(listassets&&) = default; 
-    listassets& operator=(listassets&&) = default; 
-    listassets& operator=(const listassets&) = default; 
-
-public:
     static const char* symbol(){ return "listassets";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -2944,6 +2848,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("LISTASSETS", 1);
     }
 
@@ -2951,7 +2856,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "LISTASSETS", variables, input, raw);
     }
 
@@ -2969,7 +2874,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -2998,14 +2908,6 @@ public:
 class getasset: public command_extension
 {
 public:
-    getasset() = default; 
-    virtual ~getasset() = default; 
-    getasset(const getasset&) = default; 
-    getasset(getasset&&) = default; 
-    getasset& operator=(getasset&&) = default; 
-    getasset& operator=(const getasset&) = default; 
-
-public:
     static const char* symbol(){ return "getasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3014,6 +2916,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETASSET", 1);
     }
 
@@ -3021,7 +2924,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETASSET", variables, input, raw);
     }
 
@@ -3039,7 +2942,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3068,14 +2976,6 @@ public:
 class getaddressasset: public command_extension
 {
 public:
-    getaddressasset() = default; 
-    virtual ~getaddressasset() = default; 
-    getaddressasset(const getaddressasset&) = default; 
-    getaddressasset(getaddressasset&&) = default; 
-    getaddressasset& operator=(getaddressasset&&) = default; 
-    getaddressasset& operator=(const getaddressasset&) = default; 
-
-public:
     static const char* symbol(){ return "getaddressasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3084,6 +2984,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETADDRESSASSET", 1);
     }
 
@@ -3091,7 +2992,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETADDRESSASSET", variables, input, raw);
     }
 
@@ -3109,7 +3010,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3138,14 +3044,6 @@ public:
 class getaccountasset: public command_extension
 {
 public:
-    getaccountasset() = default; 
-    virtual ~getaccountasset() = default; 
-    getaccountasset(const getaccountasset&) = default; 
-    getaccountasset(getaccountasset&&) = default; 
-    getaccountasset& operator=(getaccountasset&&) = default; 
-    getaccountasset& operator=(const getaccountasset&) = default; 
-
-public:
     static const char* symbol(){ return "getaccountasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3154,6 +3052,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETACCOUNTASSET", 1);
     }
 
@@ -3161,7 +3060,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETACCOUNTASSET", variables, input, raw);
     }
 
@@ -3179,7 +3078,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3208,14 +3112,6 @@ public:
 class createasset: public command_extension
 {
 public:
-    createasset() = default; 
-    virtual ~createasset() = default; 
-    createasset(const createasset&) = default; 
-    createasset(createasset&&) = default; 
-    createasset& operator=(createasset&&) = default; 
-    createasset& operator=(const createasset&) = default; 
-
-public:
     static const char* symbol(){ return "createasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3224,6 +3120,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("CREATEASSET", 1);
     }
 
@@ -3231,7 +3128,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "CREATEASSET", variables, input, raw);
     }
 
@@ -3249,7 +3146,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3278,14 +3180,6 @@ public:
 class issue: public command_extension
 {
 public:
-    issue() = default; 
-    virtual ~issue() = default; 
-    issue(const issue&) = default; 
-    issue(issue&&) = default; 
-    issue& operator=(issue&&) = default; 
-    issue& operator=(const issue&) = default; 
-
-public:
     static const char* symbol(){ return "issue";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3294,6 +3188,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ISSUE", 1);
     }
 
@@ -3301,7 +3196,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ISSUE", variables, input, raw);
     }
 
@@ -3319,7 +3214,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3348,14 +3248,6 @@ public:
 class issuefrom: public command_extension
 {
 public:
-    issuefrom() = default; 
-    virtual ~issuefrom() = default; 
-    issuefrom(const issuefrom&) = default; 
-    issuefrom(issuefrom&&) = default; 
-    issuefrom& operator=(issuefrom&&) = default; 
-    issuefrom& operator=(const issuefrom&) = default; 
-
-public:
     static const char* symbol(){ return "issuefrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3364,6 +3256,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ISSUEFROM", 1);
     }
 
@@ -3371,7 +3264,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ISSUEFROM", variables, input, raw);
     }
 
@@ -3389,7 +3282,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3418,14 +3316,6 @@ public:
 class issuemore: public command_extension
 {
 public:
-    issuemore() = default; 
-    virtual ~issuemore() = default; 
-    issuemore(const issuemore&) = default; 
-    issuemore(issuemore&&) = default; 
-    issuemore& operator=(issuemore&&) = default; 
-    issuemore& operator=(const issuemore&) = default; 
-
-public:
     static const char* symbol(){ return "issuemore";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3434,6 +3324,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ISSUEMORE", 1);
     }
 
@@ -3441,7 +3332,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ISSUEMORE", variables, input, raw);
     }
 
@@ -3459,7 +3350,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3488,14 +3384,6 @@ public:
 class issuemorefrom: public command_extension
 {
 public:
-    issuemorefrom() = default; 
-    virtual ~issuemorefrom() = default; 
-    issuemorefrom(const issuemorefrom&) = default; 
-    issuemorefrom(issuemorefrom&&) = default; 
-    issuemorefrom& operator=(issuemorefrom&&) = default; 
-    issuemorefrom& operator=(const issuemorefrom&) = default; 
-
-public:
     static const char* symbol(){ return "issuemorefrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3504,6 +3392,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("ISSUEMOREFROM", 1);
     }
 
@@ -3511,7 +3400,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "ISSUEMOREFROM", variables, input, raw);
     }
 
@@ -3529,7 +3418,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3558,14 +3452,6 @@ public:
 class sendasset: public command_extension
 {
 public:
-    sendasset() = default; 
-    virtual ~sendasset() = default; 
-    sendasset(const sendasset&) = default; 
-    sendasset(sendasset&&) = default; 
-    sendasset& operator=(sendasset&&) = default; 
-    sendasset& operator=(const sendasset&) = default; 
-
-public:
     static const char* symbol(){ return "sendasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3574,6 +3460,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDASSET", 1);
     }
 
@@ -3581,7 +3468,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDASSET", variables, input, raw);
     }
 
@@ -3599,7 +3486,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3628,14 +3520,6 @@ public:
 class sendassetfrom: public command_extension
 {
 public:
-    sendassetfrom() = default; 
-    virtual ~sendassetfrom() = default; 
-    sendassetfrom(const sendassetfrom&) = default; 
-    sendassetfrom(sendassetfrom&&) = default; 
-    sendassetfrom& operator=(sendassetfrom&&) = default; 
-    sendassetfrom& operator=(const sendassetfrom&) = default; 
-
-public:
     static const char* symbol(){ return "sendassetfrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3644,6 +3528,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDASSETFROM", 1);
     }
 
@@ -3651,7 +3536,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDASSETFROM", variables, input, raw);
     }
 
@@ -3669,7 +3554,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3698,14 +3588,6 @@ public:
 class getdid: public command_extension
 {
 public:
-    getdid() = default; 
-    virtual ~getdid() = default; 
-    getdid(const getdid&) = default; 
-    getdid(getdid&&) = default; 
-    getdid& operator=(getdid&&) = default; 
-    getdid& operator=(const getdid&) = default; 
-
-public:
     static const char* symbol(){ return "getdid";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3714,6 +3596,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("GETDID", 1);
     }
 
@@ -3721,7 +3604,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "GETDID", variables, input, raw);
     }
 
@@ -3739,7 +3622,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3768,14 +3656,6 @@ public:
 class setdid: public command_extension
 {
 public:
-    setdid() = default; 
-    virtual ~setdid() = default; 
-    setdid(const setdid&) = default; 
-    setdid(setdid&&) = default; 
-    setdid& operator=(setdid&&) = default; 
-    setdid& operator=(const setdid&) = default; 
-
-public:
     static const char* symbol(){ return "setdid";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3784,6 +3664,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SETDID", 1);
     }
 
@@ -3791,7 +3672,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SETDID", variables, input, raw);
     }
 
@@ -3809,7 +3690,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3838,14 +3724,6 @@ public:
 class sendwithdid: public command_extension
 {
 public:
-    sendwithdid() = default; 
-    virtual ~sendwithdid() = default; 
-    sendwithdid(const sendwithdid&) = default; 
-    sendwithdid(sendwithdid&&) = default; 
-    sendwithdid& operator=(sendwithdid&&) = default; 
-    sendwithdid& operator=(const sendwithdid&) = default; 
-
-public:
     static const char* symbol(){ return "sendwithdid";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3854,6 +3732,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SENDWITHDID", 1);
     }
 
@@ -3861,7 +3740,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SENDWITHDID", variables, input, raw);
     }
 
@@ -3879,7 +3758,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
@@ -3908,14 +3792,6 @@ public:
 class settxfee: public command_extension
 {
 public:
-    settxfee() = default; 
-    virtual ~settxfee() = default; 
-    settxfee(const settxfee&) = default; 
-    settxfee(settxfee&&) = default; 
-    settxfee& operator=(settxfee&&) = default; 
-    settxfee& operator=(const settxfee&) = default; 
-
-public:
     static const char* symbol(){ return "settxfee";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -3924,6 +3800,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
             .add("SETTXFEE", 1);
     }
 
@@ -3931,7 +3808,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        //fixme
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         //load_input(argument_.xxx, "SETTXFEE", variables, input, raw);
     }
 
@@ -3949,7 +3826,12 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-        );
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "account name."
+	    );
 
         return options;
     }
