@@ -920,5 +920,134 @@ void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
     fetch_serial(do_fetch);
 }
 
+/* begin store account related info into database */
+#if 1
+
+std::shared_ptr<account_address> block_chain_impl::get_address_by_xpub(const std::string& xpub)
+{
+	data_chunk data(xpub.begin(), xpub.end());
+	const auto hash = sha256_hash(data);		
+	account_address_result result = database_.account_addresses.get_account_address_result(hash);
+	return result.get_account_address_detail();
+}
+void block_chain_impl::store_account_address(const std::string& name, const std::string& xprv,
+	const std::string& xpub, uint32_t& hd_index)
+{
+	if (stopped())
+	{
+		//handler(error::service_stopped, 0);
+		return;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	data_chunk data(xpub.begin(), xpub.end());
+	const auto hash = sha256_hash(data);
+	account_address address(name, xprv, xpub, hd_index);
+	database_.account_addresses.store(hash, address);
+	database_.account_addresses.sync();
+	///////////////////////////////////////////////////////////////////////////
+}
+/* used for "set_admin_passwd" command */
+bool block_chain_impl::set_admin_passwd(const std::string& name, const std::string& old_passwd,
+	const std::string& new_passwd)
+{
+	// parameter check
+	if( name.empty() || new_passwd.empty())
+		return false;
+	
+	std::shared_ptr<account> acc = get_account_by_name(name);
+	if(acc)
+	{	
+		// todo -- password check
+		acc->passwd = "";
+		std::copy(new_passwd.begin(), new_passwd.end(), std::back_inserter(acc->passwd));
+		//acc->priority = 0;
+	}
+	else
+	{
+		acc = std::make_shared<account>();
+		std::copy(name.begin(), name.end(), std::back_inserter(acc->name));
+		std::copy(new_passwd.begin(), new_passwd.end(), std::back_inserter(acc->passwd));
+		acc->priority = 0;
+	}
+	store_account(acc);
+	return *acc;
+}
+
+/* used for "get_new_address" command */
+bool block_chain_impl::get_account_info(const std::string& name, const std::string& passwd,
+	std::string& mnemonic, uint32_t& hd_index)
+{
+	bool ret_val = false;
+	// parameter check
+	if( name.empty() || passwd.empty() )
+		return ret_val;
+	
+	std::shared_ptr<account> acc = get_account_by_name(name);
+	if(acc)
+	{	
+		// todo -- password check
+		std::copy(acc->mnemonic.begin(), acc->mnemonic.end(), std::back_inserter(mnemonic));
+		hd_index = acc->hd_index ;
+		ret_val = true;
+	}
+	return ret_val;
+}
+
+/* used for "get_new_account" command */
+bool block_chain_impl::get_new_account(const std::string& name, const std::string& passwd, 
+	const std::string& mnemonic)
+{
+	bool ret_val = false;
+	// parameter check
+	if( name.empty() || passwd.empty() || mnemonic.empty() )
+		return ret_val;
+	
+	std::shared_ptr<account> acc = get_account_by_name(name);
+	if(!acc) // not found then create a new one
+	{
+		acc = std::make_shared<account>();
+		std::copy(name.begin(), name.end(), std::back_inserter(acc->name));
+		std::copy(mnemonic.begin(), mnemonic.end(), std::back_inserter(acc->mnemonic));
+		std::copy(passwd.begin(), passwd.end(), std::back_inserter(acc->passwd));
+		acc->hd_index = 0;
+		store_account(acc);
+		ret_val = true;
+	}
+	return ret_val;
+}
+
+// This call is sequential, but we are preserving the callback model for now.
+void block_chain_impl::store_account(std::shared_ptr<account> acc)
+
+{
+    if (stopped() || !(acc))
+    {
+        //handler(error::service_stopped, 0);
+        return;
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section.
+    unique_lock lock(mutex_);
+
+	data_chunk data(acc->name.begin(), acc->name.end());
+	const auto hash = sha256_hash(data);
+    database_.accounts.store(hash, *acc);
+    database_.accounts.sync();
+    ///////////////////////////////////////////////////////////////////////////
+}
+
+//Reads are ordered and not concurrent
+std::shared_ptr<account> block_chain_impl::get_account_by_name(const std::string& name)
+{
+	data_chunk data(name.begin(), name.end());
+	const auto hash = sha256_hash(data);		
+	account_result result = database_.accounts.get_account_result(hash);
+	return result.get_account_detail();
+}
+#endif
+/* end store account related info into database */
 } // namespace blockchain
 } // namespace libbitcoin

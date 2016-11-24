@@ -203,6 +203,28 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
+	/* begin store account related info into database */
+#if 1
+	/* used for "set_admin_passwd" command */
+	bool set_admin_passwd(const std::string& name, const std::string& old_passwd,
+		const std::string& new_passwd);
+	/* used for "get_new_account" command */
+	bool get_new_account(const std::string& name, const std::string& passwd, 
+		const std::string& mnemonic);
+	void store_account(std::shared_ptr<account> acc);
+	std::shared_ptr<account> get_account_by_name(const std::string& name);
+	bool get_account_info(const std::string& name, const std::string& passwd,
+		std::string& mnemonic, uint32_t& hd_index);
+
+	
+	/* used for "get_new_address" command */
+	bool get_new_address(const std::string& name, const std::string& passwd,
+		const std::string& mnemonic, uint32_t& hd_index);
+	void store_account_address(const std::string& name, const std::string& xprv,
+		const std::string& xpub, uint32_t& hd_index);
+	std::shared_ptr<account_address> get_address_by_xpub(const std::string& xpub);
+#endif
+	/* end store account related info into database */
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 
@@ -232,7 +254,7 @@ private:
     ////void fetch_parallel(perform_read_functor perform_read);
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
-
+	
     std::atomic<bool> stopped_;
     const settings& settings_;
 

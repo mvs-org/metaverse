@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2015 metaverse developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of mvs-node.
  *
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -17,41 +17,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-#define LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-
+#include <bitcoin/database/result/account_address_result.hpp>
+#include <bitcoin/bitcoin/chain/attachment/account/account_address.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/define.hpp>
 #include <bitcoin/database/memory/memory.hpp>
 
 namespace libbitcoin {
 namespace database {
-    
-/// Deferred read transaction result.
-class BCD_API transaction_result
+
+template <typename Iterator>
+std::shared_ptr<account_address> deserialize_account_address_detail(const Iterator first)
 {
-public:
-    transaction_result(const memory_ptr slab);
+	auto detail = std::make_shared<account_address>();
+    auto deserial = make_deserializer_unsafe(first);
+    detail->from_data(deserial);
+    return detail;
+}
 
-    /// True if this transaction result is valid (found).
-    operator bool() const;
+account_address_result::account_address_result(const memory_ptr slab)
+  : base_result(slab)
+{
+}
 
-    /// The height of the block which includes the transaction.
-    size_t height() const;
-
-    /// The position of the transaction within its block.
-    size_t index() const;
-
-    /// The transaction.
-    chain::transaction transaction() const;
-
-private:
-    const memory_ptr slab_;
-};
-
+std::shared_ptr<account_address> account_address_result::get_account_address_detail() const
+{
+    //BITCOIN_ASSERT(get_slab());
+	std::shared_ptr<account_address> addr(nullptr);
+	if(get_slab()) 
+	{
+	    const auto memory = REMAP_ADDRESS(get_slab());
+	    addr = deserialize_account_address_detail(memory);
+	}
+	return addr;
+}
 } // namespace database
 } // namespace libbitcoin
 
-#endif

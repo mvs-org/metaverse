@@ -17,40 +17,36 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/databases/spend_database.hpp>
+#include <bitcoin/database/databases/base_database.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/database/memory/memory.hpp>
+//#include <bitcoin/database/result/base_result.hpp>
 
 namespace libbitcoin {
 namespace database {
 
 using namespace boost::filesystem;
-using namespace bc::chain;
 
-BC_CONSTEXPR size_t number_buckets = 228110589;
-BC_CONSTEXPR size_t header_size = record_hash_table_header_size(number_buckets);
-BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_records_size;
+BC_CONSTEXPR size_t number_buckets = 100000000;
+BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
+BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
 
-BC_CONSTEXPR size_t value_size = std::tuple_size<chain::point>::value;
-BC_CONSTEXPR size_t record_size = hash_table_record_size<chain::point>(value_size);
-
-spend_database::spend_database(const path& filename,
+base_database::base_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(filename, mutex), 
+  : lookup_file_(map_filename, mutex), 
     lookup_header_(lookup_file_, number_buckets),
-    lookup_manager_(lookup_file_, header_size, record_size),
+    lookup_manager_(lookup_file_, header_size),
     lookup_map_(lookup_header_, lookup_manager_)
 {
 }
 
 // Close does not call stop because there is no way to detect thread join.
-spend_database::~spend_database()
+base_database::~base_database()
 {
     close();
 }
@@ -59,7 +55,7 @@ spend_database::~spend_database()
 // ----------------------------------------------------------------------------
 
 // Initialize files and start.
-bool spend_database::create()
+bool base_database::create()
 {
     // Resize and create require a started file.
     if (!lookup_file_.start())
@@ -81,7 +77,8 @@ bool spend_database::create()
 // Startup and shutdown.
 // ----------------------------------------------------------------------------
 
-bool spend_database::start()
+// Start files and primitives.
+bool base_database::start()
 {
     return
         lookup_file_.start() &&
@@ -89,66 +86,39 @@ bool spend_database::start()
         lookup_manager_.start();
 }
 
-bool spend_database::stop()
+// Stop files.
+bool base_database::stop()
 {
     return lookup_file_.stop();
 }
 
-bool spend_database::close()
+// Close files.
+bool base_database::close()
 {
     return lookup_file_.close();
 }
 
 // ----------------------------------------------------------------------------
-
-spend spend_database::get(const output_point& outpoint) const
+memory_ptr base_database::get(const hash_digest& hash) const
 {
-    spend result;
-    result.valid = false;
-    result.index = 0x00;
-    const auto memory = lookup_map_.find(outpoint);
-
-    if (!memory)
-        return result;
-
-    const auto hash_start = REMAP_ADDRESS(memory);
-    const auto index_start = hash_start + hash_size;
-    std::copy(hash_start, index_start, result.hash.begin());
-    result.index = from_little_endian_unsafe<uint32_t>(index_start);
-    result.valid = true;
-    return result;
+    const auto memory = lookup_map_.find(hash);
+    return memory;
 }
 
-void spend_database::store(const chain::output_point& outpoint,
-    const chain::input_point& spend)
+void base_database::remove(const hash_digest& hash)
 {
-    const auto write = [&spend](memory_ptr data)
-    {
-        auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_data(spend.to_data());
-    };
-
-    lookup_map_.store(outpoint, write);
-}
-
-void spend_database::remove(const output_point& outpoint)
-{
-    DEBUG_ONLY(bool success =) lookup_map_.unlink(outpoint);
+    DEBUG_ONLY(bool success =) lookup_map_.unlink(hash);
     BITCOIN_ASSERT(success);
 }
 
-void spend_database::sync()
+void base_database::sync()
 {
     lookup_manager_.sync();
 }
 
-spend_statinfo spend_database::statinfo() const
+base_database::slab_map base_database::get_lookup_map() const
 {
-    return
-    {
-        lookup_header_.size(),
-        lookup_manager_.count()
-    };
+	return lookup_map_;
 }
 
 } // namespace database

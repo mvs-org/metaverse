@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2015 metaverse developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of mvs-node.
  *
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -17,38 +17,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
-#define LIBBITCOIN_DATABASE_TRANSACTION_RESULT_HPP
+#ifndef LIBBITCOIN_DATABASE_ACCOUNT_RESULT_HPP
+#define LIBBITCOIN_DATABASE_ACCOUNT_RESULT_HPP
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/database/define.hpp>
 #include <bitcoin/database/memory/memory.hpp>
+#include <bitcoin/database/result/base_result.hpp>
+#include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
+
+using namespace libbitcoin::chain;
+using namespace std;
 
 namespace libbitcoin {
 namespace database {
     
-/// Deferred read transaction result.
-class BCD_API transaction_result
+/// read account detail information from account database.
+class BCD_API account_result : public base_result
 {
 public:
-    transaction_result(const memory_ptr slab);
+    account_result(const memory_ptr slab);
 
-    /// True if this transaction result is valid (found).
-    operator bool() const;
-
-    /// The height of the block which includes the transaction.
-    size_t height() const;
-
-    /// The position of the transaction within its block.
-    size_t index() const;
-
-    /// The transaction.
-    chain::transaction transaction() const;
-
-private:
-    const memory_ptr slab_;
+    /// The account.
+    //account get_account_detail() const;
+	std::shared_ptr<account> get_account_detail() const;
 };
 
 } // namespace database

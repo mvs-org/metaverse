@@ -34,6 +34,23 @@
 #include <bitcoin/database/define.hpp>
 #include <bitcoin/database/settings.hpp>
 
+#include <boost/variant.hpp>
+#include <bitcoin/bitcoin/chain/attachment/asset/asset.hpp>
+#include <bitcoin/bitcoin/chain/attachment/etp/etp.hpp>
+#include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
+#include <bitcoin/bitcoin/chain/attachment/asset/asset_detail.hpp>
+#include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
+#include <bitcoin/bitcoin/chain/attachment/attachment.hpp>
+
+#include <bitcoin/database/databases/account_database.hpp>
+#include <bitcoin/database/databases/account_address_database.hpp>
+#include <bitcoin/database/databases/asset_database.hpp>
+#include <bitcoin/database/databases/account_asset_database.hpp>
+//#include <bitcoin/bitcoin/wallet/payment_address.hpp>
+
+using namespace libbitcoin::wallet;                                         
+using namespace libbitcoin::chain;   
+
 namespace libbitcoin {
 namespace database {
 
@@ -58,6 +75,12 @@ public:
         path stealth_rows;
         path spends_lookup;
         path transactions_lookup;
+		/* begin database for account, asset, account_asset relationship */
+        path accounts_lookup;
+        path assets_lookup;
+        path account_assets_lookup;
+        path account_addresses_lookup;
+		/* end database for account, asset, account_asset relationship */
     };
 
     /// Create a new database file with a given path prefix and default paths.
@@ -107,6 +130,55 @@ public:
     /// Throws if the chain is empty.
     chain::block pop();
 
+    /* begin store asset info into  database */
+
+    void process_attachemnt(attachment& attach, payment_address& address);
+    void process_asset(asset& sp, payment_address address);
+    void push_asset_detail(asset_detail& sp_detail);
+    void push_asset_transfer(asset_transfer& sp_transfer, payment_address& address);
+
+   class attachment_visitor : public boost::static_visitor<void>
+	{
+	public:
+		attachment_visitor(payment_address& address,  
+                data_base* db):address_(address),db_(db)
+		{
+
+		}
+		void operator()(asset &t)
+		{
+			return db_->process_asset(t, address_);
+		}
+		void operator()(etp &t)
+		{
+			return ;
+		}
+		payment_address& address_;
+        data_base* db_;
+	};
+
+	class asset_visitor : public boost::static_visitor<void>
+	{
+	public:
+		asset_visitor(payment_address& address,
+                data_base* db):address_(address),db_(db)
+		{
+
+		}
+		void operator()(asset_detail &t)
+		{
+			return db_->push_asset_detail(t);
+		}
+		void operator()(asset_transfer &t)
+		{
+		 	return db_->push_asset_transfer(t, address_);
+		}
+		payment_address& address_;
+        data_base* db_;
+	};
+
+   /* begin store asset info into  database */
+
 protected:
     data_base(const store& paths, size_t history_height, size_t stealth_height);
     data_base(const path& prefix, size_t history_height, size_t stealth_height);
@@ -151,6 +223,12 @@ public:
     spend_database spends;
     stealth_database stealth;
     transaction_database transactions;
+	/* begin database for account, asset, account_asset relationship */
+    account_database accounts;
+    asset_database assets;
+    account_asset_database account_assets;
+    account_address_database account_addresses;
+	/* end database for account, asset, account_asset relationship */
 };
 
 } // namespace database
