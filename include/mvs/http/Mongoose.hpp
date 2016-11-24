@@ -46,15 +46,25 @@ inline std::string_view operator+(const websocket_message& msg) noexcept
 
 class ToCommandArg{
 public:
-    std::string& mvs_method(){ return mvs_method_;}
-    std::string& mvs_params(){ return mvs_params_;}
+    ToCommandArg() noexcept = default;
+    virtual ~ToCommandArg() noexcept = default;
+    ToCommandArg(const ToCommandArg&) noexcept = default;
+    ToCommandArg(ToCommandArg&&) noexcept = default;
+    ToCommandArg& operator=(const ToCommandArg&) noexcept = default;
+    ToCommandArg& operator=(ToCommandArg&&) noexcept = default;
 
-    virtual void set_mvs_method(std::string&& rhs){mvs_method_ = rhs;};
+    auto argv() const noexcept { return argv_; }
+    auto argc() const noexcept { return argc_; }
+    void setargv0(std::string&& outside);
+
+    static const int max_paramters{8};
 protected:
-    virtual void data_to_arg() noexcept = 0;
 
-    std::string mvs_method_;
-    std::string mvs_params_;
+    virtual void data_to_arg() noexcept = 0;
+    const char* argv_[max_paramters]{{nullptr}};
+    int argc_{0};
+
+    std::vector<std::string> vargv_;
 };
 
 
