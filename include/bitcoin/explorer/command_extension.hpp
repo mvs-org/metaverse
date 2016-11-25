@@ -33,6 +33,8 @@ namespace explorer {
 namespace commands {
 
 class command_extension:public command{
+public:
+    typedef std::shared_ptr<bc::chain::account> account_ptr;
 protected:
     struct argument_base
     {

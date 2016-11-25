@@ -284,6 +284,9 @@ console_result getaccount::invoke (std::ostream& output, std::ostream& cerr)
 console_result getaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    account_ptr acc = blockchain.get_account_by_name(auth_.name);
+    output << acc->to_string();
+
     return console_result::okay;
 }
 
@@ -336,6 +339,36 @@ console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    account_ptr acc = blockchain.get_account_by_name(auth_.name);
+    if (acc->mnemonic.empty()) return  console_result::failure;
+
+    const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
+    std::ostringstream sout("");
+    std::istringstream sin(acc->mnemonic);
+
+    auto exec_with = [&](int i){
+        sin.str(sout.str());
+        sout.str("");
+        return dispatch_command(1, cmds + i, sin, sout, sout);
+    };
+
+    dispatch_command(1, cmds, sin, sout, sout);
+    exec_with(1);
+
+    std::string argv_index = std::to_string(acc->hd_index);
+    const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
+    sin.str(sout.str());
+    sout.str("");
+    dispatch_command(3, hd_private_gen, sin, sout, sout);
+
+    exec_with(2);
+    exec_with(3);
+    exec_with(4);
+    output<<sout.str();
+
+
+    //acc->hd_index++;
+
     return console_result::okay;
 }
 
