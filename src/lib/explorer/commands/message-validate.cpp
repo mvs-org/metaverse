@@ -22,6 +22,9 @@
 #include <iostream>
 #include <bitcoin/bitcoin.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -44,4 +47,6 @@ console_result message_validate::invoke(std::ostream& output,
 
     output << BX_MESSAGE_VALIDATE_INDEX_VALID_SIGNATURE << std::flush;
     return console_result::okay;
+}
+}
 }

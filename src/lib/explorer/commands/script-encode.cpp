@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/script.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -38,4 +41,6 @@ console_result script_encode::invoke(std::ostream& output, std::ostream& error)
 
     output << base16(encoded_script) << std::flush;
     return console_result::okay;
+}
+}
 }

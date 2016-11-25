@@ -28,6 +28,9 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/config/algorithm.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::client;
 using namespace bc::explorer;
@@ -71,4 +74,6 @@ console_result fetch_utxo::invoke(std::ostream& output, std::ostream& error)
     client.wait();
 
     return state.get_result();
+}
+}
 }

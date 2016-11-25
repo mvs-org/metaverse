@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -68,4 +71,6 @@ console_result hd_to_ec::invoke(std::ostream& output, std::ostream& error)
 
     output << "ERROR_VKEY" << std::flush;
     return console_result::failure;
+}
+}
 }

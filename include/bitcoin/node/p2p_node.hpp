@@ -117,8 +117,10 @@ private:
 
     // These are thread safe.
     header_queue hashes_;
-    blockchain::block_chain_impl blockchain_;
     const settings& settings_;
+protected:
+    // fix me, for explorer only.
+    blockchain::block_chain_impl blockchain_;
 };
 
 } // namspace node

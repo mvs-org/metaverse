@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -47,4 +50,6 @@ console_result stealth_shared::invoke(std::ostream& output,
 
     output << config::ec_private(hash) << std::flush;
     return console_result::okay;
+}
+}
 }

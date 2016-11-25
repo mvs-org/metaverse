@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -35,4 +38,6 @@ console_result base58_encode::invoke(std::ostream& output, std::ostream& error)
     
     output << base58(base16) << std::flush;
     return console_result::okay;
+}
+}
 }

@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::wallet;
 using namespace bc::explorer;
@@ -49,4 +52,6 @@ console_result mnemonic_new::invoke(std::ostream& output,
 
     output << join(words) << std::flush;
     return console_result::okay;
+}
+}
 }

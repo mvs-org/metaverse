@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -33,4 +36,6 @@ console_result mnemonic_decode::invoke(std::ostream& output,
 {
     error << BX_MNEMONIC_DECODE_OBSOLETE << std::flush;
     return console_result::failure;
+}
+}
 }

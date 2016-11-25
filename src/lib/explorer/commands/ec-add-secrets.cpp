@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -54,5 +57,7 @@ console_result ec_add_secrets::invoke(std::ostream& output, std::ostream& error)
     // We don't use bc::ec_private serialization (WIF) here.
     output << config::ec_private(sum) << std::flush;
     return console_result::okay;
+}
+}
 }
 

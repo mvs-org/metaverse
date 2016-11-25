@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/raw.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -38,4 +41,6 @@ console_result base64_decode::invoke(std::ostream& output, std::ostream& error)
     output << raw(base64) /* << std::flush */;
 
     return console_result::okay;
+}
+}
 }

@@ -23,6 +23,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -47,4 +50,6 @@ console_result cert_public::invoke(std::ostream& output, std::ostream& error)
 
     output << certificate.public_key() << std::flush;
     return console_result::okay;
+}
+}
 }

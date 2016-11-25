@@ -26,6 +26,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -52,4 +55,6 @@ console_result ek_to_ec::invoke(std::ostream& output, std::ostream& error)
     error << BX_EK_TO_EC_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
+}
+}
 }

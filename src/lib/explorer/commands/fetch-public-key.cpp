@@ -26,6 +26,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/display.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::client;
 using namespace bc::explorer;
@@ -69,4 +72,6 @@ console_result fetch_public_key::invoke(std::ostream& output, std::ostream& erro
 
     error << BX_FETCH_PUBLIC_KEY_NOT_IMPLEMENTED << std::flush;
     return console_result::failure;
+}
+}
 }

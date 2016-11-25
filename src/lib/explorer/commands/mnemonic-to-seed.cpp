@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::wallet;
@@ -73,4 +76,6 @@ console_result mnemonic_to_seed::invoke(std::ostream& output,
 
     output << base16(seed) << std::flush;
     return console_result::okay;
+}
+}
 }

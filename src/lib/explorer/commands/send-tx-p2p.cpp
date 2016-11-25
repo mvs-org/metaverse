@@ -33,6 +33,9 @@
 #include <bitcoin/explorer/config/transaction.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -162,4 +165,6 @@ console_result send_tx_p2p::invoke(std::ostream& output, std::ostream& error)
     network.close();
 
     return state.get_result();
+}
+}
 }

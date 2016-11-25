@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/wrapper.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -37,4 +40,6 @@ console_result wrap_encode::invoke(std::ostream& output, std::ostream& error)
     
     output << wrapper(version, payload) << std::flush;
     return console_result::okay;
+}
+}
 }

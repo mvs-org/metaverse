@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/config/script.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -47,4 +50,6 @@ console_result address_embed::invoke(std::ostream& output, std::ostream& error)
     // Make address (money sent here is lost forever).
     output << payment_address(hash, version) << std::flush;
     return console_result::okay;
+}
+}
 }

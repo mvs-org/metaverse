@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -58,3 +61,5 @@ using namespace bc::wallet;
      output << uri.encoded() << std::flush;
      return console_result::okay;
  }
+}
+}

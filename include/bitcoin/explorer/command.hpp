@@ -26,6 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/blockchain/block_chain_impl.hpp>
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/address.hpp>
 #include <bitcoin/explorer/config/algorithm.hpp>
@@ -135,6 +136,12 @@ public:
      */
     virtual console_result invoke(std::ostream& output,
         std::ostream& error)
+    {
+        return console_result::failure;
+    }
+
+    virtual console_result invoke(std::ostream& output,
+        std::ostream& error, bc::blockchain::block_chain_impl& blockchain)
     {
         return console_result::failure;
     }

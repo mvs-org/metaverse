@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/config/wrapper.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -41,4 +44,6 @@ console_result address_decode::invoke(std::ostream& output,
     write_stream(output, prop_tree(wrapped), encoding);
 
     return console_result::okay;
+}
+}
 }

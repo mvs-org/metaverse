@@ -23,6 +23,9 @@
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::chain;
 using namespace bc::explorer;
@@ -61,4 +64,6 @@ console_result input_validate::invoke(std::ostream& output,
 
     output << BX_INPUT_VALIDATE_INDEX_VALID_ENDORSEMENT << std::flush;
     return console_result::okay;
+}
+}
 }

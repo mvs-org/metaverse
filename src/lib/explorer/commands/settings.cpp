@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -97,4 +100,6 @@ console_result commands::settings::invoke(std::ostream& output,
 
     write_stream(output, prop_tree(list), encoding);
     return console_result::okay;
+}
+}
 }

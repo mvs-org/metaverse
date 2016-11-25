@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::chain;
 using namespace bc::config;
@@ -62,4 +65,6 @@ console_result input_sign::invoke(std::ostream& output, std::ostream& error)
 
     output << base16(endorse) << std::flush;
     return console_result::okay;
+}
+}
 }
