@@ -36,7 +36,7 @@ class BC_API account
 {
 public:
 	account();
-	account(std::string name, std::string mnemonic, std::string passwd, 
+	account(std::string name, std::string mnemonic, hash_digest passwd, 
 			uint32_t hd_index, uint8_t priority);
     static account factory_from_data(const data_chunk& data);
     static account factory_from_data(std::istream& stream);
@@ -57,7 +57,7 @@ public:
 
     std::string name;
     std::string mnemonic;
-    std::string passwd;
+    hash_digest passwd;
 	
     uint32_t hd_index;
 	uint8_t  priority;

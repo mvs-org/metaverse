@@ -925,85 +925,143 @@ void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
 
 std::shared_ptr<account_address> block_chain_impl::get_address_by_xpub(const std::string& xpub)
 {
-	data_chunk data(xpub.begin(), xpub.end());
-	const auto hash = sha256_hash(data);		
+	const auto hash = str2sha256hash(xpub);		
 	account_address_result result = database_.account_addresses.get_account_address_result(hash);
 	return result.get_account_address_detail();
 }
-void block_chain_impl::store_account_address(const std::string& name, const std::string& xprv,
-	const std::string& xpub, uint32_t& hd_index)
+operation_result block_chain_impl::store_account_address(const std::string& name, const std::string& passwd,
+	uint16_t flag, const std::string& xprv, const std::string& xpub, uint32_t& hd_index)
 {
+	operation_result ret_val = operation_result::none;
 	if (stopped())
 	{
-		//handler(error::service_stopped, 0);
-		return;
+		ret_val = operation_result::service_stopped;
+		return ret_val;
 	}
-	///////////////////////////////////////////////////////////////////////////
-	// Critical Section.
-	unique_lock lock(mutex_);
 
-	data_chunk data(xpub.begin(), xpub.end());
-	const auto hash = sha256_hash(data);
-	account_address address(name, xprv, xpub, hd_index);
-	database_.account_addresses.store(hash, address);
-	database_.account_addresses.sync();
-	///////////////////////////////////////////////////////////////////////////
+	std::shared_ptr<account> acc = get_account_by_name(name);
+	if(!acc)
+	{
+		ret_val = operation_result::account_not_exist;
+		return ret_val;
+	}
+
+	// password check
+	if(!(flag&0x0001) // no password check if last bit is 0 -> unlock
+		|| (str2sha256hash(passwd) == acc->passwd)) 
+	{
+		ret_val = operation_result::okay;
+	}
+	else
+	{
+		ret_val = operation_result::password_invalid;
+	}
+
+	if(ret_val == operation_result::okay)
+	{
+		///////////////////////////////////////////////////////////////////////////
+		// Critical Section.
+		unique_lock lock(mutex_);
+
+		const auto hash = str2sha256hash(xpub);
+		account_address address(name, xprv, xpub, hd_index);
+		database_.account_addresses.store(hash, address);
+		database_.account_addresses.sync();
+		///////////////////////////////////////////////////////////////////////////
+	}
+	return ret_val;
+}
+inline hash_digest block_chain_impl::str2sha256hash(const std::string& passwd)
+{
+	data_chunk data(passwd.begin(), passwd.end());
+	return sha256_hash(data);
 }
 /* used for "set_admin_passwd" command */
-bool block_chain_impl::set_admin_passwd(const std::string& name, const std::string& old_passwd,
-	const std::string& new_passwd)
+operation_result block_chain_impl::set_admin_passwd(const std::string& name, const std::string& old_passwd,
+	uint16_t flag, const std::string& new_passwd)
 {
+	operation_result ret_val = operation_result::none;
 	// parameter check
 	if( name.empty() || new_passwd.empty())
-		return false;
+	{
+		ret_val = operation_result::parameter_invalid;
+		return ret_val;
+	}
 	
 	std::shared_ptr<account> acc = get_account_by_name(name);
 	if(acc)
 	{	
-		// todo -- password check
-		acc->passwd = "";
-		std::copy(new_passwd.begin(), new_passwd.end(), std::back_inserter(acc->passwd));
-		//acc->priority = 0;
+		// password check
+		if(!(flag&0x0001) // no password check if last bit is 0 -> unlock
+			|| (str2sha256hash(old_passwd) == acc->passwd)) 
+		{
+			acc->passwd = str2sha256hash(new_passwd);
+			ret_val = operation_result::okay;
+		}
+		else
+		{
+			ret_val = operation_result::password_invalid;
+		}
 	}
 	else
 	{
 		acc = std::make_shared<account>();
 		std::copy(name.begin(), name.end(), std::back_inserter(acc->name));
-		std::copy(new_passwd.begin(), new_passwd.end(), std::back_inserter(acc->passwd));
+		acc->passwd = str2sha256hash(new_passwd);
 		acc->priority = 0;
+		ret_val = operation_result::newaccount_created;
 	}
-	store_account(acc);
-	return *acc;
+	if((operation_result::newaccount_created == ret_val) 
+		|| (operation_result::okay == ret_val))
+		store_account(acc);
+	return ret_val;
 }
 
 /* used for "get_new_address" command */
-bool block_chain_impl::get_account_info(const std::string& name, const std::string& passwd,
-	std::string& mnemonic, uint32_t& hd_index)
+operation_result block_chain_impl::get_account_info(const std::string& name, const std::string& passwd,
+	uint16_t flag, std::string& mnemonic, uint32_t& hd_index)
 {
-	bool ret_val = false;
+	operation_result ret_val = operation_result::none;
 	// parameter check
 	if( name.empty() || passwd.empty() )
+	{
+		ret_val = operation_result::parameter_invalid;
 		return ret_val;
+	}
 	
 	std::shared_ptr<account> acc = get_account_by_name(name);
 	if(acc)
 	{	
-		// todo -- password check
-		std::copy(acc->mnemonic.begin(), acc->mnemonic.end(), std::back_inserter(mnemonic));
-		hd_index = acc->hd_index ;
-		ret_val = true;
+		if(!(flag&0x0001) // no password check if last bit is 0 -> unlock
+			|| (str2sha256hash(passwd) == acc->passwd))
+		{
+			std::copy(acc->mnemonic.begin(), acc->mnemonic.end(), std::back_inserter(mnemonic));
+			hd_index = acc->hd_index ;
+			ret_val = operation_result::okay;
+		}
+		else
+		{
+			ret_val = operation_result::password_invalid;
+		}
+	}
+	else
+	{
+		ret_val = operation_result::account_not_exist;
 	}
 	return ret_val;
 }
 
 /* used for "get_new_account" command */
-bool block_chain_impl::get_new_account(const std::string& name, const std::string& passwd, 
+operation_result block_chain_impl::get_new_account(const std::string& name, const std::string& passwd, 
 	const std::string& mnemonic)
 {
-	bool ret_val = false;
+	operation_result ret_val = operation_result::none;
 	// parameter check
 	if( name.empty() || passwd.empty() || mnemonic.empty() )
+	{
+		ret_val = operation_result::parameter_invalid;
 		return ret_val;
+	}
 	
 	std::shared_ptr<account> acc = get_account_by_name(name);
 	if(!acc) // not found then create a new one
@@ -1011,10 +1069,15 @@ bool block_chain_impl::get_new_account(const std::string& name, const std::strin
 		acc = std::make_shared<account>();
 		std::copy(name.begin(), name.end(), std::back_inserter(acc->name));
 		std::copy(mnemonic.begin(), mnemonic.end(), std::back_inserter(acc->mnemonic));
-		std::copy(passwd.begin(), passwd.end(), std::back_inserter(acc->passwd));
+		//std::copy(passwd.begin(), passwd.end(), std::back_inserter(acc->passwd));
+		acc->passwd = str2sha256hash(passwd);
 		acc->hd_index = 0;
 		store_account(acc);
-		ret_val = true;
+		ret_val = operation_result::newaccount_created;
+	}
+	else
+	{
+		ret_val = operation_result::account_existed;
 	}
 	return ret_val;
 }
@@ -1046,6 +1109,90 @@ std::shared_ptr<account> block_chain_impl::get_account_by_name(const std::string
 	const auto hash = sha256_hash(data);		
 	account_result result = database_.accounts.get_account_result(hash);
 	return result.get_account_detail();
+}
+std::shared_ptr<asset_detail> block_chain_impl::get_asset_by_symbol(const std::string& symbol)
+{
+	const auto hash = str2sha256hash(symbol);		
+	asset_result result = database_.assets.get_asset_result(hash);
+	return result.get_asset_detail();
+}
+
+operation_result block_chain_impl::create_asset(const std::string& name, const std::string& passwd, 
+	uint16_t flag, const asset_detail& asset)
+{
+	operation_result ret_val = operation_result::none;
+	// parameter check
+	if( name.empty() || passwd.empty() || !asset.is_valid() )
+	{
+		ret_val = operation_result::parameter_invalid;
+		return ret_val;
+	}
+
+	std::shared_ptr<account> account = get_account_by_name(name);
+	if(!account)
+	{
+		ret_val = operation_result::account_not_exist;
+		return ret_val;
+	}
+
+	// account exist 
+	
+	if((flag&0x0001) // password check if last bit is 1 -> lock
+		&& (str2sha256hash(passwd) != account->passwd))
+	{
+		ret_val = operation_result::password_invalid;
+		return ret_val;
+	}
+	
+	std::shared_ptr<asset_detail> acc = get_asset_by_symbol(asset.symbol);
+	if(!acc) // not found then create a new one
+	{
+		store_asset(asset);
+		asset_transfer sp_transfer;
+		sp_transfer.address = asset.symbol;
+		sp_transfer.sender = name;
+		sp_transfer.status = 0;
+		store_account_asset(sp_transfer);
+		ret_val = operation_result::okay;
+	}
+	else
+	{
+		ret_val = operation_result::asset_existed;
+	}
+	return ret_val;
+}
+
+void block_chain_impl::store_asset(const asset_detail& acc)
+{
+    if (stopped())
+    {
+        //handler(error::service_stopped, 0);
+        return;
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section.
+    unique_lock lock(mutex_);
+
+	const auto hash = str2sha256hash(acc.symbol);
+    database_.assets.store(hash, acc);
+    database_.assets.sync();
+    ///////////////////////////////////////////////////////////////////////////
+}
+void block_chain_impl::store_account_asset(asset_transfer& sp_transfer)
+{
+    if (stopped())
+    {
+        //handler(error::service_stopped, 0);
+        return;
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section.
+    unique_lock lock(mutex_);
+
+	std::string symbol_sender = sp_transfer.address + sp_transfer.sender;
+	const auto hash = str2sha256hash(symbol_sender);
+    database_.account_assets.sync();
+    ///////////////////////////////////////////////////////////////////////////
 }
 #endif
 /* end store account related info into database */

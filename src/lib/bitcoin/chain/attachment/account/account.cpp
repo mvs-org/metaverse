@@ -33,7 +33,7 @@ account::account()
 {
 	reset();
 }
-account::account(std::string name, std::string mnemonic, std::string passwd, 
+account::account(std::string name, std::string mnemonic, hash_digest passwd, 
 		uint32_t hd_index, uint8_t priority)
 {
     this->name = name;
@@ -73,7 +73,7 @@ void account::reset()
 {	
     this->name = "";
     this->mnemonic = "";
-    this->passwd = "";
+    //this->passwd = "";
     this->hd_index = 0;
     this->priority = 1; // 0 -- admin user  1 -- common user
 }
@@ -95,7 +95,7 @@ bool account::from_data(reader& source)
     reset();
     name = source.read_string();
     mnemonic = source.read_string();
-    passwd = source.read_string();
+    passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
     return true;	
@@ -122,7 +122,7 @@ void account::to_data(writer& sink) const
 {
     sink.write_string(name);
 	sink.write_string(mnemonic);
-	sink.write_string(passwd);
+	sink.write_hash(passwd);
 	sink.write_4_bytes_little_endian(hd_index);
 	sink.write_byte(priority);
 }
@@ -138,7 +138,7 @@ std::string account::to_string()
 
     ss << "\t name = " << name << "\n"
 		<< "\t mnemonic = " << mnemonic << "\n"
-		<< "\t password = " << passwd << "\n"
+		<< "\t password = " << passwd.data() << "\n"
 		<< "\t hd_index = " << hd_index << "\n"
 		<< "\t priority = " << priority << "\n";
 
@@ -147,7 +147,7 @@ std::string account::to_string()
 
 account::operator bool() const
 {
-	return (name.empty() || mnemonic.empty() || passwd.empty());
+	return (name.empty() || mnemonic.empty());
 }
 
 
