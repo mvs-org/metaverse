@@ -28,24 +28,30 @@ namespace libbitcoin {
 namespace database {
 
 template <typename Iterator>
-asset_detail deserialize_asset_detail(const Iterator first)
+std::shared_ptr<asset_detail> deserialize_account_detail(const Iterator first)
 {
-    asset_detail sp_detail;
-    auto deserial = make_deserializer_unsafe(first);
-    sp_detail.from_data(deserial);
-    return sp_detail;
+	auto detail = std::make_shared<asset_detail>();
+	auto deserial = make_deserializer_unsafe(first);
+	detail->from_data(deserial);
+	return detail;
 }
-
 asset_result::asset_result(const memory_ptr slab)
   : base_result(slab)
 {
 }
 
-asset_detail asset_result::get_asset_detail() const
+std::shared_ptr<asset_detail> asset_result::get_asset_detail() const
 {
-    BITCOIN_ASSERT(get_slab());
-    const auto memory = REMAP_ADDRESS(get_slab());
-    return deserialize_asset_detail(memory);
+    //BITCOIN_ASSERT(get_slab());
+	std::shared_ptr<asset_detail> sp_acc(nullptr);
+	if(get_slab()) 
+	{
+	    const auto memory = REMAP_ADDRESS(get_slab());
+	    sp_acc = deserialize_account_detail(memory);
+	}
+	return sp_acc;
 }
+
+
 } // namespace database
 } // namespace libbitcoin

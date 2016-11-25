@@ -52,7 +52,7 @@ public:
     void reset();
     uint64_t serialized_size() const;
     
-    std::string address;
+    std::string address;  // symbol
     std::string sender;
 	std::string recipient;
 	uint32_t status;

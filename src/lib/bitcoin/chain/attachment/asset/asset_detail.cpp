@@ -69,7 +69,7 @@ asset_detail asset_detail::factory_from_data(reader& source)
 
 bool asset_detail::is_valid() const
 {
-    return true;
+    return !(symbol.empty() || (maximum_supply==0));
 }
 
 void asset_detail::reset()
