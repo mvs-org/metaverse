@@ -133,7 +133,7 @@ console_result dispatch_command(int argc, const char* argv[],
     bc::blockchain::block_chain_impl& blockchain)
 {
     const std::string target(argv[0]);
-    const auto command = find_extension(target);
+    const auto command = find(target);
 
     if (!command)
     {
@@ -161,7 +161,12 @@ console_result dispatch_command(int argc, const char* argv[],
         return console_result::okay;
     }
 
-    return command->invoke(out, err, blockchain);
+    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
+    {
+        return command->invoke(out, err, blockchain);
+    }else{
+        return command->invoke(out, err);
+    }
 }
 
 } // namespace explorer
