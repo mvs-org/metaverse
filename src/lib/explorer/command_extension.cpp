@@ -603,6 +603,12 @@ console_result sendfrom::invoke (std::ostream& output, std::ostream& cerr)
 console_result sendfrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    //todo
+    //fetch-tx get outputs
+    //input-set 
+    //input-sgin
+    //input-validate
+    //send-tx transacton base16 code
     return console_result::okay;
 }
 
@@ -694,6 +700,9 @@ console_result createasset::invoke (std::ostream& output, std::ostream& cerr)
 console_result createasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    //todo
+    //createasset
+    //
     return console_result::okay;
 }
 
@@ -720,6 +729,7 @@ console_result issuefrom::invoke (std::ostream& output, std::ostream& cerr)
 console_result issuefrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    //sendassetfrom - to systemaccount
     return console_result::okay;
 }
 
@@ -772,6 +782,8 @@ console_result sendassetfrom::invoke (std::ostream& output, std::ostream& cerr)
 console_result sendassetfrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    //attachasset
+    //sendfrom
     return console_result::okay;
 }
 

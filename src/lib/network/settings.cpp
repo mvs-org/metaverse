@@ -61,28 +61,26 @@ settings::settings(bc::settings context)
         case bc::settings::mainnet:
         {
             identifier = 3652501241;
-            inbound_port = 8333;
+            inbound_port = 5251;
 
             // Seeds based on bitcoinstats.com/network/dns-servers
-            seeds.reserve(6);
-            seeds.push_back({ "seed.bitnodes.io", 8333 });
-            seeds.push_back({ "seed.bitcoinstats.com", 8333 });
-            seeds.push_back({ "seed.bitcoin.sipa.be", 8333 });
-            seeds.push_back({ "dnsseed.bluematt.me", 8333 });
-            seeds.push_back({ "seed.bitcoin.jonasschnelli.ch", 8333 });
-            seeds.push_back({ "dnsseed.bitcoin.dashjr.org", 8333 });
+            seeds.reserve(4);
+            seeds.push_back({ "seed1.metaverse.live", 5251 });
+            seeds.push_back({ "seed2.metaverse.live", 5251 });
+            seeds.push_back({ "seed3.metaverse.live", 5251 });
+            seeds.push_back({ "seed4.metaverse.live", 5251 });
             break;
         }
 
         case bc::settings::testnet:
         {
             identifier = 118034699;
-            inbound_port = 18333;
+            inbound_port = 15251;
 
-            seeds.reserve(3);
-            seeds.push_back({ "testnet-seed.bitcoin.petertodd.org", 18333 });
-            seeds.push_back({ "testnet-seed.bitcoin.schildbach.de", 18333 });
-            seeds.push_back({ "testnet-seed.bluematt.me", 18333 });
+            seeds.reserve(2);
+            seeds.push_back({ "seed1.metaversetest.live", 5251 });
+            seeds.push_back({ "seed2.metaversetest.live", 5251 });
+            seeds.push_back({ "seed3.metaversetest.live", 5251 });
             break;
         }
 
