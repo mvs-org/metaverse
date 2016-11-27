@@ -43,7 +43,6 @@ template <typename KeyType>
 file_offset slab_hash_table<KeyType>::store(const KeyType& key,
     write_function write, const size_t value_size)
 {
-	mutex_.lock();
     // Store current bucket value.
     const auto old_begin = read_bucket_value(key);
     slab_row<KeyType> item(manager_, 0);
@@ -52,7 +51,6 @@ file_offset slab_hash_table<KeyType>::store(const KeyType& key,
 
     // Link record to header.
     link(key, new_begin);
-    mutex_.unlock();
 
     // Return position,
     return new_begin + item.value_begin;

@@ -9,6 +9,7 @@
 #include <array>
 #include <thread>
 #include <bitcoin/consensus/miner/MinerAux.h>
+#include <random>
 
 
 using namespace libbitcoin;
