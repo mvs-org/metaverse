@@ -63,14 +63,14 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
         ws.data_to_arg();
 
         explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-            sin, sout, sout);
+            sin, sout, sout, blockchain_);
 
     }catch(...){
         log::error(LOG_HTTP)<<__func__<<":"<<sout.rdbuf();
     }
 
     //websocketBroadcast(nc, sout.str().c_str(), sout.str().size() - 1);
-    websocketSend(&nc, sout.str().c_str(), sout.str().size() - 1);
+    websocketSend(&nc, sout.str().c_str(), sout.str().size());
 }
 
 // --------------------- json rpc interface -----------------------
@@ -97,7 +97,7 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
         std::stringstream sout;
         std::istringstream sin;
         bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-            sin, sout, sout);
+            sin, sout, sout, blockchain_);
 
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
 
@@ -147,7 +147,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             std::istringstream sin;
 
             bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                sin, sout, sout);
+                sin, sout, sout, blockchain_);
 
             log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
 

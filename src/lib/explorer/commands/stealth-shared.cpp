@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -39,12 +42,14 @@ console_result stealth_shared::invoke(std::ostream& output,
     ec_compressed product(pubkey);
     if (!bc::ec_multiply(product, secret))
     {
-        error << BX_STEALTH_SHARED_OUT_OF_RANGE << std::endl;
+        error << BX_STEALTH_SHARED_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
     const auto hash = sha256_hash(product);
 
-    output << config::ec_private(hash) << std::endl;
+    output << config::ec_private(hash) << std::flush;
     return console_result::okay;
+}
+}
 }

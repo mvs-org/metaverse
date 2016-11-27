@@ -24,6 +24,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <bitcoin/explorer/command.hpp>
+#include <bitcoin/explorer/command_extension.hpp>
+#include <bitcoin/explorer/command_extension_func.hpp>
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/display.hpp>
 #include <bitcoin/explorer/generated.hpp>
@@ -85,7 +87,10 @@ console_result dispatch(int argc, const char* argv[],
         return console_result::okay;
     }
 
-    return dispatch_command(argc - 1, &argv[1], input, output, error);
+    auto ret = dispatch_command(argc - 1, &argv[1], input, output, error);
+    output<<std::endl;
+    //error<<std::endl; // once \n is okay
+    return ret;
 }
 
 console_result dispatch_command(int argc, const char* argv[],
@@ -121,6 +126,47 @@ console_result dispatch_command(int argc, const char* argv[],
     }
 
     return command->invoke(out, err);
+}
+
+console_result dispatch_command(int argc, const char* argv[],
+    std::istream& input, std::ostream& output, std::ostream& error,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    const std::string target(argv[0]);
+    const auto command = find(target);
+
+    if (!command)
+    {
+        const std::string superseding(formerly(target));
+        display_invalid_command(error, target, superseding);
+        return console_result::failure;
+    }
+
+    auto& in = get_command_input(*command, input);
+    auto& err = get_command_error(*command, error);
+    auto& out = get_command_output(*command, output);
+
+    parser metadata(*command);
+    std::string error_message;
+
+    if (!metadata.parse(error_message, in, argc, argv))
+    {
+        display_invalid_parameter(error, error_message);
+        return console_result::failure;
+    }
+
+    if (metadata.help())
+    {
+        command->write_help(output);
+        return console_result::okay;
+    }
+
+    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
+    {
+        return command->invoke(out, err, blockchain);
+    }else{
+        return command->invoke(out, err);
+    }
 }
 
 } // namespace explorer

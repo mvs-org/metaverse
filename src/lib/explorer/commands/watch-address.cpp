@@ -32,6 +32,9 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::client;
 using namespace bc::explorer;
@@ -94,7 +97,7 @@ console_result watch_address::invoke(std::ostream& output, std::ostream& error)
         size_t, const hash_digest& block_hash, const tx_type& tx)
     {
         state.output(prop_tree(tx, block_hash, address, json));
-        output << std::endl;
+        output << std::flush;
     };
 
     client.set_on_update(on_update);
@@ -108,4 +111,6 @@ console_result watch_address::invoke(std::ostream& output, std::ostream& error)
     client.monitor(timeout);
 
     return state.get_result();
+}
+}
 }

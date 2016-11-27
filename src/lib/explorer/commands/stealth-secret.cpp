@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -39,10 +42,12 @@ console_result stealth_secret::invoke(std::ostream& output,
     ec_secret sum(scan_secret);
     if (!bc::ec_add(sum, shared_secret))
     {
-        error << BX_STEALTH_SECRET_OUT_OF_RANGE << std::endl;
+        error << BX_STEALTH_SECRET_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
-    output << config::ec_private(sum) << std::endl;
+    output << config::ec_private(sum) << std::flush;
     return console_result::okay;
+}
+}
 }

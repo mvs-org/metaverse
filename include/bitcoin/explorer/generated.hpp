@@ -127,21 +127,21 @@ namespace explorer {
 #define BX_COMMANDS_HEADER \
     "Info: The commands are:"
 #define BX_COMMANDS_HOME_PAGE \
-    "Bitcoin Explorer home page:"
+    "MVS home page:"
 #define BX_COMMAND_USAGE \
     "Usage: COMMAND [--help]"
 #define BX_CONFIG_DESCRIPTION \
     "The path to the configuration settings file."
 #define BX_CONNECTION_FAILURE \
-    "Could not connect to server: %1%"
+    "{\"error\":\"Could not connect to server: %1%\"}"
 #define BX_DEPRECATED_COMMAND \
-    "The '%1%' command has been replaced by '%2%'."
+    "{\"error\":\"The '%1%' command has been replaced by '%2%'.\"}"
 #define BX_HELP_DESCRIPTION \
     "Get a description and instructions for this command."
 #define BX_INVALID_COMMAND \
-    "'%1%' is not a command. Enter 'help' for a list of commands."
+    "{\"error\":\"'%1%' is not a command. Enter 'help' for a list of commands.\"}"
 #define BX_INVALID_PARAMETER \
-    "Error: %1%"
+    "{\"error\": \"%1%\"}"
 #define BX_PRINTER_ARGUMENT_TABLE_HEADER \
     "Arguments (positional):"
 #define BX_PRINTER_DESCRIPTION_FORMAT \

@@ -23,6 +23,9 @@
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::chain;
 using namespace bc::explorer;
@@ -41,7 +44,7 @@ console_result input_validate::invoke(std::ostream& output,
 
     if (index >= tx.inputs.size())
     {
-        error << BX_INPUT_VALIDATE_INDEX_OUT_OF_RANGE << std::endl;
+        error << BX_INPUT_VALIDATE_INDEX_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
@@ -55,10 +58,12 @@ console_result input_validate::invoke(std::ostream& output,
             index))
     {
         // We do not return a failure here, as this is a validity test.
-        output << BX_INPUT_VALIDATE_INDEX_INVALID_ENDORSEMENT << std::endl;
+        output << BX_INPUT_VALIDATE_INDEX_INVALID_ENDORSEMENT << std::flush;
         return console_result::invalid;
     }
 
-    output << BX_INPUT_VALIDATE_INDEX_VALID_ENDORSEMENT << std::endl;
+    output << BX_INPUT_VALIDATE_INDEX_VALID_ENDORSEMENT << std::flush;
     return console_result::okay;
+}
+}
 }

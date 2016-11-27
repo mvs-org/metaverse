@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::wallet;
@@ -41,7 +44,7 @@ console_result mnemonic_to_seed::invoke(std::ostream& output,
 
     if ((word_count % bc::wallet::mnemonic_word_multiple) != 0)
     {
-        error << BX_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE << std::endl;
+        error << BX_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE << std::flush;
         return console_result::failure;
     }
 
@@ -50,12 +53,12 @@ console_result mnemonic_to_seed::invoke(std::ostream& output,
     if (!valid && language.size() == 1)
     {
         // This is fatal because a dictionary was specified explicitly.
-        error << BX_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGE << std::endl;
+        error << BX_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGE << std::flush;
         return console_result::failure;
     }
 
     if (!valid && language.size() > 1)
-        error << BX_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES << std::endl;
+        error << BX_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES << std::flush;
 
 #ifdef WITH_ICU
     // Any word set divisible by 3 works regardless of language validation.
@@ -63,7 +66,7 @@ console_result mnemonic_to_seed::invoke(std::ostream& output,
 #else
     if (!passphrase.empty())
     {
-        error << BX_EC_MNEMONIC_TO_SEED_PASSPHRASE_UNSUPPORTED << std::endl;
+        error << BX_EC_MNEMONIC_TO_SEED_PASSPHRASE_UNSUPPORTED << std::flush;
         return console_result::failure;
     }
 
@@ -71,6 +74,8 @@ console_result mnemonic_to_seed::invoke(std::ostream& output,
     const auto seed = decode_mnemonic(words);
 #endif
 
-    output << base16(seed) << std::endl;
+    output << base16(seed) << std::flush;
     return console_result::okay;
+}
+}
 }

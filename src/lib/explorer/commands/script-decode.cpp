@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/script.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -35,6 +38,8 @@ console_result script_decode::invoke(std::ostream& output, std::ostream& error)
     const auto& base16 = get_base16_argument();
     
     // Any array of bytes produces a valid script.
-    output << script(base16) << std::endl;
+    output << script(base16) << std::flush;
     return console_result::okay;
+}
+}
 }

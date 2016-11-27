@@ -111,7 +111,7 @@ private:
 
     // modify.chenhao
     void run_mongoose();
-    http::RestServ rest_server_{"./web"};
+    http::RestServ rest_server_{"./html", blockchain_};
 
     // These are thread safe.
     authenticator authenticator_;

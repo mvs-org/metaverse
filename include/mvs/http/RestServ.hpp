@@ -5,6 +5,7 @@
 #include <mvs/http/Stream_buf.hpp>
 
 #include <bitcoin/client.hpp>
+#include <bitcoin/blockchain.hpp>
 
 namespace http{
 
@@ -15,7 +16,8 @@ using namespace bc;
 
 class RestServ : public mg::Mgr<RestServ>{
 public:
-    explicit RestServ(const char* webroot):socket_(context_, protocol::zmq::socket::role::dealer)
+    explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs)
+        :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs)
     {
         memset(&httpoptions_, 0x00, sizeof(httpoptions_));
         httpoptions_.document_root = webroot;
@@ -96,6 +98,7 @@ private:
     Tokeniser<'/'> uri_;
     int state_{0};
     const char* const servername_{"Http-Metaverse"};
+    blockchain::block_chain_impl& blockchain_;
 };
 
 } // http

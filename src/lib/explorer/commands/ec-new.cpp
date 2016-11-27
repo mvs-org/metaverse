@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/utility.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -38,18 +41,20 @@ console_result ec_new::invoke(std::ostream& output, std::ostream& error)
 
     if (seed.size() < minimum_seed_size)
     {
-        error << BX_EC_NEW_SHORT_SEED << std::endl;
+        error << BX_EC_NEW_SHORT_SEED << std::flush;
         return console_result::failure;
     }
 
     ec_secret secret(new_key(seed));
     if (secret == null_hash)
     {
-        error << BX_EC_NEW_INVALID_KEY << std::endl;
+        error << BX_EC_NEW_INVALID_KEY << std::flush;
         return console_result::failure;
     }
 
     // We don't use bc::ec_private serialization (WIF) here.
-    output << config::ec_private(secret) << std::endl;
+    output << config::ec_private(secret) << std::flush;
     return console_result::okay;
+}
+}
 }

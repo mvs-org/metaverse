@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -40,7 +43,7 @@ console_result ek_to_address::invoke(std::ostream& output, std::ostream& error)
     ec_secret secret;
     if (!decrypt(secret, version, compressed, key, passphrase))
     {
-        error << BX_EK_TO_ADDRESS_INVALID_PASSPHRASE << std::endl;
+        error << BX_EK_TO_ADDRESS_INVALID_PASSPHRASE << std::flush;
         return console_result::failure;
     }
 
@@ -48,10 +51,12 @@ console_result ek_to_address::invoke(std::ostream& output, std::ostream& error)
     secret_to_public(point, secret);
     const payment_address address({ point, compressed }, version);
 
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
 #else
-    error << BX_EK_TO_ADDRESS_REQUIRES_ICU << std::endl;
+    error << BX_EK_TO_ADDRESS_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
+}
+}
 }

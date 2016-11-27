@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/btc.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -35,6 +38,8 @@ console_result satoshi_to_btc::invoke(std::ostream& output,
     // Bound parameters.
     const auto satoshi = get_satoshi_argument();
 
-    output << btc(satoshi) << std::endl;
+    output << btc(satoshi) << std::flush;
     return console_result::okay;
+}
+}
 }

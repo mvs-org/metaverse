@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/config/transaction.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -43,12 +46,14 @@ console_result input_set::invoke(std::ostream& output, std::ostream& error)
 
     if (index >= tx_out.inputs.size())
     {
-        error << BX_INPUT_SET_INDEX_OUT_OF_RANGE << std::endl;
+        error << BX_INPUT_SET_INDEX_OUT_OF_RANGE << std::flush;
         return console_result::failure;
     }
 
     tx_out.inputs[index].script = script;
 
-    output << tx_copy << std::endl;
+    output << tx_copy << std::flush;
     return console_result::okay;
+}
+}
 }

@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -38,7 +41,7 @@ console_result hd_to_ec::invoke(std::ostream& output, std::ostream& error)
     const auto key_version = key.version();
     if (key_version != private_version && key_version != public_version)
     {
-        output << "ERROR_VERSION" << std::endl;
+        output << "ERROR_VERSION" << std::flush;
         return console_result::failure;
     }
 
@@ -51,7 +54,7 @@ console_result hd_to_ec::invoke(std::ostream& output, std::ostream& error)
         const auto private_key = bc::wallet::hd_private(key, prefixes);
         if (private_key)
         {
-            output << encode_base16(private_key.secret()) << std::endl;
+            output << encode_base16(private_key.secret()) << std::flush;
             return console_result::okay;
         }
     }
@@ -61,11 +64,13 @@ console_result hd_to_ec::invoke(std::ostream& output, std::ostream& error)
         const auto public_key = bc::wallet::hd_public(key, public_version);
         if (public_key)
         {
-            output << bc::wallet::ec_public(public_key) << std::endl;
+            output << bc::wallet::ec_public(public_key) << std::flush;
             return console_result::okay;
         }
     }
 
-    output << "ERROR_VKEY" << std::endl;
+    output << "ERROR_VKEY" << std::flush;
     return console_result::failure;
+}
+}
 }

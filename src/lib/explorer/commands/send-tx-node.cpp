@@ -32,6 +32,9 @@
 #include <bitcoin/explorer/config/transaction.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -132,4 +135,6 @@ console_result send_tx_node::invoke(std::ostream& output, std::ostream& error)
     complete.get_future();
 
     return state.get_result();
+}
+}
 }

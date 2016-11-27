@@ -24,6 +24,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -38,12 +41,14 @@ console_result seed::invoke(std::ostream& output, std::ostream& error)
     if (bit_length < minimum_seed_size * byte_bits ||
         bit_length % byte_bits != 0)
     {
-        error << BX_SEED_BIT_LENGTH_UNSUPPORTED << std::endl;
+        error << BX_SEED_BIT_LENGTH_UNSUPPORTED << std::flush;
         return console_result::failure;
     }
 
     const auto seed = new_seed(bit_length);
 
-    output << base16(seed) << std::endl;
+    output << base16(seed) << std::flush;
     return console_result::okay;
+}
+}
 }

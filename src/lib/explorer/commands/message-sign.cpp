@@ -25,6 +25,9 @@
 #include <bitcoin/explorer/config/signature.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -41,6 +44,8 @@ console_result message_sign::invoke(std::ostream& output, std::ostream& error)
     message_signature sign;
     sign_message(sign, message, secret);
 
-    output << signature(sign) << std::endl;
+    output << signature(sign) << std::flush;
     return console_result::okay;
+}
+}
 }

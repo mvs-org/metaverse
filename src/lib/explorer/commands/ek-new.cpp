@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -38,7 +41,7 @@ console_result ek_new::invoke(std::ostream& output, std::ostream& error)
 
     if (seed.size() < ek_seed_size)
     {
-        error << BX_EK_NEW_SHORT_SEED << std::endl;
+        error << BX_EK_NEW_SHORT_SEED << std::flush;
         return console_result::failure;
     }
     
@@ -49,6 +52,8 @@ console_result ek_new::invoke(std::ostream& output, std::ostream& error)
     encrypted_private secret;
     create_key_pair(secret, unused, token, bytes, version, !uncompressed);
     
-    output << ek_private(secret) << std::endl;
+    output << ek_private(secret) << std::flush;
     return console_result::okay;
+}
+}
 }

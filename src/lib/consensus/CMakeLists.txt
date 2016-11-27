@@ -1,4 +1,5 @@
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/clone")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src/lib/consensus/common")
 
 FILE(GLOB_RECURSE consensus_SOURCES "*.cpp")
 
@@ -17,6 +18,7 @@ ADD_DEFINITIONS(-DBCK_STATIC=1)
 ADD_LIBRARY(consensus_static STATIC ${consensus_SOURCES})
 SET_TARGET_PROPERTIES(consensus_static PROPERTIES OUTPUT_NAME mvs_consensus)
 TARGET_LINK_LIBRARIES(consensus_static ${Boost_LIBRARIES} )
+TARGET_LINK_LIBRARIES(consensus_static ethash )
 INSTALL(TARGETS consensus_static DESTINATION lib)
 
 IF(ENABLE_SHARED_LIBS)
@@ -24,5 +26,6 @@ IF(ENABLE_SHARED_LIBS)
   ADD_LIBRARY(consensus_shared SHARED ${consensus_SOURCES})
   SET_TARGET_PROPERTIES(consensus_shared PROPERTIES OUTPUT_NAME mvs_consensus)
   TARGET_LINK_LIBRARIES(consensus_shared ${Boost_LIBRARIES})
+  TARGET_LINK_LIBRARIES(consensus_shared  ethash )
   INSTALL(TARGETS consensus_shared DESTINATION lib)
 ENDIF()

@@ -35,6 +35,21 @@
 
 namespace libbitcoin {
 namespace blockchain {
+	
+/// used for account/asset operation return code
+/// error code < 0 , normal code > 0
+enum operation_result : int
+{
+	asset_existed = -6,
+	account_existed = -5,
+	account_not_exist = -4,
+    parameter_invalid = -3,
+    service_stopped = -2,
+    password_invalid = -1,
+    none = 0, // defaul value
+	okay = 1, // normal operation
+	newaccount_created = 2
+};
 
 /// The simple_chain interface portion of this class is not thread safe.
 class BCB_API block_chain_impl
@@ -203,6 +218,35 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
+	/* begin store account related info into database */
+#if 1
+	inline hash_digest str2sha256hash(const std::string& passwd);
+	/* used for "set_admin_passwd" command */
+	operation_result set_admin_passwd(const std::string& name, const std::string& old_passwd,
+		const std::string& new_passwd, uint16_t flag=0);
+	/* used for "get_new_account" command */
+	operation_result get_new_account(const std::string& name, const std::string& passwd, 
+		const std::string& mnemonic);
+	void store_account(std::shared_ptr<account> acc);
+	std::shared_ptr<account> get_account_by_name(const std::string& name);
+	operation_result get_account_info(const std::string& name, const std::string& passwd,
+		std::string& mnemonic, uint32_t& hd_index, uint16_t flag=0);
+
+	
+	/* used for "get_new_address" command */
+	operation_result get_new_address(const std::string& name, const std::string& passwd,
+		const std::string& mnemonic, uint32_t& hd_index);
+	operation_result store_account_address(const std::string& name, const std::string& passwd,  
+		const std::string& xprv, const std::string& xpub, uint32_t& hd_index, uint16_t flag=0);
+	std::shared_ptr<account_address> get_address_by_xpub(const std::string& xpub);
+	// asset related api
+	std::shared_ptr<asset_detail> get_asset_by_symbol(const std::string& symbol);
+	operation_result create_asset(const std::string& name, const std::string& passwd, 
+		const asset_detail& asset, uint16_t flag=0);
+	void store_asset(const asset_detail& acc);
+	void store_account_asset(asset_transfer& sp_transfer);
+#endif
+	/* end store account related info into database */
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 
@@ -232,7 +276,7 @@ private:
     ////void fetch_parallel(perform_read_functor perform_read);
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
-
+	
     std::atomic<bool> stopped_;
     const settings& settings_;
 

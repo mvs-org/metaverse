@@ -24,6 +24,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -34,6 +37,8 @@ console_result wif_to_public::invoke(std::ostream& output, std::ostream& error)
     // Bound parameters.
     const auto& secret = get_wif_argument();
 
-    output << ec_public(secret) << std::endl;
+    output << ec_public(secret) << std::flush;
     return console_result::okay;
+}
+}
 }

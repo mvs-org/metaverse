@@ -25,6 +25,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::wallet;
 using namespace bc::explorer;
@@ -59,7 +62,7 @@ console_result qrcode::invoke(std::ostream& output, std::ostream& error)
 
         return (result ? console_result::okay : console_result::failure);
 #else
-        error << BX_QRCODE_REQUIRES_PNG << std::endl;
+        error << BX_QRCODE_REQUIRES_PNG << std::flush;
         return console_result::failure;
 #endif // WITH_PNG
     }
@@ -71,7 +74,9 @@ console_result qrcode::invoke(std::ostream& output, std::ostream& error)
 
     return console_result::okay;
 #else
-    error << BX_QRCODE_REQUIRES_QRENCODE << std::endl;
+    error << BX_QRCODE_REQUIRES_QRENCODE << std::flush;
     return console_result::failure;
 #endif // WITH_QRENCODE
+}
+}
 }

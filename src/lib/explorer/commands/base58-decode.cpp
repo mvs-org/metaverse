@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -33,6 +36,8 @@ console_result base58_decode::invoke(std::ostream& output, std::ostream& error)
     // Bound parameters.
     const auto& base58 = get_base58_argument();
 
-    output << base16(base58) << std::endl;
+    output << base16(base58) << std::flush;
     return console_result::okay;
+}
+}
 }

@@ -25,6 +25,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -37,6 +40,8 @@ console_result tx_sign::invoke(std::ostream& output, std::ostream& error)
     //for (const tx_type& tx: transactions)
     //    /* sign */;
 
-    error << BX_TX_SIGN_NOT_IMPLEMENTED << std::endl;
+    error << BX_TX_SIGN_NOT_IMPLEMENTED << std::flush;
     return console_result::failure;
+}
+}
 }

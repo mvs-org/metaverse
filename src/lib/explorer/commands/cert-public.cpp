@@ -23,6 +23,9 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::config;
 using namespace bc::explorer;
@@ -41,10 +44,12 @@ console_result cert_public::invoke(std::ostream& output, std::ostream& error)
     // of a new keypair, so it must be excluded here if the user entered it.
     if (!private_key || !certificate)
     {
-        error << BX_CERT_PUBLIC_INVALID << std::endl;
+        error << BX_CERT_PUBLIC_INVALID << std::flush;
         return console_result::failure;
     }
 
-    output << certificate.public_key() << std::endl;
+    output << certificate.public_key() << std::flush;
     return console_result::okay;
+}
+}
 }

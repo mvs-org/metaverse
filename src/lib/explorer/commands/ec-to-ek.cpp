@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -39,10 +42,12 @@ console_result ec_to_ek::invoke(std::ostream& output, std::ostream& error)
     encrypted_private point;
     encrypt(point, secret, passphrase, version, !uncompressed);
 
-    output << ek_private(point) << std::endl;
+    output << ek_private(point) << std::flush;
     return console_result::okay;
 #else
-    error << BX_EC_TO_EK_REQUIRES_ICU << std::endl;
+    error << BX_EC_TO_EK_REQUIRES_ICU << std::flush;
     return console_result::failure;
 #endif
+}
+}
 }

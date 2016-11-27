@@ -23,6 +23,9 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
+namespace libbitcoin{ 
+namespace explorer {
+
 using namespace bc;
 using namespace bc::explorer;
 using namespace bc::explorer::commands;
@@ -36,6 +39,8 @@ console_result script_to_address::invoke(std::ostream& output, std::ostream& err
 
     const payment_address address(script, version);
 
-    output << address << std::endl;
+    output << address << std::flush;
     return console_result::okay;
+}
+}
 }
