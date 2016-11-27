@@ -223,26 +223,26 @@ public:
 	inline hash_digest str2sha256hash(const std::string& passwd);
 	/* used for "set_admin_passwd" command */
 	operation_result set_admin_passwd(const std::string& name, const std::string& old_passwd,
-		uint16_t flag, const std::string& new_passwd);
+		const std::string& new_passwd, uint16_t flag=0);
 	/* used for "get_new_account" command */
 	operation_result get_new_account(const std::string& name, const std::string& passwd, 
 		const std::string& mnemonic);
 	void store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account_by_name(const std::string& name);
 	operation_result get_account_info(const std::string& name, const std::string& passwd,
-		uint16_t flag, std::string& mnemonic, uint32_t& hd_index);
+		std::string& mnemonic, uint32_t& hd_index, uint16_t flag=0);
 
 	
 	/* used for "get_new_address" command */
 	operation_result get_new_address(const std::string& name, const std::string& passwd,
 		const std::string& mnemonic, uint32_t& hd_index);
-	operation_result store_account_address(const std::string& name, const std::string& passwd, uint16_t flag, 
-		const std::string& xprv, const std::string& xpub, uint32_t& hd_index);
+	operation_result store_account_address(const std::string& name, const std::string& passwd,  
+		const std::string& xprv, const std::string& xpub, uint32_t& hd_index, uint16_t flag=0);
 	std::shared_ptr<account_address> get_address_by_xpub(const std::string& xpub);
 	// asset related api
 	std::shared_ptr<asset_detail> get_asset_by_symbol(const std::string& symbol);
 	operation_result create_asset(const std::string& name, const std::string& passwd, 
-		uint16_t flag, const asset_detail& asset);
+		const asset_detail& asset, uint16_t flag=0);
 	void store_asset(const asset_detail& acc);
 	void store_account_asset(asset_transfer& sp_transfer);
 #endif

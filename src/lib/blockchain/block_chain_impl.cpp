@@ -930,7 +930,7 @@ std::shared_ptr<account_address> block_chain_impl::get_address_by_xpub(const std
 	return result.get_account_address_detail();
 }
 operation_result block_chain_impl::store_account_address(const std::string& name, const std::string& passwd,
-	uint16_t flag, const std::string& xprv, const std::string& xpub, uint32_t& hd_index)
+	const std::string& xprv, const std::string& xpub, uint32_t& hd_index, uint16_t flag)
 {
 	operation_result ret_val = operation_result::none;
 	if (stopped())
@@ -978,7 +978,7 @@ inline hash_digest block_chain_impl::str2sha256hash(const std::string& passwd)
 }
 /* used for "set_admin_passwd" command */
 operation_result block_chain_impl::set_admin_passwd(const std::string& name, const std::string& old_passwd,
-	uint16_t flag, const std::string& new_passwd)
+	const std::string& new_passwd, uint16_t flag)
 {
 	operation_result ret_val = operation_result::none;
 	// parameter check
@@ -1019,7 +1019,7 @@ operation_result block_chain_impl::set_admin_passwd(const std::string& name, con
 
 /* used for "get_new_address" command */
 operation_result block_chain_impl::get_account_info(const std::string& name, const std::string& passwd,
-	uint16_t flag, std::string& mnemonic, uint32_t& hd_index)
+	std::string& mnemonic, uint32_t& hd_index, uint16_t flag)
 {
 	operation_result ret_val = operation_result::none;
 	// parameter check
@@ -1118,7 +1118,7 @@ std::shared_ptr<asset_detail> block_chain_impl::get_asset_by_symbol(const std::s
 }
 
 operation_result block_chain_impl::create_asset(const std::string& name, const std::string& passwd, 
-	uint16_t flag, const asset_detail& asset)
+	const asset_detail& asset, uint16_t flag)
 {
 	operation_result ret_val = operation_result::none;
 	// parameter check
