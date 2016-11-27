@@ -53,7 +53,7 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	//operator bool() const;
+	void to_json(std::ostream& output) ;
 
     std::string name;  // account name
     std::string xprv_key; 

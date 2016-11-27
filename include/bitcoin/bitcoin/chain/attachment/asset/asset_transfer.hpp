@@ -51,7 +51,8 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-    
+	void to_json(std::ostream& output) ;
+
     std::string address;  // symbol
     std::string sender;
 	std::string recipient;

@@ -25,6 +25,7 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <json/minijson_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -150,6 +151,16 @@ account::operator bool() const
 	return (name.empty() || mnemonic.empty());
 }
 
+void account::to_json(std::ostream& output) 
+{
+	minijson::object_writer json_writer(output);
+	json_writer.write("name", name);
+	json_writer.write("mnemonic", mnemonic);
+	//json_writer.write_array("passwd", std::begin(passwd.data()), std::passwd.end());
+	json_writer.write("hd_index", hd_index);
+	json_writer.write("priority", priority);
+	json_writer.close();
+}
 
 } // namspace chain
 } // namspace libbitcoin

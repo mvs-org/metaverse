@@ -51,6 +51,7 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
     std::string to_string() ;
+	void to_json(std::ostream& out);
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;

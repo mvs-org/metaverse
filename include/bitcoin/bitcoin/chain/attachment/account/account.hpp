@@ -54,7 +54,8 @@ public:
     void reset();
     uint64_t serialized_size() const;
 	operator bool() const;
-
+	void to_json(std::ostream& output);
+	
     std::string name;
     std::string mnemonic;
     hash_digest passwd;
