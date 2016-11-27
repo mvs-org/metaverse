@@ -150,10 +150,18 @@ void session_header_sync::handle_channel_start(const code& ec,
 void session_header_sync::attach_protocols(channel::ptr channel,
     connector::ptr connect, result_handler handler)
 {
-    attach<protocol_ping>(channel)->start();
-    attach<protocol_address>(channel)->start();
-    attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
-        ->start(BIND4(handle_complete, _1, channel, connect, handler));
+    attach<protocol_ping>(channel)->start([channel, connect, handler, this](const code& ec){
+    	if(ec)
+    	{
+    		log::debug(LOG_NODE) << "fuck";
+    		handle_complete(ec, channel, connect, handler);
+//    		handler(ec);
+    		return;
+    	}
+    	attach<protocol_address>(channel)->start();
+		attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
+			->start(BIND4(handle_complete, _1, channel, connect, handler));
+    });
 }
 
 void session_header_sync::handle_complete(const code& ec, channel::ptr channel,

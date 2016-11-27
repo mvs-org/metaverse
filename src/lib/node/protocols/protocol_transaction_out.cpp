@@ -193,6 +193,7 @@ bool protocol_transaction_out::handle_floated(const code& ec,
     {
         static const auto id = inventory::type_id::transaction;
         const inventory announcement{ { id, message->hash() } };
+        log::debug(LOG_NODE) << "handle floated send transaction hash," << encode_hash(message->hash()) ;
         SEND2(announcement, handle_send, _1, announcement.command);
     }
 

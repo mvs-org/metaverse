@@ -72,6 +72,7 @@ void protocol_block_out::start()
     if (headers_to_peer_)
     {
         // Send headers vs. inventory anncements if headers_to_peer_ is set.
+    	log::debug(LOG_NODE) << "protocol block out headers to peer" ;
         SUBSCRIBE2(send_headers, handle_receive_send_headers, _1, _2);
     }
 
@@ -158,6 +159,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     // and one of its other peers populates the chain back to this level. In
     // that case we would not respond but our peer's other peer should.
     const auto threshold = last_locator_top_.load();
+    log::debug(LOG_NODE) << "protocol block out handle receive get headers";
 
     blockchain_.fetch_locator_block_headers(*message, threshold, locator_cap,
         BIND2(handle_fetch_locator_headers, _1, _2));
@@ -380,7 +382,10 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
                 announcement.elements.push_back(block->header);
 
         if (!announcement.elements.empty())
+        {
+        	log::debug(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
             SEND2(announcement, handle_send, _1, announcement.command);
+        }
         return true;
     }
 
@@ -392,7 +397,10 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
             announcement.inventories.push_back( { id, block->header.hash() });
 
     if (!announcement.inventories.empty())
+    {
+    	log::debug(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
         SEND2(announcement, handle_send, _1, announcement.command);
+    }
     return true;
 }
 

@@ -46,12 +46,19 @@ session_outbound::session_outbound(p2p& network, block_chain& blockchain,
 
 void session_outbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start();
-    attach<protocol_address>(channel)->start();
-    attach<protocol_block_in>(channel, blockchain_)->set_name("session_outbound").start();
-    attach<protocol_block_out>(channel, blockchain_)->start();
-    attach<protocol_transaction_in>(channel, blockchain_, pool_)->start();
-    attach<protocol_transaction_out>(channel, blockchain_, pool_)->start();
+	log::debug(LOG_NODE) << "attach protocols";
+    attach<protocol_ping>(channel)->start([channel, this](const code& ec){
+    	if(ec)
+		{
+			return;
+		}
+    	attach<protocol_address>(channel)->start();
+		attach<protocol_block_in>(channel, blockchain_)->set_name("session_outbound").start();
+		attach<protocol_block_out>(channel, blockchain_)->start();
+		attach<protocol_transaction_in>(channel, blockchain_, pool_)->start();
+		attach<protocol_transaction_out>(channel, blockchain_, pool_)->start();
+    });
+
 //    attach<protocol_miner>(channel, blockchain_)->start();
 }
 

@@ -73,6 +73,11 @@ public:
     /// Set the max size of a block request (defaults to 50000).
     void set_max_request(size_t value);
 
+    std::size_t size() {
+    	shared_lock lock(mutex_);
+    	return table_.size();
+    }
+
 private:
 
     // Create the specified number of reservations and distribute hashes.

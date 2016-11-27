@@ -106,6 +106,7 @@ void server_node::handle_running(const code& ec, result_handler handler)
     if (ec)
     {
     	handler(ec);
+	return;
     }
 
     if (!start_services())

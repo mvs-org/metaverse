@@ -43,6 +43,7 @@ template <typename KeyType>
 void record_hash_table<KeyType>::store(const KeyType& key,
     const write_function write)
 {
+	mutex_.lock();
     // Store current bucket value.
     const auto old_begin = read_bucket_value(key);
     record_row<KeyType> item(manager_, 0);
@@ -51,6 +52,7 @@ void record_hash_table<KeyType>::store(const KeyType& key,
 
     // Link record to header.
     link(key, new_begin);
+    mutex_.unlock();
 }
 
 // This is limited to returning the first of multiple matching key values.

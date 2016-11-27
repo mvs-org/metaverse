@@ -48,6 +48,7 @@ session_block_sync::session_block_sync(p2p& network, header_queue& hashes,
     simple_chain& chain, const settings& settings)
   : session_batch(network, false),
     blockchain_(chain),
+	reservations_count_{0},
     settings_(settings),
     reservations_(hashes, chain, settings),
     CONSTRUCT_TRACK(session_block_sync)
@@ -84,13 +85,15 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
     // TODO: expose valid block count from reservations and emit here.
     log::info(LOG_NODE)
         << "Getting blocks.";
-
     const auto connector = create_connector();
+    reservations_count_ = table.size();
     const auto complete = synchronize(handler, table.size(), NAME);
-
+    std::function<void(const code&)> func = complete;
     // This is the end of the start sequence.
     for (const auto row: table)
-        new_connection(connector, row, complete);
+        new_connection(connector, row, [func](const code& ec){
+    	func(ec);
+    });
     log::info(LOG_NODE)
             << "table size," << table.size();
 
@@ -127,14 +130,10 @@ void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
         log::debug(LOG_NODE)
             << "Failure connecting slot (" << row->slot() << ") "
             << ec.message();
-        if(channel){
-			channel->stop(ec);
-		}
         if(ec.value() == error::not_satisfied)
         {
         	log::debug(LOG_NETWORK) << "session block sync handle connect, not satified";
-        	add_2_dustbin(row, handler);
-//        	handle_complete(error::success, connect, row, handler);
+        	handle_complete(ec, channel, connect, row, handler);
         	return;
         }
         new_connection(connect, row, handler);
@@ -147,7 +146,7 @@ void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
 
     register_channel(channel,
         BIND5(handle_channel_start, _1, channel, connect, row, handler),
-        BIND2(handle_channel_stop, _1, row));
+        BIND4(handle_channel_stop, _1, connect, row, handler));
 }
 
 void session_block_sync::attach_handshake_protocols(channel::ptr channel,
@@ -173,10 +172,16 @@ void session_block_sync::handle_channel_start(const code& ec,
 void session_block_sync::attach_protocols(channel::ptr channel,
     connector::ptr connect, reservation::ptr row, result_handler handler)
 {
-    attach<protocol_ping>(channel)->start();
-    attach<protocol_address>(channel)->start();
-    attach<protocol_block_sync>(channel, row)->start(
-        BIND5(handle_complete, _1, channel, connect, row, handler));
+    attach<protocol_ping>(channel)->start([channel, row, connect, handler, this](const code& ec){
+    	if(ec)
+		{
+    		handle_complete(ec, channel, connect, row, handler);
+			return;
+		}
+    	attach<protocol_address>(channel)->start();
+		attach<protocol_block_sync>(channel, row)->start(
+			BIND5(handle_complete, _1, channel, connect, row, handler));
+    });
 }
 
 void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
@@ -186,44 +191,39 @@ void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
     if (!ec)
     {
         timer_->stop();
+        scoped_lock lock{mutex_};
+        --reservations_count_;
         reservations_.remove(row);
-
         log::debug(LOG_NODE)
-            << "Completed slot (" << row->slot() << ")";
-
+            << "Completed slot (" << row->slot() << ")" << ",resd size," << reservations_.size();
         // This is the end of the block sync sequence.
         handler(ec);
-        get_from_dustbin(channel, connect, handler);
+
         return;
     }
 
+    if(ec.value() == error::not_satisfied)
+    {
+    	scoped_lock lock{mutex_};
+    	if(reservations_count_ != 1)
+    	{
+    		--reservations_count_;
+			handler(error::success);
+			return;
+    	}
+    }
+
     // There is no failure scenario, we ignore the result code here.
-    add_2_dustbin(row, handler);
-//    new_connection(connect, row, handler);
+    new_connection(connect, row, handler);
 }
 
 void session_block_sync::handle_channel_stop(const code& ec,
-    reservation::ptr row)
+		network::connector::ptr connect, reservation::ptr row, result_handler handler)
 {
     log::info(LOG_NODE)
         << "Channel stopped on slot (" << row->slot() << ") " << ec.message();
 }
 
-void session_block_sync::add_2_dustbin(reservation::ptr row, result_handler handler)
-{
-	pending_.insert(row);
-}
-
-void session_block_sync::get_from_dustbin(channel::ptr channel, connector::ptr connect, result_handler handler)
-{
-	if(not pending_.empty())
-	{
-		auto item = *pending_.begin();
-		pending_.erase(pending_.begin());
-		attach<protocol_block_sync>(channel, item)->start(
-			BIND5(handle_complete, _1, channel, connect, item, handler));
-	}
-}
 
 // Timer.
 // ----------------------------------------------------------------------------

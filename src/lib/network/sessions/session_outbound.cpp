@@ -90,7 +90,7 @@ void session_outbound::new_connection(connector::ptr connect)
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
 	log::debug(LOG_NETWORK) << "delay new connect" ;
-	auto timer = std::make_shared<deadline>(pool_, asio::seconds(5));
+	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
 	auto self = shared_from_this();
 	timer->start([this, connect, timer, self](const code& ec){
 		if (ec)
@@ -120,7 +120,6 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 			return;
 		}
         delay_new_connect(connect);
-//        new_connection(connect);
         return;
     }
 
@@ -141,8 +140,6 @@ void session_outbound::handle_channel_start(const code& ec,
         log::debug(LOG_NETWORK)
             << "Outbound channel failed to start ["
             << channel->authority() << "] " << ec.message();
-
-        new_connection(connect);
         return;
     }
 
@@ -151,7 +148,7 @@ void session_outbound::handle_channel_start(const code& ec,
 
 void session_outbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start();
+    attach<protocol_ping>(channel)->start([](const code&){});
     attach<protocol_address>(channel)->start();
 }
 
@@ -161,8 +158,7 @@ void session_outbound::handle_channel_stop(const code& ec,
     log::debug(LOG_NETWORK)
         << "Outbound channel stopped [" << channel->authority() << "] "
         << ec.message();
-
-    new_connection(connect);
+    delay_new_connect(connect);
 }
 
 } // namespace network

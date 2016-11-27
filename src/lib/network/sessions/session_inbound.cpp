@@ -165,7 +165,7 @@ void session_inbound::handle_channel_start(const code& ec,
 
 void session_inbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start();
+    attach<protocol_ping>(channel)->start([](const code&){});
     attach<protocol_address>(channel)->start();
 }
 

@@ -43,10 +43,13 @@ protocol_ping::protocol_ping(p2p& network, channel::ptr channel)
 {
 }
 
-void protocol_ping::start()
+void protocol_ping::start(result_handler handler)
 {
     protocol_timer::start(settings_.channel_heartbeat(), BIND1(send_ping, _1));
-
+    {
+    	unique_lock lock{mutex_};
+    	result_handler_ = handler;
+    }
     SUBSCRIBE2(ping, handle_receive_ping, _1, _2);
 
     // Send initial ping message by simulating first heartbeat.
@@ -64,6 +67,7 @@ void protocol_ping::send_ping(const code& ec)
         log::debug(LOG_NETWORK)
             << "Failure in ping timer for [" << authority() << "] "
             << ec.message();
+        test_call_handler(ec);
         stop(ec);
         return;
     }
@@ -72,6 +76,18 @@ void protocol_ping::send_ping(const code& ec)
 
     SUBSCRIBE3(pong, handle_receive_pong, _1, _2, nonce);
     SEND2(ping{ nonce }, handle_send, _1, pong::command);
+}
+
+void protocol_ping::test_call_handler(const code& ec)
+{
+	upgrade_lock upgrade{mutex_};
+	if(result_handler_)
+	{
+		log::debug(LOG_NETWORK) << "test call handler";
+		result_handler_(ec);
+		unique_lock lock(std::move(upgrade));
+		result_handler_ = nullptr;
+	}
 }
 
 bool protocol_ping::handle_receive_ping(const code& ec,
@@ -85,10 +101,10 @@ bool protocol_ping::handle_receive_ping(const code& ec,
         log::debug(LOG_NETWORK)
             << "Failure getting ping from [" << authority() << "] "
             << ec.message();
+        test_call_handler(ec);
         stop(ec);
         return false;
     }
-
     SEND2(pong{ message->nonce }, handle_send, _1, pong::command);
 
     // RESUBSCRIBE
@@ -100,6 +116,8 @@ bool protocol_ping::handle_receive_pong(const code& ec,
 {
     if (stopped())
         return false;
+
+    test_call_handler(ec);
 
     if (ec)
     {

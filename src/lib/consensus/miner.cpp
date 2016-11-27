@@ -345,6 +345,7 @@ void miner::work()
 		block->header.bits = height_*1000 + (unsigned char)random(); 
 		if(block) 
 		{ 
+			log::debug(LOG_NODE) << "miner store block, hash," << encode_hash(block->header.hash());
 			boost::uint64_t height = store_block(block); 
 		} 
 	} 

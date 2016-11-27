@@ -387,6 +387,11 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     // TODO: use p2p_node instead.
     // Update the top of the chain.
     current_chain_top_.store(incoming.back()->header.hash());
+    auto last_hash = incoming.back()->header.hash();
+    blockchain_.fetch_block_height(last_hash, [&last_hash](const code&ec, uint64_t height){
+    	log::debug(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
+    });
+
 
     // Ask the peer for blocks above our top (we also do this via stall timer).
     send_get_blocks(null_hash);

@@ -145,6 +145,12 @@ bool protocol_block_sync::handle_receive(const code& ec, block_ptr message,
 // This is fired by the base timer and stop handler.
 void protocol_block_sync::handle_event(const code& ec, event_handler complete)
 {
+	if (ec == error::service_stopped)
+	{
+		complete(ec);
+		return ;
+	}
+
     if (ec == error::channel_stopped)
     {
         complete(ec);
@@ -178,6 +184,7 @@ void protocol_block_sync::handle_event(const code& ec, event_handler complete)
         complete(error::channel_timeout);
         return;
     }
+    complete(ec);
 }
 
 void protocol_block_sync::blocks_complete(const code& ec,
@@ -185,13 +192,12 @@ void protocol_block_sync::blocks_complete(const code& ec,
 {
     // We are no longer receiving blocks, so exclude from average.
     reservation_->reset();
-
+    log::debug(LOG_NODE) << "protocol block sync blocks complete," << ec.message();
+    // The session does not need to handle the stop.
+    stop(error::channel_stopped);
     // This is the end of the peer sync sequence.
     // If there is no error the hash list must be empty and remain so.
     handler(ec);
-
-    // The session does not need to handle the stop.
-    stop(error::channel_stopped);
 }
 
 } // namespace node

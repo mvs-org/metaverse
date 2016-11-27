@@ -149,7 +149,17 @@ code hosts::start()
             config::authority host(line);
 
             if (host.port() != 0)
-                buffer_.push_back(host.to_network_address());
+            {
+            	auto network_address = host.to_network_address();
+            	if(network_address.is_routable())
+				{
+					buffer_.push_back(network_address);
+				}
+				else
+				{
+					log::debug(LOG_NETWORK) << "host start is not routable," << config::authority{network_address};
+				}
+            }
         }
     }
 
@@ -244,10 +254,10 @@ code hosts::remove(const address& host)
 
 code hosts::store(const address& host)
 {
-    if (!host.is_valid())
+    if (!host.is_routable())
     {
         log::debug(LOG_NETWORK)
-            << "Invalid host address from peer";
+            << "Invalid host address from peer" << config::authority{host};
 
         // We don't treat invalid address as an error, just log it.
         return error::success;

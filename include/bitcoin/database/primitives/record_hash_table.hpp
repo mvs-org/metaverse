@@ -93,6 +93,7 @@ private:
 
     record_hash_table_header& header_;
     record_manager& manager_;
+    shared_mutex mutex_;
 };
 
 } // namespace database

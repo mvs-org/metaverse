@@ -256,19 +256,6 @@ bool block_chain_impl::import(block::ptr block, uint64_t height)
 
     // THIS IS THE DATABASE BLOCK WRITE AND INDEX OPERATION.
     database_.push(*block, height);
-
-	log::debug(LOG_BLOCKCHAIN)
-		<< "do fetch block";
-	fetch_block(height, [](const code& ec, chain::block::ptr block){
-		if(block){
-			log::debug(LOG_BLOCKCHAIN)
-				<< "fetch block ," << encode_hash(block->header.merkle);
-		}
-		else{
-			log::debug(LOG_BLOCKCHAIN) << "do fetch block failed," << ec.message();
-		}
-
-	});
     return true;
 }
 
@@ -534,13 +521,13 @@ void block_chain_impl::fetch_locator_block_hashes(
         // TODO: This largest portion can be parallelized.
         // Build the hash list until we hit last or the blockchain top.
         hash_list hashes;
-        for (size_t index = start + 1; index <= stop; ++index)
+        for (size_t index = start + 1; index < stop; ++index)
         {
             const auto result = database_.blocks.get(index);
             if (result)
             {
                 hashes.push_back(result.header().hash());
-//                break;
+                break;
             }
         }
 
@@ -603,13 +590,13 @@ void block_chain_impl::fetch_locator_block_headers(
         // TODO: This largest portion can be parallelized.
         // Build the hash list until we hit last or the blockchain top.
         chain::header::list headers;
-        for (size_t index = start + 1; index <= stop; ++index)
+        for (size_t index = start + 1; index < stop; ++index)
         {
             const auto result = database_.blocks.get(index);
             if (result)
             {
                 headers.push_back(result.header());
-//                break;
+                break;
             }
         }
 

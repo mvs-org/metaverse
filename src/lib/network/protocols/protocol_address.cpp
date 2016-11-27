@@ -117,6 +117,20 @@ bool protocol_address::handle_receive_get_address(const code& ec,
     // TODO: need to distort for privacy, don't send currently-connected peers.
 
     auto address_list = std::move(network_.address_list() );
+    auto channel_authorithy = authority();
+
+    auto iter = std::find_if(address_list.begin(), address_list.end(), [&channel_authorithy](const message::network_address& address){
+    	if(config::authority{address} == channel_authorithy)
+		{
+    		return true;
+		}
+    	return false;
+    });
+    if(iter != address_list.end() )
+    {
+    	address_list.erase(iter);
+    }
+
     if(address_list.empty())
     {
     	return false;

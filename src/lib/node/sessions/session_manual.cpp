@@ -45,7 +45,7 @@ session_manual::session_manual(p2p& network, block_chain& blockchain,
 
 void session_manual::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start();
+    attach<protocol_ping>(channel)->start([](const code&){});
     attach<protocol_address>(channel)->start();
     attach<protocol_block_in>(channel, blockchain_)->start();
     attach<protocol_block_out>(channel, blockchain_)->start();

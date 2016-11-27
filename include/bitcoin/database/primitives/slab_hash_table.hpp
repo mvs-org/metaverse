@@ -88,6 +88,7 @@ private:
 
     slab_hash_table_header& header_;
     slab_manager& manager_;
+    shared_mutex mutex_;
 };
 
 } // namespace database

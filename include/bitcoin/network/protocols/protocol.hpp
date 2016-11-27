@@ -146,6 +146,9 @@ private:
     subscribe<CLASS, message>(&CLASS::method, p1, p2)
 #define SUBSCRIBE3(message, method, p1, p2, p3) \
     subscribe<CLASS, message>(&CLASS::method, p1, p2, p3)
+#define SUBSCRIBE4(message, method, p1, p2, p3, p4) \
+    subscribe<CLASS, message>(&CLASS::method, p1, p2, p3, p4)
+
 
 #define SUBSCRIBE_STOP1(method, p1) \
     subscribe_stop<CLASS>(&CLASS::method, p1)
