@@ -44,11 +44,13 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+static const char * NOT_IMPLEMENT_MVS_CLI = "Not implement in mvs-cli present.";
 
 /************************ stop *************************/
 console_result stop::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result stop::invoke (std::ostream& output,
@@ -61,7 +63,8 @@ console_result stop::invoke (std::ostream& output,
 /************************ start *************************/
 console_result start::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result start::invoke (std::ostream& output,
@@ -74,7 +77,8 @@ console_result start::invoke (std::ostream& output,
 /************************ setadmin *************************/
 console_result setadmin::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result setadmin::invoke (std::ostream& output,
@@ -87,7 +91,8 @@ console_result setadmin::invoke (std::ostream& output,
 /************************ getinfo *************************/
 console_result getinfo::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getinfo::invoke (std::ostream& output,
@@ -100,7 +105,8 @@ console_result getinfo::invoke (std::ostream& output,
 /************************ getpeerinfo *************************/
 console_result getpeerinfo::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getpeerinfo::invoke (std::ostream& output,
@@ -113,7 +119,8 @@ console_result getpeerinfo::invoke (std::ostream& output,
 /************************ ping *************************/
 console_result ping::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result ping::invoke (std::ostream& output,
@@ -126,7 +133,8 @@ console_result ping::invoke (std::ostream& output,
 /************************ addnode *************************/
 console_result addnode::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result addnode::invoke (std::ostream& output,
@@ -139,7 +147,8 @@ console_result addnode::invoke (std::ostream& output,
 /************************ getmininginfo *************************/
 console_result getmininginfo::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getmininginfo::invoke (std::ostream& output,
@@ -152,7 +161,8 @@ console_result getmininginfo::invoke (std::ostream& output,
 /************************ backupwallet *************************/
 console_result backupwallet::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result backupwallet::invoke (std::ostream& output,
@@ -165,7 +175,8 @@ console_result backupwallet::invoke (std::ostream& output,
 /************************ importwallet *************************/
 console_result importwallet::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result importwallet::invoke (std::ostream& output,
@@ -178,7 +189,8 @@ console_result importwallet::invoke (std::ostream& output,
 /************************ lockwallet *************************/
 console_result lockwallet::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result lockwallet::invoke (std::ostream& output,
@@ -191,7 +203,8 @@ console_result lockwallet::invoke (std::ostream& output,
 /************************ backupaccount *************************/
 console_result backupaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result backupaccount::invoke (std::ostream& output,
@@ -204,7 +217,8 @@ console_result backupaccount::invoke (std::ostream& output,
 /************************ importaccount *************************/
 console_result importaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result importaccount::invoke (std::ostream& output,
@@ -217,7 +231,8 @@ console_result importaccount::invoke (std::ostream& output,
 /************************ switchaccount *************************/
 console_result switchaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result switchaccount::invoke (std::ostream& output,
@@ -230,7 +245,8 @@ console_result switchaccount::invoke (std::ostream& output,
 /************************ listaccounts *************************/
 console_result listaccounts::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result listaccounts::invoke (std::ostream& output,
@@ -243,7 +259,8 @@ console_result listaccounts::invoke (std::ostream& output,
 /************************ getnewaccount *************************/
 console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getnewaccount::invoke (std::ostream& output,
@@ -278,7 +295,8 @@ console_result getnewaccount::invoke (std::ostream& output,
 /************************ getaccount *************************/
 console_result getaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaccount::invoke (std::ostream& output,
@@ -294,7 +312,8 @@ console_result getaccount::invoke (std::ostream& output,
 /************************ lockaccount *************************/
 console_result lockaccount::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result lockaccount::invoke (std::ostream& output,
@@ -307,7 +326,8 @@ console_result lockaccount::invoke (std::ostream& output,
 /************************ setaccountinfo *************************/
 console_result setaccountinfo::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result setaccountinfo::invoke (std::ostream& output,
@@ -320,7 +340,8 @@ console_result setaccountinfo::invoke (std::ostream& output,
 /************************ listaddresses *************************/
 console_result listaddresses::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result listaddresses::invoke (std::ostream& output,
@@ -333,14 +354,19 @@ console_result listaddresses::invoke (std::ostream& output,
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
     account_ptr acc = blockchain.get_account_by_name(auth_.name);
-    if (acc->mnemonic.empty()) return  console_result::failure;
+    if (!acc && acc->mnemonic.empty()) 
+    {
+        cerr << "not found account.";
+        return console_result::failure;
+    }
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
@@ -366,7 +392,6 @@ console_result getnewaddress::invoke (std::ostream& output,
     exec_with(4);
     output<<sout.str();
 
-
     //acc->hd_index++;
 
     return console_result::okay;
@@ -376,7 +401,8 @@ console_result getnewaddress::invoke (std::ostream& output,
 /************************ getaddress *************************/
 console_result getaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaddress::invoke (std::ostream& output,
@@ -389,7 +415,8 @@ console_result getaddress::invoke (std::ostream& output,
 /************************ getblock *************************/
 console_result getblock::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getblock::invoke (std::ostream& output,
@@ -402,7 +429,8 @@ console_result getblock::invoke (std::ostream& output,
 /************************ signmessage *************************/
 console_result signmessage::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result signmessage::invoke (std::ostream& output,
@@ -415,7 +443,8 @@ console_result signmessage::invoke (std::ostream& output,
 /************************ verifymessage *************************/
 console_result verifymessage::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result verifymessage::invoke (std::ostream& output,
@@ -428,7 +457,8 @@ console_result verifymessage::invoke (std::ostream& output,
 /************************ createmultisig *************************/
 console_result createmultisig::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result createmultisig::invoke (std::ostream& output,
@@ -441,7 +471,8 @@ console_result createmultisig::invoke (std::ostream& output,
 /************************ addmultisigaddress *************************/
 console_result addmultisigaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result addmultisigaddress::invoke (std::ostream& output,
@@ -454,7 +485,8 @@ console_result addmultisigaddress::invoke (std::ostream& output,
 /************************ validateaddress *************************/
 console_result validateaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result validateaddress::invoke (std::ostream& output,
@@ -467,7 +499,8 @@ console_result validateaddress::invoke (std::ostream& output,
 /************************ listbalances *************************/
 console_result listbalances::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result listbalances::invoke (std::ostream& output,
@@ -480,7 +513,8 @@ console_result listbalances::invoke (std::ostream& output,
 /************************ getbalance *************************/
 console_result getbalance::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getbalance::invoke (std::ostream& output,
@@ -493,7 +527,8 @@ console_result getbalance::invoke (std::ostream& output,
 /************************ getaddressbalance *************************/
 console_result getaddressbalance::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaddressbalance::invoke (std::ostream& output,
@@ -506,7 +541,8 @@ console_result getaddressbalance::invoke (std::ostream& output,
 /************************ getaccountbalance *************************/
 console_result getaccountbalance::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaccountbalance::invoke (std::ostream& output,
@@ -519,7 +555,8 @@ console_result getaccountbalance::invoke (std::ostream& output,
 /************************ listtxs *************************/
 console_result listtxs::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result listtxs::invoke (std::ostream& output,
@@ -532,7 +569,8 @@ console_result listtxs::invoke (std::ostream& output,
 /************************ gettx *************************/
 console_result gettx::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result gettx::invoke (std::ostream& output,
@@ -545,7 +583,8 @@ console_result gettx::invoke (std::ostream& output,
 /************************ getaddresstx *************************/
 console_result getaddresstx::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaddresstx::invoke (std::ostream& output,
@@ -558,7 +597,8 @@ console_result getaddresstx::invoke (std::ostream& output,
 /************************ getaccounttx *************************/
 console_result getaccounttx::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaccounttx::invoke (std::ostream& output,
@@ -571,7 +611,8 @@ console_result getaccounttx::invoke (std::ostream& output,
 /************************ send *************************/
 console_result send::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result send::invoke (std::ostream& output,
@@ -584,7 +625,8 @@ console_result send::invoke (std::ostream& output,
 /************************ sendmore *************************/
 console_result sendmore::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendmore::invoke (std::ostream& output,
@@ -597,18 +639,13 @@ console_result sendmore::invoke (std::ostream& output,
 /************************ sendfrom *************************/
 console_result sendfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendfrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    //todo
-    //fetch-tx get outputs
-    //input-set 
-    //input-sgin
-    //input-validate
-    //send-tx transacton base16 code
     return console_result::okay;
 }
 
@@ -616,7 +653,8 @@ console_result sendfrom::invoke (std::ostream& output,
 /************************ sendwithmsg *************************/
 console_result sendwithmsg::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendwithmsg::invoke (std::ostream& output,
@@ -629,7 +667,8 @@ console_result sendwithmsg::invoke (std::ostream& output,
 /************************ sendwithmsgfrom *************************/
 console_result sendwithmsgfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendwithmsgfrom::invoke (std::ostream& output,
@@ -642,7 +681,8 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 /************************ listassets *************************/
 console_result listassets::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result listassets::invoke (std::ostream& output,
@@ -655,7 +695,8 @@ console_result listassets::invoke (std::ostream& output,
 /************************ getasset *************************/
 console_result getasset::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getasset::invoke (std::ostream& output,
@@ -668,7 +709,8 @@ console_result getasset::invoke (std::ostream& output,
 /************************ getaddressasset *************************/
 console_result getaddressasset::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaddressasset::invoke (std::ostream& output,
@@ -681,7 +723,8 @@ console_result getaddressasset::invoke (std::ostream& output,
 /************************ getaccountasset *************************/
 console_result getaccountasset::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getaccountasset::invoke (std::ostream& output,
@@ -694,15 +737,13 @@ console_result getaccountasset::invoke (std::ostream& output,
 /************************ createasset *************************/
 console_result createasset::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result createasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    //todo
-    //createasset
-    //
     return console_result::okay;
 }
 
@@ -710,7 +751,8 @@ console_result createasset::invoke (std::ostream& output,
 /************************ issue *************************/
 console_result issue::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result issue::invoke (std::ostream& output,
@@ -723,13 +765,13 @@ console_result issue::invoke (std::ostream& output,
 /************************ issuefrom *************************/
 console_result issuefrom::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result issuefrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    //sendassetfrom - to systemaccount
     return console_result::okay;
 }
 
@@ -737,7 +779,8 @@ console_result issuefrom::invoke (std::ostream& output,
 /************************ issuemore *************************/
 console_result issuemore::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result issuemore::invoke (std::ostream& output,
@@ -750,7 +793,8 @@ console_result issuemore::invoke (std::ostream& output,
 /************************ issuemorefrom *************************/
 console_result issuemorefrom::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result issuemorefrom::invoke (std::ostream& output,
@@ -763,7 +807,8 @@ console_result issuemorefrom::invoke (std::ostream& output,
 /************************ sendasset *************************/
 console_result sendasset::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendasset::invoke (std::ostream& output,
@@ -776,14 +821,13 @@ console_result sendasset::invoke (std::ostream& output,
 /************************ sendassetfrom *************************/
 console_result sendassetfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendassetfrom::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    //attachasset
-    //sendfrom
     return console_result::okay;
 }
 
@@ -791,7 +835,8 @@ console_result sendassetfrom::invoke (std::ostream& output,
 /************************ getdid *************************/
 console_result getdid::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result getdid::invoke (std::ostream& output,
@@ -804,7 +849,8 @@ console_result getdid::invoke (std::ostream& output,
 /************************ setdid *************************/
 console_result setdid::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result setdid::invoke (std::ostream& output,
@@ -817,7 +863,8 @@ console_result setdid::invoke (std::ostream& output,
 /************************ sendwithdid *************************/
 console_result sendwithdid::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result sendwithdid::invoke (std::ostream& output,
@@ -830,7 +877,8 @@ console_result sendwithdid::invoke (std::ostream& output,
 /************************ settxfee *************************/
 console_result settxfee::invoke (std::ostream& output, std::ostream& cerr)
 {
-    return console_result::okay;
+    cerr << NOT_IMPLEMENT_MVS_CLI;
+    return console_result::failure;
 }
 
 console_result settxfee::invoke (std::ostream& output,
