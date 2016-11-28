@@ -48,7 +48,7 @@ public:
     auto argc() const noexcept { return argc_; }
     void setargv0(std::string&& outside);
 
-    static const int max_paramters{8};
+    static const int max_paramters{24};
 protected:
 
     virtual void data_to_arg() noexcept = 0;
