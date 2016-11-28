@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_WALLET_SETTINGS_HPP
-#define LIBBITCOIN_WALLET_SETTINGS_HPP
+#ifndef MVS_WALLET_SETTINGS_HPP
+#define MVS_WALLET_SETTINGS_HPP
 
 #include <cstdint>
 #include <bitcoin/bitcoin/define.hpp>

@@ -1,6 +1,6 @@
 
-#ifndef LIBBITCOIN_CONSENSUS_MINER_HPP
-#define LIBBITCOIN_CONSENSUS_MINER_HPP
+#ifndef MVS_CONSENSUS_MINER_HPP
+#define MVS_CONSENSUS_MINER_HPP
 
 #include <vector>
 #include <boost/thread.hpp>

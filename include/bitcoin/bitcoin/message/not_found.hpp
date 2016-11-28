@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_MESSAGE_NOT_FOUND_HPP
-#define LIBBITCOIN_MESSAGE_NOT_FOUND_HPP
+#ifndef MVS_MESSAGE_NOT_FOUND_HPP
+#define MVS_MESSAGE_NOT_FOUND_HPP
 
 #include <initializer_list>
 #include <istream>

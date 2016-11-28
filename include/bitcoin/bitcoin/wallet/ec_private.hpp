@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_EC_PRIVATE_HPP
-#define LIBBITCOIN_EC_PRIVATE_HPP
+#ifndef MVS_EC_PRIVATE_HPP
+#define MVS_EC_PRIVATE_HPP
 
 #include <cstdint>
 #include <string>

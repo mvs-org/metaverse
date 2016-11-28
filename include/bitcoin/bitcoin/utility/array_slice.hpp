@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ARRAY_SLICE_HPP
-#define LIBBITCOIN_ARRAY_SLICE_HPP
+#ifndef MVS_ARRAY_SLICE_HPP
+#define MVS_ARRAY_SLICE_HPP
 
 #include <cstddef>
 

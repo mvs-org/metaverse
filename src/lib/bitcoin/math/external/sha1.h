@@ -4,8 +4,8 @@
 * By Steve Reid <steve@edmweb.com>
 * 100% Public Domain
 */
-#ifndef LIBBITCOIN_SHA1_H
-#define LIBBITCOIN_SHA1_H
+#ifndef MVS_SHA1_H
+#define MVS_SHA1_H
 
 #include <stdint.h>
 #include <stddef.h>

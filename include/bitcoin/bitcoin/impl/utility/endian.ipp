@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ENDIAN_IPP
-#define LIBBITCOIN_ENDIAN_IPP
+#ifndef MVS_ENDIAN_IPP
+#define MVS_ENDIAN_IPP
 
 #include <type_traits>
 

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CONSTANTS_HPP
-#define LIBBITCOIN_CONSTANTS_HPP
+#ifndef MVS_CONSTANTS_HPP
+#define MVS_CONSTANTS_HPP
 
 #include <cstddef>
 #include <cstdint>
@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 
-#define BC_USER_AGENT "/libbitcoin:" LIBBITCOIN_VERSION "/"
+#define BC_USER_AGENT "/libbitcoin:" MVS_VERSION "/"
 
 // Generic constants.
 

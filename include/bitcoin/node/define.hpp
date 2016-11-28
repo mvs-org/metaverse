@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NODE_DEFINE_HPP
-#define LIBBITCOIN_NODE_DEFINE_HPP
+#ifndef MVS_NODE_DEFINE_HPP
+#define MVS_NODE_DEFINE_HPP
 
 #include <bitcoin/bitcoin.hpp>
 

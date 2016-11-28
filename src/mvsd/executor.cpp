@@ -83,11 +83,11 @@ void executor::do_settings()
 void executor::do_version()
 {
     output_ << format(BS_VERSION_MESSAGE) %
-        LIBBITCOIN_SERVER_VERSION %
-        LIBBITCOIN_PROTOCOL_VERSION %
-        LIBBITCOIN_NODE_VERSION %
-        LIBBITCOIN_BLOCKCHAIN_VERSION %
-        LIBBITCOIN_VERSION << std::endl;
+        MVS_SERVER_VERSION %
+        MVS_PROTOCOL_VERSION %
+        MVS_NODE_VERSION %
+        MVS_BLOCKCHAIN_VERSION %
+        MVS_VERSION << std::endl;
 }
 
 // Emit to the log.

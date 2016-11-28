@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_BLOCK_RESULT_HPP
-#define LIBBITCOIN_DATABASE_BLOCK_RESULT_HPP
+#ifndef MVS_DATABASE_BLOCK_RESULT_HPP
+#define MVS_DATABASE_BLOCK_RESULT_HPP
 
 #include <cstdint>
 #include <cstddef>

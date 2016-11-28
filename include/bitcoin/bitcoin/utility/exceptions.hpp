@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_EXCEPTIONS_HPP
-#define LIBBITCOIN_EXCEPTIONS_HPP
+#ifndef MVS_EXCEPTIONS_HPP
+#define MVS_EXCEPTIONS_HPP
 
 #include <exception>
 #include <bitcoin/bitcoin/define.hpp>

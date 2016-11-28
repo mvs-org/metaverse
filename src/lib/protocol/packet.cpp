@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef LIBBITCOIN_VERSION4
+#ifdef MVS_VERSION4
 
 #include <bitcoin/protocol/packet.hpp>
 

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_AES256_HPP
-#define LIBBITCOIN_AES256_HPP
+#ifndef MVS_AES256_HPP
+#define MVS_AES256_HPP
 
 #include <cstdint>
 #include <bitcoin/bitcoin/compat.hpp>

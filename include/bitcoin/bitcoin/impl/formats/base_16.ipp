@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BASE_16_IPP
-#define LIBBITCOIN_BASE_16_IPP
+#ifndef MVS_BASE_16_IPP
+#define MVS_BASE_16_IPP
 
 #include <bitcoin/bitcoin/utility/assert.hpp>
 

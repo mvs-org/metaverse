@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NOTIFIER_IPP
-#define LIBBITCOIN_NOTIFIER_IPP
+#ifndef MVS_NOTIFIER_IPP
+#define MVS_NOTIFIER_IPP
 
 #include <cstddef>
 #include <functional>

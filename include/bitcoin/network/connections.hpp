@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NETWORK_CONNECTIONS_HPP
-#define LIBBITCOIN_NETWORK_CONNECTIONS_HPP
+#ifndef MVS_NETWORK_CONNECTIONS_HPP
+#define MVS_NETWORK_CONNECTIONS_HPP
 
 #include <atomic>
 #include <cstddef>

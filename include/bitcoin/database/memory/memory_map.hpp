@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_MEMORY_MAP_HPP
-#define LIBBITCOIN_DATABASE_MEMORY_MAP_HPP
+#ifndef MVS_DATABASE_MEMORY_MAP_HPP
+#define MVS_DATABASE_MEMORY_MAP_HPP
 
 #ifndef _WIN32
 #include <sys/mman.h>

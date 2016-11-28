@@ -4,8 +4,8 @@
 //        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef LIBBITCOIN_BLOCKCHAIN_HPP
-#define LIBBITCOIN_BLOCKCHAIN_HPP
+#ifndef MVS_BLOCKCHAIN_HPP
+#define MVS_BLOCKCHAIN_HPP
 
 /**
  * API Users: Include only this header. Direct use of other headers is fragile 

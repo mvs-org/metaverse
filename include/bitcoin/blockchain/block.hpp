@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
-#define LIBBITCOIN_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
+#ifndef MVS_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
+#define MVS_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
 
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>

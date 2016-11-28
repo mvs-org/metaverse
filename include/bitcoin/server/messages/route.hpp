@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_SERVER_ROUTE
-#define LIBBITCOIN_SERVER_ROUTE
+#ifndef MVS_SERVER_ROUTE
+#define MVS_SERVER_ROUTE
 
 #include <cstddef>
 #include <string>

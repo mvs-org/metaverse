@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_SERVER_EXECUTOR_HPP
-#define LIBBITCOIN_SERVER_EXECUTOR_HPP
+#ifndef MVS_SERVER_EXECUTOR_HPP
+#define MVS_SERVER_EXECUTOR_HPP
 
 #include <future>
 #include <iostream>

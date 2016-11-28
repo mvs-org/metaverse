@@ -23,8 +23,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#ifndef LIBBITCOIN_SHA256_H
-#define LIBBITCOIN_SHA256_H
+#ifndef MVS_SHA256_H
+#define MVS_SHA256_H
 
 #include <stdint.h>
 #include <stddef.h>

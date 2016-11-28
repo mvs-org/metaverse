@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CONFIG_BASE2_HPP
-#define LIBBITCOIN_CONFIG_BASE2_HPP
+#ifndef MVS_CONFIG_BASE2_HPP
+#define MVS_CONFIG_BASE2_HPP
 
 #include <cstddef>
 #include <iostream>

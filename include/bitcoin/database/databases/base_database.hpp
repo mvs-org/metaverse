@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_BASE_DATABASE_HPP
-#define LIBBITCOIN_DATABASE_BASE_DATABASE_HPP
+#ifndef MVS_DATABASE_BASE_DATABASE_HPP
+#define MVS_DATABASE_BASE_DATABASE_HPP
 
 #include <memory>
 #include <boost/filesystem.hpp>

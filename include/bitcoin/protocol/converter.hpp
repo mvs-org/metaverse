@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef LIBBITCOIN_VERSION4
+#ifdef MVS_VERSION4
 
-#ifndef LIBBITCOIN_PROTOCOL_CONVERSION_HPP
-#define LIBBITCOIN_PROTOCOL_CONVERSION_HPP
+#ifndef MVS_PROTOCOL_CONVERSION_HPP
+#define MVS_PROTOCOL_CONVERSION_HPP
 
 #include <memory>
 #include <bitcoin/bitcoin.hpp>

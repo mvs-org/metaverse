@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_PROTOCOL_ZMQ_ZEROMQ_HPP
-#define LIBBITCOIN_PROTOCOL_ZMQ_ZEROMQ_HPP
+#ifndef MVS_PROTOCOL_ZMQ_ZEROMQ_HPP
+#define MVS_PROTOCOL_ZMQ_ZEROMQ_HPP
 
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/protocol/define.hpp>

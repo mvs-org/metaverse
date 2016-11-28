@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBBITCOIN_PROTOCOL_PACKET
-#define LIBBITCOIN_PROTOCOL_PACKET
+#ifndef MVS_PROTOCOL_PACKET
+#define MVS_PROTOCOL_PACKET
 
 #include <memory>
 #include <bitcoin/bitcoin.hpp>
