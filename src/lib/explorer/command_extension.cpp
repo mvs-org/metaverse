@@ -362,11 +362,14 @@ console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
     account_ptr acc = blockchain.get_account_by_name(auth_.name);
-    if (!acc && acc->mnemonic.empty()) 
+    if (!acc) 
     {
-        cerr << "not found account.";
+        throw std::logic_error("not found account");
+//        cerr << "not found account.";
         return console_result::failure;
     }
+
+    if (acc->mnemonic.empty()) return console_result::failure;
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");

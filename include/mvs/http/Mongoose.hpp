@@ -19,12 +19,10 @@
 
 #include <bitcoin/bitcoin.hpp> // log
 #include <bitcoin/explorer.hpp> // command-line
-
-#include "mvs/http/Exception_error.hpp"
-
 #include "mongoose/mongoose.h"
 
 #include <mvs/http/String.hpp>
+#include <mvs/http/Exception_error.hpp>
 
 /**
  * @addtogroup Web
@@ -165,7 +163,7 @@ private:
                 self->httpRpcRequest(*conn, hm);
             }else{
                 self->httpStatic(*conn, hm);
-                //conn->flags |= MG_F_SEND_AND_CLOSE;
+                conn->flags |= MG_F_SEND_AND_CLOSE;
             }
             break;
 
@@ -174,7 +172,7 @@ private:
             break;
 
         case MG_EV_WEBSOCKET_FRAME:
-            self->websocketBroadcast(*conn, wm);
+            self->websocketSend(*conn, wm);
             break;
 
        }

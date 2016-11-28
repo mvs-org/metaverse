@@ -29,31 +29,31 @@
 namespace http {
 
 class MVS_API ServException : public Exception {
- public:
-  explicit ServException(std::string_view what) noexcept : Exception{what} {}
-  ~ServException() noexcept override;
+public:
+    explicit ServException(std::string_view what) noexcept : Exception{what} {}
+    ~ServException() noexcept override;
 
-  // Copy.
-  ServException(const ServException&) noexcept = default;
-  ServException& operator=(const ServException&) noexcept = default;
+    // Copy.
+    ServException(const ServException&) noexcept = default;
+    ServException& operator=(const ServException&) noexcept = default;
 
-  // Move.
-  ServException(ServException&&) noexcept = default;
-  ServException& operator=(ServException&&) noexcept = default;
+    // Move.
+    ServException(ServException&&) noexcept = default;
+    ServException& operator=(ServException&&) noexcept = default;
 
-  static void toJson(int status, const char* reason, const char* detail, std::ostream& os);
+    static void toJson(int status, const char* reason, const char* detail, std::ostream& os);
 
-  void toJson(std::ostream& os) const { toJson(httpStatus(), httpReason(), what(), os); }
+    void toJson(std::ostream& os) const { toJson(httpStatus(), httpReason(), what(), os); }
 
-  virtual int httpStatus() const noexcept = 0;
+    virtual int httpStatus() const noexcept = 0;
 
-  virtual const char* httpReason() const noexcept = 0;
+    virtual const char* httpReason() const noexcept = 0;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ServException& e)
 {
-  e.toJson(os);
-  return os;
+    e.toJson(os);
+    return os;
 }
 
 /**
@@ -61,109 +61,67 @@ inline std::ostream& operator<<(std::ostream& os, const ServException& e)
  * repeat the request without modifications.
  */
 class MVS_API BadRequestException : public ServException {
- public:
-  explicit BadRequestException(std::string_view what) noexcept : ServException{what} {}
-  ~BadRequestException() noexcept override;
+public:
+    explicit BadRequestException(std::string_view what) noexcept : ServException{what} {}
+    ~BadRequestException() noexcept override;
 
-  // Copy.
-  BadRequestException(const BadRequestException&) noexcept = default;
-  BadRequestException& operator=(const BadRequestException&) noexcept = default;
+    // Copy.
+    BadRequestException(const BadRequestException&) noexcept = default;
+    BadRequestException& operator=(const BadRequestException&) noexcept = default;
 
-  // Move.
-  BadRequestException(BadRequestException&&) noexcept = default;
-  BadRequestException& operator=(BadRequestException&&) noexcept = default;
+    // Move.
+    BadRequestException(BadRequestException&&) noexcept = default;
+    BadRequestException& operator=(BadRequestException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 class MVS_API AlreadyExistsException : public BadRequestException {
- public:
-  explicit AlreadyExistsException(std::string_view what) noexcept : BadRequestException{what} {}
-  ~AlreadyExistsException() noexcept override;
+public:
+    explicit AlreadyExistsException(std::string_view what) noexcept : BadRequestException{what} {}
+    ~AlreadyExistsException() noexcept override;
 
-  // Copy.
-  AlreadyExistsException(const AlreadyExistsException&) noexcept = default;
-  AlreadyExistsException& operator=(const AlreadyExistsException&) noexcept = default;
+    // Copy.
+    AlreadyExistsException(const AlreadyExistsException&) noexcept = default;
+    AlreadyExistsException& operator=(const AlreadyExistsException&) noexcept = default;
 
-  // Move.
-  AlreadyExistsException(AlreadyExistsException&&) noexcept = default;
-  AlreadyExistsException& operator=(AlreadyExistsException&&) noexcept = default;
+    // Move.
+    AlreadyExistsException(AlreadyExistsException&&) noexcept = default;
+    AlreadyExistsException& operator=(AlreadyExistsException&&) noexcept = default;
 };
 
 class MVS_API RefAlreadyExistsException : public AlreadyExistsException {
- public:
-  explicit RefAlreadyExistsException(std::string_view what) noexcept : AlreadyExistsException{what}
-  {
-  }
-  RefAlreadyExistsException() noexcept = default;
+public:
+    explicit RefAlreadyExistsException(std::string_view what) noexcept : AlreadyExistsException{what}
+    {
+    }
+    RefAlreadyExistsException() noexcept = default;
 
-  ~RefAlreadyExistsException() noexcept override;
+    ~RefAlreadyExistsException() noexcept override;
 
-  // Copy.
-  RefAlreadyExistsException(const RefAlreadyExistsException&) noexcept = default;
-  RefAlreadyExistsException& operator=(const RefAlreadyExistsException&) noexcept = default;
+    // Copy.
+    RefAlreadyExistsException(const RefAlreadyExistsException&) noexcept = default;
+    RefAlreadyExistsException& operator=(const RefAlreadyExistsException&) noexcept = default;
 
-  // Move.
-  RefAlreadyExistsException(RefAlreadyExistsException&&) noexcept = default;
-  RefAlreadyExistsException& operator=(RefAlreadyExistsException&&) noexcept = default;
+    // Move.
+    RefAlreadyExistsException(RefAlreadyExistsException&&) noexcept = default;
+    RefAlreadyExistsException& operator=(RefAlreadyExistsException&&) noexcept = default;
 };
 
 class MVS_API InvalidException : public BadRequestException {
- public:
-  explicit InvalidException(std::string_view what) noexcept : BadRequestException{what} {}
-  ~InvalidException() noexcept override;
+public:
+    explicit InvalidException(std::string_view what) noexcept : BadRequestException{what} {}
+    ~InvalidException() noexcept override;
 
-  // Copy.
-  InvalidException(const InvalidException&) noexcept = default;
-  InvalidException& operator=(const InvalidException&) noexcept = default;
+    // Copy.
+    InvalidException(const InvalidException&) noexcept = default;
+    InvalidException& operator=(const InvalidException&) noexcept = default;
 
-  // Move.
-  InvalidException(InvalidException&&) noexcept = default;
-  InvalidException& operator=(InvalidException&&) noexcept = default;
-};
-
-class MVS_API InvalidLotsException : public InvalidException {
- public:
-  explicit InvalidLotsException(std::string_view what) noexcept : InvalidException{what} {}
-  ~InvalidLotsException() noexcept override;
-
-  // Copy.
-  InvalidLotsException(const InvalidLotsException&) noexcept = default;
-  InvalidLotsException& operator=(const InvalidLotsException&) noexcept = default;
-
-  // Move.
-  InvalidLotsException(InvalidLotsException&&) noexcept = default;
-  InvalidLotsException& operator=(InvalidLotsException&&) noexcept = default;
-};
-
-class MVS_API InvalidTicksException : public InvalidException {
- public:
-  explicit InvalidTicksException(std::string_view what) noexcept : InvalidException{what} {}
-  ~InvalidTicksException() noexcept override;
-
-  // Copy.
-  InvalidTicksException(const InvalidTicksException&) noexcept = default;
-  InvalidTicksException& operator=(const InvalidTicksException&) noexcept = default;
-
-  // Move.
-  InvalidTicksException(InvalidTicksException&&) noexcept = default;
-  InvalidTicksException& operator=(InvalidTicksException&&) noexcept = default;
-};
-
-class MVS_API TooLateException : public BadRequestException {
- public:
-  explicit TooLateException(std::string_view what) noexcept : BadRequestException{what} {}
-  ~TooLateException() noexcept override;
-
-  // Copy.
-  TooLateException(const TooLateException&) noexcept = default;
-  TooLateException& operator=(const TooLateException&) noexcept = default;
-
-  // Move.
-  TooLateException(TooLateException&&) noexcept = default;
-  TooLateException& operator=(TooLateException&&) noexcept = default;
+    // Move.
+    InvalidException(InvalidException&&) noexcept = default;
+    InvalidException& operator=(InvalidException&&) noexcept = default;
 };
 
 /**
@@ -174,42 +132,42 @@ class MVS_API TooLateException : public BadRequestException {
  * status code 404 (Not Found) can be used instead.
  */
 class MVS_API ForbiddenException : public ServException {
- public:
-  explicit ForbiddenException(std::string_view what) noexcept : ServException{what} {}
-  ~ForbiddenException() noexcept override;
+public:
+    explicit ForbiddenException(std::string_view what) noexcept : ServException{what} {}
+    ~ForbiddenException() noexcept override;
 
-  // Copy.
-  ForbiddenException(const ForbiddenException&) noexcept = default;
-  ForbiddenException& operator=(const ForbiddenException&) noexcept = default;
+    // Copy.
+    ForbiddenException(const ForbiddenException&) noexcept = default;
+    ForbiddenException& operator=(const ForbiddenException&) noexcept = default;
 
-  // Move.
-  ForbiddenException(ForbiddenException&&) noexcept = default;
-  ForbiddenException& operator=(ForbiddenException&&) noexcept = default;
+    // Move.
+    ForbiddenException(ForbiddenException&&) noexcept = default;
+    ForbiddenException& operator=(ForbiddenException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 /**
  * The server encountered an unexpected condition which prevented it from fulfilling the request.
  */
 class MVS_API InternalException : public ServException {
- public:
-  explicit InternalException(std::string_view what) noexcept : ServException{what} {}
-  ~InternalException() noexcept override;
+public:
+    explicit InternalException(std::string_view what) noexcept : ServException{what} {}
+    ~InternalException() noexcept override;
 
-  // Copy.
-  InternalException(const InternalException&) noexcept = default;
-  InternalException& operator=(const InternalException&) noexcept = default;
+    // Copy.
+    InternalException(const InternalException&) noexcept = default;
+    InternalException& operator=(const InternalException&) noexcept = default;
 
-  // Move.
-  InternalException(InternalException&&) noexcept = default;
-  InternalException& operator=(InternalException&&) noexcept = default;
+    // Move.
+    InternalException(InternalException&&) noexcept = default;
+    InternalException& operator=(InternalException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 /**
@@ -218,21 +176,21 @@ class MVS_API InternalException : public ServException {
  * requested resource.
  */
 class MVS_API MethodNotAllowedException : public ServException {
- public:
-  explicit MethodNotAllowedException(std::string_view what) noexcept : ServException{what} {}
-  ~MethodNotAllowedException() noexcept override;
+public:
+    explicit MethodNotAllowedException(std::string_view what) noexcept : ServException{what} {}
+    ~MethodNotAllowedException() noexcept override;
 
-  // Copy.
-  MethodNotAllowedException(const MethodNotAllowedException&) noexcept = default;
-  MethodNotAllowedException& operator=(const MethodNotAllowedException&) noexcept = default;
+    // Copy.
+    MethodNotAllowedException(const MethodNotAllowedException&) noexcept = default;
+    MethodNotAllowedException& operator=(const MethodNotAllowedException&) noexcept = default;
 
-  // Move.
-  MethodNotAllowedException(MethodNotAllowedException&&) noexcept = default;
-  MethodNotAllowedException& operator=(MethodNotAllowedException&&) noexcept = default;
+    // Move.
+    MethodNotAllowedException(MethodNotAllowedException&&) noexcept = default;
+    MethodNotAllowedException& operator=(MethodNotAllowedException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 /**
@@ -244,77 +202,21 @@ class MVS_API MethodNotAllowedException : public ServException {
  * applicable.
  */
 class MVS_API NotFoundException : public ServException {
- public:
-  explicit NotFoundException(std::string_view what) noexcept : ServException{what} {}
-  ~NotFoundException() noexcept override;
+public:
+    explicit NotFoundException(std::string_view what) noexcept : ServException{what} {}
+    ~NotFoundException() noexcept override;
 
-  // Copy.
-  NotFoundException(const NotFoundException&) noexcept = default;
-  NotFoundException& operator=(const NotFoundException&) noexcept = default;
+    // Copy.
+    NotFoundException(const NotFoundException&) noexcept = default;
+    NotFoundException& operator=(const NotFoundException&) noexcept = default;
 
-  // Move.
-  NotFoundException(NotFoundException&&) noexcept = default;
-  NotFoundException& operator=(NotFoundException&&) noexcept = default;
+    // Move.
+    NotFoundException(NotFoundException&&) noexcept = default;
+    NotFoundException& operator=(NotFoundException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
-};
-
-class MVS_API MarketClosedException : public NotFoundException {
- public:
-  explicit MarketClosedException(std::string_view what) noexcept : NotFoundException{what} {}
-  ~MarketClosedException() noexcept override;
-
-  // Copy.
-  MarketClosedException(const MarketClosedException&) noexcept = default;
-  MarketClosedException& operator=(const MarketClosedException&) noexcept = default;
-
-  // Move.
-  MarketClosedException(MarketClosedException&&) noexcept = default;
-  MarketClosedException& operator=(MarketClosedException&&) noexcept = default;
-};
-
-class MVS_API MarketNotFoundException : public NotFoundException {
- public:
-  explicit MarketNotFoundException(std::string_view what) noexcept : NotFoundException{what} {}
-  ~MarketNotFoundException() noexcept override;
-
-  // Copy.
-  MarketNotFoundException(const MarketNotFoundException&) noexcept = default;
-  MarketNotFoundException& operator=(const MarketNotFoundException&) noexcept = default;
-
-  // Move.
-  MarketNotFoundException(MarketNotFoundException&&) noexcept = default;
-  MarketNotFoundException& operator=(MarketNotFoundException&&) noexcept = default;
-};
-
-class MVS_API OrderNotFoundException : public NotFoundException {
- public:
-  explicit OrderNotFoundException(std::string_view what) noexcept : NotFoundException{what} {}
-  ~OrderNotFoundException() noexcept override;
-
-  // Copy.
-  OrderNotFoundException(const OrderNotFoundException&) noexcept = default;
-  OrderNotFoundException& operator=(const OrderNotFoundException&) noexcept = default;
-
-  // Move.
-  OrderNotFoundException(OrderNotFoundException&&) noexcept = default;
-  OrderNotFoundException& operator=(OrderNotFoundException&&) noexcept = default;
-};
-
-class MVS_API TraderNotFoundException : public NotFoundException {
- public:
-  explicit TraderNotFoundException(std::string_view what) noexcept : NotFoundException{what} {}
-  ~TraderNotFoundException() noexcept override;
-
-  // Copy.
-  TraderNotFoundException(const TraderNotFoundException&) noexcept = default;
-  TraderNotFoundException& operator=(const TraderNotFoundException&) noexcept = default;
-
-  // Move.
-  TraderNotFoundException(TraderNotFoundException&&) noexcept = default;
-  TraderNotFoundException& operator=(TraderNotFoundException&&) noexcept = default;
+    const char* httpReason() const noexcept override;
 };
 
 /**
@@ -325,21 +227,21 @@ class MVS_API TraderNotFoundException : public NotFoundException {
  * response.
  */
 class MVS_API ServiceUnavailableException : public ServException {
- public:
-  explicit ServiceUnavailableException(std::string_view what) noexcept : ServException{what} {}
-  ~ServiceUnavailableException() noexcept override;
+public:
+    explicit ServiceUnavailableException(std::string_view what) noexcept : ServException{what} {}
+    ~ServiceUnavailableException() noexcept override;
 
-  // Copy.
-  ServiceUnavailableException(const ServiceUnavailableException&) noexcept = default;
-  ServiceUnavailableException& operator=(const ServiceUnavailableException&) noexcept = default;
+    // Copy.
+    ServiceUnavailableException(const ServiceUnavailableException&) noexcept = default;
+    ServiceUnavailableException& operator=(const ServiceUnavailableException&) noexcept = default;
 
-  // Move.
-  ServiceUnavailableException(ServiceUnavailableException&&) noexcept = default;
-  ServiceUnavailableException& operator=(ServiceUnavailableException&&) noexcept = default;
+    // Move.
+    ServiceUnavailableException(ServiceUnavailableException&&) noexcept = default;
+    ServiceUnavailableException& operator=(ServiceUnavailableException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 /**
@@ -354,21 +256,21 @@ class MVS_API ServiceUnavailableException : public ServException {
  * Authentication: Basic and Digest Access Authentication".
  */
 class MVS_API UnauthorizedException : public ServException {
- public:
-  explicit UnauthorizedException(std::string_view what) noexcept : ServException{what} {}
-  ~UnauthorizedException() noexcept override;
+public:
+    explicit UnauthorizedException(std::string_view what) noexcept : ServException{what} {}
+    ~UnauthorizedException() noexcept override;
 
-  // Copy.
-  UnauthorizedException(const UnauthorizedException&) noexcept = default;
-  UnauthorizedException& operator=(const UnauthorizedException&) noexcept = default;
+    // Copy.
+    UnauthorizedException(const UnauthorizedException&) noexcept = default;
+    UnauthorizedException& operator=(const UnauthorizedException&) noexcept = default;
 
-  // Move.
-  UnauthorizedException(UnauthorizedException&&) noexcept = default;
-  UnauthorizedException& operator=(UnauthorizedException&&) noexcept = default;
+    // Move.
+    UnauthorizedException(UnauthorizedException&&) noexcept = default;
+    UnauthorizedException& operator=(UnauthorizedException&&) noexcept = default;
 
-  int httpStatus() const noexcept override;
+    int httpStatus() const noexcept override;
 
-  const char* httpReason() const noexcept override;
+    const char* httpReason() const noexcept override;
 };
 
 } // http

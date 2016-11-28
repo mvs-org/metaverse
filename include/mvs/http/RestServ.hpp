@@ -41,9 +41,9 @@ public:
     void httpStatic (mg_connection& nc, HttpMessage data);
     void httpRequest (mg_connection& nc, HttpMessage data);
     void httpRpcRequest (mg_connection& nc, HttpMessage data);
-    void websocketBroadcast (mg_connection& nc, WebsocketMessage ws);
     void websocketBroadcast (mg_connection& nc, const char* msg, size_t len);
     void websocketSend(mg_connection* nc, const char* msg, size_t len);
+    void websocketSend(mg_connection& nc, WebsocketMessage ws);
 
 protected:
     std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data)

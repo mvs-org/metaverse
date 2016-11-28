@@ -50,12 +50,6 @@ RefAlreadyExistsException::~RefAlreadyExistsException() noexcept = default;
 
 InvalidException::~InvalidException() noexcept = default;
 
-InvalidLotsException::~InvalidLotsException() noexcept = default;
-
-InvalidTicksException::~InvalidTicksException() noexcept = default;
-
-TooLateException::~TooLateException() noexcept = default;
-
 ForbiddenException::~ForbiddenException() noexcept = default;
 
 int ForbiddenException::httpStatus() const noexcept
@@ -103,14 +97,6 @@ const char* NotFoundException::httpReason() const noexcept
 {
   return "Not Found";
 }
-
-MarketClosedException::~MarketClosedException() noexcept = default;
-
-MarketNotFoundException::~MarketNotFoundException() noexcept = default;
-
-OrderNotFoundException::~OrderNotFoundException() noexcept = default;
-
-TraderNotFoundException::~TraderNotFoundException() noexcept = default;
 
 ServiceUnavailableException::~ServiceUnavailableException() noexcept = default;
 
