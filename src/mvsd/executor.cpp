@@ -103,10 +103,11 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << format(BS_INITIALIZING_CHAIN) % directory;
 
         // Unfortunately we are still limited to a choice of hardcoded chains.
-        const auto genesis = metadata_.configured.chain.use_testnet_rules ?
-            chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+        //const auto genesis = metadata_.configured.chain.use_testnet_rules ?
+         //   chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+        auto genesis = consensus::miner::create_genesis_block();
 
-        const auto result = data_base::initialize(directory, genesis);
+        const auto result = data_base::initialize(directory, *genesis);
 
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return result;

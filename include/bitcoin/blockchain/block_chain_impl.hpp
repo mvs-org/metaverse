@@ -32,6 +32,8 @@
 #include <bitcoin/blockchain/settings.hpp>
 #include <bitcoin/blockchain/simple_chain.hpp>
 #include <bitcoin/blockchain/transaction_pool.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -98,7 +100,7 @@ public:
     bool get_next_gap(uint64_t& out_height, uint64_t start_height) const;
 
     /// Get the dificulty of a block at the given height.
-    bool get_difficulty(hash_number& out_difficulty, uint64_t height) const;
+    bool get_difficulty(u256& out_difficulty, uint64_t height) const;
 
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const;

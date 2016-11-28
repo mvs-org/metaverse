@@ -44,7 +44,7 @@ validate_block_impl::validate_block_impl(simple_chain& chain,
 {
 }
 
-uint32_t validate_block_impl::previous_block_bits() const
+u256 validate_block_impl::previous_block_bits() const
 {
     // Read block header (top - 1) and return bits
     return fetch_block(height_ - 1).bits;

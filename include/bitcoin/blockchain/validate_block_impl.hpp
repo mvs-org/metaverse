@@ -43,7 +43,7 @@ public:
 
 protected:
     uint64_t median_time_past() const;
-    uint32_t previous_block_bits() const;
+    u256 previous_block_bits() const;
     uint64_t actual_time_span(size_t interval) const;
     versions preceding_block_versions(size_t maximum) const;
     chain::header fetch_block(size_t fetch_height) const;

@@ -69,7 +69,7 @@ HeaderAux* HeaderAux::get()
 
 h256 HeaderAux::seedHash(libbitcoin::chain::header& _bi)
 {
-	unsigned _number = (unsigned) _bi.getNumber();
+	unsigned _number = (unsigned) _bi.number;
 	unsigned epoch = _number / ETHASH_EPOCH_LENGTH;
 	Guard l(get()->x_epochs);
 	if (epoch >= get()->m_seedHashes.size())
@@ -117,7 +117,7 @@ h256 HeaderAux::hashHead(libbitcoin::chain::header& _bi)
 {
 	h256 memo;
 	RLPStream s;
-	s  << (bigint) _bi.version << (bigint)_bi.bits << (bigint)_bi.m_number << (char*)(_bi.merkle.data())
+	s  << (bigint) _bi.version << (bigint)_bi.bits << (bigint)_bi.number << (char*)(_bi.merkle.data())
 		<< (char*)(_bi.previous_block_hash.data()) << (bigint) _bi.timestamp ;
 	memo = sha3(s.out());
 	return memo;
@@ -125,7 +125,7 @@ h256 HeaderAux::hashHead(libbitcoin::chain::header& _bi)
 
 uint64_t HeaderAux::cacheSize(libbitcoin::chain::header& _header)
 {
-	return ethash_get_cachesize((uint64_t)_header.m_number);
+	return ethash_get_cachesize((uint64_t)_header.number);
 }
 
 uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
@@ -133,10 +133,10 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 	return ethash_get_datasize(_blockNumber);
 }
 
-//static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
-//{
-//
-//}
+u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
+{
+	return 1;
+}
 
 /*****************************/
 

@@ -20,7 +20,7 @@ namespace libbitcoin{
 namespace consensus{
 	BC_CONSTEXPR unsigned int min_tx_fee = 1000;
 	BC_CONSTEXPR unsigned int median_time_span = 11;
-	BC_CONSTEXPR uint32_t version = 10;
+	BC_CONSTEXPR uint32_t version = 1;
 
 	BC_CONSTEXPR boost::int64_t coin = 100000000;
 	//The maximum allowed size for a serialized block, in bytes (network rule)
@@ -67,14 +67,14 @@ public:
 		exit_
 	};
 
-	bool start();
+	bool start(const std::string& pay_public_key);
 	bool stop();
-	block_ptr create_genesis_block();
+	static block_ptr create_genesis_block();
 	bool script_hash_signature_operations_count(size_t &count, chain::input::list& inputs);
 	bool script_hash_signature_operations_count(size_t &count, chain::input& input);
 
 private:
-	void work();
+	void work(const std::string& pay_address);
 	static boost::int64_t calculate_fee(int height, boost::int64_t fees);
 	block_ptr create_new_block(const std::string& address);
 	unsigned int get_adjust_time();

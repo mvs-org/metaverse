@@ -72,15 +72,15 @@ header_message::header_message(const header& other)
 
 header_message::header_message(const header_message& other)
 : header_message(other.version, other.previous_block_hash, other.merkle,
-      other.timestamp, other.bits, other.nonce, other.transaction_count)
+      other.timestamp, other.bits, other.nonce, other.mixhash, other.number, other.transaction_count)
 {
 }
 
 header_message::header_message(uint32_t version,
     const hash_digest& previous_block_hash, const hash_digest& merkle,
-    uint32_t timestamp, uint32_t bits, uint32_t nonce,
+    uint32_t timestamp, const u256& bits, u64 nonce, const u256& mixhash, uint32_t number,
     uint64_t transaction_count)
-  : header(version, previous_block_hash, merkle, timestamp, bits, nonce,
+  : header(version, previous_block_hash, merkle, timestamp, bits, nonce, mixhash, number,
         transaction_count)
 {
 }
@@ -94,16 +94,16 @@ header_message::header_message(header_message&& other)
   : header_message(other.version,
         std::forward<hash_digest>(other.previous_block_hash),
         std::forward<hash_digest>(other.merkle), other.timestamp, other.bits,
-        other.nonce, other.transaction_count)
+        other.nonce, other.mixhash, other.number, other.transaction_count)
 {
 }
 
 header_message::header_message(uint32_t version,
     hash_digest&& previous_block_hash, hash_digest&& merkle,
-    uint32_t timestamp, uint32_t bits, uint32_t nonce,
+    uint32_t timestamp, const u256& bits, u64 nonce, const u256& mixhash, uint32_t number,
     uint64_t transaction_count)
   : header(version, std::forward<hash_digest>(previous_block_hash),
-        std::forward<hash_digest>(merkle), timestamp, bits, nonce,
+        std::forward<hash_digest>(merkle), timestamp, bits, nonce, mixhash, number,
         transaction_count)
 {
 }
@@ -116,6 +116,8 @@ header_message& header_message::operator=(header_message&& other)
     timestamp = other.timestamp;
     bits = other.bits;
     nonce = other.nonce;
+    mixhash = other.mixhash;
+    number = other.number;
     transaction_count = other.transaction_count;
     originator_ = other.originator_;
     return *this;

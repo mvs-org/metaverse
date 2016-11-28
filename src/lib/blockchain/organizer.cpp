@@ -31,6 +31,7 @@
 #include <bitcoin/blockchain/settings.hpp>
 #include <bitcoin/blockchain/simple_chain.hpp>
 #include <bitcoin/blockchain/validate_block_impl.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -199,7 +200,7 @@ void organizer::process(block_detail::ptr process_block)
 void organizer::replace_chain(uint64_t fork_index,
     block_detail::list& orphan_chain)
 {
-    hash_number orphan_work = 0;
+    u256 orphan_work = 0;
 
     for (uint64_t orphan = 0; orphan < orphan_chain.size(); ++orphan)
     {
@@ -233,7 +234,7 @@ void organizer::replace_chain(uint64_t fork_index,
     // Compare the difficulty of the 2 forks (original and orphan)
     const auto begin_index = fork_index + 1;
 
-    hash_number main_work;
+    u256 main_work;
     DEBUG_ONLY(auto result =) chain_.get_difficulty(main_work, begin_index);
     BITCOIN_ASSERT(result);
 

@@ -17,15 +17,21 @@ class MinerAux
 public:
 	~MinerAux();
 	static MinerAux* get();
-	static h256 mixHash(chain::header& _bi) { return _bi.getMixhash();}
-	static chain::header& setNonce(chain::header& _bi, Nonce _v){_bi.setNonce(_v); return _bi;}
-	static chain::header& setMixHash(chain::header& _bi, h256& _v){_bi.setMixHash(_v); return _bi;}
+	static h256 mixHash(chain::header& _bi) { return u256(1);}
+	static chain::header& setNonce(chain::header& _bi, Nonce _v){return _bi;}
+	static chain::header& setMixHash(chain::header& _bi, h256& _v){return _bi;}
 	static LightType get_light(h256& _seedHash);
 	static FullType get_full(h256& _seedHash);
-	static bool verifySeal(chain::header& header);
-	static ethash_return_value_t search(chain::header& header, std::function<bool (void)> is_exit);
 
-
+	static bool verifySeal(chain::header& header){
+		return true;	
+	}
+	static bool search(chain::header& header, std::function<bool (void)> is_exit){
+		sleep(30);
+		header.mixhash = header.number;
+		header.nonce = header.number;
+		return true;
+	}
 
 private:
 	MinerAux() {}

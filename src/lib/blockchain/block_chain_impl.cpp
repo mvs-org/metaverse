@@ -175,7 +175,7 @@ bool block_chain_impl::get_next_gap(uint64_t& out_height,
     return false;
 }
 
-bool block_chain_impl::get_difficulty(hash_number& out_difficulty,
+bool block_chain_impl::get_difficulty(u256& out_difficulty,
     uint64_t height) const
 {
     size_t top;
