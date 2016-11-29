@@ -68,6 +68,27 @@ void protocol_address::start()
     SEND2(get_address(), handle_send, _1, get_address::command);
 }
 
+void protocol_address::remove_useless_address(address::ptr& message)
+{
+    auto& addresses = message->addresses;
+    const auto& settings = network_.network_settings();
+    if(settings.self.port() != 0)
+    {
+    	auto iter = std::find_if(addresses.begin(), addresses.end(), [&settings](const message::network_address& addr){
+    		if(config::authority{addr} == settings.self)
+    		{
+    			return true;
+    		}
+    		return false;
+    	});
+
+    	if(iter != addresses.end())
+    	{
+    		addresses.erase(iter);
+    	}
+    }
+}
+
 // Protocol.
 // ----------------------------------------------------------------------------
 
@@ -85,7 +106,7 @@ bool protocol_address::handle_receive_address(const code& ec,
         stop(ec);
         return false;
     }
-
+    remove_useless_address(message);
     log::debug(LOG_NETWORK)
         << "Storing addresses from [" << authority() << "] ("
         << message->addresses.size() << ")";
