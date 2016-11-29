@@ -52,7 +52,7 @@ void RestServ::websocketSend(mg_connection* nc, const char* msg, size_t len)
 
 
 // --------------------- websocket interface -----------------------
-void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws) 
+void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws) 
 {
     using namespace bc;
 
@@ -65,11 +65,13 @@ void RestServ::websocketBroadcast(mg_connection& nc, WebsocketMessage ws)
         explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
             sin, sout, sout, blockchain_);
 
+    }catch(std::logic_error e){
+        sout<<"{\"error\":\""<<e.what()<<"\"}";
     }catch(...){
         log::error(LOG_HTTP)<<__func__<<":"<<sout.rdbuf();
+        sout<<"{\"error\":\"fatel error\"}";
     }
 
-    //websocketBroadcast(nc, sout.str().c_str(), sout.str().size() - 1);
     websocketSend(&nc, sout.str().c_str(), sout.str().size());
 }
 
@@ -87,9 +89,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
     try {
-    	if (uri_.empty() || uri_.top() != "rpc") {
-    	    throw ForbiddenException{"URI not support"};
-    	}
+        if (uri_.empty() || uri_.top() != "rpc") {
+            throw ForbiddenException{"URI not support"};
+        }
 
         //process here
         data.data_to_arg();
@@ -101,17 +103,17 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
 
-    	out_<<sout.str();
+        out_<<sout.str();
 
     } catch (const ServException& e) {
-    	out_.reset(e.httpStatus(), e.httpReason());
-    	out_ << e;
-  	} catch (const std::exception& e) {
-    	const int status{500};
-    	const char* const reason{"Internal Server Error"};
-    	out_.reset(status, reason);
-    	ServException::toJson(status, reason, e.what(), out_);
-  	} 
+        out_.reset(e.httpStatus(), e.httpReason());
+        out_ << e;
+      } catch (const std::exception& e) {
+        const int status{500};
+        const char* const reason{"Internal Server Error"};
+        out_.reset(status, reason);
+        ServException::toJson(status, reason, e.what(), out_);
+    } 
 
     out_.setContentLength(); 
 }
@@ -133,7 +135,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     try {
         if (uri_.empty() || uri_.top() != "api") {
-        	throw ForbiddenException{"URI not support"};
+            throw ForbiddenException{"URI not support"};
         }
         uri_.pop();
 
@@ -151,10 +153,9 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
             log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
 
-        	out_<<sout.str();
+            out_<<sout.str();
             state_|= MatchUri;
             state_|= MatchMethod;
-
         }
 
         if (!isSet(MatchUri)) {
@@ -163,17 +164,17 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
         if (!isSet(MatchMethod)) {
           throw MethodNotAllowedException{errMsg() << "method '" << data.method()
               << "' is not allowed"};
+        }
+    } catch (const ServException& e) {
+        out_.reset(e.httpStatus(), e.httpReason());
+        out_ << e;
+    } catch (const std::exception& e) {
+        const int status{500};
+        const char* const reason{"Internal Server Error"};
+        out_.reset(status, reason);
+        ServException::toJson(status, reason, e.what(), out_);
     }
-  } catch (const ServException& e) {
-    out_.reset(e.httpStatus(), e.httpReason());
-    out_ << e;
-  } catch (const std::exception& e) {
-    const int status{500};
-    const char* const reason{"Internal Server Error"};
-    out_.reset(status, reason);
-    ServException::toJson(status, reason, e.what(), out_);
-  }
-  out_.setContentLength(); 
 
+    out_.setContentLength(); 
 }
 

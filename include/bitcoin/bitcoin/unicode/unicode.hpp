@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_UNICODE_HPP
-#define LIBBITCOIN_UNICODE_HPP
+#ifndef MVS_UNICODE_HPP
+#define MVS_UNICODE_HPP
 
 #include <cstddef>
 #include <iostream>
@@ -36,7 +36,7 @@
 // Libbitcoin embraces the "utf8 everywhere" design: http://utf8everywhere.org
 // The objective is to use utf8 as the canonical string encoding, pushing
 // wchar_t translation to the edge (stdio, argv, O/S and external API calls).
-// The macro BC_USE_LIBBITCOIN_MAIN does most of the heavy lifting to ensure
+// The macro BC_USE_MVS_MAIN does most of the heavy lifting to ensure
 // that stdio and argv is configured for utf8. The 'to_utf' functions are
 // provided for API translations.
 
@@ -51,7 +51,7 @@
 
 // Regarding Unicode in console applications:
 //
-// BC_USE_LIBBITCOIN_MAIN should be declared prior to bc::main() in a console
+// BC_USE_MVS_MAIN should be declared prior to bc::main() in a console
 // application. This enables Unicode argument and environment processing in 
 // Windows. This macro implements main() and forwards to bc::main(), which 
 // should be implemented as if it was main() with the expectation that argv 
@@ -82,7 +82,7 @@
     #include <boost/filesystem.hpp>
     #include <boost/locale.hpp>
     #include <windows.h>
-    #define BC_USE_LIBBITCOIN_MAIN \
+    #define BC_USE_MVS_MAIN \
         namespace libbitcoin { \
         int main(int argc, char* argv[]); \
         } \
@@ -103,7 +103,7 @@
             return libbitcoin::main(argc, args); \
         }
 #else
-    #define BC_USE_LIBBITCOIN_MAIN \
+    #define BC_USE_MVS_MAIN \
         namespace libbitcoin { \
         int main(int argc, char* argv[]); \
         } \

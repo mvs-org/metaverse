@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_SERVER_TRANSACTION_POOL_HPP
-#define LIBBITCOIN_SERVER_TRANSACTION_POOL_HPP
+#ifndef MVS_SERVER_TRANSACTION_POOL_HPP
+#define MVS_SERVER_TRANSACTION_POOL_HPP
 
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/server/define.hpp>

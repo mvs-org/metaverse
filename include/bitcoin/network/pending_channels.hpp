@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NETWORK_PENDING_CHANNELS_HPP
-#define LIBBITCOIN_NETWORK_PENDING_CHANNELS_HPP
+#ifndef MVS_NETWORK_PENDING_CHANNELS_HPP
+#define MVS_NETWORK_PENDING_CHANNELS_HPP
 
 #include <cstdint>
 #include <functional>

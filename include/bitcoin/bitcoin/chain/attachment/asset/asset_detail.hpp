@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CHAIN_ATTACHMENT_ASSET_DETAIL_HPP
-#define LIBBITCOIN_CHAIN_ATTACHMENT_ASSET_DETAIL_HPP
+#ifndef MVS_CHAIN_ATTACHMENT_ASSET_DETAIL_HPP
+#define MVS_CHAIN_ATTACHMENT_ASSET_DETAIL_HPP
 
 #include <cstdint>
 #include <istream>
@@ -51,6 +51,7 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
     std::string to_string() ;
+	void to_json(std::ostream& out);
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;

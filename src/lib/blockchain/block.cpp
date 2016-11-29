@@ -34,22 +34,9 @@ uint64_t block_subsidy(size_t height)
     return subsidy;
 }
 
-hash_number block_work(uint32_t bits)
+u256 block_work(u256 bits)
 {
 	return bits;
-    hash_number target;
-
-    if (!target.set_compact(bits))
-        return 0;
-
-    if (target == 0)
-        return 0;
-
-    // We need to compute 2**256 / (bnTarget+1), but we can't represent 2**256
-    // as it's too large for a uint256. However, as 2**256 is at least as large
-    // as bnTarget+1, it is equal to ((2**256 - bnTarget - 1) / (bnTarget+1)) + 1,
-    // or ~bnTarget / (nTarget+1) + 1.
-    return (~target / (target + 1)) + 1;
 }
 
 block::indexes block_locator_indexes(size_t top_height)

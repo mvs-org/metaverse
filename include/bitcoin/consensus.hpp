@@ -4,8 +4,8 @@
 //        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef LIBBITCOIN_CONSENSUS_HPP
-#define LIBBITCOIN_CONSENSUS_HPP
+#ifndef MVS_CONSENSUS_HPP
+#define MVS_CONSENSUS_HPP
 
 /**
  * API Users: Include only this header. Direct use of other headers is fragile 

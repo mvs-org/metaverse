@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CLIENT_DEALER_HPP
-#define LIBBITCOIN_CLIENT_DEALER_HPP
+#ifndef MVS_CLIENT_DEALER_HPP
+#define MVS_CLIENT_DEALER_HPP
 
 #include <cstddef>
 #include <cstdint>

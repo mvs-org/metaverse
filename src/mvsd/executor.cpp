@@ -83,11 +83,11 @@ void executor::do_settings()
 void executor::do_version()
 {
     output_ << format(BS_VERSION_MESSAGE) %
-        LIBBITCOIN_SERVER_VERSION %
-        LIBBITCOIN_PROTOCOL_VERSION %
-        LIBBITCOIN_NODE_VERSION %
-        LIBBITCOIN_BLOCKCHAIN_VERSION %
-        LIBBITCOIN_VERSION << std::endl;
+        MVS_SERVER_VERSION %
+        MVS_PROTOCOL_VERSION %
+        MVS_NODE_VERSION %
+        MVS_BLOCKCHAIN_VERSION %
+        MVS_VERSION << std::endl;
 }
 
 // Emit to the log.
@@ -103,10 +103,11 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << format(BS_INITIALIZING_CHAIN) % directory;
 
         // Unfortunately we are still limited to a choice of hardcoded chains.
-        const auto genesis = metadata_.configured.chain.use_testnet_rules ?
-            chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+        //const auto genesis = metadata_.configured.chain.use_testnet_rules ?
+         //   chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+        auto genesis = consensus::miner::create_genesis_block();
 
-        const auto result = data_base::initialize(directory, genesis);
+        const auto result = data_base::initialize(directory, *genesis);
 
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return result;

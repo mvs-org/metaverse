@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_STRING_HPP
-#define LIBBITCOIN_STRING_HPP
+#ifndef MVS_STRING_HPP
+#define MVS_STRING_HPP
 
 #include <string>
 #include <vector>

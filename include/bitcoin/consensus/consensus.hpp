@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CONSENSUS_CONSENSUS_HPP
-#define LIBBITCOIN_CONSENSUS_CONSENSUS_HPP
+#ifndef MVS_CONSENSUS_CONSENSUS_HPP
+#define MVS_CONSENSUS_CONSENSUS_HPP
 
 #include <cstddef>
 #include <bitcoin/consensus/define.hpp>

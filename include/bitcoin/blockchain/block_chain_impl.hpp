@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_BLOCK_CHAIN_IMPL_HPP
-#define LIBBITCOIN_BLOCKCHAIN_BLOCK_CHAIN_IMPL_HPP
+#ifndef MVS_BLOCKCHAIN_BLOCK_CHAIN_IMPL_HPP
+#define MVS_BLOCKCHAIN_BLOCK_CHAIN_IMPL_HPP
 
 #include <atomic>
 #include <cstddef>
@@ -32,6 +32,8 @@
 #include <bitcoin/blockchain/settings.hpp>
 #include <bitcoin/blockchain/simple_chain.hpp>
 #include <bitcoin/blockchain/transaction_pool.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -98,7 +100,7 @@ public:
     bool get_next_gap(uint64_t& out_height, uint64_t start_height) const;
 
     /// Get the dificulty of a block at the given height.
-    bool get_difficulty(hash_number& out_difficulty, uint64_t height) const;
+    bool get_difficulty(u256& out_difficulty, uint64_t height) const;
 
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const;
@@ -227,7 +229,7 @@ public:
 	/* used for "get_new_account" command */
 	operation_result get_new_account(const std::string& name, const std::string& passwd, 
 		const std::string& mnemonic);
-	void store_account(std::shared_ptr<account> acc);
+	//void store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account_by_name(const std::string& name);
 	operation_result get_account_info(const std::string& name, const std::string& passwd,
 		std::string& mnemonic, uint32_t& hd_index, uint16_t flag=0);
@@ -246,6 +248,24 @@ public:
 	void store_asset(const asset_detail& acc);
 	void store_account_asset(asset_transfer& sp_transfer);
 #endif
+	bool is_account_passwd_valid(const std::string& name, const std::string& passwd);
+	bool is_account_exist(const std::string& name);
+	operation_result store_account(std::shared_ptr<account> acc);
+	std::shared_ptr<account> get_account(const std::string& name);
+	std::shared_ptr<account_address> get_account_address(const std::string& name, uint32_t idx=0);
+	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
+	std::shared_ptr<asset_detail> get_account_asset(const std::string& name, const std::string& asset);
+	std::shared_ptr<std::vector<asset_detail>> get_account_assets(const std::string& name);
+	account_status get_account_user_status(const std::string& name);
+	account_status get_account_system_status(const std::string& name);
+	void set_account_user_status(const std::string& name, const account_status status);
+	void set_account_system_status(const std::string& name, const account_status status);
+	
+	uint16_t get_asset_status(const std::string& name);
+	bool is_asset_exist(const std::string& name);
+	operation_result store_asset(std::shared_ptr<asset> ptr);
+	operation_result delete_asset(const std::string& name);  
+	std::shared_ptr<asset_detail> get_asset(const std::string& name);
 	/* end store account related info into database */
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

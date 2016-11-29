@@ -4,8 +4,8 @@
 //        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef LIBBITCOIN_NETWORK_HPP
-#define LIBBITCOIN_NETWORK_HPP
+#ifndef MVS_NETWORK_HPP
+#define MVS_NETWORK_HPP
 
 /**
  * API Users: Include only this header. Direct use of other headers is fragile 

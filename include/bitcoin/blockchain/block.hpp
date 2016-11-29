@@ -17,19 +17,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
-#define LIBBITCOIN_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
+#ifndef MVS_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
+#define MVS_BLOCKCHAIN_BLOCK_LOCATOR_INDEXES_HPP
 
 #include <cstdint>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/blockchain/define.hpp>
+#include <bitcoin/bitcoin/chain/header.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
 
 BCB_API uint64_t block_subsidy(size_t height);
 
-BCB_API hash_number block_work(uint32_t bits);
+BCB_API u256 block_work(u256 bits);
 
 BCB_API chain::block::indexes block_locator_indexes(size_t top_height);
 

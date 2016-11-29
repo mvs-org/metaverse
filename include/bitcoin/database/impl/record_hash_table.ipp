@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_DATABASE_RECORD_HASH_TABLE_IPP
-#define LIBBITCOIN_DATABASE_RECORD_HASH_TABLE_IPP
+#ifndef MVS_DATABASE_RECORD_HASH_TABLE_IPP
+#define MVS_DATABASE_RECORD_HASH_TABLE_IPP
 
 #include <string>
 #include <bitcoin/bitcoin.hpp>

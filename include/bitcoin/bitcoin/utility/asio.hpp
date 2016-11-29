@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ASIO_HPP
-#define LIBBITCOIN_ASIO_HPP
+#ifndef MVS_ASIO_HPP
+#define MVS_ASIO_HPP
 
 #include <chrono>
 #include <memory>

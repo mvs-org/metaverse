@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_CHAIN_SPEND_HPP
-#define LIBBITCOIN_CHAIN_SPEND_HPP
+#ifndef MVS_CHAIN_SPEND_HPP
+#define MVS_CHAIN_SPEND_HPP
 
 #include <vector>
 #include <bitcoin/bitcoin/chain/point.hpp>

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_SIMPLE_CHAIN_HPP
-#define LIBBITCOIN_BLOCKCHAIN_SIMPLE_CHAIN_HPP
+#ifndef MVS_BLOCKCHAIN_SIMPLE_CHAIN_HPP
+#define MVS_BLOCKCHAIN_SIMPLE_CHAIN_HPP
 
 #include <cstddef>
 #include <bitcoin/bitcoin.hpp>
@@ -44,7 +44,7 @@ public:
         uint64_t start_height) const = 0;
 
     /// Get the dificulty of a block at the given height.
-    virtual bool get_difficulty(hash_number& out_difficulty,
+    virtual bool get_difficulty(u256& out_difficulty,
         uint64_t height) const = 0;
 
     /// Get the header of the block at the given height.

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_LOG_HPP
-#define LIBBITCOIN_LOG_HPP
+#ifndef MVS_LOG_HPP
+#define MVS_LOG_HPP
 
 #include <functional>
 #include <map>

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_SERVER_ADDRESS_HPP
-#define LIBBITCOIN_SERVER_ADDRESS_HPP
+#ifndef MVS_SERVER_ADDRESS_HPP
+#define MVS_SERVER_ADDRESS_HPP
 
 #include <bitcoin/server/define.hpp>
 #include <bitcoin/server/messages/message.hpp>

@@ -20,7 +20,7 @@
 #include <iostream>
 #include <bitcoin/explorer.hpp>
 
-BC_USE_LIBBITCOIN_MAIN
+BC_USE_MVS_MAIN
 
 /**
  * Invoke this program with the raw arguments provided on the command line.

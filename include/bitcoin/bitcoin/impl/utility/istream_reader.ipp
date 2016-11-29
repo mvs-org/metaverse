@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ISTREAM_READER_IPP
-#define LIBBITCOIN_ISTREAM_READER_IPP
+#ifndef MVS_ISTREAM_READER_IPP
+#define MVS_ISTREAM_READER_IPP
 
 #include <algorithm>
 #include <boost/asio/streambuf.hpp>

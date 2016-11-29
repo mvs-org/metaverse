@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_TIMER_HPP
-#define LIBBITCOIN_TIMER_HPP
+#ifndef MVS_TIMER_HPP
+#define MVS_TIMER_HPP
 
 #include <chrono>
 #include <bitcoin/bitcoin/utility/asio.hpp>

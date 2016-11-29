@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ELLIPTIC_CURVE_HPP
-#define LIBBITCOIN_ELLIPTIC_CURVE_HPP
+#ifndef MVS_ELLIPTIC_CURVE_HPP
+#define MVS_ELLIPTIC_CURVE_HPP
 
 #include <cstddef>
 #include <bitcoin/bitcoin/compat.hpp>

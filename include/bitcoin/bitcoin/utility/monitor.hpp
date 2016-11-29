@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_MONITOR_HPP
-#define LIBBITCOIN_MONITOR_HPP
+#ifndef MVS_MONITOR_HPP
+#define MVS_MONITOR_HPP
 
 #include <atomic>
 #include <cstddef>

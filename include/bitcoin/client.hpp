@@ -4,8 +4,8 @@
 //        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef LIBBITCOIN_CLIENT_HPP
-#define LIBBITCOIN_CLIENT_HPP
+#ifndef MVS_CLIENT_HPP
+#define MVS_CLIENT_HPP
 
 /**
  * API Users: Include only this header. Direct use of other headers is fragile 

@@ -25,6 +25,7 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <json/minijson_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -177,6 +178,18 @@ std::string asset_detail::to_string()
         << "\t description=" << description << "\n";
 
     return ss.str();
+}
+
+void asset_detail::to_json(std::ostream& output) 
+{
+	minijson::object_writer json_writer(output);
+	json_writer.write("symbol", symbol);
+	json_writer.write("maximum_supply", maximum_supply);
+	json_writer.write("asset_type", asset_type);
+	json_writer.write("issuer", issuer);
+	json_writer.write("address", address);
+	json_writer.write("description", description);
+	json_writer.close();
 }
 
 } // namspace chain

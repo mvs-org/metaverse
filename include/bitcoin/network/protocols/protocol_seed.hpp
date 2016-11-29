@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NETWORK_PROTOCOL_SEED_HPP
-#define LIBBITCOIN_NETWORK_PROTOCOL_SEED_HPP
+#ifndef MVS_NETWORK_PROTOCOL_SEED_HPP
+#define MVS_NETWORK_PROTOCOL_SEED_HPP
 
 #include <memory>
 #include <bitcoin/bitcoin.hpp>

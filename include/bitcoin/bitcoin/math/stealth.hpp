@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_STEALTH_HPP
-#define LIBBITCOIN_STEALTH_HPP
+#ifndef MVS_STEALTH_HPP
+#define MVS_STEALTH_HPP
 
 #include <cstdint>
 #include <bitcoin/bitcoin/chain/script/script.hpp>

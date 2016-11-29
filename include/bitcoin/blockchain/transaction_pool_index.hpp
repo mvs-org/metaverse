@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_TRANSACTION_POOL_INDEX_HPP
-#define LIBBITCOIN_BLOCKCHAIN_TRANSACTION_POOL_INDEX_HPP
+#ifndef MVS_BLOCKCHAIN_TRANSACTION_POOL_INDEX_HPP
+#define MVS_BLOCKCHAIN_TRANSACTION_POOL_INDEX_HPP
 
 #include <atomic>
 #include <cstddef>

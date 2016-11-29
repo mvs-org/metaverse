@@ -28,6 +28,8 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/blockchain/block.hpp>
 #include <bitcoin/blockchain/validate_transaction.hpp>
+#include <bitcoin/consensus/miner/MinerAux.h>
+#include <bitcoin/consensus/libdevcore/BasicType.h>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -205,7 +207,7 @@ code validate_block::check_block() const
 
     const auto& header = current_block_.header;
 
-    if (!is_valid_proof_of_work(header.hash(), header.bits))
+    if (!is_valid_proof_of_work(header))
         return error::proof_of_work;
 
     RETURN_IF_STOPPED();
@@ -271,24 +273,14 @@ bool validate_block::is_distinct_tx_set(const transaction::list& txs)
 
 bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
 {
-    // Use system clock because we require accurate time of day.
-    typedef std::chrono::system_clock wall_clock;
-    const auto block_time = wall_clock::from_time_t(timestamp);
-    const auto two_hour_future = wall_clock::now() + time_stamp_window;
-    return block_time <= two_hour_future;
+    chain::header prev_header = fetch_block(height_ - 1);
+    return timestamp > prev_header.timestamp;
 }
 
-bool validate_block::is_valid_proof_of_work(hash_digest hash, uint32_t bits)
+bool validate_block::is_valid_proof_of_work(const chain::header& header)
 {
 	return true;
-    hash_number target_value;
-    if (!target_value.set_compact(bits) || target_value > max_target())
-        return false;
-
-    hash_number our_value;
-    our_value.set_hash(hash);
-//    return (our_value <= target_value);  #FIXME jianglh
-    return true;
+    //return dev::MinerAux::verifySeal(const_cast<chain::header&>(header));
 }
 
 // TODO: move to bc::chain::opcode.
@@ -412,74 +404,10 @@ code validate_block::accept_block() const
     return error::success;
 }
 
-uint32_t validate_block::work_required(bool is_testnet) const
+u256 validate_block::work_required(bool is_testnet) const
 {
-	return current_block_.header.bits; 
-	return 0;
-    if (height_ == 0)
-        return max_work_bits;
-
-    const auto is_retarget_height = [](size_t height)
-    {
-        return height % retargeting_interval == 0;
-    };
-
-    if (is_retarget_height(height_))
-    {
-        // This is the total time it took for the last 2016 blocks.
-        const auto actual = actual_time_span(retargeting_interval);
-
-        // Now constrain the time between an upper and lower bound.
-        const auto constrained = range_constrain(actual,
-            target_timespan_seconds / retargeting_factor,
-            target_timespan_seconds * retargeting_factor);
-
-        hash_number retarget;
-        retarget.set_compact(previous_block_bits());
-        retarget *= constrained;
-        retarget /= target_timespan_seconds;
-        if (retarget > max_target())
-            retarget = max_target();
-
-        return retarget.compact();
-    }
-
-    if (!is_testnet)
-        return previous_block_bits();
-
-    // This section is testnet in not-retargeting scenario.
-    // ------------------------------------------------------------------------
-
-    const auto max_time_gap = fetch_block(height_ - 1).timestamp + 2 * 
-        target_spacing_seconds;
-
-    if (current_block_.header.timestamp > max_time_gap)
-        return max_work_bits;
-
-    const auto last_non_special_bits = [this, is_retarget_height]()
-    {
-        header previous_block;
-        auto previous_height = height_;
-
-        // TODO: this is very suboptimal, cache the set of change points.
-        // Loop backwards until we find a difficulty change point,
-        // or we find a block which does not have max_bits (is not special).
-        while (!is_retarget_height(previous_height))
-        {
-            --previous_height;
-
-            // Test for non-special block.
-            previous_block = fetch_block(previous_height);
-            if (previous_block.bits != max_work_bits)
-                break;
-        }
-
-        return previous_block.bits;
-    };
-
-    return last_non_special_bits();
-
-    // ------------------------------------------------------------------------
+    chain::header prev_header = fetch_block(height_ - 1);
+    return HeaderAux::calculateDifficulty(const_cast<chain::header&>(current_block_.header), prev_header);
 }
 
 bool validate_block::is_valid_coinbase_height(size_t height, const block& block)

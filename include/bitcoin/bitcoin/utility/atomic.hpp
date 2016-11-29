@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_ATOMIC_POINTER_HPP
-#define LIBBITCOIN_ATOMIC_POINTER_HPP
+#ifndef MVS_ATOMIC_POINTER_HPP
+#define MVS_ATOMIC_POINTER_HPP
 
 #include <utility>
 #include <bitcoin/bitcoin/utility/thread.hpp>

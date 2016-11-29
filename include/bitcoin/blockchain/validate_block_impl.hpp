@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_BLOCKCHAIN_IMPL_VALIDATE_BLOCK_H
-#define LIBBITCOIN_BLOCKCHAIN_IMPL_VALIDATE_BLOCK_H
+#ifndef MVS_BLOCKCHAIN_IMPL_VALIDATE_BLOCK_H
+#define MVS_BLOCKCHAIN_IMPL_VALIDATE_BLOCK_H
 
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +43,7 @@ public:
 
 protected:
     uint64_t median_time_past() const;
-    uint32_t previous_block_bits() const;
+    u256 previous_block_bits() const;
     uint64_t actual_time_span(size_t interval) const;
     versions preceding_block_versions(size_t maximum) const;
     chain::header fetch_block(size_t fetch_height) const;
