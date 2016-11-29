@@ -71,8 +71,16 @@ const settings& server_node::server_settings() const
 
 void server_node::run_mongoose()
 {
+    // bind
     auto& conn = rest_server_.bind("8820");
+
+    // init for websocket and seesion control
     mg_set_protocol_http_websocket(&conn);
+    mg_register_http_endpoint(&conn, "/login.html", &http::RestServ::login_handler);
+    mg_register_http_endpoint(&conn, "/logout", &http::RestServ::logout_handler);
+    mg_set_timer(&conn, mg_time() + http::RestServ::session_check_interval);
+
+    // run
     for (;;)
         rest_server_.poll(1000);
 }

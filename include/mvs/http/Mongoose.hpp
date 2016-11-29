@@ -17,8 +17,7 @@
 #ifndef MVSD_MONGOOSE_HPP
 #define MVSD_MONGOOSE_HPP
 
-#include <bitcoin/bitcoin.hpp> // log
-#include <bitcoin/explorer.hpp> // command-line
+#include <bitcoin/explorer/dispatch.hpp>
 #include "mongoose/mongoose.h"
 
 #include <mvs/http/String.hpp>
@@ -31,6 +30,8 @@
 
 namespace http {
 namespace mg {
+
+#define SESSION_COOKIE_NAME "mvss"
 
 inline std::string_view operator+(const mg_str& str) noexcept
 {
@@ -114,6 +115,19 @@ private:
     websocket_message* impl_;
 };
 
+struct Session{
+        Session() = default;
+        Session(uint64_t a1, double a2, double a3, 
+                std::string&& a4, uint16_t a5):
+            id(a1), created(a2), last_used(a3), user(a4), state(a5){}
+        ~Session() = default;
+
+        uint64_t        id;
+        double          created;
+        double          last_used;
+        std::string     user;
+        uint16_t        state;
+};
 
 template <typename DerivedT>
 class Mgr {
@@ -136,27 +150,72 @@ public:
     }
     time_t poll(int milli) { return mg_mgr_poll(&mgr_, milli); }
 
+    // session control
+    static void login_handler(mg_connection* conn, int ev, void* data){
+       http_message* hm = static_cast<http_message*>(data);
+       auto* self = static_cast<DerivedT*>(conn->user_data);
+
+       if (mg_vcmp(&hm->method, "POST") != 0) {
+           mg_serve_http(conn, hm, self->get_httpoptions());
+       }else{
+           char user[50], pass[50];
+           auto ul = mg_get_http_var(&hm->body, "user", user, sizeof(user));
+           auto pl = mg_get_http_var(&hm->body, "pass", pass, sizeof(pass));
+           if (ul > 0 && pl > 0) {
+              if(!self->user_auth({user, std::strlen(user)}, {pass, std::strlen(pass)})){
+                mg_printf(conn, "HTTP/1.0 403 Unauthorized\r\n\r\nWrong password.\r\n");
+              }
+
+              auto ret = self->push_session({user, std::strlen(user)}, hm);
+              std::ostringstream shead;
+              shead<<"Set-Cookie: " SESSION_COOKIE_NAME "="<<ret->id<<"; path=/";
+              mg_http_send_redirect(conn, 302, mg_mk_str("/"), mg_mk_str(shead.str().c_str()));
+
+           } else {
+              mg_printf(conn, "HTTP/1.0 400 Bad Request\r\n\r\nuser, pass required.\r\n");
+           }
+       }
+       conn->flags |= MG_F_SEND_AND_CLOSE;
+    }
+
+    static void logout_handler(mg_connection* conn, int ev, void* data){
+       http_message* hm = static_cast<http_message*>(data);
+       auto* self = static_cast<DerivedT*>(conn->user_data);
+    }
+
+    constexpr static const double session_check_interval = 5.0;
+
 protected:
     Mgr() noexcept { mg_mgr_init(&mgr_, this); }
     ~Mgr() noexcept { mg_mgr_free(&mgr_); }
 
 private:
+
     static void handler(mg_connection* conn, int event, void* data)
     {
        http_message* hm = static_cast<http_message*>(data);
-       websocket_message* wm = static_cast<websocket_message*>(data);
+       websocket_message* ws = static_cast<websocket_message*>(data);
        auto* self = static_cast<DerivedT*>(conn->user_data);
 
        switch (event) {
-       case MG_EV_CLOSE:
+       case MG_EV_CLOSE:{
             if (conn->flags & MG_F_IS_WEBSOCKET) {
                 //self->websocketBroadcast(*conn, "left", 4);
             }else{
                 conn->user_data = nullptr;
             }
             break;
+        }
+       case MG_EV_HTTP_REQUEST:{
+            // login required
+            if (!self->get_from_session_list(hm)) {
+                mg_http_send_redirect(conn, 302, mg_mk_str("/login.html"),
+                        mg_mk_str(nullptr));
+                conn->flags |= MG_F_SEND_AND_CLOSE;
+                break;
+            }
 
-       case MG_EV_HTTP_REQUEST:
+            // logined, http request process
             if (mg_ncasecmp((&hm->uri)->p, "/api", 4u) == 0) {
                 self->httpRequest(*conn, hm);
             }else if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
@@ -166,17 +225,24 @@ private:
                 conn->flags |= MG_F_SEND_AND_CLOSE;
             }
             break;
-
-        case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
+        }
+        case MG_EV_WEBSOCKET_HANDSHAKE_DONE:{
             self->websocketSend(conn, "connected", 9);
             break;
-
-        case MG_EV_WEBSOCKET_FRAME:
-            self->websocketSend(*conn, wm);
+        }
+        case MG_EV_WEBSOCKET_FRAME:{
+            self->websocketSend(*conn, ws);
             break;
-
-       }
-    }
+        }
+        case MG_EV_SSI_CALL:{
+        }
+        case MG_EV_TIMER:{
+            self->check_sessions();
+            mg_set_timer(conn, mg_time() + self->session_check_interval);
+            break;
+        }
+       }// switch
+    }// handler
 
     mg_mgr mgr_;
 };

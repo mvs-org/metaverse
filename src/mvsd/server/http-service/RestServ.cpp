@@ -3,8 +3,11 @@
 #include <mvs/http/Exception_instance.hpp>
 #include <mvs/http/Stream_buf.hpp>
 #include <exception>
+#include <functional> //hash
 
-using namespace http;
+namespace http{
+
+using namespace mg;
 
 void RestServ::reset(HttpMessage& data) noexcept
 {
@@ -177,4 +180,67 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     out_.setContentLength(); 
 }
+
+std::shared_ptr<Session> RestServ::push_session(std::string_view user, HttpMessage data)
+{
+    auto s = std::make_shared<Session>();
+
+    s->created = s->last_used = mg_time();
+    s->user = std::string(user.data(), user.size());
+    s->state = 1;
+
+    s->id = std::hash<std::shared_ptr<Session>>()(s);
+    session_list_.push_back(s);
+
+    log::debug("session")<<s->id<<" pushed";
+
+    return s;
+}
+
+std::shared_ptr<Session> RestServ::get_from_session_list(HttpMessage data)
+{
+    mg_str* cookie_header = mg_get_http_header(data.get(), "cookie");;
+    if (cookie_header == nullptr) 
+        return nullptr;
+
+    char ssid[21]{0x00};
+    if (!mg_http_parse_header(cookie_header, SESSION_COOKIE_NAME, ssid, sizeof(ssid)))
+        return nullptr;
+
+    auto sid = std::stol(ssid, nullptr, 10);
+
+    log::info("session")<<sid<<" login required";
+
+    auto ret = std::find_if(session_list_.begin(), session_list_.end(), [&sid](std::shared_ptr<Session> p){
+            return sid == p->id;
+            });
+
+    if (ret == session_list_.end())
+        return nullptr;
+
+    (*ret)->last_used = mg_time();
+    return *ret;
+}
+
+bool RestServ::check_sessions()
+{
+    auto threshold = mg_time() - SESSION_TTL;
+
+    for (auto iter = session_list_.begin(); iter != session_list_.end(); ++iter)
+    {
+        if ( (*iter)->last_used < threshold )
+        {
+            log::debug("session")<<(*iter)->id<<" removed";
+            iter = session_list_.erase(iter);
+        }
+    }
+    return true;
+}
+
+bool RestServ::user_auth(std::string_view user, std::string_view password) const
+{
+    return true;
+}
+
+}// namespace http
 

@@ -11,10 +11,11 @@ namespace http{
 
 using namespace mg;
 using namespace bc;
-//using namespace bc::client;
-//using namespace bc::protocol;
 
-class RestServ : public mg::Mgr<RestServ>{
+class SessionMgr;
+
+class RestServ : public mg::Mgr<RestServ>
+{
 public:
     explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs)
         :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs)
@@ -45,26 +46,25 @@ public:
     void websocketSend(mg_connection* nc, const char* msg, size_t len);
     void websocketSend(mg_connection& nc, WebsocketMessage ws);
 
-protected:
-    std::pair<std::string_view,std::string_view> rpc_check(mg::HttpMessage &data)
+    // http session
+    mg_serve_http_opts& get_httpoptions(){return httpoptions_;}
+    std::shared_ptr<Session> get_from_session_list(HttpMessage data);
+    std::shared_ptr<Session> push_session(std::string_view user, HttpMessage data);
+    bool check_sessions();
+
+    std::pair<std::string_view,std::string_view> user_check(mg::HttpMessage &data)
     {
-       auto rpcuser = data.header("rpcuser");
-       auto rpcpassword = data.header("rpcpassword");
+       auto user = data.header("user");
+       auto password = data.header("pass");
     
-       if (rpcuser.empty() || rpcpassword.empty()) {
-      	    throw InvalidException{"authorisation required"_sv};
+       if (user.empty() || password.empty()) {
+      	    throw std::logic_error("authorisation required");
        }
-       return std::make_pair(rpcuser, rpcpassword);
+       return std::make_pair(user, password);
     }
 
-    void rpc_auth(std::string_view rpcuser, std::string_view rpcpassword) const 
-    {
-       if( rpcuser_ == rpcuser and rpcpassword_ == rpcpassword){
-       } else {
-           throw InvalidException("authorisation failed"_sv);
-       }
-    }
-
+    bool user_auth(std::string_view user, std::string_view password) const ;
+    
 private:
     enum : int {
       // Method values are represented as powers of two for simplicity.
@@ -90,8 +90,8 @@ private:
 
     // http
     mg_serve_http_opts httpoptions_;
-    std::string_view  rpcpassword_;
-    std::string_view  rpcuser_;
+    constexpr static const double SESSION_TTL = 120.0;
+    std::list< std::shared_ptr<Session> > session_list_;
 
     // config
     mg::OStream out_;
