@@ -20,6 +20,8 @@
 #ifndef MVS_CHAIN_HEADER_HPP
 #define MVS_CHAIN_HEADER_HPP
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <functional>
 #include <cstdint>
 #include <istream>
 #include <string>
@@ -31,15 +33,20 @@
 #include <bitcoin/bitcoin/utility/reader.hpp>
 #include <bitcoin/bitcoin/utility/thread.hpp>
 #include <bitcoin/bitcoin/utility/writer.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
+
 #include <bitcoin/consensus/libdevcore/FixedHash.h>
 #include <bitcoin/consensus/libdevcore/Common.h>
 #include <bitcoin/consensus/libdevcore/RLP.h>
 #include <bitcoin/consensus/libdevcore/SHA3.h>
+
 namespace libbitcoin {
+    using bigint = boost::multiprecision::number<boost::multiprecision::cpp_int_backend<>>;
+    using u64 =  boost::multiprecision::number<boost::multiprecision::cpp_int_backend<64, 64, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void>>;
+    using u128 =  boost::multiprecision::number<boost::multiprecision::cpp_int_backend<128, 128, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void>>;
+    using u256 =  boost::multiprecision::number<boost::multiprecision::cpp_int_backend<256, 256, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void>>;
+
 namespace chain {
 
-using u256 =  boost::multiprecision::number<boost::multiprecision::cpp_int_backend<256, 256, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void>>;
 class BC_API header
 {
 public:
@@ -58,13 +65,13 @@ public:
     header();
     header(const header& other);
     header(uint32_t version, const hash_digest& previous_block_hash,
-        const hash_digest& merkle, uint32_t timestamp, uint32_t bits,
-        uint32_t nonce, uint64_t transaction_count=0);
+        const hash_digest& merkle, uint32_t timestamp, const u256& bits,
+        u64 nonce, const u256& mixhash, uint32_t number, uint64_t transaction_count=0);
 
     header(header&& other);
     header(uint32_t version, hash_digest&& previous_block_hash,
-        hash_digest&& merkle, uint32_t timestamp, uint32_t bits,
-        uint32_t nonce, uint64_t transaction_count=0);
+        hash_digest&& merkle, uint32_t timestamp, const u256& bits,
+        u64 nonce, const u256& mixhash, uint32_t number, uint64_t transaction_count=0);
 
     /// This class is move assignable but not copy assignable.
     header& operator=(header&& other);
@@ -83,24 +90,14 @@ public:
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
 
-    u256 getDifficulty() { return (u256)bits; }
-    void setDifficulty(u256 const& _bits) {}
-    u256 getTimestamp() { return (u256)timestamp; }
-    Nonce getNonce() { return (Nonce)nonce; }
-    h256 getMixhash() { return (h256)m_Mixhash; }
-    void setNonce(Nonce const& _v) {}
-    void setMixHash(h256 const& _v) {}
-    uint32_t getNumber() { return m_number; }
-
     uint32_t version;
     hash_digest previous_block_hash;
     hash_digest merkle;
     uint32_t timestamp;
-    uint32_t bits;
-    uint32_t nonce;
-    /* Added by Sun,difficulty , nonce, mix_hash */
-    uint32_t m_number;
-    h256 m_Mixhash;
+    u256 bits;
+    u64 nonce;
+    u256 mixhash;
+    uint32_t number;
 
     // The longest size (64) of a protocol variable int is deserialized here.
     // WHen writing a block the size of the transaction collection is used.

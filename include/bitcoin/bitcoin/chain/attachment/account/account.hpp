@@ -31,13 +31,24 @@
 
 namespace libbitcoin {
 namespace chain {
+
+enum account_status : uint8_t
+{
+	//system status
+	locked = 0,
+	imported,
+	normal,
+	//use status
+	login,
+	logout,
+};
 /// used for store account related information 
 class BC_API account
 {
 public:
 	account();
 	account(std::string name, std::string mnemonic, hash_digest passwd, 
-			uint32_t hd_index, uint8_t priority);
+			uint32_t hd_index, uint8_t priority, uint16_t status);
     static account factory_from_data(const data_chunk& data);
     static account factory_from_data(std::istream& stream);
     static account factory_from_data(reader& source);
@@ -55,12 +66,27 @@ public:
     uint64_t serialized_size() const;
 	operator bool() const;
 	void to_json(std::ostream& output);
+	std::string  get_name();
+	void  set_name(std::string name);
+	std::string  get_mnemonic();
+	void  set_mnemonic(std::string mnemonic);
+	hash_digest  get_passwd();
+	void  set_passwd(hash_digest passwd);
+	uint32_t  get_hd_index();
+	void  set_hd_index(uint32_t hd_index);
+	uint16_t  get_status();
+	void  set_status(uint16_t status);
+	uint8_t  get_priority();
+	void  set_priority(uint8_t priority);
+	void  set_user_status(uint8_t status);
+	void  set_system_status(uint8_t status);
 	
     std::string name;
     std::string mnemonic;
     hash_digest passwd;
 	
     uint32_t hd_index;
+	uint16_t status;
 	uint8_t  priority;
 };
 

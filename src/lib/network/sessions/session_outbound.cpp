@@ -158,7 +158,11 @@ void session_outbound::handle_channel_stop(const code& ec,
     log::debug(LOG_NETWORK)
         << "Outbound channel stopped [" << channel->authority() << "] "
         << ec.message();
-    delay_new_connect(connect);
+
+    if(not stopped() and ec.value() != error::service_stopped)
+    {
+    	delay_new_connect(connect);
+    }
 }
 
 } // namespace network

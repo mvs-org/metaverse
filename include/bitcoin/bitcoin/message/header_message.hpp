@@ -51,14 +51,14 @@ public:
     header_message(const chain::header& other);
     header_message(const header_message& other);
     header_message(uint32_t version, const hash_digest& previous_block_hash,
-        const hash_digest& merkle, uint32_t timestamp, uint32_t bits,
-        uint32_t nonce, uint64_t transaction_count=0);
+        const hash_digest& merkle, uint32_t timestamp, const u256& bits,
+        u64 nonce, const u256& mixhash, uint32_t number, uint64_t transaction_count=0);
 
     header_message(chain::header&& other);
     header_message(header_message&& other);
     header_message(uint32_t version, hash_digest&& previous_block_hash,
-        hash_digest&& merkle, uint32_t timestamp, uint32_t bits,
-        uint32_t nonce, uint64_t transaction_count = 0);
+        hash_digest&& merkle, uint32_t timestamp, const u256& bits,
+        u64 nonce, const u256& mixhash, uint32_t number, uint64_t transaction_count = 0);
 
     /// This class is move assignable but not copy assignable.
     header_message& operator=(header_message&& other);

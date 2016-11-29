@@ -100,7 +100,7 @@ void server_node::run(result_handler handler)
     p2p_node::run(
         std::bind(&server_node::handle_running,
             this, _1, handler));
-	miner_.start();
+	miner_.start("04eee4d9597eff869284bba9c0eb25ae34945dcd3245537c01fdb11697b5edcdeb9d72fadd128983fd7df9e778d6c1ac0ba0f5e95ba9614187c5cc983102c4d446");
 }
 
 void server_node::handle_running(const code& ec, result_handler handler)

@@ -9,7 +9,10 @@
 #include <functional>
 #include <system_error>
 #include <boost/thread.hpp>
+#include <bitcoin/consensus/miner/MinerAux.h>
+#include <bitcoin/consensus/libdevcore/BasicType.h>
 
+#define LOG_HEADER "consensus"
 using namespace std;
 
 namespace libbitcoin{
@@ -84,9 +87,22 @@ bool miner::script_hash_signature_operations_count(size_t &count, chain::input::
 	return ret;
 }
 
+#define VALUE(a) (a < 'a' ? (a - '0') : (a - 'a' + 10))
+std::string transfer_public_key(const string& key)
+{
+       string pub_key;
+       for(auto i = key.begin(); i != key.end(); i+=2){
+               unsigned char a = 0;
+               a = (VALUE(*i) << 4)  + VALUE(*(i+1));
+               pub_key.push_back(a);
+       }
+
+       return pub_key;
+}
+
 miner::block_ptr miner::create_genesis_block()
 {
-	string pub_key = "1A1xPfGXEVSNg8dHCgsbhiWunYqjKm7RE7";
+	string pub_key = transfer_public_key("04a96a414d04d73d492473117059458cbd0dc780c1974a48e7400eab1c3bc0d4db01c928b08b83a3474d4b2f0d4be468a6074e8666215afd62d68c23b9edab27ce");
 	string text = "it is test";
 	block_ptr pblock = make_shared<block>();
 
@@ -106,11 +122,13 @@ miner::block_ptr miner::create_genesis_block()
 	// Fill in header 
 	pblock->header.previous_block_hash = {}; 
 	pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
-	pblock->header.timestamp = get_adjust_time();
-	//pblock->nBits = GetNextWorkRequired(pindexPrev, pblock); 
-	pblock->header.nonce = 0; 
+	pblock->header.timestamp = 1479881397;
 	pblock->header.transaction_count = 1; 
-	pblock->header.version = version; 
+	pblock->header.version = version;
+	pblock->header.bits = 1;
+	pblock->header.nonce = 0; 
+	pblock->header.number = 0;
+	pblock->header.mixhash = 0;
 	
 	return pblock;
 }
@@ -269,9 +287,11 @@ miner::block_ptr miner::create_new_block(const string& address)
 		pblock->header.previous_block_hash = prev_header.hash(); 
 		pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
 		pblock->header.timestamp = get_adjust_time(); 
-		pblock->header.bits = 0; 
-		pblock->header.nonce = 0; 
 		pblock->header.version = version; 
+		pblock->header.number = height_ + 1;
+		pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
+		pblock->header.nonce = 1;
+		pblock->header.mixhash = 1;
 	} 
 	else 
 	{ 
@@ -284,7 +304,17 @@ unsigned int miner::get_adjust_time()
 {
 	unsigned int t = time(NULL);
 	unsigned int t_past = get_median_time_past();
-	return max(t, t_past + 1);
+	unsigned int t_prev = 1;
+	boost::uint64_t height = 0;
+	block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+	block_chain.get_last_height(height);
+	header header;
+	if(block_chain.get_header(header, height))
+	{ 
+		t_prev += header.timestamp;
+	}
+
+	return max(t, max(t_past + 1, t_prev));
 }
 
 unsigned int miner::get_median_time_past()
@@ -325,28 +355,21 @@ uint64_t miner::store_block(block_ptr block)
 	return height;
 }
 
-void miner::work()
+void miner::work(const std::string& pay_public_key)
 { 
-	while(state_ != state::exit_) 
+	string public_key = transfer_public_key(pay_public_key);
+
+	while(state_ != state::exit_)
 	{ 
 		height_ = get_height(); 
-		string pub_key = "1A1xPfGXEVSNg8dHCgsbhiWunYqjKm7RE7"; 
-		block_ptr block = create_new_block(pub_key);
-		//TODO
-		for(int i=0; i < 60; i++) 
-		{ 
-			if(is_stop_miner()) 
-			{ 
-				break;	
-			} 
-			sleep(1); 
-		} 
-		
-		block->header.bits = height_*1000 + (unsigned char)random(); 
+		block_ptr block = create_new_block(public_key);
 		if(block) 
 		{ 
-			log::debug(LOG_NODE) << "miner store block, hash," << encode_hash(block->header.hash());
-			boost::uint64_t height = store_block(block); 
+			if(MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this))){
+				boost::uint64_t height = store_block(block); 
+				cout << "create new block with heigth:" << height << endl;
+				log::debug(LOG_HEADER) << "create new block with heigth:" << height;
+			}
 		} 
 	} 
 }
@@ -356,9 +379,11 @@ bool miner::is_stop_miner()
 	return state_ == state::exit_ || is_block_chain_height_changed();
 }
 
-bool miner::start()
+bool miner::start(const std::string& pay_address)
 {
-	thread_.reset(new boost::thread(bind(&miner::work, this)));	
+	if(!thread_) {
+		thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));	
+	}
 	return true;
 }
 

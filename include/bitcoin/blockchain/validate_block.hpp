@@ -53,7 +53,7 @@ protected:
         stopped_callback stop_callback);
 
     virtual uint64_t median_time_past() const = 0;
-    virtual uint32_t previous_block_bits() const = 0;
+    virtual u256 previous_block_bits() const = 0;
     virtual uint64_t actual_time_span(size_t interval) const = 0;
     virtual versions preceding_block_versions(size_t count) const = 0;
     virtual chain::header fetch_block(size_t fetch_height) const = 0;
@@ -78,10 +78,10 @@ protected:
     virtual bool is_active(chain::script_context flag) const;
     bool is_spent_duplicate(const chain::transaction& tx) const;
     bool is_valid_time_stamp(uint32_t timestamp) const;
-    uint32_t work_required(bool is_testnet) const;
+    u256 work_required(bool is_testnet) const;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
-    static bool is_valid_proof_of_work(hash_digest hash, uint32_t bits);
+    static bool is_valid_proof_of_work(const chain::header& header);
     static bool is_valid_coinbase_height(size_t height,
         const chain::block& block);
     //static size_t legacy_sigops_count(const chain::transaction& tx);

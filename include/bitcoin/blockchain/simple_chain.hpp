@@ -44,7 +44,7 @@ public:
         uint64_t start_height) const = 0;
 
     /// Get the dificulty of a block at the given height.
-    virtual bool get_difficulty(hash_number& out_difficulty,
+    virtual bool get_difficulty(u256& out_difficulty,
         uint64_t height) const = 0;
 
     /// Get the header of the block at the given height.

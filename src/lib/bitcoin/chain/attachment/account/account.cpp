@@ -35,13 +35,14 @@ account::account()
 	reset();
 }
 account::account(std::string name, std::string mnemonic, hash_digest passwd, 
-		uint32_t hd_index, uint8_t priority)
+		uint32_t hd_index, uint8_t priority, uint16_t status)
 {
     this->name = name;
     this->mnemonic = mnemonic;
     this->passwd = passwd;
     this->hd_index = hd_index;
     this->priority = priority;
+	this->status = status;
 }
 
 account account::factory_from_data(const data_chunk& data)
@@ -77,6 +78,7 @@ void account::reset()
     //this->passwd = "";
     this->hd_index = 0;
     this->priority = 1; // 0 -- admin user  1 -- common user
+    this->status = account_status::normal;
 }
 
 bool account::from_data(const data_chunk& data)
@@ -99,6 +101,7 @@ bool account::from_data(reader& source)
     passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
+	status = source.read_2_bytes_little_endian();
     return true;	
 }
 
@@ -126,6 +129,7 @@ void account::to_data(writer& sink) const
 	sink.write_hash(passwd);
 	sink.write_4_bytes_little_endian(hd_index);
 	sink.write_byte(priority);
+	sink.write_2_bytes_little_endian(status);
 }
 
 uint64_t account::serialized_size() const
@@ -141,7 +145,8 @@ std::string account::to_string()
 		<< "\t mnemonic = " << mnemonic << "\n"
 		<< "\t password = " << passwd.data() << "\n"
 		<< "\t hd_index = " << hd_index << "\n"
-		<< "\t priority = " << priority << "\n";
+		<< "\t priority = " << priority << "\n"
+		<< "\t status = " << status << "\n";
 
     return ss.str();
 }
@@ -160,6 +165,68 @@ void account::to_json(std::ostream& output)
 	json_writer.write("hd_index", hd_index);
 	json_writer.write("priority", priority);
 	json_writer.close();
+}
+std::string account::get_name()
+{ 
+    return name;
+}
+void account::set_name(std::string name)
+{ 
+     this->name = name;
+}
+
+std::string account::get_mnemonic()
+{ 
+    return mnemonic;
+}
+void account::set_mnemonic(std::string mnemonic)
+{ 
+     this->mnemonic = mnemonic;
+}
+
+hash_digest account::get_passwd()
+{ 
+    return passwd;
+}
+void account::set_passwd(hash_digest passwd)
+{ 
+     this->passwd = passwd;
+}
+
+uint32_t account::get_hd_index()
+{ 
+    return hd_index;
+}
+void account::set_hd_index(uint32_t hd_index)
+{ 
+     this->hd_index = hd_index;
+}
+
+uint16_t account::get_status()
+{ 
+    return status;
+}
+void account::set_status(uint16_t status)
+{ 
+     this->status = status;
+}
+
+uint8_t account::get_priority()
+{ 
+    return priority;
+}
+void account::set_priority(uint8_t priority)
+{ 
+     this->priority = priority;
+}
+
+void account::set_user_status(uint8_t status)
+{ 
+     this->status |= status;
+}
+void account::set_system_status(uint8_t status)
+{ 
+	this->status |= (status<<sizeof(uint8_t));
 }
 
 } // namspace chain

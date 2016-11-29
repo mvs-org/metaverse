@@ -57,6 +57,8 @@ session_header_sync::session_header_sync(p2p& network, header_queue& hashes,
     minimum_rate_(headers_per_second),
     blockchain_(blockchain),
     checkpoints_(checkpoint::sort(checkpoints)),
+	try_count_{0},
+	synced_{false},
     CONSTRUCT_TRACK(session_header_sync)
 {
     static_assert(back_off_factor < 1.0, "invalid back-off factor");
@@ -112,11 +114,10 @@ void session_header_sync::handle_connect(const code& ec, channel::ptr channel,
             << "Failure connecting header sync channel: " << ec.message();
         if(ec.value() == error::not_satisfied)
 		{
-        	handler(ec);
         	log::debug(LOG_NETWORK) << "session header sync handle connect, not satified";
+        	handler(ec);
 			return;
 		}
-        new_connection(connect, handler);
         return;
     }
 
@@ -125,7 +126,7 @@ void session_header_sync::handle_connect(const code& ec, channel::ptr channel,
 
     register_channel(channel,
         BIND4(handle_channel_start, _1, connect, channel, handler),
-        BIND1(handle_channel_stop, _1));
+        BIND3(handle_channel_stop, _1, connect, handler));
 }
 
 void session_header_sync::attach_handshake_protocols(channel::ptr channel,
@@ -143,7 +144,7 @@ void session_header_sync::handle_channel_start(const code& ec,
         handle_complete(ec, channel, connect, handler);
         return;
     }
-
+    try_count_.store(0);
     attach_protocols(channel, connect, handler);
 }
 
@@ -158,6 +159,7 @@ void session_header_sync::attach_protocols(channel::ptr channel,
 //    		handler(ec);
     		return;
     	}
+    	log::debug(LOG_NODE) << "header sync, last," << encode_hash(last_.hash()) ;
     	attach<protocol_address>(channel)->start();
 		attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
 			->start(BIND4(handle_complete, _1, channel, connect, handler));
@@ -170,6 +172,7 @@ void session_header_sync::handle_complete(const code& ec, channel::ptr channel,
 	channel->stop(error::channel_stopped);
     if (!ec)
     {
+    	synced_.store(true);
     	log::debug(LOG_NODE)
     	    	<< "header sync handle complete successfully," << ec.message() ;
         // This is the end of the header sync sequence.
@@ -183,14 +186,25 @@ void session_header_sync::handle_complete(const code& ec, channel::ptr channel,
     log::debug(LOG_NODE)
     	<< "handle complete failed," << ec.message() ;
 
-    // There is no failure scenario, we ignore the result code here.
-    new_connection(connect, handler);
+//    // There is no failure scenario, we ignore the result code here.
+//    new_connection(connect, handler);
 }
 
-void session_header_sync::handle_channel_stop(const code& ec)
+void session_header_sync::handle_channel_stop(const code& ec, network::connector::ptr connect, result_handler handler)
 {
     log::debug(LOG_NODE)
         << "Header sync channel stopped: " << ec.message();
+    if(!synced_)
+    {
+    	++try_count_;
+		if (try_count_ == 10)
+		{
+			log::info(LOG_NETWORK) << "session header sync handle connect try count reach 10";
+			handler(error::network_unreachable);
+			return;
+		}
+		new_connection(connect, handler);
+    }
 }
 
 // Utility.

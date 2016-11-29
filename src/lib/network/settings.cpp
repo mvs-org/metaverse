@@ -77,10 +77,11 @@ settings::settings(bc::settings context)
             identifier = 118034699;
             inbound_port = 15251;
 
-            seeds.reserve(2);
-            seeds.push_back({ "seed1.metaversetest.live", 5251 });
-            seeds.push_back({ "seed2.metaversetest.live", 5251 });
-            seeds.push_back({ "seed3.metaversetest.live", 5251 });
+            seeds.reserve(3);
+            seeds.push_back({ "seed1.metaversetest.live", 15251 });
+            seeds.push_back({ "seed2.metaversetest.live", 15251 });
+            seeds.push_back({ "seed3.metaversetest.live", 15251 });
+            seeds.push_back({ "seed4.metaversetest.live", 15251 });
             break;
         }
 

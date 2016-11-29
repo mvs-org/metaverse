@@ -29,7 +29,7 @@ namespace database {
 
 using namespace bc::chain;
 
-static constexpr size_t header_size = 80;
+static constexpr size_t header_size = 148;
 static constexpr size_t height_size = sizeof(uint32_t);
 static constexpr size_t count_size = sizeof(uint32_t);
 
