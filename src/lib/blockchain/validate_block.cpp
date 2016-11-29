@@ -279,8 +279,7 @@ bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
 
 bool validate_block::is_valid_proof_of_work(const chain::header& header)
 {
-	return true;
-    //return dev::MinerAux::verifySeal(const_cast<chain::header&>(header));
+    return MinerAux::verifySeal(const_cast<chain::header&>(header));
 }
 
 // TODO: move to bc::chain::opcode.
