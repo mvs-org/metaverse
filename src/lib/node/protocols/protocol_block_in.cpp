@@ -373,7 +373,10 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     const block_ptr_list& incoming, const block_ptr_list& outgoing)
 {
     if (stopped() || ec == error::service_stopped || incoming.empty())
+    {
+    	log::debug(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
         return false;
+    }
 
     if (ec)
     {

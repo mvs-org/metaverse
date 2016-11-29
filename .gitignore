@@ -31,3 +31,4 @@ build/*
 *.app
 .project
 .cproject
+.settings

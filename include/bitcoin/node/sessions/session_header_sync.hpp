@@ -67,7 +67,7 @@ private:
         result_handler handler);
     void handle_channel_start(const code& ec, network::connector::ptr connect,
         network::channel::ptr channel, result_handler handler);
-    void handle_channel_stop(const code& ec);
+    void handle_channel_stop(const code& ec, network::connector::ptr connect, result_handler handler);
     code get_range(config::checkpoint& out_seed, config::checkpoint& out_stop);
 
     // Thread safe.
@@ -78,6 +78,8 @@ private:
     config::checkpoint last_;
     blockchain::simple_chain& blockchain_;
     const config::checkpoint::list checkpoints_;
+    std::atomic_int try_count_;
+    std::atomic_bool synced_;
 };
 
 } // namespace node

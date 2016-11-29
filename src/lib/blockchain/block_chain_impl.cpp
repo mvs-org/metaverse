@@ -527,7 +527,7 @@ void block_chain_impl::fetch_locator_block_hashes(
             if (result)
             {
                 hashes.push_back(result.header().hash());
-                break;
+//                break;
             }
         }
 
@@ -596,7 +596,7 @@ void block_chain_impl::fetch_locator_block_headers(
             if (result)
             {
                 headers.push_back(result.header());
-                break;
+//                break;
             }
         }
 
