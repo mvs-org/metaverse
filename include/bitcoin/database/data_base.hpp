@@ -45,7 +45,7 @@
 #include <bitcoin/database/databases/account_database.hpp>
 #include <bitcoin/database/databases/account_address_database.hpp>
 #include <bitcoin/database/databases/asset_database.hpp>
-#include <bitcoin/database/databases/account_asset_database.hpp>
+#include <bitcoin/database/databases/address_asset_database.hpp>
 //#include <bitcoin/bitcoin/wallet/payment_address.hpp>
 
 using namespace libbitcoin::wallet;                                         
@@ -75,12 +75,14 @@ public:
         path stealth_rows;
         path spends_lookup;
         path transactions_lookup;
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
         path accounts_lookup;
         path assets_lookup;
-        path account_assets_lookup;
+        path address_assets_lookup;
+        path address_assets_rows;
         path account_addresses_lookup;
-		/* end database for account, asset, account_asset relationship */
+        path account_addresses_rows;
+		/* end database for account, asset, address_asset relationship */
     };
 
     /// Create a new database file with a given path prefix and default paths.
@@ -223,12 +225,12 @@ public:
     spend_database spends;
     stealth_database stealth;
     transaction_database transactions;
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
     account_database accounts;
     asset_database assets;
-    account_asset_database account_assets;
+    address_asset_database address_assets;
     account_address_database account_addresses;
-	/* end database for account, asset, account_asset relationship */
+	/* end database for account, asset, address_asset relationship */
 };
 
 } // namespace database

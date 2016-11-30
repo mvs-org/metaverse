@@ -34,6 +34,11 @@ asset_transfer::asset_transfer()
 {
 	reset();
 }
+asset_transfer::asset_transfer(const std::string& address, uint64_t quantity):
+	address(address),quantity(quantity)
+{
+
+}
 asset_transfer asset_transfer::factory_from_data(const data_chunk& data)
 {
     asset_transfer instance;
@@ -63,13 +68,7 @@ bool asset_transfer::is_valid() const
 void asset_transfer::reset()
 {	
     address = "";
-    sender = "";
-	recipient = "";
-	status = 0;
-	maximum_supply = 0;
     quantity = 0;
-	timestamp = 0;
-	height = 0;
 }
 
 bool asset_transfer::from_data(const data_chunk& data)
@@ -87,14 +86,8 @@ bool asset_transfer::from_data(std::istream& stream)
 bool asset_transfer::from_data(reader& source)
 {
     reset();
-    address = source.read_string();
-    sender = source.read_string();
-    recipient = source.read_string();
-	status = source.read_4_bytes_little_endian();
-    maximum_supply = source.read_8_bytes_little_endian();
     quantity = source.read_8_bytes_little_endian();
-    timestamp = source.read_8_bytes_little_endian(); 
-    height =  source.read_8_bytes_little_endian();
+    address = source.read_fixed_string(ASSET_TRANSFER_ADDRESS_FIX_SIZE);
 	
     auto result = static_cast<bool>(source);
     if (!result)
@@ -121,20 +114,13 @@ void asset_transfer::to_data(std::ostream& stream) const
 
 void asset_transfer::to_data(writer& sink) const
 {
-    sink.write_string(address);
-    sink.write_string(sender);
-    sink.write_string(recipient);
-    sink.write_4_bytes_little_endian(status);
-	sink.write_8_bytes_little_endian(maximum_supply);
 	sink.write_8_bytes_little_endian(quantity);
-	sink.write_8_bytes_little_endian(timestamp);
-	sink.write_8_bytes_little_endian(height);
+    sink.write_fixed_string(address, ASSET_TRANSFER_ADDRESS_FIX_SIZE);
 }
 
 uint64_t asset_transfer::serialized_size() const
 {
-    return address.size() + sender.size() + recipient.size() 
-		+ 4 + 8 + 8 + 8 + 8;
+    return address.size() + 8 + 3;
 }
 
 std::string asset_transfer::to_string() 
@@ -142,13 +128,7 @@ std::string asset_transfer::to_string()
     std::ostringstream ss;
 
     ss << "\t address = " << address << "\n"
-		<< "\t sender = " << sender << "\n"
-		<< "\t recipient = " << recipient << "\n"
-		<< "\t status = " << status << "\n"
-		<< "\t maximum_supply = " << maximum_supply << "\n"
-		<< "\t quantity = " << quantity << "\n"
-		<< "\t timestamp = " << timestamp << "\n"
-        << "\t height=" << height << "\n";
+		<< "\t quantity = " << quantity << "\n";
 
     return ss.str();
 }
@@ -157,15 +137,27 @@ void asset_transfer::to_json(std::ostream& output)
 {
 	minijson::object_writer json_writer(output);
 	json_writer.write("address", address);
-	json_writer.write("sender", sender);
-	json_writer.write("recipient", recipient);
-	json_writer.write("status", status);
-	json_writer.write("maximum_supply", maximum_supply);
 	json_writer.write("quantity", quantity);
-	json_writer.write("timestamp", timestamp);
-	json_writer.write("height", height);
 	json_writer.close();
 }
+const std::string& asset_transfer::get_address() const
+{ 
+    return address;
+}
+void asset_transfer::set_address(const std::string& address)
+{ 
+     this->address = address;
+}
+
+uint64_t asset_transfer::get_quantity() const
+{ 
+    return quantity;
+}
+void asset_transfer::set_quantity(uint64_t quantity)
+{ 
+     this->quantity = quantity;
+}
+
 
 } // namspace chain
 } // namspace libbitcoin

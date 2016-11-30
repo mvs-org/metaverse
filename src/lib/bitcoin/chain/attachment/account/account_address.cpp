@@ -35,13 +35,27 @@ account_address::account_address()
 	reset();
 }
 
-account_address::account_address(std::string name, std::string xprv_key, 
-	std::string xpub_key, uint32_t hd_index)
+account_address::account_address(std::string name, std::string prv_key, 
+	std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, std::string address)
 {
     this->name = name;
-    this->xprv_key = xprv_key;
-    this->xpub_key = xpub_key;
+    this->prv_key = prv_key;
+    this->pub_key = pub_key;
     this->hd_index = hd_index;
+	this->balance = balance;
+	this->alias = alias;
+	this->address = address;
+}
+
+account_address::account_address(const account_address& other)
+{
+    this->name = other.name;
+    this->prv_key = other.prv_key;
+    this->pub_key = other.pub_key;
+    this->hd_index = other.hd_index;
+	this->balance = other.balance;
+	this->alias = other.alias;
+	this->address = other.address;
 }
 account_address account_address::factory_from_data(const data_chunk& data)
 {
@@ -72,9 +86,12 @@ bool account_address::is_valid() const
 void account_address::reset()
 {	
     this->name = "";
-    this->xprv_key = "";
-    this->xpub_key = "";
+    this->prv_key = "";
+    this->pub_key = "";
     this->hd_index = 0;
+	this->balance = 0;
+	this->alias = "";
+	this->address = "";
 }
 
 bool account_address::from_data(const data_chunk& data)
@@ -92,10 +109,13 @@ bool account_address::from_data(std::istream& stream)
 bool account_address::from_data(reader& source)
 {
     reset();
-    name = source.read_string();
-    xprv_key = source.read_string();
-	xpub_key = source.read_string();
-    hd_index= source.read_4_bytes_little_endian();
+    name = source.read_fixed_string(ADDRESS_NAME_FIX_SIZE);
+    prv_key = source.read_fixed_string(ADDRESS_PRV_KEY_FIX_SIZE);
+	pub_key = source.read_fixed_string(ADDRESS_PUB_KEY_FIX_SIZE);
+    hd_index = source.read_4_bytes_little_endian();
+	balance = source.read_8_bytes_little_endian();
+	alias = source.read_fixed_string(ADDRESS_ALIAS_FIX_SIZE);
+	address = source.read_fixed_string(ADDRESS_ADDRESS_FIX_SIZE);
     return true;	
 }
 
@@ -118,15 +138,18 @@ void account_address::to_data(std::ostream& stream) const
 
 void account_address::to_data(writer& sink) const
 {
-    sink.write_string(name);
-	sink.write_string(xprv_key);
-	sink.write_string(xpub_key);
+    sink.write_fixed_string(name, ADDRESS_NAME_FIX_SIZE);
+	sink.write_fixed_string(prv_key, ADDRESS_PRV_KEY_FIX_SIZE);
+	sink.write_fixed_string(pub_key, ADDRESS_PUB_KEY_FIX_SIZE);
 	sink.write_4_bytes_little_endian(hd_index);
+	sink.write_8_bytes_little_endian(balance);
+	sink.write_fixed_string(alias, ADDRESS_ALIAS_FIX_SIZE);
+	sink.write_fixed_string(address, ADDRESS_ADDRESS_FIX_SIZE);
 }
 
 uint64_t account_address::serialized_size() const
 {
-    return name.size() + xprv_key.size() + xpub_key.size() + 4 + 3; // 3 "string length" byte
+    return name.size() + prv_key.size() + pub_key.size() + 4 + 8 + alias.size() + address.size() + 4 + 4; // 4 "string length" byte
 }
 
 std::string account_address::to_string() 
@@ -134,9 +157,12 @@ std::string account_address::to_string()
     std::ostringstream ss;
 
     ss << "\t name = " << name << "\n"
-		<< "\t xprv_key = " << xprv_key << "\n"
-		<< "\t xpub_key = " << xpub_key << "\n"
-		<< "\t hd_index = " << hd_index << "\n";
+		<< "\t prv_key = " << prv_key << "\n"
+		<< "\t pub_key = " << pub_key << "\n"
+		<< "\t hd_index = " << hd_index << "\n"
+		<< "\t balance = " << balance << "\n"
+		<< "\t alias = " << alias << "\n"
+		<< "\t address = " << address << "\n";
 
     return ss.str();
 }
@@ -144,10 +170,73 @@ void account_address::to_json(std::ostream& output)
 {
 	minijson::object_writer json_writer(output);
 	json_writer.write("name", name);
-	json_writer.write("xprv_key", xprv_key);
-	json_writer.write("xpub_key", xpub_key);
+	json_writer.write("prv_key", prv_key);
+	json_writer.write("pub_key", pub_key);
 	json_writer.write("hd_index", hd_index);
 	json_writer.close();
+}
+
+const std::string& account_address::get_name() const
+{ 
+    return name;
+}
+void account_address::set_name(const std::string& name)
+{ 
+     this->name = name;
+}
+
+const std::string& account_address::get_prv_key() const
+{ 
+    return prv_key;
+}
+void account_address::set_prv_key(const std::string& prv_key)
+{ 
+     this->prv_key = prv_key;
+}
+
+const std::string& account_address::get_pub_key() const
+{ 
+    return pub_key;
+}
+void account_address::set_pub_key(const std::string& pub_key)
+{ 
+     this->pub_key = pub_key;
+}
+
+uint32_t account_address::get_hd_index() const
+{ 
+    return hd_index;
+}
+void account_address::set_hd_index(uint32_t hd_index)
+{ 
+     this->hd_index = hd_index;
+}
+
+uint64_t account_address::get_balance() const
+{ 
+    return balance;
+}
+void account_address::set_balance(uint64_t balance)
+{ 
+     this->balance = balance;
+}
+
+const std::string& account_address::get_alias() const
+{ 
+    return alias;
+}
+void account_address::set_alias(const std::string& alias)
+{ 
+     this->alias = alias;
+}
+
+const std::string& account_address::get_address() const
+{ 
+    return address;
+}
+void account_address::set_address(const std::string& address)
+{ 
+     this->address = address;
 }
 
 

@@ -31,13 +31,24 @@
 
 namespace libbitcoin {
 namespace chain {
+
+BC_CONSTEXPR size_t ADDRESS_NAME_FIX_SIZE = 64;
+BC_CONSTEXPR size_t ADDRESS_PRV_KEY_FIX_SIZE = 32;
+BC_CONSTEXPR size_t ADDRESS_PUB_KEY_FIX_SIZE = 33;
+BC_CONSTEXPR size_t ADDRESS_HD_INDEX_FIX_SIZE = 4;
+BC_CONSTEXPR size_t ADDRESS_BALANCE_FIX_SIZE = 8;
+BC_CONSTEXPR size_t ADDRESS_ALIAS_FIX_SIZE = 64;
+BC_CONSTEXPR size_t ADDRESS_ADDRESS_FIX_SIZE = 17;
+
 /// used for store account_address related information 
 class BC_API account_address
 {
 public:
+    typedef std::vector<account_address> list;
 	account_address();
-	account_address(std::string name, std::string xprv_key, 
-		std::string xpub_key, uint32_t hd_index);
+	account_address(std::string name, std::string prv_key, 
+		std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, std::string address);
+	account_address(const account_address& other);
     static account_address factory_from_data(const data_chunk& data);
     static account_address factory_from_data(std::istream& stream);
     static account_address factory_from_data(reader& source);
@@ -54,11 +65,29 @@ public:
     void reset();
     uint64_t serialized_size() const;
 	void to_json(std::ostream& output) ;
+	const std::string& get_name() const;
+	void set_name(const std::string& name);
+	const std::string& get_prv_key() const;
+	void set_prv_key(const std::string& prv_key);
+	const std::string& get_pub_key() const;
+	void set_pub_key(const std::string& pub_key);
+	uint32_t get_hd_index() const;
+	void set_hd_index(uint32_t hd_index);
+	uint64_t get_balance() const;
+	void set_balance(uint64_t balance);
+	const std::string& get_alias() const;
+	void set_alias(const std::string& alias);
+	const std::string& get_address() const;
+	void set_address(const std::string& address);
 
-    std::string name;  // account name
-    std::string xprv_key; 
-    std::string xpub_key;
-    uint32_t hd_index;
+private:
+    std::string name;  // 64 bytes -- account name -- todo remove it later
+    std::string prv_key; // 32 bytes
+    std::string pub_key; // 33 bytes
+    uint32_t hd_index; // 4 bytes -- todo remove it later
+	uint64_t balance; // 8 bytes
+	std::string alias; // 64 bytes
+	std::string address; // 17 bytes
 };
 
 } // namespace chain

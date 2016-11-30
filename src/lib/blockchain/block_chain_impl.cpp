@@ -951,7 +951,7 @@ operation_result block_chain_impl::store_account_address(const std::string& name
 		unique_lock lock(mutex_);
 
 		const auto hash = str2sha256hash(xpub);
-		account_address address(name, xprv, xpub, hd_index);
+		account_address address(name, xprv, xpub, hd_index, 0, "alias", "bitcoin address");
 		database_.account_addresses.store(hash, address);
 		database_.account_addresses.sync();
 		///////////////////////////////////////////////////////////////////////////
@@ -1132,9 +1132,9 @@ operation_result block_chain_impl::create_asset(const std::string& name, const s
 	{
 		store_asset(asset);
 		asset_transfer sp_transfer;
-		sp_transfer.address = asset.symbol;
-		sp_transfer.sender = name;
-		sp_transfer.status = 0;
+		sp_transfer.set_address(asset.symbol);
+		//sp_transfer.sender = name;
+		//sp_transfer.status = 0;
 		store_account_asset(sp_transfer);
 		ret_val = operation_result::okay;
 	}
@@ -1172,9 +1172,9 @@ void block_chain_impl::store_account_asset(asset_transfer& sp_transfer)
     // Critical Section.
     unique_lock lock(mutex_);
 
-	std::string symbol_sender = sp_transfer.address + sp_transfer.sender;
+	std::string symbol_sender = sp_transfer.get_address();// + sp_transfer.sender;
 	const auto hash = str2sha256hash(symbol_sender);
-    database_.account_assets.sync();
+    database_.address_assets.sync();
     ///////////////////////////////////////////////////////////////////////////
 }
 #endif
