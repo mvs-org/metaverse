@@ -207,7 +207,18 @@ private:
             break;
         }
        case MG_EV_HTTP_REQUEST:{
-            // login required
+            // rpc call
+            if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
+                self->httpRpcRequest(*conn, hm);
+                break;
+            }
+            // register call
+            if (mg_ncasecmp((&hm->uri)->p, "/api/getnewaccount", 18u) == 0) {
+                self->httpRequest(*conn, hm);
+                break;
+            }
+
+            // login required for other calls
             if (!self->get_from_session_list(hm)) {
                 mg_http_send_redirect(conn, 302, mg_mk_str("/login.html"),
                         mg_mk_str(nullptr));
@@ -218,8 +229,6 @@ private:
             // logined, http request process
             if (mg_ncasecmp((&hm->uri)->p, "/api", 4u) == 0) {
                 self->httpRequest(*conn, hm);
-            }else if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
-                self->httpRpcRequest(*conn, hm);
             }else{
                 self->httpStatic(*conn, hm);
                 conn->flags |= MG_F_SEND_AND_CLOSE;
