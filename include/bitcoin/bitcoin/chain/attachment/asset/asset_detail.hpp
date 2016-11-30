@@ -55,7 +55,20 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-    
+	const std::string& get_symbol() const;
+	void set_symbol(const std::string& symbol);
+	uint64_t get_maximum_supply() const;
+	void set_maximum_supply(uint64_t maximum_supply);
+	uint32_t get_asset_type() const;
+	void set_asset_type(uint32_t asset_type);
+	const std::string& get_issuer() const;
+	void set_issuer(const std::string& issuer);
+	const std::string& get_address() const;
+	void set_address(const std::string& address);
+	const std::string& get_description() const;
+	void set_description(const std::string& description);
+
+private:    
     std::string symbol;
     uint64_t maximum_supply;
     uint32_t asset_type;

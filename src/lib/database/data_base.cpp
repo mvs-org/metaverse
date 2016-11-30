@@ -79,12 +79,14 @@ data_base::store::store(const path& prefix)
     history_lookup = prefix / "history_table";
     spends_lookup = prefix / "spend_table";
     transactions_lookup = prefix / "transaction_table";
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
 	accounts_lookup = prefix / "account_table";
 	assets_lookup = prefix / "asset_table";
-	account_assets_lookup = prefix / "account_asset_table";
+	address_assets_lookup = prefix / "address_asset_table";
+	address_assets_rows = prefix / "address_asset_row";
 	account_addresses_lookup = prefix / "account_address_table";
-	/* end database for account, asset, account_asset relationship */
+    account_addresses_rows = prefix / "account_address_rows";
+	/* end database for account, asset, address_asset relationship */
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -108,12 +110,14 @@ bool data_base::store::touch_all() const
         touch_file(stealth_rows) &&
         touch_file(spends_lookup) &&
         touch_file(transactions_lookup)&&
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
         touch_file(accounts_lookup)&&
         touch_file(assets_lookup)&&
-        touch_file(account_assets_lookup)&&
-		touch_file(account_addresses_lookup);
-		/* end database for account, asset, account_asset relationship */
+        touch_file(address_assets_lookup)&&
+        touch_file(address_assets_rows)&&
+		touch_file(account_addresses_lookup)&&
+		touch_file(account_addresses_rows);
+		/* end database for account, asset, address_asset relationship */
 }
 
 data_base::file_lock data_base::initialize_lock(const path& lock)
@@ -160,12 +164,12 @@ data_base::data_base(const store& paths, size_t history_height,
     stealth(paths.stealth_rows, mutex_),
     spends(paths.spends_lookup, mutex_),
     transactions(paths.transactions_lookup, mutex_),
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
 	accounts(paths.accounts_lookup, mutex_),
 	assets(paths.assets_lookup, mutex_),
-	account_assets(paths.account_assets_lookup, mutex_),
-	account_addresses(paths.account_addresses_lookup, mutex_)
-	/* end database for account, asset, account_asset relationship */
+	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
+    account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
+	/* end database for account, asset, address_asset relationship */
 {
 }
 
@@ -191,12 +195,12 @@ bool data_base::create()
         spends.create() &&
         stealth.create() &&
         transactions.create()&&
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
 		accounts.create()&&
 		assets.create()&&
-		account_assets.create()&&
+		address_assets.create()&&
 		account_addresses.create()
-		/* end database for account, asset, account_asset relationship */
+		/* end database for account, asset, address_asset relationship */
 		;
 }
 
@@ -225,12 +229,12 @@ bool data_base::start()
         spends.start() &&
         stealth.start() &&
         transactions.start()&&
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
 		accounts.start()&&
 		assets.start()&&
-		account_assets.start()&&
+		address_assets.start()&&
 		account_addresses.start()
-		/* end database for account, asset, account_asset relationship */
+		/* end database for account, asset, address_asset relationship */
         ;
     const auto end_exclusive = end_write();
 
@@ -247,12 +251,12 @@ bool data_base::stop()
     const auto spends_stop = spends.stop();
     const auto stealth_stop = stealth.stop();
     const auto transactions_stop = transactions.stop();
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
 	const auto accounts_stop = accounts.stop();
 	const auto assets_stop = assets.stop();
-	const auto account_assets_stop = account_assets.stop();
+	const auto address_assets_stop = address_assets.stop();
 	const auto account_addresses_stop = account_addresses.stop();
-	/* end database for account, asset, account_asset relationship */
+	/* end database for account, asset, address_asset relationship */
     const auto end_exclusive = end_write();
 
     // This should remove the lock file. This is not important for locking
@@ -268,12 +272,12 @@ bool data_base::stop()
         spends_stop &&
         stealth_stop &&
         transactions_stop &&
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
 		accounts_stop &&
 		assets_stop &&
-		account_assets_stop &&
+		address_assets_stop &&
 		account_addresses_stop &&
-		/* end database for account, asset, account_asset relationship */
+		/* end database for account, asset, address_asset relationship */
         end_exclusive;
 }
 
@@ -285,12 +289,12 @@ bool data_base::close()
     const auto spends_close = spends.close();
     const auto stealth_close = stealth.close();
     const auto transactions_close = transactions.close();
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
 	const auto accounts_close = accounts.close();
 	const auto assets_close = assets.close();
-	const auto account_assets_close = account_assets.close();
+	const auto address_assets_close = address_assets.close();
 	const auto account_addresses_close = account_addresses.close();
-	/* end database for account, asset, account_asset relationship */
+	/* end database for account, asset, address_asset relationship */
 
     // Return the cumulative result of the database closes.
     return
@@ -299,12 +303,12 @@ bool data_base::close()
         spends_close &&
         stealth_close &&
         transactions_close&&
-		/* begin database for account, asset, account_asset relationship */
+		/* begin database for account, asset, address_asset relationship */
 		accounts_close &&
 		assets_close &&
-		account_assets_close&&
+		address_assets_close&&
 		account_addresses_close
-		/* end database for account, asset, account_asset relationship */
+		/* end database for account, asset, address_asset relationship */
         ;
 }
 
@@ -365,12 +369,12 @@ void data_base::synchronize()
     history.sync();
     stealth.sync();
     transactions.sync();
-	/* begin database for account, asset, account_asset relationship */
+	/* begin database for account, asset, address_asset relationship */
 	accounts.sync();
 	assets.sync();
-	account_assets.sync();
+	address_assets.sync();
 	account_addresses.sync();
-	/* end database for account, asset, account_asset relationship */
+	/* end database for account, asset, address_asset relationship */
     blocks.sync();
 }
 
@@ -582,8 +586,8 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 }
 /* begin store asset related info into database */
 
-//#include <bitcoin/bitcoin/config/base16.hpp>
-//using namespace libbitcoin::config;
+#include <bitcoin/bitcoin/config/base16.hpp>
+using namespace libbitcoin::config;
 void data_base::process_attachemnt(attachment& attach, payment_address& address)
 {
 	if(0 == attach.type) { // not process etp business now
@@ -602,6 +606,44 @@ void data_base::process_attachemnt(attachment& attach, payment_address& address)
 		account_address address("dongyun", "xprv-key", "xpub-key" ,1000);
 		account_addresses.store(hash, address);
 		#endif
+		std::string ss = "1111111111111111111114oLvT2";
+		data_chunk data(ss.begin(), ss.end());
+		const auto hash = ripemd160_hash(data);
+		std::cout << base16(hash) << std::endl;
+		//std::cout << sp_detail.symbol << std::endl;
+		account_address address("dongyun", "xprv-key", "xpub-key" ,1000, 0, "alia", "address");
+		account_addresses.store(hash, address);
+		account_address address2("dongyun2", "xprv-key2", "xpub-key2" ,1000, 0, "alia2", "address2");
+		account_addresses.store(hash, address2);
+		std::shared_ptr<account_address> ptr = account_addresses.get(hash, "address");
+		if(ptr)
+			std::cout<<ptr->to_string();
+		
+		std::shared_ptr<account_address> ptr2 = account_addresses.get(hash, "address2");
+		if(ptr2)
+			std::cout<<ptr2->to_string();
+
+		const output_point outpoint{hash_digest(), 0}; 
+		uint32_t output_height = 10;
+		uint64_t value = 100;
+		const asset_transfer transfer("transfer", 66);
+		address_assets.store_output(hash, outpoint, output_height, value, transfer);
+
+		const output_point outpoint2{hash_digest(), 0}; 
+		uint32_t output_height2 = 100;
+		uint64_t value2 = 1000;
+		const asset_transfer transfer2("transfer", 6);
+		address_assets.store_output(hash, outpoint2, output_height2, value2, transfer2);
+
+		asset_transfer_compact::list result = address_assets.get(hash, 10, 0);
+		const auto action = [](const asset_transfer_compact& spend)
+		{
+			std::cout<< spend.height << std::endl;
+			std::cout<< spend.value << std::endl;
+		};
+
+		std::for_each(result.begin(), result.end(), action);
+		
 		return ;
 	}
 	auto visitor = attachment_visitor(address, this);
@@ -615,7 +657,7 @@ void data_base::process_asset(asset& sp, payment_address address) // sp = smart 
 
 void data_base::push_asset_detail(asset_detail& sp_detail)
 {
-	const data_chunk& data = data_chunk(sp_detail.symbol.begin(), sp_detail.symbol.end());
+	const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
     //std::cout << base16(hash) << std::endl;
     //std::cout << sp_detail.symbol << std::endl;
@@ -623,14 +665,16 @@ void data_base::push_asset_detail(asset_detail& sp_detail)
 }
 void data_base::push_asset_transfer(asset_transfer& sp_transfer, payment_address& address)
 {
-	data_chunk  addr(sp_transfer.address.begin(), sp_transfer.address.end());
-	data_chunk& data = addr;
-	std::copy(address.encoded().begin(), address.encoded().end(), std::back_inserter(data));
-    const auto hash = sha256_hash(data);
+	//data_chunk  addr(sp_transfer.get_address.begin(), sp_transfer.get_address.end());
+	//data_chunk& data = addr;
+	//std::copy(address.encoded().begin(), address.encoded().end(), std::back_inserter(data));
+    //const auto hash = ripemd160_hash(data);
+    
     //std::cout << base16(hash) << std::endl;
     //std::cout << sp_transfer.address << std::endl;
     //std::cout << address.encoded() << std::endl;
-	account_assets.store(hash, sp_transfer);
+    
+	//address_assets.store(hash, sp_transfer);
 }
 /* end store asset related info into database */
 

@@ -209,7 +209,7 @@ void account_address_database::delete_last_row(const short_hash& key)
     rows_multimap_.delete_last_row(key);
 }
 
- account_address::list account_address_database::get(const short_hash& key) const
+account_address::list account_address_database::get(const short_hash& key) const
 {
     // Read a row from the data for the account_address list.
     const auto read_row = [](uint8_t* data)

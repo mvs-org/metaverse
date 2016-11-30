@@ -41,6 +41,7 @@ enum account_status : uint8_t
 	//use status
 	login,
 	logout,
+	error,
 };
 /// used for store account related information 
 class BC_API account
@@ -66,21 +67,25 @@ public:
     uint64_t serialized_size() const;
 	operator bool() const;
 	void to_json(std::ostream& output);
-	std::string  get_name();
-	void  set_name(std::string name);
-	std::string  get_mnemonic();
-	void  set_mnemonic(std::string mnemonic);
-	hash_digest  get_passwd();
-	void  set_passwd(hash_digest passwd);
-	uint32_t  get_hd_index();
-	void  set_hd_index(uint32_t hd_index);
-	uint16_t  get_status();
-	void  set_status(uint16_t status);
-	uint8_t  get_priority();
-	void  set_priority(uint8_t priority);
-	void  set_user_status(uint8_t status);
-	void  set_system_status(uint8_t status);
 	
+	const std::string& get_name() const;
+	void set_name(const std::string& name);
+	const std::string& get_mnemonic() const;
+	void set_mnemonic(const std::string& mnemonic);
+	const hash_digest& get_passwd() const;
+	void set_passwd(const hash_digest& passwd);
+	uint32_t get_hd_index() const;
+	void set_hd_index(const uint32_t hd_index);
+	uint16_t get_status() const;
+	void set_status(const uint16_t status);
+	uint8_t get_priority() const;
+	void set_priority(const uint8_t priority);
+	void set_user_status(const uint8_t status);
+	void set_system_status(const uint8_t status);
+	uint8_t get_user_status() const;
+	uint8_t get_system_status() const;
+	
+private:	
     std::string name;
     std::string mnemonic;
     hash_digest passwd;

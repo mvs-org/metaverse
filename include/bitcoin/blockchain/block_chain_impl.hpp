@@ -221,46 +221,26 @@ public:
     virtual void subscribe_reorganize(reorganize_handler handler);
 
 	/* begin store account related info into database */
-#if 1
-	inline hash_digest str2sha256hash(const std::string& passwd);
-	/* used for "set_admin_passwd" command */
-	operation_result set_admin_passwd(const std::string& name, const std::string& old_passwd,
-		const std::string& new_passwd, uint16_t flag=0);
-	/* used for "get_new_account" command */
-	operation_result get_new_account(const std::string& name, const std::string& passwd, 
-		const std::string& mnemonic);
-	//void store_account(std::shared_ptr<account> acc);
-	std::shared_ptr<account> get_account_by_name(const std::string& name);
-	operation_result get_account_info(const std::string& name, const std::string& passwd,
-		std::string& mnemonic, uint32_t& hd_index, uint16_t flag=0);
-
-	
-	/* used for "get_new_address" command */
-	operation_result get_new_address(const std::string& name, const std::string& passwd,
-		const std::string& mnemonic, uint32_t& hd_index);
-	operation_result store_account_address(const std::string& name, const std::string& passwd,  
-		const std::string& xprv, const std::string& xpub, uint32_t& hd_index, uint16_t flag=0);
-	std::shared_ptr<account_address> get_address_by_xpub(const std::string& xpub);
-	// asset related api
-	std::shared_ptr<asset_detail> get_asset_by_symbol(const std::string& symbol);
-	operation_result create_asset(const std::string& name, const std::string& passwd, 
-		const asset_detail& asset, uint16_t flag=0);
-	void store_asset(const asset_detail& acc);
-	void store_account_asset(asset_transfer& sp_transfer);
-#endif
+	inline hash_digest get_hash(const std::string& str);
+	inline short_hash get_short_hash(const std::string& str);
+	// account related api
 	bool is_account_passwd_valid(const std::string& name, const std::string& passwd);
 	bool is_account_exist(const std::string& name);
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);
-	std::shared_ptr<account_address> get_account_address(const std::string& name, uint32_t idx=0);
-	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
 	std::shared_ptr<asset_detail> get_account_asset(const std::string& name, const std::string& asset);
 	std::shared_ptr<std::vector<asset_detail>> get_account_assets(const std::string& name);
 	account_status get_account_user_status(const std::string& name);
 	account_status get_account_system_status(const std::string& name);
-	void set_account_user_status(const std::string& name, const account_status status);
-	void set_account_system_status(const std::string& name, const account_status status);
-	
+	bool set_account_user_status(const std::string& name, uint8_t status);
+	bool set_account_system_status(const std::string& name, uint8_t status);
+
+	// account adress related api
+	operation_result store_account_address(std::shared_ptr<account_address> address);
+	std::shared_ptr<account_address> get_account_address(const std::string& name, const std::string& address);
+	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
+
+	// asset related api	
 	uint16_t get_asset_status(const std::string& name);
 	bool is_asset_exist(const std::string& name);
 	operation_result store_asset(std::shared_ptr<asset> ptr);

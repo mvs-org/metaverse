@@ -191,6 +191,60 @@ void asset_detail::to_json(std::ostream& output)
 	json_writer.write("description", description);
 	json_writer.close();
 }
+const std::string& asset_detail::get_symbol() const
+{ 
+    return symbol;
+}
+void asset_detail::set_symbol(const std::string& symbol)
+{ 
+     this->symbol = symbol;
+}
+
+uint64_t asset_detail::get_maximum_supply() const
+{ 
+    return maximum_supply;
+}
+void asset_detail::set_maximum_supply(uint64_t maximum_supply)
+{ 
+     this->maximum_supply = maximum_supply;
+}
+
+uint32_t asset_detail::get_asset_type() const
+{ 
+    return asset_type;
+}
+void asset_detail::set_asset_type(uint32_t asset_type)
+{ 
+     this->asset_type = asset_type;
+}
+
+const std::string& asset_detail::get_issuer() const
+{ 
+    return issuer;
+}
+void asset_detail::set_issuer(const std::string& issuer)
+{ 
+     this->issuer = issuer;
+}
+
+const std::string& asset_detail::get_address() const
+{ 
+    return address;
+}
+void asset_detail::set_address(const std::string& address)
+{ 
+     this->address = address;
+}
+
+const std::string& asset_detail::get_description() const
+{ 
+    return description;
+}
+void asset_detail::set_description(const std::string& description)
+{ 
+     this->description = description;
+}
+
 
 } // namspace chain
 } // namspace libbitcoin

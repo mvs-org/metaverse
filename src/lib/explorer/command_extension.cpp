@@ -280,7 +280,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     exec_with(0);
     exec_with(1);
     json_writer.write("mnemonic", sout.str());
-    blockchain.get_new_account(auth_.name, auth_.auth, sout.str());
+    //blockchain.get_new_account(auth_.name, auth_.auth, sout.str()); // api changed
     
     exec_with(2);
     exec_with(3);
@@ -302,7 +302,7 @@ console_result getaccount::invoke (std::ostream& output, std::ostream& cerr)
 console_result getaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    account_ptr acc = blockchain.get_account_by_name(auth_.name);
+    account_ptr acc = blockchain.get_account(auth_.name);
     output << acc->to_string();
 
     return console_result::okay;
@@ -361,13 +361,13 @@ console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    account_ptr acc = blockchain.get_account_by_name(auth_.name);
+    account_ptr acc = blockchain.get_account(auth_.name);
     if (!acc) { throw std::logic_error("account not found"); }
-    if (acc->mnemonic.empty()) { throw std::logic_error("mnemonic empty"); }
+    if (acc->get_mnemonic().empty()) { throw std::logic_error("mnemonic empty"); }
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
-    std::istringstream sin(acc->mnemonic);
+    std::istringstream sin(acc->get_mnemonic());
 
     auto exec_with = [&](int i){
         sin.str(sout.str());
@@ -378,7 +378,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     dispatch_command(1, cmds + 0, sin, sout, sout);
     exec_with(1);
 
-    std::string argv_index = std::to_string(acc->hd_index);
+    std::string argv_index = std::to_string(acc->get_hd_index());
     const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
     sin.str(sout.str());
     sout.str("");

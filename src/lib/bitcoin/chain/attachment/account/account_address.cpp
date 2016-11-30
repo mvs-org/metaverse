@@ -36,26 +36,21 @@ account_address::account_address()
 }
 
 account_address::account_address(std::string name, std::string prv_key, 
-	std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, std::string address)
+	std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, std::string address) :
+	name(name), prv_key(prv_key), pub_key(pub_key), hd_index(hd_index), balance(balance),
+	alias(alias), address(address)
 {
-    this->name = name;
-    this->prv_key = prv_key;
-    this->pub_key = pub_key;
-    this->hd_index = hd_index;
-	this->balance = balance;
-	this->alias = alias;
-	this->address = address;
 }
 
 account_address::account_address(const account_address& other)
 {
-    this->name = other.name;
-    this->prv_key = other.prv_key;
-    this->pub_key = other.pub_key;
-    this->hd_index = other.hd_index;
-	this->balance = other.balance;
-	this->alias = other.alias;
-	this->address = other.address;
+    name = other.name;
+    prv_key = other.prv_key;
+    pub_key = other.pub_key;
+    hd_index = other.hd_index;
+	balance = other.balance;
+	alias = other.alias;
+	address = other.address;
 }
 account_address account_address::factory_from_data(const data_chunk& data)
 {
@@ -85,13 +80,13 @@ bool account_address::is_valid() const
 
 void account_address::reset()
 {	
-    this->name = "";
-    this->prv_key = "";
-    this->pub_key = "";
-    this->hd_index = 0;
-	this->balance = 0;
-	this->alias = "";
-	this->address = "";
+    name = "";
+    prv_key = "";
+    pub_key = "";
+    hd_index = 0;
+	balance = 0;
+	alias = "";
+	address = "";
 }
 
 bool account_address::from_data(const data_chunk& data)
@@ -238,7 +233,6 @@ void account_address::set_address(const std::string& address)
 { 
      this->address = address;
 }
-
 
 } // namspace chain
 } // namspace libbitcoin

@@ -35,14 +35,9 @@ account::account()
 	reset();
 }
 account::account(std::string name, std::string mnemonic, hash_digest passwd, 
-		uint32_t hd_index, uint8_t priority, uint16_t status)
+		uint32_t hd_index, uint8_t priority, uint16_t status):
+		name(name), mnemonic(mnemonic), passwd(passwd), hd_index(hd_index), priority(priority), status(status)
 {
-    this->name = name;
-    this->mnemonic = mnemonic;
-    this->passwd = passwd;
-    this->hd_index = hd_index;
-    this->priority = priority;
-	this->status = status;
 }
 
 account account::factory_from_data(const data_chunk& data)
@@ -166,34 +161,34 @@ void account::to_json(std::ostream& output)
 	json_writer.write("priority", priority);
 	json_writer.close();
 }
-std::string account::get_name()
+const std::string& account::get_name() const
 { 
     return name;
 }
-void account::set_name(std::string name)
+void account::set_name(const std::string& name)
 { 
      this->name = name;
 }
 
-std::string account::get_mnemonic()
+const std::string& account::get_mnemonic() const
 { 
     return mnemonic;
 }
-void account::set_mnemonic(std::string mnemonic)
+void account::set_mnemonic(const std::string& mnemonic)
 { 
      this->mnemonic = mnemonic;
 }
 
-hash_digest account::get_passwd()
+const hash_digest& account::get_passwd() const
 { 
     return passwd;
 }
-void account::set_passwd(hash_digest passwd)
+void account::set_passwd(const hash_digest& passwd)
 { 
      this->passwd = passwd;
 }
 
-uint32_t account::get_hd_index()
+uint32_t account::get_hd_index() const
 { 
     return hd_index;
 }
@@ -202,7 +197,7 @@ void account::set_hd_index(uint32_t hd_index)
      this->hd_index = hd_index;
 }
 
-uint16_t account::get_status()
+uint16_t account::get_status() const
 { 
     return status;
 }
@@ -211,7 +206,7 @@ void account::set_status(uint16_t status)
      this->status = status;
 }
 
-uint8_t account::get_priority()
+uint8_t account::get_priority() const
 { 
     return priority;
 }
@@ -227,6 +222,14 @@ void account::set_user_status(uint8_t status)
 void account::set_system_status(uint8_t status)
 { 
 	this->status |= (status<<sizeof(uint8_t));
+}
+uint8_t account::get_user_status() const
+{ 
+     return static_cast<uint8_t>(status&0xff);
+}
+uint8_t account::get_system_status() const
+{ 
+	return static_cast<uint8_t>(status>>sizeof(uint8_t));
 }
 
 } // namspace chain
