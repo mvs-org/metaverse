@@ -152,7 +152,8 @@ void p2p_node::handle_running(const code& ec, result_handler handler)
     set_height(static_cast<size_t>(height));
 
     blockchain_.fetch_block(height, [](const code& ec, chain::block::ptr block){
-    	log::info(LOG_NODE) << "Node start hash is " << encode_hash(block->header.hash());
+            if (not ec)
+    	        log::info(LOG_NODE) << "Node start hash is " << encode_hash(block->header.hash());
     });
 
     log::info(LOG_NODE)
