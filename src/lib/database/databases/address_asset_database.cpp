@@ -119,22 +119,56 @@ bool address_asset_database::close()
 }
 
 // ----------------------------------------------------------------------------
-template <class BusinessDataType>
+
 void address_asset_database::store_output(const short_hash& key, const output_point& outpoint, 
-	uint32_t output_height, uint64_t value, uint16_t business_kd, BusinessDataType& business_data)
+	uint32_t output_height, uint64_t value, uint16_t business_kd, etp& business_data)
 {
-    auto write = [&](memory_ptr data)
-    {
-        auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_byte(static_cast<uint8_t>(point_kind::output));
-        serial.write_data(outpoint.to_data());
-        serial.write_4_bytes_little_endian(output_height);
-        serial.write_8_bytes_little_endian(value);
-        serial.write_2_bytes_little_endian(business_kd);
-        serial.write_data(business_data.to_data());
-    };
-    rows_multimap_.add_row(key, write);
+	auto write = [&](memory_ptr data)
+	{
+		auto serial = make_serializer(REMAP_ADDRESS(data));
+		serial.write_byte(static_cast<uint8_t>(point_kind::output));
+		serial.write_data(outpoint.to_data());
+		serial.write_4_bytes_little_endian(output_height);
+		serial.write_8_bytes_little_endian(value);
+		serial.write_2_bytes_little_endian(business_kd);
+		serial.write_data(business_data.to_data());
+	};
+	rows_multimap_.add_row(key, write);
 }
+
+void address_asset_database::store_output(const short_hash& key, const output_point& outpoint, 
+	uint32_t output_height, uint64_t value, uint16_t business_kd, asset_detail& business_data)
+{
+	auto write = [&](memory_ptr data)
+	{
+		auto serial = make_serializer(REMAP_ADDRESS(data));
+		serial.write_byte(static_cast<uint8_t>(point_kind::output));
+		serial.write_data(outpoint.to_data());
+		serial.write_4_bytes_little_endian(output_height);
+		serial.write_8_bytes_little_endian(value);
+		serial.write_2_bytes_little_endian(business_kd);
+		serial.write_data(business_data.to_data());
+	};
+	rows_multimap_.add_row(key, write);
+}
+
+void address_asset_database::store_output(const short_hash& key, const output_point& outpoint, 
+	uint32_t output_height, uint64_t value, uint16_t business_kd, asset_transfer& business_data)
+{
+	auto write = [&](memory_ptr data)
+	{
+		auto serial = make_serializer(REMAP_ADDRESS(data));
+		serial.write_byte(static_cast<uint8_t>(point_kind::output));
+		serial.write_data(outpoint.to_data());
+		serial.write_4_bytes_little_endian(output_height);
+		serial.write_8_bytes_little_endian(value);
+		serial.write_2_bytes_little_endian(business_kd);
+		serial.write_data(business_data.to_data());
+	};
+	rows_multimap_.add_row(key, write);
+}
+
+
 
 void address_asset_database::store_input(const short_hash& key,
     const output_point& inpoint, uint32_t input_height,
