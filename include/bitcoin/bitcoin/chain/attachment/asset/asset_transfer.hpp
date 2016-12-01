@@ -36,6 +36,8 @@ namespace chain {
 BC_CONSTEXPR size_t ASSET_TRANSFER_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_TRANSFER_QUANTITY_FIX_SIZE = 8;
 
+BC_CONSTEXPR size_t ASSET_TRANSFER_FIX_SIZE = ASSET_TRANSFER_ADDRESS_FIX_SIZE + ASSET_TRANSFER_QUANTITY_FIX_SIZE;
+
 class BC_API asset_transfer
 {
 public:
@@ -66,60 +68,6 @@ private:
     std::string address;  // symbol  -- in block
     uint64_t quantity;  // -- in block
 };
-
-class BC_API asset_transfer_compact
-{
-public:
-    typedef std::vector<asset_transfer_compact> list;
-
-    // The type of point (output or spend).
-    point_kind kind;
-
-    /// The point that identifies the record.
-    chain::point point;
-
-    /// The height of the point.
-    uint64_t height;
-
-    union
-    {
-        /// If output, then satoshi value of output.
-        uint64_t value;
-
-        /// If spend, then checksum hash of previous output point
-        /// To match up this row with the output, recompute the
-        /// checksum from the output row with spend_checksum(row.point)
-        uint64_t previous_checksum;
-    };
-	asset_transfer transfer; // only used when kind==point_kind::output
-};
-
-class BC_API asset_transfer_history
-{
-public:
-    typedef std::vector<asset_transfer_history> list;
-
-    /// If there is no output this is null_hash:max.
-    output_point output;
-    uint64_t output_height;
-
-    /// The satoshi value of the output.
-    uint64_t value;
-	asset_transfer transfer;
-
-    /// If there is no spend this is null_hash:max.
-    input_point spend;
-
-    union
-    {
-        /// The height of the spend or max if no spend.
-        uint64_t spend_height;
-
-        /// During expansion this value temporarily doubles as a checksum.
-        uint64_t temporary_checksum;
-    };
-};
-
 
 } // namespace chain
 } // namespace libbitcoin

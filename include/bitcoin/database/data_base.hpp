@@ -134,49 +134,69 @@ public:
 
     /* begin store asset info into  database */
 
-    void process_attachemnt(attachment& attach, payment_address& address);
-    void process_asset(asset& sp, payment_address address);
-    void push_asset_detail(asset_detail& sp_detail);
-    void push_asset_transfer(asset_transfer& sp_transfer, payment_address& address);
+	void push_attachemnt(attachment& attach, const payment_address& address,
+			output_point& outpoint, uint32_t output_height, uint64_t value);
+
+	void push_etp(etp& etp, short_hash& key,
+			output_point& outpoint, uint32_t output_height, uint64_t value);
+	
+	void push_asset(asset& sp, short_hash& key,
+				output_point& outpoint, uint32_t output_height, uint64_t value);
+	
+	void push_asset_detail(asset_detail& sp_detail, short_hash& key,
+				output_point& outpoint, uint32_t output_height, uint64_t value);
+	
+	void push_asset_transfer(asset_transfer& sp_transfer, short_hash& key,
+				output_point& outpoint, uint32_t output_height, uint64_t value);
 
    class attachment_visitor : public boost::static_visitor<void>
 	{
 	public:
-		attachment_visitor(payment_address& address,  
-                data_base* db):address_(address),db_(db)
+		attachment_visitor(data_base* db, short_hash& sh_hash,  output_point& outpoint, 
+			uint32_t output_height, uint64_t value):
+			db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value)
 		{
 
 		}
 		void operator()(asset &t)
 		{
-			return db_->process_asset(t, address_);
+			return db_->push_asset(t, sh_hash_, outpoint_, output_height_, value_);
 		}
 		void operator()(etp &t)
 		{
-			return ;
+			return db_->push_etp(t, sh_hash_, outpoint_, output_height_, value_);
 		}
-		payment_address& address_;
+	private:
         data_base* db_;
+		short_hash& sh_hash_;
+		output_point& outpoint_;
+		uint32_t output_height_;
+		uint64_t value_;
 	};
 
 	class asset_visitor : public boost::static_visitor<void>
 	{
 	public:
-		asset_visitor(payment_address& address,
-                data_base* db):address_(address),db_(db)
+		asset_visitor(data_base* db, short_hash& key,
+			output_point& outpoint, uint32_t output_height, uint64_t value):
+			db_(db), key_(key), outpoint_(outpoint), output_height_(output_height), value_(value)
 		{
 
 		}
 		void operator()(asset_detail &t)
 		{
-			return db_->push_asset_detail(t);
+			return db_->push_asset_detail(t, key_, outpoint_, output_height_, value_);
 		}
 		void operator()(asset_transfer &t)
 		{
-		 	return db_->push_asset_transfer(t, address_);
+		 	return db_->push_asset_transfer(t, key_, outpoint_, output_height_, value_);
 		}
-		payment_address& address_;
+	private:
         data_base* db_;
+		short_hash& key_;
+		output_point& outpoint_;
+		uint32_t output_height_;
+		uint64_t value_;
 	};
 
    /* begin store asset info into  database */

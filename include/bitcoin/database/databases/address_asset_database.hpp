@@ -27,7 +27,8 @@
 #include <bitcoin/database/memory/memory_map.hpp>
 #include <bitcoin/database/primitives/record_multimap.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
-//#include <bitcoin/database/result/asset_transfer_result.hpp>  // todo -- remove later
+#include <bitcoin/bitcoin/chain/business_data.hpp>
+
 using namespace libbitcoin::chain;
 
 namespace libbitcoin {
@@ -71,14 +72,18 @@ public:
     /// Call to unload the memory map.
     bool close();
 
+	template <class BusinessDataType>
 	void store_output(const short_hash& key, const output_point& outpoint, 
-	uint32_t output_height, uint64_t value, const asset_transfer& transfer);
-
-	void store_input(const short_hash& key, const output_point& inpoint, 
-		uint32_t input_height, const input_point& previous);
-
-	asset_transfer_compact::list get(const short_hash& key, size_t limit, size_t from_height) const;
-	asset_transfer_history::list get_asset_transfer_history(asset_transfer_compact::list& compact) const;
+		uint32_t output_height, uint64_t value, uint16_t business_kd, BusinessDataType& data);
+	
+	void store_input(const short_hash& key,
+		const output_point& inpoint, uint32_t input_height,
+		const input_point& previous);
+	
+	business_record::list get(const short_hash& key, size_t limit, size_t from_height) const;
+	
+	business_history::list get_business_history(const short_hash& key,
+			size_t limit, size_t from_height) const;
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 
