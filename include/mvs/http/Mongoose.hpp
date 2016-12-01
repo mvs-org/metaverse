@@ -47,7 +47,7 @@ class ToCommandArg{
 public:
     auto argv() const noexcept { return argv_; }
     auto argc() const noexcept { return argc_; }
-    void setargv0(std::string&& outside);
+    void add_arg(std::string&& outside);
 
     static const int max_paramters{32};
 protected:

@@ -25,8 +25,10 @@ void HttpMessage::data_to_arg() noexcept {
 
     auto convert = [this](std::string_view method, std::string_view pramas){
 
-        this->vargv_.push_back({method.data(), method.size()});
-        this->argc_++;
+        if (!method.empty()){
+            this->vargv_.push_back({method.data(), method.size()});
+            this->argc_++;
+        }
 
         if (!pramas.empty()){
             Tokeniser<' '> args;
@@ -80,11 +82,10 @@ void HttpMessage::data_to_arg() noexcept {
      * ******************************************/
     if (uri().substr(0,4) == "/api")
     {
-        static const char* placeholder {"hello"};
         std::array<char, 4096> params{0x00};
         mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
 
-        convert({placeholder, 6u}, 
+        convert({nullptr, 0u}, 
                 {params.data(), std::strlen(params.data())});
     }
 
@@ -117,16 +118,10 @@ void WebsocketMessage::data_to_arg() noexcept {
     bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
 }
 
-void ToCommandArg::setargv0(std::string&& outside)
+void ToCommandArg::add_arg(std::string&& outside)
 {
-    if (vargv_.empty())
-    {
-        vargv_.push_back(outside); 
-        argc_++; 
-        argv_[0] = vargv_[0].c_str();
-    } else { 
-        vargv_[0] = outside; 
-    }
+    vargv_.push_back(outside); 
+    argc_++; 
 }
 
 } // mg

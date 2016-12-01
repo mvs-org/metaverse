@@ -143,9 +143,16 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
         uri_.pop();
 
         if (!uri_.empty()) {
+            // method
+            data.add_arg({uri_.top().data(), uri_.top().size()});
+
+            // username
+            auto ret = get_from_session_list(data.get());
+            if (!ret) throw std::logic_error{"nullptr for seesion"};
+            data.add_arg(std::string(ret->user));
+
             data.data_to_arg();
             // let uri as method
-            data.setargv0({uri_.top().data(), uri_.top().size()});
 
             //process here
             std::stringstream sout;
