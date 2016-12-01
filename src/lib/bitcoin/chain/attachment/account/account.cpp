@@ -183,10 +183,6 @@ const hash_digest& account::get_passwd() const
 { 
     return passwd;
 }
-void account::set_passwd(const hash_digest& passwd)
-{ 
-     this->passwd = passwd;
-}
 
 uint32_t account::get_hd_index() const
 { 

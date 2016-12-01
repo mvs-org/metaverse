@@ -961,9 +961,7 @@ operation_result block_chain_impl::store_account(std::shared_ptr<account> acc)
 
 std::shared_ptr<account> block_chain_impl::get_account(const std::string& name)
 {
-	std::shared_ptr<account> sp_acc(nullptr);
-	sp_acc = database_.accounts.get_account_result(get_hash(name)).get_account_detail();
-	return sp_acc;
+	return database_.accounts.get_account_result(get_hash(name)).get_account_detail();
 }
 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)
@@ -990,12 +988,12 @@ operation_result block_chain_impl::store_account_address(std::shared_ptr<account
 	return ret_val;
 }
 
-std::shared_ptr<account_address> block_chain_impl::get_account_address(const std::string& name, const std::string& address)
+std::shared_ptr<account_address> block_chain_impl::get_account_address 
+                    (const std::string& name, const std::string& address)
 {
-	std::shared_ptr<account_address> sp_addr(nullptr);
-	sp_addr = database_.account_addresses.get(get_short_hash(name), address);
-	return sp_addr;
+	return database_.account_addresses.get(get_short_hash(name), address);
 }
+
 std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addresses(const std::string& name)
 {
 	std::shared_ptr<std::vector<account_address>> sp_addr(nullptr);

@@ -266,10 +266,15 @@ console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 console_result getnewaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    const char* cmds[]{"seed", "mnemonic-new", "mnemonic-to-seed", "hd-new", "hd-to-public"};
+    const char* cmds[]{"seed", "mnemonic-new", "mnemonic-to-seed", "hd-new", 
+        "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
     std::istringstream sin;
     minijson::object_writer json_writer(output);
+    auto acc = std::make_shared<bc::chain::account>();
+
+    acc->set_name(auth_.name);
+    acc->set_passwd(auth_.auth);
 
     auto exec_with = [&](int i){
         sin.str(sout.str());
@@ -280,14 +285,19 @@ console_result getnewaccount::invoke (std::ostream& output,
     exec_with(0);
     exec_with(1);
     json_writer.write("mnemonic", sout.str());
-    //blockchain.get_new_account(auth_.name, auth_.auth, sout.str()); // api changed
+    acc->set_mnemonic(sout.str());
     
     exec_with(2);
     exec_with(3);
     exec_with(4);
-    json_writer.write("publickey", sout.str());
+    exec_with(5);
+    exec_with(6);
+    json_writer.write("main-address", sout.str());
     json_writer.close();
 
+    // flush to db
+    auto ret = blockchain.store_account(acc);
+    
     return console_result::okay;
 }
 
@@ -303,7 +313,11 @@ console_result getaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
     account_ptr acc = blockchain.get_account(auth_.name);
-    output << acc->to_string();
+    if (acc) {
+        acc->to_json(output);
+    }else{
+        throw std::logic_error{"account not found"};
+    }
 
     return console_result::okay;
 }
@@ -389,7 +403,8 @@ console_result getnewaddress::invoke (std::ostream& output,
     exec_with(4);
     output<<sout.str();
 
-    //acc->hd_index++;
+    acc->increase_hd_index();
+    auto ret = blockchain.store_account(acc);
 
     return console_result::okay;
 }

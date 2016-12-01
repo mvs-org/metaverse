@@ -28,6 +28,7 @@
 #include <bitcoin/bitcoin/define.hpp>
 #include <bitcoin/bitcoin/utility/reader.hpp>
 #include <bitcoin/bitcoin/utility/writer.hpp>
+#include <bitcoin/bitcoin/formats/base_16.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -73,9 +74,16 @@ public:
 	const std::string& get_mnemonic() const;
 	void set_mnemonic(const std::string& mnemonic);
 	const hash_digest& get_passwd() const;
-	void set_passwd(const hash_digest& passwd);
+
+	void set_passwd(const std::string& outside_passwd){
+        bc::decode_hash(passwd, outside_passwd);
+    }
+
 	uint32_t get_hd_index() const;
 	void set_hd_index(const uint32_t hd_index);
+
+	void increase_hd_index(){hd_index++;};
+
 	uint16_t get_status() const;
 	void set_status(const uint16_t status);
 	uint8_t get_priority() const;
