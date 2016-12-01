@@ -147,9 +147,11 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             data.add_arg({uri_.top().data(), uri_.top().size()});
 
             // username
-            auto ret = get_from_session_list(data.get());
-            if (!ret) throw std::logic_error{"nullptr for seesion"};
-            data.add_arg(std::string(ret->user));
+            if (uri_.top() != "getnewaccount"_sv) {
+                auto ret = get_from_session_list(data.get());
+                if (!ret) throw std::logic_error{"nullptr for seesion"};
+                data.add_arg(std::string(ret->user));
+            }
 
             data.data_to_arg();
             // let uri as method
@@ -215,8 +217,6 @@ std::shared_ptr<Session> RestServ::get_from_session_list(HttpMessage data)
         return nullptr;
 
     auto sid = std::stol(ssid, nullptr, 10);
-
-    log::info("session")<<sid<<" login required";
 
     auto ret = std::find_if(session_list_.begin(), session_list_.end(), [&sid](std::shared_ptr<Session> p){
             return sid == p->id;
