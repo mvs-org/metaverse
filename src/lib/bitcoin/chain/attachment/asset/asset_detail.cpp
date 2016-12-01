@@ -110,12 +110,12 @@ bool asset_detail::from_data(reader& source)
 {
     reset();
 
-    symbol = source.read_string();
+    symbol = source.read_fixed_string(ASSET_DETAIL_SYMBOL_FIX_SIZE);
     maximum_supply = source.read_8_bytes_little_endian();
     asset_type = source.read_4_bytes_little_endian();
-    issuer = source.read_string(); 
-    address =  source.read_string();
-    description =  source.read_string();
+    issuer = source.read_fixed_string(ASSET_DETAIL_ISSUER_FIX_SIZE); 
+    address =  source.read_fixed_string(ASSET_DETAIL_ADDRESS_FIX_SIZE);
+    description =  source.read_fixed_string(ASSET_DETAIL_DESCRIPTION_FIX_SIZE);
     //issue_price =  source.read_8_bytes_little_endian();
 
     //restrict section
@@ -153,12 +153,12 @@ void asset_detail::to_data(std::ostream& stream) const
 
 void asset_detail::to_data(writer& sink) const
 {
-    sink.write_string(symbol);
+    sink.write_fixed_string(symbol, ASSET_DETAIL_SYMBOL_FIX_SIZE);
     sink.write_8_bytes_little_endian(maximum_supply);
 	sink.write_4_bytes_little_endian(asset_type);
-	sink.write_string(issuer);
-	sink.write_string(address);
-	sink.write_string(description);
+	sink.write_fixed_string(issuer, ASSET_DETAIL_ISSUER_FIX_SIZE);
+	sink.write_fixed_string(address, ASSET_DETAIL_ADDRESS_FIX_SIZE);
+	sink.write_fixed_string(description, ASSET_DETAIL_DESCRIPTION_FIX_SIZE);
 }
 
 uint64_t asset_detail::serialized_size() const

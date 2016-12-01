@@ -86,8 +86,8 @@ bool asset_transfer::from_data(std::istream& stream)
 bool asset_transfer::from_data(reader& source)
 {
     reset();
-    quantity = source.read_8_bytes_little_endian();
     address = source.read_fixed_string(ASSET_TRANSFER_ADDRESS_FIX_SIZE);
+    quantity = source.read_8_bytes_little_endian();
 	
     auto result = static_cast<bool>(source);
     if (!result)
@@ -114,8 +114,8 @@ void asset_transfer::to_data(std::ostream& stream) const
 
 void asset_transfer::to_data(writer& sink) const
 {
-	sink.write_8_bytes_little_endian(quantity);
     sink.write_fixed_string(address, ASSET_TRANSFER_ADDRESS_FIX_SIZE);
+	sink.write_8_bytes_little_endian(quantity);
 }
 
 uint64_t asset_transfer::serialized_size() const

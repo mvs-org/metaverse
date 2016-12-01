@@ -41,8 +41,8 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
-BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 \
-		+ ASSET_TRANSFER_ADDRESS_FIX_SIZE + ASSET_TRANSFER_QUANTITY_FIX_SIZE; // refer address_asset.hpp
+BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 + 8 + 2 + ASSET_DETAIL_FIX_SIZE; // ASSET_DETAIL_FIX_SIZE is the biggest one
+//		+ std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(asset_transfer_record_size);
 
 address_asset_database::address_asset_database(const path& lookup_filename,
@@ -119,9 +119,9 @@ bool address_asset_database::close()
 }
 
 // ----------------------------------------------------------------------------
-
+template <class BusinessDataType>
 void address_asset_database::store_output(const short_hash& key, const output_point& outpoint, 
-	uint32_t output_height, uint64_t value, const asset_transfer& transfer)
+	uint32_t output_height, uint64_t value, uint16_t business_kd, BusinessDataType& business_data)
 {
     auto write = [&](memory_ptr data)
     {
@@ -130,7 +130,8 @@ void address_asset_database::store_output(const short_hash& key, const output_po
         serial.write_data(outpoint.to_data());
         serial.write_4_bytes_little_endian(output_height);
         serial.write_8_bytes_little_endian(value);
-        serial.write_data(transfer.to_data());
+        serial.write_2_bytes_little_endian(business_kd);
+        serial.write_data(business_data.to_data());
     };
     rows_multimap_.add_row(key, write);
 }
@@ -150,12 +151,13 @@ void address_asset_database::store_input(const short_hash& key,
     rows_multimap_.add_row(key, write);
 }
 
+
 void address_asset_database::delete_last_row(const short_hash& key)
 {
     rows_multimap_.delete_last_row(key);
 }
-
-asset_transfer_compact::list address_asset_database::get(const short_hash& key,
+/// get all record of key from database
+business_record::list address_asset_database::get(const short_hash& key,
     size_t limit, size_t from_height) const
 {
     // Read the height value from the row.
@@ -170,7 +172,7 @@ asset_transfer_compact::list address_asset_database::get(const short_hash& key,
     const auto read_row = [](uint8_t* data)
     {
         auto deserial = make_deserializer_unsafe(data);
-        return asset_transfer_compact
+        return business_record
         {
             // output or spend?
             static_cast<point_kind>(deserial.read_byte()),
@@ -184,11 +186,11 @@ asset_transfer_compact::list address_asset_database::get(const short_hash& key,
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
             
-            asset_transfer::factory_from_data(deserial)
+            business_data::factory_from_data(deserial)
         };
     };
 
-    asset_transfer_compact::list result;
+    business_record::list result;
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
@@ -211,23 +213,25 @@ asset_transfer_compact::list address_asset_database::get(const short_hash& key,
     return result;
 }
 
-
-asset_transfer_history::list address_asset_database::get_asset_transfer_history(asset_transfer_compact::list& compact) const
+business_history::list address_asset_database::get_business_history(const short_hash& key,
+		size_t limit, size_t from_height) const
 {
-    asset_transfer_history::list result;
+	business_record::list compact = get(key, limit, from_height);
+	
+    business_history::list result;
 
     // Process and remove all outputs.
     for (auto output = compact.begin(); output != compact.end();)
     {
         if (output->kind == point_kind::output)
         {
-            asset_transfer_history row;
+            business_history row;
             row.output = output->point;
             row.output_height = output->height;
             row.value = output->value;
             row.spend = { null_hash, max_uint32 };
             row.temporary_checksum = output->point.checksum();
-			row.transfer = output->transfer;
+			row.data = output->data;
             result.emplace_back(row);
             output = compact.erase(output);
             continue;
@@ -258,7 +262,7 @@ asset_transfer_history::list address_asset_database::get_asset_transfer_history(
         // an output and its spend. In this case we return just the spend.
         if (!found)
         {
-            asset_transfer_history row;
+            business_history row;
             row.output = { null_hash, max_uint32 };
             row.output_height = max_uint64;
             row.value = max_uint64;

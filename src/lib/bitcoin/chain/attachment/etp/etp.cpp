@@ -27,7 +27,17 @@
 
 namespace libbitcoin {
 namespace chain {
-	
+
+etp::etp()
+{
+	value = 0;
+}
+etp::etp(uint64_t value):
+	value(value)
+{
+
+}
+
 etp etp::factory_from_data(const data_chunk& data)
 {
     etp instance;
@@ -73,10 +83,10 @@ bool etp::from_data(std::istream& stream)
 bool etp::from_data(reader& source)
 {
     reset();
+    value = source.read_8_bytes_little_endian();
     auto result = static_cast<bool>(source);
 	
     return result;
-	
 }
 
 data_chunk etp::to_data() 
@@ -97,12 +107,12 @@ void etp::to_data(std::ostream& stream)
 
 void etp::to_data(writer& sink) 
 {
-	return ;
+	sink.write_8_bytes_little_endian(value);
 }
 
 uint64_t etp::serialized_size() 
 {
-    uint64_t size = 0;
+    uint64_t size = 8;
 	return size;
 }
 
@@ -112,6 +122,15 @@ std::string etp::to_string()
 	ss << "\t value = " << value << "\n";
 
     return ss.str();
+}
+uint64_t etp::get_value() const
+{
+	return value;
+}
+
+void etp::set_value(uint64_t value)
+{
+	this->value = value;
 }
 
 } // namspace chain
