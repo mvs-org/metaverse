@@ -211,7 +211,7 @@ public:
 	inline hash_digest get_hash(const std::string& str);
 	inline short_hash get_short_hash(const std::string& str);
 	// account related api
-	bool is_account_passwd_valid(const std::string& name, const std::string& passwd);
+	std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
 	bool is_account_exist(const std::string& name);
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);

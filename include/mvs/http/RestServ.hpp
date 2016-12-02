@@ -47,9 +47,10 @@ public:
     void websocketSend(mg_connection& nc, WebsocketMessage ws);
 
     // http session
+    bool user_auth(mg_connection& nc, HttpMessage data);
     mg_serve_http_opts& get_httpoptions(){return httpoptions_;}
     std::shared_ptr<Session> get_from_session_list(HttpMessage data);
-    std::shared_ptr<Session> push_session(std::string_view user, HttpMessage data);
+    std::shared_ptr<Session> push_session(HttpMessage data);
     bool check_sessions();
 
     std::pair<std::string_view,std::string_view> user_check(mg::HttpMessage &data)
@@ -63,7 +64,6 @@ public:
        return std::make_pair(user, password);
     }
 
-    bool user_auth(std::string_view user, std::string_view password) const ;
     
 private:
     enum : int {
@@ -90,7 +90,7 @@ private:
 
     // http
     mg_serve_http_opts httpoptions_;
-    constexpr static const double SESSION_TTL = 120.0;
+    constexpr static const double SESSION_TTL = 90.0;
     std::list< std::shared_ptr<Session> > session_list_;
 
     // config

@@ -190,13 +190,17 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     out_.setContentLength(); 
 }
 
-std::shared_ptr<Session> RestServ::push_session(std::string_view user, HttpMessage data)
+std::shared_ptr<Session> RestServ::push_session(HttpMessage data)
 {
+    char user[64]{0x00}, pass[64]{0x00};
+    auto ul = mg_get_http_var(&(data.get()->body), "user", user, sizeof(user));
+    auto pl = mg_get_http_var(&(data.get()->body), "pass", pass, sizeof(pass));
+
     auto s = std::make_shared<Session>();
 
     s->created = s->last_used = mg_time();
-    s->user = std::string(user.data(), user.size());
-    s->state = 1;
+    s->user = std::string(user, ul);
+    s->pass = std::string(pass, pl);
 
     s->id = std::hash<std::shared_ptr<Session>>()(s);
     session_list_.push_back(s);
@@ -244,8 +248,30 @@ bool RestServ::check_sessions()
     return true;
 }
 
-bool RestServ::user_auth(std::string_view user, std::string_view password) const
+bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
 {
+    char user[64]{0x00}, pass[64]{0x00};
+    auto ul = mg_get_http_var(&(data.get()->body), "user", user, sizeof(user));
+    auto pl = mg_get_http_var(&(data.get()->body), "pass", pass, sizeof(pass));
+
+    try{
+        if (ul > 0 && pl > 0){
+            blockchain_.is_account_passwd_valid(std::string(user, ul), std::string(pass, pl));
+        }else{
+            throw std::logic_error{"Bad Request,user, pass required."};
+        }
+
+    }catch(std::exception& e){
+        reset(data);
+        StreamBuf buf{nc.send_mbuf};
+        out_.rdbuf(&buf);
+        out_.reset(403, "Forbidden");
+        out_<<"{\"error\":\""<<e.what()<<"\"}";
+        out_.setContentLength(); 
+
+        return false;
+    }
+
     return true;
 }
 

@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain.hpp>
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/command.hpp>
 
@@ -33,8 +32,6 @@ namespace explorer {
 namespace commands {
 
 class command_extension:public command{
-public:
-    typedef std::shared_ptr<bc::chain::account> account_ptr;
 protected:
     struct argument_base
     {
@@ -59,7 +56,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("STOP", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -67,7 +64,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "STOP", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -88,7 +85,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -130,7 +132,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("START", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -138,7 +140,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "START", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -159,7 +161,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -201,7 +208,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SETADMIN", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -209,7 +216,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SETADMIN", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -230,7 +237,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -272,7 +284,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETINFO", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -280,7 +292,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETINFO", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -301,7 +313,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -343,7 +360,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETPEERINFO", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -351,7 +368,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETPEERINFO", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -372,7 +389,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -414,7 +436,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("PING", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -422,7 +444,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "PING", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -443,7 +465,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -485,7 +512,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ADDNODE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -493,7 +520,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ADDNODE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -514,7 +541,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -556,7 +588,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETMININGINFO", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -564,7 +596,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETMININGINFO", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -585,7 +617,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -627,7 +664,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("BACKUPWALLET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -635,7 +672,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "BACKUPWALLET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -656,7 +693,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -698,7 +740,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("IMPORTWALLET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -706,7 +748,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "IMPORTWALLET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -727,7 +769,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -769,7 +816,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LOCKWALLET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -777,7 +824,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LOCKWALLET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -798,7 +845,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -840,7 +892,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("BACKUPACCOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -848,7 +900,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "BACKUPACCOUNT", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -869,7 +921,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -911,7 +968,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("IMPORTACCOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -919,7 +976,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "IMPORTACCOUNT", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -940,7 +997,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -982,7 +1044,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SWITCHACCOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -990,7 +1052,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SWITCHACCOUNT", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1011,7 +1073,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1053,7 +1120,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LISTACCOUNTS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1061,7 +1128,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LISTACCOUNTS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1082,7 +1149,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1149,17 +1221,17 @@ public:
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
-	    )
+        )
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
 	    )
-	    (
+        (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            "account auth."
-    	);
+            "Account password/authorization."
+	    );
 
         return options;
     }
@@ -1200,7 +1272,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETACCOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1208,7 +1280,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETACCOUNT", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1229,7 +1301,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1271,7 +1348,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LOCKACCOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1279,7 +1356,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LOCKACCOUNT", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1300,7 +1377,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1342,7 +1424,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SETACCOUNTINFO", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1350,7 +1432,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SETACCOUNTINFO", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1371,7 +1453,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1413,7 +1500,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LISTADDRESSES", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1421,7 +1508,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LISTADDRESSES", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1442,7 +1529,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1484,7 +1576,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETNEWADDRESS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1492,7 +1584,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETNEWADDRESS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1513,7 +1605,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1555,7 +1652,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETADDRESS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1563,7 +1660,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETADDRESS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1584,7 +1681,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1626,7 +1728,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETBLOCK", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1634,7 +1736,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETBLOCK", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1655,7 +1757,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1697,7 +1804,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SIGNMESSAGE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1705,7 +1812,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SIGNMESSAGE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1726,7 +1833,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1768,7 +1880,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("VERIFYMESSAGE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1776,7 +1888,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "VERIFYMESSAGE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1797,7 +1909,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1839,7 +1956,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("CREATEMULTISIG", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1847,7 +1964,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "CREATEMULTISIG", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1868,7 +1985,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1910,7 +2032,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ADDMULTISIGADDRESS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1918,7 +2040,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ADDMULTISIGADDRESS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -1939,7 +2061,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -1981,7 +2108,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("VALIDATEADDRESS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -1989,7 +2116,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "VALIDATEADDRESS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2010,7 +2137,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2052,7 +2184,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LISTBALANCES", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2060,7 +2192,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LISTBALANCES", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2081,7 +2213,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2123,7 +2260,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETBALANCE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2131,7 +2268,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETBALANCE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2152,7 +2289,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2194,7 +2336,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETADDRESSBALANCE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2202,7 +2344,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETADDRESSBALANCE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2223,7 +2365,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2265,7 +2412,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETACCOUNTBALANCE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2273,7 +2420,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETACCOUNTBALANCE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2294,7 +2441,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2336,7 +2488,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LISTTXS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2344,7 +2496,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LISTTXS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2365,7 +2517,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2407,7 +2564,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETTX", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2415,7 +2572,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETTX", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2436,7 +2593,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2478,7 +2640,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETADDRESSTX", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2486,7 +2648,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETADDRESSTX", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2507,7 +2669,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2549,7 +2716,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETACCOUNTTX", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2557,7 +2724,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETACCOUNTTX", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2578,7 +2745,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2620,7 +2792,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SEND", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2628,7 +2800,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SEND", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2649,7 +2821,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2691,7 +2868,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDMORE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2699,7 +2876,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDMORE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2720,7 +2897,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2762,7 +2944,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDFROM", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2770,7 +2952,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDFROM", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2791,7 +2973,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2833,7 +3020,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDWITHMSG", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2841,7 +3028,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDWITHMSG", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2862,7 +3049,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2904,7 +3096,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDWITHMSGFROM", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2912,7 +3104,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDWITHMSGFROM", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2933,7 +3125,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -2975,7 +3172,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("LISTASSETS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2983,7 +3180,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "LISTASSETS", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3004,7 +3201,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3046,7 +3248,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETASSET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3054,7 +3256,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETASSET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3075,7 +3277,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3117,7 +3324,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETADDRESSASSET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3125,7 +3332,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETADDRESSASSET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3146,7 +3353,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3188,7 +3400,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETACCOUNTASSET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3196,7 +3408,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETACCOUNTASSET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3217,7 +3429,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3259,7 +3476,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("CREATEASSET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3267,7 +3484,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "CREATEASSET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3288,7 +3505,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3330,7 +3552,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ISSUE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3338,7 +3560,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ISSUE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3359,7 +3581,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3401,7 +3628,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ISSUEFROM", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3409,7 +3636,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ISSUEFROM", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3430,7 +3657,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3472,7 +3704,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ISSUEMORE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3480,7 +3712,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ISSUEMORE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3501,7 +3733,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3543,7 +3780,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ISSUEMOREFROM", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3551,7 +3788,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "ISSUEMOREFROM", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3572,7 +3809,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3614,7 +3856,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDASSET", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3622,7 +3864,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDASSET", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3643,7 +3885,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3685,7 +3932,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDASSETFROM", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3693,7 +3940,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDASSETFROM", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3714,7 +3961,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3756,7 +4008,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("GETDID", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3764,7 +4016,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "GETDID", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3785,7 +4037,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3827,7 +4084,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SETDID", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3835,7 +4092,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SETDID", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3856,7 +4113,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3898,7 +4160,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SENDWITHDID", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3906,7 +4168,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SENDWITHDID", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3927,7 +4189,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;
@@ -3969,7 +4236,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("SETTXFEE", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3977,7 +4244,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        //load_input(argument_.xxx, "SETTXFEE", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3998,7 +4265,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "account name."
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
 	    );
 
         return options;

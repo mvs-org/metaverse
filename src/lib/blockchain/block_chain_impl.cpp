@@ -920,16 +920,17 @@ inline short_hash block_chain_impl::get_short_hash(const std::string& str)
 	return ripemd160_hash(data); 
 }
 
-bool block_chain_impl::is_account_passwd_valid(const std::string& name, const std::string& passwd)
+std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
+        (const std::string& name, const std::string& passwd)
 {
-	bool ret_val = false;
 	auto account = get_account(name);
-	if(account) // account exist
+	if(account && account->get_passwd() == get_hash(passwd)) // account exist
 	{
-		if(account->get_passwd() == get_hash(passwd))
-			ret_val = true;
-	}
-	return ret_val;
+        return account;
+	}else{
+        throw std::logic_error{"account not found or incorrect password"};
+        return nullptr;
+    }
 }
 bool block_chain_impl::is_account_exist(const std::string& name)
 {

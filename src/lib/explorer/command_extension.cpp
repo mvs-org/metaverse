@@ -316,7 +316,8 @@ console_result getaccount::invoke (std::ostream& output, std::ostream& cerr)
 console_result getaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    account_ptr acc = blockchain.get_account(auth_.name);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
     if (acc) {
         acc->to_json(output);
     }else{
@@ -379,8 +380,8 @@ console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    account_ptr acc = blockchain.get_account(auth_.name);
-    if (!acc) { throw std::logic_error("account not found"); }
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
     if (acc->get_mnemonic().empty()) { throw std::logic_error("mnemonic empty"); }
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
@@ -432,6 +433,8 @@ console_result getaddress::invoke (std::ostream& output, std::ostream& cerr)
 console_result getaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
     minijson::object_writer owriter(output);
     minijson::array_writer awriter = owriter.nested_array("addresses");;
 

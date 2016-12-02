@@ -118,15 +118,15 @@ private:
 struct Session{
         Session() = default;
         Session(uint64_t a1, double a2, double a3, 
-                std::string&& a4, uint16_t a5):
-            id(a1), created(a2), last_used(a3), user(a4), state(a5){}
+                std::string&& a4, std::string a5):
+            id(a1), created(a2), last_used(a3), user(a4), pass(a5){}
         ~Session() = default;
 
         uint64_t        id;
         double          created;
         double          last_used;
         std::string     user;
-        uint16_t        state;
+        std::string     pass;
 };
 
 template <typename DerivedT>
@@ -158,22 +158,12 @@ public:
        if (mg_vcmp(&hm->method, "POST") != 0) {
            mg_serve_http(conn, hm, self->get_httpoptions());
        }else{
-           char user[50], pass[50];
-           auto ul = mg_get_http_var(&hm->body, "user", user, sizeof(user));
-           auto pl = mg_get_http_var(&hm->body, "pass", pass, sizeof(pass));
-           if (ul > 0 && pl > 0) {
-              if(!self->user_auth({user, std::strlen(user)}, {pass, std::strlen(pass)})){
-                mg_printf(conn, "HTTP/1.0 403 Unauthorized\r\n\r\nWrong password.\r\n");
+              if ( self->user_auth(*conn, hm) ){
+                  std::ostringstream shead;
+                  auto ret = self->push_session(hm);
+                  shead<<"Set-Cookie: " SESSION_COOKIE_NAME "="<<ret->id<<"; path=/";
+                  mg_http_send_redirect(conn, 302, mg_mk_str("/"), mg_mk_str(shead.str().c_str()));
               }
-
-              auto ret = self->push_session({user, std::strlen(user)}, hm);
-              std::ostringstream shead;
-              shead<<"Set-Cookie: " SESSION_COOKIE_NAME "="<<ret->id<<"; path=/";
-              mg_http_send_redirect(conn, 302, mg_mk_str("/"), mg_mk_str(shead.str().c_str()));
-
-           } else {
-              mg_printf(conn, "HTTP/1.0 400 Bad Request\r\n\r\nuser, pass required.\r\n");
-           }
        }
        conn->flags |= MG_F_SEND_AND_CLOSE;
     }
