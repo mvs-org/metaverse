@@ -937,16 +937,13 @@ bool block_chain_impl::is_account_exist(const std::string& name)
 }
 operation_result block_chain_impl::store_account(std::shared_ptr<account> acc)
 {
-	operation_result ret_val = operation_result::okay;
 	if (stopped())
 	{
-		ret_val = operation_result::service_stopped;
-		return ret_val;
+		return operation_result::failure;
 	}
 	if (!(acc))
 	{
-		ret_val = operation_result::parameter_invalid;
-		return ret_val;
+        throw std::runtime_error{"nullptr for account"};
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// Critical Section.
@@ -956,7 +953,7 @@ operation_result block_chain_impl::store_account(std::shared_ptr<account> acc)
 	database_.accounts.store(hash, *acc);
 	database_.accounts.sync();
 	///////////////////////////////////////////////////////////////////////////
-	return ret_val;
+	return operation_result::okay;
 }
 
 std::shared_ptr<account> block_chain_impl::get_account(const std::string& name)
@@ -966,16 +963,13 @@ std::shared_ptr<account> block_chain_impl::get_account(const std::string& name)
 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)
 {
-	operation_result ret_val = operation_result::okay;
 	if (stopped())
 	{
-		ret_val = operation_result::service_stopped;
-		return ret_val;
+		return operation_result::failure;
 	}
 	if (!(address))
 	{
-		ret_val = operation_result::parameter_invalid;
-		return ret_val;
+        throw std::runtime_error{"nullptr for address"};
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// Critical Section.
@@ -985,7 +979,7 @@ operation_result block_chain_impl::store_account_address(std::shared_ptr<account
 	database_.account_addresses.store(hash, *address);
 	database_.account_addresses.sync();
 	///////////////////////////////////////////////////////////////////////////
-	return ret_val;
+	return operation_result::okay;
 }
 
 std::shared_ptr<account_address> block_chain_impl::get_account_address 
@@ -1071,16 +1065,13 @@ bool block_chain_impl::is_asset_exist(const std::string& name)
 
 operation_result block_chain_impl::store_asset(std::shared_ptr<asset_detail> ptr)
 {
-	operation_result ret_val = operation_result::okay;
 	if (stopped())
 	{
-		ret_val = operation_result::service_stopped;
-		return ret_val;
+		return operation_result::failure;
 	}
 	if (!(ptr))
 	{
-		ret_val = operation_result::parameter_invalid;
-		return ret_val;
+        throw std::runtime_error{"nullptr for asset detail"};
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// Critical Section.
@@ -1090,13 +1081,12 @@ operation_result block_chain_impl::store_asset(std::shared_ptr<asset_detail> ptr
 	database_.assets.store(hash, *ptr);
 	database_.assets.sync();
 	///////////////////////////////////////////////////////////////////////////
-	return ret_val;
+	return operation_result::okay;
 }
 
 operation_result block_chain_impl::delete_asset(const std::string& name)
 {
-	operation_result ret_val = operation_result::okay;
-	return ret_val;
+	return operation_result::okay;
 }
 std::shared_ptr<asset_detail> block_chain_impl::get_asset(const std::string& name)
 {

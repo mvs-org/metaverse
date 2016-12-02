@@ -38,20 +38,7 @@
 namespace libbitcoin {
 namespace blockchain {
 	
-/// used for account/asset operation return code
-/// error code < 0 , normal code > 0
-enum operation_result : int
-{
-	asset_existed = -6,
-	account_existed = -5,
-	account_not_exist = -4,
-    parameter_invalid = -3,
-    service_stopped = -2,
-    password_invalid = -1,
-    none = 0, // defaul value
-	okay = 1, // normal operation
-	newaccount_created = 2
-};
+typedef console_result operation_result;
 
 /// The simple_chain interface portion of this class is not thread safe.
 class BCB_API block_chain_impl
