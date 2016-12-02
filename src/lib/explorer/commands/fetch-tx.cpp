@@ -75,4 +75,3 @@ console_result fetch_tx::invoke(std::ostream& output, std::ostream& error)
 }
 }
 }
-

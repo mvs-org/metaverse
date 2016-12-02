@@ -60,4 +60,3 @@ console_result ec_add_secrets::invoke(std::ostream& output, std::ostream& error)
 }
 }
 }
-

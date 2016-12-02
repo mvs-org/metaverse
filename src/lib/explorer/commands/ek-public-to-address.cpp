@@ -59,4 +59,3 @@ console_result ek_public_to_address::invoke(std::ostream& output,
 }
 }
 }
-

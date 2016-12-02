@@ -60,4 +60,3 @@ console_result ec_multiply_secrets::invoke(std::ostream& output, std::ostream& e
 }
 }
 }
-

@@ -80,4 +80,3 @@ console_result fetch_header::invoke(std::ostream& output, std::ostream& error)
 }
 }
 }
-

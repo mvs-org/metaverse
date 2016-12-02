@@ -73,4 +73,3 @@ console_result fetch_tx_index::invoke(std::ostream& output, std::ostream& error)
 }
 }
 }
-
