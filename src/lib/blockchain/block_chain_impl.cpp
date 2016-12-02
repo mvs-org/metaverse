@@ -1066,13 +1066,33 @@ uint16_t block_chain_impl::get_asset_status(const std::string& name)
 }
 bool block_chain_impl::is_asset_exist(const std::string& name)
 {
-	return true;
+	return nullptr != get_asset(name);
 }
-operation_result block_chain_impl::store_asset(std::shared_ptr<asset> ptr)
+
+operation_result block_chain_impl::store_asset(std::shared_ptr<asset_detail> ptr)
 {
 	operation_result ret_val = operation_result::okay;
+	if (stopped())
+	{
+		ret_val = operation_result::service_stopped;
+		return ret_val;
+	}
+	if (!(ptr))
+	{
+		ret_val = operation_result::parameter_invalid;
+		return ret_val;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	const auto hash = get_hash(ptr->get_symbol());
+	database_.assets.store(hash, *ptr);
+	database_.assets.sync();
+	///////////////////////////////////////////////////////////////////////////
 	return ret_val;
 }
+
 operation_result block_chain_impl::delete_asset(const std::string& name)
 {
 	operation_result ret_val = operation_result::okay;
@@ -1080,9 +1100,9 @@ operation_result block_chain_impl::delete_asset(const std::string& name)
 }
 std::shared_ptr<asset_detail> block_chain_impl::get_asset(const std::string& name)
 {
-	std::shared_ptr<asset_detail> sp_asset(nullptr);
-	return sp_asset;
-}
+ 	return database_.assets.get_asset_result(get_hash(name)).get_asset_detail();
+ }
+
 
 /* end store account related info into database */
 } // namespace blockchain

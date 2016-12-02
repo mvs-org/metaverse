@@ -243,7 +243,7 @@ public:
 	// asset related api	
 	uint16_t get_asset_status(const std::string& name);
 	bool is_asset_exist(const std::string& name);
-	operation_result store_asset(std::shared_ptr<asset> ptr);
+	operation_result store_asset(std::shared_ptr<asset_detail> ptr);
 	operation_result delete_asset(const std::string& name);  
 	std::shared_ptr<asset_detail> get_asset(const std::string& name);
 	/* end store account related info into database */
