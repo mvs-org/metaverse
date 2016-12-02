@@ -112,7 +112,7 @@ block_detail::list orphan_pool::trace(block_detail::ptr end) const
     block_detail::list trace;
     trace.reserve(buffer_.size());
     trace.push_back(end);
-    auto& hash = end->actual()->header.previous_block_hash;
+    auto hash = end->actual()->header.previous_block_hash;
 
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
