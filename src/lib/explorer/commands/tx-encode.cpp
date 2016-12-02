@@ -25,12 +25,10 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/transaction.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::explorer::config;
 using namespace bc::wallet;
 
@@ -110,5 +108,7 @@ console_result tx_encode::invoke(std::ostream& output, std::ostream& error)
     output << transaction(tx) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

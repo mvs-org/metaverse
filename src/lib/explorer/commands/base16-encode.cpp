@@ -23,13 +23,11 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::config;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 
 console_result base16_encode::invoke(std::ostream& output, std::ostream& error)
 {
@@ -39,5 +37,7 @@ console_result base16_encode::invoke(std::ostream& output, std::ostream& error)
     output << base16(data) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

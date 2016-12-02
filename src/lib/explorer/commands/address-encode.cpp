@@ -23,12 +23,10 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::wallet;
 
 console_result address_encode::invoke(std::ostream& output,
@@ -41,5 +39,7 @@ console_result address_encode::invoke(std::ostream& output,
     output << payment_address(ripemd160, version) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

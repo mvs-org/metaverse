@@ -25,12 +25,10 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::explorer::config;
 
 console_result uri_decode::invoke(std::ostream& output, std::ostream& error)
@@ -42,5 +40,7 @@ console_result uri_decode::invoke(std::ostream& output, std::ostream& error)
      write_stream(output, prop_tree(uri), encoding);
      return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

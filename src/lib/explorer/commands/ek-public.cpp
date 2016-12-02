@@ -24,12 +24,10 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::wallet;
 
 console_result commands::ek_public::invoke(std::ostream& output,
@@ -58,5 +56,7 @@ console_result commands::ek_public::invoke(std::ostream& output,
     output << bc::wallet::ek_public(key) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

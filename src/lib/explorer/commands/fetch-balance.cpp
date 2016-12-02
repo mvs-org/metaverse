@@ -28,14 +28,12 @@
 #include <bitcoin/explorer/display.hpp>
 #include <bitcoin/explorer/prop_tree.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::chain;
 using namespace bc::client;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 using namespace bc::explorer::config;
 
 console_result fetch_balance::invoke(std::ostream& output, std::ostream& error)
@@ -73,5 +71,7 @@ console_result fetch_balance::invoke(std::ostream& output, std::ostream& error)
 
     return state.get_result();
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

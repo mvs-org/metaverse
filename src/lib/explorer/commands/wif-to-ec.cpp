@@ -24,12 +24,11 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/ec_private.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 
 console_result wif_to_ec::invoke(std::ostream& output, std::ostream& error)
 {
@@ -39,5 +38,7 @@ console_result wif_to_ec::invoke(std::ostream& output, std::ostream& error)
     output << config::ec_private(secret) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

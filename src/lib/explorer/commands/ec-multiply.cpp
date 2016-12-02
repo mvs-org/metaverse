@@ -23,12 +23,10 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::wallet;
 
 console_result ec_multiply::invoke(std::ostream& output, std::ostream& error)
@@ -51,5 +49,7 @@ console_result ec_multiply::invoke(std::ostream& output, std::ostream& error)
     output << ec_public(product, point.compressed()) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

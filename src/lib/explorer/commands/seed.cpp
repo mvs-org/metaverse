@@ -24,13 +24,11 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::config;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 
 console_result seed::invoke(std::ostream& output, std::ostream& error)
 {
@@ -50,5 +48,7 @@ console_result seed::invoke(std::ostream& output, std::ostream& error)
     output << base16(seed) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

@@ -24,13 +24,11 @@
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/wrapper.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::config;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 using namespace bc::explorer::config;
 
 console_result base58check_encode::invoke(std::ostream& output, 
@@ -47,5 +45,7 @@ console_result base58check_encode::invoke(std::ostream& output,
     output << base58check << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

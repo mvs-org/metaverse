@@ -23,13 +23,11 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::config;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 using namespace bc::explorer::config;
 
 console_result bitcoin256::invoke(std::ostream& output, std::ostream& error)
@@ -42,5 +40,7 @@ console_result bitcoin256::invoke(std::ostream& output, std::ostream& error)
     output << hash256(hash) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

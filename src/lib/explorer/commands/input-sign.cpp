@@ -24,14 +24,12 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::chain;
 using namespace bc::config;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
 
 // The BX_INPUT_SIGN_FAILED condition uncovered by test.
 // This is because a vector to produce the failure is not known.
@@ -66,5 +64,7 @@ console_result input_sign::invoke(std::ostream& output, std::ostream& error)
     output << base16(endorse) << std::flush;
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 

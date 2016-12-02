@@ -25,12 +25,10 @@
 #include <bitcoin/explorer/prop_tree.hpp>
 #include <bitcoin/explorer/utility.hpp>
 
-namespace libbitcoin{ 
-namespace explorer {
 
-using namespace bc;
-using namespace bc::explorer;
-using namespace bc::explorer::commands;
+namespace libbitcoin {
+namespace explorer {
+namespace commands {
 using namespace bc::explorer::config;
 
 console_result stealth_decode::invoke(std::ostream& output,
@@ -46,5 +44,7 @@ console_result stealth_decode::invoke(std::ostream& output,
     write_stream(output, prop_tree(address, json), encoding);
     return console_result::okay;
 }
-}
-}
+
+} //namespace commands 
+} //namespace explorer 
+} //namespace libbitcoin 
