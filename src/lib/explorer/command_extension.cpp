@@ -266,6 +266,10 @@ console_result getnewaccount::invoke (std::ostream& output, std::ostream& cerr)
 console_result getnewaccount::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    if (blockchain.is_account_exist(auth_.name)){
+        throw std::logic_error{"account already exist"};
+    }
+
     const char* cmds[]{"seed", "mnemonic-new", "mnemonic-to-seed", "hd-new", 
         "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
@@ -389,6 +393,9 @@ console_result getnewaddress::invoke (std::ostream& output,
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
 
+    auto addr = std::make_shared<bc::chain::account_address>();
+    addr->set_name(auth_.name);
+
     dispatch_command(1, cmds + 0, sin, sout, sout);
     exec_with(1);
 
@@ -399,12 +406,17 @@ console_result getnewaddress::invoke (std::ostream& output,
     dispatch_command(3, hd_private_gen, sin, sout, sout);
 
     exec_with(2);
+    addr->set_prv_key(sout.str());
     exec_with(3);
+    addr->set_pub_key(sout.str());
     exec_with(4);
+    addr->set_address(sout.str());
     output<<sout.str();
 
     acc->increase_hd_index();
-    auto ret = blockchain.store_account(acc);
+    addr->set_hd_index(acc->get_hd_index());
+    blockchain.store_account(acc);
+    blockchain.store_account_address(addr);
 
     return console_result::okay;
 }
@@ -420,6 +432,19 @@ console_result getaddress::invoke (std::ostream& output, std::ostream& cerr)
 console_result getaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    minijson::object_writer owriter(output);
+    minijson::array_writer awriter = owriter.nested_array("addresses");;
+
+    auto vaddr = blockchain.get_account_addresses(auth_.name);
+    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+
+    for (auto& i: *vaddr){
+        awriter.write(i.get_address());
+    }
+
+    awriter.close();
+    owriter.close();
+
     return console_result::okay;
 }
 
