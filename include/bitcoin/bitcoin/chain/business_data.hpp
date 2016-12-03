@@ -43,6 +43,7 @@ enum class business_kind : uint16_t
 class BC_API business_data
 {
 public:
+	typedef boost::variant<etp, asset_detail, asset_transfer> business_data_type;
     static business_data factory_from_data(const data_chunk& data);
     static business_data factory_from_data(std::istream& stream);
     static business_data factory_from_data(reader& source);
@@ -59,9 +60,9 @@ public:
 	bool is_valid_type() const;
     void reset();
     uint64_t serialized_size() ;
-
-	typedef boost::variant<etp, asset_detail, asset_transfer> business_data_type;
-	
+	uint16_t get_kind_value() const;
+	const business_data_type& get_data() const;
+		
 private:
 	business_kind kind;
 	business_data_type data;
@@ -123,6 +124,27 @@ public:
 	
 	business_data data;  // for output only
 };
+class BC_API business_address_asset
+{
+public:
+	typedef std::vector<business_address_asset> list;
+	
+	std::string  address;
+	uint8_t status;
+	uint64_t quantity;
+	asset_detail detail;
+};
+
+class BC_API business_address_etp // todo -- maybe remve it later -- not usable now
+{
+public:
+	typedef std::vector<business_address_etp> list;
+	
+	std::string  address;
+	uint8_t status;
+	uint64_t quantity;
+};
+
 /****************************************business assisant class end*******************************************/
 
 } // namespace chain

@@ -215,8 +215,8 @@ public:
 	bool is_account_exist(const std::string& name);
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);
-	std::shared_ptr<asset_detail> get_account_asset(const std::string& name, const std::string& asset);
-	std::shared_ptr<std::vector<asset_detail>> get_account_assets(const std::string& name);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, const std::string& asset);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
 	account_status get_account_user_status(const std::string& name);
 	account_status get_account_system_status(const std::string& name);
 	bool set_account_user_status(const std::string& name, uint8_t status);

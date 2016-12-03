@@ -167,6 +167,15 @@ std::string business_data::to_string()
 
     return ss.str();
 }
+uint16_t business_data::get_kind_value() const
+{
+	return KIND2UINT16(kind);
+}
+const business_data::business_data_type& business_data::get_data() const
+{
+	return data;
+}
+
 
 } // namspace chain
 } // namspace libbitcoin

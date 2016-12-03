@@ -192,7 +192,7 @@ void address_asset_database::delete_last_row(const short_hash& key)
 }
 /// get all record of key from database
 business_record::list address_asset_database::get(const short_hash& key,
-    size_t limit, size_t from_height) const
+    size_t from_height) const
 {
     // Read the height value from the row.
     const auto read_height = [](uint8_t* data)
@@ -230,10 +230,6 @@ business_record::list address_asset_database::get(const short_hash& key,
 
     for (const auto index: records)
     {
-        // Stop once we reach the limit (if specified).
-        if (limit > 0 && result.size() >= limit)
-            break;
-
         // This obtains a remap safe address pointer against the rows file.
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
@@ -248,9 +244,9 @@ business_record::list address_asset_database::get(const short_hash& key,
 }
 
 business_history::list address_asset_database::get_business_history(const short_hash& key,
-		size_t limit, size_t from_height) const
+		size_t from_height) const
 {
-	business_record::list compact = get(key, limit, from_height);
+	business_record::list compact = get(key, from_height);
 	
     business_history::list result;
 
@@ -315,6 +311,48 @@ business_history::list address_asset_database::get_business_history(const short_
 
     // TODO: sort by height and index of output, spend or both in order.
     return result;
+}
+
+business_address_asset::list address_asset_database::get_assets(const std::string& address, 
+	size_t from_height) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_address_asset::list unspent;
+    for (const auto& row: result)
+    {
+    	if(row.data.get_kind_value() == 0)
+			continue;
+		
+        uint8_t status = 0xff; 
+        if (row.spend.hash == null_hash) 
+			status = 0; // 0 -- unspent  1 -- confirmed
+
+		if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = 1;
+		
+		business_address_asset detail;
+		if(row.data.get_kind_value()==1) // asset issue
+		{
+			auto issue_info = boost::get<asset_detail>(row.data.get_data());
+			detail.quantity = issue_info.get_maximum_supply();
+			detail.detail = issue_info;
+		}
+		else //asset transfer
+		{
+			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
+			detail.quantity = transfer_info.get_quantity();
+			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
+		}
+
+		detail.address = address; // account address
+		detail.status = status; // 0 -- unspent  1 -- confirmed
+		unspent.emplace_back(detail);
+    }
+	return unspent;
+	    
 }
 
 void address_asset_database::sync()

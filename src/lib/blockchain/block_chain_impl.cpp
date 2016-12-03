@@ -1004,15 +1004,42 @@ std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addr
 	}
 	return sp_addr;
 }
-std::shared_ptr<asset_detail> block_chain_impl::get_account_asset(const std::string& name, const std::string& asset)
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_asset(const std::string& name, const std::string& asset_name)
 {
-	std::shared_ptr<asset_detail> detail(nullptr);
-	return detail;
+	auto sp_asset_vec = get_account_assets(name);
+	auto ret_vector = std::make_shared<std::vector<business_address_asset>>();
+	
+	const auto action = [&](const business_address_asset& addr_asset)
+	{
+		if(addr_asset.detail.get_symbol() == asset_name)
+			ret_vector->emplace_back(std::move(addr_asset));
+	};
+
+	std::for_each(sp_asset_vec->begin(), sp_asset_vec->end(), action);
+
+	return ret_vector;
 }
-std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_account_assets(const std::string& name)
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_assets(const std::string& name)
 {
-	std::shared_ptr<std::vector<asset_detail>> sp_asset(nullptr);
-	return sp_asset;
+	auto account_addr_vec = 
+get_account_addresses(name);
+	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
+	
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_address_asset& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+
+	// search all assets belongs to this address which is owned by account
+	const auto action = [&](const account_address& elem)
+	{
+		business_address_asset::list asset_vec = database_.address_assets.get_assets(elem.get_address(), 0);
+		std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+	};
+	std::for_each(account_addr_vec->begin(), account_addr_vec->end(), action);
+
+	return sp_asset_vec;
 }
 account_status block_chain_impl::get_account_user_status(const std::string& name)
 {
@@ -1089,6 +1116,7 @@ operation_result block_chain_impl::delete_asset(const std::string& name)
 {
 	return operation_result::okay;
 }
+/// get asset info by its symbol name
 std::shared_ptr<asset_detail> block_chain_impl::get_asset(const std::string& name)
 {
  	return database_.assets.get_asset_result(get_hash(name)).get_asset_detail();

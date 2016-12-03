@@ -106,10 +106,12 @@ public:
 		const output_point& inpoint, uint32_t input_height,
 		const input_point& previous);
 	
-	business_record::list get(const short_hash& key, size_t limit, size_t from_height) const;
+	business_record::list get(const short_hash& key, size_t from_height) const;
 	
 	business_history::list get_business_history(const short_hash& key,
-			size_t limit, size_t from_height) const;
+			size_t from_height) const;
+	business_address_asset::list get_assets(const std::string& address, 
+		size_t from_height) const;
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 

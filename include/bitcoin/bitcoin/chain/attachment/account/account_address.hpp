@@ -38,7 +38,7 @@ BC_CONSTEXPR size_t ADDRESS_PUB_KEY_FIX_SIZE = 33;
 BC_CONSTEXPR size_t ADDRESS_HD_INDEX_FIX_SIZE = 4;
 BC_CONSTEXPR size_t ADDRESS_BALANCE_FIX_SIZE = 8;
 BC_CONSTEXPR size_t ADDRESS_ALIAS_FIX_SIZE = 64;
-BC_CONSTEXPR size_t ADDRESS_ADDRESS_FIX_SIZE = 17;
+BC_CONSTEXPR size_t ADDRESS_ADDRESS_FIX_SIZE = 48;
 
 /// used for store account_address related information 
 class BC_API account_address
@@ -87,7 +87,7 @@ private:
     uint32_t hd_index; // 4 bytes -- todo remove it later
 	uint64_t balance; // 8 bytes
 	std::string alias; // 64 bytes
-	std::string address; // 17 bytes
+	std::string address; // 48 bytes
 };
 
 } // namespace chain

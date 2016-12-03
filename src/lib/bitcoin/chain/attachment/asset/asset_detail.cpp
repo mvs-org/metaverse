@@ -37,14 +37,10 @@ asset_detail::asset_detail()
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
     uint32_t asset_type, std::string issuer,
-    std::string address, std::string description)
+    std::string address, std::string description):
+    symbol(symbol), maximum_supply(maximum_supply), asset_type(asset_type), 
+	issuer(issuer), address(address), description(description)
 {
-    this->symbol = symbol;
-    this->maximum_supply = maximum_supply;
-    this->asset_type = asset_type;
-    this->issuer = issuer; 
-    this->address = address;
-    this->description = description;
 }
 
 asset_detail asset_detail::factory_from_data(const data_chunk& data)
