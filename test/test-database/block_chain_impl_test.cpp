@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(get_asset)
 /*  test : just not issued asset
 	not test : asset in blockchain
 */
-BOOST_AUTO_TEST_CASE(get_account_addresses)
+BOOST_AUTO_TEST_CASE(get_account_asset)
 {	
 	auto bc_impl = get_block_chain_impl();
 	bc_impl->start();
@@ -222,43 +222,43 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 	bc_impl->store_account_address(sh_addr);
 
 	
-	auto acc = std::make_shared<asset_detail>();
-	acc->set_symbol("car");
-	acc->set_maximum_supply(1000);
-	acc->set_asset_type(1);
-	acc->set_issuer("wdy");
-	acc->set_address("car address");
-	acc->set_description("a car of wdy divide into 1000 shares!");
-	bc_impl->store_account_asset(acc);
+	auto detail = std::make_shared<asset_detail>();
+	detail->set_symbol("car");
+	detail->set_maximum_supply(1000);
+	detail->set_asset_type(1);
+	detail->set_issuer("wdy");
+	detail->set_address("car address");
+	detail->set_description("a car of wdy divide into 1000 shares!");
+	bc_impl->store_account_asset(detail);
 	
-	acc = std::make_shared<asset_detail>();
-	acc->set_symbol("house");
-	acc->set_maximum_supply(10000);
-	acc->set_asset_type(1);
-	acc->set_issuer("wdy");
-	acc->set_address("house address");
-	acc->set_description("a house of wdy divide into 10000 shares!");
-	bc_impl->store_account_asset(acc);
+	detail = std::make_shared<asset_detail>();
+	detail->set_symbol("house");
+	detail->set_maximum_supply(10000);
+	detail->set_asset_type(1);
+	detail->set_issuer("wdy");
+	detail->set_address("house address");
+	detail->set_description("a house of wdy divide into 10000 shares!");
+	bc_impl->store_account_asset(detail);
 	
-	acc = std::make_shared<asset_detail>();
-	acc->set_symbol("bike");
-	acc->set_maximum_supply(1000);
-	acc->set_asset_type(1);
-	acc->set_issuer("eric");
-	acc->set_address("bike address");
-	acc->set_description("a bike of eric divide into 10 shares!");
-	bc_impl->store_account_asset(acc);
+	detail = std::make_shared<asset_detail>();
+	detail->set_symbol("bike");
+	detail->set_maximum_supply(1000);
+	detail->set_asset_type(1);
+	detail->set_issuer("eric");
+	detail->set_address("bike address");
+	detail->set_description("a bike of eric divide into 10 shares!");
+	bc_impl->store_account_asset(detail);
 	
-	acc = std::make_shared<asset_detail>();
-	acc->set_symbol("shares");
-	acc->set_maximum_supply(10000);
-	acc->set_asset_type(1);
-	acc->set_issuer("eric");
-	acc->set_address("shares address");
-	acc->set_description("a shares of eric divide into 10000 shares!");
-	bc_impl->store_account_asset(acc);
+	detail = std::make_shared<asset_detail>();
+	detail->set_symbol("shares");
+	detail->set_maximum_supply(10000);
+	detail->set_asset_type(1);
+	detail->set_issuer("eric");
+	detail->set_address("shares address");
+	detail->set_description("a shares of eric divide into 10000 shares!");
+	bc_impl->store_account_asset(detail);
 	
-	auto sh_vec = bc_impl->get_account_asset("wdy", "car")
+	auto sh_vec = bc_impl->get_account_asset("wdy", "car");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "wdy car = " << sh_vec->size();
 	if(sh_vec->size()) {
 		
@@ -269,8 +269,8 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 		std::for_each(sh_vec->begin(), sh_vec->end(), action);
 	}
 
+	sh_vec = bc_impl->get_account_asset("wdy", "house");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "wdy house = " << sh_vec->size();
-	sh_vec = bc_impl->get_account_asset("wdy", "house")
 	if(sh_vec->size()) {
 		
 		const auto action = [&](business_address_asset& elem)
@@ -280,8 +280,8 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 		std::for_each(sh_vec->begin(), sh_vec->end(), action);
 	}
 	
+	sh_vec = bc_impl->get_account_asset("eric", "bike");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "eric bike = " << sh_vec->size();
-	sh_vec = bc_impl->get_account_asset("eric", "bike")
 	if(sh_vec->size()) {
 		
 		const auto action = [&](business_address_asset& elem)
@@ -291,8 +291,8 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 		std::for_each(sh_vec->begin(), sh_vec->end(), action);
 	}
 	
+	sh_vec = bc_impl->get_account_asset("eric", "shares");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "eric shares = " << sh_vec->size();
-	sh_vec = bc_impl->get_account_asset("eric", "shares")
 	if(sh_vec->size()) {
 		
 		const auto action = [&](business_address_asset& elem)
@@ -302,8 +302,8 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 		std::for_each(sh_vec->begin(), sh_vec->end(), action);
 	}
 	
+	sh_vec = bc_impl->get_account_assets("wdy");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "wdy = " << sh_vec->size();
-	sh_vec = bc_impl->get_account_asset("wdy")
 	if(sh_vec->size()) {
 		
 		const auto action = [&](business_address_asset& elem)
@@ -313,8 +313,8 @@ BOOST_AUTO_TEST_CASE(get_account_addresses)
 		std::for_each(sh_vec->begin(), sh_vec->end(), action);
 	}
 	
+	sh_vec = bc_impl->get_account_assets("eric");
 	log::info(LOG_BLOCK_CHAIN_IMPL_TEST) << "eric = " << sh_vec->size();
-	sh_vec = bc_impl->get_account_asset("eric")
 	if(sh_vec->size()) {
 		
 		const auto action = [&](business_address_asset& elem)

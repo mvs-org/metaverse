@@ -133,6 +133,19 @@ public:
 	uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
 	uint64_t quantity;
 	asset_detail detail;
+	
+	// just used for unit test in block_chain_impl_test.cpp
+	std::string to_string() 
+	{
+		std::ostringstream ss;
+	
+		ss << "\t address = " << address
+			<< "\t status = " << status
+			<< "\t quantity = " << quantity << "\n"
+			<< "\t detail = " << detail.to_string() << "\n";
+	
+		return ss.str();
+	}
 };
 
 class BC_API business_address_etp // todo -- maybe remve it later -- not usable now
