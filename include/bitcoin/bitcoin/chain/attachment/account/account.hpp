@@ -76,7 +76,12 @@ public:
 	const hash_digest& get_passwd() const;
 
 	void set_passwd(const std::string& outside_passwd){
-        bc::decode_hash(passwd, outside_passwd);
+        //bc::decode_hash(passwd, outside_passwd);
+		data_chunk data(outside_passwd.begin(), outside_passwd.end());
+		set_passwd(sha256_hash(data)); 
+    }
+	void set_passwd(const hash_digest& passwd_hash){
+        passwd = passwd_hash;
     }
 
 	uint32_t get_hd_index() const;
