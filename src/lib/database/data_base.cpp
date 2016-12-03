@@ -84,6 +84,8 @@ data_base::store::store(const path& prefix)
 	assets_lookup = prefix / "asset_table";
 	address_assets_lookup = prefix / "address_asset_table";
 	address_assets_rows = prefix / "address_asset_row";
+	account_assets_lookup = prefix / "account_asset_table";
+	account_assets_rows = prefix / "account_asset_row";
 	account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
 	/* end database for account, asset, address_asset relationship */
@@ -115,6 +117,8 @@ bool data_base::store::touch_all() const
         touch_file(assets_lookup)&&
         touch_file(address_assets_lookup)&&
         touch_file(address_assets_rows)&&
+        touch_file(account_assets_lookup)&&
+        touch_file(account_assets_rows)&&
 		touch_file(account_addresses_lookup)&&
 		touch_file(account_addresses_rows);
 		/* end database for account, asset, address_asset relationship */
@@ -168,6 +172,7 @@ data_base::data_base(const store& paths, size_t history_height,
 	accounts(paths.accounts_lookup, mutex_),
 	assets(paths.assets_lookup, mutex_),
 	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
+	account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
 	/* end database for account, asset, address_asset relationship */
 {
@@ -199,6 +204,7 @@ bool data_base::create()
 		accounts.create()&&
 		assets.create()&&
 		address_assets.create()&&
+		account_assets.create()&&
 		account_addresses.create()
 		/* end database for account, asset, address_asset relationship */
 		;
@@ -233,6 +239,7 @@ bool data_base::start()
 		accounts.start()&&
 		assets.start()&&
 		address_assets.start()&&
+		account_assets.start()&&
 		account_addresses.start()
 		/* end database for account, asset, address_asset relationship */
         ;
@@ -255,6 +262,7 @@ bool data_base::stop()
 	const auto accounts_stop = accounts.stop();
 	const auto assets_stop = assets.stop();
 	const auto address_assets_stop = address_assets.stop();
+	const auto account_assets_stop = account_assets.stop();
 	const auto account_addresses_stop = account_addresses.stop();
 	/* end database for account, asset, address_asset relationship */
     const auto end_exclusive = end_write();
@@ -276,6 +284,7 @@ bool data_base::stop()
 		accounts_stop &&
 		assets_stop &&
 		address_assets_stop &&
+		account_assets_stop &&
 		account_addresses_stop &&
 		/* end database for account, asset, address_asset relationship */
         end_exclusive;
@@ -293,6 +302,7 @@ bool data_base::close()
 	const auto accounts_close = accounts.close();
 	const auto assets_close = assets.close();
 	const auto address_assets_close = address_assets.close();
+	const auto account_assets_close = account_assets.close();
 	const auto account_addresses_close = account_addresses.close();
 	/* end database for account, asset, address_asset relationship */
 
@@ -307,6 +317,7 @@ bool data_base::close()
 		accounts_close &&
 		assets_close &&
 		address_assets_close&&
+		account_assets_close&&
 		account_addresses_close
 		/* end database for account, asset, address_asset relationship */
         ;
@@ -373,6 +384,7 @@ void data_base::synchronize()
 	accounts.sync();
 	assets.sync();
 	address_assets.sync();
+	account_assets.sync();
 	account_addresses.sync();
 	/* end database for account, asset, address_asset relationship */
     blocks.sync();

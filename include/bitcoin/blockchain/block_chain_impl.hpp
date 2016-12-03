@@ -210,29 +210,40 @@ public:
 	/* begin store account related info into database */
 	inline hash_digest get_hash(const std::string& str);
 	inline short_hash get_short_hash(const std::string& str);
+
 	// account related api
 	std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
 	bool is_account_exist(const std::string& name);
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);
-	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, const std::string& asset);
-	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
 	account_status get_account_user_status(const std::string& name);
 	account_status get_account_system_status(const std::string& name);
 	bool set_account_user_status(const std::string& name, uint8_t status);
 	bool set_account_system_status(const std::string& name, uint8_t status);
 
+	// account asset api
+	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, const std::string& asset);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
+	bool is_asset_exist(const std::string& name, const std::string& asset_name);
+	
 	// account adress related api
 	operation_result store_account_address(std::shared_ptr<account_address> address);
 	std::shared_ptr<account_address> get_account_address(const std::string& name, const std::string& address);
 	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
 
-	// asset related api	
+	// asset related api
+	
+	/* begin todo -- will be removed later-- not use following api 
+		use set/get_account_asset(s) api instead  ---- refer "account asset api"
+	*/
 	uint16_t get_asset_status(const std::string& name);
 	bool is_asset_exist(const std::string& name);
 	operation_result store_asset(std::shared_ptr<asset_detail> ptr);
 	operation_result delete_asset(const std::string& name);  
 	std::shared_ptr<asset_detail> get_asset(const std::string& name);
+	/* end todo -- will be removed later -- not suggest use up api */
+	
 	/* end store account related info into database */
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

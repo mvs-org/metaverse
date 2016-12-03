@@ -106,8 +106,7 @@ data_chunk account::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-	std::cout<<"to-data: "<<data.size()<<" "<<serialized_size();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
+    //BITCOIN_ASSERT(data.size() == serialized_size()); // serialized_size is not used
     return data;
 }
 

@@ -49,6 +49,7 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
+	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,
 		uint32_t asset_type, std::string issuer,

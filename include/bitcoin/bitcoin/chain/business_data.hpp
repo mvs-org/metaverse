@@ -130,7 +130,7 @@ public:
 	typedef std::vector<business_address_asset> list;
 	
 	std::string  address;
-	uint8_t status;
+	uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
 	uint64_t quantity;
 	asset_detail detail;
 };

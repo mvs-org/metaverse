@@ -46,6 +46,7 @@
 #include <bitcoin/database/databases/account_address_database.hpp>
 #include <bitcoin/database/databases/asset_database.hpp>
 #include <bitcoin/database/databases/address_asset_database.hpp>
+#include <bitcoin/database/databases/account_asset_database.hpp>
 //#include <bitcoin/bitcoin/wallet/payment_address.hpp>
 
 using namespace libbitcoin::wallet;                                         
@@ -80,6 +81,8 @@ public:
         path assets_lookup;
         path address_assets_lookup;
         path address_assets_rows;
+        path account_assets_lookup;
+        path account_assets_rows;
         path account_addresses_lookup;
         path account_addresses_rows;
 		/* end database for account, asset, address_asset relationship */
@@ -249,6 +252,7 @@ public:
     account_database accounts;
     asset_database assets;
     address_asset_database address_assets;
+    account_asset_database account_assets;
     account_address_database account_addresses;
 	/* end database for account, asset, address_asset relationship */
 };

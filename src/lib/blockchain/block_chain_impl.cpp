@@ -961,7 +961,7 @@ std::shared_ptr<account> block_chain_impl::get_account(const std::string& name)
 {
 	return database_.accounts.get_account_result(get_hash(name)).get_account_detail();
 }
-
+/// just store data into database "not do same address check"  -- todo 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)
 {
 	if (stopped())
@@ -1004,6 +1004,27 @@ std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addr
 	}
 	return sp_addr;
 }
+operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_detail> detail)
+{
+	if (stopped())
+	{
+		return operation_result::failure;
+	}
+	if (!(detail))
+	{
+        throw std::runtime_error{"nullptr for asset"};
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	const auto hash = get_short_hash(detail->get_issuer());
+	database_.account_assets.store(hash, *detail);
+	database_.account_assets.sync();
+	///////////////////////////////////////////////////////////////////////////
+	return operation_result::okay;
+}
+
 std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_asset(const std::string& name, const std::string& asset_name)
 {
 	auto sp_asset_vec = get_account_assets(name);
@@ -1021,8 +1042,7 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 }
 std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_assets(const std::string& name)
 {
-	auto account_addr_vec = 
-get_account_addresses(name);
+	auto account_addr_vec = get_account_addresses(name);
 	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
 	
 	// copy each asset_vec element to sp_asset
@@ -1038,6 +1058,10 @@ get_account_addresses(name);
 		std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
 	};
 	std::for_each(account_addr_vec->begin(), account_addr_vec->end(), action);
+
+	// get account asset which is not issued (not in blockchain)
+	auto no_issued_assets = database_.account_assets.get_unissued_assets(get_short_hash(name));
+	std::for_each(no_issued_assets->begin(), no_issued_assets->end(), add_asset);
 
 	return sp_asset_vec;
 }
@@ -1081,7 +1105,13 @@ bool block_chain_impl::set_account_system_status(const std::string& name, uint8_
 	}
 	return ret_val;
 }
+bool block_chain_impl::is_asset_exist(const std::string& name, const std::string& asset_name)
+{
+	auto sh_vec = get_account_asset(name, asset_name);
+	return sh_vec->size() != 0;
+}
 
+/* begin todo -- will be removed later-- not use following api */
 uint16_t block_chain_impl::get_asset_status(const std::string& name)
 {
 	return 0;
@@ -1090,7 +1120,7 @@ bool block_chain_impl::is_asset_exist(const std::string& name)
 {
 	return nullptr != get_asset(name);
 }
-
+/// just store data into database "not do same address check"  -- todo 
 operation_result block_chain_impl::store_asset(std::shared_ptr<asset_detail> ptr)
 {
 	if (stopped())
@@ -1120,8 +1150,8 @@ operation_result block_chain_impl::delete_asset(const std::string& name)
 std::shared_ptr<asset_detail> block_chain_impl::get_asset(const std::string& name)
 {
  	return database_.assets.get_asset_result(get_hash(name)).get_asset_detail();
- }
-
+}
+/* end todo -- will be removed later */
 
 /* end store account related info into database */
 } // namespace blockchain
