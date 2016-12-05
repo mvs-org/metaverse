@@ -260,7 +260,7 @@ std::shared_ptr<std::vector<fetch_utxo_json_t>> fetch_utxo_impl(
             minijson::dispatch (key)
             <<"change">> [&]{ change = value.as_string(); }
             <<"points">> [&]{ 
-                if (value.as_string().empty())
+                if (std::strlen(value.as_string()) == 0)
                     return;
 
                 minijson::parse_array(ctx, [&](minijson::value v)
