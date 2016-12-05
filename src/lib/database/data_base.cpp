@@ -670,6 +670,7 @@ void data_base::push_etp(etp& etp, short_hash& key,
 	#endif
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), etp);
+	address_assets.sync();
 		
 }
 
@@ -691,6 +692,7 @@ void data_base::push_asset_detail(asset_detail& sp_detail, short_hash& key,
 	assets.store(hash, sp_detail);
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), sp_detail);
+	address_assets.sync();
 }
 void data_base::push_asset_transfer(asset_transfer& sp_transfer, short_hash& key,
 			output_point& outpoint, uint32_t output_height, uint64_t value)
@@ -707,6 +709,7 @@ void data_base::push_asset_transfer(asset_transfer& sp_transfer, short_hash& key
 	//address_assets.store(hash, sp_transfer);
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), sp_transfer);
+	address_assets.sync();
 }
 /* end store asset related info into database */
 
