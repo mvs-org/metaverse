@@ -26,7 +26,6 @@
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
 
-#define KIND2UINT16(kd)  (static_cast<typename std::underlying_type<business_kind>::type>(kd))
 #define ETP_TYPE            KIND2UINT16(business_kind::etp)
 #define ASSET_ISSUE_TYPE    KIND2UINT16(business_kind::asset_issue)
 #define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)

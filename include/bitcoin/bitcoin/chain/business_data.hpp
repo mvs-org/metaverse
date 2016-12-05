@@ -30,6 +30,8 @@
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <bitcoin/bitcoin/chain/attachment/etp/etp.hpp>
 
+#define KIND2UINT16(kd)  (static_cast<typename std::underlying_type<business_kind>::type>(kd))
+
 namespace libbitcoin {
 namespace chain {
 
@@ -96,6 +98,19 @@ public:
         uint64_t previous_checksum;
     };
 	business_data data;
+	
+	// just used for debug code in block_chain_impl_test.cpp
+	std::string to_string() 
+	{
+		std::ostringstream ss;
+	
+		ss << "\t kind = " << KIND2UINT16(kind)
+			<< "\t point = " << point.to_string() << "\n"
+			<< "\t height = " << height
+			<< "\t data = " << data.to_string() << "\n";
+	
+		return ss.str();
+	}
 };
 
 class BC_API business_history
@@ -108,7 +123,6 @@ public:
 
     /// The satoshi value of the output.
     uint64_t value;
-	asset_transfer transfer;
 
     /// If there is no spend this is null_hash:max.
     input_point spend;
@@ -123,6 +137,20 @@ public:
     };
 	
 	business_data data;  // for output only
+	
+	// just used for debug code in block_chain_impl_test.cpp
+	std::string to_string() 
+	{
+		std::ostringstream ss;
+	
+		ss << "\t output = " << output.to_string()
+			<< "\t output_height = " << output_height
+			<< "\t value = " << value << "\n"
+			<< "\t spend = " << spend.to_string()
+			<< "\t data = " << data.to_string() << "\n";
+	
+		return ss.str();
+	}
 };
 class BC_API business_address_asset
 {

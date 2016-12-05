@@ -29,6 +29,8 @@
 #include <bitcoin/database/primitives/record_multimap_iterable.hpp>
 #include <bitcoin/database/primitives/record_multimap_iterator.hpp>
 
+#define  LOG_ADDRESS_ASSET_DATABASE  "address_asset_database"
+
 namespace libbitcoin {
 namespace database {
 
@@ -250,6 +252,14 @@ business_history::list address_asset_database::get_business_history(const short_
 	
     business_history::list result;
 
+	/* debug code begin */
+    for (auto output = compact.begin(); output != compact.end();)
+    {
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << "get_business_history input";
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << output->to_string();
+	}
+	/* debug code end */
+
     // Process and remove all outputs.
     for (auto output = compact.begin(); output != compact.end();)
     {
@@ -320,6 +330,13 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 	auto key = ripemd160_hash(data);
 	business_history::list result = get_business_history(key, from_height);
 	business_address_asset::list unspent;
+	/* debug code begin */
+    for (auto& row: result)
+    {
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << "get_assets input";
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << row.to_string();
+	}
+	/* debug code end */
     for (const auto& row: result)
     {
     	if(row.data.get_kind_value() == 0)
@@ -351,6 +368,13 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 		detail.status = status; // 0 -- unspent  1 -- confirmed
 		unspent.emplace_back(detail);
     }
+	/* debug code begin */
+    for (auto& row: unspent)
+    {
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << "get_assets output";
+		log::debug(LOG_ADDRESS_ASSET_DATABASE) << row.to_string();
+	}
+	/* debug code end */
 	return unspent;
 	    
 }
