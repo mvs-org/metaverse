@@ -14,6 +14,7 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+#include <cctype>
 #include "mvs/http/Mongoose.hpp"
 #include "mvs/http/Tokeniser.hpp"
 #include "json/minijson_reader.hpp"
@@ -37,7 +38,7 @@ void HttpMessage::data_to_arg() noexcept {
             // store args from ws message
             do {
                 //skip spaces
-                if(args.top().front() != ' '){
+                if(!std::isspace(args.top().front())){
                     this->vargv_.push_back({args.top().data(), args.top().size()});
                     this->argc_++;
                 }
@@ -99,7 +100,7 @@ void WebsocketMessage::data_to_arg() noexcept {
     // store args from ws message
     do {
         //skip spaces
-        if(args.top().front() != ' '){
+        if(!std::isspace(args.top().front())){
             vargv_.push_back({args.top().data(), args.top().size()});
             argc_++;
         }

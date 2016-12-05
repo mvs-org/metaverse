@@ -20,6 +20,7 @@
 
 
 #include <bitcoin/explorer/command_extension.hpp>
+#include <bitcoin/explorer/command_extension_func.hpp>
 
 #include <iostream>
 #include <bitcoin/bitcoin.hpp>
@@ -31,6 +32,7 @@
 
 #include <bitcoin/explorer/dispatch.hpp>
 #include <json/minijson_writer.hpp>
+#include <json/minijson_reader.hpp>
 #include <array>
 
 using namespace bc;
@@ -373,8 +375,30 @@ console_result listaddresses::invoke (std::ostream& output,
 /************************ getnewaddress *************************/
 console_result getnewaddress::invoke (std::ostream& output, std::ostream& cerr)
 {
-    cerr << NOT_IMPLEMENT_MVS_CLI;
-    return console_result::failure;
+    // for mvs-cli
+    const char* cmds[]{"seed", "ec-new", "ec-to-public", "ec-to-address"};
+
+    std::ostringstream sout("");
+    std::istringstream sin;
+
+    minijson::object_writer owriter(output);
+
+    auto exec_with = [&](int i){
+        sin.str(sout.str());
+        sout.str("");
+        return dispatch_command(1, cmds + i, sin, sout, sout);
+    };
+
+    exec_with(0);
+    exec_with(1);
+    owriter.write("ec-private-key", sout.str());
+    exec_with(2);
+    owriter.write("ec-public-key", sout.str());
+    exec_with(3);
+    owriter.write("address", sout.str());
+    owriter.close();
+
+    return console_result::okay;
 }
 
 console_result getnewaddress::invoke (std::ostream& output,
@@ -560,6 +584,24 @@ console_result getbalance::invoke (std::ostream& output, std::ostream& cerr)
 console_result getbalance::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    minijson::array_writer awriter(output);
+
+    auto vaddr = blockchain.get_account_addresses(auth_.name);
+    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+
+    const char* cmds[]{"fetch-balance"};
+
+    for (auto& i: *vaddr){
+        std::ostringstream sout("");
+        std::istringstream sin(i.get_address());
+        dispatch_command(1, cmds + 0, sin, sout, sout);
+        awriter.write(sout.str());
+    }
+
+    awriter.close();
+
     return console_result::okay;
 }
 
@@ -658,6 +700,21 @@ console_result send::invoke (std::ostream& output, std::ostream& cerr)
 console_result send::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr) throw std::logic_error{"nullptr for address list"};
+
+    auto vaddr = *pvaddr;
+    auto ret = std::find_if(vaddr.begin(), vaddr.end(), 
+            [this, &output, &cerr](const account_address& addr){
+                return send_impl(addr.get_prv_key(), argument_.address, 
+                    argument_.amount, output, cerr);
+            });
+
+    if (ret == vaddr.end()){
+        throw std::logic_error{"no enough utxo."};
+    }
+
     return console_result::okay;
 }
 
@@ -677,10 +734,12 @@ console_result sendmore::invoke (std::ostream& output,
 
 
 /************************ sendfrom *************************/
+
+
 console_result sendfrom::invoke (std::ostream& output, std::ostream& cerr)
 {
     cerr << NOT_IMPLEMENT_MVS_CLI;
-    return console_result::failure;
+    return console_result::okay;
 }
 
 console_result sendfrom::invoke (std::ostream& output,

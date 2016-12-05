@@ -39,6 +39,15 @@ std::shared_ptr<command> find_extension(const std::string& symbol);
 void broadcast_extension(const std::function<void(std::shared_ptr<command>)> func);
 
 
+namespace commands{
+// for send
+bool send_impl(const std::string& fromprikey, const std::string& toaddr, uint64_t amount,
+                std::ostream& output, std::ostream& cerr);
+
+std::string ec_to_xxx_impl(const char* xxx,const std::string& fromkey);
+
+} // commands
+
 } // namespace explorer
 } // namespace libbitcoin
 

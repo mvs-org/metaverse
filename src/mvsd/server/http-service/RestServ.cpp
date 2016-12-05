@@ -151,6 +151,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
                 auto ret = get_from_session_list(data.get());
                 if (!ret) throw std::logic_error{"nullptr for seesion"};
                 data.add_arg(std::string(ret->user));
+                data.add_arg(std::string(ret->pass));
             }
 
             data.data_to_arg();

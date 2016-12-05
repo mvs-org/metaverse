@@ -2792,7 +2792,9 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("TOADDRESS", 1)
+            .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2801,6 +2803,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "TOADDRESS", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2827,6 +2831,16 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
+	    )
+        (
+            "TOADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "Send to this address"
+	    )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "How many you will spend"
 	    );
 
         return options;
@@ -2844,6 +2858,8 @@ public:
 
     struct argument
     {
+        std::string address;
+        uint64_t amount;
     } argument_;
 
     struct option
