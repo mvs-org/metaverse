@@ -6,19 +6,18 @@
 
 #include <bitcoin/client.hpp>
 #include <bitcoin/blockchain.hpp>
+#include <bitcoin/consensus/miner.hpp> //miner
 
 namespace http{
 
 using namespace mg;
 using namespace bc;
 
-class SessionMgr;
-
 class RestServ : public mg::Mgr<RestServ>
 {
 public:
-    explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs)
-        :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs)
+    explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs, consensus::miner& miner)
+        :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs), miner_(miner)
     {
         memset(&httpoptions_, 0x00, sizeof(httpoptions_));
         httpoptions_.document_root = webroot;
@@ -93,12 +92,15 @@ private:
     constexpr static const double SESSION_TTL = 90.0;
     std::list< std::shared_ptr<Session> > session_list_;
 
+    //miner
+
     // config
     mg::OStream out_;
     Tokeniser<'/'> uri_;
     int state_{0};
     const char* const servername_{"Http-Metaverse"};
     blockchain::block_chain_impl& blockchain_;
+    consensus::miner& miner_;
 };
 
 } // http

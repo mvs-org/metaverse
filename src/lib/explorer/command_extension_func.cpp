@@ -254,14 +254,17 @@ std::shared_ptr<std::vector<fetch_utxo_json_t>> fetch_utxo_impl(
     std::cout<<sout.str()<<std::endl;
 
     auto vutxo = std::make_shared<std::vector<fetch_utxo_json_t>>();
+    bool not_found_utxo = false;
 
     minijson::istream_context ctx(sin);
     minijson::parse_object(ctx, [&](const char* key, minijson::value value){
             minijson::dispatch (key)
             <<"change">> [&]{ change = value.as_string(); }
             <<"points">> [&]{ 
-                if (std::strlen(value.as_string()) == 0)
+                if (std::strlen(value.as_string()) == 0){
+                    not_found_utxo = true;
                     return;
+                }
 
                 minijson::parse_array(ctx, [&](minijson::value v)
                 {
@@ -279,6 +282,10 @@ std::shared_ptr<std::vector<fetch_utxo_json_t>> fetch_utxo_impl(
             }
             <<minijson::any>> [&]{ minijson::ignore(ctx); };
     });
+
+    if (not_found_utxo && change == "0"){
+        return nullptr;
+    }
 
     return vutxo;
 }
@@ -309,7 +316,9 @@ bool send_impl(const std::string& fromprikey, const std::string& toaddr, uint64_
 
     auto vutxo = fetch_utxo_impl(fromaddr, std::to_string(amount), change);
     if (!vutxo){
-        throw std::runtime_error{"nullptr for fetch_utxo_impl"};
+        //no utxo
+        return false;
+        //throw std::runtime_error{"nullptr for fetch_utxo_impl"};
     }
 
     // ------------------------------------------------------

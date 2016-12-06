@@ -104,7 +104,9 @@ public:
         std::ostream& cerr) override;
 
     console_result invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
+        bc::consensus::miner& miner
+        ) override;
 
     struct argument
     {
@@ -180,7 +182,9 @@ public:
         std::ostream& cerr) override;
 
     console_result invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
+        bc::consensus::miner& miner
+        ) override;
 
     struct argument
     {

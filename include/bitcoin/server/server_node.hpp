@@ -111,7 +111,8 @@ private:
 
     // modify.chenhao
     void run_mongoose();
-    http::RestServ rest_server_{"./html", blockchain_};
+    consensus::miner miner_;
+    http::RestServ rest_server_{"./html", blockchain_, miner_};
 
     // These are thread safe.
     authenticator authenticator_;
@@ -125,7 +126,6 @@ private:
     transaction_service public_transaction_service_;
     notification_worker secure_notification_worker_;
     notification_worker public_notification_worker_;
-    consensus::miner miner_;
 };
 
 } // namespace server

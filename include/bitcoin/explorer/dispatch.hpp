@@ -24,6 +24,7 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/blockchain.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 /* NOTE: don't declare 'using namespace foo' in headers. */
 
@@ -69,6 +70,22 @@ BCX_API console_result dispatch_command(int argc, const char* argv[],
 BCX_API console_result dispatch_command(int argc, const char* argv[],
     std::istream& input, std::ostream& output, std::ostream& error,
     bc::blockchain::block_chain_impl& blockchain);
+/**
+ * Invoke the command identified by the specified arguments.
+ * The first argument in the array is the command symbolic name.
+ * @param[in]  argc   The number of elements in the argv parameter.
+ * @param[in]  argv   Array of command line arguments excluding the process.
+ * @param[in]  input   The input stream (e.g. STDIO).
+ * @param[in]  output  The output stream (e.g. STDOUT).
+ * @param[in]  error   The error stream (e.g. STDERR).
+ * @param[in]  blockchain p2p_node blockchain instance.
+ * @param[in]  miner  server_node miner instance.
+ * @return            The appropriate console return code { -1, 0, 1 }.
+ */
+BCX_API console_result dispatch_command(int argc, const char* argv[],
+    std::istream& input, std::ostream& output, std::ostream& error,
+    bc::blockchain::block_chain_impl& blockchain,
+    bc::consensus::miner& miner);
 
 } // namespace explorer
 } // namespace libbitcoin

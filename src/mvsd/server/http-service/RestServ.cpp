@@ -161,8 +161,14 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             std::stringstream sout;
             std::istringstream sin;
 
-            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                sin, sout, sout, blockchain_);
+
+            if (uri_.top() == "start"_sv or uri_.top() == "stop"_sv) {
+                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+                    sin, sout, sout, blockchain_, miner_);
+            }else{
+                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+                    sin, sout, sout, blockchain_);
+            }
 
             log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
 

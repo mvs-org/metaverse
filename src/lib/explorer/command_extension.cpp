@@ -56,8 +56,11 @@ console_result stop::invoke (std::ostream& output, std::ostream& cerr)
 }
 
 console_result stop::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
+        bc::consensus::miner& miner)
 {
+    miner.stop();
+    output<<"mining stoped.";
     return console_result::okay;
 }
 
@@ -70,8 +73,25 @@ console_result start::invoke (std::ostream& output, std::ostream& cerr)
 }
 
 console_result start::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
+        bc::consensus::miner& miner)
 {
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if (!pvaddr) 
+        throw std::logic_error{"nullptr for address list"};
+
+    auto vaddr = *pvaddr;
+
+    if (vaddr.empty())
+        throw std::logic_error{"gen new address please"}; // todo
+
+    auto pubkey = vaddr[0].get_pub_key();
+
+    log::info("pubkey")<<pubkey;
+    miner.start(pubkey);
+    output<<"mining started.";
+
     return console_result::okay;
 }
 

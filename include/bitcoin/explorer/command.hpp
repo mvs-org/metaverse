@@ -26,7 +26,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain/block_chain_impl.hpp>
 #include <bitcoin/explorer/define.hpp>
 #include <bitcoin/explorer/config/address.hpp>
 #include <bitcoin/explorer/config/algorithm.hpp>
@@ -48,6 +47,9 @@
 #include <bitcoin/explorer/config/transaction.hpp>
 #include <bitcoin/explorer/config/wrapper.hpp>
 #include <bitcoin/explorer/utility.hpp>
+
+#include <bitcoin/blockchain/block_chain_impl.hpp> // for blockchain
+#include <bitcoin/consensus/miner.hpp> // for miner
 
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 
@@ -142,6 +144,13 @@ public:
 
     virtual console_result invoke(std::ostream& output,
         std::ostream& error, bc::blockchain::block_chain_impl& blockchain)
+    {
+        return console_result::failure;
+    }
+
+    virtual console_result invoke(std::ostream& output, std::ostream& error, 
+            bc::blockchain::block_chain_impl& blockchain,
+            bc::consensus::miner& miner)
     {
         return console_result::failure;
     }
