@@ -52,13 +52,15 @@ output output::factory_from_data(reader& source)
 
 bool output::is_valid() const
 {
-    return (value != 0) || script.is_valid();
+    return (value != 0) || script.is_valid() 
+		|| attach_data.is_valid(); // added for asset issue/transfer
 }
 
 void output::reset()
 {
     value = 0;
     script.reset();
+	attach_data.reset(); // added for asset issue/transfer
 }
 
 bool output::from_data(const data_chunk& data)
@@ -83,6 +85,11 @@ bool output::from_data(reader& source)
     if (result)
         result = script.from_data(source, true, 
             script::parse_mode::raw_data_fallback);
+
+	/* begin added for asset issue/transfer */
+    if (result)
+        result = attach_data.from_data(source);
+	/* end added for asset issue/transfer */
 
     if (!result)
         reset();
@@ -110,11 +117,15 @@ void output::to_data(writer& sink) const
 {
     sink.write_8_bytes_little_endian(value);
     script.to_data(sink, true);
+	/* begin added for asset issue/transfer */
+	attach_data.to_data(sink);
+	/* end added for asset issue/transfer */
 }
 
 uint64_t output::serialized_size() const
 {
-    return 8 + script.serialized_size(true);
+    return 8 + script.serialized_size(true)
+		+ attach_data.serialized_size(); // added for asset issue/transfer
 }
 
 std::string output::to_string(uint32_t flags) const
@@ -122,7 +133,8 @@ std::string output::to_string(uint32_t flags) const
     std::ostringstream ss;
 
     ss << "\tvalue = " << value << "\n"
-        << "\t" << script.to_string(flags) << "\n";
+        << "\t" << script.to_string(flags) << "\n"
+        << "\t" << attach_data.to_string() << "\n"; // added for asset issue/transfer
 
     return ss.str();
 }

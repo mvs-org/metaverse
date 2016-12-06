@@ -137,42 +137,42 @@ public:
 
     /* begin store asset info into  database */
 
-	void push_attachemnt(attachment& attach, const payment_address& address,
-			output_point& outpoint, uint32_t output_height, uint64_t value);
+	void push_attachemnt(const attachment& attach, const payment_address& address,
+			const output_point& outpoint, uint32_t output_height, uint64_t value);
 
-	void push_etp(etp& etp, short_hash& key,
-			output_point& outpoint, uint32_t output_height, uint64_t value);
+	void push_etp(const etp& etp, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
-	void push_asset(asset& sp, short_hash& key,
-				output_point& outpoint, uint32_t output_height, uint64_t value);
+	void push_asset(const asset& sp, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
-	void push_asset_detail(asset_detail& sp_detail, short_hash& key,
-				output_point& outpoint, uint32_t output_height, uint64_t value);
+	void push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
-	void push_asset_transfer(asset_transfer& sp_transfer, short_hash& key,
-				output_point& outpoint, uint32_t output_height, uint64_t value);
+	void push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
 
    class attachment_visitor : public boost::static_visitor<void>
 	{
 	public:
-		attachment_visitor(data_base* db, short_hash& sh_hash,  output_point& outpoint, 
+		attachment_visitor(data_base* db, const short_hash& sh_hash,  const output_point& outpoint, 
 			uint32_t output_height, uint64_t value):
 			db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value)
 		{
 
 		}
-		void operator()(asset &t)
+		void operator()(const asset &t) const
 		{
 			return db_->push_asset(t, sh_hash_, outpoint_, output_height_, value_);
 		}
-		void operator()(etp &t)
+		void operator()(const etp &t) const
 		{
 			return db_->push_etp(t, sh_hash_, outpoint_, output_height_, value_);
 		}
 	private:
         data_base* db_;
-		short_hash& sh_hash_;
-		output_point& outpoint_;
+		short_hash sh_hash_;
+		output_point outpoint_;
 		uint32_t output_height_;
 		uint64_t value_;
 	};
@@ -180,24 +180,24 @@ public:
 	class asset_visitor : public boost::static_visitor<void>
 	{
 	public:
-		asset_visitor(data_base* db, short_hash& key,
-			output_point& outpoint, uint32_t output_height, uint64_t value):
+		asset_visitor(data_base* db, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value):
 			db_(db), key_(key), outpoint_(outpoint), output_height_(output_height), value_(value)
 		{
 
 		}
-		void operator()(asset_detail &t)
+		void operator()(const asset_detail &t) const
 		{
 			return db_->push_asset_detail(t, key_, outpoint_, output_height_, value_);
 		}
-		void operator()(asset_transfer &t)
+		void operator()(const asset_transfer &t) const
 		{
 		 	return db_->push_asset_transfer(t, key_, outpoint_, output_height_, value_);
 		}
 	private:
         data_base* db_;
-		short_hash& key_;
-		output_point& outpoint_;
+		short_hash key_;
+		output_point outpoint_;
 		uint32_t output_height_;
 		uint64_t value_;
 	};

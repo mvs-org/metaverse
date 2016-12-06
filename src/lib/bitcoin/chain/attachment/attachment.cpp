@@ -119,7 +119,7 @@ bool attachment::from_data(reader& source)
 	
 }
 
-data_chunk attachment::to_data() 
+data_chunk attachment::to_data() const
 {
     data_chunk data;
     data_sink ostream(data);
@@ -129,13 +129,13 @@ data_chunk attachment::to_data()
     return data;
 }
 
-void attachment::to_data(std::ostream& stream) 
+void attachment::to_data(std::ostream& stream) const
 {
     ostream_writer sink(stream);
     to_data(sink);
 }
 
-void attachment::to_data(writer& sink) 
+void attachment::to_data(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_4_bytes_little_endian(type);
@@ -143,7 +143,7 @@ void attachment::to_data(writer& sink)
 	boost::apply_visitor(visitor, attach);
 }
 
-uint64_t attachment::serialized_size() 
+uint64_t attachment::serialized_size() const
 {
     uint64_t size = 4 + 4;
 	auto visitor = serialized_size_visitor();
@@ -152,7 +152,7 @@ uint64_t attachment::serialized_size()
 	return size;
 }
 
-std::string attachment::to_string() 
+std::string attachment::to_string() const
 {
     std::ostringstream ss;
 

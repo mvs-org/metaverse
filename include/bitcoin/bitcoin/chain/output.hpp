@@ -28,7 +28,7 @@
 #include <bitcoin/bitcoin/define.hpp>
 #include <bitcoin/bitcoin/utility/reader.hpp>
 #include <bitcoin/bitcoin/utility/writer.hpp>
-
+#include <bitcoin/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
 namespace libbitcoin {
 namespace chain {
 
@@ -55,6 +55,7 @@ public:
 
     uint64_t value;
     chain::script script;
+	attachment attach_data; // added for asset issue/transfer
 };
 
 struct BC_API output_info

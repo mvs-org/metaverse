@@ -123,7 +123,7 @@ uint64_t asset_transfer::serialized_size() const
     return address.size() + 8 + 3;
 }
 
-std::string asset_transfer::to_string() 
+std::string asset_transfer::to_string() const 
 {
     std::ostringstream ss;
 

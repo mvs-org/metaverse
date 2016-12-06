@@ -89,7 +89,7 @@ bool etp::from_data(reader& source)
     return result;
 }
 
-data_chunk etp::to_data() 
+data_chunk etp::to_data() const
 {
     data_chunk data;
     data_sink ostream(data);
@@ -99,24 +99,24 @@ data_chunk etp::to_data()
     return data;
 }
 
-void etp::to_data(std::ostream& stream) 
+void etp::to_data(std::ostream& stream) const
 {
     ostream_writer sink(stream);
     to_data(sink);
 }
 
-void etp::to_data(writer& sink) 
+void etp::to_data(writer& sink) const
 {
 	sink.write_8_bytes_little_endian(value);
 }
 
-uint64_t etp::serialized_size() 
+uint64_t etp::serialized_size() const
 {
     uint64_t size = 8;
 	return size;
 }
 
-std::string etp::to_string() 
+std::string etp::to_string() const
 {
     std::ostringstream ss;
 	ss << "\t value = " << value << "\n";

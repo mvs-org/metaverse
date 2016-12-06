@@ -161,7 +161,7 @@ uint64_t asset_detail::serialized_size() const
     return symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size();
 }
 
-std::string asset_detail::to_string() 
+std::string asset_detail::to_string() const
 {
     std::ostringstream ss;
 

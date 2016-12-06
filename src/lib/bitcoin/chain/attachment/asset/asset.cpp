@@ -116,7 +116,7 @@ bool asset::from_data(reader& source)
     return result;
 }
 
-data_chunk asset::to_data() 
+data_chunk asset::to_data() const
 {
     data_chunk data;
     data_sink ostream(data);
@@ -126,13 +126,13 @@ data_chunk asset::to_data()
     return data;
 }
 
-void asset::to_data(std::ostream& stream) 
+void asset::to_data(std::ostream& stream) const
 {
     ostream_writer sink(stream);
     to_data(sink);
 }
 
-void asset::to_data(writer& sink) 
+void asset::to_data(writer& sink) const
 {
     sink.write_4_bytes_little_endian(status);
 	
@@ -140,7 +140,7 @@ void asset::to_data(writer& sink)
 	boost::apply_visitor(visitor, data);
 }
 
-uint64_t asset::serialized_size() 
+uint64_t asset::serialized_size() const
 {
     uint64_t size = 0;
 	
@@ -149,7 +149,7 @@ uint64_t asset::serialized_size()
 	return 4 + size;
 }
 
-std::string asset::to_string() 
+std::string asset::to_string() const
 {
     std::ostringstream ss;
     ss << "\t status = " << status << "\n";

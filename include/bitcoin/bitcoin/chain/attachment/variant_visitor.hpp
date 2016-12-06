@@ -53,7 +53,7 @@ public:
 	}
 	
 	template <class T>
-	void operator()(T &t)
+	void operator()(T &t) const
 	{
 	  return t.to_data(sink);
 	}
@@ -70,7 +70,7 @@ public:
 	}
 	
 	template <class T>
-	uint64_t operator()(T &t)
+	uint64_t operator()(T &t) const
 	{
 	  return t.serialized_size();
 	}
@@ -85,7 +85,7 @@ public:
 	}
 	
 	template <class T>
-	std::string operator()(T &t)
+	std::string operator()(T &t) const
 	{
 	  return t.to_string();
 	}
@@ -115,7 +115,7 @@ public:
 	}
 	
 	template <class T>
-	bool operator()(T &t)
+	bool operator()(T &t) const
 	{
 	  return t.is_valid();
 	}

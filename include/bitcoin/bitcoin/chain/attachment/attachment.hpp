@@ -52,14 +52,14 @@ public:
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
-    data_chunk to_data() ;
-    void to_data(std::ostream& stream) ;
-    void to_data(writer& sink);
-    std::string to_string() ;
+    data_chunk to_data() const;
+    void to_data(std::ostream& stream) const;
+    void to_data(writer& sink) const;
+    std::string to_string() const;
     bool is_valid() const;
 	bool is_valid_type() const;
     void reset();
-    uint64_t serialized_size() ;
+    uint64_t serialized_size() const;
 
     uint32_t version;
     uint32_t type;

@@ -65,7 +65,7 @@ public:
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
-    std::string to_string() ;
+    std::string to_string() const;
 	void to_json(std::ostream& out);
     bool is_valid() const;
     void reset();

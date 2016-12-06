@@ -449,6 +449,11 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
 
         const auto& previous = input.previous_output;
         history.add_input(address.hash(), point, height, previous);
+
+		/* begin added for asset issue/transfer */
+		address_assets.store_input(address.hash(), point, height, previous);
+		address_assets.sync();
+		/* end added for asset issue/transfer */
     }
 }
 
@@ -470,6 +475,10 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
 
         const auto value = output.value;
         history.add_output(address.hash(), point, height, value);
+		
+		/* begin added for asset issue/transfer */
+		push_attachemnt(output.attach_data, address, point, height, value);
+		/* end added for asset issue/transfer */
     }
 }
 
@@ -598,12 +607,14 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 }
 /* begin store asset related info into database */
 
-//#include <bitcoin/bitcoin/config/base16.hpp>
-//using namespace libbitcoin::config;
-void data_base::push_attachemnt(attachment& attach, const payment_address& address,
-		output_point& outpoint, uint32_t output_height, uint64_t value)
+#include <bitcoin/bitcoin/config/base16.hpp>
+using namespace libbitcoin::config;
+void data_base::push_attachemnt(const attachment& attach, const payment_address& address,
+		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	auto address_str = address.encoded();
+	std::cout << "address_str=" << address_str << std::endl;
+	std::cout << "address hash=" << base16(address.hash()) << std::endl;
 	data_chunk data(address_str.begin(), address_str.end());
 	short_hash hash = ripemd160_hash(data);
 	
@@ -611,8 +622,8 @@ void data_base::push_attachemnt(attachment& attach, const payment_address& addre
 	boost::apply_visitor(visitor, attach.attach);
 }
 
-void data_base::push_etp(etp& etp, short_hash& key,
-		output_point& outpoint, uint32_t output_height, uint64_t value)
+void data_base::push_etp(const etp& etp, const short_hash& key,
+		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), etp);
@@ -620,15 +631,15 @@ void data_base::push_etp(etp& etp, short_hash& key,
 		
 }
 
-void data_base::push_asset(asset& sp, short_hash& key,
-			output_point& outpoint, uint32_t output_height, uint64_t value) // sp = smart property
+void data_base::push_asset(const asset& sp, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value) // sp = smart property
 {
 	auto visitor = asset_visitor(this, key, outpoint, output_height, value);
 	boost::apply_visitor(visitor, sp.data);
 }
 
-void data_base::push_asset_detail(asset_detail& sp_detail, short_hash& key,
-			output_point& outpoint, uint32_t output_height, uint64_t value)
+void data_base::push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value)
 
 {
 	const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
@@ -638,8 +649,8 @@ void data_base::push_asset_detail(asset_detail& sp_detail, short_hash& key,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), sp_detail);
 	address_assets.sync();
 }
-void data_base::push_asset_transfer(asset_transfer& sp_transfer, short_hash& key,
-			output_point& outpoint, uint32_t output_height, uint64_t value)
+void data_base::push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), sp_transfer);
