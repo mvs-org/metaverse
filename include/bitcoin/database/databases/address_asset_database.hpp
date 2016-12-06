@@ -71,7 +71,7 @@ public:
 
     /// Call to unload the memory map.
     bool close();
-	#if 0
+	
 	template <class BusinessDataType>
 	void store_output(const short_hash& key, const output_point& outpoint, 
 		uint32_t output_height, uint64_t value, uint16_t business_kd, BusinessDataType& business_data)
@@ -88,20 +88,7 @@ public:
 		};
 		rows_multimap_.add_row(key, write);
 	}
-	#endif
-	
-	void store_output(const short_hash& key, const output_point& outpoint, 
-		uint32_t output_height, uint64_t value, uint16_t business_kd, etp& business_data);
-	
-	
-	void store_output(const short_hash& key, const output_point& outpoint, 
-		uint32_t output_height, uint64_t value, uint16_t business_kd, asset_detail& business_data);
-	
-	
-	void store_output(const short_hash& key, const output_point& outpoint, 
-		uint32_t output_height, uint64_t value, uint16_t business_kd, asset_transfer& business_data);
-	
-	
+
 	void store_input(const short_hash& key,
 		const output_point& inpoint, uint32_t input_height,
 		const input_point& previous);

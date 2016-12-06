@@ -598,8 +598,8 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 }
 /* begin store asset related info into database */
 
-#include <bitcoin/bitcoin/config/base16.hpp>
-using namespace libbitcoin::config;
+//#include <bitcoin/bitcoin/config/base16.hpp>
+//using namespace libbitcoin::config;
 void data_base::push_attachemnt(attachment& attach, const payment_address& address,
 		output_point& outpoint, uint32_t output_height, uint64_t value)
 {
@@ -614,60 +614,6 @@ void data_base::push_attachemnt(attachment& attach, const payment_address& addre
 void data_base::push_etp(etp& etp, short_hash& key,
 		output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	#if 0	
-#if 0
-	std::cout << "push etp="<<address<<std::endl;
-	std::cout << address.encoded() << std::endl;
-	//const data_chunk& data = data_chunk(address.encoded().begin(), address.encoded().end());
-	std::string ss = "1111111111111111111114oLvT2";
-	data_chunk data(ss.begin(), ss.end());
-	const auto hash = sha256_hash(data);
-	std::cout << base16(hash) << std::endl;
-	//std::cout << sp_detail.symbol << std::endl;
-	account value("hello", "word list", "lala", 1000, 1);
-	accounts.store(hash, value);
-
-	account_address address("dongyun", "xprv-key", "xpub-key" ,1000);
-	account_addresses.store(hash, address);
-#endif
-	std::string ss = "1111111111111111111114oLvT2";
-	data_chunk data(ss.begin(), ss.end());
-	const auto hash = ripemd160_hash(data);
-	std::cout << base16(hash) << std::endl;
-	//std::cout << sp_detail.symbol << std::endl;
-	account_address address("dongyun", "xprv-key", "xpub-key" ,1000, 0, "alia", "address");
-	account_addresses.store(hash, address);
-	account_address address2("dongyun2", "xprv-key2", "xpub-key2" ,1000, 0, "alia2", "address2");
-	account_addresses.store(hash, address2);
-	std::shared_ptr<account_address> ptr = account_addresses.get(hash, "address");
-	if(ptr)
-		std::cout<<ptr->to_string();
-	
-	std::shared_ptr<account_address> ptr2 = account_addresses.get(hash, "address2");
-	if(ptr2)
-		std::cout<<ptr2->to_string();
-
-	const output_point outpoint{hash_digest(), 0}; 
-	uint32_t output_height = 10;
-	uint64_t value = 100;
-	const asset_transfer transfer("transfer", 66);
-	address_assets.store_output(hash, outpoint, output_height, value, transfer);
-
-	const output_point outpoint2{hash_digest(), 0}; 
-	uint32_t output_height2 = 100;
-	uint64_t value2 = 1000;
-	const asset_transfer transfer2("transfer", 6);
-	address_assets.store_output(hash, outpoint2, output_height2, value2, transfer2);
-
-	business_record::list result = address_assets.get(hash, 10, 0);
-	const auto action = [](const business_record& spend)
-	{
-		std::cout<< spend.height << std::endl;
-		std::cout<< spend.value << std::endl;
-	};
-
-	std::for_each(result.begin(), result.end(), action);
-	#endif
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), etp);
 	address_assets.sync();
@@ -687,8 +633,6 @@ void data_base::push_asset_detail(asset_detail& sp_detail, short_hash& key,
 {
 	const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
-    //std::cout << base16(hash) << std::endl;
-    //std::cout << sp_detail.symbol << std::endl;
 	assets.store(hash, sp_detail);
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), sp_detail);
@@ -697,16 +641,6 @@ void data_base::push_asset_detail(asset_detail& sp_detail, short_hash& key,
 void data_base::push_asset_transfer(asset_transfer& sp_transfer, short_hash& key,
 			output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	//data_chunk  addr(sp_transfer.get_address.begin(), sp_transfer.get_address.end());
-	//data_chunk& data = addr;
-	//std::copy(address.encoded().begin(), address.encoded().end(), std::back_inserter(data));
-    //const auto hash = ripemd160_hash(data);
-    
-    //std::cout << base16(hash) << std::endl;
-    //std::cout << sp_transfer.address << std::endl;
-    //std::cout << address.encoded() << std::endl;
-    
-	//address_assets.store(hash, sp_transfer);
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), sp_transfer);
 	address_assets.sync();
