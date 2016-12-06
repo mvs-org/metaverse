@@ -55,7 +55,7 @@ public:
 
     uint64_t value;
     chain::script script;
-	attachment attach_data; // added for asset issue/transfer
+	//attachment attach_data; // todo -- will be open later // added for asset issue/transfer
 };
 
 struct BC_API output_info

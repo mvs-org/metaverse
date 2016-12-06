@@ -477,7 +477,7 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
         history.add_output(address.hash(), point, height, value);
 		
 		/* begin added for asset issue/transfer */
-		push_attachemnt(output.attach_data, address, point, height, value);
+		//push_attachemnt(output.attach_data, address, point, height, value); // todo -- will be open lator
 		/* end added for asset issue/transfer */
     }
 }
