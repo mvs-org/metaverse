@@ -32,6 +32,9 @@
 #include <json/minijson_reader.hpp>
 #include <bitcoin/explorer/dispatch.hpp>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 
 namespace libbitcoin {
 namespace explorer {
@@ -230,19 +233,15 @@ namespace commands {
 // ---------------------------------------------------------------------------
 //for fetch-utxo
 struct fetch_utxo_json_t{
-    fetch_utxo_json_t():addr_index(0) {}
-    fetch_utxo_json_t(const fetch_utxo_json_t& rs)
-        :addr_hash(rs.addr_hash),addr_index(rs.addr_index){}
-
-    std::string addr_hash;
-    long addr_index;
+    std::string txhash;
+    long index;
+    std::string script;// pre tx output script
 };
 
-#include <iostream>
 std::shared_ptr<std::vector<fetch_utxo_json_t>> fetch_utxo_impl(
     std::string& addr, std::string&& amount, std::string& change)
 {
-    using namespace minijson;
+    using namespace boost::property_tree;
 
     const char* cmds[]{"fetch-utxo", amount.c_str(), addr.c_str()};
     std::ostringstream sout("");
@@ -251,45 +250,56 @@ std::shared_ptr<std::vector<fetch_utxo_json_t>> fetch_utxo_impl(
         throw std::logic_error(sout.str());
     }
     sin.str(sout.str());
-    std::cout<<sout.str()<<std::endl;
 
     auto vutxo = std::make_shared<std::vector<fetch_utxo_json_t>>();
-    bool not_found_utxo = false;
 
-    minijson::istream_context ctx(sin);
-    minijson::parse_object(ctx, [&](const char* key, minijson::value value){
-            minijson::dispatch (key)
-            <<"change">> [&]{ change = value.as_string(); }
-            <<"points">> [&]{ 
-                if (std::strlen(value.as_string()) == 0){
-                    not_found_utxo = true;
-                    return;
-                }
+    fetch_utxo_json_t utxo;
+    ptree pt; 
+    read_json(sin, pt);
 
-                minijson::parse_array(ctx, [&](minijson::value v)
-                {
-                    minijson::parse_object(ctx, [&](const char* k, minijson::value v)
-                    {
-                        fetch_utxo_json_t utxo;
-                        minijson::dispatch (k)
-                        <<"hash">> [&]{ utxo.addr_hash = v.as_string(); }
-                        <<"index">> [&]{ utxo.addr_index = v.as_long(); }
-                        <<any>> [&]{ minijson::ignore(ctx); };
+    change = pt.get<std::string>("change");
+    auto points = pt.get_child("points");
 
-                        vutxo->push_back(utxo);
-                    });
-                });
-            }
-            <<minijson::any>> [&]{ minijson::ignore(ctx); };
-    });
-
-    if (not_found_utxo && change == "0"){
+    //not found
+    if (points.size() == 0 and change == "0"){
         return nullptr;
+    }
+
+    for (auto& i: points){
+        vutxo->push_back({i.second.get<std::string>("hash"),
+            i.second.get<long>("index"), ""});
     }
 
     return vutxo;
 }
 
+
+// ---------------------------------------------------------------------------
+// input hash => output script
+void fetch_tx_impl(std::string& txhash, std::string& script) 
+{
+    using namespace boost::property_tree;
+    const char* cmds2[]{"fetch-tx"};
+
+    std::ostringstream sout("");
+    std::istringstream sin(txhash);
+
+    dispatch_command(1, cmds2, sin, sout, sout);
+    sin.str(sout.str());
+
+    log::info("fetch-tx")<<sout.str();
+
+    ptree pt;
+    read_json(sin, pt);
+
+    auto transaction = pt.get_child("transaction");
+    auto outputs = transaction.get_child("outputs");
+    for (auto& i : outputs){
+        script = i.second.get<std::string>("script");
+    }
+}
+
+// ---------------------------------------------------------------------------
 std::string ec_to_xxx_impl(const char* xxx,const std::string& fromkey)
 {
     std::ostringstream sout("");
@@ -311,61 +321,65 @@ bool send_impl(const std::string& fromprikey, const std::string& toaddr, uint64_
     auto frompubkey = ec_to_xxx_impl("ec-to-public", fromprikey);
     auto fromaddr = ec_to_xxx_impl("ec-to-address", frompubkey);
 
+    log::info("prikey")<<fromprikey;
+    log::info("pubkey")<<frompubkey;
+    log::info("fromaddr")<<fromaddr;
+
     // ------------------------------------------------------
     std::string change{""};
 
-    auto vutxo = fetch_utxo_impl(fromaddr, std::to_string(amount), change);
-    if (!vutxo){
+    auto pvutxo = fetch_utxo_impl(fromaddr, std::to_string(amount), change);
+    if (!pvutxo){
         //no utxo
         return false;
-        //throw std::runtime_error{"nullptr for fetch_utxo_impl"};
+    }
+
+    auto vutxo = *pvutxo;
+    // ------------------------------------------------------
+    
+    for (auto& utxo : vutxo) {
+        fetch_tx_impl(utxo.txhash, utxo.script);
     }
 
     // ------------------------------------------------------
-    const char* cmds2[]{"fetch-tx"};
+
+    const char* cmds3[1024];
+
+    cmds3[0] = "tx-encode";
+
+    size_t i = 0;
+    for (auto& utxo: vutxo){
+        utxo.txhash += ":" + std::to_string(utxo.index);
+        cmds3[++i] = "-i";
+        cmds3[++i] = utxo.txhash.c_str();
+    }
+    cmds3[++i] = "-o";
+    std::string&& toaddramount = toaddr + ":" + std::to_string(amount);
+    cmds3[++i] = toaddramount.c_str();
+
+    for (int ii = 0; ii <= i; ii++)
+    {
+        log::info("xxx")<<cmds3[ii];
+    }
+    log::info("toaddramount")<<toaddramount;
+
     std::ostringstream sout("");
-    std::istringstream sin((*vutxo)[0].addr_hash);
-
-    dispatch_command(1, cmds2, sin, sout, sout);
-    sin.str(sout.str());
-    std::string script;
-    minijson::istream_context ctx1(sin);
-    minijson::parse_object(ctx1, [&](const char* key, minijson::value value){
-        minijson::dispatch (key)
-        <<"transaction">> [&]{ 
-            minijson::parse_object(ctx1, [&](const char* key, minijson::value value){
-                minijson::dispatch (key)
-                <<"outputs">> [&]{ 
-                    minijson::parse_array(ctx1, [&](minijson::value v)
-                    {
-                        minijson::parse_object(ctx1, [&](const char* k, minijson::value v)
-                        {
-                            minijson::dispatch (k)
-                            <<"script">> [&]{ script = v.as_string(); }
-                            <<minijson::any>> [&]{ minijson::ignore(ctx1); };
-                        });
-                    });
-                }
-                <<minijson::any>> [&]{ minijson::ignore(ctx1); };
-            });
-        }
-        <<minijson::any>> [&]{ minijson::ignore(ctx1); };
-    }); 
-    log::info("--------")<<"script sout:"<<script;
-
-    // ------------------------------------------------------
-    std::string addr_hash = (*vutxo)[0].addr_hash + ":" + std::to_string((*vutxo)[0].addr_index);
-
-    const char* cmds3[]{"tx-encode", "-i", addr_hash.c_str(), "-o", toaddr.c_str()};
-    sout.str("");
-    sin.str("");
-    dispatch_command(5, cmds3, sin, sout, sout);
+    std::istringstream sin("");
+    dispatch_command(i + 1, cmds3, sin, sout, sout);
     log::info("--------")<<"tx-encode sout:"<<sout.str();
 
+    std::string&& tx = sout.str();
     // ------------------------------------------------------
-    std::string tx = sout.str();
-    const char* cmds4[]{"input-sign", fromprikey.c_str(), script.c_str()};
-    sin.str(sout.str());
+    std::string scripts;
+    for (auto& utxo: vutxo){
+        scripts += " ";
+        scripts += utxo.script;
+    }
+
+    log::info("--------")<<"scripts :["<<scripts<<"]";
+
+    const char* cmds4[]{"input-sign", fromprikey.c_str(), scripts.c_str()};
+    sin.str(tx);
     sout.str("");
     dispatch_command(3, cmds4, sin, sout, sout);
     log::info("--------")<<"input-sign sout:"<<sout.str();
@@ -380,9 +394,9 @@ bool send_impl(const std::string& fromprikey, const std::string& toaddr, uint64_
     dispatch_command(3, cmds5, sin, sout, sout);
     log::info("--------")<<"input-set sout:"<<sout.str();
 
-    std::string tx_set = sout.str();
-
+    std::string&& tx_set = sout.str();
     // ------------------------------------------------------
+#if 0
     const char* cmds6[]{"validate-tx"};
     sin.str(tx_set);
     sout.str("");
@@ -390,6 +404,7 @@ bool send_impl(const std::string& fromprikey, const std::string& toaddr, uint64_
     if (ret != console_result::okay){
         throw std::logic_error(sout.str());
     }
+#endif
 
     // ------------------------------------------------------
     const char* cmds7[]{"send-tx"};

@@ -720,9 +720,13 @@ console_result send::invoke (std::ostream& output, std::ostream& cerr)
 console_result send::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
+    if (argument_.address.empty())
+        throw std::logic_error{"no address ?"};
+
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) throw std::logic_error{"nullptr for address list"};
+    if(!pvaddr) 
+        throw std::logic_error{"nullptr for address list"};
 
     auto vaddr = *pvaddr;
     auto ret = std::find_if(vaddr.begin(), vaddr.end(), 
@@ -731,9 +735,8 @@ console_result send::invoke (std::ostream& output,
                     argument_.amount, output, cerr);
             });
 
-    if (ret == vaddr.end()){
+    if (ret == vaddr.end())
         throw std::logic_error{"no enough utxo."};
-    }
 
     return console_result::okay;
 }
