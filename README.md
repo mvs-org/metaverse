@@ -1,4 +1,6 @@
 # The Metaverse(mvs)
+**Now switch to a private repository to develop. It will be merged when main-net go-live.**
+
 Metaverse is a decentralised system based on the blockchain technology, 
 through which, a network of smart properties , digital identities and value intermediators are established.
 
