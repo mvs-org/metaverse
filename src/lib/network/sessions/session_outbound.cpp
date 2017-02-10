@@ -103,7 +103,11 @@ void session_outbound::delay_new_connect(connector::ptr connect)
 			log::debug(LOG_NETWORK) << "delay new connect, session stopped" ;
 			return;
 		}
-		new_connection(connect);
+		auto pThis = shared_from_this();
+		auto action = [this, pThis, connect](){
+			new_connection(connect);
+		};
+		pool_.service().post(action);
 	});
 }
 
@@ -116,7 +120,7 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
             << "Failure connecting outbound: " << ec.message();
         if(ec.value() == error::not_satisfied)
 		{
-        	log::debug(LOG_NETWORK) << "session outbound handle connect, not satified";
+        	log::debug(LOG_NETWORK) << "session outbound handle connect, not satisfied";
 			return;
 		}
         delay_new_connect(connect);

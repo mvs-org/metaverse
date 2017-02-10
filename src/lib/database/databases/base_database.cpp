@@ -32,7 +32,7 @@ namespace database {
 
 using namespace boost::filesystem;
 
-BC_CONSTEXPR size_t number_buckets = 100000000;
+BC_CONSTEXPR size_t number_buckets = 9997;
 BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
 BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
 
@@ -115,11 +115,12 @@ void base_database::sync()
 {
     lookup_manager_.sync();
 }
-
-base_database::slab_map base_database::get_lookup_map() const
+#if 0
+base_database::slab_map& base_database::get_lookup_map()
 {
 	return lookup_map_;
 }
+#endif
 
 } // namespace database
 } // namespace libbitcoin

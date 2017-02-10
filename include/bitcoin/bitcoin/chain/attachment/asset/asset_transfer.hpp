@@ -54,11 +54,15 @@ public:
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
+
+#ifdef MVS_DEBUG
     std::string to_string() const;
+	void to_json(std::ostream& output) ;
+#endif
+
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	void to_json(std::ostream& output) ;
 	const std::string& get_address() const;
 	void set_address(const std::string& address);
 	uint64_t get_quantity() const;

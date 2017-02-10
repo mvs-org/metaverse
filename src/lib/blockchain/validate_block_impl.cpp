@@ -18,11 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/blockchain/validate_block_impl.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 #include <cstddef>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/blockchain/block_detail.hpp>
 #include <bitcoin/blockchain/simple_chain.hpp>
+#include <bitcoin/consensus/miner/MinerAux.h>
+#include <bitcoin/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -42,6 +45,17 @@ validate_block_impl::validate_block_impl(simple_chain& chain,
     orphan_index_(orphan_index),
     orphan_chain_(orphan_chain)
 {
+}
+
+bool validate_block_impl::is_valid_proof_of_work(const chain::header& header) const
+{
+    chain::header parent_header;
+    if(orphan_index_ != 0) {
+        parent_header = orphan_chain_[orphan_index_ - 1]->actual()->header;
+    }else{
+       static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
+    }
+    return MinerAux::verifySeal(const_cast<chain::header&>(header), parent_header);
 }
 
 u256 validate_block_impl::previous_block_bits() const
@@ -229,6 +243,23 @@ bool validate_block_impl::orphan_is_spent(
     }
 
     return false;
+}
+
+bool validate_block_impl::check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& output) const
+{
+    uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+    uint64_t coinbase_lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(coinage_reward_coinbase.outputs[0].script.operations);
+    wallet::payment_address addr1 = wallet::payment_address::extract(coinage_reward_coinbase.outputs[0].script);
+    wallet::payment_address addr2 = wallet::payment_address::extract(output.script);
+    uint64_t coinage_reward_value = libbitcoin::consensus::miner::calculate_lockblock_reward(lock_height, output.value);
+
+    if(addr1 == addr2 
+        && lock_height == coinbase_lock_height
+        && coinage_reward_value == coinage_reward_coinbase.outputs[0].value) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 } // namespace blockchain

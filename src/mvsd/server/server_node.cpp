@@ -50,7 +50,7 @@ server_node::server_node(const configuration& configuration)
     secure_transaction_service_(authenticator_, *this, true),
     public_transaction_service_(authenticator_, *this, false),
     secure_notification_worker_(authenticator_, *this, true),
-    public_notification_worker_(authenticator_, *this, true),
+    public_notification_worker_(authenticator_, *this, false),
     miner_(*this)
 {
 }
@@ -71,14 +71,25 @@ const settings& server_node::server_settings() const
 
 void server_node::run_mongoose()
 {
-    // bind
-    auto& conn = rest_server_.bind("8820");
+    try
+    {
+        // bind
+        auto& conn = rest_server_.bind(configuration_.server.mongoose_listen.c_str());
 
-    // init for websocket and seesion control
-    mg_set_protocol_http_websocket(&conn);
-    mg_register_http_endpoint(&conn, "/login.html", &http::RestServ::login_handler);
-    mg_register_http_endpoint(&conn, "/logout", &http::RestServ::logout_handler);
-    mg_set_timer(&conn, mg_time() + http::RestServ::session_check_interval);
+        // init for websocket and seesion control
+        mg_set_protocol_http_websocket(&conn);
+        mg_set_timer(&conn, mg_time() + http::RestServ::session_check_interval);
+
+#if 0   // not use session control
+        mg_register_http_endpoint(&conn, "/login.html", &http::RestServ::login_handler);
+        mg_register_http_endpoint(&conn, "/logout", &http::RestServ::logout_handler);
+#endif
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("can not listen on " + configuration_.server.mongoose_listen);
+    }
+    log::info(LOG_SERVER) << "http server listen on (" << configuration_.server.mongoose_listen << ")";;
 
     // run
     for (;;)
@@ -112,8 +123,8 @@ void server_node::handle_running(const code& ec, result_handler handler)
 
     if (ec)
     {
-    	handler(ec);
-	return;
+        handler(ec);
+    return;
     }
 
     if (!start_services())
@@ -121,7 +132,6 @@ void server_node::handle_running(const code& ec, result_handler handler)
         handler(error::operation_failed);
         return;
     }
-
     std::thread httpserver(std::bind(&server_node::run_mongoose, this));
     httpserver.detach();
 
@@ -343,6 +353,8 @@ uint32_t server_node::threads_required(const configuration& configuration)
     // If any services are enabled increment for the authenticator.
     return required == 1 ? required : required + 1;
 }
+
+boost::filesystem::path server_node::webpage_path_ = webpage_path();
 
 } // namespace server
 } // namespace libbitcoin

@@ -17,6 +17,8 @@
 #include <endian.h>
 #elif defined(HAVE_SYS_ENDIAN_H)
 #include <sys/endian.h>
+#elif defined(HAVE_OSX_ENDIAN_H)
+#include <machine/endian.h>
 #endif
 
 #if defined(WORDS_BIGENDIAN)

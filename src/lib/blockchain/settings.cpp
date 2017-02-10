@@ -20,6 +20,7 @@
 #include <bitcoin/blockchain/settings.hpp>
 
 #include <boost/filesystem.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -43,8 +44,9 @@ settings::settings(bc::settings context)
     {
         case bc::settings::mainnet:
         {
-            checkpoints.reserve(1);
-            checkpoints.push_back({ "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 0 });
+            bc::wallet::ec_private::mainnet_p2kh = 0x32;
+            bc::wallet::ec_public::mainnet_p2kh = 0x32;
+            bc::wallet::payment_address::mainnet_p2kh = 0x32;
             break;
         }
 
@@ -53,7 +55,14 @@ settings::settings(bc::settings context)
             use_testnet_rules = true;
 
             checkpoints.reserve(1);
-            checkpoints.push_back({ "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943", 0 });
+            checkpoints.push_back({ "b1076144f919c8efaf55e5ec267daa6d5dc0a12609c9c6fddf8157270ae6e7ca", 0 });
+
+            bc::wallet::ec_private::mainnet_p2kh = 0x7f;
+            bc::wallet::ec_public::mainnet_p2kh = 0x7f;
+            bc::wallet::payment_address::mainnet_p2kh = 0x7f;
+
+            libbitcoin::consensus::bucket_size = 50000;
+            libbitcoin::consensus::lock_heights = {10, 20, 30};
             break;
         }
 

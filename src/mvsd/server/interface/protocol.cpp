@@ -38,10 +38,13 @@ using namespace std::placeholders;
 void protocol::broadcast_transaction(server_node& node, const message& request,
     send_handler handler)
 {
+	using transaction_ptr = libbitcoin::blockchain::transaction_pool::transaction_ptr;
+	using indexes = libbitcoin::blockchain::transaction_pool::indexes;
     static const auto version = bc::message::version::level::maximum;
-    bc::message::transaction_message tx;
+    transaction_ptr tx = std::make_shared<bc::message::transaction_message>();;
+//    bc::message::transaction_message tx;
 
-    if (!tx.from_data(version, request.data()))
+    if (!tx->from_data(version, request.data()))
     {
         handler(message(request, error::bad_stream));
         return;
@@ -51,10 +54,17 @@ void protocol::broadcast_transaction(server_node& node, const message& request,
     const auto ignore_send = [](const code&, network::channel::ptr) {};
 
     // Send and hope for the best!
-    node.broadcast(tx, ignore_send, ignore_complete);
+//    node.broadcast(tx, ignore_send, ignore_complete);
+
+    node.pool().store(tx, [tx](const code& ec, transaction_ptr){
+    	log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " confirmed";
+    }, [handler, request, tx](const code& ec, transaction_ptr, indexes){
+    	log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " validated";
+    	handler(message(request, ec));
+    });
 
     // Tell the user everything is fine.
-    handler(message(request, error::success));
+
 }
 
 void protocol::total_connections(server_node& node, const message& request,

@@ -64,10 +64,11 @@ public:
     /// Returns the position of the inserted value in the slab_manager.
     file_offset store(const KeyType& key, write_function write,
         const size_t value_size);
-
+	file_offset restore(const KeyType& key,
+		write_function write, const size_t value_size);
     /// Find the slab for a given hash. Returns a null pointer if not found.
     const memory_ptr find(const KeyType& key) const;
-
+	std::shared_ptr<std::vector<memory_ptr>> find(uint64_t index) const;
     /// Delete a key-value pair from the hashtable by unlinking the node.
     bool unlink(const KeyType& key);
 
@@ -88,6 +89,7 @@ private:
 
     slab_hash_table_header& header_;
     slab_manager& manager_;
+    shared_mutex mutex_;
 };
 
 } // namespace database

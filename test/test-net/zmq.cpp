@@ -13,34 +13,70 @@
 
 BOOST_AUTO_TEST_SUITE(test_zmq)
 
+auto service_address = "inproc://test";
+
+void create_sub(void* ctx)
+{
+	boost::thread th([ctx](){
+		auto sub = zmq_socket(ctx, ZMQ_SUB);
+		zmq_bind(sub, service_address);
+
+		while(true)
+		{
+			char buf[1024] = {0};
+			auto res = zmq_recv(sub,buf, 1024, 0);
+			std::cout << "zmq recv result," << res << std::endl;
+			if(res <= 0)
+			{
+				break;
+			}
+		}
+	});
+}
+
+#include <boost/preprocessor.hpp>
+
+#define CHECK_ZMQ_OPERATION(res, operation)\
+		do{\
+			if(res){\
+				std::cout << operation << " failed" << std::endl;}\
+		}while(0)
+
 BOOST_AUTO_TEST_CASE(case_pub_sub)
 {
 	try
 	{
 		auto ctx = zmq_ctx_new();
-		for(auto i=0;i<2048;++i)
+
+#ifdef SUB_SERVICE_START
+		create_sub(ctx);
+#endif
+
+		for(auto i=0;i<1025;++i)
 		{
+			auto res = 0;
+
 			auto pub = zmq_socket(ctx, ZMQ_PUB);
-			if(pub == nullptr)
-			{
-				std::cout << "connect failed" << std::endl;
-			}
-			auto res = zmq_connect(pub, "inproc://test");
-			if(res == -1)
-			{
-				std::cout << "connect failed" << std::endl;
-			}
+			CHECK_ZMQ_OPERATION(!pub, "zmq socket");
+
+			int value = 0;
+			res = zmq_setsockopt(pub, ZMQ_LINGER, &value, sizeof(int));
+			CHECK_ZMQ_OPERATION(res, "zmq setsocketopt");
+
+			res = zmq_connect(pub, service_address);
+			CHECK_ZMQ_OPERATION(res, "zmq connect");
+
+			res = zmq_disconnect(pub, service_address);
+			CHECK_ZMQ_OPERATION(res, "zmq disconnect");
+
 			res = zmq_close(pub);
-			if(res == -1)
-			{
-				std::cout << "close failed" << std::endl;
-			}
+			CHECK_ZMQ_OPERATION(res, "zmq close");
+
 			boost::this_thread::sleep(boost::posix_time::milliseconds{1});
 		}
 
-
-		zmq_ctx_destroy(ctx);
 		boost::this_thread::sleep(boost::posix_time::seconds{1000});
+		zmq_ctx_destroy(ctx);
 	}
 	catch(const std::exception& e)
 	{

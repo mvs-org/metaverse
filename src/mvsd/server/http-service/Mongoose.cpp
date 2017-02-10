@@ -22,13 +22,24 @@
 namespace http {
 namespace mg {
 
-void HttpMessage::data_to_arg() noexcept {
+void HttpMessage::data_to_arg() {
+
+    auto vargv_to_argv = [this]() {
+        // convert to char** argv
+        int i = 0;
+        for(auto& iter : this->vargv_){
+            if (i >= max_paramters){
+                break;
+            }
+            this->argv_[i++] = iter.c_str();
+        }
+        argc_ = i;
+    };
 
     auto convert = [this](std::string_view method, std::string_view pramas){
 
         if (!method.empty()){
             this->vargv_.push_back({method.data(), method.size()});
-            this->argc_++;
         }
 
         if (!pramas.empty()){
@@ -38,23 +49,18 @@ void HttpMessage::data_to_arg() noexcept {
             // store args from ws message
             do {
                 //skip spaces
-                if(!std::isspace(args.top().front())){
+                if (args.top().front() == ' '){
+                    args.pop();
+                    continue;
+                } else if (std::iscntrl(args.top().front())){
+                    break;
+                } else {
                     this->vargv_.push_back({args.top().data(), args.top().size()});
-                    this->argc_++;
+                    args.pop();
                 }
-                args.pop();
             }while(!args.empty());
         }
-
-        // convert to char** argv
-        int i = 0;
-        for(auto& iter : this->vargv_){
-            if (i >= max_paramters){
-                break;
-            }
-            this->argv_[i++] = iter.c_str();
-        }
-
+    
     };
 
     /* *******************************************
@@ -63,18 +69,43 @@ void HttpMessage::data_to_arg() noexcept {
      * ******************************************/
     if (uri() == "/rpc" or uri() == "/rpc/")
     {
-        std::string method, params;
+
+#if 0
+        pt::ptree root;
+        std::istringstream sin;
+        sin.str({body().data(), body().size()});
+        pt::read_json(sin, root);
+        auto&& method = root.get<std::string>("method");
+        if (method.size()){
+            vargv_.push_back(method);
+        }
+
+        for (auto& each : root.get_child("params.")) {
+            vargv_.push_back(each.second.data());
+        }
+#else
         minijson::const_buffer_context ctx(body().data(), body().size());
         minijson::parse_object(ctx, 
-            [&](const char* key, minijson::value value){
+            [&, this](const char* key, minijson::value value){
             minijson::dispatch (key)
-            <<"method">> [&]{ method = value.as_string(); }
-            <<"params">> [&]{ params = value.as_string(); }
+            <<"method">> [&,this]{ 
+                   std::string&& method = value.as_string();
+                   if (method.size()){
+                       vargv_.insert(vargv_.begin(), method);
+                    }
+                }
+            <<"params">> [&, this]{ 
+                minijson::parse_array(ctx, [&](minijson::value v) {
+                   std::string&& params = v.as_string();
+                   if (params.size())
+                       vargv_.push_back(params);
+                });
+             }
             <<minijson::any>> [&]{ minijson::ignore(ctx); };
         });
+#endif
 
-        convert({method.c_str(), method.size()}, 
-                {params.c_str(), params.size()});
+        vargv_to_argv();
     }
 
     /* *******************************************
@@ -84,27 +115,31 @@ void HttpMessage::data_to_arg() noexcept {
     if (uri().substr(0,4) == "/api")
     {
         std::array<char, 4096> params{0x00};
-        mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
+        auto len = mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
 
         convert({nullptr, 0u}, 
-                {params.data(), std::strlen(params.data())});
+                {params.data(), static_cast<std::string_view::size_type>(len)});
+        vargv_to_argv();
     }
 
-    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
 }
 
-void WebsocketMessage::data_to_arg() noexcept {
+void WebsocketMessage::data_to_arg() {
     Tokeniser<' '> args;
     args.reset(+*impl_);
 
     // store args from ws message
     do {
         //skip spaces
-        if(!std::isspace(args.top().front())){
-            vargv_.push_back({args.top().data(), args.top().size()});
-            argc_++;
+        if (args.top().front() == ' '){
+            args.pop();
+            continue;
+        } else if (std::iscntrl(args.top().front())){
+            break;
+        } else {
+            this->vargv_.push_back({args.top().data(), args.top().size()});
+            args.pop();
         }
-        args.pop();
     }while(!args.empty());
 
     // convert to char** argv
@@ -115,8 +150,7 @@ void WebsocketMessage::data_to_arg() noexcept {
         }
         argv_[i++] = iter.c_str();
     }
-
-    bc::log::debug(LOG_HTTP)<<"Got:["<<argv_[0]<<"],params count["<<argc_-1<<"]";
+    argc_ = i;
 }
 
 void ToCommandArg::add_arg(std::string&& outside)

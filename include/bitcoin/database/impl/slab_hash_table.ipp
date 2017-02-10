@@ -43,6 +43,7 @@ template <typename KeyType>
 file_offset slab_hash_table<KeyType>::store(const KeyType& key,
     write_function write, const size_t value_size)
 {
+	mutex_.lock();
     // Store current bucket value.
     const auto old_begin = read_bucket_value(key);
     slab_row<KeyType> item(manager_, 0);
@@ -51,9 +52,35 @@ file_offset slab_hash_table<KeyType>::store(const KeyType& key,
 
     // Link record to header.
     link(key, new_begin);
+    
+    mutex_.unlock();
 
     // Return position,
     return new_begin + item.value_begin;
+}
+
+// This is not limited to store unique key values. If duplicate keyed values
+// are store then retrieval and unlinking will fail as these multiples cannot
+// be differentiated. Therefore the database is not currently able to support
+// multiple transactions with the same hash, as required by BIP30.
+template <typename KeyType>
+file_offset slab_hash_table<KeyType>::restore(const KeyType& key,
+    write_function write, const size_t value_size)
+{
+	mutex_.lock();
+    // Store current bucket value.
+    const auto old_begin = read_bucket_value(key);
+    slab_row<KeyType> item(manager_, old_begin);
+    //const auto new_begin = item.create(key, value_size, old_begin);
+    write(item.data());
+
+    // Link record to header.
+    //link(key, new_begin);
+    
+    mutex_.unlock();
+
+    // Return position,
+    return old_begin + item.value_begin;
 }
 
 // This is limited to returning the first of multiple matching key values.
@@ -84,6 +111,38 @@ const memory_ptr slab_hash_table<KeyType>::find(const KeyType& key) const
 
     return nullptr;
 }
+
+
+// This is limited to returning all the item in the special index.
+template <typename KeyType>
+std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t index) const
+{
+	auto vec_memo = std::make_shared<std::vector<memory_ptr>>();
+	// find first item
+    auto current = header_.read(index);
+    static_assert(sizeof(current) == sizeof(file_offset), "Invalid size");
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        // Found.
+        vec_memo->push_back(item.data());
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return vec_memo;
+}
+
 
 // This is limited to unlinking the first of multiple matching key values.
 template <typename KeyType>

@@ -129,7 +129,7 @@ namespace explorer {
 #define BX_COMMANDS_HOME_PAGE \
     "MVS home page:"
 #define BX_COMMAND_USAGE \
-    "Usage: COMMAND [--help]"
+    "Usage: help COMMAND"
 #define BX_CONFIG_DESCRIPTION \
     "The path to the configuration settings file."
 #define BX_CONNECTION_FAILURE \
@@ -159,7 +159,7 @@ namespace explorer {
  * Invoke a specified function on all commands.
  * @param[in]  func  The function to invoke on all commands.
  */
-void broadcast(const std::function<void(std::shared_ptr<command>)> func);
+void broadcast(const std::function<void(std::shared_ptr<command>)> func, std::ostream& os);
 
 /**
  * Find the command identified by the specified symbolic command name.

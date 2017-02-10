@@ -97,20 +97,22 @@ bool connector::stopped()
 // ----------------------------------------------------------------------------
 
 // public:
-void connector::connect(const endpoint& endpoint, connect_handler handler)
+void connector::connect(const endpoint& endpoint, connect_handler handler
+		, resolve_handler h)
 {
-    connect(endpoint.host(), endpoint.port(), handler);
+    connect(endpoint.host(), endpoint.port(), handler, h);
 }
 
 // public:
-void connector::connect(const authority& authority, connect_handler handler)
+void connector::connect(const authority& authority, connect_handler handler
+		, resolve_handler h)
 {
-    connect(authority.to_hostname(), authority.port(), handler);
+    connect(authority.to_hostname(), authority.port(), handler, h);
 }
 
 // public:
 void connector::connect(const std::string& hostname, uint16_t port,
-    connect_handler handler)
+    connect_handler handler, resolve_handler h)
 {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
@@ -134,15 +136,24 @@ void connector::connect(const std::string& hostname, uint16_t port,
     // async_resolve will not invoke the handler within this function.
     resolver_->async_resolve(*query,
         std::bind(&connector::handle_resolve,
-            shared_from_this(), _1, _2, handler));
+            shared_from_this(), _1, _2, handler, h));
 
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 }
 
 void connector::handle_resolve(const boost_code& ec, asio::iterator iterator,
-    connect_handler handler)
+    connect_handler handler, resolve_handler h)
 {
+	auto it = iterator;
+	asio::iterator end;
+	if (h)
+	{
+		while(it != end){
+			h(*it);
+			++it;
+		}
+	}
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     mutex_.lock_shared();

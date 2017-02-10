@@ -204,7 +204,13 @@ BCX_API pt::ptree prop_tree(
  * @return                A property list.
  */
 BCX_API pt::ptree prop_list(const tx_output_type& tx_output);
+/**
+ * Generate a property list for a attachment.
+ * @param[in]  output_attach  The attachment in output.
+ * @return                A property list.
+ */
 
+BCX_API pt::ptree prop_list(bc::chain::attachment& output_attach);
 /**
  * Generate a property tree for a transaction output.
  * @param[in]  tx_output  The transaction output.

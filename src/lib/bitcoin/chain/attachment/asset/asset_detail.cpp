@@ -25,7 +25,9 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
+#endif
 
 namespace libbitcoin {
 namespace chain {
@@ -63,10 +65,11 @@ asset_detail asset_detail::factory_from_data(reader& source)
     instance.from_data(source);
     return instance;
 }
-
 bool asset_detail::is_valid() const
 {
-    return !(symbol.empty() || (maximum_supply==0));
+    return !(symbol.empty() 
+			|| (maximum_supply==0)
+			|| (symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4)>ASSET_DETAIL_FIX_SIZE);
 }
 
 void asset_detail::reset()
@@ -106,12 +109,12 @@ bool asset_detail::from_data(reader& source)
 {
     reset();
 
-    symbol = source.read_fixed_string(ASSET_DETAIL_SYMBOL_FIX_SIZE);
+    symbol = source.read_string();
     maximum_supply = source.read_8_bytes_little_endian();
     asset_type = source.read_4_bytes_little_endian();
-    issuer = source.read_fixed_string(ASSET_DETAIL_ISSUER_FIX_SIZE); 
-    address =  source.read_fixed_string(ASSET_DETAIL_ADDRESS_FIX_SIZE);
-    description =  source.read_fixed_string(ASSET_DETAIL_DESCRIPTION_FIX_SIZE);
+    issuer = source.read_string(); 
+    address =  source.read_string();
+    description =  source.read_string();
     //issue_price =  source.read_8_bytes_little_endian();
 
     //restrict section
@@ -148,19 +151,21 @@ void asset_detail::to_data(std::ostream& stream) const
 
 void asset_detail::to_data(writer& sink) const
 {
-    sink.write_fixed_string(symbol, ASSET_DETAIL_SYMBOL_FIX_SIZE);
+    sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);
 	sink.write_4_bytes_little_endian(asset_type);
-	sink.write_fixed_string(issuer, ASSET_DETAIL_ISSUER_FIX_SIZE);
-	sink.write_fixed_string(address, ASSET_DETAIL_ADDRESS_FIX_SIZE);
-	sink.write_fixed_string(description, ASSET_DETAIL_DESCRIPTION_FIX_SIZE);
+	sink.write_string(issuer);
+	sink.write_string(address);
+	sink.write_string(description);
 }
 
 uint64_t asset_detail::serialized_size() const
 {
-    return symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size();
+    size_t len = symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4;
+    return std::min(ASSET_DETAIL_FIX_SIZE, len);
 }
 
+#ifdef MVS_DEBUG
 std::string asset_detail::to_string() const
 {
     std::ostringstream ss;
@@ -186,13 +191,16 @@ void asset_detail::to_json(std::ostream& output)
 	json_writer.write("description", description);
 	json_writer.close();
 }
+#endif
+
 const std::string& asset_detail::get_symbol() const
 { 
     return symbol;
 }
 void asset_detail::set_symbol(const std::string& symbol)
 { 
-     this->symbol = symbol;
+	size_t len = symbol.size()+1 < (ASSET_DETAIL_SYMBOL_FIX_SIZE) ?symbol.size()+1:ASSET_DETAIL_SYMBOL_FIX_SIZE;
+    this->symbol = symbol.substr(0, len);
 }
 
 uint64_t asset_detail::get_maximum_supply() const
@@ -219,7 +227,8 @@ const std::string& asset_detail::get_issuer() const
 }
 void asset_detail::set_issuer(const std::string& issuer)
 { 
-     this->issuer = issuer;
+	 size_t len = issuer.size()+1 < (ASSET_DETAIL_ISSUER_FIX_SIZE) ?issuer.size()+1:ASSET_DETAIL_ISSUER_FIX_SIZE;
+	 this->issuer = issuer.substr(0, len);
 }
 
 const std::string& asset_detail::get_address() const
@@ -228,7 +237,8 @@ const std::string& asset_detail::get_address() const
 }
 void asset_detail::set_address(const std::string& address)
 { 
-     this->address = address;
+	 size_t len = address.size()+1 < (ASSET_DETAIL_ADDRESS_FIX_SIZE) ?address.size()+1:ASSET_DETAIL_ADDRESS_FIX_SIZE;
+	 this->address = address.substr(0, len);
 }
 
 const std::string& asset_detail::get_description() const
@@ -237,7 +247,8 @@ const std::string& asset_detail::get_description() const
 }
 void asset_detail::set_description(const std::string& description)
 { 
-     this->description = description;
+	 size_t len = description.size()+1 < (ASSET_DETAIL_DESCRIPTION_FIX_SIZE) ?description.size()+1:ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
+	 this->description = description.substr(0, len);
 }
 
 

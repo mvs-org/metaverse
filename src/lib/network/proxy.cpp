@@ -30,6 +30,7 @@
 #include <bitcoin/network/const_buffer.hpp>
 #include <bitcoin/network/define.hpp>
 #include <bitcoin/network/socket.hpp>
+#include <bitcoin/bitcoin/utility/time.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -46,11 +47,14 @@ proxy::proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
     authority_(socket->get_authority()),
     heading_buffer_(heading::maximum_size()),
     payload_buffer_(heading::maximum_payload_size(protocol_version_)),
+	dispatch_{pool, "proxy"},
     socket_(socket),
     stopped_(true),
     peer_protocol_version_(message::version::level::maximum),
     message_subscriber_(pool),
-    stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME))
+    stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME)),
+	processing_{false},
+	misbehaving_{0}
 {
 }
 
@@ -216,11 +220,12 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
         return;
     }
 
-    if (head.checksum != bitcoin_checksum(payload_buffer_))
+    auto checksum = bitcoin_checksum(payload_buffer_);
+    if (head.checksum != checksum)
     {
         log::warning(LOG_NETWORK) 
             << "Invalid " << head.command << " payload from [" << authority()
-            << "] bad checksum.";
+            << "] bad checksum. size is " << payload_size;
         stop(error::bad_stream);
         return;
     }
@@ -229,38 +234,81 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
     // TODO: we aren't getting a stream benefit if we read the full payload
     // before parsing the message. Should just make this a message parse.
     ///////////////////////////////////////////////////////////////////////////
-
-    // Notify subscribers of the new message.
-    payload_source source(payload_buffer_);
-    payload_stream istream(source);
-    const auto version = peer_protocol_version_.load();
-    const auto code = message_subscriber_.load(head.type(), version, istream);
-    const auto consumed = istream.peek() == std::istream::traits_type::eof();
-
-    if (code)
+    auto request = std::bind(&proxy::handle_request,
+            this->shared_from_this(), payload_buffer_, peer_protocol_version_.load(), head, payload_size);
     {
-        log::warning(LOG_NETWORK)
-            << "Invalid " << head.command << " payload from [" << authority()
-            << "] " << code.message();
-        stop(code);
-        return;
+    	scoped_lock lock{mutex_};
+    	pendingRequests_.push(std::move(request));
     }
-
-    if (!consumed)
-    {
-        log::warning(LOG_NETWORK)
-            << "Invalid " << head.command << " payload from [" << authority()
-            << "] trailing bytes.";
-        stop(error::bad_stream);
-        return;
-    }
-
-    log::debug(LOG_NETWORK)
-        << "Valid " << head.command << " payload from [" << authority()
-        << "] (" << payload_size << " bytes)";
+    dispatch();
 
     handle_activity();
     read_heading();
+}
+
+void proxy::dispatch()
+{
+	scoped_lock lock{mutex_};
+	if(not processing_.load())
+	{
+		if(not pendingRequests_.empty())
+		{
+			auto req = std::move(pendingRequests_.front() );
+			processing_.store(true);
+			dispatch_.unordered(req);
+			pendingRequests_.pop();
+			return;
+		}
+	}
+}
+
+void proxy::handle_request(data_chunk payload_buffer, uint32_t peer_protocol_version, heading head, size_t payload_size)
+{
+	bool succeed = false;
+	struct clean_up{
+		~clean_up(){
+			processing_.store(false);
+			if(succeed_)
+			{
+				proxy_->dispatch();
+				return;
+			}
+			proxy_->clear_request();
+		}
+		std::atomic_bool& processing_;
+		bool& succeed_;
+		proxy * proxy_;
+	} clean_up_{processing_, succeed, this};
+
+	// Notify subscribers of the new message.
+	payload_source source(payload_buffer);
+	payload_stream istream(source);
+	const auto version = peer_protocol_version;
+	const auto code = message_subscriber_.load(head.type(), version, istream);
+	const auto consumed = istream.peek() == std::istream::traits_type::eof();
+
+	if (code)
+	{
+		log::warning(LOG_NETWORK)
+			<< "Invalid " << head.command << " payload from [" << authority()
+			<< "] " << code.message();
+		stop(code);
+		return;
+	}
+
+	if (!consumed)
+	{
+		log::warning(LOG_NETWORK)
+			<< "Invalid " << head.command << " payload from [" << authority()
+			<< "] trailing bytes.";
+		stop(error::bad_stream);
+		return;
+	}
+
+	log::debug(LOG_NETWORK)
+		<< "Valid " << head.command << " payload from [" << authority()
+		<< "] (" << payload_size << " bytes)";
+	succeed = true;
 }
 
 // Message send sequence.
@@ -341,6 +389,40 @@ void proxy::stop(const boost_code& ec)
 bool proxy::stopped() const
 {
     return stopped_;
+}
+
+std::map<config::authority, int64_t> proxy::banned_;
+
+bool proxy::blacklisted(const config::authority& authority)
+{
+	auto it = banned_.find(authority);
+	if(it != banned_.end())
+	{
+		auto millissecond = unix_millisecond();
+		if (it->second >= millissecond)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+bool proxy::misbehaving(int32_t howmuch)
+{
+	misbehaving_ += howmuch;
+	if (misbehaving_.load() >= 100)
+	{
+		{
+			boost::detail::spinlock::scoped_lock guard{spinlock_};
+			auto millissecond = unix_millisecond();
+			banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
+		}
+		log::debug(LOG_NETWORK) << "channel misbehave trigger," << authority();
+		stop(error::bad_stream);
+		return true;
+	}
+	return false;
 }
 
 } // namespace network

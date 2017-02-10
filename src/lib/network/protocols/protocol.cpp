@@ -71,5 +71,10 @@ void protocol::stop(const code& ec)
     channel_->stop(ec);
 }
 
+bool protocol::misbehaving(int32_t howmuch)
+{
+	return channel_->misbehaving(howmuch);
+}
+
 } // namespace network
 } // namespace libbitcoin

@@ -19,6 +19,7 @@
  */
 #include <bitcoin/blockchain/validate_block.hpp>
 
+#include <set>
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -30,6 +31,8 @@
 #include <bitcoin/blockchain/validate_transaction.hpp>
 #include <bitcoin/consensus/miner/MinerAux.h>
 #include <bitcoin/consensus/libdevcore/BasicType.h>
+#include <bitcoin/consensus/miner.hpp>
+#include <bitcoin/bitcoin/chain/output.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -67,12 +70,6 @@ static constexpr size_t mainnet_bip30_exception_height1 = 91842;
 static constexpr size_t mainnet_bip30_exception_height2 = 91880;
 static constexpr size_t testnet_bip30_exception_height1 = 0;
 static constexpr size_t testnet_bip30_exception_height2 = 0;
-
-// Max block size (1000000 bytes).
-static constexpr uint32_t max_block_size = 1000000;
-
-// Maximum signature operations per block (20000).
-static constexpr uint32_t max_block_script_sigops = max_block_size / 50;
 
 // The default sigops count for mutisignature scripts.
 static constexpr uint32_t multisig_default_sigops = 20;
@@ -194,7 +191,7 @@ bool validate_block::stopped() const
     return stop_callback_();
 }
 
-code validate_block::check_block() const
+code validate_block::check_block(blockchain::block_chain_impl& chain) const
 {
     // These are checks that are independent of the blockchain
     // that can be validated before saving an orphan block.
@@ -217,10 +214,16 @@ code validate_block::check_block() const
 
     RETURN_IF_STOPPED();
 
-    if (!transactions.front().is_coinbase())
+    unsigned int coinbase_count = 0;
+    for(auto i : transactions){
+        if(i.is_coinbase())
+            ++coinbase_count;
+    }
+    if(coinbase_count == 0){
         return error::first_not_coinbase;
+    }
 
-    for (auto it = ++transactions.begin(); it != transactions.end(); ++it)
+    for (auto it = transactions.begin() + coinbase_count; it != transactions.end(); ++it)
     {
         RETURN_IF_STOPPED();
 
@@ -228,13 +231,23 @@ code validate_block::check_block() const
             return error::extra_coinbases;
     }
 
+    std::set<string> assets;
     for (const auto& tx: transactions)
     {
         RETURN_IF_STOPPED();
 
-        const auto ec = validate_transaction::check_transaction(tx);
+        const auto ec = validate_transaction::check_transaction(tx, chain);
         if (ec)
             return ec;
+
+       for(auto& output : const_cast<transaction&>(tx).outputs){
+           if(output.is_asset_issue()) {
+               auto r = assets.insert(output.get_asset_symbol());
+               if(r.second == false) {
+                   return error::asset_exist;
+               }
+           }
+       }
     }
 
     RETURN_IF_STOPPED();
@@ -272,14 +285,12 @@ bool validate_block::is_distinct_tx_set(const transaction::list& txs)
 }
 
 bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
-{
-    chain::header prev_header = fetch_block(height_ - 1);
-    return timestamp > prev_header.timestamp;
-}
-
-bool validate_block::is_valid_proof_of_work(const chain::header& header)
-{
-    return MinerAux::verifySeal(const_cast<chain::header&>(header));
+{ 
+    // Use system clock because we require accurate time of day.
+    typedef std::chrono::system_clock wall_clock;
+    const auto block_time = wall_clock::from_time_t(timestamp);
+    const auto two_hour_future = wall_clock::now() + time_stamp_window;
+    return block_time <= two_hour_future;
 }
 
 // TODO: move to bc::chain::opcode.
@@ -451,6 +462,8 @@ code validate_block::connect_block() const
     uint64_t fees = 0;
     size_t total_sigops = 0;
     const auto count = transactions.size();
+    size_t coinage_reward_coinbase_index = 1;
+    size_t get_coinage_reward_tx_count = 0;
 
     ////////////// TODO: parallelize. //////////////
     for (size_t tx_index = 0; tx_index < count; ++tx_index)
@@ -469,6 +482,16 @@ code validate_block::connect_block() const
         if (tx.is_coinbase())
             continue;
 
+        for(auto& output : transactions[tx_index].outputs)
+        {
+            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                if(check_get_coinage_reward_transaction(transactions[coinage_reward_coinbase_index++], output) == false) {
+                    return error::invalid_coinage_reward_coinbase;
+                }
+                ++get_coinage_reward_tx_count;
+            }
+        }
+
         RETURN_IF_STOPPED();
 
         // Consensus checks here.
@@ -481,11 +504,15 @@ code validate_block::connect_block() const
             return error::fees_out_of_range;
     }
 
+    if(get_coinage_reward_tx_count != coinage_reward_coinbase_index - 1) {
+        return error::invalid_coinage_reward_coinbase; 
+    }
+
     RETURN_IF_STOPPED();
 
     const auto& coinbase = transactions.front();
     const auto reward = coinbase.total_output_value();
-    const auto value = block_subsidy(height_) + fees;
+    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
 }
 

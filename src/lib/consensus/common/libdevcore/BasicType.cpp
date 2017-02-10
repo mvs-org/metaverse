@@ -1,7 +1,11 @@
 #include <bitcoin/consensus/libdevcore/BasicType.h>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
 
 using namespace libbitcoin;
 
+DEV_SIMPLE_EXCEPTION(GenesisBlockCannotBeCalculated);
 /*****************************/
 WorkPackage::WorkPackage(libbitcoin::chain::header& _bh):
     boundary(HeaderAux::boundary(_bh)),
@@ -117,8 +121,8 @@ h256 HeaderAux::hashHead(libbitcoin::chain::header& _bi)
 {
 	h256 memo;
 	RLPStream s;
-	s  << (bigint) _bi.version << (bigint)_bi.bits << (bigint)_bi.number << (char*)(_bi.merkle.data())
-		<< (char*)(_bi.previous_block_hash.data()) << (bigint) _bi.timestamp ;
+	s  << (bigint) _bi.version << (bigint)_bi.bits << (bigint)_bi.number << _bi.merkle
+		<< _bi.previous_block_hash << (bigint) _bi.timestamp ;
 	memo = sha3(s.out());
 	return memo;
 }
@@ -135,8 +139,38 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 
 u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
 {
-	return 1;
+	const unsigned c_expDiffPeriod = 100000;
+	auto minimumDifficulty = bigint(300000);
+	bigint target;
+
+    static uint32_t time_config{24};
+#ifdef MVS_DEBUG
+    std::ifstream infile("time_config", std::ios::in);
+    if(infile) {
+        infile >> time_config;
+    }
+    infile.close();
+#endif
+
+	if (!_bi.number)
+		throw GenesisBlockCannotBeCalculated();
+	if(_bi.timestamp >= _parent.timestamp+time_config)
+		target = _parent.bits-(_parent.bits/1024);
+	else
+		target = _parent.bits+(_parent.bits/1024);
+	//target = _parent.bits + _parent.bits / 2048 * max<bigint>(1 - (bigint(_bi.timestamp) - _parent.timestamp) / 10, -99);
+	bigint o = target;
+
+	o = std::max<bigint>(minimumDifficulty, o);
+	return u256(std::min<bigint>(o, std::numeric_limits<u256>::max()));
 }
+
+
+
+//static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
+//{
+//
+//}
 
 /*****************************/
 

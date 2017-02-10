@@ -28,6 +28,18 @@
 #include <boost/variant.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset.hpp>
 #include <bitcoin/bitcoin/chain/attachment/etp/etp.hpp>
+#include <bitcoin/bitcoin/chain/attachment/etp/etp_award.hpp>
+#include <bitcoin/bitcoin/chain/attachment/message/message.hpp>
+
+using namespace libbitcoin::chain;
+#define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
+
+#define ETP_TYPE TYPE2UINT32(attachment::attachment_type::attachment_etp)
+#define ETP_AWARD_TYPE TYPE2UINT32(attachment::attachment_type::attachment_etp_award)
+#define ASSET_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset)
+#define MESSAGE_TYPE TYPE2UINT32(attachment::attachment_type::attachment_message)
+
+
 
 namespace libbitcoin {
 namespace chain {
@@ -36,14 +48,20 @@ class BC_API attachment
 {
 public:
 
-	
 	enum class attachment_type : uint32_t
 	{
-		attachment_none,
+		attachment_etp, // etp
+		attachment_etp_award,
 		attachment_asset,
+		attachment_message,
 	};
-	typedef boost::variant<etp, asset> attachment_data_type;
+	typedef boost::variant<etp, etp_award, asset, blockchain_message> attachment_data_type;
 
+	attachment();
+	template<class Type>
+	attachment(uint32_t type, uint32_t version, const Type& attach_data):
+	type(type), version(version), attach(attach_data)
+	{}
     static attachment factory_from_data(const data_chunk& data);
     static attachment factory_from_data(std::istream& stream);
     static attachment factory_from_data(reader& source);
@@ -61,6 +79,19 @@ public:
     void reset();
     uint64_t serialized_size() const;
 
+	uint32_t get_version() const;
+	void set_version(uint32_t version);
+	uint32_t get_type() const;
+	void set_type(uint32_t type);
+	
+	template<class Type>
+	void set_attach(const Type& attach)
+	{ 
+		 this->attach = attach;
+	};
+	attachment_data_type& get_attach();
+
+private:
     uint32_t version;
     uint32_t type;
     attachment_data_type attach;

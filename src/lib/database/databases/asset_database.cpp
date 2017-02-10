@@ -32,9 +32,9 @@ namespace database {
 
 using namespace boost::filesystem;
 
-BC_CONSTEXPR size_t number_buckets = 100000000;
-BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
-BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
+BC_CONSTEXPR size_t number_buckets = 9997; // source value = 600000. 9997 copy form base_database.cpp file
+//BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
+//BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
 
 asset_database::asset_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)
@@ -53,13 +53,36 @@ asset_result asset_database::get_asset_result(const hash_digest& hash) const
 	const auto memory = get(hash);
     return asset_result(memory);
 }
+/// 
+std::shared_ptr<std::vector<asset_detail>> asset_database::get_asset_details() const
+{
+	auto vec_acc = std::make_shared<std::vector<asset_detail>>();
+	uint64_t i = 0;
+	for( i = 0; i < number_buckets; i++ ) {
+	    auto memo = lookup_map_.find(i);
+		//log::debug("get_accounts size=")<<memo->size();
+		if(memo->size()) 
+		{			
+			const auto action = [&](memory_ptr elem)
+			{
+				const auto memory = REMAP_ADDRESS(elem);
+				auto deserial = make_deserializer_unsafe(memory);
+				vec_acc->push_back(asset_detail::factory_from_data(deserial));				
+			};
+			std::for_each(memo->begin(), memo->end(), action);
+		}
+	}
+	return vec_acc;
+}
 
 void asset_database::store(const hash_digest& hash, const asset_detail& sp_detail)
 {
     // Write block data.
     const auto key = hash;
     const auto sp_size = sp_detail.serialized_size();
-
+#ifdef MVS_DEBUG
+	log::debug("asset_database::store") << sp_detail.to_string();
+#endif
     BITCOIN_ASSERT(sp_size <= max_size_t);
     const auto value_size = static_cast<size_t>(sp_size);
 
@@ -68,7 +91,8 @@ void asset_database::store(const hash_digest& hash, const asset_detail& sp_detai
         auto serial = make_serializer(REMAP_ADDRESS(data));
         serial.write_data(sp_detail.to_data());
     };
-    get_lookup_map().store(key, write, value_size);
+    //get_lookup_map().store(key, write, value_size);
+	lookup_map_.store(key, write, value_size);
 }
 } // namespace database
 } // namespace libbitcoin

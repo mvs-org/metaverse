@@ -36,6 +36,7 @@ using namespace std::placeholders;
 
 session_inbound::session_inbound(p2p& network)
   : session(network, true, true),
+	network_{network},
     CONSTRUCT_TRACK(session_inbound)
 {
 }
@@ -90,6 +91,7 @@ void session_inbound::start_accept(const code& ec, acceptor::ptr accept)
     {
         log::error(LOG_NETWORK)
             << "Error starting listener: " << ec.message();
+        network_.stop();
         return;
     }
 

@@ -152,8 +152,7 @@ void p2p_node::handle_running(const code& ec, result_handler handler)
     set_height(static_cast<size_t>(height));
 
     blockchain_.fetch_block(height, [](const code& ec, chain::block::ptr block){
-            if (not ec)
-    	        log::info(LOG_NODE) << "Node start hash is " << encode_hash(block->header.hash());
+    	log::info(LOG_NODE) << "Node start hash is " << encode_hash(block->header.hash());
     });
 
     log::info(LOG_NODE)
@@ -232,7 +231,7 @@ session_block_sync::ptr p2p_node::attach_block_sync_session()
 bool p2p_node::stop()
 {
     // Suspend new work last so we can use work to clear subscribers.
-    return blockchain_.stop() && p2p::stop();
+    return p2p::stop();
 }
 
 // This must be called from the thread that constructed this class (see join).
@@ -243,7 +242,7 @@ bool p2p_node::close()
         return false;
 
     // Join threads first so that there is no activity on the chain at close.
-    return p2p::close() && blockchain_.close();
+    return p2p::close() && blockchain_.stop() && blockchain_.close();
 }
 
 // Properties.

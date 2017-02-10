@@ -151,6 +151,11 @@ bool transaction_service::handle_transaction(const code& ec, const index_list&,
     if (stopped() || ec == error::service_stopped)
         return false;
 
+    if (ec == error::mock)
+	{
+		return true;
+	}
+
     if (ec)
     {
         log::warning(LOG_SERVER)

@@ -99,7 +99,7 @@ void protocol_header_sync::send_get_headers(event_handler complete)
         { hashes_.last_hash() },
         last_.hash()
     };
-    log::debug(LOG_NODE) << "send get headers, " << encode_hash(hashes_.last_hash());
+    log::debug(LOG_NODE) << "send get headers, [" << encode_hash(hashes_.last_hash()) << "], stop hash[" << encode_hash(last_.hash()) << ']';
     SEND2(request, handle_send, _1, complete);
 }
 

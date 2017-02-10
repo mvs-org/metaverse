@@ -38,9 +38,6 @@ using namespace bc::message;
 using namespace bc::network;
 using namespace std::placeholders;
 
-// Protocol limit.
-static constexpr auto locator_cap = 500u;
-
 // The largest reasonable search is 10 for the first block of 10 hashes,
 // 1 for the genesis block, 1 for disparity between peers and log2(top)
 // for the exponential back-off algorithm.
@@ -143,9 +140,9 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 
     const auto locator_size = message->start_hashes.size();
 
-    if (locator_size > locator_limit())
+    if (locator_size > 100)//locator_limit())
     {
-        log::debug(LOG_NODE)
+        log::warning(LOG_NODE)
             << "Invalid get_headers locator size (" << locator_size
             << ") from [" << authority() << "] ";
         stop(error::channel_stopped);
@@ -159,7 +156,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     // and one of its other peers populates the chain back to this level. In
     // that case we would not respond but our peer's other peer should.
     const auto threshold = last_locator_top_.load();
-    log::debug(LOG_NODE) << "protocol block out handle receive get headers";
+    log::debug(LOG_NODE) << "protocol block out handle receive get headers, locator size," << locator_size;
 
     blockchain_.fetch_locator_block_headers(*message, threshold, locator_cap,
         BIND2(handle_fetch_locator_headers, _1, _2));
@@ -182,6 +179,10 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         return;
     }
 
+    if(headers.empty())
+	{
+		return;
+	}
     log::debug(LOG_NODE)
     	<< "handle fetch locator headers size," << headers.size();
 
@@ -359,6 +360,11 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
     if (stopped() || ec == error::service_stopped)
         return false;
 
+    if (ec == error::mock)
+	{
+		return true;
+	}
+
     if (ec)
     {
         log::error(LOG_NODE)
@@ -408,6 +414,7 @@ void protocol_block_out::handle_stop(const code&)
 {
     log::debug(LOG_NETWORK)
         << "Stopped block_out protocol";
+    blockchain_.fired();
 }
 
 } // namespace node

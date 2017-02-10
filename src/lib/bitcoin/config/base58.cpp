@@ -27,6 +27,7 @@
 #include <bitcoin/bitcoin/formats/base_58.hpp>
 #include <bitcoin/bitcoin/utility/data.hpp>
 
+
 namespace libbitcoin {
 namespace config {
 

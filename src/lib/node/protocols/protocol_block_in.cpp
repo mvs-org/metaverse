@@ -38,7 +38,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 static constexpr auto perpetual_timer = true;
-static const auto get_blocks_interval = asio::seconds(10);
+static const auto get_blocks_interval = asio::seconds(2);
 
 protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
     block_chain& blockchain)
@@ -49,6 +49,7 @@ protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     headers_from_peer_(peer_version().value >= version::level::bip130),
+	headers_batch_size_{0},
 
     CONSTRUCT_TRACK(protocol_block_in)
 {
@@ -102,7 +103,10 @@ void protocol_block_in::start()
 void protocol_block_in::get_block_inventory(const code& ec)
 {
     if (stopped())
+    {
+    	blockchain_.fired();
         return;
+    }
 
     if (ec && ec != error::channel_timeout)
     {
@@ -127,6 +131,14 @@ void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
     if (chain_top == null_hash || last_locator_top != chain_top)
         blockchain_.fetch_block_locator(
             BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+}
+
+void protocol_block_in::send_get_blocks(const hash_digest& from_hash, const hash_digest& to_hash)
+{ 
+    hash_list locator;
+    locator.push_back(from_hash);
+    code code;
+    handle_fetch_block_locator(code, locator, to_hash);
 }
 
 void protocol_block_in::handle_fetch_block_locator(const code& ec,
@@ -190,6 +202,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     // In v3 headers will be used to build block tree before getting blocks.
     const auto response = std::make_shared<get_data>();
     message->to_inventory(response->inventories, inventory::type_id::block);
+    log::debug(LOG_NODE) << "protocol_block_in handle_receive_headers size," << message->elements.size();
 
     // Remove block hashes found in the orphan pool.
     blockchain_.filter_orphans(response,
@@ -265,6 +278,8 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
         return;
     }
 
+    headers_batch_size_.store(message->inventories.size());
+
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
 }
@@ -327,7 +342,13 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
     // We will pick this up in handle_reorganized.
     message->set_originator(nonce());
 
-    log::debug(LOG_NODE) << "receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count ;
+    log::debug(LOG_NODE) << "from " << authority() << ",receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count << ",number," << message->header.number ;
+    --headers_batch_size_;
+    if(not headers_batch_size_.load())
+    {
+    	send_get_blocks(null_hash);
+    }
+
 
     blockchain_.store(message, BIND2(handle_store_block, _1, message));
     return true;
@@ -344,6 +365,15 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
         log::debug(LOG_NODE)
             << "Redundant block from [" << authority() << "] "
             << ec.message();
+        return;
+    } 
+
+    if(ec == error::fetch_more_block)
+    {
+        log::debug(LOG_NODE)
+            << "fetch more blocks start_hash:"
+            << encode_hash(message->header.hash());
+        send_get_blocks(message->header.hash(), null_hash); 
         return;
     }
 
@@ -362,7 +392,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
         << "Potential block from [" << authority() << "].";
 
     // Ask the peer for blocks from the top up to this orphan.
-    send_get_blocks(message->header.hash());
+//    send_get_blocks(message->header.hash());
 }
 
 // Subscription.
@@ -377,6 +407,11 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     	log::debug(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
         return false;
     }
+
+    if (ec == error::mock)
+	{
+		return true;
+	}
 
     if (ec)
     {
@@ -397,7 +432,7 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 
 
     // Ask the peer for blocks above our top (we also do this via stall timer).
-    send_get_blocks(null_hash);
+//    send_get_blocks(null_hash);
 
     /*
     hash_list hashes;

@@ -111,6 +111,11 @@ bool protocol_address::handle_receive_address(const code& ec,
         << "Storing addresses from [" << authority() << "] ("
         << message->addresses.size() << ")";
 
+    if (message->addresses.size() > 1000)
+    {
+    	return not misbehaving(20);
+    }
+
     // TODO: manage timestamps (active channels are connected < 3 hours ago).
     network_.store(message->addresses, BIND2(handle_store_addresses, _1, message));
 
@@ -137,7 +142,7 @@ bool protocol_address::handle_receive_get_address(const code& ec,
     // TODO: pull active hosts from host cache (currently just resending self).
     // TODO: need to distort for privacy, don't send currently-connected peers.
 
-    auto address_list = std::move(network_.address_list() );
+    auto&& address_list = network_.address_list();
     auto channel_authorithy = authority();
 
     auto iter = std::find_if(address_list.begin(), address_list.end(), [&channel_authorithy](const message::network_address& address){
@@ -154,7 +159,7 @@ bool protocol_address::handle_receive_get_address(const code& ec,
 
     if(address_list.empty())
     {
-    	return false;
+    	return true;
     }
 //    if (self_.addresses.empty())
 //        return false;

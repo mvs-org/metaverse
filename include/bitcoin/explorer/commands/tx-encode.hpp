@@ -169,7 +169,17 @@ public:
             "output,o",
             value<std::vector<explorer::config::output>>(&option_.outputs),
             "The set of transaction output data encoded as TARGET:SATOSHI:SEED. TARGET is an address (including stealth or pay-to-script-hash) or a Base16 script. SATOSHI is the 32 bit spend amount in satoshi. SEED is required for stealth outputs and not used otherwise. The same seed should NOT be used for multiple outputs."
-        );
+        )
+		(
+			"period,p",
+			value<uint32_t>(&option_.period)->default_value(7),
+			"The deposit period support [7, 30, 90, 182, 365] days"
+		)
+		(
+			"deposit,d",
+			value<explorer::config::output>(&option_.deposit),
+			"The transaction output deposit data encoded as TARGET:SATOSHI. TARGET is an address (including stealth or pay-to-script-hash) or a Base16 script. SATOSHI is the 32 bit spend amount in satoshi."
+		);
 
         return options;
     }
@@ -258,6 +268,25 @@ public:
     }
 
     /**
+     * Get the value of the period option.
+     */
+    virtual uint32_t& get_period_option()
+    {
+        return option_.period;
+    }
+
+    /**
+     * Set the value of the period option.
+     */
+    virtual void set_period_option(
+        const uint32_t& value)
+    {
+        option_.period = value;
+    }
+	
+	uint32_t get_reward_lock_block_height();
+		
+    /**
      * Get the value of the input options.
      */
     virtual std::vector<explorer::config::input>& get_inputs_option()
@@ -290,6 +319,22 @@ public:
     {
         option_.outputs = value;
     }
+	
+    /**
+     * Get the value of the deposit options.
+     */
+    virtual explorer::config::output& get_deposit_option()
+    {
+        return option_.deposit;
+    }
+
+    /**
+     * Set the value of the deposit options.
+     */
+    virtual void set_deposit_option(const explorer::config::output& value)
+    {
+        option_.deposit = value;
+    }
 
 private:
 
@@ -317,16 +362,20 @@ private:
           : script_version(),
             lock_time(),
             version(),
+            period(),
             inputs(),
-            outputs()
+            outputs(),
+            deposit()
         {
         }
 
         explorer::config::byte script_version;
         uint32_t lock_time;
         uint32_t version;
+        uint32_t period;
         std::vector<explorer::config::input> inputs;
         std::vector<explorer::config::output> outputs;
+        explorer::config::output deposit;
     } option_;
 };
 

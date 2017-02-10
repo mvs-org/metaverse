@@ -60,6 +60,8 @@ public:
     virtual void subscribe_reorganize(reorganize_handler handler);
     virtual void filter_orphans(message::get_data::ptr message);
 
+    void fired();
+
 protected:
     virtual bool stopped();
 

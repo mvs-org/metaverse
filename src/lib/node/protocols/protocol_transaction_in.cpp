@@ -79,7 +79,7 @@ void protocol_transaction_in::start()
     SUBSCRIBE2(transaction_message, handle_receive_transaction, _1, _2);
 }
 
-// Receive inventory sequence.
+// Receive inventory sequemessagence.
 //-----------------------------------------------------------------------------
 
 bool protocol_transaction_in::handle_receive_inventory(const code& ec,
@@ -106,11 +106,11 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     {
         log::debug(LOG_NODE)
             << "Unexpected transaction inventory from [" << authority() << "]";
-        stop(error::channel_stopped);
-        return false;
+        return not misbehaving(20);
     }
 
-    log::debug(LOG_NODE) << "protocol_transaction_in::handle_receive_inventory pool filter";
+    auto hash = message->inventories.empty() ? "" : encode_hash(message->inventories[0].hash);
+    log::debug(LOG_NODE) << "protocol_transaction_in::handle_receive_inventory pool filter," << hash;
     // This is returned on a new thread.
     // Remove matching transaction hashes found in the transaction pool.
     pool_.filter(response, BIND2(handle_filter_floaters, _1, response));
@@ -187,7 +187,7 @@ bool protocol_transaction_in::handle_receive_transaction(const code& ec,
     }
 
     log::info(LOG_NODE)
-        << "Potential transaction from [" << authority() << "].";
+        << "Potential transaction from [" << authority() << "]." << encode_hash(message->hash());
 
     pool_.store(message,
         BIND2(handle_store_confirmed, _1, _2),
@@ -232,6 +232,11 @@ bool protocol_transaction_in::handle_reorganized(const code& ec, size_t,
     if (stopped() || ec == error::service_stopped)
         return false;
 
+    if (ec == error::mock)
+	{
+		return true;
+	}
+
     if (ec)
     {
         log::error(LOG_NODE)
@@ -256,6 +261,7 @@ void protocol_transaction_in::handle_stop(const code&)
 {
     log::debug(LOG_NETWORK)
         << "Stopped transaction_in protocol";
+    blockchain_.fired();
 }
 
 } // namespace node

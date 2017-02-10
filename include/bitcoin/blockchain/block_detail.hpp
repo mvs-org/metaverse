@@ -59,12 +59,15 @@ public:
     /// This method is thread safe.
     //chenhao remove & from hash_digest
     const hash_digest hash() const;
+    const bool get_is_checked_work_proof() const{return is_checked_work_proof_;}
+    void set_is_checked_work_proof(bool is_checked_work_proof) {is_checked_work_proof_ = is_checked_work_proof;}
 
 private:
     bc::atomic<code> code_;
     std::atomic<bool> processed_;
     std::atomic<uint64_t> height_;
     const block_ptr actual_block_;
+    bool is_checked_work_proof_;
 };
 
 } // namespace blockchain

@@ -34,7 +34,7 @@ namespace explorer {
 
 using namespace bc::config;
 
-#define BX_HOME_PAGE_URL "http://metaverse.live"
+#define BX_HOME_PAGE_URL "http://mvs.live"
 
 void display_command_names(std::ostream& stream)
 {
@@ -42,10 +42,10 @@ void display_command_names(std::ostream& stream)
     {
         BITCOIN_ASSERT(explorer_command != nullptr);
         if (!explorer_command->obsolete())
-            stream << explorer_command->name() << "\r\n";
+            stream << "  " <<explorer_command->name() << "\r\n";
     };
 
-    broadcast(func);
+    broadcast(func, stream);
 }
 
 void display_connection_failure(std::ostream& stream, const endpoint& url)
@@ -80,16 +80,16 @@ void display_usage(std::ostream& stream)
 {
     stream 
         << std::endl << BX_COMMAND_USAGE << std::endl
-        << std::endl << format(BX_VERSION_MESSAGE) % 
+        << format(BX_VERSION_MESSAGE) % 
             MVS_EXPLORER_VERSION << std::endl
-        << std::endl << BX_COMMANDS_HEADER << std::endl
+        << BX_COMMANDS_HEADER << std::endl
         << std::endl;
 
     display_command_names(stream);
 
     stream
-        << std::endl << BX_COMMANDS_HOME_PAGE << std::endl
-        << std::endl << BX_HOME_PAGE_URL << std::endl;
+        << std::endl << BX_COMMANDS_HOME_PAGE << " "
+        << BX_HOME_PAGE_URL << std::endl;
 }
 
 } // namespace explorer

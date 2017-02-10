@@ -145,6 +145,8 @@ public:
      */
     bool operator!=(const authority& other) const;
 
+    bool operator<(const authority& other) const;
+
     /**
      * Define stream in. Throws if input is invalid.
      * @param[in]   input     The input stream to read the value from.

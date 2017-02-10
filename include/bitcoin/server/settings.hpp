@@ -43,6 +43,7 @@ public:
     uint32_t heartbeat_interval_seconds;
     uint32_t subscription_expiration_minutes;
     uint32_t subscription_limit;
+    std::string mongoose_listen;
     bool log_requests{true}; //FIXME.chenhao
     bool secure_only;
 

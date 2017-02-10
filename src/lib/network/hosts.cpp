@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/bitcoin/utility/path.hpp>
 #include <bitcoin/network/settings.hpp>
 
 namespace libbitcoin {
@@ -35,7 +36,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
   : buffer_(std::max(settings.host_pool_capacity, 1u)),
     stopped_(true),
     dispatch_(pool, NAME),
-    file_path_(settings.hosts_file),
+    file_path_(default_data_path() / settings.hosts_file),
     disabled_(settings.host_pool_capacity == 0)
 {
 }

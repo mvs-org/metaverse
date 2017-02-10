@@ -66,12 +66,16 @@ ptree prop_list(const header& header)
     tree.put("previous_block_hash", hash256(block_header.previous_block_hash));
     tree.put("time_stamp", block_header.timestamp);
     tree.put("version", block_header.version);
+	// wdy added
+    tree.put("mixhash", block_header.mixhash);
+    tree.put("number", block_header.number);
+    tree.put("transaction_count", block_header.transaction_count);
     return tree;
 }
 ptree prop_tree(const header& header)
 {
     ptree tree;
-    tree.add_child("header", prop_list(header));
+    tree.add_child("result", prop_list(header));
     return tree;
 }
 ptree prop_tree(const std::vector<header>& headers, bool json)
@@ -239,6 +243,38 @@ ptree prop_list(const tx_output_type& tx_output)
     }
 
     tree.put("value", tx_output.value);
+    tree.add_child("attachment", prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data)));
+    return tree;
+}
+ptree prop_list(bc::chain::attachment& attach_data)
+{
+    ptree tree;
+	
+	if(attach_data.get_type() == ETP_TYPE) {
+		tree.put("type", "etp");
+	} else if(attach_data.get_type() == ASSET_TYPE) {
+		auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
+		if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+			tree.put("type", "asset-issue");
+			auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
+			tree.put("symbol", detail_info.get_symbol());
+			tree.put("quantity", detail_info.get_maximum_supply());
+			tree.put("asset_type", detail_info.get_asset_type());
+			tree.put("issuer", detail_info.get_issuer());
+			tree.put("address", detail_info.get_address());
+			tree.put("description", detail_info.get_description());
+		}
+		if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+			tree.put("type", "asset-transfer");
+			auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
+			tree.put("symbol", trans_info.get_address());
+			tree.put("quantity", trans_info.get_quantity());
+		}
+	} else if(attach_data.get_type() == MESSAGE_TYPE) {
+		tree.put("type", "message");
+	} else {
+		tree.put("type", "unknown business");
+	}
     return tree;
 }
 ptree prop_tree(const tx_output_type& tx_output)

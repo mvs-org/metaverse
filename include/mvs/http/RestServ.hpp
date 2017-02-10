@@ -7,6 +7,7 @@
 #include <bitcoin/client.hpp>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/consensus/miner.hpp> //miner
+#include <bitcoin/server/services/query_service.hpp> //public_query
 
 namespace http{
 
@@ -22,7 +23,7 @@ public:
         memset(&httpoptions_, 0x00, sizeof(httpoptions_));
         httpoptions_.document_root = webroot;
 
-        socket_.connect({"tcp://127.0.0.1:9091"});
+        socket_.connect(server::query_service::public_query);
     }
     ~RestServ() noexcept {};
 
@@ -49,6 +50,7 @@ public:
     bool user_auth(mg_connection& nc, HttpMessage data);
     mg_serve_http_opts& get_httpoptions(){return httpoptions_;}
     std::shared_ptr<Session> get_from_session_list(HttpMessage data);
+    bool remove_from_session_list(HttpMessage data);
     std::shared_ptr<Session> push_session(HttpMessage data);
     bool check_sessions();
 
@@ -89,7 +91,11 @@ private:
 
     // http
     mg_serve_http_opts httpoptions_;
-    constexpr static const double SESSION_TTL = 90.0;
+#if MVS_DEBUG
+    constexpr static const double SESSION_TTL = 900.0;
+#else
+    constexpr static const double SESSION_TTL = 240.0;
+#endif
     std::list< std::shared_ptr<Session> > session_list_;
 
     //miner

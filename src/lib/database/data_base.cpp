@@ -27,6 +27,7 @@
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/database/memory/memory_map.hpp>
 #include <bitcoin/database/settings.hpp>
+#include <bitcoin/bitcoin/utility/path.hpp>
 
 #include <algorithm> 
 
@@ -72,6 +73,10 @@ bool data_base::initialize(const path& prefix, const chain::block& genesis)
     return instance.stop();
 }
 
+void data_base::set_admin(const std::string& name, const std::string& passwd)
+{
+	accounts.set_admin(name, passwd);
+}
 data_base::store::store(const path& prefix)
 {
     // Hash-based lookup (hash tables).
@@ -145,7 +150,7 @@ void data_base::uninitialize_lock(const path& lock)
 }
 
 data_base::data_base(const settings& settings)
-  : data_base(settings.directory, settings.history_start_height,
+  : data_base(default_data_path() / settings.directory, settings.history_start_height,
         settings.stealth_start_height)
 {
 }
@@ -407,7 +412,8 @@ void data_base::push(const block& block, uint64_t height)
 
         const auto& tx = block.transactions[index];
         const auto tx_hash = tx.hash();
-
+		
+		timestamp_ = block.header.timestamp; // for address_asset_database store_input/store_output used only
         // Add inputs
         if (!tx.is_coinbase())
             push_inputs(tx_hash, height, tx.inputs);
@@ -451,7 +457,10 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
         history.add_input(address.hash(), point, height, previous);
 
 		/* begin added for asset issue/transfer */
-		address_assets.store_input(address.hash(), point, height, previous);
+		auto address_str = address.encoded();
+		data_chunk data(address_str.begin(), address_str.end());
+		short_hash key = ripemd160_hash(data);
+		address_assets.store_input(key, point, height, previous, timestamp_);
 		address_assets.sync();
 		/* end added for asset issue/transfer */
     }
@@ -477,7 +486,16 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
         history.add_output(address.hash(), point, height, value);
 		
 		/* begin added for asset issue/transfer */
-		//push_attachemnt(output.attach_data, address, point, height, value); // todo -- will be open lator
+		// add for coin reward
+		/* not store etp award record into database
+		if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+			uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+			push_attachemnt(attachment(ETP_AWARD_TYPE, 1, etp_award(lock_height)), address, point, height, value);
+		} else {
+			push_attachemnt(output.attach_data, address, point, height, value);
+		}
+		*/
+		push_attachemnt(output.attach_data, address, point, height, value);
 		/* end added for asset issue/transfer */
     }
 }
@@ -585,8 +603,14 @@ void data_base::pop_inputs(const input::list& inputs, size_t height)
         // Try to extract an address.
         const auto address = payment_address::extract(input->script);
 
-        if (address)
+        if (address) {
             history.delete_last_row(address.hash());
+			// delete address asset record
+			auto address_str = address.encoded();
+			data_chunk data(address_str.begin(), address_str.end());
+			short_hash hash = ripemd160_hash(data);
+			address_assets.delete_last_row(hash);
+        }
     }
 }
 
@@ -601,8 +625,24 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
         // Try to extract an address.
         const auto address = payment_address::extract(output->script);
 
-        if (address)
+        if (address) {
             history.delete_last_row(address.hash());
+			// delete address asset record
+			auto address_str = address.encoded();
+			data_chunk data(address_str.begin(), address_str.end());
+			short_hash hash = ripemd160_hash(data);
+			address_assets.delete_last_row(hash);
+			// todo -- remove asset from asset database
+			// open later
+			/*
+			if(output.is_asset_issue()) {
+				auto symbol = output.get_asset_symbol();
+				const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
+				const auto symbol_hash = sha256_hash(symbol_data);
+				assets.remove(symbol_hash);
+			}
+			*/
+        }
     }
 }
 /* begin store asset related info into database */
@@ -613,29 +653,42 @@ void data_base::push_attachemnt(const attachment& attach, const payment_address&
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	auto address_str = address.encoded();
-	std::cout << "address_str=" << address_str << std::endl;
-	std::cout << "address hash=" << base16(address.hash()) << std::endl;
+	log::debug(LOG_DATABASE) << "push_attachemnt address_str=" << address_str;
+	log::debug(LOG_DATABASE) << "push_attachemnt address hash=" << base16(address.hash());
 	data_chunk data(address_str.begin(), address_str.end());
 	short_hash hash = ripemd160_hash(data);
-	
 	auto visitor = attachment_visitor(this, hash, outpoint, output_height, value);
-	boost::apply_visitor(visitor, attach.attach);
+	boost::apply_visitor(visitor, const_cast<attachment&>(attach).get_attach());
 }
 
 void data_base::push_etp(const etp& etp, const short_hash& key,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	address_assets.store_output(key, outpoint, output_height, value, 
-		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), etp);
+		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), timestamp_, etp);
 	address_assets.sync();
 		
 }
-
+void data_base::push_etp_award(const etp_award& award, const short_hash& key,
+		const output_point& outpoint, uint32_t output_height, uint64_t value)
+{
+	address_assets.store_output(key, outpoint, output_height, value, 
+		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp_award), timestamp_, award);
+	address_assets.sync();
+}
+void data_base::push_message(const chain::blockchain_message& msg, const short_hash& key,
+		const output_point& outpoint, uint32_t output_height, uint64_t value)
+{
+	address_assets.store_output(key, outpoint, output_height, value, 
+		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::message), timestamp_, msg);
+	address_assets.sync();
+		
+}
 void data_base::push_asset(const asset& sp, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value) // sp = smart property
 {
 	auto visitor = asset_visitor(this, key, outpoint, output_height, value);
-	boost::apply_visitor(visitor, sp.data);
+	boost::apply_visitor(visitor, const_cast<asset&>(sp).get_data());
 }
 
 void data_base::push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
@@ -646,14 +699,14 @@ void data_base::push_asset_detail(const asset_detail& sp_detail, const short_has
     const auto hash = sha256_hash(data);
 	assets.store(hash, sp_detail);
 	address_assets.store_output(key, outpoint, output_height, value, 
-		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), sp_detail);
+		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), timestamp_, sp_detail);
 	address_assets.sync();
 }
 void data_base::push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	address_assets.store_output(key, outpoint, output_height, value, 
-		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), sp_transfer);
+		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), timestamp_, sp_transfer);
 	address_assets.sync();
 }
 /* end store asset related info into database */

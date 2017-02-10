@@ -35,6 +35,8 @@
 #include <bitcoin/bitcoin/chain/header.hpp>
 #include <bitcoin/bitcoin/chain/header.hpp>
 
+#define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
+
 namespace libbitcoin {
 namespace blockchain {
 	
@@ -207,44 +209,58 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
-	/* begin store account related info into database */
 	inline hash_digest get_hash(const std::string& str);
 	inline short_hash get_short_hash(const std::string& str);
 
 	// account related api
 	std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
+	void set_account_passwd(const std::string& name, const std::string& passwd);
 	bool is_account_exist(const std::string& name);
+	bool is_admin_account(const std::string& name);
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);
+	std::shared_ptr<std::vector<account>> get_accounts();
 	account_status get_account_user_status(const std::string& name);
 	account_status get_account_system_status(const std::string& name);
 	bool set_account_user_status(const std::string& name, uint8_t status);
 	bool set_account_system_status(const std::string& name, uint8_t status);
 
+	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
+					business_kind kind, uint8_t confirmed);
+	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
+					business_kind kind, uint32_t time_begin, uint32_t time_end);
+	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr);
 	// account asset api
 	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, 
+			const std::string& asset_name, business_kind kind);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, const std::string& asset);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
-	bool is_asset_exist(const std::string& name, const std::string& asset_name);
+	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name,
+					business_kind kind);
+	bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
+	std::shared_ptr<std::vector<asset_detail>> get_local_assets();
+	std::shared_ptr<std::vector<business_address_asset>> get_account_assets();
+	std::shared_ptr<std::vector<asset_detail>> get_issued_assets();
+	std::shared_ptr<std::vector<business_address_asset>> get_account_unissued_assets(const std::string& name);
+	std::shared_ptr<std::vector<business_history>> get_account_business_history(const std::string& name,
+					business_kind kind, uint32_t time_begin, uint32_t time_end);
+	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
+					const std::string& symbol, business_kind kind, uint8_t confirmed);
+	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr);
+	std::shared_ptr<std::vector<account_address>> get_addresses();
+	
+	// account message api
+	std::shared_ptr<std::vector<business_address_message>> get_account_messages(const std::string& name);
 	
 	// account adress related api
 	operation_result store_account_address(std::shared_ptr<account_address> address);
 	std::shared_ptr<account_address> get_account_address(const std::string& name, const std::string& address);
 	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
+	void uppercase_symbol(std::string& symbol);
+	bool is_valid_address(const std::string& address);
+	void fired();
 
-	// asset related api
-	
-	/* begin todo -- will be removed later-- not use following api 
-		use set/get_account_asset(s) api instead  ---- refer "account asset api"
-	*/
-	uint16_t get_asset_status(const std::string& name);
-	bool is_asset_exist(const std::string& name);
-	operation_result store_asset(std::shared_ptr<asset_detail> ptr);
-	operation_result delete_asset(const std::string& name);  
-	std::shared_ptr<asset_detail> get_asset(const std::string& name);
-	/* end todo -- will be removed later -- not suggest use up api */
-	
-	/* end store account related info into database */
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

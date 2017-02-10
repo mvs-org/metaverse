@@ -27,6 +27,7 @@
 #include <bitcoin/network/protocols/protocol_ping.hpp>
 #include <bitcoin/network/protocols/protocol_seed.hpp>
 #include <bitcoin/network/proxy.hpp>
+#include <bitcoin/bitcoin/config/authority.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -37,7 +38,8 @@ namespace network {
 using namespace std::placeholders;
 session_seed::session_seed(p2p& network)
   : session(network, true, false),
-    CONSTRUCT_TRACK(session_seed)
+    CONSTRUCT_TRACK(session_seed),
+	network_{network}
 {
 }
 
@@ -124,7 +126,10 @@ void session_seed::start_seed(const config::endpoint& seed,
         << "Contacting seed [" << seed << "]";
 
     // OUTBOUND CONNECT
-    connect->connect(seed, BIND4(handle_connect, _1, _2, seed, handler));
+    connect->connect(seed, BIND4(handle_connect, _1, _2, seed, handler), [this](const asio::endpoint& endpoint){
+    	network_.store(config::authority{endpoint}.to_network_address(), [](const code& ec){});
+    	log::debug(LOG_NETWORK) << "session seed store," << endpoint ;
+    });
 }
 
 void session_seed::handle_connect(const code& ec, channel::ptr channel,

@@ -149,7 +149,7 @@ public:
         )
         (
             "version,v",
-            value<explorer::config::byte>(&option_.version)->default_value(0),
+            value<explorer::config::byte>(&option_.version)->default_value(50),
             "The desired payment address version."
         )
         (

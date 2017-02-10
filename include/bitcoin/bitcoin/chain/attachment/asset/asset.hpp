@@ -32,6 +32,13 @@
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 
+using namespace libbitcoin::chain;
+
+#define ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset::asset_status>::type>(kd))
+
+#define ASSET_DETAIL_TYPE ASSET_STATUS2UINT32(asset::asset_status::asset_locked)
+#define ASSET_TRANSFERABLE_TYPE ASSET_STATUS2UINT32(asset::asset_status::asset_transferable)
+
 namespace libbitcoin {
 namespace chain {
 
@@ -46,6 +53,9 @@ public:
 	};
 	typedef boost::variant<asset_detail, asset_transfer> asset_data_type;
 
+	asset();
+	asset(uint32_t status, const asset_detail& detail);
+	asset(uint32_t status, const asset_transfer& detail);
     static asset factory_from_data(const data_chunk& data);
     static asset factory_from_data(std::istream& stream);
     static asset factory_from_data(reader& source);
@@ -62,7 +72,13 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-
+	uint32_t get_status() const;
+	void set_status(uint32_t status);
+	void set_data(const asset_detail& detail);
+	void set_data(const asset_transfer& detail);
+	asset_data_type& get_data();
+	
+private:
     uint32_t status;
     asset_data_type data;
 

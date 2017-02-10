@@ -208,6 +208,11 @@ bool authority::operator!=(const authority& other) const
     return !(*this == other);
 }
 
+bool authority::operator<(const authority& other) const
+{
+    return ip() < other.ip() ? true : (ip() > other.ip() ? false : port() < other.port());
+}
+
 std::istream& operator>>(std::istream& input, authority& argument)
 {
     std::string value;

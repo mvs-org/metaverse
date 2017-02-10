@@ -70,6 +70,7 @@ public:
     unsigned int get_byte(int n) const;
     bool is_ipv4() const;    // IPv4 mapped address (::FFFF:0:0/96, 0.0.0.0/0)
    	bool is_ipv6() const;    // IPv6 address (not mapped IPv4, not Tor)
+   	bool is_private_network();
    	bool is_RFC1918() const; // IPv4 private networks (10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12)
    	bool is_RFC3849() const; // IPv6 documentation address (2001:0DB8::/32)
    	bool is_RFC3927() const; // IPv4 autoconfig (169.254.0.0/16)

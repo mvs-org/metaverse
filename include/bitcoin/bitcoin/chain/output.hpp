@@ -41,7 +41,7 @@ public:
     static output factory_from_data(std::istream& stream);
     static output factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-
+	static bool is_valid_symbol(const std::string& symbol);
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
@@ -52,10 +52,14 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-
+	uint64_t get_asset_amount() const;
+	std::string get_asset_symbol();
+	bool is_asset_transfer();
+	bool is_asset_issue();
+	
     uint64_t value;
     chain::script script;
-	//attachment attach_data; // todo -- will be open later // added for asset issue/transfer
+	attachment attach_data; // added for asset issue/transfer
 };
 
 struct BC_API output_info

@@ -41,7 +41,8 @@ public:
     static const uint8_t compressed_even;
     static const uint8_t compressed_odd;
     static const uint8_t uncompressed;
-    static const uint8_t mainnet_p2kh;
+    // chenhao bad modify
+    static uint8_t mainnet_p2kh;
 
     /// Constructors.
     ec_public();

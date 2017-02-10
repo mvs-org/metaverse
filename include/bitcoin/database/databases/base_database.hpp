@@ -72,13 +72,15 @@ public:
     /// Synchronise storage with disk so things are consistent.
     /// Should be done at the end of every block write.
     void sync();
-	slab_map get_lookup_map() const;
+	//slab_map& get_lookup_map() ;
 private:
 
     // Hash table used for looking up txs by hash.
     memory_map lookup_file_;
     slab_hash_table_header lookup_header_;
     slab_manager lookup_manager_;
+	
+protected:
     slab_map lookup_map_;
 };
 

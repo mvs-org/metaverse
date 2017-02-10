@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(metaverse)
 
 SET(CMAKE_VERBOSE_MAKEFILE 1)
@@ -7,8 +7,8 @@ SET(ENABLE_SHARED_LIBS OFF CACHE BOOL   "Enable shared libs.")
 SET(MG_ENABLE_DEBUG    OFF CACHE BOOL   "Enable Mongoose debug.")
 
 IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE DEBUG)
-  #SET(CMAKE_BUILD_TYPE RELEASE)
+    SET(CMAKE_BUILD_TYPE DEBUG)
+    #SET(CMAKE_BUILD_TYPE RELEASE)
   #SET(CMAKE_BUILD_TYPE RELWITHDEBINFO)
   #SET(CMAKE_BUILD_TYPE MINSIZEREL)
 ENDIF()
@@ -23,17 +23,19 @@ STRING(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 # ----------------- common Definitions ------
 SET(COMMON_WARN "-Wall -Werror -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
 SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
-SET(COMMON_LIBS "-pthread")
-SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN} ${COMMON_LIBS}")
+SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
 
 # --------------- Compiler ------------------
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
   #libbitcoin has too many ignored-qualifiers, and TODOs
-  SET(CMAKE_CXX_FLAGS "-std=c++11 -static-libstdc++ ${COMMON_ARGS} -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
+  SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
+  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    ADD_DEFINITIONS(-DMAC_OSX=1)
   SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
-  SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder")
+  SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function")
+  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 ENDIF()
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
 
@@ -54,7 +56,7 @@ FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/html")
 
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/etc")
 #SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR})
-SET(CMAKE_INSTALL_PREFIX "/usr/local/mvs")
+SET(CMAKE_INSTALL_PREFIX "/usr/local/")
 
 set(Boost_USE_STATIC_LIBS   ON)
 FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <script/script.h>
 #include <bitcoin/bitcoin/chain/script/operation.hpp>
-
 #include <algorithm>
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
@@ -328,6 +328,19 @@ bool operation::is_pay_key_hash_pattern(const operation::stack& ops)
         && ops[4].code == opcode::checksig;
 }
 
+bool operation::is_pay_key_hash_with_lock_height_pattern(const operation::stack& ops)
+{
+    return ops.size() == 7
+        && ops[0].code == opcode::special
+        && ops[1].code == opcode::numequalverify
+        && ops[2].code == opcode::dup
+        && ops[3].code == opcode::hash160
+        && ops[4].code == opcode::special
+        && ops[4].data.size() == short_hash_size
+        && ops[5].code == opcode::equalverify
+        && ops[6].code == opcode::checksig;
+}
+
 bool operation::is_pay_script_hash_pattern(const operation::stack& ops)
 {
     return ops.size() == 3
@@ -357,6 +370,24 @@ bool operation::is_sign_key_hash_pattern(const operation::stack& ops)
 {
     return ops.size() == 2 && is_push_only(ops) &&
         is_public_key(ops.back().data);
+}
+
+uint64_t operation::get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops)
+{
+    CScriptNum num(ops[2].data, 1);
+    return num.getint();
+}
+
+uint64_t operation::get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops)
+{
+    CScriptNum num(ops[0].data, 1);
+    return num.getint();
+}
+
+bool operation::is_sign_key_hash_with_lock_height_pattern(const operation::stack& ops)
+{
+    return ops.size() == 3 && is_push_only(ops) &&
+        is_public_key((ops.begin()+1)->data);
 }
 
 bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
@@ -460,6 +491,20 @@ operation::stack operation::to_pay_key_hash_pattern(const short_hash& hash)
 {
     return operation::stack
     {
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(hash) },
+        { opcode::equalverify, {} },
+        { opcode::checksig, {} }
+    };
+}
+
+operation::stack operation::to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height)
+{
+    return operation::stack
+    {
+        { opcode::special, CScriptNum::serialize(block_height) },
+        { opcode::numequalverify, {} },
         { opcode::dup, {} },
         { opcode::hash160, {} },
         { opcode::special, to_chunk(hash) },

@@ -1,9 +1,9 @@
-#include "mvs/http/RestServ.hpp"
-
-#include <mvs/http/Exception_instance.hpp>
-#include <mvs/http/Stream_buf.hpp>
 #include <exception>
 #include <functional> //hash
+#include "mvs/http/RestServ.hpp"
+#include <mvs/http/Exception_instance.hpp>
+#include <mvs/http/Stream_buf.hpp>
+#include <bitcoin/explorer/command_extension_func.hpp>
 
 namespace http{
 
@@ -41,15 +41,14 @@ void RestServ::websocketBroadcast(mg_connection& nc, const char* msg, size_t len
 {
     mg_connection* iter;
 
-    log::debug(LOG_HTTP)<<"ws snd len "<<len<<" msg:["<<msg<<"]";
     for (iter = mg_next(nc.mgr, nullptr); iter != nullptr; iter = mg_next(nc.mgr, iter))
     {
       mg_send_websocket_frame(iter, WEBSOCKET_OP_TEXT, msg, len);
     }
 }
+
 void RestServ::websocketSend(mg_connection* nc, const char* msg, size_t len) 
 {
-    log::debug(LOG_HTTP)<<"ws snd len "<<len<<" msg:["<<msg<<"]";
     mg_send_websocket_frame(nc, WEBSOCKET_OP_TEXT, msg, len);
 }
 
@@ -65,13 +64,18 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
     try{
         ws.data_to_arg();
 
-        explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-            sin, sout, sout, blockchain_);
+        if (ws.is_miner_command()){
+            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
+                sin, sout, sout, blockchain_, miner_);
+        }else{
+            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
+                sin, sout, sout, blockchain_);
+        }
 
-    }catch(std::logic_error e){
+    }catch(std::exception& e){
         sout<<"{\"error\":\""<<e.what()<<"\"}";
     }catch(...){
-        log::error(LOG_HTTP)<<__func__<<":"<<sout.rdbuf();
+        log::error(LOG_HTTP)<<sout.rdbuf();
         sout<<"{\"error\":\"fatel error\"}";
     }
 
@@ -101,8 +105,14 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 
         std::stringstream sout;
         std::istringstream sin;
-        bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-            sin, sout, sout, blockchain_);
+
+        if (data.is_miner_command()){
+            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+                sin, sout, sout, blockchain_, miner_);
+        }else{
+            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
+                sin, sout, sout, blockchain_);
+        }
 
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
 
@@ -111,11 +121,8 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     } catch (const ServException& e) {
         out_.reset(e.httpStatus(), e.httpReason());
         out_ << e;
-      } catch (const std::exception& e) {
-        const int status{500};
-        const char* const reason{"Internal Server Error"};
-        out_.reset(status, reason);
-        ServException::toJson(status, reason, e.what(), out_);
+    } catch (const std::exception& e) {
+        out_<<"{\"error\":\""<<e.what()<<"\"}";
     } 
 
     out_.setContentLength(); 
@@ -130,8 +137,6 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 
     reset(data);
 
-    log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
-
     StreamBuf buf{nc.send_mbuf};
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
@@ -143,11 +148,11 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
         uri_.pop();
 
         if (!uri_.empty()) {
-            // method
+            // uri => command
             data.add_arg({uri_.top().data(), uri_.top().size()});
 
             // username
-            if (uri_.top() != "getnewaccount"_sv) {
+            if (uri_.top() != "getnewaccount"_sv && bc::explorer::find_extension(data.get_command())) {
                 auto ret = get_from_session_list(data.get());
                 if (!ret) throw std::logic_error{"nullptr for seesion"};
                 data.add_arg(std::string(ret->user));
@@ -155,22 +160,18 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             }
 
             data.data_to_arg();
-            // let uri as method
 
             //process here
-            std::stringstream sout;
-            std::istringstream sin;
+            std::stringstream sout("");
+            std::istringstream sin("");
 
-
-            if (uri_.top() == "start"_sv or uri_.top() == "stop"_sv) {
+            if (data.is_miner_command()){
                 bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
                     sin, sout, sout, blockchain_, miner_);
             }else{
                 bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
                     sin, sout, sout, blockchain_);
             }
-
-            log::debug(LOG_HTTP)<<"sout:"<<sout.rdbuf();
 
             out_<<sout.str();
             state_|= MatchUri;
@@ -188,10 +189,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
         out_.reset(e.httpStatus(), e.httpReason());
         out_ << e;
     } catch (const std::exception& e) {
-        const int status{500};
-        const char* const reason{"Internal Server Error"};
-        out_.reset(status, reason);
-        ServException::toJson(status, reason, e.what(), out_);
+        out_<<"{\"error\":\""<<e.what()<<"\"}";
     }
 
     out_.setContentLength(); 
@@ -210,9 +208,10 @@ std::shared_ptr<Session> RestServ::push_session(HttpMessage data)
     s->pass = std::string(pass, pl);
 
     s->id = std::hash<std::shared_ptr<Session>>()(s);
-    session_list_.push_back(s);
+    std::string&& seed = std::string(user) + std::to_string(s->id);
+    s->id = std::hash<std::string>()(seed);
 
-    log::debug("session")<<s->id<<" pushed";
+    session_list_.push_back(s);
 
     return s;
 }
@@ -223,11 +222,11 @@ std::shared_ptr<Session> RestServ::get_from_session_list(HttpMessage data)
     if (cookie_header == nullptr) 
         return nullptr;
 
-    char ssid[21]{0x00};
+    char ssid[32]{0x00};
     if (!mg_http_parse_header(cookie_header, SESSION_COOKIE_NAME, ssid, sizeof(ssid)))
         return nullptr;
 
-    auto sid = std::stol(ssid, nullptr, 10);
+    auto sid = std::stoul(ssid, nullptr, 10);
 
     auto ret = std::find_if(session_list_.begin(), session_list_.end(), [&sid](std::shared_ptr<Session> p){
             return sid == p->id;
@@ -238,6 +237,30 @@ std::shared_ptr<Session> RestServ::get_from_session_list(HttpMessage data)
 
     (*ret)->last_used = mg_time();
     return *ret;
+}
+
+bool RestServ::remove_from_session_list(HttpMessage data)
+{
+    mg_str* cookie_header = mg_get_http_header(data.get(), "cookie");;
+    if (cookie_header == nullptr) 
+        return false;
+
+    char ssid[32]{0x00};
+    if (!mg_http_parse_header(cookie_header, SESSION_COOKIE_NAME, ssid, sizeof(ssid)))
+        return false;
+
+    auto sid = std::stoul(ssid, nullptr, 10);
+
+    for (auto iter = session_list_.begin(); iter != session_list_.end(); ++iter)
+    {
+        if ( (*iter)->id == sid )
+        {
+            log::debug("session")<<(*iter)->id<<" removed";
+            iter = session_list_.erase(iter);
+        }
+    }
+
+    return true;
 }
 
 bool RestServ::check_sessions()
@@ -265,7 +288,7 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
         if (ul > 0 && pl > 0){
             blockchain_.is_account_passwd_valid(std::string(user, ul), std::string(pass, pl));
         }else{
-            throw std::logic_error{"Bad Request,user, pass required."};
+            throw std::logic_error{"Bad Request:user,password required."};
         }
 
     }catch(std::exception& e){

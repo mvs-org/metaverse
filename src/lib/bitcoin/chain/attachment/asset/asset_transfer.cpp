@@ -25,7 +25,9 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
+#endif
 
 namespace libbitcoin {
 namespace chain {
@@ -62,7 +64,9 @@ asset_transfer asset_transfer::factory_from_data(reader& source)
 
 bool asset_transfer::is_valid() const
 {
-    return true;
+    return !(address.empty() 
+			|| quantity==0
+			|| address.size() +1 > ASSET_TRANSFER_ADDRESS_FIX_SIZE);
 }
 
 void asset_transfer::reset()
@@ -86,7 +90,7 @@ bool asset_transfer::from_data(std::istream& stream)
 bool asset_transfer::from_data(reader& source)
 {
     reset();
-    address = source.read_fixed_string(ASSET_TRANSFER_ADDRESS_FIX_SIZE);
+    address = source.read_string();
     quantity = source.read_8_bytes_little_endian();
 	
     auto result = static_cast<bool>(source);
@@ -114,15 +118,17 @@ void asset_transfer::to_data(std::ostream& stream) const
 
 void asset_transfer::to_data(writer& sink) const
 {
-    sink.write_fixed_string(address, ASSET_TRANSFER_ADDRESS_FIX_SIZE);
+    sink.write_string(address);
 	sink.write_8_bytes_little_endian(quantity);
 }
 
 uint64_t asset_transfer::serialized_size() const
 {
-    return address.size() + 8 + 3;
+    size_t len = address.size() + 8 + 1;
+	return std::min(len, ASSET_TRANSFER_FIX_SIZE);
 }
 
+#ifdef MVS_DEBUG
 std::string asset_transfer::to_string() const 
 {
     std::ostringstream ss;
@@ -140,13 +146,16 @@ void asset_transfer::to_json(std::ostream& output)
 	json_writer.write("quantity", quantity);
 	json_writer.close();
 }
+#endif
+
 const std::string& asset_transfer::get_address() const
 { 
     return address;
 }
 void asset_transfer::set_address(const std::string& address)
 { 
-     this->address = address;
+	 size_t len = address.size()+1 < (ASSET_TRANSFER_ADDRESS_FIX_SIZE) ?address.size()+1:ASSET_TRANSFER_ADDRESS_FIX_SIZE;
+	 this->address = address.substr(0, len);
 }
 
 uint64_t asset_transfer::get_quantity() const

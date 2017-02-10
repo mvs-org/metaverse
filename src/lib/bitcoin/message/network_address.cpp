@@ -212,9 +212,14 @@ bool network_address::is_ipv6() const
     return (!is_ipv4() && !is_tor());
 }
 
+bool network_address::is_private_network()
+{
+	return is_RFC1918();
+}
+
 bool network_address::is_RFC1918() const
 {
-#if 0
+#if 0 //fixme jianglh
     return is_ipv4() && (
         get_byte(3) == 10 ||
         (get_byte(3) == 192 && get_byte(2) == 168) ||

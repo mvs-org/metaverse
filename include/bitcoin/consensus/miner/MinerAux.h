@@ -17,30 +17,28 @@ class MinerAux
 public:
 	~MinerAux();
 	static MinerAux* get();
-	static h256 mixHash(chain::header& _bi) { return u256(1);}
-	static chain::header& setNonce(chain::header& _bi, Nonce _v){return _bi;}
-	static chain::header& setMixHash(chain::header& _bi, h256& _v){return _bi;}
+	//static h256 mixHash(chain::header& _bi) { return _bi;}
+	static void setNonce(chain::header& _bi, Nonce _v){_bi.nonce = (FixedHash<8>::Arith)_v; }
+	static void setMixHash(chain::header& _bi, h256& _v){_bi.mixhash = (FixedHash<32>::Arith)_v; }
 	static LightType get_light(h256& _seedHash);
 	static FullType get_full(h256& _seedHash);
+	static bool verifySeal(chain::header& header,chain::header& _parent);
+	static bool search(chain::header& header, std::function<bool (void)> is_exit);
+    static uint64_t getRate(){ return get()->m_rate; }
 
-	static bool verifySeal(chain::header& header){
-		return true;	
-	}
-	static bool search(chain::header& header, std::function<bool (void)> is_exit){
-		sleep(30);
-		header.mixhash = header.number;
-		header.nonce = header.number;
-		return true;
-	}
+
 
 private:
-	MinerAux() {}
+	MinerAux() {m_rate = 0;}
     static MinerAux* s_this;
     SharedMutex x_lights;
     std::unordered_map<h256, std::shared_ptr<LightAllocation>> m_lights;
     Mutex x_fulls;
     std::condition_variable m_fullsChanged;
     std::unordered_map<h256, std::weak_ptr<FullAllocation>> m_fulls;
+    FullType m_lastUsedFull;
+   // uint64_t m_hashCount;
+    uint64_t m_rate;
 
 
 

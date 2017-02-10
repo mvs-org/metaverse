@@ -60,28 +60,32 @@ settings::settings(bc::settings context)
     {
         case bc::settings::mainnet:
         {
-            identifier = 3652501241;
+            identifier = 0x6d73766d;
             inbound_port = 5251;
 
             // Seeds based on bitcoinstats.com/network/dns-servers
-            seeds.reserve(4);
-            seeds.push_back({ "seed1.metaverse.live", 5251 });
-            seeds.push_back({ "seed2.metaverse.live", 5251 });
-            seeds.push_back({ "seed3.metaverse.live", 5251 });
-            seeds.push_back({ "seed4.metaverse.live", 5251 });
+            seeds.reserve(6);
+            seeds.push_back({ "main-asia.metaverse.live", 5251 });
+            seeds.push_back({ "main-americas.metaverse.live", 5251 });
+            seeds.push_back({ "main-europe.metaverse.live", 5251 });
+            seeds.push_back({ "main-asia.mvs.live", 5251 });
+            seeds.push_back({ "main-americas.mvs.live", 5251 });
+            seeds.push_back({ "main-europe.mvs.live", 5251 });
             break;
         }
 
         case bc::settings::testnet:
         {
-            identifier = 118034699;
+            identifier = 0x73766d74;
             inbound_port = 15251;
 
-            seeds.reserve(3);
-            seeds.push_back({ "seed1.metaversetest.live", 15251 });
-            seeds.push_back({ "seed2.metaversetest.live", 15251 });
-            seeds.push_back({ "seed3.metaversetest.live", 15251 });
-            seeds.push_back({ "seed4.metaversetest.live", 15251 });
+            seeds.reserve(6);
+            seeds.push_back({ "test-asia.metaverse.live", 15251 });
+            seeds.push_back({ "test-americas.metaverse.live", 15251 });
+            seeds.push_back({ "test-europe.metaverse.live", 15251 });
+            seeds.push_back({ "test-asia.mvs.live", 15251 });
+            seeds.push_back({ "test-americas.mvs.live", 15251 });
+            seeds.push_back({ "test-europe.mvs.live", 15251 });
             break;
         }
 

@@ -31,6 +31,7 @@ namespace server {
 #define BS_HELP_VARIABLE "help"
 #define BS_SETTINGS_VARIABLE "settings"
 #define BS_VERSION_VARIABLE "version"
+#define BS_DAEMON_VARIABLE "daemon"
 
 // This must be lower case but the env var part can be any case.
 #define BS_CONFIG_VARIABLE "config"

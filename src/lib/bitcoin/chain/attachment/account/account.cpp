@@ -25,7 +25,10 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+
+#ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
+#endif
 
 namespace libbitcoin {
 namespace chain {
@@ -72,7 +75,7 @@ void account::reset()
     this->mnemonic = "";
     //this->passwd = "";
     this->hd_index = 0;
-    this->priority = 1; // 0 -- admin user  1 -- common user
+    this->priority = account_priority::common_user; // 0 -- admin user  1 -- common user
     this->status = account_status::normal;
 }
 
@@ -131,6 +134,18 @@ uint64_t account::serialized_size() const
     return name.size() + mnemonic.size() + passwd.size() + 4 + 1 + 3; // 2 "string length" byte
 }
 
+account::operator bool() const
+{
+	return (name.empty() || mnemonic.empty());
+}
+bool account::operator==(const account& other) const
+{
+    return (name.compare(other.get_name()) == 0)
+			&& (mnemonic.compare(other.get_mnemonic()) == 0);
+}
+
+
+#ifdef MVS_DEBUG
 std::string account::to_string() 
 {
     std::ostringstream ss;
@@ -144,12 +159,6 @@ std::string account::to_string()
 
     return ss.str();
 }
-
-account::operator bool() const
-{
-	return (name.empty() || mnemonic.empty());
-}
-
 void account::to_json(std::ostream& output) 
 {
 	minijson::object_writer json_writer(output);
@@ -160,6 +169,8 @@ void account::to_json(std::ostream& output)
 	json_writer.write("priority", priority);
 	json_writer.close();
 }
+#endif
+
 const std::string& account::get_name() const
 { 
     return name;

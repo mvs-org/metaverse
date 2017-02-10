@@ -75,6 +75,11 @@ void transaction_pool::stop()
     subscriber_->invoke(error::service_stopped, {}, {});
 }
 
+void transaction_pool::fired()
+{
+	subscriber_->relay(error::mock, {}, {});
+}
+
 bool transaction_pool::stopped()
 {
     return stopped_;
@@ -136,8 +141,16 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
     // Recheck the memory pool, as a duplicate may have been added.
     if (is_in_pool(tx->hash()))
         handler(error::duplicate, tx, {});
-    else
-        handler(error::success, tx, unconfirmed);
+
+    for(auto& output : tx->outputs){
+        if(output.is_asset_issue()
+            && is_in_pool(output.get_asset_symbol())){
+            handler(error::asset_exist, tx, {});
+            return;
+         }
+    }
+
+    handler(error::success, tx, unconfirmed);
 }
 
 // handle_confirm will never fire if handle_validate returns a failure code.
@@ -530,9 +543,31 @@ transaction_pool::const_iterator transaction_pool::find(
     return std::find_if(buffer_.begin(), buffer_.end(), found);
 }
 
+transaction_pool::const_iterator transaction_pool::find(
+    const std::string& assert_name) const
+{
+    const auto found = [&assert_name](const entry& entry)
+    {
+        for(auto& output : entry.tx->outputs)
+            if(output.is_asset_issue() 
+				&& output.get_asset_symbol() == assert_name){
+                return true;
+            } 
+
+        return false;
+    };
+
+    return std::find_if(buffer_.begin(), buffer_.end(), found);
+}
+
 bool transaction_pool::is_in_pool(const hash_digest& tx_hash) const
 {
     return find(tx_hash) != buffer_.end();
+}
+
+bool transaction_pool::is_in_pool(const std::string& assert_name) const
+{
+    return find(assert_name) != buffer_.end();
 }
 
 bool transaction_pool::is_spent_in_pool(transaction_ptr tx) const

@@ -28,12 +28,21 @@
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
 
-#define  ASSET_DETAIL_TYPE        static_cast<typename std::underlying_type<asset_status>::type>(asset_status::asset_locked)
-#define  ASSET_TRANSFERABLE_TYPE  static_cast<typename std::underlying_type<asset_status>::type>(asset_status::asset_transferable)
-
 namespace libbitcoin {
 namespace chain {
 
+asset::asset()
+{
+	reset();
+}
+asset::asset(uint32_t status, const asset_detail& detail):
+	status(status), data(detail)
+{
+}
+asset::asset(uint32_t status, const asset_transfer& detail):
+	status(status), data(detail)
+{
+}
 asset asset::factory_from_data(const data_chunk& data)
 {
     asset instance;
@@ -149,6 +158,7 @@ uint64_t asset::serialized_size() const
 	return 4 + size;
 }
 
+#ifdef MVS_DEBUG
 std::string asset::to_string() const
 {
     std::ostringstream ss;
@@ -157,6 +167,28 @@ std::string asset::to_string() const
 	ss << boost::apply_visitor(visitor, data);
     return ss.str();
 }
- 
+#endif
+
+uint32_t asset::get_status() const
+{
+	return status;
+}
+void asset::set_status(uint32_t status)
+{
+	this->status = status;
+}
+void asset::set_data(const asset_detail& detail)
+{
+	this->data = detail;
+}
+void asset::set_data(const asset_transfer& detail)
+{
+	this->data = detail;
+}
+asset::asset_data_type& asset::get_data()
+{
+	return this->data;
+}
+
 } // namspace chain
 } // namspace libbitcoin

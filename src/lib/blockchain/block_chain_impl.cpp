@@ -456,11 +456,20 @@ void block_chain_impl::fetch_block_locator(block_locator_fetch_handler handler)
         const auto indexes = block_locator_indexes(top_height);
         for (const auto index: indexes)
         {
-            const auto result = database_.blocks.get(index);
-            if (!result)
-                return finish_fetch(slock, handler, error::not_found, locator);
+        	hash_digest hash;
+        	auto found = false;
+        	{
+				const auto result = database_.blocks.get(index);
+				if (result)
+				{
+					found = true;
+					hash = result.header().hash();
+				}
+        	}
+			if (!found)
+				return finish_fetch(slock, handler, error::not_found, locator);
 
-            locator.push_back(result.header().hash());
+            locator.push_back(hash);
         }
 
         return finish_fetch(slock, handler, error::success, locator);
@@ -506,7 +515,7 @@ void block_chain_impl::fetch_locator_block_hashes(
             // If the stop block is not on chain we treat it as a null stop.
             const auto stop_result = database_.blocks.get(locator.stop_hash);
             if (stop_result)
-                stop = std::min(stop_result.height(), stop);
+                stop = std::min(stop_result.height() + 1, stop);
         }
 
         // Find the threshold block height.
@@ -574,7 +583,7 @@ void block_chain_impl::fetch_locator_block_headers(
             // If the stop block is not on chain we treat it as a null stop.
             const auto stop_result = database_.blocks.get(locator.stop_hash);
             if (stop_result)
-                stop = std::min(stop_result.height(), stop);
+                stop = std::min(stop_result.height() + 1, stop);
         }
 
         // Find the threshold block height.
@@ -690,9 +699,18 @@ void block_chain_impl::fetch_block_header(uint64_t height,
 
     const auto do_fetch = [this, height, handler](size_t slock)
     {
-        const auto result = database_.blocks.get(height);
-        return result ?
-            finish_fetch(slock, handler, error::success, result.header()) :
+    	chain::header header;
+    	auto found = false;
+    	{
+    		const auto result = database_.blocks.get(height);
+    		if(result)
+    		{
+    			header = result.header();
+    			found = true;
+    		}
+    	}
+        return found ?
+            finish_fetch(slock, handler, error::success, header) :
             finish_fetch(slock, handler, error::not_found, chain::header());
     };
     fetch_serial(do_fetch);
@@ -709,9 +727,18 @@ void block_chain_impl::fetch_block_header(const hash_digest& hash,
 
     const auto do_fetch = [this, hash, handler](size_t slock)
     {
-        const auto result = database_.blocks.get(hash);
-        return result ?
-            finish_fetch(slock, handler, error::success, result.header()) :
+        chain::header header;
+		auto found = false;
+		{
+			const auto result = database_.blocks.get(hash);
+			if(result)
+			{
+				header = result.header();
+				found = true;
+			}
+		}
+        return found ?
+            finish_fetch(slock, handler, error::success, header) :
             finish_fetch(slock, handler, error::not_found, chain::header());
     };
     fetch_serial(do_fetch);
@@ -744,9 +771,19 @@ void block_chain_impl::fetch_block_transaction_hashes(uint64_t height,
 
     const auto do_fetch = [this, height, handler](size_t slock)
     {
-        const auto result = database_.blocks.get(height);
-        return result ?
-            finish_fetch(slock, handler, error::success, to_hashes(result)) :
+    	hash_list hashes;
+		auto found = false;
+		{
+			const auto result = database_.blocks.get(height);
+			if(result)
+			{
+				hashes = to_hashes(result);
+				found = true;
+			}
+		}
+
+        return found ?
+            finish_fetch(slock, handler, error::success, hashes) :
             finish_fetch(slock, handler, error::not_found, hash_list());
     };
     fetch_serial(do_fetch);
@@ -763,9 +800,19 @@ void block_chain_impl::fetch_block_transaction_hashes(const hash_digest& hash,
 
     const auto do_fetch = [this, hash, handler](size_t slock)
     {
-        const auto result = database_.blocks.get(hash);
-        return result ?
-            finish_fetch(slock, handler, error::success, to_hashes(result)) :
+    	hash_list hashes;
+		auto found = false;
+		{
+			const auto result = database_.blocks.get(hash);
+			if(result)
+			{
+				hashes = to_hashes(result);
+				found = true;
+			}
+		}
+
+        return found ?
+            finish_fetch(slock, handler, error::success, hashes) :
             finish_fetch(slock, handler, error::not_found, hash_list());
     };
     fetch_serial(do_fetch);
@@ -782,9 +829,19 @@ void block_chain_impl::fetch_block_height(const hash_digest& hash,
 
     const auto do_fetch = [this, hash, handler](size_t slock)
     {
-        const auto result = database_.blocks.get(hash);
-        return result ?
-            finish_fetch(slock, handler, error::success, result.height()) :
+    	std::size_t h{0};
+		auto found = false;
+		{
+			const auto result = database_.blocks.get(hash);
+			if(result)
+			{
+				h = result.height();
+				found = true;
+			}
+		}
+
+        return found ?
+            finish_fetch(slock, handler, error::success, h) :
             finish_fetch(slock, handler, error::not_found, 0);
     };
     fetch_serial(do_fetch);
@@ -907,7 +964,6 @@ void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
     fetch_serial(do_fetch);
 }
 
-/* begin store account related info into database */
 inline hash_digest block_chain_impl::get_hash(const std::string& str)
 {
 	data_chunk data(str.begin(), str.end());
@@ -932,6 +988,29 @@ std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
         return nullptr;
     }
 }
+void block_chain_impl::set_account_passwd
+        (const std::string& name, const std::string& passwd)
+{
+	auto account = get_account(name);
+	if(account) // account exist
+	{
+		account->set_passwd(passwd);
+        store_account(account);
+	}else{
+        throw std::logic_error{"account not found"};
+    }
+}
+
+bool block_chain_impl::is_admin_account(const std::string& name)
+{
+	auto account = get_account(name);
+	if(account) // account exist
+	{
+		return account_priority::administrator == account->get_priority();
+	}
+	return false;
+}
+
 bool block_chain_impl::is_account_exist(const std::string& name)
 {
 	return nullptr != get_account(name);
@@ -956,11 +1035,16 @@ operation_result block_chain_impl::store_account(std::shared_ptr<account> acc)
 	///////////////////////////////////////////////////////////////////////////
 	return operation_result::okay;
 }
-
 std::shared_ptr<account> block_chain_impl::get_account(const std::string& name)
 {
 	return database_.accounts.get_account_result(get_hash(name)).get_account_detail();
 }
+/// get all the accounts in account database
+std::shared_ptr<std::vector<account>> block_chain_impl::get_accounts()
+{
+	return database_.accounts.get_accounts();
+}
+
 /// just store data into database "not do same address check"  -- todo 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)
 {
@@ -991,11 +1075,11 @@ std::shared_ptr<account_address> block_chain_impl::get_account_address
 
 std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addresses(const std::string& name)
 {
-	std::shared_ptr<std::vector<account_address>> sp_addr(nullptr);
+	auto sp_addr = std::make_shared<std::vector<account_address>>();
 	auto result = database_.account_addresses.get(get_short_hash(name));
 	if(result.size())
 	{
-		sp_addr = std::make_shared<std::vector<account_address>>();
+		//sp_addr = std::make_shared<std::vector<account_address>>();
 	    const auto action = [&sp_addr](const account_address& elem)
 	    {
 	        sp_addr->emplace_back(std::move(elem)); // todo -- add std::move later
@@ -1025,9 +1109,11 @@ operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_det
 	return operation_result::okay;
 }
 
-std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_asset(const std::string& name, const std::string& asset_name)
+
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_asset(const std::string& name, 
+		const std::string& asset_name, business_kind kind)
 {
-	auto sp_asset_vec = get_account_assets(name);
+	auto sp_asset_vec = get_account_assets(name, kind);
 	auto ret_vector = std::make_shared<std::vector<business_address_asset>>();
 	
 	const auto action = [&](const business_address_asset& addr_asset)
@@ -1040,6 +1126,169 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 
 	return ret_vector;
 }
+
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_asset(const std::string& name, const std::string& asset_name)
+{
+	auto sp_asset_vec = get_account_assets(name);
+	auto ret_vector = std::make_shared<std::vector<business_address_asset>>();
+	
+	const auto action = [&](const business_address_asset& addr_asset)
+	{
+		if(addr_asset.detail.get_symbol().compare(asset_name) == 0)
+			ret_vector->emplace_back(std::move(addr_asset));
+	};
+
+	std::for_each(sp_asset_vec->begin(), sp_asset_vec->end(), action);
+
+	return ret_vector;
+}
+// get special assets of the account/name, just used for asset_detail/asset_transfer
+std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
+				const std::string& symbol, business_kind kind, uint8_t confirmed)
+{	
+	auto ret_vector = std::make_shared<std::vector<business_history>>();
+	auto sh_vec = database_.address_assets.get_address_business_history(addr, 0);
+	std::string asset_symbol;
+	
+    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter){
+		if((iter->data.get_kind_value() != kind)
+			|| (iter->status != confirmed)) 
+			continue;
+		
+		// etp business process
+		if((iter->data.get_kind_value() ==  business_kind::etp)
+				&& kind == business_kind::etp) {
+			ret_vector->emplace_back(std::move(*iter));
+			continue;
+		}
+		
+		// asset business process
+		asset_symbol = "";
+		if(iter->data.get_kind_value() ==  business_kind::asset_issue) {
+			auto transfer = boost::get<asset_detail>(iter->data.get_data());
+			asset_symbol = transfer.get_symbol();
+		}
+		
+		if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
+			auto transfer = boost::get<asset_transfer>(iter->data.get_data());
+			asset_symbol = transfer.get_address();
+		}
+		
+        if ( 0 == symbol.compare(asset_symbol)){
+            ret_vector->emplace_back(std::move(*iter));
+        }
+    }
+
+	return ret_vector;
+}
+
+// get special assets of the account/name, just used for asset_detail/asset_transfer
+std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
+				business_kind kind, uint8_t confirmed)
+{
+	auto sp_asset_vec = std::make_shared<std::vector<business_history>>();
+	
+	business_history::list asset_vec = database_.address_assets.get_business_history(addr, 0, kind, confirmed);
+	const auto add_asset = [&](const business_history& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+	std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+
+	return sp_asset_vec;
+}
+// get account owned business history between begin and end
+std::shared_ptr<std::vector<business_history>> block_chain_impl::get_account_business_history(const std::string& name,
+				business_kind kind, uint32_t time_begin, uint32_t time_end)
+{	
+	auto account_addr_vec = get_account_addresses(name);
+	auto sp_asset_vec = std::make_shared<std::vector<business_history>>();
+	
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_history& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+
+	// search all assets belongs to this address which is owned by account
+	const auto action = [&](const account_address& elem)
+	{
+		auto asset_vec = database_.address_assets.get_business_history(elem.get_address(), 0, kind, time_begin, time_end);
+		std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+	};
+	std::for_each(account_addr_vec->begin(), account_addr_vec->end(), action);
+
+	return sp_asset_vec;
+}
+
+std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
+				business_kind kind, uint32_t time_begin, uint32_t time_end)
+{
+	auto sp_asset_vec = std::make_shared<std::vector<business_history>>();
+	
+	business_history::list asset_vec = database_.address_assets.get_business_history(addr, 0, kind, time_begin, time_end);
+	const auto add_asset = [&](const business_history& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+	std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+
+	return sp_asset_vec;
+}
+
+std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr)
+{
+	auto sp_asset_vec = std::make_shared<std::vector<business_history>>();
+	auto key = get_short_hash(addr);
+	business_history::list asset_vec = database_.address_assets.get_business_history(key, 0);
+	const auto add_asset = [&](const business_history& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+	std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+
+	return sp_asset_vec;
+}
+/// get business record according address
+std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_business_record(const std::string& addr)
+{
+	auto sp_asset_vec = std::make_shared<std::vector<business_record>>();
+	auto key = get_short_hash(addr);
+	business_record::list asset_vec = database_.address_assets.get(key, 0);
+	const auto add_asset = [&](const business_record& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+	std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+
+	return sp_asset_vec;
+}
+
+// get special assets of the account/name, just used for asset_detail/asset_transfer
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_assets(const std::string& name,
+				business_kind kind)
+{
+	auto account_addr_vec = get_account_addresses(name);
+	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
+	
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_address_asset& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+
+	// search all assets belongs to this address which is owned by account
+	const auto action = [&](const account_address& elem)
+	{
+		business_address_asset::list asset_vec = database_.address_assets.get_assets(elem.get_address(), 0, kind);
+		std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+	};
+	std::for_each(account_addr_vec->begin(), account_addr_vec->end(), action);
+
+	return sp_asset_vec;
+}
+
+// get all assets belongs to the account/name
 std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_assets(const std::string& name)
 {
 	auto account_addr_vec = get_account_addresses(name);
@@ -1065,6 +1314,88 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 
 	return sp_asset_vec;
 }
+
+// get all unissued assets which stored in local database
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_assets()
+{
+	auto sh_acc_vec = get_accounts();
+	auto ret_vector = std::make_shared<std::vector<business_address_asset>>();
+	
+	for(auto& acc : *sh_acc_vec) {
+		auto sh_vec = get_account_assets(acc.get_name());
+		const auto action = [&](const business_address_asset& addr_asset)
+		{
+			ret_vector->emplace_back(std::move(addr_asset));
+		};
+		std::for_each(sh_vec->begin(), sh_vec->end(), action);
+	}
+
+	return ret_vector;
+}
+
+// get all local unissued assets belongs to the account/name
+std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_unissued_assets(const std::string& name)
+{
+	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_address_asset& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+
+	// get account asset which is not issued (not in blockchain)
+	auto no_issued_assets = database_.account_assets.get_unissued_assets(get_short_hash(name));
+	std::for_each(no_issued_assets->begin(), no_issued_assets->end(), add_asset);
+
+	return sp_asset_vec;
+}
+
+/// get all the asset in blockchain
+std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_issued_assets()
+{
+	return database_.assets.get_asset_details();
+}
+
+// get all addresses
+std::shared_ptr<std::vector<account_address>> block_chain_impl::get_addresses()
+{
+	auto sh_acc_vec = get_accounts();
+	auto ret_vector = std::make_shared<std::vector<account_address>>();
+	
+	for(auto& acc : *sh_acc_vec) {
+		auto sh_vec = get_account_addresses(acc.get_name());
+		const auto action = [&](const account_address& addr)
+		{
+			ret_vector->emplace_back(std::move(addr));
+		};
+		std::for_each(sh_vec->begin(), sh_vec->end(), action);
+	}
+
+	return ret_vector;
+}
+
+std::shared_ptr<std::vector<business_address_message>> block_chain_impl::get_account_messages(const std::string& name)
+{
+	auto account_addr_vec = get_account_addresses(name);
+	auto sp_asset_vec = std::make_shared<std::vector<business_address_message>>();
+	
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_address_message& addr_asset)
+	{
+		sp_asset_vec->emplace_back(std::move(addr_asset));
+	};
+
+	// search all assets belongs to this address which is owned by account
+	const auto action = [&](const account_address& elem)
+	{
+		business_address_message::list asset_vec = database_.address_assets.get_messages(elem.get_address(), 0);
+		std::for_each(asset_vec.begin(), asset_vec.end(), add_asset);
+	};
+	std::for_each(account_addr_vec->begin(), account_addr_vec->end(), action);
+
+	return sp_asset_vec;
+}
+
 account_status block_chain_impl::get_account_user_status(const std::string& name)
 {
 	account_status ret_val = account_status::error;
@@ -1105,54 +1436,68 @@ bool block_chain_impl::set_account_system_status(const std::string& name, uint8_
 	}
 	return ret_val;
 }
-bool block_chain_impl::is_asset_exist(const std::string& name, const std::string& asset_name)
-{
-	auto sh_vec = get_account_asset(name, asset_name);
-	return sh_vec->size() != 0;
-}
 
-/* begin todo -- will be removed later-- not use following api */
-uint16_t block_chain_impl::get_asset_status(const std::string& name)
+void block_chain_impl::fired()
 {
-	return 0;
+	organizer_.fired();
 }
-bool block_chain_impl::is_asset_exist(const std::string& name)
+/* find asset symbol exist or not
+*  find steps:
+*  1. find from blockchain
+*  2. find from local database(includes account created asset) if add_local_db = true
+*/
+bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_local_db)
 {
-	return nullptr != get_asset(name);
-}
-/// just store data into database "not do same address check"  -- todo 
-operation_result block_chain_impl::store_asset(std::shared_ptr<asset_detail> ptr)
-{
-	if (stopped())
-	{
-		return operation_result::failure;
+	// 1. find from blockchain database
+	auto sh_bc_vec = get_issued_assets();
+	
+	for(auto& acc : *sh_bc_vec) {
+		if(asset_name.compare(acc.get_symbol())==0)
+			return true;
 	}
-	if (!(ptr))
-	{
-        throw std::runtime_error{"nullptr for asset detail"};
+
+	// 2. find from local database asset
+	if(add_local_db) {
+		auto sh_acc_vec = get_local_assets();
+		// scan all account asset
+		for(auto& acc : *sh_acc_vec) {
+			if(asset_name.compare(acc.get_symbol())==0)
+				return true;
+		}
 	}
-	///////////////////////////////////////////////////////////////////////////
-	// Critical Section.
-	unique_lock lock(mutex_);
-
-	const auto hash = get_hash(ptr->get_symbol());
-	database_.assets.store(hash, *ptr);
-	database_.assets.sync();
-	///////////////////////////////////////////////////////////////////////////
-	return operation_result::okay;
+	
+	return false;
 }
-
-operation_result block_chain_impl::delete_asset(const std::string& name)
+/// get asset from local database including all account's assets
+std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_local_assets()
 {
-	return operation_result::okay;
+	auto ret_vec = std::make_shared<std::vector<asset_detail>>();
+	auto sh_acc_vec = get_accounts();
+	// scan all account asset -- maybe the asset has been issued
+	for(auto& acc : *sh_acc_vec) {
+		auto no_issued_assets = database_.account_assets.get(get_short_hash(acc.get_name()));
+		for (auto& detail : no_issued_assets){
+			ret_vec->emplace_back(std::move(detail));
+		}
+	}
+	
+	return ret_vec;
 }
-/// get asset info by its symbol name
-std::shared_ptr<asset_detail> block_chain_impl::get_asset(const std::string& name)
-{
- 	return database_.assets.get_asset_result(get_hash(name)).get_asset_detail();
-}
-/* end todo -- will be removed later */
 
-/* end store account related info into database */
+void block_chain_impl::uppercase_symbol(std::string& symbol)
+{
+    // uppercase symbol
+    for (auto& i : symbol){
+        if (!(std::isalnum(i) || i=='.'))
+            throw std::logic_error{"symbol must be alpha or number or point."};
+        i = std::toupper(i);
+    }
+}
+bool block_chain_impl::is_valid_address(const std::string& address)
+{	
+	using namespace bc::wallet;
+	return payment_address(address);
+}
+
 } // namespace blockchain
 } // namespace libbitcoin

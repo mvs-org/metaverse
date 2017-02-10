@@ -60,6 +60,7 @@ private:
 
     void get_block_inventory(const code& ec);
     void send_get_blocks(const hash_digest& stop_hash);
+    void send_get_blocks(const hash_digest& from_hash, const hash_digest& to_hash);
     void send_get_data(const code& ec, get_data_ptr message);
 
     bool handle_receive_block(const code& ec, block_ptr message);
@@ -77,6 +78,7 @@ private:
     bc::atomic<hash_digest> last_locator_top_;
     bc::atomic<hash_digest> current_chain_top_;
     const bool headers_from_peer_;
+    std::atomic_int headers_batch_size_;
     std::string name_;
 };
 

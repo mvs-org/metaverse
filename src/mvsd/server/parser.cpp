@@ -28,7 +28,7 @@
 #include <bitcoin/server/parser.hpp>
 #include <bitcoin/server/settings.hpp>
 
-BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bs.cfg")
+BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 
 // TODO: localize descriptions.
 
@@ -58,8 +58,9 @@ options_metadata parser::load_options()
     description.add_options()
     (
         BS_CONFIG_VARIABLE ",c",
-        value<path>(&configured.file),
-        "Specify path to a configuration settings file."
+        value<path>(&configured.file)->
+		default_value("mvs.conf"),
+        "Specify path to a configuration settings file based on path ~/.metaverse"
     )
     (
         BS_HELP_VARIABLE ",h",
@@ -84,7 +85,20 @@ options_metadata parser::load_options()
         value<bool>(&configured.version)->
             default_value(false)->zero_tokens(),
         "Display version information."
-    );
+    )
+	(
+		BS_DAEMON_VARIABLE ",d",
+		value<bool>(&configured.daemon)->
+			default_value(false)->zero_tokens(),
+		"Run in daemon mode (unix/apple)."
+	)
+	(
+		"testnet,t",
+		value<bool>(&configured.use_testnet_rules)->
+			default_value(false)->zero_tokens(),
+		"Use testnet rules for determination of work required, defaults to false."
+	)
+	;
 
     return description;
 }
@@ -131,12 +145,12 @@ options_metadata parser::load_settings()
     (
         "network.identifier",
         value<uint32_t>(&configured.network.identifier),
-        "The magic number for message headers, defaults to 3652501241."
+        "The magic number for message headers, defaults to 0x6d73766d."
     )
     (
         "network.inbound_port",
         value<uint16_t>(&configured.network.inbound_port),
-        "The port for incoming connections, defaults to 8333."
+        "The port for incoming connections, defaults to 5251."
     )
     (
         "network.inbound_connections",
@@ -296,6 +310,11 @@ options_metadata parser::load_settings()
     )
 
     /* [server] */
+	(
+		"server.mongoose_listen",
+		value<std::string>(&configured.server.mongoose_listen),
+		"the listening port for mongoose, defaults to 127.0.0.1:8820."
+	)
     (
         "server.query_workers",
         value<uint16_t>(&configured.server.query_workers),

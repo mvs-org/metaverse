@@ -37,6 +37,7 @@
 #include <boost/variant.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset.hpp>
 #include <bitcoin/bitcoin/chain/attachment/etp/etp.hpp>
+#include <bitcoin/bitcoin/chain/attachment/message/message.hpp>
 #include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
@@ -48,6 +49,7 @@
 #include <bitcoin/database/databases/address_asset_database.hpp>
 #include <bitcoin/database/databases/account_asset_database.hpp>
 //#include <bitcoin/bitcoin/wallet/payment_address.hpp>
+#define  LOG_DATABASE  "database"  // for log_debug output
 
 using namespace libbitcoin::wallet;                                         
 using namespace libbitcoin::chain;   
@@ -142,6 +144,12 @@ public:
 
 	void push_etp(const etp& etp, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value);
+
+	void push_etp_award(const etp_award& etp, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value);
+
+	void push_message(const chain::blockchain_message& msg, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
 	void push_asset(const asset& sp, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
@@ -168,6 +176,14 @@ public:
 		void operator()(const etp &t) const
 		{
 			return db_->push_etp(t, sh_hash_, outpoint_, output_height_, value_);
+		}
+		void operator()(const etp_award &t) const
+		{
+			return db_->push_etp_award(t, sh_hash_, outpoint_, output_height_, value_);
+		}
+		void operator()(const chain::blockchain_message &t) const
+		{
+			return db_->push_message(t, sh_hash_, outpoint_, output_height_, value_);
 		}
 	private:
         data_base* db_;
@@ -201,7 +217,7 @@ public:
 		uint32_t output_height_;
 		uint64_t value_;
 	};
-
+	void set_admin(const std::string& name, const std::string& passwd);
    /* begin store asset info into  database */
 
 protected:
@@ -239,6 +255,9 @@ private:
 
     // Cross-database mutext to prevent concurrent file remapping.
     std::shared_ptr<shared_mutex> mutex_;
+
+	// temp block timestamp
+	uint32_t timestamp_;
 
 public:
 

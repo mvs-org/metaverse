@@ -99,6 +99,10 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "coinbase transaction disallowed in memory pool";
         case error::is_not_standard:
             return "transaction is not standard";
+        case error::invalid_input_script_lock_height:
+            return "get coinage reward transaction input script lock heigh value error";
+        case error::invalid_output_script_lock_height:
+            return "get coinage reward transaction output script lock heigh value error";
         case error::double_spend:
             return "double spend of input";
         case error::input_not_found:
@@ -157,6 +161,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "fees are out of range";
         case error::coinbase_too_large:
             return "coinbase value is too large";
+        case error::invalid_coinage_reward_coinbase:
+            return "coinage reward coinbase value is wrong";
 
         // file system errors
         case error::file_system:
@@ -169,6 +175,12 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "channel is stopped";
         case error::not_satisfied:
         	return "not satisfied";
+
+        case error::asset_exist:
+            return "asset exist";
+
+        case error::asset_symbol_invalid:
+            return "asset symbol invalid";
 
         // unknown errors
         case error::unknown:

@@ -57,6 +57,7 @@ protocol_transaction_out::protocol_transaction_out(p2p& network,
 
 void protocol_transaction_out::start()
 {
+	protocol_events::start(BIND1(handle_stop, _1));
     // TODO: move relay to a derived class protocol_transaction_out_70001.
     // Prior to this level transaction relay is not configurable.
     if (relay_to_peer_)
@@ -68,6 +69,8 @@ void protocol_transaction_out::start()
     // TODO: move fee filter to a derived class protocol_transaction_out_70013.
     // Filter announcements by fee if set.
     SUBSCRIBE2(fee_filter, handle_receive_fee_filter, _1, _2);
+    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+
 }
 
 // Receive send_headers.
@@ -127,12 +130,27 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
         return false;
     }
 
+    if (message->inventories.size() > 50000)
+    {
+    	return not misbehaving(20);
+    }
+
     // TODO: these must return message objects or be copied!
     // Ignore non-transaction inventory requests in this protocol.
-    for (const auto& inventory: message->inventories)
-        if (inventory.type == inventory::type_id::transaction)
-            blockchain_.fetch_transaction(inventory.hash,
-                BIND3(send_transaction, _1, _2, inventory.hash));
+    for (const auto& inv: message->inventories)
+        if (inv.type == inventory::type_id::transaction)
+        {
+    		pool_.fetch(inv.hash, [this, &inv](const code& ec, transaction_ptr tx){
+    			auto t = tx ? *tx : chain::transaction{};
+    			send_transaction(ec, t, inv.hash);
+    			if(ec)
+    			{
+    				blockchain_.fetch_transaction(inv.hash,
+    				BIND3(send_transaction, _1, _2, inv.hash));
+    			}
+    		});
+        }
+
 
     return true;
 }
@@ -162,6 +180,8 @@ void protocol_transaction_out::send_transaction(const code& ec,
         return;
     }
 
+    log::debug(LOG_NODE) << "send transaction " << encode_hash(transaction.hash()) << ", to " << authority();
+
     // TODO: eliminate copy.
     SEND2(transaction_message(transaction), handle_send, _1,
         transaction_message::command);
@@ -175,6 +195,11 @@ bool protocol_transaction_out::handle_floated(const code& ec,
 {
     if (stopped() || ec == error::service_stopped)
         return false;
+
+    if (ec == error::mock)
+	{
+		return true;
+	}
 
     if (ec)
     {
@@ -204,6 +229,7 @@ void protocol_transaction_out::handle_stop(const code&)
 {
     log::debug(LOG_NETWORK)
         << "Stopped transaction_out protocol";
+    pool_.fired();
 }
 
 } // namespace node

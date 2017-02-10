@@ -26,16 +26,24 @@
 #include <vector>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/blockchain/define.hpp>
+#include <bitcoin/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
+
+// Max block size (1000000 bytes).
+constexpr uint32_t max_block_size = 1000000;
+
+// Maximum signature operations per block (20000).
+constexpr uint32_t max_block_script_sigops = max_block_size / 50;
+
 
 // TODO: this is not an interface, collapse with validate_block_impl.
 /// This class is not thread safe.
 class BCB_API validate_block
 {
 public:
-    code check_block() const;
+    code check_block(blockchain::block_chain_impl& chain) const;
     code accept_block() const;
     code connect_block() const;
 
@@ -52,6 +60,7 @@ protected:
         bool testnet, const config::checkpoint::list& checks,
         stopped_callback stop_callback);
 
+    virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& tx) const = 0;
     virtual uint64_t median_time_past() const = 0;
     virtual u256 previous_block_bits() const = 0;
     virtual uint64_t actual_time_span(size_t interval) const = 0;
@@ -81,7 +90,7 @@ protected:
     u256 work_required(bool is_testnet) const;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
-    static bool is_valid_proof_of_work(const chain::header& header);
+    virtual bool is_valid_proof_of_work(const chain::header& header)const = 0;
     static bool is_valid_coinbase_height(size_t height,
         const chain::block& block);
     //static size_t legacy_sigops_count(const chain::transaction& tx);

@@ -36,7 +36,8 @@ block_detail::block_detail(block_ptr actual_block)
   : code_(error::success),
     processed_(false),
     height_(orphan_height),
-    actual_block_(actual_block)
+    actual_block_(actual_block),
+    is_checked_work_proof_(false)
 {
 }
 

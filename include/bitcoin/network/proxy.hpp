@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <bitcoin/bitcoin.hpp>
@@ -32,6 +33,8 @@
 #include <bitcoin/network/define.hpp>
 #include <bitcoin/network/message_subscriber.hpp>
 #include <bitcoin/network/socket.hpp>
+#include <bitcoin/bitcoin/utility/dispatcher.hpp>
+#include <boost/thread.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -47,6 +50,7 @@ public:
     typedef subscriber<const code&> stop_subscriber;
     typedef resubscriber<const code&, const std::string&, const_buffer,
         result_handler> send_subscriber;
+    using RequestCallback = std::function<void()>;
 
     /// Construct an instance.
     proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
@@ -94,6 +98,18 @@ public:
     /// Stop reading or sending messages on this socket.
     virtual void stop(const code& ec);
 
+    void dispatch();
+
+    void clear_request() {
+    	scoped_lock lock{mutex_};
+    	std::queue<RequestCallback>{}.swap(pendingRequests_);
+    	processing_.store(false);
+    }
+
+    static bool blacklisted(const config::authority&);
+
+    virtual bool misbehaving(int32_t howmuch);
+
 protected:
     virtual bool stopped() const;
     virtual void handle_activity() = 0;
@@ -120,6 +136,8 @@ private:
     void handle_send(const boost_code& ec, const_buffer buffer,
         result_handler handler);
 
+    void handle_request(data_chunk payload_buffer, uint32_t protocol_version_, message::heading head, size_t payload_size);
+
     const uint32_t protocol_magic_;
     const uint32_t protocol_version_;
     const config::authority authority_;
@@ -128,6 +146,8 @@ private:
     data_chunk heading_buffer_;
     data_chunk payload_buffer_;
 
+    dispatcher dispatch_;
+
     // These are thread safe.
     socket::ptr socket_;
     std::atomic<bool> stopped_;
@@ -135,6 +155,13 @@ private:
     bc::atomic<message::version::ptr> peer_version_message_;
     message_subscriber message_subscriber_;
     stop_subscriber::ptr stop_subscriber_;
+    std::queue<RequestCallback> pendingRequests_;
+    std::atomic_bool processing_;
+    unique_mutex mutex_;
+
+    std::atomic_int misbehaving_;
+	boost::detail::spinlock spinlock_;
+	static std::map<config::authority, int64_t> banned_;
 };
 
 } // namespace network

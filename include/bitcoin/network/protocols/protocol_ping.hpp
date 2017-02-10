@@ -57,6 +57,8 @@ public:
      */
     virtual void start(result_handler handler);
 
+    void handle_or_not(uint64_t nonce);
+
 private:
     void send_ping(const code& ec);
     void test_call_handler(const code& ec);

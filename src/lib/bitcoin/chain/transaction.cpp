@@ -248,6 +248,7 @@ uint64_t transaction::serialized_size() const
     return tx_size;
 }
 
+#ifdef MVS_DEBUG
 std::string transaction::to_string(uint32_t flags) const
 {
     std::ostringstream value;
@@ -266,6 +267,7 @@ std::string transaction::to_string(uint32_t flags) const
     value << "\n";
     return value.str();
 }
+#endif
 
 hash_digest transaction::hash() const
 {
@@ -341,6 +343,32 @@ uint64_t transaction::total_output_value() const
     };
 
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
+}
+
+uint64_t transaction::total_output_transfer_amount() const
+{
+    const auto value = [](uint64_t total, const output& output)
+    {
+        return total + output.get_asset_amount();
+    };
+    return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
+}
+
+bool transaction::has_asset_issue()
+{
+	for (auto& elem: outputs) {
+		if(elem.is_asset_issue())
+			return true;
+	}
+	return false;
+}
+bool transaction::has_asset_transfer()
+{
+	for (auto& elem: outputs) {
+		if(elem.is_asset_transfer())
+			return true;
+	}
+	return false;
 }
 
 } // namspace chain

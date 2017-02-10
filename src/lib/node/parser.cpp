@@ -86,7 +86,13 @@ options_metadata parser::load_options()
         value<bool>(&configured.version)->
             default_value(false)->zero_tokens(),
         "Display version information."
-    );
+    )
+	(
+		"daemon,d",
+		value<bool>(&configured.daemon)->
+			default_value(false)->zero_tokens(),
+		"Run in daemon mode or not"
+	);
 
     return description;
 }

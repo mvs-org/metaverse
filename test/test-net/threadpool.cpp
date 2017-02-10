@@ -36,4 +36,20 @@ BOOST_AUTO_TEST_CASE(case_threadpool)
 }
 
 
+BOOST_AUTO_TEST_CASE(case_interupt)
+{
+	boost::thread th{[](){
+		while(true)
+		{
+			std::cout << "aaa" << std::endl;
+			boost::this_thread::interruption_point();
+			boost::this_thread::sleep(boost::posix_time::milliseconds{100});
+		}
+	}};
+	boost::this_thread::sleep(boost::posix_time::seconds{1});
+	th.interrupt();
+	boost::this_thread::sleep(boost::posix_time::seconds{10});
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

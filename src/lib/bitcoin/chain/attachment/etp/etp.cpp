@@ -82,11 +82,14 @@ bool etp::from_data(std::istream& stream)
 
 bool etp::from_data(reader& source)
 {
+	/*
     reset();
     value = source.read_8_bytes_little_endian();
     auto result = static_cast<bool>(source);
 	
     return result;
+	*/
+	return true;
 }
 
 data_chunk etp::to_data() const
@@ -107,13 +110,14 @@ void etp::to_data(std::ostream& stream) const
 
 void etp::to_data(writer& sink) const
 {
-	sink.write_8_bytes_little_endian(value);
+	//sink.write_8_bytes_little_endian(value); // not use etp now
 }
 
 uint64_t etp::serialized_size() const
 {
-    uint64_t size = 8;
-	return size;
+    //uint64_t size = 8;
+	//return size;
+	return 0; // not insert ept into transaction
 }
 
 std::string etp::to_string() const

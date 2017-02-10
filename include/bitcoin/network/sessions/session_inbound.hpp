@@ -62,6 +62,7 @@ private:
 
     void handle_channel_start(const code& ec, channel::ptr channel);
     void handle_channel_stop(const code& ec);
+    p2p& network_;
 };
 
 } // namespace network

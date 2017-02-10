@@ -44,6 +44,13 @@ enum account_status : uint8_t
 	logout,
 	error,
 };
+
+enum account_priority : uint8_t
+{
+	// 0 -- admin user  1 -- common user
+	administrator = 0,
+	common_user = 1,
+};
 /// used for store account related information 
 class BC_API account
 {
@@ -62,12 +69,16 @@ public:
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
-    std::string to_string() ;
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
 	operator bool() const;
+	bool operator==(const account& other) const;
+	
+#ifdef MVS_DEBUG
+    std::string to_string() ;
 	void to_json(std::ostream& output);
+#endif
 	
 	const std::string& get_name() const;
 	void set_name(const std::string& name);

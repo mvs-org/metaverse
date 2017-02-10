@@ -109,6 +109,12 @@ bool unwrap_fetch_transaction_args(hash_digest& hash,
 void chain_transaction_fetched(const code& ec, const chain::transaction& tx,
     const message& request, send_handler handler)
 {
+	// wdy add for tx is null reference
+	if(error::not_found == ec) {
+    	handler(message(request, error::not_found));
+		return;
+	}
+	
     const auto result = build_chunk(
     {
         message::to_bytes(ec),

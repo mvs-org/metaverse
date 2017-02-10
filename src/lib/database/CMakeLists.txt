@@ -2,6 +2,8 @@ FILE(GLOB_RECURSE database_SOURCES "*.cpp")
 
 ADD_DEFINITIONS(-DBCD_STATIC=1)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-braced-scalar-init")
+
 ADD_LIBRARY(database_static STATIC ${database_SOURCES})
 SET_TARGET_PROPERTIES(database_static PROPERTIES OUTPUT_NAME mvs_database)
 TARGET_LINK_LIBRARIES(database_static ${Boost_LIBRARIES} ${bitcoin_LIBRARY})

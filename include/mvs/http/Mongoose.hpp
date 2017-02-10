@@ -31,7 +31,7 @@
 namespace http {
 namespace mg {
 
-#define SESSION_COOKIE_NAME "mvss"
+#define SESSION_COOKIE_NAME "2iBXdhW9rQxbnDdNQk9KdjiytM9X"
 
 inline std::string_view operator+(const mg_str& str) noexcept
 {
@@ -47,12 +47,30 @@ class ToCommandArg{
 public:
     auto argv() const noexcept { return argv_; }
     auto argc() const noexcept { return argc_; }
+    const auto& get_command() const { 
+        if(!vargv_.empty()) 
+            return vargv_[0]; 
+        throw std::logic_error{"no command found"};
+    }
+    bool is_miner_command() const {
+        auto cmd = get_command();
+         if (cmd == "getwork" or
+             cmd == "submitwork" or
+             cmd == "start" or
+             cmd == "stop"  or
+             cmd == "setminingaccount" or
+             cmd == "getmininginfo" or
+             cmd == "fetchheaderext"){
+            return true;
+        }
+        return false;
+    }
     void add_arg(std::string&& outside);
 
     static const int max_paramters{32};
 protected:
 
-    virtual void data_to_arg() noexcept = 0;
+    virtual void data_to_arg() = 0;
     const char* argv_[max_paramters]{{nullptr}};
     int argc_{0};
 
@@ -67,12 +85,12 @@ public:
     
     // Copy.
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1778
-    HttpMessage(const HttpMessage&) noexcept = default;
-    HttpMessage& operator=(const HttpMessage&) noexcept = default;
+    HttpMessage(const HttpMessage&) = default;
+    HttpMessage& operator=(const HttpMessage&) = default;
     
     // Move.
-    HttpMessage(HttpMessage&&) noexcept = default;
-    HttpMessage& operator=(HttpMessage&&) noexcept = default;
+    HttpMessage(HttpMessage&&) = default;
+    HttpMessage& operator=(HttpMessage&&) = default;
     
     auto get() const noexcept { return impl_; }
     auto method() const noexcept { return +impl_->method; }
@@ -86,7 +104,7 @@ public:
     }
     auto body() const noexcept { return +impl_->body; }
 
-    void data_to_arg() noexcept override;
+    void data_to_arg() override;
     
 private:
 
@@ -99,18 +117,18 @@ public:
     ~WebsocketMessage() noexcept = default;
     
     // Copy.
-    WebsocketMessage(const WebsocketMessage&) noexcept = default;
-    WebsocketMessage& operator=(const WebsocketMessage&) noexcept = default;
+    WebsocketMessage(const WebsocketMessage&) = default;
+    WebsocketMessage& operator=(const WebsocketMessage&) = default;
     
     // Move.
-    WebsocketMessage(WebsocketMessage&&) noexcept = default;
-    WebsocketMessage& operator=(WebsocketMessage&&) noexcept = default;
+    WebsocketMessage(WebsocketMessage&&) = default;
+    WebsocketMessage& operator=(WebsocketMessage&&) = default;
     
     auto get() const noexcept { return impl_; }
     auto data() const noexcept { return reinterpret_cast<char*>(impl_->data); }
     auto size() const noexcept { return impl_->size; }
    
-    void data_to_arg() noexcept override;
+    void data_to_arg() override;
 private:
     websocket_message* impl_;
 };
@@ -171,6 +189,13 @@ public:
     static void logout_handler(mg_connection* conn, int ev, void* data){
        http_message* hm = static_cast<http_message*>(data);
        auto* self = static_cast<DerivedT*>(conn->user_data);
+
+       std::ostringstream shead;
+       shead<<"Set-Cookie: " SESSION_COOKIE_NAME "=";
+       mg_http_send_redirect(conn, 302, mg_mk_str("/login.html"), mg_mk_str(shead.str().c_str()));
+       self->remove_from_session_list(hm);
+
+       conn->flags |= MG_F_SEND_AND_CLOSE;
     }
 
     constexpr static const double session_check_interval = 5.0;
@@ -201,29 +226,11 @@ private:
             if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
                 self->httpRpcRequest(*conn, hm);
                 break;
-            }
-            // register call
-            if (mg_ncasecmp((&hm->uri)->p, "/api/getnewaccount", 18u) == 0) {
-                self->httpRequest(*conn, hm);
-                break;
-            }
-
-            // login required for other calls
-            if (!self->get_from_session_list(hm)) {
-                mg_http_send_redirect(conn, 302, mg_mk_str("/login.html"),
-                        mg_mk_str(nullptr));
-                conn->flags |= MG_F_SEND_AND_CLOSE;
-                break;
-            }
-
-            // logined, http request process
-            if (mg_ncasecmp((&hm->uri)->p, "/api", 4u) == 0) {
-                self->httpRequest(*conn, hm);
             }else{
                 self->httpStatic(*conn, hm);
                 conn->flags |= MG_F_SEND_AND_CLOSE;
+                break;
             }
-            break;
         }
         case MG_EV_WEBSOCKET_HANDSHAKE_DONE:{
             self->websocketSend(conn, "connected", 9);
@@ -237,7 +244,7 @@ private:
         }
         case MG_EV_TIMER:{
             self->check_sessions();
-            mg_set_timer(conn, mg_time() + self->session_check_interval);
+            mg_set_timer(conn, mg_time() + session_check_interval);
             break;
         }
        }// switch

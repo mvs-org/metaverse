@@ -52,6 +52,7 @@ private:
     void do_settings();
     void do_version();
     bool do_initchain();
+	void set_admin();
 
     void initialize_output();
     bool verify_directory();
@@ -72,12 +73,12 @@ private:
 #define BS_SETTINGS_MESSAGE \
     "These are the configuration settings that can be set."
 #define BS_INFORMATION_MESSAGE \
-    "Runs a full bitcoin node in the global peer-to-peer network."
+    "Runs a full metaverse node in the global peer-to-peer network."
 
 #define BS_UNINITIALIZED_CHAIN \
     "The %1% directory is not initialized. " \
-    "If this is your first time running bs, then please run:" \
-    " bs --initchain"
+    "If this is your first time running mvsd, please run:" \
+    " 'mvsd -i' for initializing."
 #define BS_INITIALIZING_CHAIN \
     "Please wait while initializing %1% directory..."
 #define BS_INITCHAIN_NEW \
@@ -115,11 +116,12 @@ private:
     "Using default configuration settings."
 #define BS_VERSION_MESSAGE \
     "\nVersion Information:\n\n" \
-    "libbitcoin-server:     %1%\n" \
-    "libbitcoin-protocol:   %2%\n" \
-    "libbitcoin-node:       %3%\n" \
-    "libbitcoin-blockchain: %4%\n" \
-    "libbitcoin:            %5%"
+    "mvsd:           %1%\n" \
+    "mvs-server:     %2%\n" \
+    "mvs-protocol:   %3%\n" \
+    "mvs-node:       %4%\n" \
+    "mvs-blockchain: %5%\n" \
+    "mvs-base:       %6%"
 #define BS_LOG_HEADER \
     "================= startup =================="
 

@@ -37,13 +37,13 @@ namespace database {
 using namespace boost::filesystem;
 using namespace bc::chain;
 
-BC_CONSTEXPR size_t number_buckets = 1000;
+BC_CONSTEXPR size_t number_buckets = 97210744;
 BC_CONSTEXPR size_t header_size = record_hash_table_header_size(number_buckets);
 BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_size;
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
-BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 + 8 + 2 + ASSET_DETAIL_FIX_SIZE; // ASSET_DETAIL_FIX_SIZE is the biggest one
+BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 + 8 + 2 + 4 + ASSET_DETAIL_FIX_SIZE; // ASSET_DETAIL_FIX_SIZE is the biggest one
 //		+ std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(asset_transfer_record_size);
 
@@ -123,15 +123,19 @@ bool address_asset_database::close()
 // ----------------------------------------------------------------------------
 void address_asset_database::store_input(const short_hash& key,
     const output_point& inpoint, uint32_t input_height,
-    const input_point& previous)
+    const input_point& previous, uint32_t timestamp)
 {
     auto write = [&](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_byte(static_cast<uint8_t>(point_kind::spend));
-        serial.write_data(inpoint.to_data());
-        serial.write_4_bytes_little_endian(input_height);
-        serial.write_8_bytes_little_endian(previous.checksum());
+        serial.write_byte(static_cast<uint8_t>(point_kind::spend)); // 1
+        serial.write_data(inpoint.to_data()); // 36
+        serial.write_4_bytes_little_endian(input_height); // 4
+        serial.write_8_bytes_little_endian(previous.checksum()); // 8
+
+		serial.write_2_bytes_little_endian(0); // 2 use etp type fill incase invalid when deser
+		serial.write_4_bytes_little_endian(timestamp); // 4
+		// asset data should be here but input has no these data
     };
     rows_multimap_.add_row(key, write);
 }
@@ -171,7 +175,12 @@ business_record::list address_asset_database::get(const short_hash& key,
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
             
-            business_data::factory_from_data(deserial)
+			// business_kd;
+            //deserial.read_2_bytes_little_endian(),
+			// timestamp;
+            //deserial.read_4_bytes_little_endian(),
+            
+            business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
 
@@ -210,7 +219,7 @@ business_history::list address_asset_database::get_business_history(const short_
             business_history row;
             row.output = output->point;
             row.output_height = output->height;
-            row.value = output->value;
+            row.value = output->val_chk_sum.value;
             row.spend = { null_hash, max_uint32 };
             row.temporary_checksum = output->point.checksum();
 			row.data = output->data;
@@ -230,7 +239,7 @@ business_history::list address_asset_database::get_business_history(const short_
         // Update outputs with the corresponding spends.
         for (auto& row: result)
         {
-            if (row.temporary_checksum == spend.previous_checksum &&
+            if (row.temporary_checksum == spend.val_chk_sum.previous_checksum &&
                 row.spend.hash == null_hash)
             {
                 row.spend = spend.point;
@@ -265,16 +274,125 @@ business_history::list address_asset_database::get_business_history(const short_
     return result;
 }
 
-business_address_asset::list address_asset_database::get_assets(const std::string& address, 
+// get address assets in the database(blockchain)
+std::shared_ptr<std::vector<business_history>> address_asset_database::get_address_business_history(const std::string& address, 
 	size_t from_height) const
 {
 	data_chunk data(address.begin(), address.end());
 	auto key = ripemd160_hash(data);
 	business_history::list result = get_business_history(key, from_height);
-	business_address_asset::list unspent;
+	auto unspent = std::make_shared<std::vector<business_history>>();
+	
+    for (auto& row: result)
+    {
+        if ((row.spend.hash == null_hash)) {// unspent business
+        	row.status = business_status::unspent;
+			unspent->emplace_back(row);
+        }
+
+		if (row.output_height != 0 
+				&&(row.spend.hash == null_hash || row.spend_height == 0)) {// confirmed business
+        	row.status = business_status::confirmed;
+			unspent->emplace_back(row);
+		}
+		
+    }
+	return unspent;
+	    
+}
+
+// get special kind of asset in the database(blockchain)
+/*
+ status -- // 0 -- unspent  1 -- confirmed
+*/
+business_history::list address_asset_database::get_business_history(const std::string& address, 
+	size_t from_height, business_kind kind, uint8_t status) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_history::list unspent;
+	// asset type check
+	if((kind != business_kind::asset_issue) // asset_detail
+		&& (kind != business_kind::asset_transfer) // asset_transfer
+		&& (kind != business_kind::etp))
+		return unspent;
+	
     for (const auto& row: result)
     {
-    	if(row.data.get_kind_value() == 0)
+    	if(row.data.get_kind_value() != kind)
+			continue;
+		
+        if ((row.spend.hash == null_hash)
+				&& (status == 0)) // unspent business
+			unspent.emplace_back(row);
+
+		if (row.output_height != 0 
+				&&(row.spend.hash == null_hash || row.spend_height == 0)
+				&& (status == 1)) // confirmed business
+			unspent.emplace_back(row);
+		
+    }
+	return unspent;
+	    
+}
+
+// get special kind of asset in the database(blockchain)
+/*
+ status -- // 0 -- unspent  1 -- confirmed
+*/
+business_history::list address_asset_database::get_business_history(const std::string& address, 
+	size_t from_height, business_kind kind, uint32_t time_begin, uint32_t time_end) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_history::list unspent;
+	// asset type check
+	if((kind != business_kind::asset_issue) // asset_detail
+		&& (kind != business_kind::asset_transfer) // asset_transfer
+		&& (kind != business_kind::etp))
+		return unspent;
+	
+    for (auto& row: result)
+    {
+    	if(row.data.get_kind_value() != kind
+			|| row.data.get_timestamp()<time_begin 
+			|| row.data.get_timestamp()>time_end)
+			continue;
+		
+        if ((row.spend.hash == null_hash)) {//0 -- unspent business
+        	row.status = 0;
+			unspent.emplace_back(row);
+        }
+
+		if (row.output_height != 0 
+				&&(row.spend.hash == null_hash || row.spend_height == 0)) {// 1 -- confirmed business
+			row.status = 1;
+			unspent.emplace_back(row);
+		}
+		
+    }
+	return unspent;
+	    
+}
+
+// get special kind of asset in the database(blockchain)
+business_address_asset::list address_asset_database::get_assets(const std::string& address, 
+	size_t from_height, business_kind kind) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_address_asset::list unspent;
+	// asset type check
+	if((kind != business_kind::asset_issue) // asset_detail
+		&& (kind != business_kind::asset_transfer)) // asset_transfer
+		return unspent;
+	
+    for (const auto& row: result)
+    {
+    	if(row.data.get_kind_value() != kind)
 			continue;
 		
         uint8_t status = 0xff; 
@@ -286,7 +404,7 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
             status = 1;
 		
 		business_address_asset detail;
-		if(row.data.get_kind_value()==1) // asset issue
+		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
 		{
 			auto issue_info = boost::get<asset_detail>(row.data.get_data());
 			detail.quantity = issue_info.get_maximum_supply();
@@ -307,6 +425,81 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 	    
 }
 
+// get all kinds of asset in the database(blockchain)
+business_address_asset::list address_asset_database::get_assets(const std::string& address, 
+	size_t from_height) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_address_asset::list unspent;
+    for (const auto& row: result)
+    {
+    	if((row.data.get_kind_value() != business_kind::asset_issue)  // asset_detail
+			&& (row.data.get_kind_value() != business_kind::asset_transfer))  // asset_transfer
+			continue;
+		
+        uint8_t status = 0xff; 
+        if (row.spend.hash == null_hash) 
+			status = 0; // 0 -- unspent  1 -- confirmed
+
+		if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = 1;
+		
+		business_address_asset detail;
+		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
+		{
+			auto issue_info = boost::get<asset_detail>(row.data.get_data());
+			detail.quantity = issue_info.get_maximum_supply();
+			detail.detail = issue_info;
+		}
+		else //asset transfer
+		{
+			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
+			detail.quantity = transfer_info.get_quantity();
+			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
+		}
+
+		detail.address = address; // account address
+		detail.status = status; // 0 -- unspent  1 -- confirmed
+		unspent.emplace_back(detail);
+    }
+	return unspent;
+	    
+}
+
+business_address_message::list address_asset_database::get_messages(const std::string& address, 
+	size_t from_height) const
+{
+	data_chunk data(address.begin(), address.end());
+	auto key = ripemd160_hash(data);
+	business_history::list result = get_business_history(key, from_height);
+	business_address_message::list unspent;
+    for (const auto& row: result)
+    {
+    	if((row.data.get_kind_value() != business_kind::message))  // asset_detail
+			continue;
+		
+        uint8_t status = 0xff; 
+        if (row.spend.hash == null_hash) 
+			status = 0; // 0 -- unspent  1 -- confirmed
+
+		if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = 1;
+		
+		business_address_message detail;
+		auto issue_info = boost::get<chain::blockchain_message>(row.data.get_data());
+		detail.msg = issue_info;
+
+		detail.address = address; // account address
+		detail.status = status; // 0 -- unspent  1 -- confirmed
+		unspent.emplace_back(detail);
+    }
+	return unspent;
+	    
+}
 void address_asset_database::sync()
 {
     lookup_manager_.sync();

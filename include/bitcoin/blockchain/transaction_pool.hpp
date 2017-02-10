@@ -71,6 +71,8 @@ public:
     /// Signal stop of current work, speeds shutdown.
     void stop();
 
+    void fired();
+
     void inventory(message::inventory::ptr inventory);
     void fetch(const hash_digest& tx_hash, fetch_handler handler);
     void fetch(fetch_all_handler handler);
@@ -101,6 +103,7 @@ protected:
 
     bool stopped();
     const_iterator find(const hash_digest& tx_hash) const;
+    const_iterator find(const std::string& assert_name) const;
 
     bool handle_reorganized(const code& ec, size_t fork_point,
         const block_list& new_blocks, const block_list& replaced_blocks);
@@ -139,6 +142,7 @@ private:
 
     // These methods are NOT thread safe.
     bool is_in_pool(const hash_digest& tx_hash) const;
+    bool is_in_pool(const std::string& assert_name) const;
     bool is_spent_in_pool(transaction_ptr tx) const;
     bool is_spent_in_pool(const chain::transaction& tx) const;
     bool is_spent_in_pool(const chain::output_point& outpoint) const;

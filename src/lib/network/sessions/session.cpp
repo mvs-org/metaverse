@@ -96,7 +96,8 @@ bool session::blacklisted(const authority& authority) const
 {
     const auto& blocked = settings_.blacklists;
     const auto it = std::find(blocked.begin(), blocked.end(), authority);
-    return it != blocked.end();
+    auto result = it != blocked.end();
+    return result ? true : channel::blacklisted(authority);
 }
 
 void session::remove(const message::network_address& address, result_handler handler)

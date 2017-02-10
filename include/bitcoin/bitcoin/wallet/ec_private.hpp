@@ -50,7 +50,8 @@ public:
     // as a parameterized mapping is required, so we use the same technique as
     // with hd keys, merging the two necessary values into one version.
     static const uint8_t wif;
-    static const uint8_t mainnet_p2kh;
+    // chenhao bad modify
+    static uint8_t mainnet_p2kh;
     static const uint16_t mainnet;
     static const uint8_t compressed_sentinel;
 

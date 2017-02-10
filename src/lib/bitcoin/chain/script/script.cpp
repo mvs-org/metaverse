@@ -91,6 +91,9 @@ script_pattern script::pattern() const
     if (operation::is_pay_key_hash_pattern(operations))
         return script_pattern::pay_key_hash;
 
+    if (operation::is_pay_key_hash_with_lock_height_pattern(operations))
+        return script_pattern::pay_key_hash_with_lock_height;
+
     if (operation::is_pay_script_hash_pattern(operations))
         return script_pattern::pay_script_hash;
 
@@ -102,6 +105,9 @@ script_pattern script::pattern() const
 
     if (operation::is_sign_key_hash_pattern(operations))
         return script_pattern::sign_key_hash;
+
+    if (operation::is_sign_key_hash_with_lock_height_pattern(operations))
+        return script_pattern::sign_key_hash_with_lock_height;
 
     if (operation::is_sign_script_hash_pattern(operations))
         return script_pattern::sign_script_hash;

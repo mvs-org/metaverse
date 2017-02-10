@@ -39,6 +39,9 @@ protected:
 
 private:
     const std::string class_;
+#ifndef NDEBUG
+    std::size_t count_;
+#endif
 };
 
 #include <bitcoin/bitcoin/impl/utility/track.ipp>

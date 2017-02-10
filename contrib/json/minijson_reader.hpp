@@ -934,7 +934,7 @@ void parse_object(Context& context, Handler handler)
         case OPENING_BRACKET:
             if (c != '{')
             {
-				std::cout<<"fuck:"<<static_cast<int>(c)<<std::endl;
+				//std::cout<<"fuck:"<<static_cast<int>(c)<<std::endl;
                 throw parse_error(context, parse_error::EXPECTED_OPENING_BRACKET);
             }
             state = FIELD_NAME_OR_CLOSING_BRACKET;

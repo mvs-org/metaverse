@@ -27,7 +27,7 @@
 #include <bitcoin/database/memory/memory_map.hpp>
 #include <bitcoin/database/primitives/record_multimap.hpp>
 #include <bitcoin/bitcoin/chain/attachment/account/account_address.hpp>
-#include <bitcoin/database/result/account_address_result.hpp>  // todo -- remove later
+//#include <bitcoin/database/result/account_address_result.hpp>  // todo -- remove later
 using namespace libbitcoin::chain;
 
 namespace libbitcoin {
@@ -88,16 +88,6 @@ public:
 
     /// Return statistical info about the database.
     account_address_statinfo statinfo() const;
-
-	/* todo -- remove later */
-	/// get account_address info by symbol hash
-	account_address_result get_account_address_result(const hash_digest& hash) const;
-	
-    /// Store a account_address in the database. Returns a unique index
-    /// which can be used to reference the account_address.
-    void store(const hash_digest& hash, const account_address account_address);
-
-	/* todo -- remove later */
 
 private:
     typedef record_hash_table<short_hash> record_map;

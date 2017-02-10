@@ -126,6 +126,8 @@ public:
         result_handler handler) = 0;
 
     virtual void subscribe_reorganize(reorganize_handler handler) = 0;
+
+    virtual void fired() = 0; // used for removing out of date action
 };
 
 } // namespace blockchain

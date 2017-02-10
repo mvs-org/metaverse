@@ -35,14 +35,15 @@ namespace database {
 using namespace boost::filesystem;
 using namespace bc::chain;
 
-BC_CONSTEXPR size_t number_buckets = 1000;
+BC_CONSTEXPR size_t number_buckets = 9997;
 BC_CONSTEXPR size_t header_size = record_hash_table_header_size(number_buckets);
 BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_size;
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
 BC_CONSTEXPR size_t address_db_size = ADDRESS_NAME_FIX_SIZE + ADDRESS_PRV_KEY_FIX_SIZE + ADDRESS_PUB_KEY_FIX_SIZE \
-	+ ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE; // 222 -- refer account_address.hpp
+	+ ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE
+	+ ADDRESS_STATUS_FIX_SIZE; // 222 -- refer account_address.hpp
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(address_db_size);
 
 account_address_database::account_address_database(const path& lookup_filename,
@@ -191,18 +192,6 @@ account_address_statinfo account_address_database::statinfo() const
         rows_manager_.count()
     };
 }
-/* todo -- remove later */
-void account_address_database::store(const hash_digest& hash, const account_address account_address)
-{
-	
-}
-account_address_result account_address_database::get_account_address_result(const hash_digest& hash) const
-{
-    return account_address_result(nullptr);
-}
-
-/* todo -- remove later */
-
 
 } // namespace database
 } // namespace libbitcoin

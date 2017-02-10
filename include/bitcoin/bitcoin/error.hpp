@@ -76,6 +76,8 @@ enum error_code_t
     is_not_standard,
     double_spend,
     input_not_found,
+    invalid_input_script_lock_height,
+    invalid_output_script_lock_height,
 
     // check_transaction()
     empty_transaction,
@@ -108,6 +110,7 @@ enum error_code_t
     validate_inputs_failed,
     fees_out_of_range,
     coinbase_too_large,
+    invalid_coinage_reward_coinbase,
 
     // file system errors
     file_system,
@@ -118,7 +121,18 @@ enum error_code_t
     // network errors (more)
     address_blocked,
     channel_stopped,
-	not_satisfied
+	not_satisfied,
+	mock,
+
+	// asset check
+    asset_amount_overflow,
+	asset_amount_not_equal,
+	asset_symbol_not_match,
+    asset_symbol_invalid,
+    asset_exist,
+
+	//syn block
+	fetch_more_block,
 };
 
 enum error_condition_t

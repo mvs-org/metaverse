@@ -26,11 +26,13 @@
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
 
-#define ASSET_TYPE static_cast<typename std::underlying_type<attachment_type>::type>(attachment_type::attachment_asset)
-#define ETP_TYPE   static_cast<typename std::underlying_type<attachment_type>::type>(attachment_type::attachment_none)
-
 namespace libbitcoin {
 namespace chain {
+
+attachment::attachment()
+{
+	reset();
+}
 attachment attachment::factory_from_data(const data_chunk& data)
 {
     attachment instance;
@@ -67,7 +69,9 @@ bool attachment::is_valid() const
 bool attachment::is_valid_type() const
 {
     return ((ETP_TYPE == type)
-		|| (ASSET_TYPE == type));
+		|| (ASSET_TYPE == type)
+		|| (MESSAGE_TYPE == type)
+		|| (ETP_AWARD_TYPE == type));
 }
 
 
@@ -101,9 +105,19 @@ bool attachment::from_data(reader& source)
 				attach = etp();
 				break;
 			}
+			case ETP_AWARD_TYPE:
+			{
+				attach = etp_award();
+				break;
+			}
 			case ASSET_TYPE:
 			{
 				attach = asset();
+				break;
+			}
+			case MESSAGE_TYPE:
+			{
+				attach = blockchain_message();
 				break;
 			}
 		}
@@ -151,7 +165,7 @@ uint64_t attachment::serialized_size() const
 
 	return size;
 }
-
+#ifdef MVS_DEBUG
 std::string attachment::to_string() const
 {
     std::ostringstream ss;
@@ -162,6 +176,29 @@ std::string attachment::to_string() const
 	ss << boost::apply_visitor(visitor, attach);
 
     return ss.str();
+}
+#endif
+
+uint32_t attachment::get_version() const
+{ 
+    return version;
+}
+void attachment::set_version(uint32_t version)
+{ 
+     this->version = version;
+}
+
+uint32_t attachment::get_type() const
+{ 
+    return type;
+}
+void attachment::set_type(uint32_t type)
+{ 
+     this->type = type;
+}
+attachment::attachment_data_type& attachment::get_attach()
+{
+	return this->attach;
 }
 
 } // namspace chain

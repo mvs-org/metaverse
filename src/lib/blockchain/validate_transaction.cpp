@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/blockchain/validate_transaction.hpp>
+#include <bitcoin/bitcoin/chain/script/operation.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -25,6 +26,7 @@
 #include <memory>
 #include <bitcoin/bitcoin.hpp>
 #include <bitcoin/blockchain/transaction_pool.hpp>
+#include <bitcoin/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
 #include <bitcoin/consensus.hpp>
@@ -32,6 +34,8 @@
 
 namespace libbitcoin {
 namespace blockchain {
+
+static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
 
 using namespace chain;
 using namespace std::placeholders;
@@ -61,7 +65,7 @@ validate_transaction::validate_transaction(block_chain& chain,
 void validate_transaction::start(validate_handler handler)
 {
     handle_validate_ = handler;
-    const auto ec = basic_checks();
+    const auto ec = basic_checks(static_cast<blockchain::block_chain_impl&>(this->blockchain_));
 
     if (ec)
     {
@@ -79,9 +83,9 @@ void validate_transaction::start(validate_handler handler)
                 shared_from_this(), _1));
 }
 
-code validate_transaction::basic_checks() const
+code validate_transaction::basic_checks(blockchain::block_chain_impl& chain) const
 {
-    const auto ec = check_transaction(*tx_);
+    const auto ec = check_transaction(*tx_, chain);
 
     if (ec)
         return ec;
@@ -146,6 +150,10 @@ void validate_transaction::set_last_height(const code& ec,
     last_block_height_ = last_height;
     current_input_ = 0;
     value_in_ = 0;
+	asset_amount_in_ = 0;
+	old_symbol_in_ = "";
+	new_symbol_in_ = "";
+	business_tp_in_ = 0;
 
     // Begin looping through the inputs, fetching the previous tx.
     if (!tx_->inputs.empty())
@@ -218,7 +226,8 @@ void validate_transaction::handle_previous_tx(const code& ec,
 
     // Should check if inputs are standard here...
     if (!connect_input(*tx_, current_input_, previous_tx, parent_height,
-        last_block_height_, value_in_, script_context::all_enabled))
+        last_block_height_, value_in_, script_context::all_enabled, asset_amount_in_, old_symbol_in_,
+    new_symbol_in_, business_tp_in_))
     {
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
@@ -261,14 +270,27 @@ void validate_transaction::check_fees()
         handle_validate_(error::fees_out_of_range, tx_, {});
         return;
     }
-
+	if(((business_tp_in_== ASSET_DETAIL_TYPE) && tx_->has_asset_transfer())
+		|| ((business_tp_in_== ASSET_TRANSFERABLE_TYPE) && tx_->has_asset_transfer())) {
+	    if (!check_asset_amount(*tx_))
+	    {
+	        handle_validate_(error::asset_amount_not_equal, tx_, {});
+	        return;
+	    }
+		
+	    if (!check_asset_symbol(*tx_))
+	    {
+	        handle_validate_(error::asset_symbol_not_match, tx_, {});
+	        return;
+	    }
+	}
     // Who cares?
     // Fuck the police
     // Every tx equal!
     handle_validate_(error::success, tx_, unconfirmed_);
 }
 
-code validate_transaction::check_transaction(const transaction& tx)
+code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
 {
     if (tx.inputs.empty() || tx.outputs.empty())
         return error::empty_transaction;
@@ -289,6 +311,31 @@ code validate_transaction::check_transaction(const transaction& tx)
         if (total_output_value > max_money())
             return error::output_value_overflow;
     }
+    // Check for negative or overflow sset issue/transfer amount
+    uint64_t total_asset_amount = 0;
+    for (const auto& output: tx.outputs)
+    {
+        if (output.get_asset_amount() > max_money())
+            return error::asset_amount_overflow;
+
+        total_asset_amount += output.get_asset_amount();
+
+        if (total_asset_amount > max_money())
+            return error::asset_amount_overflow;
+    }
+
+    for(auto& output : const_cast<transaction&>(tx).outputs){
+        if(output.is_asset_issue()) {
+            const string& symbol = output.get_asset_symbol();
+            if(!chain::output::is_valid_symbol(symbol)) {
+               return error::asset_symbol_invalid;
+            }
+
+            if(chain.is_asset_exist(output.get_asset_symbol(), false)) { 
+                return error::asset_exist;
+            }
+        }
+    }
 
     if (tx.is_coinbase())
     {
@@ -300,8 +347,38 @@ code validate_transaction::check_transaction(const transaction& tx)
     else
     {
         for (const auto& input: tx.inputs)
+        {
             if (input.previous_output.is_null())
                 return error::previous_output_null;
+
+            if(chain::operation::is_sign_key_hash_with_lock_height_pattern(input.script.operations)){
+                uint64_t prev_output_blockheight = 0;
+                chain::transaction prev_tx;
+                uint64_t current_blockheight = 0;
+
+                chain.get_last_height(current_blockheight);
+                chain.get_height(prev_output_blockheight, input.previous_output.hash);
+                if(chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash) == false){
+                    return error::input_not_found;
+                }
+
+                uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
+                if(lock_height > current_blockheight - prev_output_blockheight){
+                    return error::invalid_input_script_lock_height;
+                }
+            }
+        }
+
+        for(auto& output : tx.outputs) 
+        {
+            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                if((int)lock_height < 0 
+                    || consensus::miner::get_lock_heights_index(lock_height) < 0){
+                    return error::invalid_output_script_lock_height;
+                }
+            }
+        }
     }
 
     return error::success;
@@ -357,7 +434,8 @@ bool validate_transaction::check_consensus(const script& prevout_script,
 bool validate_transaction::connect_input(const transaction& tx,
     size_t current_input, const transaction& previous_tx,
     size_t parent_height, size_t last_block_height, uint64_t& value_in,
-    uint32_t flags)
+    uint32_t flags, uint64_t& asset_amount_in, std::string& old_symbol_in,
+    std::string& new_symbol_in, uint32_t& business_tp_in)
 {
     const auto& input = tx.inputs[current_input];
     const auto& previous_outpoint = tx.inputs[current_input].previous_output;
@@ -367,9 +445,32 @@ bool validate_transaction::connect_input(const transaction& tx,
 
     const auto& previous_output = previous_tx.outputs[previous_outpoint.index];
     const auto output_value = previous_output.value;
+	if (output_value > max_money())
+		return false;
 
-    if (output_value > max_money())
-        return false;
+	uint64_t asset_transfer_amount = 0;
+	if(previous_output.attach_data.get_type() == ASSET_TYPE) {
+		// 1. do asset transfer amount check
+		asset_transfer_amount = const_cast<output&>(previous_output).get_asset_amount();
+		if(asset_transfer_amount > max_money())
+			return false;
+		
+		// 2. do asset symbol check
+		new_symbol_in = const_cast<output&>(previous_output).get_asset_symbol();
+		if(!new_symbol_in.empty()) { // asset input
+			if(old_symbol_in.empty()) { // init old symbol
+				old_symbol_in = new_symbol_in;
+			} else {
+				if(0 != old_symbol_in.compare(new_symbol_in)) // there are different asset symbol in this transaction
+					return false;
+			}
+		}
+		// 3. set business type
+		if(const_cast<output&>(previous_output).is_asset_issue())
+			business_tp_in = ASSET_DETAIL_TYPE;
+		if(const_cast<output&>(previous_output).is_asset_transfer())
+			business_tp_in = ASSET_TRANSFERABLE_TYPE;
+	}
 
     if (previous_tx.is_coinbase())
     {
@@ -383,7 +484,8 @@ bool validate_transaction::connect_input(const transaction& tx,
         return false;
 
     value_in += output_value;
-    return value_in <= max_money();
+	asset_amount_in += asset_transfer_amount;
+    return (value_in <= max_money()) && (asset_amount_in <= max_money());
 }
 
 bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
@@ -395,8 +497,39 @@ bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
         return false;
 
     const auto fee = value_in - value_out;
+    if(fee < min_tx_fee)
+        return false;
     total_fees += fee;
     return total_fees <= max_money();
+}
+
+bool validate_transaction::check_asset_amount(const transaction& tx)
+{
+    const auto asset_amount_out = tx.total_output_transfer_amount();
+    if (asset_amount_in_ != asset_amount_out) // asset amount must be equal
+        return false;
+	
+    return true;
+}
+bool validate_transaction::check_asset_symbol(const transaction& tx)
+{
+	// check asset symbol in out
+	std::string old_symbol = "";
+	std::string new_symbol = "";
+	for (auto elem: tx.outputs) {
+		new_symbol = elem.get_asset_symbol();
+		if(!new_symbol.empty()) {
+			if(old_symbol.empty()) {
+				old_symbol = new_symbol;
+			} else {
+				if(0 != old_symbol.compare(new_symbol))
+					return false; // different asset in outputs
+			}
+		}
+	}
+	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
+		return false;
+	return true;
 }
 
 } // namespace blockchain

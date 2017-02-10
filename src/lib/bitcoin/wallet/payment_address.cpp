@@ -32,7 +32,8 @@
 namespace libbitcoin {
 namespace wallet {
 
-const uint8_t payment_address::mainnet_p2kh = 0x00;
+//chenhao bad modify
+uint8_t payment_address::mainnet_p2kh = 0x32;
 const uint8_t payment_address::mainnet_p2sh = 0x05;
 
 payment_address::payment_address()
@@ -256,6 +257,10 @@ payment_address payment_address::extract(const chain::script& script,
             BITCOIN_ASSERT(ops.size() == 5);
             BITCOIN_ASSERT(ops[2].data.size() == short_hash_size);
             break;
+        case chain::script_pattern::pay_key_hash_with_lock_height:
+            BITCOIN_ASSERT(ops.size() == 7);
+            BITCOIN_ASSERT(ops[4].data.size() == short_hash_size);
+            break;
         case chain::script_pattern::pay_script_hash:
             BITCOIN_ASSERT(ops.size() == 3);
             BITCOIN_ASSERT(ops[1].data.size() == short_hash_size);
@@ -269,6 +274,12 @@ payment_address payment_address::extract(const chain::script& script,
             break;
         case chain::script_pattern::sign_key_hash:
             BITCOIN_ASSERT(ops.size() == 2);
+            BITCOIN_ASSERT(
+                ops[1].data.size() == ec_compressed_size ||
+                ops[1].data.size() == ec_uncompressed_size);
+            break;
+        case chain::script_pattern::sign_key_hash_with_lock_height:
+            BITCOIN_ASSERT(ops.size() == 3);
             BITCOIN_ASSERT(
                 ops[1].data.size() == ec_compressed_size ||
                 ops[1].data.size() == ec_uncompressed_size);
@@ -306,6 +317,10 @@ payment_address payment_address::extract(const chain::script& script,
             hash = to_array<short_hash_size>(ops[2].data);
             return payment_address(hash, p2kh_version);
 
+        case chain::script_pattern::pay_key_hash_with_lock_height:
+            hash = to_array<short_hash_size>(ops[4].data);
+            return payment_address(hash, p2kh_version);
+
         case chain::script_pattern::pay_script_hash:
             hash = to_array<short_hash_size>(ops[1].data);
             return payment_address(hash, p2sh_version);
@@ -320,6 +335,7 @@ payment_address payment_address::extract(const chain::script& script,
             return payment_address();
 
         case chain::script_pattern::sign_key_hash:
+        case chain::script_pattern::sign_key_hash_with_lock_height:
         {
             const auto& data = ops[1].data;
             if (data.size() == ec_compressed_size)

@@ -27,8 +27,10 @@
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
 
 #define ETP_TYPE            KIND2UINT16(business_kind::etp)
+#define ETP_AWARD_TYPE      KIND2UINT16(business_kind::etp_award)
 #define ASSET_ISSUE_TYPE    KIND2UINT16(business_kind::asset_issue)
 #define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
+#define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
 
 namespace libbitcoin {
 namespace chain {
@@ -57,6 +59,7 @@ business_data business_data::factory_from_data(reader& source)
 void business_data::reset()
 {
 	kind = business_kind::etp;
+	timestamp = 0;
     auto visitor = reset_visitor();
 	boost::apply_visitor(visitor, data);
 }
@@ -69,7 +72,9 @@ bool business_data::is_valid_type() const
 {
     return ((ETP_TYPE == KIND2UINT16(kind))
 		|| (ASSET_ISSUE_TYPE == KIND2UINT16(kind))
-		|| (ASSET_TRANSFER_TYPE == KIND2UINT16(kind)));
+		|| (ASSET_TRANSFER_TYPE == KIND2UINT16(kind))
+		|| (ETP_AWARD_TYPE == KIND2UINT16(kind))
+		|| (MESSAGE_TYPE == KIND2UINT16(kind)));
 }
 
 
@@ -89,6 +94,7 @@ bool business_data::from_data(reader& source)
 {
     reset();
     kind = static_cast<business_kind>(source.read_2_bytes_little_endian());
+	timestamp = source.read_4_bytes_little_endian();
     auto result = static_cast<bool>(source);
 	
     if (result && is_valid_type()) 
@@ -100,6 +106,11 @@ bool business_data::from_data(reader& source)
 				data = etp();
 				break;
 			}
+			case ETP_AWARD_TYPE:
+			{
+				data = etp_award();
+				break;
+			}
 			case ASSET_ISSUE_TYPE:
 			{
 				data = asset_detail();
@@ -108,6 +119,11 @@ bool business_data::from_data(reader& source)
 			case ASSET_TRANSFER_TYPE:
 			{
 				data = asset_transfer();
+				break;
+			}
+			case MESSAGE_TYPE:
+			{
+				data = blockchain_message();
 				break;
 			}
 		}
@@ -143,38 +159,47 @@ void business_data::to_data(std::ostream& stream)
 void business_data::to_data(writer& sink) 
 {
     sink.write_2_bytes_little_endian(KIND2UINT16(kind));
+    sink.write_4_bytes_little_endian(timestamp);
 	auto visitor = to_data_visitor(sink);
 	boost::apply_visitor(visitor, data);
 }
 
 uint64_t business_data::serialized_size() 
 {
-    uint64_t size = 4;
+    uint64_t size = 2 + 4; // kind and timestamp
 	auto visitor = serialized_size_visitor();
 	size += boost::apply_visitor(visitor, data);
 
 	return size;
 }
 
+#ifdef MVS_DEBUG
 std::string business_data::to_string() 
 {
     std::ostringstream ss;
 
 	ss << "\t kind = " << KIND2UINT16(kind) << "\n";
+	ss << "\t timestamp = " << timestamp << "\n";
 	auto visitor = to_string_visitor();
 	ss << boost::apply_visitor(visitor, data);
 
     return ss.str();
 }
-uint16_t business_data::get_kind_value() const
+#endif
+
+business_kind business_data::get_kind_value() const
 {
-	return KIND2UINT16(kind);
+	//return KIND2UINT16(kind);
+	return kind;
 }
 const business_data::business_data_type& business_data::get_data() const
 {
 	return data;
 }
-
+uint32_t business_data::get_timestamp() const
+{
+	return timestamp;
+}
 
 } // namspace chain
 } // namspace libbitcoin

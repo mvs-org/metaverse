@@ -118,6 +118,7 @@ void session_header_sync::handle_connect(const code& ec, channel::ptr channel,
         	handler(ec);
 			return;
 		}
+        handle_channel_stop(ec, connect, handler);
         return;
     }
 
@@ -154,7 +155,6 @@ void session_header_sync::attach_protocols(channel::ptr channel,
     attach<protocol_ping>(channel)->start([channel, connect, handler, this](const code& ec){
     	if(ec)
     	{
-    		log::debug(LOG_NODE) << "fuck";
     		handle_complete(ec, channel, connect, handler);
 //    		handler(ec);
     		return;

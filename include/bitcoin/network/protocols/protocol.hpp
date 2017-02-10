@@ -117,6 +117,8 @@ protected:
     /// Stop the channel (and the protocol).
     virtual void stop(const code& ec);
 
+    virtual bool misbehaving(int32_t howmuch);
+
 private:
     threadpool& pool_;
     channel::ptr channel_;

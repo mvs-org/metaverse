@@ -61,8 +61,19 @@ console_result fetch_tx::invoke(std::ostream& output, std::ostream& error)
         state.output(prop_tree(tx, json));
     };
 
-    auto on_error = [&state](const code& error)
+    auto on_error = [&state, &client, hash, json](const code& error)
     {
+#define FETCH_FROM_TX_POOL
+#ifdef FETCH_FROM_TX_POOL
+    	if (error.value() == error::not_found) {
+    		client.transaction_pool_fetch_transaction([&state](const code& error){
+    			state.succeeded(error);
+    		}, [&state, json](const tx_type& tx){
+    			state.output(prop_tree(tx, json));
+    		}, hash);
+    		return;
+    	}
+#endif
         state.succeeded(error);
     };
 

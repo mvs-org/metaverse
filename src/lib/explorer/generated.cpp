@@ -37,8 +37,10 @@ namespace libbitcoin {
 namespace explorer {
 using namespace commands;
 
-void broadcast(const function<void(shared_ptr<command>)> func)
+void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
+    os <<"== original commands ==\r\n";
+
     func(make_shared<address_decode>());
     func(make_shared<address_embed>());
     func(make_shared<address_encode>());
@@ -129,6 +131,8 @@ void broadcast(const function<void(shared_ptr<command>)> func)
     func(make_shared<wif_to_public>());
     func(make_shared<wrap_decode>());
     func(make_shared<wrap_encode>());
+
+    os <<"\r\n== extension commands ==\r\n";
 
     broadcast_extension(func);
 
@@ -318,7 +322,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<wrap_encode>();
 
     return find_extension(symbol);
-
 }
 
 std::string formerly(const string& former)

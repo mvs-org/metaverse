@@ -31,14 +31,42 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 using namespace bc::wallet;
+using namespace bc::consensus;
+
+uint32_t tx_encode::get_reward_lock_block_height()
+{
+	int index;
+	switch(get_period_option()) {
+		case 7 :
+			index = 0;
+			break;
+		case 30 :
+			index = 1;
+			break;
+		case 90 :
+			index = 2;
+			break;
+		case 182 :
+			index = 3;
+			break;
+		case 365 :
+			index = 4;
+			break;
+		default :
+			index = 0;
+			break;
+	}
+	return (uint32_t)bc::consensus::lock_heights[index];
+}
+
 
 static bool push_scripts(std::vector<tx_output_type>& outputs,
-    const explorer::config::output& output, uint8_t script_version)
+    const explorer::config::output& output, const explorer::config::output& deposit, uint8_t script_version, uint32_t lock_block_heigth)
 {
     // explicit script
     if (!output.script().operations.empty())
     {
-        outputs.push_back({ output.amount(), output.script() });
+        outputs.push_back({ output.amount(), output.script(), attachment() });
         return true;
     }
 
@@ -52,11 +80,21 @@ static bool push_scripts(std::vector<tx_output_type>& outputs,
 
     // This presumes stealth versions are the same as non-stealth.
     if (output.version() != script_version)
-        payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
-    else if (output.version() == script_version)
+    {
+        if ((script_version == 6u) // just lock the deposited output
+				&& (deposit.version() == output.version())
+				&& (deposit.pay_to_hash() == output.pay_to_hash())
+				&& (deposit.amount() == output.amount())){ // coin reward
+            //payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, bc::coinage_reward_lock_block_heigth);
+            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, lock_block_heigth);
+        }else{
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
+        }
+    } else if (output.version() == script_version) {
         payment_ops = chain::operation::to_pay_script_hash_pattern(hash);
-    else
+    } else {
         return false;
+    }
 
     if (is_stealth)
     {
@@ -66,11 +104,12 @@ static bool push_scripts(std::vector<tx_output_type>& outputs,
         const auto data = output.ephemeral_data();
         const auto null_data = chain::operation::to_null_data_pattern(data);
         const auto null_data_script = chain::script{ null_data };
-        outputs.push_back({ no_amount, null_data_script });
+        outputs.push_back({ no_amount, null_data_script, attachment() });
     }
 
-    const auto payment_script = chain::script{ payment_ops };
-    outputs.push_back({ output.amount(), payment_script });
+    auto payment_script = chain::script{ payment_ops };
+
+    outputs.push_back({ output.amount(), payment_script, attachment() });
     return true;
 }
 
@@ -82,6 +121,7 @@ console_result tx_encode::invoke(std::ostream& output, std::ostream& error)
     const auto script_version = get_script_version_option();
     const auto& inputs = get_inputs_option();
     const auto& outputs = get_outputs_option();
+	const auto& deposit = get_deposit_option();
 
     tx_type tx;
     tx.version = tx_version;
@@ -92,7 +132,7 @@ console_result tx_encode::invoke(std::ostream& output, std::ostream& error)
 
     for (const auto& output: outputs)
     {
-        if (!push_scripts(tx.outputs, output, script_version))
+        if (!push_scripts(tx.outputs, output, deposit, script_version, get_reward_lock_block_height()))
         {
             error << BX_TX_ENCODE_INVALID_OUTPUT << std::flush;
             return console_result::failure;

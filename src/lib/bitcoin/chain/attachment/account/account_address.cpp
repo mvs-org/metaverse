@@ -25,7 +25,10 @@
 #include <bitcoin/bitcoin/utility/container_source.hpp>
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+
+#ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
+#endif
 
 namespace libbitcoin {
 namespace chain {
@@ -36,9 +39,10 @@ account_address::account_address()
 }
 
 account_address::account_address(std::string name, std::string prv_key, 
-	std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, std::string address) :
+	std::string pub_key, uint32_t hd_index, uint64_t balance, std::string alias, 
+	std::string address, uint8_t status) :
 	name(name), prv_key(prv_key), pub_key(pub_key), hd_index(hd_index), balance(balance),
-	alias(alias), address(address)
+	alias(alias), address(address), status_(status)
 {
 }
 
@@ -51,6 +55,7 @@ account_address::account_address(const account_address& other)
 	balance = other.balance;
 	alias = other.alias;
 	address = other.address;
+	status_ = other.status_;
 }
 account_address account_address::factory_from_data(const data_chunk& data)
 {
@@ -87,6 +92,7 @@ void account_address::reset()
 	balance = 0;
 	alias = "";
 	address = "";
+	status_ = 0;
 }
 
 bool account_address::from_data(const data_chunk& data)
@@ -111,6 +117,7 @@ bool account_address::from_data(reader& source)
 	balance = source.read_8_bytes_little_endian();
 	alias = source.read_fixed_string(ADDRESS_ALIAS_FIX_SIZE);
 	address = source.read_fixed_string(ADDRESS_ADDRESS_FIX_SIZE);
+    status_ = source.read_byte();
     return true;	
 }
 
@@ -139,13 +146,17 @@ void account_address::to_data(writer& sink) const
 	sink.write_8_bytes_little_endian(balance);
 	sink.write_fixed_string(alias, ADDRESS_ALIAS_FIX_SIZE);
 	sink.write_fixed_string(address, ADDRESS_ADDRESS_FIX_SIZE);
+	sink.write_byte(status_);
 }
 
 uint64_t account_address::serialized_size() const
 {
-    return name.size() + prv_key.size() + pub_key.size() + 4 + 8 + alias.size() + address.size() + 4 + 4; // 4 "string length" byte
+    return name.size() + prv_key.size() + pub_key.size() + 4 + 8 
+		+ alias.size() + address.size() + 1 
+		+ 5; // 5 "string length" byte
 }
 
+#ifdef MVS_DEBUG
 std::string account_address::to_string() 
 {
     std::ostringstream ss;
@@ -156,7 +167,8 @@ std::string account_address::to_string()
 		<< "\t hd_index = " << hd_index << "\n"
 		<< "\t balance = " << balance << "\n"
 		<< "\t alias = " << alias << "\n"
-		<< "\t address = " << address << "\n";
+		<< "\t address = " << address << "\n"
+		<< "\t status = " << status_ << "\n";
 
     return ss.str();
 }
@@ -169,6 +181,7 @@ void account_address::to_json(std::ostream& output)
 	json_writer.write("hd_index", hd_index);
 	json_writer.close();
 }
+#endif
 
 const std::string& account_address::get_name() const
 { 
@@ -231,6 +244,15 @@ const std::string& account_address::get_address() const
 void account_address::set_address(const std::string& address)
 { 
      this->address = address;
+}
+
+uint8_t account_address::get_status() const
+{
+	return status_;
+}
+void account_address::set_status(uint8_t status)
+{
+	status_ = status;
 }
 
 } // namspace chain

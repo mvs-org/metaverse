@@ -105,6 +105,8 @@ bool parser::parse(std::string& out_error, std::istream& input,
 
             // Set the instance defaults from config values.
             instance_.set_defaults_from_config(variables);
+        } else {
+            help_ = true;
         }
     }
     catch (const po::error& e)

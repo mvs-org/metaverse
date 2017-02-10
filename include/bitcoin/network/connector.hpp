@@ -41,6 +41,7 @@ class BCT_API connector
 public:
     typedef std::shared_ptr<connector> ptr;
     typedef std::function<void(const code& ec, channel::ptr)> connect_handler;
+    typedef std::function<void(const asio::endpoint& endpoint)> resolve_handler;
 
     /// Construct an instance.
     connector(threadpool& pool, const settings& settings);
@@ -51,15 +52,15 @@ public:
 
     /// Try to connect to the endpoint.
     virtual void connect(const config::endpoint& endpoint,
-        connect_handler handler);
+        connect_handler handler, resolve_handler = nullptr);
 
     /// Try to connect to the authority.
     virtual void connect(const config::authority& authority,
-        connect_handler handler);
+        connect_handler handler, resolve_handler = nullptr);
 
     /// Try to connect to host:port.
     virtual void connect(const std::string& hostname, uint16_t port,
-        connect_handler handler);
+        connect_handler handler, resolve_handler = nullptr);
 
     /// Cancel all outstanding connection attempts.
     void stop();
@@ -75,7 +76,7 @@ private:
         deadline::ptr timer, connect_handler handler);
 
     void handle_resolve(const boost_code& ec, asio::iterator iterator,
-        connect_handler handler);
+        connect_handler handler, resolve_handler);
     void handle_timer(const code& ec, socket::ptr socket,
         connect_handler handler);
     void handle_connect(const boost_code& ec, asio::iterator iter, socket::ptr socket, deadline::ptr timer, connect_handler handler);

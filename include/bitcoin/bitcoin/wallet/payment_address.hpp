@@ -43,7 +43,8 @@ typedef byte_array<payment_size> payment;
 class BC_API payment_address
 {
 public:
-    static const uint8_t mainnet_p2kh;
+    // chenhao bad modify
+    static uint8_t mainnet_p2kh;
     static const uint8_t mainnet_p2sh;
 
     /// Extract a payment address from an input or output script.

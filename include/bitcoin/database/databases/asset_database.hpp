@@ -38,8 +38,7 @@ namespace database {
 /// This enables lookups of assets by hash.
 /// An alternative and faster method is lookup from a unique index
 /// that is assigned upon storage.
-/// This is so we can quickly reconstruct blocks given a list of tx indexes
-/// belonging to that block. These are stored with the block.
+/// This database is used to store asset issued from blockchain(not store local unissued assets)
 class BCD_API asset_database: public base_database
 {
 public:
@@ -52,7 +51,8 @@ public:
 	
 	/// get asset info by symbol hash
 	asset_result get_asset_result(const hash_digest& hash) const;
-	
+	/// get all assets in the blockchain
+	std::shared_ptr<std::vector<asset_detail>> get_asset_details() const;
     /// Store a asset in the database. Returns a unique index
     /// which can be used to reference the asset.
     void store(const hash_digest& hash, const asset_detail& sp_detail);

@@ -34,7 +34,7 @@
 #include <bitcoin/server/services/transaction_service.hpp>
 #include <bitcoin/server/utility/authenticator.hpp>
 #include <bitcoin/server/workers/notification_worker.hpp>
-
+#include <bitcoin/bitcoin/utility/path.hpp>
 #include <mvs/http/Mongoose.hpp>
 #include <mvs/http/RestServ.hpp>
 #include <bitcoin/consensus/miner.hpp>
@@ -108,11 +108,11 @@ private:
     bool start_query_workers(bool secure);
 
     const configuration& configuration_;
-
+    static boost::filesystem::path webpage_path_;
     // modify.chenhao
     void run_mongoose();
     consensus::miner miner_;
-    http::RestServ rest_server_{"./html", blockchain_, miner_};
+    http::RestServ rest_server_{webpage_path_.string().data(), blockchain_, miner_};
 
     // These are thread safe.
     authenticator authenticator_;

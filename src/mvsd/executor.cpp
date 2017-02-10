@@ -31,6 +31,7 @@
 #include <boost/format.hpp>
 #include <bitcoin/server.hpp>
 #include <bitcoin/bitcoin/utility/backtrace.hpp>
+#include <bitcoin/bitcoin/utility/path.hpp>
 
 namespace libbitcoin {
 namespace server {
@@ -53,8 +54,8 @@ std::promise<code> executor::stopping_;
 executor::executor(parser& metadata, std::istream& input,
     std::ostream& output, std::ostream& error)
   : metadata_(metadata), output_(output),
-    debug_file_(metadata_.configured.network.debug_file.string(), append),
-    error_file_(metadata_.configured.network.error_file.string(), append)
+    debug_file_((default_data_path() / metadata_.configured.network.debug_file).string(), append),
+    error_file_((default_data_path() / metadata_.configured.network.error_file).string(), append)
 {
     initialize_logging(debug_file_, error_file_, output, error);
     handle_stop(initialize_stop);
@@ -84,10 +85,19 @@ void executor::do_version()
 {
     output_ << format(BS_VERSION_MESSAGE) %
         MVS_SERVER_VERSION %
+        MVS_SERVER_VERSION %
         MVS_PROTOCOL_VERSION %
         MVS_NODE_VERSION %
         MVS_BLOCKCHAIN_VERSION %
         MVS_VERSION << std::endl;
+}
+
+void executor::set_admin()
+{
+	data_base db(metadata_.configured.database);
+	db.start();
+	db.set_admin("administerator", "mvsgo");
+	db.stop();
 }
 
 // Emit to the log.
@@ -96,31 +106,37 @@ bool executor::do_initchain()
     initialize_output();
     
     boost::system::error_code ec;
-    const auto& directory = metadata_.configured.database.directory;
 
-    if (create_directories(directory, ec))
+    auto home_path = default_data_path();
+    const auto& directory = metadata_.configured.database.directory;
+    auto data_path = home_path / directory;
+
+    if (create_directories(data_path, ec))
     {
-        log::info(LOG_SERVER) << format(BS_INITIALIZING_CHAIN) % directory;
+        log::info(LOG_SERVER) << format(BS_INITIALIZING_CHAIN) % data_path;
 
         // Unfortunately we are still limited to a choice of hardcoded chains.
         //const auto genesis = metadata_.configured.chain.use_testnet_rules ?
          //   chain::block::genesis_testnet() : chain::block::genesis_mainnet();
-        auto genesis = consensus::miner::create_genesis_block();
+        auto genesis = consensus::miner::create_genesis_block(!metadata_.configured.chain.use_testnet_rules);
 
-        const auto result = data_base::initialize(directory, *genesis);
-
+        const auto result = data_base::initialize(data_path, *genesis);
+        if (not result)
+        	throw std::runtime_error{"initialize chain failed"};
+		// init admin account
+		set_admin();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
-        return result;
+        return true;
     }
 
     if (ec.value() == directory_exists)
     {
-        log::error(LOG_SERVER) << format(BS_INITCHAIN_EXISTS) % directory;
         return false;
     }
-
-    log::error(LOG_SERVER) << format(BS_INITCHAIN_NEW) % directory % ec.message();
-    return false;
+    auto error_info = format(BS_INITCHAIN_NEW) % data_path % ec.message();
+    throw std::runtime_error{error_info.str()};
+//    log::error(LOG_SERVER) << format(BS_INITCHAIN_NEW) % data_path % ec.message();
+//    return false;
 }
 
 // Menu selection.
@@ -148,10 +164,19 @@ bool executor::menu()
         return true;
     }
 
-    if (config.initchain)
-    {
-        return do_initchain();
-    }
+	try
+	{
+		auto result = do_initchain(); // false means no need to initial chain
+	    if (config.initchain)
+	    {
+	    	return result;
+	    }
+	}
+	catch(const std::exception& e){ // initialize failed
+		//log::error(LOG_SERVER) << format(BS_INITCHAIN_EXISTS) % data_path;
+		log::error(LOG_SERVER) << "initialize chain failed," << e.what();
+		return false;
+	}
 
     // There are no command line arguments, just run the server.
     return run();
@@ -162,7 +187,7 @@ bool executor::menu()
 
 bool executor::run()
 {
-    initialize_output();
+//    initialize_output();
 
     log::info(LOG_SERVER) << BS_NODE_STARTING;
 
@@ -276,7 +301,7 @@ void executor::initialize_output()
     log::error(LOG_SERVER) << BS_LOG_HEADER;
     log::fatal(LOG_SERVER) << BS_LOG_HEADER;
 
-    const auto& file = metadata_.configured.file;
+    auto file = default_data_path() / metadata_.configured.file;
 
     if (file.empty())
         log::info(LOG_SERVER) << BS_USING_DEFAULT_CONFIG;
@@ -288,19 +313,21 @@ void executor::initialize_output()
 bool executor::verify_directory()
 {
     boost::system::error_code ec;
+    auto home_path = default_data_path();
     const auto& directory = metadata_.configured.database.directory;
+    auto data_path = home_path / directory;
 
-    if (exists(directory, ec))
+    if (exists(data_path, ec))
         return true;
 
     if (ec.value() == directory_not_found)
     {
-        log::error(LOG_SERVER) << format(BS_UNINITIALIZED_CHAIN) % directory;
+        log::error(LOG_SERVER) << format(BS_UNINITIALIZED_CHAIN) % data_path;
         return false;
     }
 
     const auto message = ec.message();
-    log::error(LOG_SERVER) << format(BS_INITCHAIN_TRY) % directory % message;
+    log::error(LOG_SERVER) << format(BS_INITCHAIN_TRY) % data_path % message;
     return false;
 }
 

@@ -31,6 +31,7 @@ settings::settings()
     heartbeat_interval_seconds(5),
     subscription_expiration_minutes(10),
     subscription_limit(100000000),
+    mongoose_listen("127.0.0.1:8820"),
     log_requests(false),
     secure_only(false),
     query_service_enabled(true),

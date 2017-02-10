@@ -1,6 +1,5 @@
-# The Metaverse(mvs)
-**Now switch to a private repository to develop. It will be merged when main-net go-live.**
-
+![logo](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/logo.png)
+# [Metaverse (MVS)](http://mvs.live)
 Metaverse is a decentralised system based on the blockchain technology, 
 through which, a network of smart properties , digital identities and value intermediators are established.
 
@@ -10,53 +9,51 @@ Features:
 - Digital identities
 - Oralce register/data-feed
 
-# mvs project
-mvs is implemented based on [libbitcoin project](https://github.com/libbitcoin).
+# MVS project
+MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
+## toolchain requirements:
+- C++ compiler support C++14 (g++ 5/LLVM 8.0.0)
+- CMake 2.8
 
-Has integrated: 
-- [libbitcoin](https://github.com/libbitcoin/libbitcoin)
-- [libbitcoin-network](https://github.com/libbitcoin/libbitcoin-network)
-- [libbitcoin-database](https://github.com/libbitcoin/libbitcoin-database)
-- [libbitcoin-consensus](https://github.com/libbitcoin/libbitcoin-consensus)
-- [libbitcoin-blockchain](https://github.com/libbitcoin/libbitcoin-blockchain)
-- [libbitcoin-protocol](https://github.com/libbitcoin/libbitcoin-protocol)
-- [libbitcoin-server](https://github.com/libbitcoin/libbitcoin-server)
-- [libbitcoin-client](https://github.com/libbitcoin/libbitcoin-client)
-- [libbitcoin-explorer](https://github.com/libbitcoin/libbitcoin-explorer)
-
-# build mvs
+# build MVS
 ```bash
 mkdir build && cd build
 cmake ..
-make 
+make -j4 && make install
+```
+optional:
+```
 make test
 make doc
-make install
 ```
 
-# build dependency
-## build tools
-C++ compiler support C++11
-cmake 3.0
-
+# Libraries dependencies
 ## install boost 1.56(or above)
 ```bash
-sudo yum/apt-get install libboost-all-dev
+sudo yum/apt-get/brew install libboost-all-dev
 ```
+On OSX, you have to install **XcodeCommandLineTools** firstly.
+Or, you can compile Boost by yourself.
 
-## install zmq for server
+## install zmq 4.2.0(or above)
+server required.
 ```bash
-git clone https://github.com/the-metaverse/libzmq
+git clone https://github.com/mvs-live/libzmq
 cd libzmq
-./autogen.sh && ./configure && make -j 4
-make install && sudo ldconfig
+./autogen.sh && ./configure && make -j4
+sudo make install && sudo ldconfig
 ```
-comments: zero-mq 4.2.0 or above required
 
-## install secp256k1 for blockchain/database
+## install secp256k1 
+blockchain/database required.
 ```bash
-git clone https://github.com/the-metaverse/secp256k1
+git clone https://github.com/mvs-live/secp256k1
 ./autogen.sh
 ./configure --enable-module-recovery
 make -j4 && sudo make install
 ```
+
+mvs-architecture
+![mvs-architecture](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/mvs-architecture.png)
+mvs-libraries
+![mvs-libraries](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/mvs-libraries.png)

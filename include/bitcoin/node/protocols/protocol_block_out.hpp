@@ -30,6 +30,9 @@
 namespace libbitcoin {
 namespace node {
 
+// Protocol limit.
+constexpr auto locator_cap = 500u;
+
 class BCN_API protocol_block_out
   : public network::protocol_events, track<protocol_block_out>
 {

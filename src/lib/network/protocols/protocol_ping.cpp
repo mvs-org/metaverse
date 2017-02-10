@@ -56,11 +56,25 @@ void protocol_ping::start(result_handler handler)
     set_event(error::success);
 }
 
+void protocol_ping::handle_or_not(uint64_t nonce)
+{
+	shared_lock lock{mutex_};
+	if (result_handler_)
+	{
+		log::debug(LOG_NETWORK) << "handle or not";
+		SEND2(ping{ nonce }, handle_send, _1, pong::command);
+	}
+}
+
 // This is fired by the callback (i.e. base timer and stop handler).
 void protocol_ping::send_ping(const code& ec)
 {
     if (stopped())
+    {
+    	log::debug(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
+    	test_call_handler(error::channel_stopped);
         return;
+    }
 
     if (ec && ec != error::channel_timeout)
     {
@@ -76,6 +90,16 @@ void protocol_ping::send_ping(const code& ec)
 
     SUBSCRIBE3(pong, handle_receive_pong, _1, _2, nonce);
     SEND2(ping{ nonce }, handle_send, _1, pong::command);
+
+    shared_lock lock{mutex_};
+    if(result_handler_)
+    {
+    	auto line = std::make_shared<deadline>(pool(), asio::seconds{1});
+    	auto pThis = shared_from_this();
+    	line->start([pThis, line, nonce](const code& ec){
+			static_cast<protocol_ping*>(pThis.get())->handle_or_not(nonce);
+		});
+    }
 }
 
 void protocol_ping::test_call_handler(const code& ec)
@@ -84,8 +108,12 @@ void protocol_ping::test_call_handler(const code& ec)
 	if(result_handler_)
 	{
 		log::debug(LOG_NETWORK) << "test call handler";
-		result_handler_(ec);
 		unique_lock lock(std::move(upgrade));
+		auto handler = std::move(result_handler_);
+		auto action = [handler, ec](){
+			handler(ec);
+		};
+		pool().service().post(action);
 		result_handler_ = nullptr;
 	}
 }
@@ -94,7 +122,11 @@ bool protocol_ping::handle_receive_ping(const code& ec,
     message::ping::ptr message)
 {
     if (stopped())
+    {
+    	log::debug(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
+    	test_call_handler(error::channel_stopped);
         return false;
+    }
 
     if (ec)
     {
@@ -115,7 +147,11 @@ bool protocol_ping::handle_receive_pong(const code& ec,
     message::pong::ptr message, uint64_t nonce)
 {
     if (stopped())
+    {
+    	log::debug(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
+    	test_call_handler(error::channel_stopped);
         return false;
+    }
 
     test_call_handler(ec);
 

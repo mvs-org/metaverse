@@ -55,6 +55,8 @@ enum class script_pattern
     /// Signature script: <sig> <pubkey>
     pay_key_hash,
 
+    pay_key_hash_with_lock_height,
+
     /// Pay to Script Hash [P2SH/BIP16]
     /// The redeem script may be any pay type, but only multisig makes sense.
     /// Pubkey script: OP_HASH160 <Hash160(redeemScript)> OP_EQUAL
@@ -69,6 +71,8 @@ enum class script_pattern
 
     /// Sign Public Key Hash [P2PKH]
     sign_key_hash,
+
+    sign_key_hash_with_lock_height,
 
     /// Sign Script Hash [P2SH/BIP16]
     sign_script_hash,
@@ -99,13 +103,18 @@ public:
     static bool is_pay_multisig_pattern(const operation::stack& ops);
     static bool is_pay_public_key_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_pattern(const operation::stack& ops);
+    static bool is_pay_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_pay_script_hash_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
     static bool is_sign_public_key_pattern(const operation::stack& ops);
     static bool is_sign_key_hash_pattern(const operation::stack& ops);
+    static bool is_sign_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_sign_script_hash_pattern(const operation::stack& ops);
+
+    static uint64_t get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops);
+    static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);
@@ -115,6 +124,7 @@ public:
         const data_stack& points);
     static stack to_pay_public_key_pattern(data_slice point);
     static stack to_pay_key_hash_pattern(const short_hash& hash);
+    static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
 
     bool from_data(const data_chunk& data);

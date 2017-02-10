@@ -4,9 +4,12 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 
 ADD_DEFINITIONS(-DBCP_STATIC=1)
 
+ADD_LIBRARY(zmq_static STATIC IMPORTED)
+SET_TARGET_PROPERTIES(zmq_static PROPERTIES IMPORTED_LOCATION ${ZeroMQ_ROOT_DIR}/lib/libzmq.a)
+
 ADD_LIBRARY(protocol_static STATIC ${protocol_SOURCES})
 SET_TARGET_PROPERTIES(protocol_static PROPERTIES OUTPUT_NAME mvs_protocol)
-TARGET_LINK_LIBRARIES(protocol_static libzmq.a ${Boost_LIBRARIES} ${bitcoin_LIBRARY})
+TARGET_LINK_LIBRARIES(protocol_static zmq_static ${Boost_LIBRARIES} ${bitcoin_LIBRARY})
 INSTALL(TARGETS protocol_static DESTINATION lib)
 
 IF(ENABLE_SHARED_LIBS)

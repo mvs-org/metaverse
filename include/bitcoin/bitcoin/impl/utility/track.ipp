@@ -37,8 +37,13 @@ track<Shared>::track(const std::string& DEBUG_ONLY(class_name))
 #endif
 {
 #ifndef NDEBUG
+	count_ = ++instances;
     bc::log::debug(LOG_SYSTEM)
-        << class_ << "(" << ++instances << ")";
+    #ifndef RESOURCE_INSCREASE
+        << class_ << "(" << count_ << ")";
+    #else
+    	<< class_ << "(" << ++instances << ")";
+    #endif
 #endif
 }
 
@@ -47,7 +52,11 @@ track<Shared>::~track()
 {
 #ifndef NDEBUG
     bc::log::debug(LOG_SYSTEM)
-        << "~" << class_ << "(" << --instances << ")";
+    #ifndef RESOURCE_INSCREASE
+        << "~" << class_ << "(" << count_ << ")";
+    #else
+    	<< "~" << class_ << "(" << --instances << ")";
+    #endif
 #endif
 }
 
