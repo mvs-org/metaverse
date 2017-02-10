@@ -61,7 +61,7 @@ private:
 
     bool exists(const hash_digest& hash) const;
     bool exists(const chain::header& header) const;
-    const_iterator find(const hash_digest& hash) const;
+    const_iterator find(buffer::const_iterator begin, const hash_digest& hash) const;
 
     // The buffer is protected by mutex.
     buffer buffer_;
