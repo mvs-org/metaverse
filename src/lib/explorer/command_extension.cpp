@@ -2338,6 +2338,7 @@ console_result xfetchbalance::invoke (std::ostream& output,
 
 	            auto transaction = pt.get_child("transaction");
 	            auto outputs = transaction.get_child("outputs");
+	            auto inputs = transaction.get_child("inputs");
 
 	            // fill tx_items outputs
 	            auto target_pos = row.output.index;
@@ -2350,13 +2351,33 @@ console_result xfetchbalance::invoke (std::ostream& output,
 						bc::chain::script ss;
 			            ss.from_string(script);
 			            if ((ss.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-							&& !row.output_height) // utxo in transaction pool
+							&& !row.output_height) { // utxo in transaction pool
 							frozen_balance += row.value;
+							break; // todo -- code should be optimized
+			            }
 						if(chain::operation::is_pay_key_hash_with_lock_height_pattern(ss.operations)
 							&& row.output_height) { // utxo already in block
 							uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(ss.operations);
 							if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
 								frozen_balance += row.value;
+								break;// todo -- code should be optimized
+							}
+						}
+						// coin base check
+						if(inputs.size() == 1) {
+							//uint64 input_cnt = 0;
+							bool is_coinbase = false;
+							for (auto& in: inputs){
+								std::string pre_hash = in.second.get<std::string>("previous_output.hash");
+								if(pre_hash == "0000000000000000000000000000000000000000000000000000000000000000")
+									is_coinbase = true;
+							}
+							// add not coinbase_maturity etp into frozen
+							if(is_coinbase 
+								&& (!row.output_height ||
+										(row.output_height && (height - row.output_height) < coinbase_maturity))) {
+								frozen_balance += row.value;
+								//break; // not need this line
 							}
 						}
 	                    break;
@@ -2464,6 +2485,7 @@ console_result xfetchutxo::invoke (std::ostream& output,
 
 				auto transaction = pt.get_child("transaction");
 				auto outputs = transaction.get_child("outputs");
+	            auto inputs = transaction.get_child("inputs");
 
 				// fill tx_items outputs
 				auto target_pos = row.output.index;
@@ -2485,6 +2507,23 @@ console_result xfetchutxo::invoke (std::ostream& output,
 							uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(ss.operations);
 							if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
 								is_deposit_utxo = true;
+							}
+						}
+						
+						// coin base check
+						if(inputs.size() == 1) {
+							//uint64 input_cnt = 0;
+							bool is_coinbase = false;
+							for (auto& in: inputs){
+								std::string pre_hash = in.second.get<std::string>("previous_output.hash");
+								if(pre_hash == "0000000000000000000000000000000000000000000000000000000000000000")
+									is_coinbase = true;
+							}
+							// add not coinbase_maturity etp into frozen
+							if(is_coinbase 
+								&& (!row.output_height ||
+										(row.output_height && (height - row.output_height) < coinbase_maturity))) {
+								is_deposit_utxo = true; // not deposit utxo but can not spent now
 							}
 						}
 						break;
