@@ -196,7 +196,8 @@ uint64_t miner::calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num)
 {
 	int lock_heights_index = get_lock_heights_index(lcok_heights);
 	if(lock_heights_index >= 0) {
-		return (uint64_t)(coinage_rewards[lock_heights_index] * num / coin_price());
+        double n = ((double )coinage_rewards[lock_heights_index]) / coin_price();
+		return (uint64_t)(n * num);
 	}
 	return 0;
 }
