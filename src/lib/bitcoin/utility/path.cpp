@@ -29,10 +29,11 @@ boost::filesystem::path default_data_path()
 #ifdef MAC_OSX
     // Mac
     pathRet /= "Library/Application Support";
-    fs::create_directory(pathRet);
+    fs::create_directories(pathRet / "Metaverse");
     return pathRet / "Metaverse";
 #else
     // Unix
+    fs::create_directories(pathRet / ".metaverse");
     return pathRet / ".metaverse";
 #endif
 #endif
