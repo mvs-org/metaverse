@@ -113,8 +113,18 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 	tx_new.inputs[0].previous_output = {null_hash, max_uint32};
 	tx_new.inputs[0].script.operations = {{chain::opcode::raw_data,{text.begin(), text.end()}}};
 	tx_new.outputs.resize(1);
-	libbitcoin::wallet::ec_public public_key("04a96a414d04d73d492473117059458cbd0dc780c1974a48e7400eab1c3bc0d4db01c928b08b83a3474d4b2f0d4be468a6074e8666215afd62d68c23b9edab27ce");
-	tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(public_key.to_payment_address()));
+
+    // init for testnet/mainnet
+    if (!is_mainnet)
+    {
+        libbitcoin::wallet::ec_public public_key("04a96a414d04d73d492473117059458cbd0dc780c1974a48e7400eab1c3bc0d4db01c928b08b83a3474d4b2f0d4be468a6074e8666215afd62d68c23b9edab27ce");
+        tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(public_key.to_payment_address()));
+	    pblock->header.timestamp = 1479881397;
+    } else {
+        bc::wallet::payment_address genesis_address("MHD7Zq6g3UqWN21AXt1Gw6xEwhDv385NJi");
+	    tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
+	    pblock->header.timestamp = 1486814400;
+    }
 	tx_new.outputs[0].value = 50000000 * coin_price();
 
 	// Add our coinbase tx as first transaction
@@ -123,7 +133,6 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 	// Fill in header 
 	pblock->header.previous_block_hash = {};
 	pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
-	pblock->header.timestamp = 1479881397;
 	pblock->header.transaction_count = 1; 
 	pblock->header.version = 1;
 	pblock->header.bits = 1;
