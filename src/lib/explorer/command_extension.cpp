@@ -2352,9 +2352,10 @@ console_result xfetchbalance::invoke (std::ostream& output,
 			            if ((ss.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
 							&& !row.output_height) // utxo in transaction pool
 							frozen_balance += row.value;
-						if(chain::operation::is_pay_key_hash_with_lock_height_pattern(ss.operations)) {
+						if(chain::operation::is_pay_key_hash_with_lock_height_pattern(ss.operations)
+							&& row.output_height) { // utxo already in block
 							uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(ss.operations);
-							if((row.output_height+lock_height)>height) { // utxo already in block but deposit not expire
+							if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
 								frozen_balance += row.value;
 							}
 						}
@@ -2479,9 +2480,10 @@ console_result xfetchutxo::invoke (std::ostream& output,
 						if ((ss.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
 							&& !row.output_height)  // utxo in transaction pool
 							is_deposit_utxo = true;
-						if(chain::operation::is_pay_key_hash_with_lock_height_pattern(ss.operations)) {
+						if(chain::operation::is_pay_key_hash_with_lock_height_pattern(ss.operations)
+							&& row.output_height) { // utxo already in block
 							uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(ss.operations);
-							if((row.output_height+lock_height)>height) { // utxo already in block but deposit not expire
+							if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
 								is_deposit_utxo = true;
 							}
 						}
