@@ -60,6 +60,13 @@ int bc::main(int argc, char* argv[])
         if(metadata.configured.use_testnet_rules) // option priority No.1
         {
             metadata.configured.chain.use_testnet_rules = true;
+			
+			server::parser test_metadata(bc::settings::testnet);
+			if (!test_metadata.parse(argc, args, cerr))
+				return console_result::failure;
+            test_metadata.configured.chain.use_testnet_rules = true;
+			executor test_host(test_metadata, cin, *out, *err);
+			return test_host.menu() ? console_result::okay : console_result::failure;
         }
 
         executor host(metadata, cin, *out, *err);
