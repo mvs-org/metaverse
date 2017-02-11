@@ -601,7 +601,11 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
 	if(header_hash == "0x"+ to_string(HeaderAux::hashHead(new_block_->header))){
         auto s_nonce = "0x" + nonce;
         uint64_t n_nonce;
+#ifdef MAC_OSX
         if(sscanf(s_nonce.c_str(), "%llx", &n_nonce) != 1) {
+#else
+        if(sscanf(s_nonce.c_str(), "%lx", &n_nonce) != 1) {
+#endif
 		    log::error(LOG_HEADER) << "nonce change error\n";
             return false;
         }
