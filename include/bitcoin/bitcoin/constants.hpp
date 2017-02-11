@@ -46,18 +46,14 @@ BC_CONSTEXPR uint8_t max_uint8 = MAX_UINT8;
 BC_CONSTEXPR uint64_t max_size_t = BC_MAX_SIZE;
 BC_CONSTEXPR uint8_t byte_bits = 8;
 
-BC_CONSTEXPR uint8_t coinage_reward_lock_block_heigth = 50;
-
-
 // Consensus constants.
 BC_CONSTEXPR uint32_t reward_interval = 210000;
-BC_CONSTEXPR uint32_t coinbase_maturity = 1; // todo -- chenhao modify later
+BC_CONSTEXPR uint32_t coinbase_maturity = 1000;
 BC_CONSTEXPR uint32_t initial_block_reward = 50;
 BC_CONSTEXPR uint32_t max_work_bits = 0x1d00ffff;
 BC_CONSTEXPR uint32_t max_input_sequence = max_uint32;
 
 BC_CONSTEXPR uint32_t total_reward = 100000000;
-BC_CONSTEXPR uint32_t max_reward_block_number = total_reward / initial_block_reward;
 
 // Threshold for nLockTime: below this value it is interpreted as block number,
 // otherwise as UNIX timestamp. [Tue Nov 5 00:53:20 1985 UTC]
