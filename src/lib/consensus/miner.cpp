@@ -600,6 +600,13 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
 	bool ret = false;
 	if(header_hash == "0x"+ to_string(HeaderAux::hashHead(new_block_->header))){
 		new_block_->header.nonce = (FixedHash<8>::Arith)h64(nonce);
+        uint64_t n_nonce;
+        if(sscanf(s_nonce.c_str(), "%lx", &n_nonce) != 1) {
+		    log::error(LOG_HEADER) << "nonce change error\n";
+            return false;
+        }
+		uint64_t nonce_t = n_nonce ^0x6675636b6d657461;
+		new_block_->header.nonce = (u64) nonce_t;
 		new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
 		uint64_t height = store_block(new_block_);
 		if(height != 0){
