@@ -158,6 +158,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
+		break; // found utxo then exit for
 
     }
 
@@ -398,13 +399,14 @@ void utxo_helper::group_utxo()
 
     // not found, group small changes
     uint64_t k = 0;
-    for (auto iter = from_list_.begin(); iter != from_list_.end(); ++iter){
+    for (auto iter = from_list_.begin(); iter != from_list_.end();){
         if (k > total_payment_amount_){
             iter = from_list_.erase(iter);
             continue;
         }
 
         k += iter->second;
+		++iter;
     }
 
     set_mychange_by_threshold(k);
