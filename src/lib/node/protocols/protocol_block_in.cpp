@@ -346,7 +346,8 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
     --headers_batch_size_;
     if(not headers_batch_size_.load())
     {
-    	send_get_blocks(null_hash);
+        send_get_blocks(null_hash);
+        send_get_blocks(message->header.hash(), null_hash);
     }
 
 
