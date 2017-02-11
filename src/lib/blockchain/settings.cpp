@@ -21,6 +21,7 @@
 
 #include <boost/filesystem.hpp>
 #include <bitcoin/consensus/miner.hpp>
+#include <bitcoin/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -63,6 +64,7 @@ settings::settings(bc::settings context)
 
             libbitcoin::consensus::bucket_size = 50000;
             libbitcoin::consensus::lock_heights = {10, 20, 30};
+            libbitcoin::coinbase_maturity = 1;
             break;
         }
 
