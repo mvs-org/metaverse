@@ -20,6 +20,7 @@
 #include <bitcoin/bitcoin/constants.hpp>
 
 namespace libbitcoin {
+uint32_t coinbase_maturity = 1000;
 
 hash_number max_target()
 {

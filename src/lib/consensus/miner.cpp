@@ -100,7 +100,8 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 {
 	string text;
 	if(is_mainnet) {
-		text = "it is Main net";
+        //BTC 452527 height witness, send to Satoshi 1Ghf657Wmot55pLzQCq5Qp69CFdqsd6bhn
+		text = "6e64c2098b84b04a0d9f61a60d5bc8f5f80f37e19f3ad9c39bfe419db422b33c";
 	} else {
 		text = "it is Test net";
 	}
@@ -121,9 +122,9 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
         tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(public_key.to_payment_address()));
 	    pblock->header.timestamp = 1479881397;
     } else {
-        bc::wallet::payment_address genesis_address("MHD7Zq6g3UqWN21AXt1Gw6xEwhDv385NJi");
+        bc::wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
 	    tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
-	    pblock->header.timestamp = 1486814400;
+	    pblock->header.timestamp = 1486796400;
     }
 	tx_new.outputs[0].value = 50000000 * coin_price();
 
@@ -598,7 +599,14 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
 {
 	bool ret = false;
 	if(header_hash == "0x"+ to_string(HeaderAux::hashHead(new_block_->header))){
-		new_block_->header.nonce = (FixedHash<8>::Arith)h64(nonce);
+        auto s_nonce = "0x" + nonce;
+        uint64_t n_nonce;
+        if(sscanf(s_nonce.c_str(), "%llx", &n_nonce) != 1) {
+		    log::error(LOG_HEADER) << "nonce change error\n";
+            return false;
+        }
+		uint64_t nonce_t = n_nonce ^0x6675636b6d657461;
+		new_block_->header.nonce = (u64) nonce_t;
 		new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
 		uint64_t height = store_block(new_block_);
 		if(height != 0){

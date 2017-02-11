@@ -60,7 +60,7 @@ settings::settings(bc::settings context)
     {
         case bc::settings::mainnet:
         {
-            identifier = 0x6d73766d;
+            identifier = 0x4d53564d;
             inbound_port = 5251;
 
             // Seeds based on bitcoinstats.com/network/dns-servers
