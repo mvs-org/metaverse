@@ -972,6 +972,7 @@ console_result listtxs::invoke (std::ostream& output,
             if( each.hash.compare(tx_hash) != 0 )
                 continue;
 
+            tx_item.put("hash", each.hash);
             tx_item.put("height", each.height);
             tx_item.put("timestamp", each.timestamp);
             tx_item.put("direction", "send");
