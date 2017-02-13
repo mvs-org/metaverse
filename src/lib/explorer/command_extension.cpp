@@ -521,9 +521,17 @@ console_result getaccount::invoke (std::ostream& output,
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
+    auto&& mnemonic = acc->get_mnemonic();
+    std::vector<std::string> results;
+    boost::split(results, mnemonic, boost::is_any_of(" "));
+
+    if (*results.rbegin() != argument_.last_word){
+        throw std::logic_error{"last word not matching."};
+    }
+
     pt::ptree root;
     root.put("name", acc->get_name());
-    root.put("mnemonic-key", acc->get_mnemonic());
+    root.put("mnemonic-key", mnemonic);
     root.put("address-count", acc->get_hd_index());
     root.put("user-status", acc->get_user_status());
     pt::write_json(output, root);
@@ -1161,7 +1169,7 @@ console_result send::invoke (std::ostream& output,
 
     std::list<prikey_amount> palist;
 
-    const char* cmds[4]{"xfetchbalance", nullptr, "-t", "etp"};
+    const char* cmds[4]{"fetch-balance", nullptr, "-t", "etp"};
     std::ostringstream sout;
     std::istringstream sin; 
 
@@ -1174,9 +1182,7 @@ console_result send::invoke (std::ostream& output,
         pt::ptree pt;
         sin.str(sout.str());
         pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
+        auto balance = pt.get<uint64_t>("unspent");
         if (balance){
             palist.push_back({each.get_prv_key(), balance});
         }
