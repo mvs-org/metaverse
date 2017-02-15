@@ -56,6 +56,7 @@ public:
 	std::string get_asset_symbol();
 	bool is_asset_transfer();
 	bool is_asset_issue();
+	bool is_etp();
 	
     uint64_t value;
     chain::script script;

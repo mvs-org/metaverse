@@ -36,6 +36,7 @@
 #include <bitcoin/bitcoin/chain/header.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
+using namespace libbitcoin::message;
 
 namespace libbitcoin {
 namespace blockchain {
@@ -261,6 +262,11 @@ public:
 	bool is_valid_address(const std::string& address);
 	void fired();
 	organizer& get_organizer();
+	bool get_transaction(const hash_digest& hash,
+		chain::transaction& tx);
+	
+	bool get_history(const wallet::payment_address& address,
+		uint64_t limit, uint64_t from_height, history_compact::list& history);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
