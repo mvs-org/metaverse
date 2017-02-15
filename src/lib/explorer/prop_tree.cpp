@@ -85,6 +85,8 @@ ptree prop_tree(const std::vector<header>& headers, bool json)
     return tree;
 }
 
+
+
 // transfers
 
 ptree prop_list(const chain::history& row)
@@ -508,6 +510,20 @@ ptree prop_tree(const bitcoin_uri& uri)
     ptree tree;
     tree.add_child("uri", uri_props);
     return tree;
+}
+
+//block
+
+
+ptree prop_tree(const block& block)
+{
+	ptree tree;
+	tree.add_child("header", prop_tree(block.header));
+	std::vector<transaction> txs;
+	txs.resize(block.transactions.size());
+	std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
+	tree.add_child("txs", prop_tree(txs, true));
+	return tree;
 }
 
 } // namespace config

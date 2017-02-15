@@ -653,7 +653,29 @@ console_result listaddresses::invoke (std::ostream& output,
 console_result getblock::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    output << IN_DEVELOPING;
+    auto json = argument_.json;
+    std::promise<code> p;
+    blockchain.fetch_block(argument_.hash, [&p, &output, json](const code& ec, chain::block::ptr block){
+            if(ec){
+                    p.set_value(ec);
+                    return;
+            }
+
+            if(json) {
+                    pt::write_json(output, prop_tree(*block));
+            }
+            else
+            {
+                    auto chunck = block->to_data();
+                    output << encode_base16(chunck);
+            }
+            p.set_value(error::success);
+    });
+
+    auto result = p.get_future().get();
+    if(result){
+            throw std::logic_error{result.message()};
+    }
     return console_result::okay;
 }
 

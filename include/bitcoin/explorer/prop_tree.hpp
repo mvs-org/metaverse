@@ -405,6 +405,8 @@ BCX_API pt::ptree prop_tree(const settings_list& settings);
  */
 BCX_API pt::ptree prop_tree(const wallet::bitcoin_uri& uri);
 
+BCX_API pt::ptree prop_tree(const block& block);
+
 } // namespace config
 } // namespace explorer
 } // namespace libbitcoin

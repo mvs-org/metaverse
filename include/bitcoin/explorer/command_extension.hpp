@@ -2021,16 +2021,17 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+        		.add("hash", 1)
+        		.add("json", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+//        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+//        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(auth_.auth, "hash", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -2048,16 +2049,27 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            "Account name."
-	    )
-        (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
-	    );
+//	    (
+//            "ACCOUNTNAME",
+//            value<std::string>(&auth_.name)->required(),
+//            "Account name."
+//	    )
+//        (
+//            "ACCOUNTAUTH",
+//            value<std::string>(&auth_.auth)->required(),
+//            "Account password/authorization."
+//	    )
+		(
+				"hash",
+				value<bc::config::hash256>(&argument_.hash)->required(),
+				"block hash."
+		)
+		(
+				"json",
+				value<bool>(&argument_.json),
+				"use json format or not, default is false"
+		)
+		;
 
         return options;
     }
@@ -2071,6 +2083,8 @@ public:
 
     struct argument
     {
+    	bc::config::hash256 hash;
+    	bool json;
     } argument_;
 
     struct option
