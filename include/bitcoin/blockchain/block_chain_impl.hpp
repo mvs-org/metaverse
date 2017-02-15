@@ -260,6 +260,7 @@ public:
 	void uppercase_symbol(std::string& symbol);
 	bool is_valid_address(const std::string& address);
 	void fired();
+	organizer& get_organizer();
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

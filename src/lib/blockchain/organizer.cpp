@@ -20,6 +20,7 @@
 #include <bitcoin/blockchain/organizer.hpp>
 #include <bitcoin/blockchain/block.hpp>
 
+#include <boost/thread.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <memory>
@@ -249,10 +250,12 @@ void organizer::replace_chain(uint64_t fork_index,
     DEBUG_ONLY(auto result =) chain_.get_difficulty(main_work, begin_index);
     BITCOIN_ASSERT(result);
 
+    delete_fork_chain_hash(orphan_chain[orphan_chain.size() - 1]->actual()->header.previous_block_hash);
     if (orphan_work <= main_work)
     {
  		if(orphan_chain.size() % node::locator_cap  == 0)
 			(*(orphan_chain.end() - 1))->set_error(error::fetch_more_block);
+	    add_fork_chain_hash((*(orphan_chain.end() - 1))->actual()->header.hash());
 
         log::debug(LOG_BLOCKCHAIN)
             << "Insufficient work to reorganize at [" << begin_index << "]" << "orphan_work:" << orphan_work << " main_work:" << main_work;
@@ -372,6 +375,26 @@ void organizer::notify_reorganize(uint64_t fork_point,
 void organizer::fired()
 {
 	subscriber_->relay(error::success, 0, {}, {});
+}
+
+std::unordered_map<hash_digest, uint64_t> organizer::get_fork_chain_last_block_hashes()
+{
+    unordered_map<hash_digest, uint64_t> hashes;
+    boost::unique_lock<boost::mutex> lock(mutex_fork_chain_last_block_hashes_);
+    hashes = fork_chain_last_block_hashes_;
+    return hashes;
+}
+
+void organizer::add_fork_chain_hash(const hash_digest& hash)
+{
+    boost::unique_lock<boost::mutex> lock(mutex_fork_chain_last_block_hashes_);
+    fork_chain_last_block_hashes_.insert(make_pair(hash, 0));
+}
+
+void organizer::delete_fork_chain_hash(const hash_digest& hash)
+{
+    boost::unique_lock<boost::mutex> lock(mutex_fork_chain_last_block_hashes_);
+    fork_chain_last_block_hashes_.erase(hash);
 }
 
 } // namespace blockchain
