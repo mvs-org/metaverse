@@ -1499,5 +1499,85 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 	return payment_address(address);
 }
 
+organizer& block_chain_impl::get_organizer()
+{
+    return organizer_;
+}
+
+bool block_chain_impl::get_transaction(const hash_digest& hash,
+    chain::transaction& tx)
+{
+	
+	bool ret = false;
+	if (stopped())
+    {
+        //handler(error::service_stopped, {});
+        return ret;
+    }
+
+    const auto result = database_.transactions.get(hash);
+	if(result) {
+		tx = result.transaction();
+		ret = true;
+	} else {
+		boost::mutex mutex;
+		transaction_message::ptr tx_ptr = nullptr;
+		
+		mutex.lock();
+		auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
+		{
+			if(error::success == ec)
+				tx_ptr = tx_;
+			mutex.unlock();
+		};
+			
+		pool().fetch(hash, f);
+		boost::unique_lock<boost::mutex> lock(mutex);
+		if(tx_ptr) {
+			tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
+			ret = true;
+		}
+	}
+	#ifdef MVS_DEBUG
+	log::debug("get_transaction=")<<tx.to_string(1);
+	#endif
+
+	return ret;
+	
+}
+
+
+bool block_chain_impl::get_history(const wallet::payment_address& address,
+    uint64_t limit, uint64_t from_height, history_compact::list& history)
+{
+	if (stopped())
+    {
+        //handler(error::service_stopped, {});
+        return false;
+    }
+
+	boost::mutex mutex;
+	
+	mutex.lock();
+	auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
+	{
+		if(error::success == ec)
+			history = history_;
+		mutex.unlock();
+	};
+		
+	// Obtain payment address history from the transaction pool and blockchain.
+    pool().fetch_history(address, limit, from_height, f);
+	boost::unique_lock<boost::mutex> lock(mutex);
+	
+#ifdef MVS_DEBUG
+	log::debug("get_history=")<<history.size();
+#endif
+
+	return true;
+	
+}
+
+
 } // namespace blockchain
 } // namespace libbitcoin

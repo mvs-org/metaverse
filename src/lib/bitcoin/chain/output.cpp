@@ -187,6 +187,11 @@ bool output::is_asset_issue()
 	return false;
 }
 
+bool output::is_etp()
+{
+	return (attach_data.get_type() == ETP_TYPE);
+}
+
 std::string output::get_asset_symbol() // for validate_transaction.cpp to calculate asset transfer amount
 {
 	if(attach_data.get_type() == ASSET_TYPE) {

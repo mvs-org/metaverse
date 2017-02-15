@@ -63,7 +63,7 @@ settings::settings(bc::settings context)
             bc::wallet::payment_address::mainnet_p2kh = 0x7f;
 
             libbitcoin::consensus::bucket_size = 50000;
-            libbitcoin::consensus::lock_heights = {10, 20, 30};
+            libbitcoin::consensus::lock_heights = {10, 20, 30, 40, 50};
             libbitcoin::coinbase_maturity = 1;
             break;
         }

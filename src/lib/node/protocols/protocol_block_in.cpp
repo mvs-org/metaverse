@@ -38,7 +38,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 static constexpr auto perpetual_timer = true;
-static const auto get_blocks_interval = asio::seconds(2);
+static const auto get_blocks_interval = asio::seconds(24);
 
 protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
     block_chain& blockchain)
@@ -117,8 +117,17 @@ void protocol_block_in::get_block_inventory(const code& ec)
         return;
     }
 
+    static uint32_t num = 0;
     // This is also sent after each reorg.
     send_get_blocks(null_hash);
+    if(num++ % 2 == 0) {
+        organizer& organizer = blockchain_.get_organizer();
+        auto&& hashes = organizer.get_fork_chain_last_block_hashes();
+        for(auto &i : hashes){
+            log::debug(LOG_NODE) << "send fetch_more_block hasese size:" << hashes.size() <<  " hash:" << encode_hash(i.first);
+            send_get_blocks(i.first, null_hash);
+        }
+    }
 }
 
 void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
@@ -344,11 +353,13 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
 
     log::debug(LOG_NODE) << "from " << authority() << ",receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count << ",number," << message->header.number ;
     --headers_batch_size_;
+	/*
     if(not headers_batch_size_.load())
     {
         send_get_blocks(null_hash);
         send_get_blocks(message->header.hash(), null_hash);
     }
+	*/
 
 
     blockchain_.store(message, BIND2(handle_store_block, _1, message));
