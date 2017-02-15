@@ -220,7 +220,8 @@ bool utxo_helper::fetch_tx()
 
 void utxo_helper::get_tx_encode(std::string& tx_encode)
 {
-    const char* cmds[10240]{0x00};
+    auto cmds = new const char* [20480];
+    memset(cmds, 0x00, 20480);
     int i = 0;
     cmds[i++] = "tx-encode";
 
@@ -228,10 +229,10 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
         cmds[i++] = "-s";
         cmds[i++] = "6"; //TODO, period deposit
         cmds[i++] = "-p";
-		period_str = std::to_string(reward_in_);
+        period_str = std::to_string(reward_in_);
         cmds[i++] = period_str.c_str();
-		cmds[i++] = "-d";
-		cmds[i++] = receiver_list_.front().c_str(); // send the deposit which shall locked in scripts
+        cmds[i++] = "-d";
+        cmds[i++] = receiver_list_.front().c_str(); // send the deposit which shall locked in scripts
     }
 
 
@@ -239,6 +240,12 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             iter.output.as_tx_encode_input_args = iter.txhash + ":" + iter.output.index;
+            if (i >= 20480)
+            {
+                delete[] cmds;
+                throw std::runtime_error{"tx inputs too manys."};
+            }
+
             cmds[i++] = "-i";
             cmds[i++] = iter.output.as_tx_encode_input_args.c_str();
         }
@@ -252,37 +259,15 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout))
+    if (dispatch_command(i, cmds, sin, sout, sout)){
+        delete[] cmds;
         throw std::logic_error(sout.str());
+    }
 
     log::debug(LOG_COMMAND)<<"tx-encode sout:"<<sout.str();
     tx_encode = sout.str();
-}
 
-void utxo_helper::get_input_sign(std::string& tx_encode)
-{
-    std::ostringstream sout;
-    std::istringstream sin;
-
-    int i = 0;
-    for (auto& fromeach : from_list_){
-        for (auto& iter: keys_inputs_[fromeach.first]){
-            sin.str(tx_encode);
-            sout.str("");
-
-            std::string&& tx_encode_index = std::to_string(i++);
-            const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-            bc::chain::script ss;
-            ss.from_string(iter.output.script);
-            if (ss.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                iter.output.script_version = 6u;
-
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw std::logic_error(sout.str());
-            iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
-        }
-    }
+    delete[] cmds;
 }
 
 // copy from src/lib/consensus/clone/script/script.h
@@ -311,29 +296,83 @@ static std::vector<unsigned char> stoshi_to_chunk(const int64_t& value)
 
 uint32_t utxo_helper::get_reward_lock_block_height()
 {
-	int index;
-	switch(reward_in_) {
-		case 7 :
-			index = 0;
-			break;
-		case 30 :
-			index = 1;
-			break;
-		case 90 :
-			index = 2;
-			break;
-		case 182 :
-			index = 3;
-			break;
-		case 365 :
-			index = 4;
-			break;
-		default :
-			index = 0;
-			break;
-	}
-	return (uint32_t)bc::consensus::lock_heights[index];
+    int index;
+    switch(reward_in_) {
+        case 7 :
+            index = 0;
+            break;
+        case 30 :
+            index = 1;
+            break;
+        case 90 :
+            index = 2;
+            break;
+        case 182 :
+            index = 3;
+            break;
+        case 365 :
+            index = 4;
+            break;
+        default :
+            index = 0;
+            break;
+    }
+    return (uint32_t)bc::consensus::lock_heights[index];
 }
+
+void utxo_helper::get_input_sign(std::string& tx_encode)
+{
+    bc::explorer::config::transaction config_tx(tx_encode);
+    tx_type& tx = config_tx.data();
+
+    uint32_t index = 0;
+    for (auto& fromeach : from_list_){
+        for (auto& iter: keys_inputs_[fromeach.first]){
+            // paramaters
+            explorer::config::hashtype sign_type;
+            uint8_t hash_type = (signature_hash_algorithm)sign_type;
+
+            bc::explorer::config::ec_private config_private_key(fromeach.first);
+            const ec_secret& private_key =    config_private_key;    
+            bc::wallet::ec_private ec_private_key(private_key, 0u, true);
+
+            bc::explorer::config::script config_contract(iter.output.script);
+            const bc::chain::script& contract = config_contract;
+
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(endorse, private_key,
+                contract, tx, index, hash_type))
+            {
+                throw std::logic_error{"get_input_sign sign failure"};
+            }
+
+            // do script
+            auto&& public_key = ec_private_key.to_public();
+            data_chunk public_key_data;
+            public_key.to_data(public_key_data);
+            bc::chain::script ss;
+            ss.operations.push_back({bc::chain::opcode::special, endorse});
+            ss.operations.push_back({bc::chain::opcode::special, public_key_data});
+
+            if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+            {
+                auto&& lock_num = stoshi_to_chunk(get_reward_lock_block_height());
+                ss.operations.push_back({bc::chain::opcode::special, lock_num});
+            }
+
+            tx.inputs[index].script = ss;
+            index++;
+        }
+    }
+
+    std::ostringstream output_tx;
+    output_tx<<config_tx;
+    tx_encode = output_tx.str();
+
+}
+
+
 
 void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
@@ -413,7 +452,7 @@ void utxo_helper::group_utxo()
         }
 
         k += iter->second;
-		++iter;
+        ++iter;
     }
 }
 
@@ -423,10 +462,10 @@ bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
     // initialization, may throw
     utxo.get_payment_by_receivers();
 
-    // clean from_list_ by some algorithm
+    // group send amount by address
     utxo.group_utxo();
 
-    // get utxo
+    // get utxo in each address
     std::string change{""};
     if (!utxo.fetch_utxo(change, blockchain))
         return false;
@@ -438,26 +477,24 @@ bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
     std::string tx_encode;
     utxo.get_tx_encode(tx_encode);
 
-    // input-sign
+    // input-sign and input-set
     utxo.get_input_sign(tx_encode);
 
-    // input-set
-    std::string tx_set;
-    utxo.get_input_set(tx_encode, tx_set);
-
-    // tx-decode
-    std::string tx_decode;
-    get_tx_decode(tx_set, tx_decode);
+    //// input-set
+    //std::string tx_set;
+    //utxo.get_input_set(tx_encode, tx_set);
 
     // validate-tx
-    validate_tx(tx_set);
+    validate_tx(tx_encode);
 
     // send-tx
     std::string send_ret;
-    send_tx(tx_set, send_ret);
+    send_tx(tx_encode, send_ret);
 
-    //output<<"{\"sent-result\":\"" << send_ret <<"\",";
-    output<<tx_decode ;
+    //// tx-decode
+    std::string tx_decode;
+    get_tx_decode(tx_encode, tx_decode);
+    output<<tx_decode;
 
     return true;
 }
@@ -835,7 +872,7 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl&
 // ----------------------------------------------------------------------------
 
 bool utxo_attach_send_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
-	std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
+    std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
     using namespace boost::property_tree;
 
@@ -1606,7 +1643,7 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::blockchain::block_chain_i
 
 /*************************************** sendassetfrom *****************************************/
 bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
-	std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
+    std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
     using namespace boost::property_tree;
 
