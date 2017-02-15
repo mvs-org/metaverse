@@ -117,13 +117,19 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
     using namespace boost::property_tree;
 
     uint64_t remaining = total_payment_amount_;
+    uint32_t from_list_index = 1;
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
         std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, is_testnet_rules);
 
-        //auto&& amount = std::to_string(std::min(fromeach.second, total_payment_amount_));
-        auto&& amount = std::to_string(fromeach.second);
+        std::string amount = std::to_string(fromeach.second);
+
+        // last one
+        if (from_list_index == from_list_.size()){
+            amount = std::to_string(remaining);
+        }
+        remaining -= fromeach.second;
 
         // exec
         const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
@@ -147,6 +153,11 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
             return false;
         }
 
+        // last one
+        if (from_list_index++ == from_list_.size()){
+            set_mychange_by_threshold(change);
+        }
+
         // found, then push_back
         tx_items tx;
         for (auto& i: points){
@@ -158,8 +169,6 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
-		break; // found matched utxo then break
-
     }
 
     return true;
@@ -370,11 +379,10 @@ uint64_t utxo_helper::get_my_balance()
     return total_balance;
 }
 
-void utxo_helper::set_mychange_by_threshold(uint64_t threshold)
+void utxo_helper::set_mychange_by_threshold(std::string& mychange)
 {
-    mychange_.second = threshold - total_payment_amount_;
     receiver_list_.pop_back();
-    receiver_list_.push_back({mychange_.first + ":" + std::to_string(mychange_.second)});
+    receiver_list_.push_back({mychange_.first + ":" + mychange});
 }
 
 void utxo_helper::group_utxo()
@@ -392,7 +400,6 @@ void utxo_helper::group_utxo()
         auto pa = *pos;
         from_list_.clear();
         from_list_.push_back(pa);
-        set_mychange_by_threshold(pa.second);
 
         return;
     }
@@ -408,8 +415,6 @@ void utxo_helper::group_utxo()
         k += iter->second;
 		++iter;
     }
-
-    set_mychange_by_threshold(k);
 }
 
 // ---------------------------------------------------------------------------
