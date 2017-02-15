@@ -30,6 +30,8 @@
 namespace libbitcoin {
 namespace blockchain {
 
+class organizer;
+
 /// This intrface is thread safe.
 /// A high level interface for encapsulation of the blockchain database.
 /// Implementations are expected to be thread safe.
@@ -128,6 +130,7 @@ public:
     virtual void subscribe_reorganize(reorganize_handler handler) = 0;
 
     virtual void fired() = 0; // used for removing out of date action
+    virtual organizer& get_organizer() = 0;
 };
 
 } // namespace blockchain

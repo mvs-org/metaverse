@@ -20,6 +20,7 @@
 #ifndef MVS_BLOCKCHAIN_ORGANIZER_HPP
 #define MVS_BLOCKCHAIN_ORGANIZER_HPP
 
+#include <unordered_map>
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -29,6 +30,8 @@
 #include <bitcoin/blockchain/orphan_pool.hpp>
 #include <bitcoin/blockchain/settings.hpp>
 #include <bitcoin/blockchain/simple_chain.hpp>
+#include <bitcoin/bitcoin/math/hash.hpp>
+#include <boost/thread.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -61,6 +64,9 @@ public:
     virtual void filter_orphans(message::get_data::ptr message);
 
     void fired();
+    std::unordered_map<hash_digest, uint64_t> get_fork_chain_last_block_hashes();
+    void add_fork_chain_hash(const hash_digest&);
+    void delete_fork_chain_hash(const hash_digest&);
 
 protected:
     virtual bool stopped();
@@ -96,6 +102,8 @@ private:
     // These are thread safe.
     orphan_pool orphan_pool_;
     reorganize_subscriber::ptr subscriber_;
+    std::unordered_map<hash_digest, uint64_t> fork_chain_last_block_hashes_;
+    boost::mutex mutex_fork_chain_last_block_hashes_;
 };
 
 } // namespace blockchain

@@ -1499,6 +1499,11 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 	return payment_address(address);
 }
 
+organizer& block_chain_impl::get_organizer()
+{
+    return organizer_;
+}
+
 bool block_chain_impl::get_transaction(const hash_digest& hash,
     chain::transaction& tx)
 {

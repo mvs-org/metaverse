@@ -118,14 +118,8 @@ block_detail::list orphan_pool::trace(block_detail::ptr end) const
     // Critical Section
     mutex_.lock_shared();
 
-    buffer::const_iterator prev_it = buffer_.begin();
-    for (auto it = find(prev_it, hash); it != buffer_.end(); it = find(prev_it, hash))
+    for (auto it = rfind(buffer_.rbegin(), hash); it != buffer_.rend(); it = rfind(it, hash))
     {
-        if(it != buffer_.begin())
-            prev_it = it - 1;
-        else
-            prev_it = buffer_.begin();
-
         trace.push_back(*it);
         hash = (*it)->actual()->header.previous_block_hash;
     }
@@ -183,6 +177,7 @@ bool orphan_pool::exists(const chain::header& header) const
     return std::any_of(buffer_.begin(), buffer_.end(), match);
 }
 
+/*
 orphan_pool::const_iterator orphan_pool::find(buffer::const_iterator begin, const hash_digest& hash) const
 {
     const auto match = [&hash](const block_detail::ptr& entry)
@@ -190,10 +185,18 @@ orphan_pool::const_iterator orphan_pool::find(buffer::const_iterator begin, cons
         return hash == entry->hash();
     };
 
-    orphan_pool::const_iterator ret = std::find_if(begin, buffer_.end(), match);
-    if(ret == buffer_.end() && begin != buffer_.begin())
-        ret = std::find_if(buffer_.begin(), buffer_.end(), match);
-    return ret;
+	return std::find_if(begin, buffer_.end(), match);
+}
+*/
+
+orphan_pool::const_reverse_iterator orphan_pool::rfind(buffer::const_reverse_iterator begin, const hash_digest& hash) const
+{
+    const auto match = [&hash](const block_detail::ptr& entry)
+    {
+        return hash == entry->hash();
+    };
+
+	return std::find_if(begin, buffer_.rend(), match);
 }
 
 } // namespace blockchain

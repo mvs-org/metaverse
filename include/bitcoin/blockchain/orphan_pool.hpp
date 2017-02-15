@@ -58,10 +58,12 @@ private:
 //    typedef boost::circular_buffer<block_detail::ptr> buffer;
     typedef std::vector<block_detail::ptr> buffer;
     typedef buffer::const_iterator const_iterator;
+    typedef buffer::const_reverse_iterator const_reverse_iterator;
 
     bool exists(const hash_digest& hash) const;
     bool exists(const chain::header& header) const;
     const_iterator find(buffer::const_iterator begin, const hash_digest& hash) const;
+    const_reverse_iterator rfind(buffer::const_reverse_iterator begin, const hash_digest& hash) const;
 
     // The buffer is protected by mutex.
     buffer buffer_;

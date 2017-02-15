@@ -261,6 +261,7 @@ public:
 	void uppercase_symbol(std::string& symbol);
 	bool is_valid_address(const std::string& address);
 	void fired();
+	organizer& get_organizer();
 	bool get_transaction(const hash_digest& hash,
 		chain::transaction& tx);
 	
