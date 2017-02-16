@@ -223,12 +223,12 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
     const char* cmds[1024]{0x00};
     uint32_t i = 0;
     cmds[i++] = "tx-encode";
+    auto&& period_str = std::to_string(reward_in_);
 
     if (reward_in_){
         cmds[i++] = "-s";
         cmds[i++] = "6"; //TODO, period deposit
         cmds[i++] = "-p";
-        period_str = std::to_string(reward_in_);
         cmds[i++] = period_str.c_str();
         cmds[i++] = "-d";
         cmds[i++] = receiver_list_.front().c_str(); // send the deposit which shall locked in scripts
@@ -241,7 +241,7 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
         for (auto& iter: keys_inputs_[fromeach.first]){
             iter.output.as_tx_encode_input_args = iter.txhash + ":" + iter.output.index;
             adjust_amount += fromeach.second;
-            if (i >= 700) // limit in ~300 inputs
+            if (i >= 667) // limit in ~330 inputs
             {
                 auto&& response = "Too many inputs makes tx too large, suggest less than " + std::to_string(adjust_amount) + " etp.";
                 throw std::runtime_error(response);
@@ -254,7 +254,7 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     // output args
     for (auto& iter: receiver_list_) {
-        if (i >= 1024) {
+        if (i >= 667) {
                 throw std::runtime_error{"Too many outputs makes tx too large, canceled."};
         }
         cmds[i++] = "-o";
