@@ -240,10 +240,10 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             iter.output.as_tx_encode_input_args = iter.txhash + ":" + iter.output.index;
-            adjust_amount += fromeach.second;
-            if (i >= 667) // limit in ~330 inputs
+            adjust_amount += iter.output.value;
+            if (i >= 677) // limit in ~333 inputs
             {
-                auto&& response = "Too many inputs makes tx too large, suggest less than " + std::to_string(adjust_amount) + " etp.";
+                auto&& response = "Too many inputs limit, suggest less than " + std::to_string(adjust_amount) + " satoshi.";
                 throw std::runtime_error(response);
             }
 
@@ -254,8 +254,8 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     // output args
     for (auto& iter: receiver_list_) {
-        if (i >= 667) {
-                throw std::runtime_error{"Too many outputs makes tx too large, canceled."};
+        if (i >= 687) {
+                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         cmds[i++] = "-o";
         cmds[i++] = iter.c_str();
