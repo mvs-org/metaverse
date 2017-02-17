@@ -253,7 +253,10 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     RETURN_IF_STOPPED();
 
     if (!is_distinct_tx_set(transactions))
+    {
+        log::warning(LOG_BLOCKCHAIN) << "is_distinct_tx_set!!!";
         return error::duplicate;
+    }
 
     RETURN_IF_STOPPED();
 
@@ -281,6 +284,12 @@ bool validate_block::is_distinct_tx_set(const transaction::list& txs)
     std::transform(txs.begin(), txs.end(), hashes.begin(), hasher);
     std::sort(hashes.begin(), hashes.end());
     auto distinct_end = std::unique(hashes.begin(), hashes.end());
+#ifdef MVS_DEBUG
+    if(distinct_end != hashes.end()) {
+        for(auto item : txs)
+            log::warning(LOG_BLOCKCHAIN) << "hash:" << encode_hash(item.hash()) << " data:" << item.to_string(1);
+	}
+#endif
     return distinct_end == hashes.end();
 }
 
@@ -442,8 +451,9 @@ bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
     return std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
-code validate_block::connect_block() const
+code validate_block::connect_block(hash_digest& err_tx) const
 {
+    err_tx = null_hash;
     const auto& transactions = current_block_.transactions;
 
     // BIP30 duplicate exceptions are spent and are not indexed.
@@ -453,7 +463,10 @@ code validate_block::connect_block() const
         for (const auto& tx: transactions)
         {
             if (is_spent_duplicate(tx))
+            {
+                err_tx = tx.hash();
                 return error::duplicate_or_spent;
+            }
 
             RETURN_IF_STOPPED();
         }
@@ -496,12 +509,18 @@ code validate_block::connect_block() const
 
         // Consensus checks here.
         if (!validate_inputs(tx, tx_index, value_in, total_sigops))
+        {
+            err_tx = tx.hash();
             return error::validate_inputs_failed;
+        }
 
         RETURN_IF_STOPPED();
 
         if (!validate_transaction::tally_fees(tx, value_in, fees))
+        {
+            err_tx = tx.hash();
             return error::fees_out_of_range;
+        }
     }
 
     if(get_coinage_reward_tx_count != coinage_reward_coinbase_index - 1) {

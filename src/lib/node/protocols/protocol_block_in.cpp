@@ -38,7 +38,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 static constexpr auto perpetual_timer = true;
-static const auto get_blocks_interval = asio::seconds(24);
+static const auto get_blocks_interval = asio::seconds(2);
 
 protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
     block_chain& blockchain)
@@ -120,7 +120,7 @@ void protocol_block_in::get_block_inventory(const code& ec)
     static uint32_t num = 0;
     // This is also sent after each reorg.
     send_get_blocks(null_hash);
-    if(num++ % 2 == 0) {
+    if(num++ % 12 == 0) {
         organizer& organizer = blockchain_.get_organizer();
         auto&& hashes = organizer.get_fork_chain_last_block_hashes();
         for(auto &i : hashes){
