@@ -250,6 +250,7 @@ void transaction_pool::delete_tx(const hash_digest& tx_hash)
             {
                 log::debug(LOG_BLOCKCHAIN) << " delete_tx hash:" << libbitcoin::encode_hash(tx_hash) << " success";
                 buffer_.erase(item);
+                break;
             }
         }
     };
