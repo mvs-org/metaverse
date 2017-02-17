@@ -220,16 +220,15 @@ bool utxo_helper::fetch_tx()
 
 void utxo_helper::get_tx_encode(std::string& tx_encode)
 {
-    auto cmds = new const char* [20480];
-    memset(cmds, 0x00, 20480);
-    int i = 0;
+    const char* cmds[1024]{0x00};
+    uint32_t i = 0;
     cmds[i++] = "tx-encode";
+    auto&& period_str = std::to_string(reward_in_);
 
     if (reward_in_){
         cmds[i++] = "-s";
         cmds[i++] = "6"; //TODO, period deposit
         cmds[i++] = "-p";
-        period_str = std::to_string(reward_in_);
         cmds[i++] = period_str.c_str();
         cmds[i++] = "-d";
         cmds[i++] = receiver_list_.front().c_str(); // send the deposit which shall locked in scripts
@@ -237,13 +236,15 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
 
     // input args
+    uint64_t adjust_amount = 0;
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             iter.output.as_tx_encode_input_args = iter.txhash + ":" + iter.output.index;
-            if (i >= 20480)
+            adjust_amount += iter.output.value;
+            if (i >= 677) // limit in ~333 inputs
             {
-                delete[] cmds;
-                throw std::runtime_error{"tx inputs too manys."};
+                auto&& response = "Too many inputs limit, suggest less than " + std::to_string(adjust_amount) + " satoshi.";
+                throw std::runtime_error(response);
             }
 
             cmds[i++] = "-i";
@@ -253,6 +254,9 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     // output args
     for (auto& iter: receiver_list_) {
+        if (i >= 687) {
+                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
         cmds[i++] = "-o";
         cmds[i++] = iter.c_str();
     }
@@ -260,18 +264,16 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
     std::ostringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout)){
-        delete[] cmds;
         throw std::logic_error(sout.str());
     }
 
     log::debug(LOG_COMMAND)<<"tx-encode sout:"<<sout.str();
     tx_encode = sout.str();
 
-    delete[] cmds;
 }
 
 // copy from src/lib/consensus/clone/script/script.h
-static std::vector<unsigned char> stoshi_to_chunk(const int64_t& value)
+static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
 {
     if(value == 0)
         return std::vector<unsigned char>();
@@ -355,12 +357,15 @@ void utxo_helper::get_input_sign(std::string& tx_encode)
             ss.operations.push_back({bc::chain::opcode::special, endorse});
             ss.operations.push_back({bc::chain::opcode::special, public_key_data});
 
+            // if pre-output script is deposit tx.
             if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
             {
-                auto&& lock_num = stoshi_to_chunk(get_reward_lock_block_height());
-                ss.operations.push_back({bc::chain::opcode::special, lock_num});
+            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+                    contract.operations);
+                ss.operations.push_back({bc::chain::opcode::special, satoshi_to_chunk(lock_height)});
             }
 
+            // set input script of this tx
             tx.inputs[index].script = ss;
             index++;
         }
@@ -387,7 +392,7 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             std::string input_script;
             if (iter.output.script_version == 6u)
             {
-                auto&& cret = stoshi_to_chunk(get_reward_lock_block_height());
+                auto&& cret = satoshi_to_chunk(get_reward_lock_block_height());
                 input_script = "[ " + iter.output.as_input_sign + " ] " + "[ " + frompubkey + " ] "
                         + "[ " + bc::encode_base16(cret) + " ]";
             }
