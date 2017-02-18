@@ -582,6 +582,7 @@ chain::block data_base::pop()
     // Stealth unlink is not implemented.
     stealth.unlink(height);
     blocks.unlink(height);
+	blocks.remove(block.header.hash()); // wdy remove block from block hash table
 
     // Synchronise everything that was changed.
     synchronize();

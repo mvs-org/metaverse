@@ -119,7 +119,7 @@ public:
     }
     uint64_t get_my_balance();
     void group_utxo();
-    inline void set_mychange_by_threshold(uint64_t threshold);
+    inline void set_mychange_by_threshold(std::string& mychange);
 
     bool fetch_utxo(std::string& change, bc::blockchain::block_chain_impl& blockchain);
     bool fetch_tx();

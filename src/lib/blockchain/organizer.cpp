@@ -138,10 +138,15 @@ code organizer::verify(uint64_t fork_point,
         << ") txs and (" << total_inputs << ") inputs";
 
     // Time this for logging.
-    const auto timed = [&ec, &validate]()
+    const auto timed = [this, &ec, &validate]()
     {
+        hash_digest err_tx;
         // Checks that include input->output traversal.
-        ec = validate.connect_block();
+        ec = validate.connect_block(err_tx);
+        if(ec && err_tx != null_hash) {	
+            dynamic_cast<block_chain_impl&>(chain_).pool().delete_tx(err_tx);
+		}
+
     };
 
     // Execute the timed validation.

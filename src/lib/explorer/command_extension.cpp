@@ -1214,7 +1214,7 @@ console_result send::invoke (std::ostream& output,
 
     auto random = bc::pseudo_random();
 
-    // random sort
+    // sort
     palist.sort([random](const prikey_amount& first, const prikey_amount& last){
             return first.second < last.second;
             });
@@ -2354,7 +2354,7 @@ console_result xfetchbalance::invoke (std::ostream& output,
 		
 			// spend unconfirmed (or no spend attempted)
 			if (row.spend.hash == null_hash) {
-				log::debug("get_tx=")<<blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
+				blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
 				auto output = tx_temp.outputs.at(row.output.index);
 
 				// deposit utxo in transaction pool
@@ -2454,7 +2454,7 @@ console_result xfetchutxo::invoke (std::ostream& output,
 			// spend unconfirmed (or no spend attempted)
 			if (row.spend.hash == null_hash) {
 				// fetch utxo script to check deposit utxo
-				log::debug("get_tx=")<<blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
+				blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
 				auto output = tx_temp.outputs.at(row.output.index);
 				bool is_deposit_utxo = false;
 

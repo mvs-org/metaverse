@@ -184,6 +184,11 @@ void block_database::unlink(size_t from_height)
     if (index_manager_.count() > from_height)
         index_manager_.set_count(from_height);
 }
+void block_database::remove(const hash_digest& hash)
+{
+    DEBUG_ONLY(bool success =) lookup_map_.unlink(hash);
+    BITCOIN_ASSERT(success);
+}
 
 void block_database::sync()
 {

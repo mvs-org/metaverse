@@ -234,6 +234,30 @@ void transaction_pool::fetch(fetch_all_handler handler)
     dispatch_.ordered(tx_fetcher);
 }
 
+void transaction_pool::delete_tx(const hash_digest& tx_hash)
+{
+    log::debug(LOG_BLOCKCHAIN) << " delete_tx hash:" << libbitcoin::encode_hash(tx_hash);
+    if (stopped())
+    {
+        return;
+    }
+
+    const auto tx_delete = [this, tx_hash]()
+    {
+        for(auto item = buffer_.begin(); item != buffer_.end(); ++item)
+        {
+            if(item->tx->hash() == tx_hash)
+            {
+                log::debug(LOG_BLOCKCHAIN) << " delete_tx hash:" << libbitcoin::encode_hash(tx_hash) << " success";
+                buffer_.erase(item);
+                break;
+            }
+        }
+    };
+
+    dispatch_.ordered(tx_delete);
+}
+
 void transaction_pool::fetch(const hash_digest& transaction_hash,
     fetch_handler handler)
 {
