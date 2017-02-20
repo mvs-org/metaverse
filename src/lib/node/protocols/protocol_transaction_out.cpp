@@ -140,7 +140,8 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
     for (const auto& inv: message->inventories)
         if (inv.type == inventory::type_id::transaction)
         {
-    		pool_.fetch(inv.hash, [this, &inv](const code& ec, transaction_ptr tx){
+        	auto pThis = shared_from_this();
+    		pool_.fetch(inv.hash, [this, &inv, pThis](const code& ec, transaction_ptr tx){
     			auto t = tx ? *tx : chain::transaction{};
     			send_transaction(ec, t, inv.hash);
     			if(ec)
