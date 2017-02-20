@@ -32,7 +32,7 @@ settings::settings()
   : threads(50),
     protocol(version::level::maximum),
     inbound_connections(32),
-    outbound_connections(4),
+    outbound_connections(8),
     manual_attempt_limit(0),
     connect_batch_size(5),
     connect_timeout_seconds(5),
