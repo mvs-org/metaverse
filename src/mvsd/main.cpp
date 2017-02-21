@@ -36,50 +36,39 @@ int bc::main(int argc, char* argv[])
 {
     using namespace bc;
     using namespace bc::server;
-    try{
-        set_utf8_stdio();
-        server::parser metadata(bc::settings::mainnet);
-        const auto& args = const_cast<const char**>(argv);
+	set_utf8_stdio();
+	server::parser metadata(bc::settings::mainnet);
+	const auto& args = const_cast<const char**>(argv);
 
-        if (!metadata.parse(argc, args, cerr))
-            return console_result::failure;
+	if (!metadata.parse(argc, args, cerr))
+		return console_result::failure;
 
-        std::ostream* out = &cout;
-        std::ostream* err = &cerr;
-        if(metadata.configured.daemon)
-        {
-            libbitcoin::daemon();
-            static fstream fout;
-            fout.open("/dev/null");
-            if(not fout.good())
-                throw std::runtime_error{"open /dev/null failed"};
-            out = &fout;
-            err = &fout;
-        }
+	std::ostream* out = &cout;
+	std::ostream* err = &cerr;
+	if(metadata.configured.daemon)
+	{
+		libbitcoin::daemon();
+		static fstream fout;
+		fout.open("/dev/null");
+		if(not fout.good())
+			throw std::runtime_error{"open /dev/null failed"};
+		out = &fout;
+		err = &fout;
+	}
 
-        if(metadata.configured.use_testnet_rules) // option priority No.1
-        {
-            metadata.configured.chain.use_testnet_rules = true;
-			
-			server::parser test_metadata(bc::settings::testnet);
-			if (!test_metadata.parse(argc, args, cerr))
-				return console_result::failure;
-            test_metadata.configured.chain.use_testnet_rules = true;
-			executor test_host(test_metadata, cin, *out, *err);
-			return test_host.menu() ? console_result::okay : console_result::failure;
-        }
+	if(metadata.configured.use_testnet_rules) // option priority No.1
+	{
+		metadata.configured.chain.use_testnet_rules = true;
 
-        executor host(metadata, cin, *out, *err);
-        return host.menu() ? console_result::okay : console_result::failure;
-    }
-    catch(const std::exception& e)
-    {
-        do_backtrace("exception.out");
-    }
-    catch(...)
-    {
-        do_backtrace("exception.out");
-    }
-    return console_result::failure;
+		server::parser test_metadata(bc::settings::testnet);
+		if (!test_metadata.parse(argc, args, cerr))
+			return console_result::failure;
+		test_metadata.configured.chain.use_testnet_rules = true;
+		executor test_host(test_metadata, cin, *out, *err);
+		return test_host.menu() ? console_result::okay : console_result::failure;
+	}
+
+	executor host(metadata, cin, *out, *err);
+	return host.menu() ? console_result::okay : console_result::failure;
 
 }
