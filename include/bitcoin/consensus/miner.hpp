@@ -57,7 +57,7 @@ public:
 	bool script_hash_signature_operations_count(size_t &count, chain::input& input, vector<transaction_ptr>& transactions);
 	transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_addres, uint64_t value, uint64_t block_height, int lock_height);
 
-	block_ptr get_block();
+	block_ptr get_block(bool is_force_create_block = false);
 	bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
 	bool put_result(const std::string& nounce, const std::string& mix_hash, const std::string& header_hash);
 	bool set_miner_public_key(const string& public_key);
