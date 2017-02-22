@@ -30,6 +30,8 @@
 #include <json/minijson_writer.hpp>
 #endif
 
+#include <bitcoin/bitcoin/math/crypto.hpp>
+
 namespace libbitcoin {
 namespace chain {
 
@@ -179,14 +181,77 @@ void account::set_name(const std::string& name)
 { 
      this->name = name;
 }
-
 const std::string& account::get_mnemonic() const
-{ 
-    return mnemonic;
+{
+	return mnemonic; // for account == operator
 }
-void account::set_mnemonic(const std::string& mnemonic)
+const std::string account::get_mnemonic(std::string& passphrase) const
 { 
-     this->mnemonic = mnemonic;
+#ifdef WITH_ICU
+	if(!passphrase.size())
+		throw std::logic_error{"invalid password!"};
+	
+	data_chunk pass_chunk(passphrase.begin(), passphrase.end());
+	aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
+	std::string decry_output("");
+
+	auto mnem_decrypt = [&decry_output](aes_secret& sec, const std::string& data){
+		uint32_t start = 0;
+		aes_block block;
+		while( start < data.size() ) {
+			data_chunk each(data.begin()+start, data.begin()+start+aes256_block_size);
+			block = to_array<aes256_block_size>(data_slice(each));
+			aes256_decrypt(sec, block);
+			for(auto x:block) {
+				if(!x && (start + aes256_block_size)>= data.size()) // filter 0 value
+					continue;
+				decry_output.push_back(static_cast<char>(x));
+			}
+			start += aes256_block_size;
+		}
+	};
+	mnem_decrypt(sec, mnemonic);
+
+    return decry_output;
+#else
+	return mnemonic;
+#endif
+}
+
+void account::set_mnemonic(const std::string& mnemonic, std::string& passphrase)
+{ 
+	if(!mnemonic.size())
+		throw std::logic_error{"mnemonic size is 0"};
+	if(!passphrase.size())
+		throw std::logic_error{"invalid password!"};
+#ifdef WITH_ICU
+	data_chunk pass_chunk(passphrase.begin(), passphrase.end());
+	aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
+	std::string encry_output("");
+
+	std::string data = mnemonic;
+	uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
+	while(left--)
+		data.push_back(uint8_t(0)); // data must to be multiple blocksize
+		
+	auto mnem_encrypt = [&encry_output](aes_secret& sec, std::string& data){
+		uint32_t start = 0;
+		aes_block block;
+		while( start < data.size() ) {
+			data_chunk each(data.begin()+start, data.begin()+start+aes256_block_size);
+			block = to_array<aes256_block_size>(data_slice(each));
+			aes256_encrypt(sec, block);
+			for(auto x:block)
+				encry_output.push_back(static_cast<char>(x));
+			start += aes256_block_size;
+		}
+	};
+	mnem_encrypt(sec, data);
+	
+	this->mnemonic = encry_output;
+#else
+	this->mnemonic = mnemonic;
+#endif
 }
 
 const hash_digest& account::get_passwd() const

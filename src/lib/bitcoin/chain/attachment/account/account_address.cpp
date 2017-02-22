@@ -30,6 +30,10 @@
 #include <json/minijson_writer.hpp>
 #endif
 
+#include <bitcoin/bitcoin.hpp>
+
+using namespace libbitcoin::wallet;
+
 namespace libbitcoin {
 namespace chain {
 
@@ -192,13 +196,45 @@ void account_address::set_name(const std::string& name)
      this->name = name;
 }
 
-const std::string& account_address::get_prv_key() const
+const std::string account_address::get_prv_key(std::string& passphrase) const
 { 
+#ifdef  WITH_ICU
+	bool unused1;
+	uint8_t unused2;
+	ec_secret dec_secret;
+	encrypted_private key;
+	if(!(decode_base58(key, prv_key) && verify_checksum(key)))
+		throw std::logic_error{"invalid encrypted private key"};
+
+	if (!decrypt(dec_secret, unused2, unused1, ek_private(key), passphrase))
+	{
+		throw std::logic_error{"invalid passphase!"};
+	}
+	
+	return encode_base16(dec_secret);
+#else
     return prv_key;
+#endif
 }
-void account_address::set_prv_key(const std::string& prv_key)
+void account_address::set_prv_key(const std::string& prv_key, std::string& passphrase)
 { 
-     this->prv_key = prv_key;
+#ifdef WITH_ICU
+	std::string encry_str;
+    encrypted_private point;
+	ec_secret secret;
+	uint8_t version = 0;
+	bool compressed = true;
+
+	if(!(decode_base16(secret, prv_key) && verify(secret)))
+		throw std::logic_error{"invalid private key"};
+	
+    if(!encrypt(point, secret, passphrase, version, compressed))
+        throw std::logic_error{"encrypt failure!"};
+
+	this->prv_key = ek_private(point).encoded();
+#else
+	this->prv_key = prv_key;
+#endif
 }
 
 const std::string& account_address::get_pub_key() const

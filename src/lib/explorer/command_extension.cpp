@@ -381,6 +381,7 @@ console_result importaccount::invoke (std::ostream& output,
     }
     
     // 2. check mnemonic exist in account database
+    #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;
     auto sh_vec = blockchain.get_accounts();
     for(auto& each : *sh_vec) {
@@ -391,12 +392,13 @@ console_result importaccount::invoke (std::ostream& output,
     }
     if(is_mnemonic_exist)
         throw std::logic_error{"mnemonic already exist!"};
+	#endif
 
     // create account
     auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);
     acc->set_passwd(option_.passwd);
-    acc->set_mnemonic(mnemonic);
+    acc->set_mnemonic(mnemonic, option_.passwd);
     //acc->set_hd_index(option_.hd_index); // hd_index updated in getnewaddress
     // flush to db
     blockchain.store_account(acc);
@@ -498,7 +500,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     dispatch_command(3, cmds3 , sin, sout, sout);
 
     root.put("mnemonic", sout.str());
-    acc->set_mnemonic(sout.str());
+    acc->set_mnemonic(sout.str(), auth_.auth);
     
     // flush to db
     auto ret = blockchain.store_account(acc);
@@ -522,7 +524,7 @@ console_result getaccount::invoke (std::ostream& output,
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    auto&& mnemonic = acc->get_mnemonic();
+    auto&& mnemonic = acc->get_mnemonic(auth_.auth);
     std::vector<std::string> results;
     boost::split(results, mnemonic, boost::is_any_of(" "));
 
@@ -578,11 +580,11 @@ console_result getnewaddress::invoke (std::ostream& output,
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    if (acc->get_mnemonic().empty()) { throw std::logic_error("mnemonic empty"); }
+    if (acc->get_mnemonic(auth_.auth).empty()) { throw std::logic_error("mnemonic empty"); }
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
-    std::istringstream sin(acc->get_mnemonic());
+    std::istringstream sin(acc->get_mnemonic(auth_.auth));
 
     auto exec_with = [&](int i){
         sin.str(sout.str());
@@ -603,9 +605,10 @@ console_result getnewaddress::invoke (std::ostream& output,
     dispatch_command(3, hd_private_gen, sin, sout, sout);
 
     exec_with(2);
-    addr->set_prv_key(sout.str());
+    addr->set_prv_key(sout.str(), auth_.auth);
+	// not store public key now
     exec_with(3);
-    addr->set_pub_key(sout.str());
+    //addr->set_pub_key(sout.str());
 
     // testnet
     if (blockchain.chain_settings().use_testnet_rules){
@@ -1152,7 +1155,7 @@ console_result deposit::invoke (std::ostream& output,
 		auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
-            palist.push_back({each.get_prv_key(), balance});
+            palist.push_back({each.get_prv_key(auth_.auth), balance});
         }
     }
 
@@ -1209,7 +1212,7 @@ console_result send::invoke (std::ostream& output,
 		auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
-            palist.push_back({each.get_prv_key(), balance});
+            palist.push_back({each.get_prv_key(auth_.auth), balance});
         }
     }
 
@@ -1267,7 +1270,7 @@ console_result sendmore::invoke (std::ostream& output,
 		auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
-            palist.push_back({each.get_prv_key(), balance});
+            palist.push_back({each.get_prv_key(auth_.auth), balance});
         }
     }
 
@@ -1331,7 +1334,7 @@ console_result sendfrom::invoke (std::ostream& output,
 		auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance && (balance >= argument_.fee)){
-            palist.push_back({each.get_prv_key(), balance});
+            palist.push_back({each.get_prv_key(auth_.auth), balance});
         }
     }
     if(palist.empty())
@@ -1862,7 +1865,7 @@ console_result issuefrom::invoke (std::ostream& output,
 			auto frozen = pt.get<uint64_t>("balance.frozen");
 			auto balance = unspent - frozen;
             if (balance){
-                palist.push_back({each.get_prv_key(), balance});
+                palist.push_back({each.get_prv_key(auth_.auth), balance});
             }else{
                 throw std::logic_error{"no enough balance"};
             }
@@ -2035,7 +2038,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
             const auto sum = [&](const business_history& bh)
             {
                 auto transfer_info = boost::get<asset_transfer>(bh.data.get_data());
-                asset_ls.push_back({each.get_prv_key(), bh.value, transfer_info.get_quantity(), bh.output});
+                asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, transfer_info.get_quantity(), bh.output});
             };
             std::for_each(sh_vec->begin(), sh_vec->end(), sum);
             break;
@@ -2050,7 +2053,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
             const auto sum = [&](const business_history& bh)
             {
                 auto asset_info = boost::get<asset_detail>(bh.data.get_data());
-                asset_ls.push_back({each.get_prv_key(), bh.value, asset_info.get_maximum_supply(), bh.output});
+                asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
             };
             std::for_each(sh_vec->begin(), sh_vec->end(), sum);
             break;
