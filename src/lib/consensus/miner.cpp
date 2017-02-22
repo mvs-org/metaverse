@@ -45,6 +45,19 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
 	node_.pool().fetch(f);
 
 	boost::unique_lock<boost::mutex> lock(mutex);
+
+	if(transactions.size() > 1) {
+		set<hash_digest> sets;
+		for(auto i = transactions.begin(); i != transactions.end(); ) {
+			auto hash = (*i)->hash();
+			if(sets.find(hash) == sets.end()){
+				sets.insert(hash);
+				++i;
+			} else {
+				i = transactions.erase(i);	
+			}
+		}
+	}
 	return transactions.empty() == false;
 }
 
@@ -567,8 +580,14 @@ bool miner::set_miner_payment_address(const bc::wallet::payment_address& address
     return true;
 }
 
-miner::block_ptr miner::get_block()
+miner::block_ptr miner::get_block(bool is_force_create_block)
 {
+	if(is_force_create_block) {
+		new_block_ = create_new_block(pay_address_);
+		log::debug(LOG_HEADER) << "force create new block";
+		return new_block_;
+	}
+
 	if(!new_block_){
 		if(pay_address_) {
 			new_block_ = create_new_block(pay_address_);
@@ -618,6 +637,7 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
 			log::debug(LOG_HEADER) << "put_result nonce:" << nonce << " mix_hash:" << mix_hash << " success with height:" << height;
 			ret = true;
 		} else {
+			get_block(true);
 			log::debug(LOG_HEADER) << "put_result nonce:" << nonce << " mix_hash:" << mix_hash << " fail";
 		}
 	} else {
