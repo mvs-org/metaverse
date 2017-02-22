@@ -368,7 +368,8 @@ console_result importaccount::invoke (std::ostream& output,
     int i = 0;
     cmds[i++] = "mnemonic-to-seed";
     cmds[i++] = "-l";
-    cmds[i++] = lang.str().c_str();
+    auto s_lang = lang.str();
+    cmds[i++] = s_lang.c_str();
     // 
     for(auto& word : argument_.words){
         cmds[i++] = word.c_str();
