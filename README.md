@@ -1,4 +1,4 @@
-![logo](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/logo.png)
+![logo](https://github.com/mvs-live/metaverse/raw/master/doc/image/logo.png)
 # [Metaverse (MVS)](http://mvs.live)
 Metaverse is a decentralised system based on the blockchain technology, 
 through which, a network of smart properties , digital identities and value intermediators are established.
@@ -54,6 +54,6 @@ make -j4 && sudo make install
 ```
 
 mvs-architecture
-![mvs-architecture](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/mvs-architecture.png)
+![mvs-architecture](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-architecture.png)
 mvs-libraries
-![mvs-libraries](https://github.com/ViewBTC/mvs-private/raw/master/doc/image/mvs-libraries.png)
+![mvs-libraries](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-libraries.png)
