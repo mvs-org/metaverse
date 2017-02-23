@@ -97,7 +97,14 @@ bool account::from_data(reader& source)
 {
     reset();
     name = source.read_string();
-    mnemonic = source.read_string();
+    //mnemonic = source.read_string();
+	
+    // read encrypted mnemonic
+    auto size = source.read_variable_uint_little_endian();
+    data_chunk string_bytes = source.read_data(size);
+    std::string result(string_bytes.begin(), string_bytes.end());
+    mnemonic = result;
+
     passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
