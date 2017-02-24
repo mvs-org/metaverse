@@ -151,6 +151,12 @@ BC_API bool create_key_pair(encrypted_private& out_private,
     const encrypted_token& token, const ek_seed& seed, uint8_t version,
     bool compressed=true);
 
+void encrypt_string(const std::string& mnemonic, 
+	std::string& passphrase, std::string& encry_output);
+
+void decrypt_string(const std::string& mnemonic, 
+	std::string& passphrase, std::string& decry_output);
+
 #ifdef WITH_ICU
 
 /**
