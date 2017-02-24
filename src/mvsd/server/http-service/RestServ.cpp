@@ -90,7 +90,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     using namespace bc::protocol;
 
     reset(data);
+	#ifdef MVS_DEBUG
     log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
+	#endif
 
     StreamBuf buf{nc.send_mbuf};
     out_.rdbuf(&buf);
@@ -113,8 +115,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
             bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
                 sin, sout, sout, blockchain_);
         }
-
+		#ifdef MVS_DEBUG
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
+		#endif
 
         out_<<sout.str();
 
