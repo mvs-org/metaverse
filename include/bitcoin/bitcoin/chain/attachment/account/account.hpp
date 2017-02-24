@@ -82,7 +82,7 @@ public:
 	
 	const std::string& get_name() const;
 	void set_name(const std::string& name);
-	const std::string get_mnemonic(std::string& passphrase) const;
+	const std::string& get_mnemonic(std::string& passphrase, std::string& decry_output) const;
 	const std::string& get_mnemonic() const;
 	void set_mnemonic(const std::string& mnemonic, std::string& passphrase);
 	const hash_digest& get_passwd() const;

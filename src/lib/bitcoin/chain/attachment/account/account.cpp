@@ -98,13 +98,13 @@ bool account::from_data(reader& source)
     reset();
     name = source.read_string();
     //mnemonic = source.read_string();
+    
+	// read encrypted mnemonic
+	auto size = source.read_variable_uint_little_endian();
+	data_chunk string_bytes = source.read_data(size);
+	std::string result(string_bytes.begin(), string_bytes.end());
+	mnemonic = result;
 	
-    // read encrypted mnemonic
-    auto size = source.read_variable_uint_little_endian();
-    data_chunk string_bytes = source.read_data(size);
-    std::string result(string_bytes.begin(), string_bytes.end());
-    mnemonic = result;
-
     passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
@@ -192,7 +192,7 @@ const std::string& account::get_mnemonic() const
 {
 	return mnemonic; // for account == operator
 }
-const std::string account::get_mnemonic(std::string& passphrase) const
+const std::string& account::get_mnemonic(std::string& passphrase, std::string& decry_output) const
 { 
 #ifdef WITH_ICU
 	if(!passphrase.size())
@@ -200,24 +200,25 @@ const std::string account::get_mnemonic(std::string& passphrase) const
 	
 	data_chunk pass_chunk(passphrase.begin(), passphrase.end());
 	aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
-	std::string decry_output("");
-
+	decry_output.clear();
+	uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
 	auto mnem_decrypt = [&decry_output](aes_secret& sec, const std::string& data){
-		uint32_t start = 0;
+		uint32_t start = 1, i = 0; // escape first byte
 		aes_block block;
 		while( start < data.size() ) {
-			data_chunk each(data.begin()+start, data.begin()+start+aes256_block_size);
-			block = to_array<aes256_block_size>(data_slice(each));
+			for( i = 0; i < aes256_block_size; i++)
+				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+			
 			aes256_decrypt(sec, block);
-			for(auto x:block) {
-				if(!x && (start + aes256_block_size)>= data.size()) // filter 0 value
-					continue;
+			
+			for( auto x : block )
 				decry_output.push_back(static_cast<char>(x));
-			}
+			
 			start += aes256_block_size;
 		}
 	};
 	mnem_decrypt(sec, mnemonic);
+	decry_output = decry_output.substr(0, decry_output.size() - left); // remove left bytes
 
     return decry_output;
 #else
@@ -238,18 +239,24 @@ void account::set_mnemonic(const std::string& mnemonic, std::string& passphrase)
 
 	std::string data = mnemonic;
 	uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
+	
+	encry_output.push_back(static_cast<char>(left)); // bytes counts which not be encrypted
+
 	while(left--)
 		data.push_back(uint8_t(0)); // data must to be multiple blocksize
 		
 	auto mnem_encrypt = [&encry_output](aes_secret& sec, std::string& data){
-		uint32_t start = 0;
+		uint32_t start = 0, i = 0;
 		aes_block block;
 		while( start < data.size() ) {
-			data_chunk each(data.begin()+start, data.begin()+start+aes256_block_size);
-			block = to_array<aes256_block_size>(data_slice(each));
+			for( i = 0; i < aes256_block_size; i++)
+				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+			
 			aes256_encrypt(sec, block);
-			for(auto x:block)
+			
+			for( auto x : block )
 				encry_output.push_back(static_cast<char>(x));
+			
 			start += aes256_block_size;
 		}
 	};

@@ -524,7 +524,9 @@ console_result getaccount::invoke (std::ostream& output,
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    auto&& mnemonic = acc->get_mnemonic(auth_.auth);
+    //auto&& mnemonic = acc->get_mnemonic(auth_.auth);
+    std::string mnemonic;
+    acc->get_mnemonic(auth_.auth, mnemonic);
     std::vector<std::string> results;
     boost::split(results, mnemonic, boost::is_any_of(" "));
 
@@ -579,12 +581,13 @@ console_result getnewaddress::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-
-    if (acc->get_mnemonic(auth_.auth).empty()) { throw std::logic_error("mnemonic empty"); }
+	std::string mnemonic;
+	acc->get_mnemonic(auth_.auth, mnemonic);
+    if (mnemonic.empty()) { throw std::logic_error("mnemonic empty"); }
 
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
-    std::istringstream sin(acc->get_mnemonic(auth_.auth));
+    std::istringstream sin(mnemonic);
 
     auto exec_with = [&](int i){
         sin.str(sout.str());
