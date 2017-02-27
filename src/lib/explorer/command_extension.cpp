@@ -886,7 +886,7 @@ console_result listtxs::invoke (std::ostream& output,
     using namespace libbitcoin::config; // for hash256
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // address is required in this command
-    if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
+    if (option_.use_address && !blockchain.is_valid_address(argument_.address))
         throw std::logic_error{"invalid address parameter!"};
     
     pt::ptree aroot;
@@ -936,23 +936,44 @@ console_result listtxs::invoke (std::ostream& output,
             auto pvaddr = blockchain.get_account_addresses(auth_.name);
             if(!pvaddr) 
                 throw std::logic_error{"nullptr for address list"};
-            
-            for (auto& elem: *pvaddr) {
-                auto sh_vec = blockchain.get_address_business_record(elem.get_address());
-                // scan all kinds of business
-                for (auto each : *sh_vec){
-                    if((start <= each.data.get_timestamp()) && (each.data.get_timestamp() < end)) {
-                        auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
-                        if(ret.second) { // new item
-                            tx_block_info tx;
-                            tx.height = each.height;
-                            tx.timestamp = each.data.get_timestamp();
-                            tx.hash = hash256(each.point.hash).to_string();
-                            sh_txs->push_back(tx);
-                        }
-                    }
-                }
-            }
+			#ifdef MVS_DEBUG
+			log::debug("listtx height")<<option_.use_height;
+			#endif
+			if(option_.use_height) {
+	            for (auto& elem: *pvaddr) {
+	                auto sh_vec = blockchain.get_address_business_record(elem.get_address());
+	                // scan all kinds of business
+	                for (auto each : *sh_vec){
+	                    if((start <= each.height) && (each.height < end)) {
+	                        auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
+	                        if(ret.second) { // new item
+	                            tx_block_info tx;
+	                            tx.height = each.height;
+	                            tx.timestamp = each.data.get_timestamp();
+	                            tx.hash = hash256(each.point.hash).to_string();
+	                            sh_txs->push_back(tx);
+	                        }
+	                    }
+	                }
+	            }
+			} else {  // timestamp filter     
+	            for (auto& elem: *pvaddr) {
+	                auto sh_vec = blockchain.get_address_business_record(elem.get_address());
+	                // scan all kinds of business
+	                for (auto each : *sh_vec){
+	                    if((start <= each.data.get_timestamp()) && (each.data.get_timestamp() < end)) {
+	                        auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
+	                        if(ret.second) { // new item
+	                            tx_block_info tx;
+	                            tx.height = each.height;
+	                            tx.timestamp = each.data.get_timestamp();
+	                            tx.hash = hash256(each.point.hash).to_string();
+	                            sh_txs->push_back(tx);
+	                        }
+	                    }
+	                }
+	            }
+        	}
         // 3. list all tx of the address    
         } else {
             auto sh_vec = blockchain.get_address_business_record(argument_.address);

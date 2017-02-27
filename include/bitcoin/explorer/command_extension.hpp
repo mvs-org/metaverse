@@ -2794,7 +2794,17 @@ public:
             "ADDRESS",
             value<std::string>(&argument_.address),
             "Address."
-	    );
+	    )
+	    (
+            "height,e",
+            value<bool>(&option_.use_height)->zero_tokens(),
+            "Get tx according height eg: -e start-height:end-height."
+        )
+        (
+            "address,a",
+            value<bool>(&option_.use_address)->zero_tokens(),
+            "Get tx according address parameter."
+        );
 
         return options;
     }
@@ -2813,6 +2823,8 @@ public:
 
     struct option
     {
+    	bool use_height;
+		bool use_address;
     } option_;
 
 };
