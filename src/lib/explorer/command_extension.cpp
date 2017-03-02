@@ -1842,7 +1842,9 @@ console_result issuefrom::invoke (std::ostream& output,
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
-    
+
+	if(argument_.fee < 100000000)
+        throw std::logic_error{"issue asset fee less than 100000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw std::logic_error{"asset symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
