@@ -225,7 +225,9 @@ public:
 	account_status get_account_system_status(const std::string& name);
 	bool set_account_user_status(const std::string& name, uint8_t status);
 	bool set_account_system_status(const std::string& name, uint8_t status);
-
+	operation_result delete_account(const std::string& name);
+	operation_result delete_account_address(const std::string& name);
+	
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
 					business_kind kind, uint8_t confirmed);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
@@ -233,6 +235,7 @@ public:
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr);
 	// account asset api
 	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
+	operation_result delete_account_asset(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, 
 			const std::string& asset_name, business_kind kind);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, const std::string& asset);

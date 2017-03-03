@@ -1625,7 +1625,7 @@ public:
         (
             "LASTWORD",
             value<std::string>(&argument_.last_word)->required(),
-            "The first word of your private-key phrase."
+            "The last word of your private-key phrase."
 	    );
 
         return options;
@@ -1649,6 +1649,84 @@ public:
 
 };
 
+/************************ deleteaccount *************************/
+
+class deleteaccount: public command_extension
+{
+public:
+    static const char* symbol(){ return "deleteaccount";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "deleteaccount "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("LASTWORD", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(auth_.auth, "LASTWORD", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+        (
+            "LASTWORD",
+            value<std::string>(&argument_.last_word)->required(),
+            "The last word of your private-key phrase."
+	    );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+        std::string last_word;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
 
 
 /************************ lockaccount *************************/

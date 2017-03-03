@@ -544,6 +544,32 @@ console_result getaccount::invoke (std::ostream& output,
     return console_result::okay;
 }
 
+/************************ deleteaccount *************************/
+
+console_result deleteaccount::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    std::string mnemonic;
+    acc->get_mnemonic(auth_.auth, mnemonic);
+    std::vector<std::string> results;
+    boost::split(results, mnemonic, boost::is_any_of(" "));
+
+    if (*results.rbegin() != argument_.last_word){
+        throw std::logic_error{"last word not matching."};
+    }
+	// delete account addresses
+	blockchain.delete_account_address(acc->get_name());
+
+	// delete account asset
+	blockchain.delete_account_asset(acc->get_name());
+	// delete account
+	blockchain.delete_account(acc->get_name());
+	output<<"delete successfully!";
+
+    return console_result::okay;
+}
 
 /************************ lockaccount *************************/
 

@@ -59,6 +59,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<importaccount>());
     func(make_shared<getnewaccount>());
     func(make_shared<getaccount>());
+    func(make_shared<deleteaccount>());
     func(make_shared<lockaccount>());
     func(make_shared<setaccountinfo>());
     func(make_shared<listaddresses>());
@@ -141,6 +142,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getnewaccount>();
     if (symbol == getaccount::symbol())
         return make_shared<getaccount>();
+    if (symbol == deleteaccount::symbol())
+        return make_shared<deleteaccount>();
     if (symbol == lockaccount::symbol())
         return make_shared<lockaccount>();
     if (symbol == setaccountinfo::symbol())

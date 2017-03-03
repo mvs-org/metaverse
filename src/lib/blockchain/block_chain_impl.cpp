@@ -1044,6 +1044,22 @@ std::shared_ptr<std::vector<account>> block_chain_impl::get_accounts()
 {
 	return database_.accounts.get_accounts();
 }
+/// delete account according account name
+operation_result block_chain_impl::delete_account(const std::string& name)
+{
+	if (stopped())
+	{
+		return operation_result::failure;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	database_.accounts.remove(get_hash(name));
+	database_.accounts.sync();
+	///////////////////////////////////////////////////////////////////////////
+	return operation_result::okay;
+}
 
 /// just store data into database "not do same address check"  -- todo 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)
@@ -1062,6 +1078,25 @@ operation_result block_chain_impl::store_account_address(std::shared_ptr<account
 
 	const auto hash = get_short_hash(address->get_name());
 	database_.account_addresses.store(hash, *address);
+	database_.account_addresses.sync();
+	///////////////////////////////////////////////////////////////////////////
+	return operation_result::okay;
+}
+/// only delete the last address of account
+operation_result block_chain_impl::delete_account_address(const std::string& name)
+{
+	if (stopped())
+	{
+		return operation_result::failure;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	auto hash = get_short_hash(name);
+	auto addr_vec = database_.account_addresses.get(hash);
+	for( auto each : addr_vec )
+		database_.account_addresses.delete_last_row(hash);
 	database_.account_addresses.sync();
 	///////////////////////////////////////////////////////////////////////////
 	return operation_result::okay;
@@ -1104,6 +1139,25 @@ operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_det
 
 	const auto hash = get_short_hash(detail->get_issuer());
 	database_.account_assets.store(hash, *detail);
+	database_.account_assets.sync();
+	///////////////////////////////////////////////////////////////////////////
+	return operation_result::okay;
+}
+/// delete account asset by account name
+operation_result block_chain_impl::delete_account_asset(const std::string& name)
+{
+	if (stopped())
+	{
+		return operation_result::failure;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	auto hash = get_short_hash(name);
+	auto asset_vec = database_.account_assets.get(hash);
+	for( auto each : asset_vec ) // just use asset count
+		database_.account_assets.delete_last_row(hash);
 	database_.account_assets.sync();
 	///////////////////////////////////////////////////////////////////////////
 	return operation_result::okay;
