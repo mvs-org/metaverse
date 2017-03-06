@@ -215,7 +215,7 @@ void connector::safe_connect(asio::iterator iterator, socket::ptr socket,
     // This is branch #2 of the connnect sequence.
     using namespace boost::asio;
 	ip::tcp::endpoint endpoint = *iterator;
-	bc::log::debug(NAME)<< "conecting addr:" << endpoint;
+	bc::log::trace(NAME)<< "conecting addr:" << endpoint;
 
     async_connect(locked->get(), iterator,
         std::bind(&connector::handle_connect,
@@ -231,7 +231,7 @@ void connector::handle_timer(const code& ec, socket::ptr socket,
    connect_handler handler)
 {
     // This is the end of the timer sequence.
-	bc::log::debug(NAME)<<"timer called here: "<<__func__;
+	bc::log::trace(NAME)<<"timer called here: "<<__func__;
     if (ec)
         handler(ec, nullptr);
     else

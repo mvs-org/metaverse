@@ -60,6 +60,11 @@ void log::clear()
     destinations_.clear();
 }
 
+log log::trace(const std::string& domain)
+{
+    return log(level::trace, domain);
+}
+
 log log::debug(const std::string& domain)
 {
     return log(level::debug, domain);
@@ -89,8 +94,10 @@ std::string log::to_text(level value)
 {
     switch (value)
     {
-        case level::debug:
-            return "DEBUG";
+        case level::trace:
+            return "TRACE";
+		case level::debug:
+			return "DEBUG";
         case level::info:
             return "INFO";
         case level::warning:
@@ -140,8 +147,10 @@ void log::output_cerr(level value, const std::string& domain,
 log::destinations log::destinations_
 {
 #ifdef NDEBUG
+    std::make_pair(level::trace, output_ignore),
     std::make_pair(level::debug, output_ignore),
 #else
+    std::make_pair(level::trace, output_cout),
     std::make_pair(level::debug, output_cout),
 #endif
     std::make_pair(level::info, output_cout),

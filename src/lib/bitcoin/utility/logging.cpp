@@ -78,6 +78,11 @@ static void log_to_both(std::ostream& device, std::ofstream& file,
 	do_logging(device, level, domain, body);	
 }
 #endif
+static void output_ignore(std::ofstream& file, log::level level,
+    const std::string& domain, const std::string& body)
+{
+
+}
 
 static void output_file(std::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
@@ -114,6 +119,15 @@ void initialize_logging(std::ofstream& debug, std::ofstream& error,
 {
     using namespace std::placeholders;
 
+	// trace => debug_log if define MVS_DEBUG
+	#ifdef MVS_DEBUG
+    log::trace("").set_output_function(std::bind(output_file,
+        std::ref(debug), _1, _2, _3));
+	#else
+    log::trace("").set_output_function(std::bind(output_ignore,
+        std::ref(debug), _1, _2, _3));
+	#endif
+	
     // debug|info => debug_log
     log::debug("").set_output_function(std::bind(output_file,
         std::ref(debug), _1, _2, _3));

@@ -33,6 +33,7 @@ class BC_API log
 public:
     enum class level
     {
+    	trace,
         debug,
         info,
         warning,
@@ -55,6 +56,7 @@ public:
     static std::string to_text(level value);
 
     // Stream to these functions.
+    static log trace(const std::string& domain);
     static log debug(const std::string& domain);
     static log info(const std::string& domain);
     static log warning(const std::string& domain);

@@ -89,7 +89,7 @@ void session_outbound::new_connection(connector::ptr connect)
 
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
-	log::debug(LOG_NETWORK) << "delay new connect" ;
+	log::trace(LOG_NETWORK) << "delay new connect" ;
 	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
 	auto self = shared_from_this();
 	timer->start([this, connect, timer, self](const code& ec){
