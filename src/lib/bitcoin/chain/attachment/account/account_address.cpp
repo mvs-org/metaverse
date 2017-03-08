@@ -114,7 +114,15 @@ bool account_address::from_data(reader& source)
 {
     reset();
     name = source.read_fixed_string(ADDRESS_NAME_FIX_SIZE);
-    prv_key = source.read_fixed_string(ADDRESS_PRV_KEY_FIX_SIZE);
+    //prv_key = source.read_fixed_string(ADDRESS_PRV_KEY_FIX_SIZE);
+    
+	// read encrypted private key
+	auto size = source.read_variable_uint_little_endian();
+	data_chunk string_bytes = source.read_data(size);
+	std::string result(string_bytes.begin(), string_bytes.end());
+	prv_key = result;
+	//log::trace("from_data prv")<<prv_key;
+
 	pub_key = source.read_fixed_string(ADDRESS_PUB_KEY_FIX_SIZE);
     hd_index = source.read_4_bytes_little_endian();
 	balance = source.read_8_bytes_little_endian();
@@ -143,7 +151,8 @@ void account_address::to_data(std::ostream& stream) const
 void account_address::to_data(writer& sink) const
 {
     sink.write_fixed_string(name, ADDRESS_NAME_FIX_SIZE);
-	sink.write_fixed_string(prv_key, ADDRESS_PRV_KEY_FIX_SIZE);
+	//sink.write_fixed_string(prv_key, ADDRESS_PRV_KEY_FIX_SIZE);
+	sink.write_string(prv_key);
 	sink.write_fixed_string(pub_key, ADDRESS_PUB_KEY_FIX_SIZE);
 	sink.write_4_bytes_little_endian(hd_index);
 	sink.write_8_bytes_little_endian(balance);
