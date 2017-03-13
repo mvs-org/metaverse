@@ -4141,8 +4141,8 @@ public:
 		)
 		(
 			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(100000000),
-			"The fee of tx. default_value 1 etp"
+			value<uint64_t>(&argument_.fee)->default_value(1000000000),
+			"The fee of tx. default_value 10 etp"
 		);
 
         return options;
@@ -4235,8 +4235,8 @@ public:
 		)
 		(
 			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(100000000),
-			"The fee of tx. default_value 1 etp"
+			value<uint64_t>(&argument_.fee)->default_value(1000000000),
+			"The fee of tx. default_value 10 etp"
 		);
 
         return options;
