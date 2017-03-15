@@ -332,6 +332,20 @@ ptree prop_list(const transaction& transaction, bool json)
     tree.put("version", tx.version);
     return tree;
 }
+ptree prop_list(const transaction& transaction, uint64_t tx_height, bool json)
+{
+    const tx_type& tx = transaction;
+
+    ptree tree;
+    tree.put("hash", hash256(tx.hash()));
+	tree.put("height", tx_height);
+    tree.add_child("inputs", prop_tree_list("input", tx.inputs, json));
+    tree.put("lock_time", tx.locktime);
+    tree.add_child("outputs", prop_tree_list("output", tx.outputs, json));
+    tree.put("version", tx.version);
+    return tree;
+}
+
 ptree prop_tree(const transaction& transaction, bool json)
 {
     ptree tree;

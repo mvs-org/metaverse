@@ -266,7 +266,7 @@ public:
 	void fired();
 	organizer& get_organizer();
 	bool get_transaction(const hash_digest& hash,
-		chain::transaction& tx);
+		chain::transaction& tx, uint64_t& tx_height);
 	
 	bool get_history(const wallet::payment_address& address,
 		uint64_t limit, uint64_t from_height, history_compact::list& history);

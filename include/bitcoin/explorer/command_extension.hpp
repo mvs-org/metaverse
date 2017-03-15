@@ -1029,6 +1029,71 @@ public:
 };
 
 
+/************************ gettransaction *************************/
+
+class gettransaction: public command_extension
+{
+public:
+    static const char* symbol(){ return "gettransaction";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "gettransaction "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("HASH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(argument_.hash, "HASH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "HASH",
+            value<bc::config::hash256>(&argument_.hash)->required(),
+            "The Base16 transaction hash of the transaction to get. If not specified the transaction hash is read from STDIN."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+	console_result invoke (std::ostream& output,
+			std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+        bc::config::hash256 hash;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
 /************************ backupwallet *************************/
 
 class backupwallet: public command_extension

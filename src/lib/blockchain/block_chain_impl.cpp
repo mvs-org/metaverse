@@ -1559,7 +1559,7 @@ organizer& block_chain_impl::get_organizer()
 }
 
 bool block_chain_impl::get_transaction(const hash_digest& hash,
-    chain::transaction& tx)
+    chain::transaction& tx, uint64_t& tx_height)
 {
 	
 	bool ret = false;
@@ -1572,6 +1572,7 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
     const auto result = database_.transactions.get(hash);
 	if(result) {
 		tx = result.transaction();
+		tx_height = result.height();
 		ret = true;
 	} else {
 		boost::mutex mutex;
@@ -1589,6 +1590,7 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
 		boost::unique_lock<boost::mutex> lock(mutex);
 		if(tx_ptr) {
 			tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
+			tx_height = 0;
 			ret = true;
 		}
 	}

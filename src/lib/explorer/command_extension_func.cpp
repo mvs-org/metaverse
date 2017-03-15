@@ -52,6 +52,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getbestblockhash>());
     func(make_shared<getbestblockheader>());
 	func(make_shared<fetchheaderext>());
+	func(make_shared<gettransaction>());
     func(make_shared<backupwallet>());
     func(make_shared<importwallet>());
     func(make_shared<lockwallet>());
@@ -128,6 +129,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getmininginfo>();
     if (symbol == fetchheaderext::symbol())
         return make_shared<fetchheaderext>();
+    if (symbol == gettransaction::symbol())
+        return make_shared<gettransaction>();
     if (symbol == backupwallet::symbol())
         return make_shared<backupwallet>();
     if (symbol == importwallet::symbol())

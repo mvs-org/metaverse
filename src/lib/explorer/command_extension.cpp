@@ -297,6 +297,22 @@ console_result fetchheaderext::invoke (std::ostream& output,
     return console_result::okay;
 }
 
+/************************ gettransaction *************************/
+/// extent fetch-tx command , add tx height in tx content
+console_result gettransaction::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+	bc::chain::transaction tx;
+	uint64_t tx_height = 0;
+    auto exist = blockchain.get_transaction(argument_.hash, tx, tx_height);
+    if(!exist)
+        throw std::logic_error{"transaction does not exist!"};
+	
+    pt::write_json(output, prop_list(tx, tx_height, true));
+
+    return console_result::okay;
+}
+
 /************************ backupwallet *************************/
 
 console_result backupwallet::invoke (std::ostream& output,
@@ -2401,6 +2417,7 @@ console_result xfetchbalance::invoke (std::ostream& output,
 		uint64_t frozen_balance = 0;
 		
 		chain::transaction tx_temp;
+		uint64_t tx_height; // unused
 		uint64_t height = 0;
 		blockchain.get_last_height(height);
 
@@ -2410,7 +2427,7 @@ console_result xfetchbalance::invoke (std::ostream& output,
 		
 			// spend unconfirmed (or no spend attempted)
 			if (row.spend.hash == null_hash) {
-				blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
+				blockchain.get_transaction(row.output.hash, tx_temp, tx_height); // todo -- return value check
 				auto output = tx_temp.outputs.at(row.output.index);
 
 				// deposit utxo in transaction pool
@@ -2504,13 +2521,14 @@ console_result xfetchutxo::invoke (std::ostream& output,
 		blockchain.get_last_height(height);
 		chain::output_info::list unspent;
 		chain::transaction tx_temp;
+		uint64_t tx_height;
 		
 		for (auto& row: rows)
 		{		
 			// spend unconfirmed (or no spend attempted)
 			if (row.spend.hash == null_hash) {
 				// fetch utxo script to check deposit utxo
-				blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
+				blockchain.get_transaction(row.output.hash, tx_temp, tx_height); // todo -- return value check
 				auto output = tx_temp.outputs.at(row.output.index);
 				bool is_deposit_utxo = false;
 

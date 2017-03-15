@@ -257,7 +257,7 @@ BCX_API pt::ptree prop_tree(const chain::points_info& points_info, bool json);
  * @return                  A property list.
  */
 BCX_API pt::ptree prop_list(const transaction& transaction, bool json);
-
+BCX_API pt::ptree prop_list(const transaction& transaction, uint64_t tx_height, bool json);
 /**
  * Generate a property tree for a transaction.
  * @param[in]  transaction  The transaction.
