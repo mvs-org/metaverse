@@ -50,7 +50,7 @@ int bc::main(int argc, char* argv[])
 		libbitcoin::daemon();
 		static fstream fout;
 		fout.open("/dev/null");
-		if(not fout.good())
+		if(! fout.good())
 			throw std::runtime_error{"open /dev/null failed"};
 		out = &fout;
 		err = &fout;

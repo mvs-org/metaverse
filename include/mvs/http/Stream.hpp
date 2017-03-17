@@ -19,13 +19,9 @@
 
 #include <mvs/http/Defs.hpp>
 
-#include <experimental/string_view>
+#include <string_view.h>
 
 #include <ostream>
-
-namespace std {
-using experimental::string_view;
-}
 
 /**
  * @addtogroup Util
@@ -53,7 +49,7 @@ class StringBuf : public std::streambuf {
   const char* data() const noexcept { return pbase(); }
   bool empty() const noexcept { return pbase() == pptr(); }
   std::size_t size() const noexcept { return pptr() - pbase(); }
-  std::string_view str() const noexcept { return {data(), size()}; }
+  string_view str() const noexcept { return {data(), size()}; }
   void reset() noexcept { setp(buf_, buf_ + MaxN); };
  private:
   char buf_[MaxN];
@@ -76,8 +72,8 @@ class StringBuilder : public std::ostream {
   const char* data() const noexcept { return buf_.data(); }
   bool empty() const noexcept { return buf_.empty(); }
   std::size_t size() const noexcept { return buf_.size(); }
-  std::string_view str() const noexcept { return buf_.str(); }
-  operator std::string_view() const noexcept { return buf_.str(); }
+  string_view str() const noexcept { return buf_.str(); }
+  operator string_view() const noexcept { return buf_.str(); }
   void reset() noexcept
   {
     buf_.reset();

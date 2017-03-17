@@ -38,7 +38,7 @@ using ErrMsg = StringBuilder<ErrMsgMax>;
 
 class MVS_API Exception : public std::exception {
  public:
-  explicit Exception(std::string_view what) noexcept;
+  explicit Exception(string_view what) noexcept;
 
   ~Exception() noexcept override;
 

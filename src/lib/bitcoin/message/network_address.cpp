@@ -25,7 +25,6 @@
 #include <bitcoin/bitcoin/utility/istream_reader.hpp>
 #include <bitcoin/bitcoin/utility/ostream_writer.hpp>
 #include <string.h>
-#include <netinet/in.h>
 
 #define	INADDR_NONE		((in_addr_t) 0xffffffff)
 
@@ -93,7 +92,7 @@ bool network_address::is_valid() const
 	if (is_ipv4())
 	{
 		// INADDR_NONE
-		uint32_t ipNone = INADDR_NONE;
+		uint32_t ipNone = 0;
 		if (memcmp(&ip[12], &ipNone, 4) == 0)
 			return false;
 

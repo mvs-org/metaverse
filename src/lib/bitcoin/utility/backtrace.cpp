@@ -47,7 +47,7 @@ void do_backtrace(const std::string& name)
 {
 	std::fstream fout;
 	fout.open(name, std::ios_base::ate|std::ios_base::out);
-	if(not fout.good())
+	if(! fout.good())
 	{
 		boost::format fmt{"open file %s failed"};
 		auto msg = fmt % name;

@@ -106,7 +106,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     {
         log::debug(LOG_NODE)
             << "Unexpected transaction inventory from [" << authority() << "]";
-        return not misbehaving(20);
+        return ! misbehaving(20);
     }
 
     auto hash = message->inventories.empty() ? "" : encode_hash(message->inventories[0].hash);

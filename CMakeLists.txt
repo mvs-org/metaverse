@@ -64,6 +64,8 @@ program_options regex thread)
 FIND_PACKAGE(secp256k1 REQUIRED)
 FIND_PACKAGE(zmq REQUIRED)
 
+set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
+
 FIND_PROGRAM(ENV_EXECUTABLE env)
 FIND_PROGRAM(DOT_EXECUTABLE dot)
 FIND_PACKAGE(Doxygen)          # Optional.

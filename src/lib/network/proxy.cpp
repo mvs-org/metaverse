@@ -249,9 +249,9 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
 void proxy::dispatch()
 {
 	scoped_lock lock{mutex_};
-	if(not processing_.load())
+	if(! processing_.load())
 	{
-		if(not pendingRequests_.empty())
+		if(! pendingRequests_.empty())
 		{
 			auto req = std::move(pendingRequests_.front() );
 			processing_.store(true);

@@ -113,7 +113,7 @@ bool protocol_address::handle_receive_address(const code& ec,
 
     if (message->addresses.size() > 1000)
     {
-    	return not misbehaving(20);
+    	return ! misbehaving(20);
     }
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).

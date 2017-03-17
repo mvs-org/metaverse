@@ -7,6 +7,10 @@
 
 #include <bitcoin/bitcoin/utility/path.hpp>
 
+#ifdef _WIN32
+#include <Shlobj.h>
+#endif
+
 namespace libbitcoin{
 
 boost::filesystem::path default_data_path()
@@ -16,9 +20,11 @@ boost::filesystem::path default_data_path()
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\Metaverse
     // Mac: ~/Library/Application Support/Metaverse
     // Unix: ~/.metaverse
-#ifdef WIN32
+#ifdef _WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Metaverse";
+    char file_path[MAX_PATH];
+    SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
+    return boost::filesystem::path(file_path) / "Metaverse";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -42,7 +48,11 @@ boost::filesystem::path default_data_path()
 
 boost::filesystem::path webpage_path()
 {
+#ifdef _WIN32
+	return "mvs-htmls";
+#else
 	return default_data_path() / "mvs-htmls";
+#endif
 }
 
 }//namespace libbitcoin

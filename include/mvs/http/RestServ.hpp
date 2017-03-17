@@ -21,7 +21,8 @@ public:
         :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs), miner_(miner)
     {
         memset(&httpoptions_, 0x00, sizeof(httpoptions_));
-        httpoptions_.document_root = webroot;
+        document_root_ = webroot;	
+        httpoptions_.document_root = document_root_.c_str();
 
         socket_.connect(server::query_service::public_query);
     }
@@ -54,7 +55,7 @@ public:
     std::shared_ptr<Session> push_session(HttpMessage data);
     bool check_sessions();
 
-    std::pair<std::string_view,std::string_view> user_check(mg::HttpMessage &data)
+    std::pair<string_view,string_view> user_check(mg::HttpMessage &data)
     {
        auto user = data.header("user");
        auto password = data.header("pass");
@@ -107,6 +108,7 @@ private:
     const char* const servername_{"Http-Metaverse"};
     blockchain::block_chain_impl& blockchain_;
     consensus::miner& miner_;
+    string document_root_;
 };
 
 } // http

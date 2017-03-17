@@ -30,7 +30,7 @@ namespace http {
 
 class MVS_API ServException : public Exception {
 public:
-    explicit ServException(std::string_view what) noexcept : Exception{what} {}
+    explicit ServException(string_view what) noexcept : Exception{what} {}
     ~ServException() noexcept override;
 
     // Copy.
@@ -62,7 +62,7 @@ inline std::ostream& operator<<(std::ostream& os, const ServException& e)
  */
 class MVS_API BadRequestException : public ServException {
 public:
-    explicit BadRequestException(std::string_view what) noexcept : ServException{what} {}
+    explicit BadRequestException(string_view what) noexcept : ServException{what} {}
     ~BadRequestException() noexcept override;
 
     // Copy.
@@ -80,7 +80,7 @@ public:
 
 class MVS_API AlreadyExistsException : public BadRequestException {
 public:
-    explicit AlreadyExistsException(std::string_view what) noexcept : BadRequestException{what} {}
+    explicit AlreadyExistsException(string_view what) noexcept : BadRequestException{what} {}
     ~AlreadyExistsException() noexcept override;
 
     // Copy.
@@ -94,7 +94,7 @@ public:
 
 class MVS_API RefAlreadyExistsException : public AlreadyExistsException {
 public:
-    explicit RefAlreadyExistsException(std::string_view what) noexcept : AlreadyExistsException{what}
+    explicit RefAlreadyExistsException(string_view what) noexcept : AlreadyExistsException{what}
     {
     }
     RefAlreadyExistsException() noexcept = default;
@@ -112,7 +112,7 @@ public:
 
 class MVS_API InvalidException : public BadRequestException {
 public:
-    explicit InvalidException(std::string_view what) noexcept : BadRequestException{what} {}
+    explicit InvalidException(string_view what) noexcept : BadRequestException{what} {}
     ~InvalidException() noexcept override;
 
     // Copy.
@@ -133,7 +133,7 @@ public:
  */
 class MVS_API ForbiddenException : public ServException {
 public:
-    explicit ForbiddenException(std::string_view what) noexcept : ServException{what} {}
+    explicit ForbiddenException(string_view what) noexcept : ServException{what} {}
     ~ForbiddenException() noexcept override;
 
     // Copy.
@@ -154,7 +154,7 @@ public:
  */
 class MVS_API InternalException : public ServException {
 public:
-    explicit InternalException(std::string_view what) noexcept : ServException{what} {}
+    explicit InternalException(string_view what) noexcept : ServException{what} {}
     ~InternalException() noexcept override;
 
     // Copy.
@@ -177,7 +177,7 @@ public:
  */
 class MVS_API MethodNotAllowedException : public ServException {
 public:
-    explicit MethodNotAllowedException(std::string_view what) noexcept : ServException{what} {}
+    explicit MethodNotAllowedException(string_view what) noexcept : ServException{what} {}
     ~MethodNotAllowedException() noexcept override;
 
     // Copy.
@@ -203,7 +203,7 @@ public:
  */
 class MVS_API NotFoundException : public ServException {
 public:
-    explicit NotFoundException(std::string_view what) noexcept : ServException{what} {}
+    explicit NotFoundException(string_view what) noexcept : ServException{what} {}
     ~NotFoundException() noexcept override;
 
     // Copy.
@@ -228,7 +228,7 @@ public:
  */
 class MVS_API ServiceUnavailableException : public ServException {
 public:
-    explicit ServiceUnavailableException(std::string_view what) noexcept : ServException{what} {}
+    explicit ServiceUnavailableException(string_view what) noexcept : ServException{what} {}
     ~ServiceUnavailableException() noexcept override;
 
     // Copy.
@@ -257,7 +257,7 @@ public:
  */
 class MVS_API UnauthorizedException : public ServException {
 public:
-    explicit UnauthorizedException(std::string_view what) noexcept : ServException{what} {}
+    explicit UnauthorizedException(string_view what) noexcept : ServException{what} {}
     ~UnauthorizedException() noexcept override;
 
     // Copy.

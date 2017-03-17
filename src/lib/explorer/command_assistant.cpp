@@ -19,6 +19,12 @@
  */
 
 #include <bitcoin/explorer/dispatch.hpp>
+
+#ifdef _WIN32
+#include <boost/bind/placeholders.hpp>
+using namespace boost::placeholders;
+#endif
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -149,7 +155,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
         auto points = pt.get_child("points");
 
         // not found
-        if (points.size() == 0 and change == "0"){
+        if (points.size() == 0 && change == "0"){
             return false;
         }
 
@@ -536,7 +542,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::blockchain::b
         auto points = pt.get_child("points");
 
         // not found, try next address 
-        if (points.size() == 0 and change == "0"){
+        if (points.size() == 0 && change == "0"){
             //return false;
             continue;
         }
@@ -591,7 +597,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::blockchain::b
         auto points = pt.get_child("points");
 
         // not found, try next address 
-        if (points.size() == 0 and change == "0"){
+        if (points.size() == 0 && change == "0"){
             //return false;
             continue;
         }
@@ -902,7 +908,7 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& 
     auto points = pt.get_child("points");
 
     // not found, return  
-    if (points.size() == 0 and change == "0"){
+    if (points.size() == 0 && change == "0"){
             return false;
     }
 
@@ -1389,7 +1395,7 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::blockchain::block_chain_impl& 
         auto points = pt.get_child("points");
 
         // not found, try next address 
-        if (points.size() == 0 and change == "0"){
+        if (points.size() == 0 && change == "0"){
             //return false;
             continue;
         }
@@ -1673,7 +1679,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::blockchain::block_chain_im
     auto points = pt.get_child("points");
 
     // not found, return  
-    if (points.size() == 0 and change == "0"){
+    if (points.size() == 0 && change == "0"){
             return false;
     }
 

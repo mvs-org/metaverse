@@ -33,12 +33,12 @@ namespace mg {
 
 #define SESSION_COOKIE_NAME "2iBXdhW9rQxbnDdNQk9KdjiytM9X"
 
-inline std::string_view operator+(const mg_str& str) noexcept
+inline string_view operator+(const mg_str& str) noexcept
 {
     return {str.p, str.len};
 }
 
-inline std::string_view operator+(const websocket_message& msg) noexcept
+inline string_view operator+(const websocket_message& msg) noexcept
 {
     return {reinterpret_cast<char*>(msg.data), msg.size};
 }
@@ -54,12 +54,12 @@ public:
     }
     bool is_miner_command() const {
         auto cmd = get_command();
-         if (cmd == "getwork" or
-             cmd == "submitwork" or
-             cmd == "start" or
-             cmd == "stop"  or
-             cmd == "setminingaccount" or
-             cmd == "getmininginfo" or
+         if (cmd == "getwork" ||
+             cmd == "submitwork" ||
+             cmd == "start" ||
+             cmd == "stop"  ||
+             cmd == "setminingaccount" ||
+             cmd == "getmininginfo" ||
              cmd == "fetchheaderext"){
             return true;
         }
@@ -100,7 +100,7 @@ public:
     auto header(const char* name) const noexcept
     {
       auto* val = mg_get_http_header(impl_, name);
-      return val ? +*val : std::string_view{};
+      return val ? +*val : string_view{};
     }
     auto body() const noexcept { return +impl_->body; }
 

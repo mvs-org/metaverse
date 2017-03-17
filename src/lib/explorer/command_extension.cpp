@@ -49,7 +49,9 @@ console_result stopall::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     output << "mvs server stoped.";
+#ifndef _WIN32
     killpg(getpid(),SIGTERM);
+#endif
     return console_result::okay;
 }
 

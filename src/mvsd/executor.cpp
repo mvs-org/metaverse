@@ -121,7 +121,7 @@ bool executor::do_initchain()
         auto genesis = consensus::miner::create_genesis_block(!metadata_.configured.chain.use_testnet_rules);
 
         const auto result = data_base::initialize(data_path, *genesis);
-        if (not result)
+        if (! result)
         	throw std::runtime_error{"initialize chain failed"};
 		// init admin account
 		set_admin();

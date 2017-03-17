@@ -55,7 +55,7 @@ bool resource_lock::lock()
     // destroyed on its destruct and does not throw.
     try
     {
-        lock_ = std::make_shared<boost_file_lock>(lock_path_.c_str());
+        lock_ = std::make_shared<boost_file_lock>(lock_path_.string().c_str());
         return lock_->try_lock();
     }
     catch (const boost::interprocess::interprocess_exception&)

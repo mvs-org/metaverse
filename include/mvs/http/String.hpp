@@ -20,14 +20,10 @@
 #include <mvs/http/Compare.hpp>
 #include <mvs/http/Defs.hpp>
 
-#include <experimental/string_view>
+#include <string_view.h>
 
 #include <cstring>
 #include <sstream>
-
-namespace std {
-using experimental::string_view;
-}
 
 /**
  * @addtogroup Util
@@ -36,7 +32,7 @@ using experimental::string_view;
 
 namespace http {
 
-constexpr std::string_view operator""_sv(const char* str, std::size_t len) noexcept
+constexpr string_view operator""_sv(const char* str, std::size_t len) noexcept
 {
   return {str, len};
 }
@@ -50,7 +46,7 @@ struct StringData {
 };
 
 template <std::size_t MaxN>
-constexpr std::string_view operator+(const StringData<MaxN>& s) noexcept
+constexpr string_view operator+(const StringData<MaxN>& s) noexcept
 {
   return {s.buf, s.len};
 }
@@ -66,14 +62,14 @@ class String {
   {
     assign(rhs.data(), rhs.size());
   }
-  constexpr String(std::string_view rhs) noexcept { assign(rhs.data(), rhs.size()); }
+  constexpr String(string_view rhs) noexcept { assign(rhs.data(), rhs.size()); }
   constexpr String() noexcept { clear(); }
 
   ~String() noexcept = default;
 
   // Copy.
   constexpr String(const String& rhs) noexcept { assign(rhs.data(), rhs.size()); }
-  constexpr String& operator=(const String& rhs) noexcept
+  constexpr String& operator=(const String& rhs) const noexcept
   {
     assign(rhs.data(), rhs.size());
     return *this;
@@ -81,15 +77,15 @@ class String {
 
   // Move.
   constexpr String(String&&) noexcept = default;
-  constexpr String& operator=(String&&) noexcept = default;
+  String& operator=(String&&) noexcept = default;
 
   template <std::size_t MaxR>
-  constexpr String& operator=(const String<MaxR>& rhs) noexcept
+  constexpr String& operator=(const String<MaxR>& rhs) const noexcept
   {
     assign(rhs.data(), rhs.size());
     return *this;
   }
-  constexpr String& operator=(std::string_view rhs) noexcept
+  constexpr String& operator=(string_view rhs) const noexcept
   {
     assign(rhs.data(), rhs.size());
     return *this;
@@ -99,7 +95,7 @@ class String {
   {
     return compare(rhs.data(), rhs.size());
   }
-  constexpr int compare(std::string_view rhs) const noexcept
+  constexpr int compare(string_view rhs) const noexcept
   {
     return compare(rhs.data(), rhs.size());
   }
@@ -117,7 +113,7 @@ class String {
     }
     return result;
   }
-  constexpr void assign(const char* rdata, std::size_t rlen) noexcept
+  constexpr void assign(const char* rdata, std::size_t rlen) const noexcept
   {
     len_ = std::min(MaxN, rlen);
     if (len_ > 0) {
@@ -130,7 +126,7 @@ class String {
 };
 
 template <std::size_t MaxN>
-constexpr std::string_view operator+(const String<MaxN>& s) noexcept
+constexpr string_view operator+(const String<MaxN>& s) noexcept
 {
   return {s.data(), s.size()};
 }
@@ -142,13 +138,13 @@ constexpr bool operator==(const String<MaxL>& lhs, const String<MaxR>& rhs) noex
 }
 
 template <std::size_t MaxN>
-constexpr bool operator==(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator==(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) == 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator==(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator==(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 == rhs.compare(lhs);
 }
@@ -160,13 +156,13 @@ constexpr bool operator!=(const String<MaxL>& lhs, const String<MaxR>& rhs) noex
 }
 
 template <std::size_t MaxN>
-constexpr bool operator!=(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator!=(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) != 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator!=(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator!=(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 != rhs.compare(lhs);
 }
@@ -178,13 +174,13 @@ constexpr bool operator<(const String<MaxL>& lhs, const String<MaxR>& rhs) noexc
 }
 
 template <std::size_t MaxN>
-constexpr bool operator<(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator<(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) < 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator<(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator<(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 < rhs.compare(lhs);
 }
@@ -196,13 +192,13 @@ constexpr bool operator<=(const String<MaxL>& lhs, const String<MaxR>& rhs) noex
 }
 
 template <std::size_t MaxN>
-constexpr bool operator<=(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator<=(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) <= 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator<=(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator<=(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 <= rhs.compare(lhs);
 }
@@ -214,13 +210,13 @@ constexpr bool operator>(const String<MaxL>& lhs, const String<MaxR>& rhs) noexc
 }
 
 template <std::size_t MaxN>
-constexpr bool operator>(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator>(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) > 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator>(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator>(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 > rhs.compare(lhs);
 }
@@ -232,13 +228,13 @@ constexpr bool operator>=(const String<MaxL>& lhs, const String<MaxR>& rhs) noex
 }
 
 template <std::size_t MaxN>
-constexpr bool operator>=(const String<MaxN>& lhs, std::string_view rhs) noexcept
+constexpr bool operator>=(const String<MaxN>& lhs, string_view rhs) noexcept
 {
   return lhs.compare(rhs) >= 0;
 }
 
 template <std::size_t MaxN>
-constexpr bool operator>=(std::string_view lhs, const String<MaxN>& rhs) noexcept
+constexpr bool operator>=(string_view lhs, const String<MaxN>& rhs) noexcept
 {
   return 0 >= rhs.compare(lhs);
 }
@@ -263,7 +259,7 @@ std::string toString(const ValueT& val)
   return ss.str();
 }
 
-MVS_API unsigned long stoul(std::string_view sv) noexcept;
+MVS_API unsigned long stoul(string_view sv) noexcept;
 
 } // http
 

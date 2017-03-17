@@ -36,7 +36,7 @@ void HttpMessage::data_to_arg() {
         argc_ = i;
     };
 
-    auto convert = [this](std::string_view method, std::string_view pramas){
+    auto convert = [this](string_view method, string_view pramas){
 
         if (!method.empty()){
             this->vargv_.push_back({method.data(), method.size()});
@@ -67,7 +67,7 @@ void HttpMessage::data_to_arg() {
      * application/json
      * {"method":"xxx", "params":""}
      * ******************************************/
-    if (uri() == "/rpc" or uri() == "/rpc/")
+    if (uri() == "/rpc" || uri() == "/rpc/")
     {
 
 #if 0
@@ -115,10 +115,10 @@ void HttpMessage::data_to_arg() {
     if (uri().substr(0,4) == "/api")
     {
         std::array<char, 4096> params{0x00};
-        auto len = mg_get_http_var(&impl_->body, "params", params.begin(), params.max_size());
+        auto len = mg_get_http_var(&impl_->body, "params", params.data(), params.max_size());
 
         convert({nullptr, 0u}, 
-                {params.data(), static_cast<std::string_view::size_type>(len)});
+                {params.data(), static_cast<string_view::size_type>(len)});
         vargv_to_argv();
     }
 

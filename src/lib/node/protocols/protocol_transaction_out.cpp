@@ -132,7 +132,7 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
 
     if (message->inventories.size() > 50000)
     {
-    	return not misbehaving(20);
+    	return ! misbehaving(20);
     }
 
     // TODO: these must return message objects or be copied!
