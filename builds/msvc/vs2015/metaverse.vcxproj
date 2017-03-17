@@ -71,7 +71,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>mvsd</TargetName>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\..\metaverse-master\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1-master\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\..\libzmq-master\include;</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1-master\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\..\libzmq-master\include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
