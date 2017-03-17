@@ -270,13 +270,6 @@ void validate_transaction::check_fees()
         handle_validate_(error::fees_out_of_range, tx_, {});
         return;
     }
-	// asset issue fee must >= 10 etp (1000000000 satoshi)
-	if(((business_tp_in_== 0) && tx_->has_asset_issue())
-		&& (value_in_ - tx_->total_output_value()) < 1000000000)
-	{
-		handle_validate_(error::fees_out_of_range, tx_, {});
-		return;
-	}
 	
 	if(((business_tp_in_== ASSET_DETAIL_TYPE) && tx_->has_asset_transfer())
 		|| ((business_tp_in_== ASSET_TRANSFERABLE_TYPE) && tx_->has_asset_transfer())) {
