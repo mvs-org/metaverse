@@ -935,6 +935,7 @@ console_result listtxs::invoke (std::ostream& output,
     
     pt::ptree aroot;
     pt::ptree balances;
+	const uint64_t limit = 100;
     auto sh_tx_hash = std::make_shared<std::set<std::string>>();
     auto sh_txs = std::make_shared<std::vector<tx_block_info>>();
     // 1. no address -- list all account tx
@@ -955,7 +956,11 @@ console_result listtxs::invoke (std::ostream& output,
                     tx.hash = hash256(each.point.hash).to_string();
                     sh_txs->push_back(tx);
                 } 
+				if( sh_txs->size() >= limit )
+					break;
             }
+			if( sh_txs->size() >= limit )
+				break;
         }
     } else { // address exist in command
         // timestamp parameter check
