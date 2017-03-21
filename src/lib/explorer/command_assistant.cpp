@@ -1378,11 +1378,10 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::blockchain::block_chain_impl& 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
         std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
 
-        const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str()};
-
+		const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(3, cmds, sin, sout, sout, blockchain)){
+        if (dispatch_command(5, cmds, sin, sout, sout, blockchain)){
             throw std::logic_error(sout.str());
         }
         sin.str(sout.str());
@@ -1750,9 +1749,9 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
     std::ostringstream sout;
     std::istringstream sin;
     
-    for (auto& fromeach : asset_ls_){
+    for (auto& fromeach : prikey_set_){
 
-        for (auto& iter : keys_inputs_[fromeach.key]){
+        for (auto& iter : keys_inputs_[fromeach]){
             sout.str("");
             sin.str(iter.txhash);
 
@@ -1790,7 +1789,7 @@ void utxo_attach_sendfrom_helper::generate_receiver_list()
         receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, amount_, mychange_.etp_value, ""});
     } else if(0==business_type_.compare("asset-transfer")) {
         //auto total_amount = get_asset_amounts();
-        if( (0 == mychange_.asset_amount) && (0 == mychange_.asset_amount) ) // no asset and etp left for the address
+        if( (0 == mychange_.asset_amount) && (0 == mychange_.etp_value) ) // no asset and etp left for the address
             ;
         else if(0 == mychange_.asset_amount) // only no asset just transfer etp
             receiver_list_.push_back({mychange_.addr, 1, "etp", "", 0, mychange_.etp_value, ""});
@@ -1809,8 +1808,8 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::bloc
     cmds[i++] = passwd_.c_str();
 
     // input args
-    for (auto& fromeach : asset_ls_){
-        for (auto& iter: keys_inputs_[fromeach.key]){ // only one address utxo inputs
+    for (auto& fromeach : prikey_set_){
+        for (auto& iter: keys_inputs_[fromeach]){ // only one address utxo inputs
             iter.output.as_tx_encode_input_args = iter.txhash + ":" + iter.output.index;
             //if(is_cmd_exist(cmds, sizeof(cmds)/sizeof(cmds[0]), const_cast<char*>(iter.output.as_tx_encode_input_args.c_str())))
                 //continue;
@@ -1846,8 +1845,8 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
     //const char* bank_cmds[1024]{0x00};
 
     int i = 0;    
-    for (auto& fromeach : asset_ls_){
-        for (auto& iter: keys_inputs_[fromeach.key]){
+    for (auto& fromeach : prikey_set_){
+        for (auto& iter: keys_inputs_[fromeach]){
             //if(!iter.output.as_input_sign.empty())  // only assign once
                 //continue;
             sin.str(tx_encode);
@@ -1858,8 +1857,8 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
             //if(is_cmd_exist(bank_cmds, sizeof(bank_cmds)/sizeof(bank_cmds[0]), const_cast<char*>((tx_encode_index + fromeach.key + iter.output.script).c_str())))
                 //continue;
             //bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
-            const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.key.c_str(), iter.output.script.c_str()};
-            log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach.key<<" "<<iter.output.script;
+            const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.c_str(), iter.output.script.c_str()};
+            log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach<<" "<<iter.output.script;
             if (dispatch_command(5, cmds, sin, sout, sout))
                 throw std::logic_error(sout.str());
             iter.output.as_input_sign = sout.str();
@@ -1876,10 +1875,10 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
 
     int i = 0;
     
-    for (auto& fromeach : asset_ls_){
-        std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.key);
+    for (auto& fromeach : prikey_set_){
+        std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach);
 
-        for (auto& iter: keys_inputs_[fromeach.key]){
+        for (auto& iter: keys_inputs_[fromeach]){
             //if(iter.output.as_input_sign.empty())
                 //continue;
             std::string&& input_script = "[ " + iter.output.as_input_sign + " ] " + "[ " + frompubkey + " ]";
@@ -1972,7 +1971,7 @@ void utxo_attach_sendfrom_helper::get_utxo_option(utxo_attach_info& info)
 bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr)
 {    
     // clean from_list_ by some algorithm
-    //utxo.group_utxo();
+    utxo.group_utxo();
         
     // get utxo
     if (!utxo.fetch_utxo())

@@ -322,6 +322,7 @@ public:
         symbol_(symbol), amount_(amount), address_(address), use_testnet_(use_testnet)
     {
         for (auto& each : asset_ls_){
+			prikey_set_.insert(each.key);
             if(keys_inputs_.find(each.key) == keys_inputs_.end())
                 keys_inputs_.emplace(std::make_pair(each.key, std::vector<tx_items>()));
         }
@@ -364,6 +365,7 @@ private:
     //uint64_t                    total_amount_;
     // business
     std::list<prikey_etp_amount> asset_ls_;
+	std::unordered_set<std::string> prikey_set_; // incase asset_ls_ has multil duplicated key
     // to
     std::vector<utxo_attach_info>    receiver_list_;
 

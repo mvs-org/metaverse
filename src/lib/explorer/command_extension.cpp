@@ -1917,7 +1917,7 @@ console_result issuefrom::invoke (std::ostream& output,
 
     std::list<prikey_amount> palist;
 
-    const char* cmds[2]{"xfetchbalance", nullptr};
+    const char* cmds[4]{"xfetchbalance", nullptr, "-t", "etp"}; // only spent pure etp utxo
     std::ostringstream sout;
     std::istringstream sin; 
 
@@ -1926,7 +1926,7 @@ console_result issuefrom::invoke (std::ostream& output,
         if( 0 == each.get_address().compare(argument_.address) ) {
             sout.str("");
             cmds[1] = each.get_address().c_str();
-            dispatch_command(2, cmds + 0, sin, sout, sout, blockchain);
+            dispatch_command(4, cmds + 0, sin, sout, sout, blockchain);
 
             pt::ptree pt;
             sin.str(sout.str());
@@ -1995,62 +1995,108 @@ console_result issuemorefrom::invoke (std::ostream& output,
 console_result sendasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty()) 
-        throw std::logic_error{"nullptr for address list"};
-    
-    std::vector<prikey_amount> pavec;
+	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	blockchain.uppercase_symbol(argument_.symbol);
+	
+	if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+		throw std::logic_error{"asset symbol length must be less than 64."};
+	if (!blockchain.is_valid_address(argument_.address))
+		throw std::logic_error{"invalid to address parameter!"};
+	if (!argument_.amount)
+		throw std::logic_error{"invalid asset amount parameter!"};
 
-    const char* fetch_cmds[2]{"xfetchbalance", nullptr};
-    std::ostringstream sout;
-    std::istringstream sin; 
+	auto pvaddr = blockchain.get_account_addresses(auth_.name);
+	if(!pvaddr) 
+		throw std::logic_error{"nullptr for address list"};
+	
+	auto kind = business_kind::asset_issue;
+	std::shared_ptr<std::vector<business_history>> sh_vec;
+	std::list<prikey_etp_amount> asset_ls;
+	// get "issued" address unspend asset balance
+	for (auto& each : *pvaddr){
+		//std::shared_ptr<std::vector<business_history>> 
+		sh_vec = blockchain.get_address_business_history(each.get_address(), argument_.symbol, kind, business_status::unspent);
+		if(sh_vec->size()){
+			const auto sum = [&](const business_history& bh)
+			{
+				auto asset_info = boost::get<asset_detail>(bh.data.get_data());
+				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
+			};
+			std::for_each(sh_vec->begin(), sh_vec->end(), sum);
+			break;
+		}
+	}
 
-    // get balance
-    for (auto& each : *pvaddr){
-        sout.str("");
-        fetch_cmds[1] = each.get_address().c_str();
-        dispatch_command(2, fetch_cmds + 0, sin, sout, sout, blockchain);
+	// not find issue asset, get transferable asset
+	uint64_t total_amount = 0;
+	if(!sh_vec->size()) { // not found issue asset then search transfer asset
+		kind = business_kind::asset_transfer;
+		for (auto& each : *pvaddr){
+			sh_vec = blockchain.get_address_business_history(each.get_address(), argument_.symbol, kind, business_status::unspent);
+			if(sh_vec->size()){
+				for(auto& bh : *sh_vec) {
+					auto transfer_info = boost::get<asset_transfer>(bh.data.get_data());
+					asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, transfer_info.get_quantity(), bh.output});
+					total_amount += transfer_info.get_quantity();
+					if( total_amount >= argument_.amount )
+						break;
+				}
+			}
+			if( total_amount >= argument_.amount )
+				break;
+		}
+	}
 
-        pt::ptree pt;
-        sin.str(sout.str());
-        pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
-        if (balance){
-            pavec.push_back({each.get_address(), balance});
-        }
-    }
-    if(!pavec.size())
-        throw std::logic_error{"not enough etp in your account!"};
+	// not available asset
+	if(!asset_ls.size()) 
+		throw std::logic_error{"the from address has no unspent asset"};
+#if 0	
+//#ifdef MVS_DEBUG
+	/* debug code begin */	  
+	const auto action = [&](business_history& elem)
+	{
+		log::info("sendassetfrom") <<elem.to_string();
+	};
+	std::for_each(sh_vec->begin(), sh_vec->end(), action);
+	/* debug code end */
+#endif
 
-    // get random address    
-    auto index = bc::pseudo_random() % pavec.size();
-    auto addr = pavec.at(index).first;
-    
-    // make sendassetfrom command 
-    // eg : sendassetfrom m m MNH8xif7cx3wWxMoAw2Fj5XTeJ1isHbHt9 MJZWnDUtBVAp6Njuc6734bdrTpMcY1kovc CAR 10
-    const char* cmds[256]{0x00};
-    int i = 0;
-    cmds[i++] = "sendassetfrom";
-    cmds[i++] = auth_.name.c_str();
-    cmds[i++] = auth_.auth.c_str();
-    cmds[i++] = addr.c_str();
-    cmds[i++] = argument_.address.c_str();
-    cmds[i++] = argument_.symbol.c_str();
-    cmds[i++] = std::to_string(argument_.amount).c_str();
-    cmds[i++] = "-f";
-    cmds[i++] = std::to_string(argument_.fee).c_str();
+	// add etp business to asset_ls if asset etp not enough
+	uint64_t total_balance = 0;
+	for (auto& each : asset_ls){
+		total_balance += each.value;
+	}
+	if(total_balance < argument_.fee) {
+		total_balance = 0;
+		for (auto& each : *pvaddr){
+			auto etp_ls = blockchain.get_address_business_history(each.get_address(), "", business_kind::etp, business_status::unspent);
+			for(auto& bh : *etp_ls) {
+				total_balance += bh.value;
+				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, 0, bh.output});
+				if(total_balance >= argument_.fee)
+					break;
+			}
+			if(total_balance >= argument_.fee)
+				break;
+		}
+	}
+#ifdef MVS_DEBUG
+	/* debug code begin */	  
+	const auto action = [&](prikey_etp_amount& elem)
+	{
+		log::trace("sendassetfrom") <<elem.key<<" "<<elem.value<<" "<<elem.asset_amount<<" "<<elem.output.to_string();
+	};
+	std::for_each(asset_ls.begin(), asset_ls.end(), action);
+	/* debug code end */
+#endif
+	std::string type("asset-transfer");
+	auto testnet_rules = blockchain.chain_settings().use_testnet_rules;
 
-    // exec command
-    sin.str("");
-    sout.str("");
-    
-    if (dispatch_command(i, cmds, sin, sout, sout, blockchain))
-        throw std::logic_error(sout.str());
-    
-    output<<sout.str();
-    return console_result::okay;
+	utxo_attach_sendfrom_helper utxo(std::move(auth_.name), std::move(auth_.auth), std::move(type), std::move(asset_ls), 
+		argument_.fee, std::move(argument_.symbol), argument_.amount, std::move(argument_.address), testnet_rules);
+	send_impl(utxo, blockchain, output, output);
+
+	return console_result::okay;
 }
 
 /************************ sendassetfrom *************************/
@@ -2077,31 +2123,24 @@ console_result sendassetfrom::invoke (std::ostream& output,
         throw std::logic_error{"nullptr for address list"};
     
     auto kind = business_kind::asset_issue;
+    std::list<prikey_etp_amount> asset_ls;
     //std::shared_ptr<std::vector<business_history>> 
     auto sh_vec = blockchain.get_address_business_history(argument_.from, argument_.symbol, kind, business_status::unspent);
-    log::debug("sendassetfrom") << "asset issue size = " << sh_vec->size();
-    if(!sh_vec->size()) { // not found issue asset then search transfer asset
-
+	if(sh_vec->size()){ // asset issue utxo exist
+		for (auto& each : *pvaddr){
+			if ( 0 != argument_.from.compare(each.get_address()) )
+				continue;
+			const auto sum = [&](const business_history& bh)
+			{
+				auto asset_info = boost::get<asset_detail>(bh.data.get_data());
+				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
+			};
+			std::for_each(sh_vec->begin(), sh_vec->end(), sum);
+			break;
+		}
+	} else { // not found issue asset then search transfer asset 
         kind = business_kind::asset_transfer;
         sh_vec = blockchain.get_address_business_history(argument_.from, argument_.symbol, kind, business_status::unspent);
-    }
-    if(!sh_vec->size()) 
-        throw std::logic_error{"the from address has no unspent asset"};
-    
-#ifdef MVS_DEBUG
-    /* debug code begin */    
-    const auto action = [&](business_history& elem)
-    {
-        log::info("sendassetfrom") <<elem.to_string();
-    };
-    std::for_each(sh_vec->begin(), sh_vec->end(), action);
-    /* debug code end */
-#endif
-    std::list<prikey_etp_amount> asset_ls;
-    
-    if(kind == business_kind::asset_transfer) {
-        
-        // get address unspend asset balance
         for (auto& each : *pvaddr){
             if ( 0 != argument_.from.compare(each.get_address()) )
                 continue;
@@ -2111,34 +2150,48 @@ console_result sendassetfrom::invoke (std::ostream& output,
                 asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, transfer_info.get_quantity(), bh.output});
             };
             std::for_each(sh_vec->begin(), sh_vec->end(), sum);
-            break;
         }
-    } else {  // asset_issue 
+    }    
+#ifdef MVS_DEBUG
+    /* debug code begin */    
+    const auto action = [&](business_history& elem)
+    {
+        log::info("sendassetfrom") <<elem.to_string();
+    };
+    std::for_each(sh_vec->begin(), sh_vec->end(), action);
+    /* debug code end */
+#endif
     
-        // get address unspend asset balance
-        for (auto& each : *pvaddr){
-            if ( 0 != argument_.from.compare(each.get_address()) )
-                continue;
-            // do data structure exchange
-            const auto sum = [&](const business_history& bh)
-            {
-                auto asset_info = boost::get<asset_detail>(bh.data.get_data());
-                asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
-            };
-            std::for_each(sh_vec->begin(), sh_vec->end(), sum);
-            break;
-        }
-    }
     if(!asset_ls.size()) 
         throw std::logic_error{"no asset business for from address!"};
-    // todo -- add etp business to asset_ls if asset etp not enough
-    // todo -- create new etp list
+	
+	// etp check incase from address etp < fee
+    uint64_t total_balance = 0;
+    for (auto& each : asset_ls){
+        total_balance += each.value;
+    }
+	if(total_balance < argument_.fee) {
+		total_balance = 0;
+		for (auto& each : *pvaddr){
+			if ( 0 != argument_.from.compare(each.get_address()) )
+				continue;
+			auto etp_ls = blockchain.get_address_business_history(argument_.from, "", business_kind::etp, business_status::unspent);
+			for( auto& bh : *etp_ls){
+				total_balance += bh.value; 
+				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, 0, bh.output});
+				if(total_balance >= argument_.fee)
+					break;
+			}
+			break;
+		}
+	}
+
+	// send
     std::string type("asset-transfer");
     auto testnet_rules = blockchain.chain_settings().use_testnet_rules;
-
     utxo_attach_sendfrom_helper utxo(std::move(auth_.name), std::move(auth_.auth), std::move(type), std::move(asset_ls), 
         argument_.fee, std::move(argument_.symbol), argument_.amount, std::move(argument_.to), testnet_rules);
-    utxo.group_utxo(); // throw exception if etp number or asset amount is not enough
+
     send_impl(utxo, blockchain, output, output);
 
     return console_result::okay;
