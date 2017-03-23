@@ -38,7 +38,7 @@ Or, you can compile Boost by yourself.
 ## install zmq 4.2.0(or above)
 server required.
 ```bash
-git clone https://github.com/mvs-live/libzmq
+wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
 cd libzmq
 ./autogen.sh && ./configure && make -j4
 sudo make install && sudo ldconfig
@@ -53,7 +53,7 @@ git clone https://github.com/mvs-live/secp256k1
 make -j4 && sudo make install
 ```
 
-mvs-architecture
+##mvs-architecture
 ![mvs-architecture](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-architecture.png)
-mvs-libraries
+##mvs-libraries
 ![mvs-libraries](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-libraries.png)
