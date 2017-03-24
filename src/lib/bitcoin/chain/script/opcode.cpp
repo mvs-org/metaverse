@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/script/opcode.hpp>
+#include <metaverse/lib/bitcoin/chain/script/opcode.hpp>
 
 #include <sstream>
-#include <bitcoin/bitcoin/constants.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace chain {

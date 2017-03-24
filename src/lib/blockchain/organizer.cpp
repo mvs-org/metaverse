@@ -17,25 +17,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/organizer.hpp>
-#include <bitcoin/blockchain/block.hpp>
+#include <metaverse/lib/blockchain/organizer.hpp>
+#include <metaverse/lib/blockchain/block.hpp>
 
 #include <boost/thread.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <numeric>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain/block_detail.hpp>
-#include <bitcoin/blockchain/orphan_pool.hpp>
-#include <bitcoin/blockchain/organizer.hpp>
-#include <bitcoin/blockchain/settings.hpp>
-#include <bitcoin/blockchain/simple_chain.hpp>
-#include <bitcoin/blockchain/validate_block_impl.hpp>
-#include <bitcoin/bitcoin/chain/header.hpp>
-#include <bitcoin/node/protocols/protocol_block_out.hpp>
-#include <bitcoin/bitcoin/wallet/payment_address.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/blockchain/block_detail.hpp>
+#include <metaverse/lib/blockchain/orphan_pool.hpp>
+#include <metaverse/lib/blockchain/organizer.hpp>
+#include <metaverse/lib/blockchain/settings.hpp>
+#include <metaverse/lib/blockchain/simple_chain.hpp>
+#include <metaverse/lib/blockchain/validate_block_impl.hpp>
+#include <metaverse/lib/bitcoin/chain/header.hpp>
+#include <metaverse/lib/node/protocols/protocol_block_out.hpp>
+#include <metaverse/lib/bitcoin/wallet/payment_address.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

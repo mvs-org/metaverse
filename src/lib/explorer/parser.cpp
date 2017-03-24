@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/parser.hpp>
+#include <metaverse/lib/explorer/parser.hpp>
 
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
-#include <bitcoin/explorer/command.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/explorer/command.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 using namespace boost::filesystem;
 using namespace boost::program_options;

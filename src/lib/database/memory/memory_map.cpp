@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/memory/memory_map.hpp>
+#include <metaverse/lib/database/memory/memory_map.hpp>
 
 #include <iostream>
 
@@ -40,10 +40,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <boost/filesystem.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/accessor.hpp>
-#include <bitcoin/database/memory/allocator.hpp>
-#include <bitcoin/database/memory/memory.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/accessor.hpp>
+#include <metaverse/lib/database/memory/allocator.hpp>
+#include <metaverse/lib/database/memory/memory.hpp>
 
 // memory_map is be able to support 32 bit but because the database 
 // requires a larger file this is not validated or supported.

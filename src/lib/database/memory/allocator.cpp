@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/memory/allocator.hpp>
+#include <metaverse/lib/database/memory/allocator.hpp>
 
 #include <cstdint>
 #include <cstddef>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/define.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/define.hpp>
 
 namespace libbitcoin {
 namespace database {

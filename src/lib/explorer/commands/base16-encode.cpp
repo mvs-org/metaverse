@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/commands/base16-encode.hpp>
+#include <metaverse/lib/explorer/commands/base16-encode.hpp>
 
 #include <iostream>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/define.hpp>
 
 
 namespace libbitcoin {

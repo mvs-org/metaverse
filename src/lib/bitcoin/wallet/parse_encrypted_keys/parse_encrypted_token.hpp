@@ -22,9 +22,9 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
-#include <bitcoin/bitcoin/wallet/encrypted_keys.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/wallet/encrypted_keys.hpp>
 #include "parse_encrypted_key.hpp"
 
 namespace libbitcoin {

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/utility/log.hpp>
+#include <metaverse/lib/bitcoin/utility/log.hpp>
 
 #include <iostream>
 #include <utility>
@@ -25,7 +25,7 @@
 #include <string>
 #include <boost/date_time.hpp>
 #include <boost/format.hpp>
-#include <bitcoin/bitcoin/unicode/unicode.hpp>
+#include <metaverse/lib/bitcoin/unicode/unicode.hpp>
 
 namespace libbitcoin {
 

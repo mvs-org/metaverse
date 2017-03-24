@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/socket_stream.hpp>
+#include <metaverse/lib/client/socket_stream.hpp>
 
 #include <cstdint>
-#include <bitcoin/protocol.hpp>
+#include <metaverse/lib/protocol.hpp>
 
 namespace libbitcoin {
 namespace client {

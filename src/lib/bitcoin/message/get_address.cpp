@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/message/get_address.hpp>
+#include <metaverse/lib/bitcoin/message/get_address.hpp>
 
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/message/version.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/message/version.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
 
 namespace libbitcoin {
 namespace message {

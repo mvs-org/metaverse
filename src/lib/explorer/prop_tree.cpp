@@ -18,21 +18,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/prop_tree.hpp>
+#include <metaverse/lib/explorer/prop_tree.hpp>
 
 #include <cstdint>
 #include <string>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
-#include <bitcoin/client.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/config/header.hpp>
-#include <bitcoin/explorer/config/input.hpp>
-#include <bitcoin/explorer/config/output.hpp>
-#include <bitcoin/explorer/config/point.hpp>
-#include <bitcoin/explorer/config/script.hpp>
-#include <bitcoin/explorer/config/transaction.hpp>
-#include <bitcoin/explorer/config/wrapper.hpp>
+#include <metaverse/lib/client.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/config/header.hpp>
+#include <metaverse/lib/explorer/config/input.hpp>
+#include <metaverse/lib/explorer/config/output.hpp>
+#include <metaverse/lib/explorer/config/point.hpp>
+#include <metaverse/lib/explorer/config/script.hpp>
+#include <metaverse/lib/explorer/config/transaction.hpp>
+#include <metaverse/lib/explorer/config/wrapper.hpp>
 
 using namespace pt;
 using namespace bc::client;

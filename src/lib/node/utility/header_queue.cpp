@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <metaverse/lib/node/utility/header_queue.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <memory>
-#include <bitcoin/blockchain.hpp>
+#include <metaverse/lib/blockchain.hpp>
 
 namespace libbitcoin {
 namespace node {

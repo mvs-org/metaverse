@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/validate_block.hpp>
+#include <metaverse/lib/blockchain/validate_block.hpp>
 
 #include <set>
 #include <algorithm>
@@ -26,13 +26,13 @@
 #include <cstdint>
 #include <system_error>
 #include <vector>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain/block.hpp>
-#include <bitcoin/blockchain/validate_transaction.hpp>
-#include <bitcoin/consensus/miner/MinerAux.h>
-#include <bitcoin/consensus/libdevcore/BasicType.h>
-#include <bitcoin/consensus/miner.hpp>
-#include <bitcoin/bitcoin/chain/output.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/blockchain/block.hpp>
+#include <metaverse/lib/blockchain/validate_transaction.hpp>
+#include <metaverse/lib/consensus/miner/MinerAux.h>
+#include <metaverse/lib/consensus/libdevcore/BasicType.h>
+#include <metaverse/lib/consensus/miner.hpp>
+#include <metaverse/lib/bitcoin/chain/output.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

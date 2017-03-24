@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/config/parameter.hpp>
+#include <metaverse/lib/bitcoin/config/parameter.hpp>
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin/define.hpp>
-#include <bitcoin/bitcoin/utility/collection.hpp>
-#include <bitcoin/bitcoin/utility/string.hpp>
+#include <metaverse/lib/bitcoin/define.hpp>
+#include <metaverse/lib/bitcoin/utility/collection.hpp>
+#include <metaverse/lib/bitcoin/utility/string.hpp>
 
 namespace po = boost::program_options;
 using namespace libbitcoin::config;

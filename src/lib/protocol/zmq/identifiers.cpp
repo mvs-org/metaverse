@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/protocol/zmq/socket.hpp>
+#include <metaverse/lib/protocol/zmq/socket.hpp>
 
 #include <algorithm>
-#include <bitcoin/protocol/zmq/identifiers.hpp>
+#include <metaverse/lib/protocol/zmq/identifiers.hpp>
 
 namespace libbitcoin {
 namespace protocol {

@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/commands/ec-new.hpp>
+#include <metaverse/lib/explorer/commands/ec-new.hpp>
 
 #include <iostream>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/utility.hpp>
-#include <bitcoin/explorer/config/ec_private.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
+#include <metaverse/lib/explorer/config/ec_private.hpp>
 
 
 

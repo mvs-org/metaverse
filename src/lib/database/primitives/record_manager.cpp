@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/primitives/record_manager.hpp>
+#include <metaverse/lib/database/primitives/record_manager.hpp>
 
 #include <cstddef>
 #include <stdexcept>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/memory.hpp>
-#include <bitcoin/database/memory/memory_map.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/memory.hpp>
+#include <metaverse/lib/database/memory/memory_map.hpp>
 
 /// -- file --
 /// [ header ]

@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/math/checksum.hpp>
+#include <metaverse/lib/bitcoin/math/checksum.hpp>
 
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/utility/endian.hpp>
-#include <bitcoin/bitcoin/utility/deserializer.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/utility/endian.hpp>
+#include <metaverse/lib/bitcoin/utility/deserializer.hpp>
 
 namespace libbitcoin {
 

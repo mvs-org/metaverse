@@ -18,16 +18,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/display.hpp>
+#include <metaverse/lib/explorer/display.hpp>
 
 #include <iostream>
 #include <memory>
 #include <boost/format.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/dispatch.hpp>
-#include <bitcoin/explorer/generated.hpp>
-#include <bitcoin/explorer/utility.hpp>
-#include <bitcoin/explorer/version.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/dispatch.hpp>
+#include <metaverse/lib/explorer/generated.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
+#include <metaverse/lib/explorer/version.hpp>
 
 namespace libbitcoin {
 namespace explorer {

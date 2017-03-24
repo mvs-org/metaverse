@@ -1,21 +1,21 @@
 
-#include <bitcoin/consensus/miner.hpp>
-#include <bitcoin/blockchain/block_chain.hpp>
-#include <bitcoin/blockchain/block_chain_impl.hpp>
-#include <bitcoin/blockchain/validate_block.hpp>
-#include <bitcoin/node/p2p_node.hpp>
+#include <metaverse/lib/consensus/miner.hpp>
+#include <metaverse/lib/blockchain/block_chain.hpp>
+#include <metaverse/lib/blockchain/block_chain_impl.hpp>
+#include <metaverse/lib/blockchain/validate_block.hpp>
+#include <metaverse/lib/node/p2p_node.hpp>
 
 #include <algorithm>
 #include <functional>
 #include <system_error>
 #include <boost/thread.hpp>
-#include <bitcoin/consensus/miner/MinerAux.h>
-#include <bitcoin/consensus/libdevcore/BasicType.h>
-#include <bitcoin/bitcoin/chain/script/operation.hpp>
-#include <bitcoin/bitcoin/config/hash160.hpp>
-#include <bitcoin/bitcoin/wallet/ec_public.hpp>
-#include <bitcoin/bitcoin/constants.hpp>
-#include <bitcoin/blockchain/validate_block.hpp>
+#include <metaverse/lib/consensus/miner/MinerAux.h>
+#include <metaverse/lib/consensus/libdevcore/BasicType.h>
+#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
+#include <metaverse/lib/bitcoin/config/hash160.hpp>
+#include <metaverse/lib/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
+#include <metaverse/lib/blockchain/validate_block.hpp>
 
 #define LOG_HEADER "consensus"
 using namespace std;

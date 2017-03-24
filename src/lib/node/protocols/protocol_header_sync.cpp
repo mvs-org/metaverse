@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/protocols/protocol_header_sync.hpp>
+#include <metaverse/lib/node/protocols/protocol_header_sync.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <functional>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/p2p_node.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <metaverse/lib/network.hpp>
+#include <metaverse/lib/node/p2p_node.hpp>
+#include <metaverse/lib/node/utility/header_queue.hpp>
 
 namespace libbitcoin {
 namespace node {

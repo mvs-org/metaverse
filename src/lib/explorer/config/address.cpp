@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/config/address.hpp>
+#include <metaverse/lib/explorer/config/address.hpp>
 
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace explorer {

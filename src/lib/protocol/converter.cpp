@@ -19,10 +19,10 @@
  */
 #ifdef MVS_VERSION4
 
-#include <bitcoin/protocol/converter.hpp>
+#include <metaverse/lib/protocol/converter.hpp>
 
 #include <string>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace protocol {

@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/hosts.hpp>
+#include <metaverse/lib/network/hosts.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/bitcoin/utility/path.hpp>
-#include <bitcoin/network/settings.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/bitcoin/utility/path.hpp>
+#include <metaverse/lib/network/settings.hpp>
 
 namespace libbitcoin {
 namespace network {

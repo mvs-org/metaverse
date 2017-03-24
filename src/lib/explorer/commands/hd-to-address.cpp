@@ -18,10 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/commands/hd-to-address.hpp>
+#include <metaverse/lib/explorer/commands/hd-to-address.hpp>
 
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/define.hpp>
 
 
 

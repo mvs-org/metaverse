@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/sessions/session_outbound.hpp>
+#include <metaverse/lib/network/sessions/session_outbound.hpp>
 
 #include <cstddef>
 #include <functional>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/p2p.hpp>
-#include <bitcoin/network/protocols/protocol_address.hpp>
-#include <bitcoin/network/protocols/protocol_ping.hpp>
-#include <bitcoin/bitcoin/utility/deadline.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/p2p.hpp>
+#include <metaverse/lib/network/protocols/protocol_address.hpp>
+#include <metaverse/lib/network/protocols/protocol_ping.hpp>
+#include <metaverse/lib/bitcoin/utility/deadline.hpp>
 
 namespace libbitcoin {
 namespace network {

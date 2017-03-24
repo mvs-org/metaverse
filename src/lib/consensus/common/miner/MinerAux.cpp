@@ -1,18 +1,18 @@
-#include <bitcoin/consensus/libethash/internal.h>
-#include <bitcoin/consensus/libdevcore/Guards.h>
-#include <bitcoin/consensus/libdevcore/Log.h>
-#include <bitcoin/consensus/libdevcore/SHA3.h>
-#include <bitcoin/bitcoin/chain/header.hpp>
+#include <metaverse/lib/consensus/libethash/internal.h>
+#include <metaverse/lib/consensus/libdevcore/Guards.h>
+#include <metaverse/lib/consensus/libdevcore/Log.h>
+#include <metaverse/lib/consensus/libdevcore/SHA3.h>
+#include <metaverse/lib/bitcoin/chain/header.hpp>
 #include <boost/detail/endian.hpp>
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include <array>
 #include <thread>
-#include <bitcoin/consensus/miner/MinerAux.h>
+#include <metaverse/lib/consensus/miner/MinerAux.h>
 #include <random>
-#include <bitcoin/consensus/libdevcore/Exceptions.h>
+#include <metaverse/lib/consensus/libdevcore/Exceptions.h>
 #include <boost/throw_exception.hpp>
-#include <bitcoin/bitcoin/utility/log.hpp>
+#include <metaverse/lib/bitcoin/utility/log.hpp>
 
 
 using namespace libbitcoin;

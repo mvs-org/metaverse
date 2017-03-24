@@ -17,20 +17,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/dispatch.hpp>
+#include <metaverse/lib/explorer/dispatch.hpp>
 
 #include <iostream>
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <bitcoin/explorer/command.hpp>
-#include <bitcoin/explorer/command_extension.hpp>
-#include <bitcoin/explorer/command_extension_func.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/display.hpp>
-#include <bitcoin/explorer/generated.hpp>
-#include <bitcoin/explorer/parser.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/explorer/command.hpp>
+#include <metaverse/lib/explorer/command_extension.hpp>
+#include <metaverse/lib/explorer/command_extension_func.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/display.hpp>
+#include <metaverse/lib/explorer/generated.hpp>
+#include <metaverse/lib/explorer/parser.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 using namespace boost::filesystem;
 using namespace boost::program_options;

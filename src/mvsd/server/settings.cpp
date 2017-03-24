@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/settings.hpp>
+#include <metaverse/lib/server/settings.hpp>
 
-#include <bitcoin/node.hpp>
+#include <metaverse/lib/node.hpp>
 
 namespace libbitcoin {
 namespace server {

@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "bitcoin/consensus.hpp"
-#include "bitcoin/consensus/consensus.hpp"
+#include "metaverse/lib/consensus.hpp"
+#include "metaverse/lib/consensus/consensus.hpp"
 
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
 #include <string.h>
-#include <bitcoin/consensus/define.hpp>
-#include <bitcoin/consensus/export.hpp>
-#include <bitcoin/consensus/version.hpp>
+#include <metaverse/lib/consensus/define.hpp>
+#include <metaverse/lib/consensus/export.hpp>
+#include <metaverse/lib/consensus/version.hpp>
 #include "primitives/transaction.h"
 #include "pubkey.h"
 #include "script/interpreter.h"

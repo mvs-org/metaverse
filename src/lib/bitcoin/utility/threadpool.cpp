@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/utility/threadpool.hpp>
+#include <metaverse/lib/bitcoin/utility/threadpool.hpp>
 
 #include <memory>
 #include <new>
 #include <thread>
-#include <bitcoin/bitcoin/utility/asio.hpp>
-#include <bitcoin/bitcoin/utility/thread.hpp>
+#include <metaverse/lib/bitcoin/utility/asio.hpp>
+#include <metaverse/lib/bitcoin/utility/thread.hpp>
 
 namespace libbitcoin {
 

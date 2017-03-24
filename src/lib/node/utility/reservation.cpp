@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/utility/reservation.hpp>
+#include <metaverse/lib/node/utility/reservation.hpp>
 
 #include <chrono>
 #include <cmath>
@@ -25,9 +25,9 @@
 #include <cstdint>
 #include <utility>
 #include <boost/format.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/node/utility/performance.hpp>
-#include <bitcoin/node/utility/reservations.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/node/utility/performance.hpp>
+#include <metaverse/lib/node/utility/reservations.hpp>
 
 namespace libbitcoin {
 namespace node {

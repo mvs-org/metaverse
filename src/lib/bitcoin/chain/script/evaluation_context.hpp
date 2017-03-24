@@ -22,9 +22,9 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <bitcoin/bitcoin/chain/script/operation.hpp>
-#include <bitcoin/bitcoin/define.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
+#include <metaverse/lib/bitcoin/define.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 #include "conditional_stack.hpp"
 
 namespace libbitcoin {

@@ -18,17 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <script/script.h>
-#include <bitcoin/bitcoin/chain/script/operation.hpp>
+#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
 #include <algorithm>
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/chain/script/script.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/math/elliptic_curve.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/chain/script/script.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {

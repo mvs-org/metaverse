@@ -17,21 +17,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
+#include <metaverse/lib/bitcoin/chain/attachment/account/account.hpp>
 
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
 
 #ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
 #endif
 
-#include <bitcoin/bitcoin/math/crypto.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin/math/crypto.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 using namespace libbitcoin::wallet;
 
 namespace libbitcoin {

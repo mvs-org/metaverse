@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/message/transaction_message.hpp>
+#include <metaverse/lib/bitcoin/message/transaction_message.hpp>
 
 #include <istream>
 #include <utility>
-#include <bitcoin/bitcoin/chain/input.hpp>
-#include <bitcoin/bitcoin/chain/output.hpp>
-#include <bitcoin/bitcoin/message/version.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
-#include <bitcoin/bitcoin/utility/reader.hpp>
+#include <metaverse/lib/bitcoin/chain/input.hpp>
+#include <metaverse/lib/bitcoin/chain/output.hpp>
+#include <metaverse/lib/bitcoin/message/version.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/utility/reader.hpp>
 
 namespace libbitcoin {
 namespace message {

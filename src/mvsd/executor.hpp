@@ -22,7 +22,7 @@
 
 #include <future>
 #include <iostream>
-#include <bitcoin/server.hpp>
+#include <metaverse/lib/server.hpp>
 
 namespace libbitcoin {
 namespace server {

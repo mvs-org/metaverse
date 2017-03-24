@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include <bitcoin/consensus/libdevcore/Log.h>
+#include <metaverse/lib/consensus/libdevcore/Log.h>
 
 #include <string>
 #include <iostream>
@@ -30,7 +30,7 @@
 #if !defined(ETH_EMSCRIPTEN)
 #include <boost/asio/ip/tcp.hpp>
 #endif
-#include <bitcoin/consensus/libdevcore/Guards.h>
+#include <metaverse/lib/consensus/libdevcore/Guards.h>
 using namespace std;
 using namespace libbitcoin;
 

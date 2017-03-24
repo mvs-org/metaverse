@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/commands/input-sign.hpp>
+#include <metaverse/lib/explorer/commands/input-sign.hpp>
 
 #include <iostream>
 #include <cstdint>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 
 namespace libbitcoin {

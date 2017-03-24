@@ -18,15 +18,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/commands/send-tx.hpp>
+#include <metaverse/lib/explorer/commands/send-tx.hpp>
 
 #include <iostream>
 #include <boost/format.hpp>
-#include <bitcoin/client.hpp>
-#include <bitcoin/explorer/callback_state.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/display.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/client.hpp>
+#include <metaverse/lib/explorer/callback_state.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/display.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 
 namespace libbitcoin {

@@ -22,7 +22,7 @@
 
 #include <mutex>
 #include <secp256k1.h>
-#include <bitcoin/bitcoin/define.hpp>
+#include <metaverse/lib/bitcoin/define.hpp>
 
 namespace libbitcoin {
 

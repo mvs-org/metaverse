@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/config/base2.hpp>
+#include <metaverse/lib/bitcoin/config/base2.hpp>
 
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin/define.hpp>
-#include <bitcoin/bitcoin/utility/binary.hpp>
+#include <metaverse/lib/bitcoin/define.hpp>
+#include <metaverse/lib/bitcoin/utility/binary.hpp>
 
 namespace libbitcoin {
 namespace config {

@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/utility/random.hpp>
+#include <metaverse/lib/bitcoin/utility/random.hpp>
 
 #include <chrono>
 #include <cstdint>
 #include <stdexcept>
 #include <random>
-#include <bitcoin/bitcoin/utility/asio.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/utility/asio.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 
 namespace libbitcoin {
 

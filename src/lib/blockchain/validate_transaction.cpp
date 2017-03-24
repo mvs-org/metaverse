@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/validate_transaction.hpp>
-#include <bitcoin/bitcoin/chain/script/operation.hpp>
+#include <metaverse/lib/blockchain/validate_transaction.hpp>
+#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain/transaction_pool.hpp>
-#include <bitcoin/consensus/miner.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/blockchain/transaction_pool.hpp>
+#include <metaverse/lib/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
-#include <bitcoin/consensus.hpp>
+#include <metaverse/lib/consensus.hpp>
 #endif
 
 namespace libbitcoin {

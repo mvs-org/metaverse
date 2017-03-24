@@ -19,16 +19,16 @@
  */
 
 
-#include <bitcoin/explorer/command.hpp>
+#include <metaverse/lib/explorer/command.hpp>
 #include <functional>
 #include <memory>    
 #include <string>    
 #include <array>     
-#include <bitcoin/explorer/command.hpp>                
-#include <bitcoin/explorer/command_extension.hpp>      
-#include <bitcoin/explorer/command_extension_func.hpp>
+#include <metaverse/lib/explorer/command.hpp>                
+#include <metaverse/lib/explorer/command_extension.hpp>      
+#include <metaverse/lib/explorer/command_extension_func.hpp>
 
-#include <bitcoin/explorer/dispatch.hpp>
+#include <metaverse/lib/explorer/dispatch.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 

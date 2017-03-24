@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
 
 #include <algorithm>
 #include <secp256k1.h>
 #include <secp256k1_recovery.h>
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 #include "../math/external/lax_der_parsing.h"
 #include "secp256k1_initializer.hpp"
 

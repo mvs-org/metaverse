@@ -18,11 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/commands/hd-to-ec.hpp>
+#include <metaverse/lib/explorer/commands/hd-to-ec.hpp>
 
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/config/ec_private.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/config/ec_private.hpp>
 
 
 

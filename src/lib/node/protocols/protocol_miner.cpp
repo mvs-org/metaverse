@@ -5,7 +5,7 @@
  *      Author: jiang
  */
 
-#include <bitcoin/node/protocols/protocol_miner.hpp>
+#include <metaverse/lib/node/protocols/protocol_miner.hpp>
 
 #define NAME "miner"
 #define CLASS protocol_miner

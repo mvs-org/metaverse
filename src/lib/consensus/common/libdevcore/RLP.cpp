@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include <bitcoin/consensus/libdevcore/RLP.h>
+#include <metaverse/lib/consensus/libdevcore/RLP.h>
 using namespace std;
 using namespace libbitcoin;
 

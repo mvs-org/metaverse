@@ -22,8 +22,8 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <bitcoin/bitcoin/utility/data.hpp>
-#include <bitcoin/bitcoin/wallet/encrypted_keys.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/wallet/encrypted_keys.hpp>
 
 // BIP38
 // Alt-chain implementers should exploit the address hash for [identification].

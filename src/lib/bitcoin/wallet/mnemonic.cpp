@@ -17,18 +17,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/wallet/mnemonic.hpp>
+#include <metaverse/lib/bitcoin/wallet/mnemonic.hpp>
 
 #include <algorithm>
 #include <cstdint>
 #include <boost/locale.hpp>
-#include <bitcoin/bitcoin/define.hpp>
-#include <bitcoin/bitcoin/unicode/unicode.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/binary.hpp>
-#include <bitcoin/bitcoin/utility/collection.hpp>
-#include <bitcoin/bitcoin/utility/string.hpp>
-#include <bitcoin/bitcoin/wallet/dictionary.hpp>
+#include <metaverse/lib/bitcoin/define.hpp>
+#include <metaverse/lib/bitcoin/unicode/unicode.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/binary.hpp>
+#include <metaverse/lib/bitcoin/utility/collection.hpp>
+#include <metaverse/lib/bitcoin/utility/string.hpp>
+#include <metaverse/lib/bitcoin/wallet/dictionary.hpp>
 #include "../math/external/pkcs5_pbkdf2.h"
 
 namespace libbitcoin {

@@ -29,9 +29,9 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <bitcoin/server.hpp>
-#include <bitcoin/bitcoin/utility/backtrace.hpp>
-#include <bitcoin/bitcoin/utility/path.hpp>
+#include <metaverse/lib/server.hpp>
+#include <metaverse/lib/bitcoin/utility/backtrace.hpp>
+#include <metaverse/lib/bitcoin/utility/path.hpp>
 
 namespace libbitcoin {
 namespace server {

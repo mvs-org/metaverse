@@ -19,7 +19,7 @@
  */
 #include "evaluation_context.hpp"
 
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 
 namespace libbitcoin {
 namespace chain {

@@ -5,7 +5,7 @@
  *      Author: jiang
  */
 
-#include <bitcoin/bitcoin/utility/path.hpp>
+#include <metaverse/lib/bitcoin/utility/path.hpp>
 
 #ifdef _WIN32
 #include <Shlobj.h>

@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/message_subscriber.hpp>
+#include <metaverse/lib/network/message_subscriber.hpp>
 
 #include <istream>
 #include <memory>
 #include <string>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 #define INITIALIZE_SUBSCRIBER(pool, value) \
     value##_subscriber_(std::make_shared<value##_subscriber_type>( \

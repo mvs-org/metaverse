@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/input.hpp>
+#include <metaverse/lib/bitcoin/chain/input.hpp>
 
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/constants.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {

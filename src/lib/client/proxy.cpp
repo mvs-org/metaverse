@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/proxy.hpp>
+#include <metaverse/lib/client/proxy.hpp>
 
 #include <cstdint>
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/client/dealer.hpp>
-#include <bitcoin/client/define.hpp>
-#include <bitcoin/client/stream.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/client/dealer.hpp>
+#include <metaverse/lib/client/define.hpp>
+#include <metaverse/lib/client/stream.hpp>
 
 namespace libbitcoin {
 namespace client {

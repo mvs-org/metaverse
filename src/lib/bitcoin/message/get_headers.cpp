@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/message/get_headers.hpp>
+#include <metaverse/lib/bitcoin/message/get_headers.hpp>
 
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/message/version.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/message/version.hpp>
 
 namespace libbitcoin {
 namespace message {

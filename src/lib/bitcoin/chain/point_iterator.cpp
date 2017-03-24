@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/point_iterator.hpp>
-#include <bitcoin/bitcoin/chain/point.hpp>
-#include <bitcoin/bitcoin/utility/endian.hpp>
+#include <metaverse/lib/bitcoin/chain/point_iterator.hpp>
+#include <metaverse/lib/bitcoin/chain/point.hpp>
+#include <metaverse/lib/bitcoin/utility/endian.hpp>
 
 namespace libbitcoin {
 namespace chain {

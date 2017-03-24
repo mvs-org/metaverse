@@ -17,18 +17,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/point.hpp>
+#include <metaverse/lib/bitcoin/chain/point.hpp>
 
 #include <cstdint>
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/constants.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
-#include <bitcoin/bitcoin/utility/serializer.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/utility/serializer.hpp>
 
 namespace libbitcoin {
 namespace chain {

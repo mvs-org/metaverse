@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 #include <algorithm>
 #include <iomanip>
@@ -39,9 +39,9 @@
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <bitcoin/client.hpp>
-#include <bitcoin/explorer/command.hpp>
-#include <bitcoin/explorer/define.hpp>
+#include <metaverse/lib/client.hpp>
+#include <metaverse/lib/explorer/command.hpp>
+#include <metaverse/lib/explorer/define.hpp>
 
 using namespace bc::client;
 using boost::filesystem::path;

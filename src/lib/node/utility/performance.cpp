@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/utility/performance.hpp>
+#include <metaverse/lib/node/utility/performance.hpp>
 
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace node {

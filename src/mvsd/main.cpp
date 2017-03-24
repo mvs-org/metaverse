@@ -18,9 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
-#include <bitcoin/server.hpp>
-#include <bitcoin/bitcoin/utility/backtrace.hpp>
-#include <bitcoin/bitcoin/utility/daemon.hpp>
+#include <metaverse/lib/server.hpp>
+#include <metaverse/lib/bitcoin/utility/backtrace.hpp>
+#include <metaverse/lib/bitcoin/utility/daemon.hpp>
 #include "executor.hpp"
 
 BC_USE_MVS_MAIN

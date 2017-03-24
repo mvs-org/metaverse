@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
 
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 
 namespace libbitcoin {
 

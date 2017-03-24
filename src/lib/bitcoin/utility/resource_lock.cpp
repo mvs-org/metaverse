@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/utility/resource_lock.hpp>
+#include <metaverse/lib/bitcoin/utility/resource_lock.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/exceptions.hpp>
-#include <bitcoin/bitcoin/unicode/ifstream.hpp>
-#include <bitcoin/bitcoin/unicode/ofstream.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/unicode/ifstream.hpp>
+#include <metaverse/lib/bitcoin/unicode/ofstream.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
 
 namespace libbitcoin {
 

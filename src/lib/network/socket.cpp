@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/socket.hpp>
+#include <metaverse/lib/network/socket.hpp>
 
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/define.hpp>
-#include <bitcoin/network/locked_socket.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/define.hpp>
+#include <metaverse/lib/network/locked_socket.hpp>
 
 namespace libbitcoin {
 namespace network {

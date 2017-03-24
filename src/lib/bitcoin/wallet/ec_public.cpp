@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/lib/bitcoin/wallet/ec_public.hpp>
 
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/math/elliptic_curve.hpp>
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
-#include <bitcoin/bitcoin/wallet/ec_private.hpp>
-#include <bitcoin/bitcoin/wallet/payment_address.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/wallet/ec_private.hpp>
+#include <metaverse/lib/bitcoin/wallet/payment_address.hpp>
 
 namespace libbitcoin {
 namespace wallet {

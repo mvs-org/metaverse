@@ -18,10 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
-#include <bitcoin/explorer.hpp>
-#include <mvs/http/MongooseCli.hpp>
+#include <metaverse/lib/explorer.hpp>
+#include <metaverse/http/MongooseCli.hpp>
 #include <json/minijson_writer.hpp>
-#include <bitcoin/explorer/command_extension_func.hpp>
+#include <metaverse/lib/explorer/command_extension_func.hpp>
 
 BC_USE_MVS_MAIN
 

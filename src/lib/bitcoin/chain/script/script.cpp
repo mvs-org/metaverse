@@ -17,25 +17,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/chain/script/script.hpp>
+#include <metaverse/lib/bitcoin/chain/script/script.hpp>
 
 #include <numeric>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin/constants.hpp>
-#include <bitcoin/bitcoin/chain/script/operation.hpp>
-#include <bitcoin/bitcoin/chain/transaction.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/math/elliptic_curve.hpp>
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/math/script_number.hpp>
-#include <bitcoin/bitcoin/utility/container_sink.hpp>
-#include <bitcoin/bitcoin/utility/container_source.hpp>
-#include <bitcoin/bitcoin/utility/istream_reader.hpp>
-#include <bitcoin/bitcoin/utility/ostream_writer.hpp>
-#include <bitcoin/bitcoin/utility/string.hpp>
-#include <bitcoin/bitcoin/utility/variable_uint_size.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
+#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
+#include <metaverse/lib/bitcoin/chain/transaction.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/math/script_number.hpp>
+#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
+#include <metaverse/lib/bitcoin/utility/container_source.hpp>
+#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/lib/bitcoin/utility/string.hpp>
+#include <metaverse/lib/bitcoin/utility/variable_uint_size.hpp>
 #include "conditional_stack.hpp"
 #include "evaluation_context.hpp"
 

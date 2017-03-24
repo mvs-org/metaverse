@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/pending_sockets.hpp>
+#include <metaverse/lib/network/pending_sockets.hpp>
 
 #include <algorithm>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/proxy.hpp>
-#include <bitcoin/network/socket.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/proxy.hpp>
+#include <metaverse/lib/network/socket.hpp>
 
 namespace libbitcoin {
 namespace network {

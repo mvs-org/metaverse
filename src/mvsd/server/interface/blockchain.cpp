@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/interface/blockchain.hpp>
+#include <metaverse/lib/server/interface/blockchain.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <functional>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/server/define.hpp>
-#include <bitcoin/server/messages/message.hpp>
-#include <bitcoin/server/server_node.hpp>
-#include <bitcoin/server/utility/fetch_helpers.hpp>
+#include <metaverse/lib/blockchain.hpp>
+#include <metaverse/lib/server/define.hpp>
+#include <metaverse/lib/server/messages/message.hpp>
+#include <metaverse/lib/server/server_node.hpp>
+#include <metaverse/lib/server/utility/fetch_helpers.hpp>
 
 namespace libbitcoin {
 namespace server {

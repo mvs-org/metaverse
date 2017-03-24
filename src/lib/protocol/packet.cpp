@@ -19,11 +19,11 @@
  */
 #ifdef MVS_VERSION4
 
-#include <bitcoin/protocol/packet.hpp>
+#include <metaverse/lib/protocol/packet.hpp>
 
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/protocol/zmq/message.hpp>
-#include <bitcoin/protocol/zmq/socket.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/protocol/zmq/message.hpp>
+#include <metaverse/lib/protocol/zmq/socket.hpp>
 
 namespace libbitcoin {
 namespace protocol {

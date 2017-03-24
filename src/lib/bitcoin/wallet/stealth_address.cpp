@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/wallet/stealth_address.hpp>
+#include <metaverse/lib/bitcoin/wallet/stealth_address.hpp>
 
 #include <algorithm>
 #include <cstdint>
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin/formats/base_58.hpp>
-#include <bitcoin/bitcoin/math/checksum.hpp>
-#include <bitcoin/bitcoin/math/elliptic_curve.hpp>
-#include <bitcoin/bitcoin/math/hash.hpp>
-#include <bitcoin/bitcoin/math/stealth.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/binary.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/formats/base_58.hpp>
+#include <metaverse/lib/bitcoin/math/checksum.hpp>
+#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/lib/bitcoin/math/hash.hpp>
+#include <metaverse/lib/bitcoin/math/stealth.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/binary.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 
 namespace libbitcoin {
 namespace wallet {

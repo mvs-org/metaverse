@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/validate_block_impl.hpp>
-#include <bitcoin/consensus/miner.hpp>
+#include <metaverse/lib/blockchain/validate_block_impl.hpp>
+#include <metaverse/lib/consensus/miner.hpp>
 
 #include <cstddef>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/blockchain/block_detail.hpp>
-#include <bitcoin/blockchain/simple_chain.hpp>
-#include <bitcoin/consensus/miner/MinerAux.h>
-#include <bitcoin/blockchain/block_chain_impl.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/blockchain/block_detail.hpp>
+#include <metaverse/lib/blockchain/simple_chain.hpp>
+#include <metaverse/lib/consensus/miner/MinerAux.h>
+#include <metaverse/lib/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

@@ -18,13 +18,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/commands/fetch-public-key.hpp>
+#include <metaverse/lib/explorer/commands/fetch-public-key.hpp>
 
 #include <iostream>
-#include <bitcoin/client.hpp>
-#include <bitcoin/explorer/callback_state.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/display.hpp>
+#include <metaverse/lib/client.hpp>
+#include <metaverse/lib/explorer/callback_state.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/display.hpp>
 
 
 namespace libbitcoin {

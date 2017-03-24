@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/dealer.hpp>
+#include <metaverse/lib/client/dealer.hpp>
 
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <string>
 #include <boost/iostreams/stream.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/client/stream.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/client/stream.hpp>
 
 // A REQ socket always adds a delimiter.
 // Server v1/v2 expect no delimiter and therefore will fail REQ clients.

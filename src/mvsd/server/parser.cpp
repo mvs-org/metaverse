@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/parser.hpp>
+#include <metaverse/lib/server/parser.hpp>
 
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <bitcoin/node.hpp>
-#include <bitcoin/server/define.hpp>
-#include <bitcoin/server/parser.hpp>
-#include <bitcoin/server/settings.hpp>
+#include <metaverse/lib/node.hpp>
+#include <metaverse/lib/server/define.hpp>
+#include <metaverse/lib/server/parser.hpp>
+#include <metaverse/lib/server/settings.hpp>
 
 BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 

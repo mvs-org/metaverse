@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/settings.hpp>
+#include <metaverse/lib/blockchain/settings.hpp>
 
 #include <boost/filesystem.hpp>
-#include <bitcoin/consensus/miner.hpp>
-#include <bitcoin/bitcoin/constants.hpp>
+#include <metaverse/lib/consensus/miner.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

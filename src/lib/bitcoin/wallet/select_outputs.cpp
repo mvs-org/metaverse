@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/wallet/select_outputs.hpp>
+#include <metaverse/lib/bitcoin/wallet/select_outputs.hpp>
 
 #include <algorithm>
 #include <cstdint>
-#include <bitcoin/bitcoin/constants.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/constants.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
 
 namespace libbitcoin {
 namespace wallet {

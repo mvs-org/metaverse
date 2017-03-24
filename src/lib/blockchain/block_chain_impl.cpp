@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/block_chain_impl.hpp>
+#include <metaverse/lib/blockchain/block_chain_impl.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -27,13 +27,13 @@
 #include <unordered_map>
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database.hpp>
-#include <bitcoin/blockchain/block.hpp>
-#include <bitcoin/blockchain/block_fetcher.hpp>
-#include <bitcoin/blockchain/organizer.hpp>
-#include <bitcoin/blockchain/settings.hpp>
-#include <bitcoin/blockchain/transaction_pool.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database.hpp>
+#include <metaverse/lib/blockchain/block.hpp>
+#include <metaverse/lib/blockchain/block_fetcher.hpp>
+#include <metaverse/lib/blockchain/organizer.hpp>
+#include <metaverse/lib/blockchain/settings.hpp>
+#include <metaverse/lib/blockchain/transaction_pool.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

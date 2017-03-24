@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/databases/block_database.hpp>
+#include <metaverse/lib/database/databases/block_database.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/memory.hpp>
-#include <bitcoin/database/result/block_result.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/memory.hpp>
+#include <metaverse/lib/database/result/block_result.hpp>
 
 namespace libbitcoin {
 namespace database {

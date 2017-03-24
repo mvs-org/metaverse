@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/config/authority.hpp>
+#include <metaverse/lib/bitcoin/config/authority.hpp>
 
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -25,10 +25,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
-#include <bitcoin/bitcoin/formats/base_16.hpp>
-#include <bitcoin/bitcoin/utility/asio.hpp>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/string.hpp>
+#include <metaverse/lib/bitcoin/formats/base_16.hpp>
+#include <metaverse/lib/bitcoin/utility/asio.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/string.hpp>
 
 namespace libbitcoin {
 namespace config {

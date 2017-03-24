@@ -19,10 +19,10 @@
  * @date 2014
  */
 
-#include <bitcoin/consensus/libdevcore/Common.h>
-#include <bitcoin/consensus/libdevcore/Exceptions.h>
-#include <bitcoin/consensus/libdevcore/Log.h>
-#include <bitcoin/consensus/libdevcore/BuildInfo.h>
+#include <metaverse/lib/consensus/libdevcore/Common.h>
+#include <metaverse/lib/consensus/libdevcore/Exceptions.h>
+#include <metaverse/lib/consensus/libdevcore/Log.h>
+#include <metaverse/lib/consensus/libdevcore/BuildInfo.h>
 using namespace std;
 using namespace libbitcoin;
 

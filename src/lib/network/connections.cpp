@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/connections.hpp>
+#include <metaverse/lib/network/connections.hpp>
 
 #include <algorithm>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/channel.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/channel.hpp>
 
 namespace libbitcoin {
 namespace network {

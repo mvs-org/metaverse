@@ -17,18 +17,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/workers/query_worker.hpp>
+#include <metaverse/lib/server/workers/query_worker.hpp>
 
 #include <functional>
 #include <string>
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/server/define.hpp>
-#include <bitcoin/server/interface/address.hpp>
-#include <bitcoin/server/interface/blockchain.hpp>
-#include <bitcoin/server/interface/protocol.hpp>
-#include <bitcoin/server/interface/transaction_pool.hpp>
-#include <bitcoin/server/messages/message.hpp>
-#include <bitcoin/server/server_node.hpp>
+#include <metaverse/lib/protocol.hpp>
+#include <metaverse/lib/server/define.hpp>
+#include <metaverse/lib/server/interface/address.hpp>
+#include <metaverse/lib/server/interface/blockchain.hpp>
+#include <metaverse/lib/server/interface/protocol.hpp>
+#include <metaverse/lib/server/interface/transaction_pool.hpp>
+#include <metaverse/lib/server/messages/message.hpp>
+#include <metaverse/lib/server/server_node.hpp>
 
 namespace libbitcoin {
 namespace server {

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/proxy.hpp>
+#include <metaverse/lib/network/proxy.hpp>
 
 #define BOOST_BIND_NO_PLACEHOLDERS
 
@@ -26,11 +26,11 @@
 #include <cstdlib>
 #include <functional>
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/const_buffer.hpp>
-#include <bitcoin/network/define.hpp>
-#include <bitcoin/network/socket.hpp>
-#include <bitcoin/bitcoin/utility/time.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/const_buffer.hpp>
+#include <metaverse/lib/network/define.hpp>
+#include <metaverse/lib/network/socket.hpp>
+#include <metaverse/lib/bitcoin/utility/time.hpp>
 
 namespace libbitcoin {
 namespace network {

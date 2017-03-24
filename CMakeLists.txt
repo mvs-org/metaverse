@@ -1,55 +1,57 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+# ----------------- Project Title ----------------
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(metaverse)
 
+# ----------------- Project Build Type ----------------
 SET(CMAKE_VERBOSE_MAKEFILE 1)
-
 SET(ENABLE_SHARED_LIBS OFF CACHE BOOL   "Enable shared libs.")
 SET(MG_ENABLE_DEBUG    OFF CACHE BOOL   "Enable Mongoose debug.")
 
 IF(NOT CMAKE_BUILD_TYPE)
     #SET(CMAKE_BUILD_TYPE DEBUG)
     SET(CMAKE_BUILD_TYPE RELEASE)
-  #SET(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-  #SET(CMAKE_BUILD_TYPE MINSIZEREL)
+    #SET(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    #SET(CMAKE_BUILD_TYPE MINSIZEREL)
 ENDIF()
+STRING(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 
 # Enable for use with clang-tidy.
 IF(NOT CMAKE_EXPORT_COMPILE_COMMANDS)
-  SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 ENDIF()
 
-STRING(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
-
-# ----------------- common Definitions ------
+# --------------- Compiler Settings ------------------
+# Common Definitions 
 SET(COMMON_WARN "-Wall -Werror -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
 SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
 SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
 
-# --------------- Compiler ------------------
+# GXX/Clang settings
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
-  #libbitcoin has too many ignored-qualifiers, and TODOs
-  SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
-  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+    SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
+    #libbitcoin has too many ignored-qualifiers, and TODOs
+    SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     ADD_DEFINITIONS(-DMAC_OSX=1)
-  SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
-  SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function")
-  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+    SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
+    SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 ENDIF()
+
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
 
-# --------------- Definitions ------------------
+# --------------- Macro Definitions ------------------
 #ADD_DEFINITIONS(-DBOOST_NO_AUTO_PTR=1 -DBOOST_NO_RTTI=1 -DBOOST_NO_TYPEID=1)
-
 IF(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-  ADD_DEFINITIONS(-DMVS_DEBUG=1)
+    ADD_DEFINITIONS(-DMVS_DEBUG=1)
 ENDIF()
 
+# --------------- Outputs ---------------------
 SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 
-# --------------- REQUIREMENTS ---------------------
 FILE(MAKE_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}")
 FILE(MAKE_DIRECTORY "${LIBRARY_OUTPUT_PATH}")
 FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/html")
@@ -58,19 +60,19 @@ SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/etc")
 #SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR})
 SET(CMAKE_INSTALL_PREFIX "/usr/local/")
 
-set(Boost_USE_STATIC_LIBS   ON)
+# --------------- Libraries Dependencies ---------------------
+SET(Boost_USE_STATIC_LIBS   ON)
 FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system
 program_options regex thread)
 FIND_PACKAGE(secp256k1 REQUIRED)
 FIND_PACKAGE(zmq REQUIRED)
-
 #set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
 
+# ---------------- Doxygen --------------------
 FIND_PROGRAM(ENV_EXECUTABLE env)
 FIND_PROGRAM(DOT_EXECUTABLE dot)
 FIND_PACKAGE(Doxygen)          # Optional.
 
-# ---------------- doxygen --------------------
 IF(DOXYGEN_FOUND)
   CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/Doxyfile.in"
     "${PROJECT_BINARY_DIR}/Doxyfile")
@@ -88,41 +90,43 @@ IF(DOXYGEN_FOUND)
   INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/" DESTINATION share/doc)
 ENDIF()
 
-# ------------------ includes --------------------
+# ------------------ MVS Includes --------------------
 INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/contrib")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 
+# ------------------ MVS Libraries --------------------
 IF(ENABLE_SHARED_LIBS)
-  SET(mongoose_LIBRARY mongoose_shared)
-  SET(bitcoin_LIBRARY bitcoin_shared)
-  SET(bitcoinmath_LIBRARY bitcoinmath_shared)
-  SET(network_LIBRARY network_shared)
-  SET(consensus_LIBRARY consensus_shared)
-  SET(database_LIBRARY database_shared)
-  SET(node_LIBRARY node_shared)
-  SET(protocol_LIBRARY protocol_shared)
-  SET(client_LIBRARY client_shared)
-  SET(explorer_LIBRARY explorer_shared)
+    SET(mongoose_LIBRARY mongoose_shared)
+    SET(bitcoin_LIBRARY bitcoin_shared)
+    SET(bitcoinmath_LIBRARY bitcoinmath_shared)
+    SET(network_LIBRARY network_shared)
+    SET(consensus_LIBRARY consensus_shared)
+    SET(database_LIBRARY database_shared)
+    SET(node_LIBRARY node_shared)
+    SET(protocol_LIBRARY protocol_shared)
+    SET(client_LIBRARY client_shared)
+    SET(explorer_LIBRARY explorer_shared)
 ELSE()
-  SET(mongoose_LIBRARY mongoose_static)
-  SET(bitcoin_LIBRARY bitcoin_static)
-  SET(bitcoinmath_LIBRARY bitcoinmath_static)
-  SET(network_LIBRARY network_static)
-  SET(consensus_LIBRARY consensus_static)
-  SET(database_LIBRARY database_static)
-  SET(blockchain_LIBRARY blockchain_static)
-  SET(node_LIBRARY node_static)
-  SET(protocol_LIBRARY protocol_static)
-  SET(client_LIBRARY client_static)
-  SET(explorer_LIBRARY explorer_static)
+    SET(mongoose_LIBRARY mongoose_static)
+    SET(bitcoin_LIBRARY bitcoin_static)
+    SET(bitcoinmath_LIBRARY bitcoinmath_static)
+    SET(network_LIBRARY network_static)
+    SET(consensus_LIBRARY consensus_static)
+    SET(database_LIBRARY database_static)
+    SET(blockchain_LIBRARY blockchain_static)
+    SET(node_LIBRARY node_static)
+    SET(protocol_LIBRARY protocol_static)
+    SET(client_LIBRARY client_static)
+    SET(explorer_LIBRARY explorer_static)
 ENDIF()
 
 ENABLE_TESTING()
 
+# ------------------ MVS src --------------------
 ADD_SUBDIRECTORY(etc)
 ADD_SUBDIRECTORY(contrib)
 ADD_SUBDIRECTORY(include)
-ADD_SUBDIRECTORY(include/bitcoin/consensus/libethash)
+ADD_SUBDIRECTORY(include/metaverse/lib/consensus/libethash)
 ADD_SUBDIRECTORY(src)
 #ADD_SUBDIRECTORY(test)

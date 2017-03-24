@@ -47,13 +47,13 @@
 //  DEALINGS IN THE SOFTWARE.
 //  --------------------------------------------------------------------------
 
-#include <bitcoin/bitcoin/formats/base_85.hpp>
+#include <metaverse/lib/bitcoin/formats/base_85.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <bitcoin/bitcoin/utility/assert.hpp>
-#include <bitcoin/bitcoin/utility/data.hpp>
+#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/lib/bitcoin/utility/data.hpp>
 
 namespace libbitcoin {
     

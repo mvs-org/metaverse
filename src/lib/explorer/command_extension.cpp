@@ -21,16 +21,16 @@
 #include <boost/property_tree/ptree.hpp>      
 #include <boost/property_tree/json_parser.hpp>
 
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/client.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/callback_state.hpp>
-#include <bitcoin/explorer/display.hpp>
-#include <bitcoin/explorer/prop_tree.hpp>
-#include <bitcoin/explorer/dispatch.hpp>
-#include <bitcoin/explorer/command_extension.hpp>
-#include <bitcoin/explorer/command_extension_func.hpp>
-#include <bitcoin/explorer/command_assistant.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/client.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/callback_state.hpp>
+#include <metaverse/lib/explorer/display.hpp>
+#include <metaverse/lib/explorer/prop_tree.hpp>
+#include <metaverse/lib/explorer/dispatch.hpp>
+#include <metaverse/lib/explorer/command_extension.hpp>
+#include <metaverse/lib/explorer/command_extension_func.hpp>
+#include <metaverse/lib/explorer/command_assistant.hpp>
 
 namespace libbitcoin {
 namespace explorer {

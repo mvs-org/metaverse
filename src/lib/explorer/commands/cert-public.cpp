@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/commands/cert-public.hpp>
+#include <metaverse/lib/explorer/commands/cert-public.hpp>
 
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/protocol.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 
 namespace libbitcoin {

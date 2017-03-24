@@ -17,14 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/databases/stealth_database.hpp>
+#include <metaverse/lib/database/databases/stealth_database.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/memory.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/memory.hpp>
 
 namespace libbitcoin {
 namespace database {

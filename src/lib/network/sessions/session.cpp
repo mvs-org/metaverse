@@ -17,23 +17,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/sessions/session.hpp>
+#include <metaverse/lib/network/sessions/session.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/acceptor.hpp>
-#include <bitcoin/network/channel.hpp>
-#include <bitcoin/network/connector.hpp>
-#include <bitcoin/network/p2p.hpp>
-#include <bitcoin/network/proxy.hpp>
-#include <bitcoin/network/protocols/protocol_address.hpp>
-#include <bitcoin/network/protocols/protocol_ping.hpp>
-#include <bitcoin/network/protocols/protocol_version.hpp>
-#include <bitcoin/network/settings.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/acceptor.hpp>
+#include <metaverse/lib/network/channel.hpp>
+#include <metaverse/lib/network/connector.hpp>
+#include <metaverse/lib/network/p2p.hpp>
+#include <metaverse/lib/network/proxy.hpp>
+#include <metaverse/lib/network/protocols/protocol_address.hpp>
+#include <metaverse/lib/network/protocols/protocol_ping.hpp>
+#include <metaverse/lib/network/protocols/protocol_version.hpp>
+#include <metaverse/lib/network/settings.hpp>
 
 namespace libbitcoin {
 namespace network {

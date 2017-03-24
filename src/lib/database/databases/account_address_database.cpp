@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/databases/account_address_database.hpp>
-#include <bitcoin/bitcoin/chain/attachment/account/account_address.hpp>
+#include <metaverse/lib/database/databases/account_address_database.hpp>
+#include <metaverse/lib/bitcoin/chain/attachment/account/account_address.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/memory.hpp>
-#include <bitcoin/database/primitives/record_multimap_iterable.hpp>
-#include <bitcoin/database/primitives/record_multimap_iterator.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/memory.hpp>
+#include <metaverse/lib/database/primitives/record_multimap_iterable.hpp>
+#include <metaverse/lib/database/primitives/record_multimap_iterator.hpp>
 
 namespace libbitcoin {
 namespace database {

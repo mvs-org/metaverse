@@ -18,17 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/callback_state.hpp>
+#include <metaverse/lib/explorer/callback_state.hpp>
 
 #include <iostream>
 #include <cstdint>
 #include <string>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <bitcoin/explorer/config/encoding.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/prop_tree.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/explorer/config/encoding.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/prop_tree.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 using namespace pt;
 

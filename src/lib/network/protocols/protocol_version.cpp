@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/network/protocols/protocol_version.hpp>
+#include <metaverse/lib/network/protocols/protocol_version.hpp>
 
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/channel.hpp>
-#include <bitcoin/network/p2p.hpp>
-#include <bitcoin/network/protocols/protocol_timer.hpp>
-#include <bitcoin/network/settings.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/channel.hpp>
+#include <metaverse/lib/network/p2p.hpp>
+#include <metaverse/lib/network/protocols/protocol_timer.hpp>
+#include <metaverse/lib/network/settings.hpp>
 
 namespace libbitcoin {
 namespace network {

@@ -20,7 +20,7 @@
  */
 
 //#include "CommonData.h"
-#include <bitcoin/consensus/libdevcore/CommonData.h>
+#include <metaverse/lib/consensus/libdevcore/CommonData.h>
 #include <random>
 
 #if defined(_MSC_VER)
@@ -33,8 +33,8 @@
 #endif
 //#include "Exceptions.h"
 //#include "Log.h"
-#include <bitcoin/consensus/libdevcore/Exceptions.h>
-#include <bitcoin/consensus/libdevcore/Log.h>
+#include <metaverse/lib/consensus/libdevcore/Exceptions.h>
+#include <metaverse/lib/consensus/libdevcore/Log.h>
 using namespace std;
 using namespace libbitcoin;
 

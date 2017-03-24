@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/client/obelisk_client.hpp>
+#include <metaverse/lib/client/obelisk_client.hpp>
 
 #include <algorithm>
 #include <cstdint>
 #include <thread>
-#include <bitcoin/protocol.hpp>
+#include <metaverse/lib/protocol.hpp>
 
 using namespace bc;
 using namespace bc::config;

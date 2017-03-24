@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/messages/route.hpp>
+#include <metaverse/lib/server/messages/route.hpp>
 
 #include <string>
 #include <boost/functional/hash_fwd.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace server {

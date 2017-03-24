@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/parser.hpp>
+#include <metaverse/lib/node/parser.hpp>
 
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/p2p_node.hpp>
-#include <bitcoin/node/settings.hpp>
+#include <metaverse/lib/blockchain.hpp>
+#include <metaverse/lib/network.hpp>
+#include <metaverse/lib/node/p2p_node.hpp>
+#include <metaverse/lib/node/settings.hpp>
 
 BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
 

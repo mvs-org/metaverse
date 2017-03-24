@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/database/data_base.hpp>
+#include <metaverse/lib/database/data_base.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <boost/filesystem.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/database/memory/memory_map.hpp>
-#include <bitcoin/database/settings.hpp>
-#include <bitcoin/bitcoin/utility/path.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/database/memory/memory_map.hpp>
+#include <metaverse/lib/database/settings.hpp>
+#include <metaverse/lib/bitcoin/utility/path.hpp>
 
 #include <algorithm> 
 
@@ -648,7 +648,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 }
 /* begin store asset related info into database */
 
-#include <bitcoin/bitcoin/config/base16.hpp>
+#include <metaverse/lib/bitcoin/config/base16.hpp>
 using namespace libbitcoin::config;
 void data_base::push_attachemnt(const attachment& attach, const payment_address& address,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)

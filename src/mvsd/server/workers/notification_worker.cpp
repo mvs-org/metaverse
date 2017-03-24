@@ -17,20 +17,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/workers/notification_worker.hpp>
+#include <metaverse/lib/server/workers/notification_worker.hpp>
 
 #include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/server/messages/message.hpp>
-#include <bitcoin/server/messages/route.hpp>
-#include <bitcoin/server/server_node.hpp>
-#include <bitcoin/server/services/query_service.hpp>
-#include <bitcoin/server/settings.hpp>
-#include <bitcoin/server/utility/fetch_helpers.hpp>
+#include <metaverse/lib/protocol.hpp>
+#include <metaverse/lib/server/messages/message.hpp>
+#include <metaverse/lib/server/messages/route.hpp>
+#include <metaverse/lib/server/server_node.hpp>
+#include <metaverse/lib/server/services/query_service.hpp>
+#include <metaverse/lib/server/settings.hpp>
+#include <metaverse/lib/server/utility/fetch_helpers.hpp>
 
 namespace libbitcoin {
 namespace server {

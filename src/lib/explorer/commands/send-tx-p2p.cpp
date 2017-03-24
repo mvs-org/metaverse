@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/commands/send-tx-p2p.hpp>
+#include <metaverse/lib/explorer/commands/send-tx-p2p.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -27,11 +27,11 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/explorer/callback_state.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/config/transaction.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/network.hpp>
+#include <metaverse/lib/explorer/callback_state.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/config/transaction.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 
 namespace libbitcoin {

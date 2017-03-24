@@ -24,8 +24,8 @@
 #include <sstream>
 #include <string>
 #include <boost/date_time.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/network/define.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/network/define.hpp>
 #include <mutex>
 
 namespace libbitcoin {

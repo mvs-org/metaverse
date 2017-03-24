@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/server_node.hpp>
+#include <metaverse/lib/server/server_node.hpp>
 
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <bitcoin/node.hpp>
-#include <bitcoin/server/configuration.hpp>
-#include <bitcoin/server/messages/route.hpp>
-#include <bitcoin/server/workers/query_worker.hpp>
+#include <metaverse/lib/node.hpp>
+#include <metaverse/lib/server/configuration.hpp>
+#include <metaverse/lib/server/messages/route.hpp>
+#include <metaverse/lib/server/workers/query_worker.hpp>
 
 #include <thread>
 

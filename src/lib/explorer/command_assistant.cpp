@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bitcoin/explorer/dispatch.hpp>
+#include <metaverse/lib/explorer/dispatch.hpp>
 
 #ifdef _WIN32
 #include <boost/bind/placeholders.hpp>
@@ -28,7 +28,7 @@ using namespace boost::placeholders;
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include <bitcoin/explorer/command_assistant.hpp>
+#include <metaverse/lib/explorer/command_assistant.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {

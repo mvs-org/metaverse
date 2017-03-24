@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/explorer/config/metaverse_output.hpp>
+#include <metaverse/lib/explorer/config/metaverse_output.hpp>
 
 #include <cstdint>
 #include <iostream>
@@ -25,10 +25,10 @@
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/config/script.hpp>
-#include <bitcoin/explorer/utility.hpp>
+#include <metaverse/lib/bitcoin.hpp>
+#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/lib/explorer/config/script.hpp>
+#include <metaverse/lib/explorer/utility.hpp>
 
 using namespace po;
 

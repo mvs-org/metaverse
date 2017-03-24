@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/blockchain/block_detail.hpp>
+#include <metaverse/lib/blockchain/block_detail.hpp>
 
 #include <cstdint>
 #include <memory>
 #include <utility>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/lib/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

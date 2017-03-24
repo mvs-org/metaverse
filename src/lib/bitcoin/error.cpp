@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/bitcoin/error.hpp>
+#include <metaverse/lib/bitcoin/error.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
-#include <bitcoin/bitcoin/compat.hpp>
-#include <bitcoin/bitcoin/utility/log.hpp>
+#include <metaverse/lib/bitcoin/compat.hpp>
+#include <metaverse/lib/bitcoin/utility/log.hpp>
 
 using namespace bc;
 

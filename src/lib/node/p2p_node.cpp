@@ -17,18 +17,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/p2p_node.hpp>
+#include <metaverse/lib/node/p2p_node.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/node/configuration.hpp>
-#include <bitcoin/node/sessions/session_block_sync.hpp>
-#include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/sessions/session_inbound.hpp>
-#include <bitcoin/node/sessions/session_manual.hpp>
-#include <bitcoin/node/sessions/session_outbound.hpp>
+#include <metaverse/lib/blockchain.hpp>
+#include <metaverse/lib/node/configuration.hpp>
+#include <metaverse/lib/node/sessions/session_block_sync.hpp>
+#include <metaverse/lib/node/sessions/session_header_sync.hpp>
+#include <metaverse/lib/node/sessions/session_inbound.hpp>
+#include <metaverse/lib/node/sessions/session_manual.hpp>
+#include <metaverse/lib/node/sessions/session_outbound.hpp>
 
 namespace libbitcoin {
 namespace node {

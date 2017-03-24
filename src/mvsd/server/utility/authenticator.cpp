@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/server/utility/authenticator.hpp>
+#include <metaverse/lib/server/utility/authenticator.hpp>
 
 #include <string>
-#include <bitcoin/protocol.hpp>
-#include <bitcoin/server/configuration.hpp>
-#include <bitcoin/server/server_node.hpp>
+#include <metaverse/lib/protocol.hpp>
+#include <metaverse/lib/server/configuration.hpp>
+#include <metaverse/lib/server/server_node.hpp>
 
 namespace libbitcoin {
 namespace server {
