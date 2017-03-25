@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,18 +18,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/bitcoin/wallet/ec_private.hpp>
+#include <metaverse/bitcoin/wallet/ec_private.hpp>
 
 #include <cstdint>
 #include <string>
 #include <boost/program_options.hpp>
-#include <metaverse/lib/bitcoin/formats/base_58.hpp>
-#include <metaverse/lib/bitcoin/math/checksum.hpp>
-#include <metaverse/lib/bitcoin/math/elliptic_curve.hpp>
-#include <metaverse/lib/bitcoin/math/hash.hpp>
-#include <metaverse/lib/bitcoin/utility/data.hpp>
-#include <metaverse/lib/bitcoin/wallet/ec_public.hpp>
-#include <metaverse/lib/bitcoin/wallet/payment_address.hpp>
+#include <metaverse/bitcoin/formats/base_58.hpp>
+#include <metaverse/bitcoin/math/checksum.hpp>
+#include <metaverse/bitcoin/math/elliptic_curve.hpp>
+#include <metaverse/bitcoin/math/hash.hpp>
+#include <metaverse/bitcoin/utility/data.hpp>
+#include <metaverse/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/bitcoin/wallet/payment_address.hpp>
 
 namespace libbitcoin {
 namespace wallet {

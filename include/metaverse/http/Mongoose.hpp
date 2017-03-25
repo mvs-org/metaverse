@@ -1,5 +1,5 @@
 /*
- * The NewReality Blockchain Project.
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS).
  * Copyright (C) 2013, 2016 Swirly Cloud Limited.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
 #ifndef MVSD_MONGOOSE_HPP
 #define MVSD_MONGOOSE_HPP
 
-#include <metaverse/lib/explorer/dispatch.hpp>
+#include <metaverse/explorer/dispatch.hpp>
 #include "mongoose/mongoose.h"
 
 #include <metaverse/http/String.hpp>

@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-explorer.
+ * This file is part of metaverse-explorer.
  *
- * libbitcoin-explorer is free software: you can redistribute it and/or
+ * metaverse-explorer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,7 +18,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/explorer/utility.hpp>
+#include <metaverse/explorer/utility.hpp>
 
 #include <algorithm>
 #include <iomanip>
@@ -39,9 +40,9 @@
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <metaverse/lib/client.hpp>
-#include <metaverse/lib/explorer/command.hpp>
-#include <metaverse/lib/explorer/define.hpp>
+#include <metaverse/client.hpp>
+#include <metaverse/explorer/command.hpp>
+#include <metaverse/explorer/define.hpp>
 
 using namespace bc::client;
 using boost::filesystem::path;

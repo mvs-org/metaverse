@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <metaverse/lib/bitcoin/compat.h>
+#include <metaverse/bitcoin/compat.h>
 #include "zeroize.h"
 
 #ifdef __BIG_ENDIAN__

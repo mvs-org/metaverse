@@ -3,7 +3,7 @@
  *
  * This file is part of mvsd.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/database/databases/account_asset_database.hpp>
-//#include <metaverse/lib/bitcoin/chain/attachment/account/account_asset.hpp>
+#include <metaverse/database/databases/account_asset_database.hpp>
+//#include <metaverse/bitcoin/chain/attachment/account/account_asset.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/database/memory/memory.hpp>
-#include <metaverse/lib/database/primitives/record_multimap_iterable.hpp>
-#include <metaverse/lib/database/primitives/record_multimap_iterator.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/database/memory/memory.hpp>
+#include <metaverse/database/primitives/record_multimap_iterable.hpp>
+#include <metaverse/database/primitives/record_multimap_iterator.hpp>
 
 namespace libbitcoin {
 namespace database {

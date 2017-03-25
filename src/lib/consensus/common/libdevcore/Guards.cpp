@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include <metaverse/lib/consensus/libdevcore/Guards.h>
+#include <metaverse/consensus/libdevcore/Guards.h>
 using namespace std;
 using namespace libbitcoin;
 

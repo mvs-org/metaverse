@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-server.
+ * This file is part of metaverse-server.
  *
- * libbitcoin-server is free software: you can redistribute it and/or
+ * metaverse-server is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,13 +18,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/server/utility/fetch_helpers.hpp>
+#include <metaverse/server/utility/fetch_helpers.hpp>
 
 #include <cstdint>
 #include <cstddef>
-#include <metaverse/lib/blockchain.hpp>
-#include <metaverse/lib/server/configuration.hpp>
-#include <metaverse/lib/server/messages/message.hpp>
+#include <metaverse/blockchain.hpp>
+#include <metaverse/server/configuration.hpp>
+#include <metaverse/server/messages/message.hpp>
 
 namespace libbitcoin {
 namespace server {

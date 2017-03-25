@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-explorer.
+ * This file is part of metaverse-explorer.
  *
- * libbitcoin-explorer is free software: you can redistribute it and/or
+ * metaverse-explorer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,15 +18,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/explorer/generated.hpp>
+#include <metaverse/explorer/generated.hpp>
 
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include <metaverse/lib/explorer/command.hpp>
-#include <metaverse/lib/explorer/command_extension.hpp>
-#include <metaverse/lib/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/command.hpp>
+#include <metaverse/explorer/command_extension.hpp>
+#include <metaverse/explorer/command_extension_func.hpp>
 
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 

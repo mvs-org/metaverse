@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-explorer.
+ * This file is part of metaverse-explorer.
  *
- * libbitcoin-explorer is free software: you can redistribute it and/or
+ * metaverse-explorer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -18,10 +19,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
-#include <metaverse/lib/explorer.hpp>
+#include <metaverse/explorer.hpp>
 #include <metaverse/http/MongooseCli.hpp>
 #include <json/minijson_writer.hpp>
-#include <metaverse/lib/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/command_extension_func.hpp>
 
 BC_USE_MVS_MAIN
 

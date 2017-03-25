@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -22,9 +23,9 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <metaverse/lib/bitcoin/math/hash.hpp>
-#include <metaverse/lib/bitcoin/utility/data.hpp>
-#include <metaverse/lib/bitcoin/wallet/encrypted_keys.hpp>
+#include <metaverse/bitcoin/math/hash.hpp>
+#include <metaverse/bitcoin/utility/data.hpp>
+#include <metaverse/bitcoin/wallet/encrypted_keys.hpp>
 #include "parse_encrypted_key.hpp"
 
 namespace libbitcoin {

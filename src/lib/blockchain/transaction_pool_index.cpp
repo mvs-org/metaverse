@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of metaverse-node.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
+ * metaverse-node is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,15 +18,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/blockchain/transaction_pool_index.hpp>
+#include <metaverse/blockchain/transaction_pool_index.hpp>
 
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/blockchain/block.hpp>
-#include <metaverse/lib/blockchain/block_chain.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/blockchain/block.hpp>
+#include <metaverse/blockchain/block_chain.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

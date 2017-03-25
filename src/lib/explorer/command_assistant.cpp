@@ -1,9 +1,9 @@
 /**
  * Copyright (c) 2016 mvs developers 
  *
- * This file is part of libbitcoin-explorer.
+ * This file is part of metaverse-explorer.
  *
- * libbitcoin-explorer is free software: you can redistribute it and/or
+ * metaverse-explorer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <metaverse/lib/explorer/dispatch.hpp>
+#include <metaverse/explorer/dispatch.hpp>
 
 #ifdef _WIN32
 #include <boost/bind/placeholders.hpp>
@@ -28,7 +28,7 @@ using namespace boost::placeholders;
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include <metaverse/lib/explorer/command_assistant.hpp>
+#include <metaverse/explorer/command_assistant.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {

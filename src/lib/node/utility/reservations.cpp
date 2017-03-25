@@ -1,9 +1,9 @@
 /**
  * Copyright (c) 2011-2016 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/node/utility/reservations.hpp>
+#include <metaverse/node/utility/reservations.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -26,10 +26,10 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/node/utility/header_queue.hpp>
-#include <metaverse/lib/node/utility/performance.hpp>
-#include <metaverse/lib/node/utility/reservation.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/node/utility/header_queue.hpp>
+#include <metaverse/node/utility/performance.hpp>
+#include <metaverse/node/utility/reservation.hpp>
 
 namespace libbitcoin {
 namespace node {

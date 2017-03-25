@@ -1,25 +1,15 @@
-INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/include/bitcoin"
-                  DESTINATION include/mvs
-                  FILES_MATCHING
-                  PATTERN "*.h"
-                  PATTERN "*.hpp")
-INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/include/zmq"
-                  DESTINATION include/mvs
-                  FILES_MATCHING
-                  PATTERN "*.h"
-                  PATTERN "*.hpp")
-INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/include/mvs"
-                  DESTINATION include/mvs
+INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/include/metaverse"
+                  DESTINATION include
                   FILES_MATCHING
                   PATTERN "*.h"
                   PATTERN "*.hpp")
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/contrib/mongoose"
-                  DESTINATION include/mvs
+                  DESTINATION include/metaverse
                   FILES_MATCHING
                   PATTERN "*.h"
                   PATTERN "*.hpp")
 INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/contrib/json"
-                  DESTINATION include/mvs
+                  DESTINATION include/metaverse
                   FILES_MATCHING
                   PATTERN "*.h"
                   PATTERN "*.hpp")

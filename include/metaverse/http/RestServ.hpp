@@ -4,10 +4,10 @@
 #include <metaverse/http/Exception_instance.hpp>
 #include <metaverse/http/Stream_buf.hpp>
 
-#include <metaverse/lib/client.hpp>
-#include <metaverse/lib/blockchain.hpp>
-#include <metaverse/lib/consensus/miner.hpp> //miner
-#include <metaverse/lib/server/services/query_service.hpp> //public_query
+#include <metaverse/client.hpp>
+#include <metaverse/blockchain.hpp>
+#include <metaverse/consensus/miner.hpp> //miner
+#include <metaverse/server/services/query_service.hpp> //public_query
 
 namespace http{
 

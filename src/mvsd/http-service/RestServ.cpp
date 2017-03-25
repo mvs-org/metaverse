@@ -3,7 +3,7 @@
 #include "metaverse/http/RestServ.hpp"
 #include <metaverse/http/Exception_instance.hpp>
 #include <metaverse/http/Stream_buf.hpp>
-#include <metaverse/lib/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/command_extension_func.hpp>
 
 namespace http{
 

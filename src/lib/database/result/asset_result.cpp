@@ -3,7 +3,7 @@
  *
  * This file is part of mvs-node.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/database/result/asset_result.hpp>
-#include <metaverse/lib/bitcoin/chain/attachment/asset/asset_detail.hpp>
+#include <metaverse/database/result/asset_result.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/database/memory/memory.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/database/memory/memory.hpp>
 
 namespace libbitcoin {
 namespace database {

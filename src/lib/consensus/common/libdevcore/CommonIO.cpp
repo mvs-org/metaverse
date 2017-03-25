@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include <metaverse/lib/consensus/libdevcore/CommonIO.h>
+#include <metaverse/consensus/libdevcore/CommonIO.h>
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -30,7 +30,7 @@
 #include <termios.h>
 #endif
 #include <boost/filesystem.hpp>
-#include <metaverse/lib/consensus/libdevcore/Exceptions.h>
+#include <metaverse/consensus/libdevcore/Exceptions.h>
 using namespace std;
 using namespace libbitcoin;
 

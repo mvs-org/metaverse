@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-server.
+ * This file is part of metaverse-server.
  *
- * libbitcoin-server is free software: you can redistribute it and/or
+ * metaverse-server is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,17 +18,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/node/parser.hpp>
+#include <metaverse/node/parser.hpp>
 
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <metaverse/lib/blockchain.hpp>
-#include <metaverse/lib/network.hpp>
-#include <metaverse/lib/node/p2p_node.hpp>
-#include <metaverse/lib/node/settings.hpp>
+#include <metaverse/blockchain.hpp>
+#include <metaverse/network.hpp>
+#include <metaverse/node/p2p_node.hpp>
+#include <metaverse/node/settings.hpp>
 
 BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
 

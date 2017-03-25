@@ -1,9 +1,9 @@
 /**
  * Copyright (c) 2011-2016 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/network/p2p.hpp>
+#include <metaverse/network/p2p.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -25,20 +25,20 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/network/channel.hpp>
-#include <metaverse/lib/network/connections.hpp>
-#include <metaverse/lib/network/define.hpp>
-#include <metaverse/lib/network/hosts.hpp>
-#include <metaverse/lib/network/protocols/protocol_address.hpp>
-#include <metaverse/lib/network/protocols/protocol_ping.hpp>
-#include <metaverse/lib/network/protocols/protocol_seed.hpp>
-#include <metaverse/lib/network/protocols/protocol_version.hpp>
-#include <metaverse/lib/network/sessions/session_inbound.hpp>
-#include <metaverse/lib/network/sessions/session_manual.hpp>
-#include <metaverse/lib/network/sessions/session_outbound.hpp>
-#include <metaverse/lib/network/sessions/session_seed.hpp>
-#include <metaverse/lib/network/settings.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/network/channel.hpp>
+#include <metaverse/network/connections.hpp>
+#include <metaverse/network/define.hpp>
+#include <metaverse/network/hosts.hpp>
+#include <metaverse/network/protocols/protocol_address.hpp>
+#include <metaverse/network/protocols/protocol_ping.hpp>
+#include <metaverse/network/protocols/protocol_seed.hpp>
+#include <metaverse/network/protocols/protocol_version.hpp>
+#include <metaverse/network/sessions/session_inbound.hpp>
+#include <metaverse/network/sessions/session_manual.hpp>
+#include <metaverse/network/sessions/session_outbound.hpp>
+#include <metaverse/network/sessions/session_seed.hpp>
+#include <metaverse/network/settings.hpp>
 
 namespace libbitcoin {
 namespace network {

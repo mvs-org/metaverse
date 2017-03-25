@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,15 +18,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/bitcoin/message/get_block_transactions.hpp>
+#include <metaverse/bitcoin/message/get_block_transactions.hpp>
 
 #include <initializer_list>
 #include <boost/iostreams/stream.hpp>
-#include <metaverse/lib/bitcoin/message/version.hpp>
-#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
-#include <metaverse/lib/bitcoin/utility/container_source.hpp>
-#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
-#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/bitcoin/message/version.hpp>
+#include <metaverse/bitcoin/utility/container_sink.hpp>
+#include <metaverse/bitcoin/utility/container_source.hpp>
+#include <metaverse/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/bitcoin/utility/ostream_writer.hpp>
 
 namespace libbitcoin {
 namespace message {

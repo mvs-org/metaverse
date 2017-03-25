@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-consensus.
+ * This file is part of metaverse-consensus.
  *
- * libbitcoin-consensus is free software: you can redistribute it and/or
+ * metaverse-consensus is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,16 +18,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "metaverse/lib/consensus.hpp"
-#include "metaverse/lib/consensus/consensus.hpp"
+#include "metaverse/consensus.hpp"
+#include "metaverse/consensus/consensus.hpp"
 
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
 #include <string.h>
-#include <metaverse/lib/consensus/define.hpp>
-#include <metaverse/lib/consensus/export.hpp>
-#include <metaverse/lib/consensus/version.hpp>
+#include <metaverse/consensus/define.hpp>
+#include <metaverse/consensus/export.hpp>
+#include <metaverse/consensus/version.hpp>
 #include "primitives/transaction.h"
 #include "pubkey.h"
 #include "script/interpreter.h"

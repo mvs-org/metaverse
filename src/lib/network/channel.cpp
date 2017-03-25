@@ -1,9 +1,9 @@
 /**
  * Copyright (c) 2011-2016 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/network/channel.hpp>
+#include <metaverse/network/channel.hpp>
 
 #include <atomic>
 #include <cstddef>
@@ -25,10 +25,10 @@
 #include <functional>
 #include <memory>
 #include <utility>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/network/proxy.hpp>
-#include <metaverse/lib/network/settings.hpp>
-#include <metaverse/lib/network/socket.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/network/proxy.hpp>
+#include <metaverse/network/settings.hpp>
+#include <metaverse/network/socket.hpp>
 
 namespace libbitcoin {
 namespace network {

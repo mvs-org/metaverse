@@ -3,11 +3,11 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <metaverse/lib/bitcoin/math/uint256.hpp>
+#include <metaverse/bitcoin/math/uint256.hpp>
 
 #include <stdio.h>
 #include <string.h>
-#include <metaverse/lib/bitcoin/utility/assert.hpp>
+#include <metaverse/bitcoin/utility/assert.hpp>
 
 namespace libbitcoin {
 

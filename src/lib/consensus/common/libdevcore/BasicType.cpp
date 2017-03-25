@@ -1,4 +1,4 @@
-#include <metaverse/lib/consensus/libdevcore/BasicType.h>
+#include <metaverse/consensus/libdevcore/BasicType.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>

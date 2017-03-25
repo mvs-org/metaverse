@@ -19,7 +19,7 @@
  * @date 2014
  */
 
-#include <metaverse/lib/consensus/libdevcore/FixedHash.h>
+#include <metaverse/consensus/libdevcore/FixedHash.h>
 #include <ctime>
 #include <boost/algorithm/string.hpp>
 using namespace std;

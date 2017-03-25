@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-server.
+ * This file is part of metaverse-server.
  *
- * libbitcoin-server is free software: you can redistribute it and/or
+ * metaverse-server is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,18 +18,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/server/workers/query_worker.hpp>
+#include <metaverse/server/workers/query_worker.hpp>
 
 #include <functional>
 #include <string>
-#include <metaverse/lib/protocol.hpp>
-#include <metaverse/lib/server/define.hpp>
-#include <metaverse/lib/server/interface/address.hpp>
-#include <metaverse/lib/server/interface/blockchain.hpp>
-#include <metaverse/lib/server/interface/protocol.hpp>
-#include <metaverse/lib/server/interface/transaction_pool.hpp>
-#include <metaverse/lib/server/messages/message.hpp>
-#include <metaverse/lib/server/server_node.hpp>
+#include <metaverse/protocol.hpp>
+#include <metaverse/server/define.hpp>
+#include <metaverse/server/interface/address.hpp>
+#include <metaverse/server/interface/blockchain.hpp>
+#include <metaverse/server/interface/protocol.hpp>
+#include <metaverse/server/interface/transaction_pool.hpp>
+#include <metaverse/server/messages/message.hpp>
+#include <metaverse/server/server_node.hpp>
 
 namespace libbitcoin {
 namespace server {

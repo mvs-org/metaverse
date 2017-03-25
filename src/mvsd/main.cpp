@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin-server.
+ * This file is part of metaverse-server.
  *
- * libbitcoin-server is free software: you can redistribute it and/or
+ * metaverse-server is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -18,9 +19,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
-#include <metaverse/lib/server.hpp>
-#include <metaverse/lib/bitcoin/utility/backtrace.hpp>
-#include <metaverse/lib/bitcoin/utility/daemon.hpp>
+#include <metaverse/server.hpp>
+#include <metaverse/bitcoin/utility/backtrace.hpp>
+#include <metaverse/bitcoin/utility/daemon.hpp>
 #include "executor.hpp"
 
 BC_USE_MVS_MAIN

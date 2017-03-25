@@ -3,7 +3,7 @@
  *
  * This file is part of mvs-node.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/bitcoin/chain/attachment/etp/etp_award.hpp>
+#include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <metaverse/lib/bitcoin/utility/container_sink.hpp>
-#include <metaverse/lib/bitcoin/utility/container_source.hpp>
-#include <metaverse/lib/bitcoin/utility/istream_reader.hpp>
-#include <metaverse/lib/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/bitcoin/utility/container_sink.hpp>
+#include <metaverse/bitcoin/utility/container_source.hpp>
+#include <metaverse/bitcoin/utility/istream_reader.hpp>
+#include <metaverse/bitcoin/utility/ostream_writer.hpp>
 
 namespace libbitcoin {
 namespace chain {

@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,7 +18,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/database/memory/memory_map.hpp>
+#include <metaverse/database/memory/memory_map.hpp>
 
 #include <iostream>
 
@@ -40,10 +41,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <boost/filesystem.hpp>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/database/memory/accessor.hpp>
-#include <metaverse/lib/database/memory/allocator.hpp>
-#include <metaverse/lib/database/memory/memory.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/database/memory/accessor.hpp>
+#include <metaverse/database/memory/allocator.hpp>
+#include <metaverse/database/memory/memory.hpp>
 
 // memory_map is be able to support 32 bit but because the database 
 // requires a larger file this is not validated or supported.

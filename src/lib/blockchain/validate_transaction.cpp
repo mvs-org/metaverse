@@ -1,9 +1,10 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
  *
- * This file is part of libbitcoin.
+ * This file is part of metaverse.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
+ * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
  * Foundation, either version 3 of the License, or (at your option)
@@ -17,19 +18,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/lib/blockchain/validate_transaction.hpp>
-#include <metaverse/lib/bitcoin/chain/script/operation.hpp>
+#include <metaverse/blockchain/validate_transaction.hpp>
+#include <metaverse/bitcoin/chain/script/operation.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <metaverse/lib/bitcoin.hpp>
-#include <metaverse/lib/blockchain/transaction_pool.hpp>
-#include <metaverse/lib/consensus/miner.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/blockchain/transaction_pool.hpp>
+#include <metaverse/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
-#include <metaverse/lib/consensus.hpp>
+#include <metaverse/consensus.hpp>
 #endif
 
 namespace libbitcoin {
