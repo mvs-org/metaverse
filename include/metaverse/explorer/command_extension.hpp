@@ -56,6 +56,97 @@ struct utxo_attach_info {
 	std::string output_option; // used by get_tx_encode
 };
 
+class BCX_API colon_height;
+
+// colon_height is currently a private encoding in bx.
+static bool decode_colon_height(colon_height& height, const std::string& tuple);
+
+// colon_height is currently a private encoding in bx.
+static std::string encode_colon_height(const colon_height& height);
+
+class BCX_API colon_height
+{
+public:
+
+    /**
+     * Default constructor.
+     */
+    colon_height()
+	: start_height(0), end_height(0)
+	{
+	};
+    
+    /**
+     * Initialization constructor.
+     * @param[in]  tuple  The value to initialize with.
+     */
+    colon_height(const std::string& tuple)
+    {
+	    std::stringstream(tuple) >> *this;
+	};
+
+    /**
+     * Overload stream in. Throws if colon_height is invalid.
+     * @param[in]   colon_height     The colon_height stream to read the value from.
+     * @param[out]  argument  The object to receive the read value.
+     * @return                The colon_height stream reference.
+     */
+    friend std::istream& operator>>(std::istream& stream,
+        colon_height& argument)
+    {
+        
+	    std::string tuple;
+	    stream >> tuple;
+
+	    if (!decode_colon_height(argument, tuple))
+	    {
+	        throw std::logic_error{"invalid option " + tuple};
+	    }
+
+	    return stream;
+	};
+
+    /**
+     * Overload stream out.
+     * @param[in]   output    The output stream to write the value to.
+     * @param[out]  argument  The object from which to obtain the value.
+     * @return                The output stream reference.
+     */
+    friend std::ostream& operator<<(std::ostream& output,
+        const colon_height& argument)
+    {
+	    output << encode_colon_height(argument);
+	    return output;
+	};
+//private:
+	/**
+     * The state of this object.
+     */
+    uint64_t start_height;
+    uint64_t end_height;
+};
+// colon_height is currently a private encoding in bx.
+static bool decode_colon_height(colon_height& height, const std::string& tuple)
+{
+    const auto tokens = split(tuple, ":");
+    if (tokens.size() != 2)
+        return false;
+
+    deserialize(height.start_height, tokens[0], true);
+    deserialize(height.end_height, tokens[1], true);
+
+    return true;
+}
+
+// colon_height is currently a private encoding in bx.
+static std::string encode_colon_height(const colon_height& height)
+{
+    std::stringstream result;
+    result << height.start_height << BX_TX_POINT_DELIMITER <<
+        height.end_height;
+    return result.str();
+}
+
 class command_extension:public command{
 protected:
     struct argument_base
@@ -2940,13 +3031,8 @@ public:
 	    )
 	    (
             "height,e",
-            value<bool>(&option_.use_height)->zero_tokens(),
+            value<libbitcoin::explorer::commands::colon_height>(&option_.height),
             "Get tx according height eg: -e start-height:end-height."
-        )
-        (
-            "address,a",
-            value<bool>(&option_.use_address)->zero_tokens(),
-            "Get tx according address parameter."
         );
 
         return options;
@@ -2966,7 +3052,8 @@ public:
 
     struct option
     {
-    	bool use_height;
+    	libbitcoin::explorer::commands::colon_height height;
+		bool use_height;
 		bool use_address;
     } option_;
 

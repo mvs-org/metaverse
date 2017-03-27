@@ -1025,17 +1025,26 @@ console_result listtxs::invoke (std::ostream& output,
         	}
         // 3. list all tx of the address    
         } else {
+        
+        	log::trace("listtxs") << option_.height.start_height;
+        	log::trace("listtxs") << option_.height.end_height;
+			
+        	if(option_.height.start_height > option_.height.end_height) {
+				throw std::logic_error{"invalid height option!"};
+			}
             auto sh_vec = blockchain.get_address_business_record(argument_.address);
             // scan all kinds of business
             for (auto each : *sh_vec){
-                auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
-                if(ret.second) { // new item
-                    tx_block_info tx;
-                    tx.height = each.height;
-                    tx.timestamp = each.data.get_timestamp();
-                    tx.hash = hash256(each.point.hash).to_string();
-                    sh_txs->push_back(tx);
-                } 
+				if((option_.height.start_height <= each.height) && (each.height < option_.height.end_height)) {
+	                auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
+	                if(ret.second) { // new item
+	                    tx_block_info tx;
+	                    tx.height = each.height;
+	                    tx.timestamp = each.data.get_timestamp();
+	                    tx.hash = hash256(each.point.hash).to_string();
+	                    sh_txs->push_back(tx);
+	                } 
+				}
             }
         }
     }
