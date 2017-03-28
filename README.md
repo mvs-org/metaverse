@@ -19,7 +19,8 @@ MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
 ```bash
 mkdir build && cd build
 cmake ..
-make -j4 && make install
+make -j4
+make install
 ```
 optional:
 ```
@@ -27,20 +28,22 @@ make test
 make doc
 ```
 
-# Libraries dependencies
+# Libraries Dependencies
 ## install boost 1.56(or above)
 ```bash
 sudo yum/apt-get/brew install libboost-all-dev
 ```
-On OSX, you have to install **XcodeCommandLineTools** firstly.
-Or, you can compile Boost by yourself.
+You can download boost from http://www.boost.org/ also.
+For GNU toochain(zmq, secp256k1), you should install automake/autoconf/libtool at first.
 
 ## install zmq 4.2.0(or above)
-server required.
+server/explorer required.
 ```bash
 wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
-cd libzmq
-./autogen.sh && ./configure && make -j4
+cd zeromq-4.2.1
+./autogen.sh
+./configure
+make -j4
 sudo make install && sudo ldconfig
 ```
 
@@ -48,12 +51,14 @@ sudo make install && sudo ldconfig
 blockchain/database required.
 ```bash
 git clone https://github.com/mvs-live/secp256k1
+cd secp256k1
 ./autogen.sh
 ./configure --enable-module-recovery
-make -j4 && sudo make install
+make -j4
+sudo make install && sudo ldconfig
 ```
 
-##mvs-architecture
+## MVS architecture
 ![mvs-architecture](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-architecture.png)
-##mvs-libraries
+## MVS libraries
 ![mvs-libraries](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-libraries.png)

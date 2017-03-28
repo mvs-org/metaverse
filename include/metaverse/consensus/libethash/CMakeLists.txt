@@ -26,7 +26,8 @@ else()
 endif()
 
 if (NOT CRYPTOPP_FOUND)
-	find_package(CryptoPP 5.6.2)
+    # libethash has implement of cryption source code if not found CryptoPP LIBRARY.
+    find_package(CryptoPP 5.6.2 QUIET)
 endif()
 
 list(APPEND FILES sha3.c sha3.h)
@@ -34,7 +35,10 @@ list(APPEND FILES sha3.c sha3.h)
 add_library(ethash ${FILES})
 
 if (CRYPTOPP_FOUND)
+    MESSAGE(STATUS "CryptoPP found")
 	TARGET_LINK_LIBRARIES(ethash ${CRYPTOPP_LIBRARIES})
+else()
+    MESSAGE(STATUS "CryptoPP not found, use existed implement by libethash")
 endif()
 
 if (UNIX AND NOT APPLE)

@@ -57,21 +57,21 @@ FILE(MAKE_DIRECTORY "${LIBRARY_OUTPUT_PATH}")
 FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share/doc/html")
 
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/etc")
-#SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR})
 SET(CMAKE_INSTALL_PREFIX "/usr/local/")
 
 # --------------- Libraries Dependencies ---------------------
 SET(Boost_USE_STATIC_LIBS   ON)
 FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system
 program_options regex thread)
-FIND_PACKAGE(secp256k1 REQUIRED)
-FIND_PACKAGE(zmq REQUIRED)
 #set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
 
+FIND_PACKAGE(secp256k1 REQUIRED)
+FIND_PACKAGE(ZeroMQ 4.2.0 REQUIRED)
+
 # ---------------- Doxygen --------------------
-FIND_PROGRAM(ENV_EXECUTABLE env)
-FIND_PROGRAM(DOT_EXECUTABLE dot)
-FIND_PACKAGE(Doxygen)          # Optional.
+FIND_PROGRAM(ENV_EXECUTABLE env QUIET)
+FIND_PROGRAM(DOT_EXECUTABLE dot QUIET)
+FIND_PACKAGE(Doxygen QUIET)          # Optional.
 
 IF(DOXYGEN_FOUND)
   CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/Doxyfile.in"
