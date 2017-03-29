@@ -13,23 +13,22 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#ifndef MVS_ASH_STRING_HPP
-#define MVS_ASH_STRING_HPP
-
-#include <metaverse/http/Compare.hpp>
-#include <metaverse/http/Defs.hpp>
-
-#include <metaverse/http/string_view.h>
+#pragma once
 
 #include <cstring>
 #include <sstream>
+
+#include <metaverse/mgbubble/compat/define.hpp>
+#include <metaverse/mgbubble/compat/string_view.h>
+#include <metaverse/mgbubble/utility/Compare.hpp>
+
 
 /**
  * @addtogroup Util
  * @{
  */
 
-namespace http {
+namespace mgbubble {
 
 constexpr string_view operator""_sv(const char* str, std::size_t len) noexcept
 {
@@ -108,7 +107,7 @@ class String {
   {
     int result{std::memcmp(buf_, rdata, std::min(len_, rlen))};
     if (result == 0) {
-      result = http::compare(len_, rlen);
+      result = mgbubble::compare(len_, rlen);
     }
     return result;
   }
@@ -264,4 +263,3 @@ MVS_API unsigned long stoul(string_view sv) noexcept;
 
 /** @} */
 
-#endif // MVS_ASH_STRING_HPP

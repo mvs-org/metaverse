@@ -20,7 +20,7 @@
  */
 #include <iostream>
 #include <metaverse/explorer.hpp>
-#include <metaverse/http/MongooseCli.hpp>
+#include <metaverse/mgbubble/MongooseCli.hpp>
 #include <json/minijson_writer.hpp>
 #include <metaverse/explorer/command_extension_func.hpp>
 
@@ -33,7 +33,7 @@ BC_USE_MVS_MAIN
  * @param argv  The array of arguments, including the process.
  * @return      The numeric result to return via console exit.
  */
-using namespace http::cli;
+using namespace mgbubble::cli;
 
 void my_impl(const http_message* hm){
     auto&& reply = std::string(hm->body.p, hm->body.len);

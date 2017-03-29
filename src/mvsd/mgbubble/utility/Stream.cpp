@@ -14,35 +14,23 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#include <metaverse/http/Exception_basic.hpp>
+
+#include <metaverse/mgbubble/utility/Stream.hpp>
+
 
 using namespace std;
 
-namespace http {
-namespace {
-thread_local ErrMsg errMsg_;
-} // anonymous
+namespace mgbubble {
 
-Exception::Exception(string_view what) noexcept
+MVS_API void reset(ostream& os) noexcept
 {
-  const auto len = min(ErrMsgMax, what.size());
-  if (len > 0) {
-    memcpy(what_, what.data(), len);
-  }
-  what_[len] = '\0';
-}
+  os.clear();
+  os.fill(os.widen(' '));
+  os.flags(ios_base::skipws | ios_base::dec);
+  os.precision(6);
+  os.width(0);
+};
 
-Exception::~Exception() noexcept = default;
+OStreamJoiner::~OStreamJoiner() noexcept = default;
 
-const char* Exception::what() const noexcept
-{
-  return what_;
-}
-
-ErrMsg& errMsg() noexcept
-{
-  errMsg_.reset();
-  return errMsg_;
-}
-
-} // http
+} // mgbubble

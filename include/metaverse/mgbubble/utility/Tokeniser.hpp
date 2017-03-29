@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <metaverse/http/String.hpp>
+#include <metaverse/mgbubble/utility/String.hpp>
 
 #include <algorithm>
 
@@ -25,7 +25,7 @@
  * @{
  */
 
-namespace http {
+namespace mgbubble {
 
 template <char DelimN>
 class Tokeniser {

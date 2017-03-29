@@ -13,21 +13,19 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#ifndef MVS_ASH_STREAM_HPP
-#define MVS_ASH_STREAM_HPP
-
-#include <metaverse/http/Defs.hpp>
-
-#include <metaverse/http/string_view.h>
+#pragma once
 
 #include <ostream>
+#include <metaverse/mgbubble/compat/define.hpp>
+#include <metaverse/mgbubble/compat/string_view.h>
+
 
 /**
  * @addtogroup Util
  * @{
  */
 
-namespace http {
+namespace mgbubble {
 
 MVS_API void reset(std::ostream& os) noexcept;
 
@@ -76,7 +74,7 @@ class StringBuilder : public std::ostream {
   void reset() noexcept
   {
     buf_.reset();
-    http::reset(*this);
+    mgbubble::reset(*this);
   };
 
  private:
@@ -140,4 +138,3 @@ class MVS_API OStreamJoiner {
 
 /** @} */
 
-#endif // MVS_ASH_STREAM_HPP

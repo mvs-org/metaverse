@@ -1,13 +1,15 @@
+
 #include <exception>
 #include <functional> //hash
-#include "metaverse/http/RestServ.hpp"
-#include <metaverse/http/Exception_instance.hpp>
-#include <metaverse/http/Stream_buf.hpp>
+
+#include <metaverse/mgbubble/RestServ.hpp>
+#include <metaverse/mgbubble/exception/Instances.hpp>
+#include <metaverse/mgbubble/utility/Stream_buf.hpp>
+
 #include <metaverse/explorer/command_extension_func.hpp>
 
-namespace http{
+namespace mgbubble{
 
-using namespace mg;
 
 void RestServ::reset(HttpMessage& data) noexcept
 {
@@ -85,7 +87,6 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 // --------------------- json rpc interface -----------------------
 void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 {
-    using namespace mg;
     using namespace bc::client;
     using namespace bc::protocol;
 
@@ -134,7 +135,6 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 // --------------------- Restful-api interface -----------------------
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 {
-    using namespace mg;
     using namespace bc::client;
     using namespace bc::protocol;
 
@@ -308,5 +308,5 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
     return true;
 }
 
-}// namespace http
+}// mgbubble
 

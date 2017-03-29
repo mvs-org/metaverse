@@ -79,11 +79,11 @@ void server_node::run_mongoose()
 
         // init for websocket and seesion control
         mg_set_protocol_http_websocket(&conn);
-        mg_set_timer(&conn, mg_time() + http::RestServ::session_check_interval);
+        mg_set_timer(&conn, mg_time() + mgbubble::RestServ::session_check_interval);
 
 #if 0   // not use session control
-        mg_register_http_endpoint(&conn, "/login.html", &http::RestServ::login_handler);
-        mg_register_http_endpoint(&conn, "/logout", &http::RestServ::logout_handler);
+        mg_register_http_endpoint(&conn, "/login.html", &mgbubble::RestServ::login_handler);
+        mg_register_http_endpoint(&conn, "/logout", &mgbubble::RestServ::logout_handler);
 #endif
     }
     catch(const std::exception& e)

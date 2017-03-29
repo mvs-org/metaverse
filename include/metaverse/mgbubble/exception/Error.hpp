@@ -16,15 +16,14 @@
 #ifndef MVSD_EXCEPTION_HPP
 #define MVSD_EXCEPTION_HPP
 
-#include <metaverse/http/Exception_basic.hpp>
+#include <metaverse/mgbubble/exception/Exception.hpp>
 
 /**
  * @addtogroup App
  * @{
  */
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 class Error : public Exception {
  public:
@@ -40,7 +39,6 @@ class Error : public Exception {
   Error& operator=(Error&&) noexcept = default;
 };
 
-} // mg
 } // http
 
 /** @} */

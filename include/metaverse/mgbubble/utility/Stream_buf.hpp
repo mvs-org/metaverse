@@ -26,8 +26,7 @@
  * @{
  */
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 class StreamBuf : public std::streambuf {
  public:
@@ -84,7 +83,6 @@ class OStream : public std::ostream {
   size_t lengthAt_{0};
 };
 
-} // mg
 } // http
 
 /** @} */

@@ -15,14 +15,13 @@
  * 02110-1301, USA.
  */
 
-#include <metaverse/http/Stream.hpp>
-#include "metaverse/http/Stream_buf.hpp"
-#include <metaverse/http/String.hpp>
+#include <metaverse/mgbubble/utility/Stream.hpp>
+#include <metaverse/mgbubble/utility/Stream_buf.hpp>
+#include <metaverse/mgbubble/utility/String.hpp>
 
 using namespace std;
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 StreamBuf::StreamBuf(mbuf& buf) throw(bad_alloc) : buf_(buf)
 {
@@ -77,7 +76,7 @@ OStream::~OStream() noexcept = default;
 void OStream::reset(int status, const char* reason,const char *content_type,const char *charset) noexcept
 {
   rdbuf()->reset();
-  http::reset(*this);
+  mgbubble::reset(*this);
 
   // Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF. Use 10 space place-holder for
   // content length. RFC2616 states that field value MAY be preceded by any amount of LWS, though a
@@ -92,5 +91,4 @@ void OStream::setContentLength() noexcept
   rdbuf()->setContentLength(lengthAt_, size() - headSize_);
 }
 
-} // mg
-} // http
+} // mgbubble

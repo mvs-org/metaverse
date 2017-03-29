@@ -15,12 +15,11 @@
  * 02110-1301, USA.
  */
 #include <cctype>
-#include "metaverse/http/Mongoose.hpp"
-#include "metaverse/http/Tokeniser.hpp"
-#include "json/minijson_reader.hpp"
+#include <json/minijson_reader.hpp>
+#include <metaverse/mgbubble/Mongoose.hpp>
+#include <metaverse/mgbubble/utility/Tokeniser.hpp>
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 void HttpMessage::data_to_arg() {
 
@@ -159,5 +158,4 @@ void ToCommandArg::add_arg(std::string&& outside)
     argc_++; 
 }
 
-} // mg
-} // http
+} // mgbubble
