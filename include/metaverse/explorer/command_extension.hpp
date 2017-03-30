@@ -3293,8 +3293,7 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("AMOUNT", 1)
-		    .add("ADDRESS", 1);
+            .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3304,7 +3303,6 @@ public:
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3338,7 +3336,7 @@ public:
             "How many you will deposit."
         )
 		(
-			"ADDRESS",
+			"address,a",
 			value<std::string>(&argument_.address),
 			"The deposit target address."
 		)
