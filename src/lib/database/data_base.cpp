@@ -655,8 +655,8 @@ void data_base::push_attachemnt(const attachment& attach, const payment_address&
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
 	auto address_str = address.encoded();
-	log::debug(LOG_DATABASE) << "push_attachemnt address_str=" << address_str;
-	log::debug(LOG_DATABASE) << "push_attachemnt address hash=" << base16(address.hash());
+	log::trace(LOG_DATABASE) << "push_attachemnt address_str=" << address_str;
+	log::trace(LOG_DATABASE) << "push_attachemnt address hash=" << base16(address.hash());
 	data_chunk data(address_str.begin(), address_str.end());
 	short_hash hash = ripemd160_hash(data);
 	auto visitor = attachment_visitor(this, hash, outpoint, output_height, value);

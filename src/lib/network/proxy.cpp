@@ -306,7 +306,7 @@ void proxy::handle_request(data_chunk payload_buffer, uint32_t peer_protocol_ver
 		return;
 	}
 
-	log::debug(LOG_NETWORK)
+	log::trace(LOG_NETWORK)
 		<< "Valid " << head.command << " payload from [" << authority()
 		<< "] (" << payload_size << " bytes)";
 	succeed = true;
@@ -347,7 +347,7 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     const auto error = code(error::boost_to_error_code(ec));
 
     if (error)
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure sending " << buffer.size() << " byte message to ["
             << authority() << "] " << error.message();
 
