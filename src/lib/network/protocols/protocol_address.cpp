@@ -101,14 +101,14 @@ bool protocol_address::handle_receive_address(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure receiving address message from ["
             << authority() << "] " << ec.message();
         stop(ec);
         return false;
     }
     remove_useless_address(message);
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Storing addresses from [" << authority() << "] ("
         << message->addresses.size() << ")";
 
@@ -132,7 +132,7 @@ bool protocol_address::handle_receive_get_address(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure receiving get_address message from ["
             << authority() << "] " << ec.message();
         stop(ec);
@@ -165,7 +165,7 @@ bool protocol_address::handle_receive_get_address(const code& ec,
 //    if (self_.addresses.empty())
 //        return false;
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Sending addresses to [" << authority() << "] ("
         << address_list.size() << ")";
     message::address self_address = {address_list};
@@ -191,7 +191,7 @@ void protocol_address::handle_store_addresses(const code& ec, address::ptr messa
 
 void protocol_address::handle_stop(const code&)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Stopped addresss protocol";
 }
 

@@ -62,7 +62,7 @@ void protocol_ping::handle_or_not(uint64_t nonce)
 	shared_lock lock{mutex_};
 	if (result_handler_)
 	{
-		log::debug(LOG_NETWORK) << "handle or not";
+		log::trace(LOG_NETWORK) << "handle or not";
 		SEND2(ping{ nonce }, handle_send, _1, pong::command);
 	}
 }
@@ -72,14 +72,14 @@ void protocol_ping::send_ping(const code& ec)
 {
     if (stopped())
     {
-    	log::debug(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
+    	log::trace(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
     	test_call_handler(error::channel_stopped);
         return;
     }
 
     if (ec && ec != error::channel_timeout)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure in ping timer for [" << authority() << "] "
             << ec.message();
         test_call_handler(ec);
@@ -108,7 +108,7 @@ void protocol_ping::test_call_handler(const code& ec)
 	upgrade_lock upgrade{mutex_};
 	if(result_handler_)
 	{
-		log::debug(LOG_NETWORK) << "test call handler";
+		log::trace(LOG_NETWORK) << "test call handler";
 		unique_lock lock(std::move(upgrade));
 		auto handler = std::move(result_handler_);
 		auto action = [handler, ec](){
@@ -124,14 +124,14 @@ bool protocol_ping::handle_receive_ping(const code& ec,
 {
     if (stopped())
     {
-    	log::debug(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
+    	log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
     	test_call_handler(error::channel_stopped);
         return false;
     }
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure getting ping from [" << authority() << "] "
             << ec.message();
         test_call_handler(ec);
@@ -149,7 +149,7 @@ bool protocol_ping::handle_receive_pong(const code& ec,
 {
     if (stopped())
     {
-    	log::debug(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
+    	log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
     	test_call_handler(error::channel_stopped);
         return false;
     }
@@ -158,7 +158,7 @@ bool protocol_ping::handle_receive_pong(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure getting pong from [" << authority() << "] "
             << ec.message();
         stop(ec);

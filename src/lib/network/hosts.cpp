@@ -290,7 +290,7 @@ code hosts::store(const address& host)
     mutex_.unlock_upgrade();
     ///////////////////////////////////////////////////////////////////////////
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Redundant host address from peer";
 
     // We don't treat redundant address as an error, just log it.
