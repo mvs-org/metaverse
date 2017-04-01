@@ -95,7 +95,7 @@ public:
 		const output_point& inpoint, uint32_t input_height,
 		const input_point& previous, uint32_t timestamp);
 	
-	business_record::list get(const short_hash& key, size_t from_height) const;
+	business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
 	
 	business_history::list get_business_history(const short_hash& key,
 			size_t from_height) const;
