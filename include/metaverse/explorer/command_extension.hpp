@@ -142,7 +142,7 @@ public:
 		return first_;
 	};
 	
-	void set_first(T1 first){
+	void set_first(const T1& first){
 		first_ = first;
 	};
 	
@@ -150,13 +150,13 @@ public:
 		return second_;
 	};
 
-	void set_second(T2 sceond){
+	void set_second(const T2& second){
 		second_ = second;
 	};
 	
 private:
 	/**
-     * The state of this object.
+     * The state of this object. only for uint64_t
      */
     T1 first_;
     T2 second_;
