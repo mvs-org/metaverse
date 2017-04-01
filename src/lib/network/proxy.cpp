@@ -324,9 +324,12 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
         return;
     }
 
-    log::debug(LOG_NETWORK)
-        << "Sending " << command << " to [" << authority() << "] ("
-        << buffer.size() << " bytes)";
+    //thin log network
+    if (command != "getheaders" && command != "headers"){
+        log::debug(LOG_NETWORK)
+            << "Sending " << command << " to [" << authority() << "] ("
+            << buffer.size() << " bytes)";
+    }
 
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////

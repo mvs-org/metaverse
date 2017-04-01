@@ -70,7 +70,7 @@ void protocol_block_out::start()
     if (headers_to_peer_)
     {
         // Send headers vs. inventory anncements if headers_to_peer_ is set.
-    	log::debug(LOG_NODE) << "protocol block out headers to peer" ;
+    	log::trace(LOG_NODE) << "protocol block out headers to peer" ;
         SUBSCRIBE2(send_headers, handle_receive_send_headers, _1, _2);
     }
 
@@ -96,7 +96,7 @@ bool protocol_block_out::handle_receive_send_headers(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting " << message->command << " from ["
             << authority() << "] " << ec.message();
         stop(ec);
@@ -133,7 +133,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting get_headers from [" << ec.message();
         stop(ec);
         return false;
@@ -157,7 +157,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     // and one of its other peers populates the chain back to this level. In
     // that case we would not respond but our peer's other peer should.
     const auto threshold = last_locator_top_.load();
-    log::debug(LOG_NODE) << "protocol block out handle receive get headers, locator size," << locator_size;
+    log::trace(LOG_NODE) << "protocol block out handle receive get headers, locator size," << locator_size;
 
     blockchain_.fetch_locator_block_headers(*message, threshold, locator_cap,
         BIND2(handle_fetch_locator_headers, _1, _2));
@@ -184,7 +184,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
 	{
 		return;
 	}
-    log::debug(LOG_NODE)
+    log::trace(LOG_NODE)
     	<< "handle fetch locator headers size," << headers.size();
 
     // Respond to get_headers with headers.
@@ -203,7 +203,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting get_blocks from [" << ec.message();
         stop(ec);
         return false;
@@ -213,7 +213,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 
     if (locator_size > locator_limit())
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Invalid get_blocks locator size (" << locator_size
             << ") from [" << authority() << "] ";
         stop(error::channel_stopped);
@@ -269,7 +269,7 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting inventory from [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -300,7 +300,7 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
 
     if (ec == error::not_found)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Block requested by [" << authority() << "] not found." << encode_hash(hash);
 
         const not_found reply{ { inventory::type_id::block, hash } };
@@ -330,7 +330,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
 
     if (ec == error::not_found)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Merkle block requested by [" << authority() << "] not found.";
 
         const not_found reply{ { inventory::type_id::filtered_block, hash } };
@@ -390,7 +390,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
         if (!announcement.elements.empty())
         {
-        	log::debug(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
+        	log::trace(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
             SEND2(announcement, handle_send, _1, announcement.command);
         }
         return true;
@@ -405,7 +405,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
     if (!announcement.inventories.empty())
     {
-    	log::debug(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
+    	log::trace(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
         SEND2(announcement, handle_send, _1, announcement.command);
     }
     return true;
@@ -413,7 +413,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
 void protocol_block_out::handle_stop(const code&)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Stopped block_out protocol";
     blockchain_.fired();
 }

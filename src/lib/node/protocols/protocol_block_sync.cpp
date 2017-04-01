@@ -74,7 +74,7 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
 
     if (reservation_->stopped())
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Stopping complete slot (" << reservation_->slot() << ").";
         complete(error::success);
         return;
@@ -87,7 +87,7 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
     if (request.inventories.empty())
         return;
 
-    log::debug(LOG_NODE)
+    log::trace(LOG_NODE)
         << "Sending request of " << request.inventories.size()
         << " hashes for slot (" << reservation_->slot() << ").";
 
@@ -120,7 +120,7 @@ bool protocol_block_sync::handle_receive(const code& ec, block_ptr message,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Receive failure on slot (" << reservation_->slot() << ") "
             << ec.message();
         complete(ec);
@@ -132,7 +132,7 @@ bool protocol_block_sync::handle_receive(const code& ec, block_ptr message,
 
     if (reservation_->toggle_partitioned())
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Restarting partitioned slot (" << reservation_->slot() << ").";
         complete(error::channel_stopped);
         return false;
@@ -160,7 +160,7 @@ void protocol_block_sync::handle_event(const code& ec, event_handler complete)
 
     if (ec && ec != error::channel_timeout)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure in block sync timer for slot (" << reservation_->slot()
             << ") " << ec.message();
         complete(ec);
@@ -172,7 +172,7 @@ void protocol_block_sync::handle_event(const code& ec, event_handler complete)
     // Causing a successful stop here prevents channel startup just to stop.
     if (reservation_->stopped())
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Stopping complete slot (" << reservation_->slot() << ").";
         complete(error::success);
         return;
@@ -180,7 +180,7 @@ void protocol_block_sync::handle_event(const code& ec, event_handler complete)
 
     if (reservation_->expired())
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Restarting slow slot (" << reservation_->slot() << ")";
         complete(error::channel_timeout);
         return;
@@ -193,7 +193,7 @@ void protocol_block_sync::blocks_complete(const code& ec,
 {
     // We are no longer receiving blocks, so exclude from average.
     reservation_->reset();
-    log::debug(LOG_NODE) << "protocol block sync blocks complete," << ec.message();
+    log::trace(LOG_NODE) << "protocol block sync blocks complete," << ec.message();
     // The session does not need to handle the stop.
     stop(error::channel_stopped);
     // This is the end of the peer sync sequence.

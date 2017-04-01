@@ -29,7 +29,7 @@ using namespace bc::message;
 
 // Common default values (no settings context).
 settings::settings()
-  : threads(50),
+  : threads(16),
     protocol(version::level::maximum),
     inbound_connections(32),
     outbound_connections(8),
@@ -63,7 +63,7 @@ settings::settings(bc::settings context)
             identifier = 0x4d53564d;
             inbound_port = 5251;
 
-            // Seeds based on bitcoinstats.com/network/dns-servers
+            // Seeds based on mvs.live/network/dns-servers
             seeds.reserve(6);
             seeds.push_back({ "main-asia.metaverse.live", 5251 });
             seeds.push_back({ "main-americas.metaverse.live", 5251 });
