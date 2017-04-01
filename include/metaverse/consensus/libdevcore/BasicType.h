@@ -25,12 +25,16 @@ public:
 	static uint64_t number(h256& _seedHash);
 	static uint64_t cacheSize(libbitcoin::chain::header& _header);
 	static uint64_t dataSize(uint64_t _blockNumber);
+
+    static void set_as_testnet(){ is_testnet = true; }
+
 private:
 	HeaderAux() {}
 	Mutex x_epochs;
 	h256s m_seedHashes;
 	std::unordered_map<h256, unsigned> m_epochs;
 	static HeaderAux* s_this;
+	static bool is_testnet;
 };
 struct Solution
 {
