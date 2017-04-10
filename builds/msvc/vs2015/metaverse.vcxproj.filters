@@ -18,19 +18,19 @@
     <ClCompile Include="..\..\..\contrib\mongoose\mongoose.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\include\bitcoin\consensus\libethash\internal.c">
+    <ClCompile Include="..\..\..\include\metaverse\consensus\libethash\internal.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\include\bitcoin\consensus\libethash\io.c">
+    <ClCompile Include="..\..\..\include\metaverse\consensus\libethash\io.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\include\bitcoin\consensus\libethash\io_win32.c">
+    <ClCompile Include="..\..\..\include\metaverse\consensus\libethash\io_win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\include\bitcoin\consensus\libethash\sha3.c">
+    <ClCompile Include="..\..\..\include\metaverse\consensus\libethash\sha3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\include\bitcoin\consensus\libethash\util_win32.c">
+    <ClCompile Include="..\..\..\include\metaverse\consensus\libethash\util_win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\bitcoin\constants.cpp">
@@ -1254,25 +1254,25 @@
     <ClCompile Include="..\..\..\src\mvsd\server\settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Exception_basic.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\Exception\Exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Exception_error.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\Exception\Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Exception_instance.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\Exception\Instances.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Mongoose.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\Mongoose.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\RestServ.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\RestServ.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Stream.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\server\http-service\Stream_buf.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream_buf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\mvsd\server\interface\address.cpp">
@@ -1331,1450 +1331,1450 @@
     <ClInclude Include="..\..\..\include\string_view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\compat.h">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\compat.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\constants.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\error.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\handlers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\handlers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\messages.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\messages.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\block.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\business_data.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\business_data.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\header.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\header.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\history.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\history.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\input.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\output.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\output.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\point.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\point_iterator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\spend.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\spend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\stealth.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\stealth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\transaction.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\transaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\attachment.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\attachment.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\ser_deser_interface.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\ser_deser_interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\variant_visitor.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\variant_visitor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\account\account.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\account\account_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\asset\asset.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\asset\asset_detail.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_detail.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\asset\asset_interface.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\asset\asset_transfer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_transfer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\etp\etp.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\etp\etp_award.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp_award.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\attachment\message\message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\message\message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\script\opcode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\script\opcode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\script\operation.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\script\operation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\chain\script\script.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\script\script.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\authority.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\authority.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\base16.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base16.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\base2.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\base58.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base58.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\base64.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\checkpoint.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\checkpoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\directory.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\directory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\endpoint.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\endpoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\hash160.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash160.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\hash256.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash256.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\parameter.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parameter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\parser.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\printer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\printer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\config\sodium.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\sodium.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\formats\base_10.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_10.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\formats\base_16.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_16.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\formats\base_58.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_58.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\formats\base_64.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\formats\base_85.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_85.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\checksum.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\checksum.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\crypto.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\crypto.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\elliptic_curve.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\elliptic_curve.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\hash.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\hash_number.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash_number.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\script_number.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\script_number.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\stealth.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\stealth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\math\uint256.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\uint256.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\alert.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\alert_payload.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\block_message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\block_transactions.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_transactions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\compact_block.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\compact_block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\fee_filter.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\fee_filter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\filter_add.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_add.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\filter_clear.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_clear.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\filter_load.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_load.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\get_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\get_blocks.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_blocks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\get_block_transactions.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_block_transactions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\get_data.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_data.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\get_headers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_headers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\headers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\headers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\header_message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\header_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\heading.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\heading.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\inventory.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\inventory_vector.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory_vector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\memory_pool.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\memory_pool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\merkle_block.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\merkle_block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\network_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\network_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\not_found.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\not_found.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\ping.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\ping.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\pong.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\pong.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\prefilled_transaction.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\prefilled_transaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\reject.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\reject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\send_compact_blocks.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_compact_blocks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\send_headers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_headers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\transaction_message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\transaction_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\verack.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\verack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\message\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\console_streambuf.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\console_streambuf.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\ifstream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ifstream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\ofstream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ofstream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\unicode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\unicode_istream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_istream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\unicode_ostream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_ostream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\unicode\unicode_streambuf.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_streambuf.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\array_slice.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\array_slice.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\asio.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\asio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\assert.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\assert.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\atomic.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\atomic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\backtrace.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\backtrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\binary.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\binary.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\collection.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\collection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\color.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\color.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\conditional_lock.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\conditional_lock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\container_sink.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_sink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\container_source.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_source.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\daemon.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\daemon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\data.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\data.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\deadline.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deadline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\decorator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\decorator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\delegates.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\delegates.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\deserializer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deserializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\dispatcher.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\dispatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\enable_shared_from_base.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\enable_shared_from_base.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\endian.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\endian.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\exceptions.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\exceptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\istream_reader.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\istream_reader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\log.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\logging.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\logging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\monitor.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\monitor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\notifier.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\notifier.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\ostream_writer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\ostream_writer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\path.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\path.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\png.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\png.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\random.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\random.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\reader.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\reader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\resource_lock.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resource_lock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\resubscriber.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resubscriber.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\scope_lock.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\scope_lock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\serializer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\serializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\string.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\subscriber.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\subscriber.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\synchronizer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\synchronizer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\thread.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\thread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\threadpool.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\threadpool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\time.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\time.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\timer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\track.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\track.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\variable_uint_size.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\variable_uint_size.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\work.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\work.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\utility\writer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\writer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\bitcoin_uri.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\bitcoin_uri.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\dictionary.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\dictionary.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\ec_private.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_private.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\ec_public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\ek_private.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_private.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\ek_public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\ek_token.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_token.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\encrypted_keys.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\encrypted_keys.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\hd_private.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_private.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\hd_public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\mini_keys.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mini_keys.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\mnemonic.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mnemonic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\payment_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\payment_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\qrcode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\qrcode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\select_outputs.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\select_outputs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\stealth_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\stealth_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\uri.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\bitcoin\wallet\uri_reader.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri_reader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\block.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\block_chain.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\block_chain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\block_chain_impl.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\block_chain_impl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\block_detail.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\block_detail.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\block_fetcher.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\block_fetcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\organizer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\organizer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\orphan_pool.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\orphan_pool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\simple_chain.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\simple_chain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\transaction_pool.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\transaction_pool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\transaction_pool_index.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\transaction_pool_index.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\validate_block.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\validate_block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\validate_block_impl.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\validate_block_impl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\validate_transaction.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\validate_transaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\blockchain\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\dealer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\dealer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\obelisk_client.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\obelisk_client.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\proxy.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\proxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\socket_stream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\socket_stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\stream.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\client\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\client\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\consensus.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\consensus.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\export.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\export.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\miner.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\miner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Base64.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Base64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\BasicType.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\BasicType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\BuildInfo.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\BuildInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Common.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\CommonData.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\CommonData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\CommonIO.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\CommonIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Exceptions.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\FixedHash.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\FixedHash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Guards.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Guards.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Log.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\picosha2.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\picosha2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\RLP.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\RLP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\SHA3.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\SHA3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\Terminal.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Terminal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\vector_ref.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\vector_ref.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libdevcore\boost_multiprecision_number_compare_bug_workaround.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\boost_multiprecision_number_compare_bug_workaround.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\compiler.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\compiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\data_sizes.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\data_sizes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\endian.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\endian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\ethash.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\ethash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\fnv.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\fnv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\internal.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\io.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\mmap.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\mmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\sha3.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\sha3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\libethash\util.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libethash\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\consensus\miner\MinerAux.h">
+    <ClInclude Include="..\..\..\include\metaverse\consensus\miner\MinerAux.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\data_base.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\data_base.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\account_address_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_address_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\account_asset_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_asset_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\account_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\address_asset_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\address_asset_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\asset_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\asset_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\base_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\base_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\block_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\block_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\history_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\history_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\spend_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\spend_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\stealth_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\stealth_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\databases\transaction_database.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\transaction_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\memory\accessor.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\accessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\memory\allocator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\allocator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\memory\memory.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\memory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\memory\memory_map.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\memory_map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\hash_table_header.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\hash_table_header.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_hash_table.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_hash_table.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_list.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_manager.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_multimap.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_multimap_iterable.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap_iterable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\record_multimap_iterator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\slab_hash_table.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\slab_hash_table.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\primitives\slab_manager.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\slab_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\account_address_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_address_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\account_asset_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_asset_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\account_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\asset_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\asset_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\base_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\base_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\block_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\block_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\database\result\transaction_result.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\database\result\transaction_result.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\callback_state.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\command.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\command_assistant.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command_assistant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\command_extension.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command_extension.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\command_extension_func.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command_extension_func.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\dispatch.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\dispatch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\display.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\display.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\generated.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\generated.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\parser.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\prop_tree.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\prop_tree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\utility.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\address-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\address-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\address-embed.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\address-embed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\address-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\address-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base16-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base16-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base16-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base16-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base58-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base58-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base58-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base58-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base58check-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base58check-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base58check-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base58check-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base64-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base64-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\base64-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\base64-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\bitcoin160.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\bitcoin160.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\bitcoin256.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\bitcoin256.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\btc-to-satoshi.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\btc-to-satoshi.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\cert-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\cert-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\cert-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\cert-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-add-secrets.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-add-secrets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-add.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-add.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-multiply-secrets.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-multiply-secrets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-multiply.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-multiply.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-to-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-to-ek.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-ek.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-to-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ec-to-wif.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-wif.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-public-to-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-public-to-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-public-to-ec.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-public-to-ec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-to-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-to-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ek-to-ec.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ek-to-ec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-balance.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-balance.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-header.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-header.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-height.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-height.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-history.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-public-key.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-public-key.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-stealth.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-tx-index.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx-index.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-tx.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\fetch-utxo.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-utxo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-private.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-private.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-to-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-to-ec.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-ec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-to-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\hd-to-wif.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-wif.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\help.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\input-set.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-set.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\input-sign.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\input-validate.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-validate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\message-sign.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\message-sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\message-validate.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\message-validate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\mnemonic-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\mnemonic-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\mnemonic-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\mnemonic-to-seed.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-to-seed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\qrcode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\qrcode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\ripemd160.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ripemd160.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\satoshi-to-btc.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\satoshi-to-btc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\script-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\script-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\script-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\script-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\script-to-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\script-to-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\seed.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\seed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\send-tx-node.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx-node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\send-tx-p2p.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx-p2p.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\send-tx.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\sha160.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\sha160.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\sha256.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\sha256.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\sha512.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\sha512.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\stealth-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\stealth-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\stealth-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\stealth-secret.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-secret.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\stealth-shared.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-shared.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\token-new.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\token-new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\tx-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\tx-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\tx-sign.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\uri-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\uri-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\uri-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\uri-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\validate-tx.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\watch-address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\watch-tx.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-tx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\wif-to-ec.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\wif-to-ec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\wif-to-public.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\wif-to-public.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\wrap-decode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\wrap-decode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\commands\wrap-encode.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\wrap-encode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\algorithm.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\btc.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\btc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\byte.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\byte.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\cert_key.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\cert_key.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\ec_private.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\ec_private.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\encoding.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\encoding.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\endorsement.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\endorsement.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\hashtype.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hashtype.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\hd_key.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hd_key.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\header.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\header.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\input.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\language.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\metaverse_output.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\output.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\point.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\point.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\raw.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\raw.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\script.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\script.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\signature.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\signature.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\transaction.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\transaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\explorer\config\wrapper.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\wrapper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\acceptor.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\acceptor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\channel.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\channel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\connections.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\connections.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\connector.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\connector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\const_buffer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\const_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\hosts.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\hosts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\locked_socket.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\locked_socket.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\message_subscriber.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\message_subscriber.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\p2p.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\p2p.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\pending_channels.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\pending_channels.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\pending_sockets.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\pending_sockets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\proxy.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\proxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\socket.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\socket.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_events.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_events.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_ping.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_ping.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_seed.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_seed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_timer.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\protocols\protocol_version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session_batch.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_batch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session_inbound.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_inbound.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session_manual.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_manual.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session_outbound.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_outbound.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\network\sessions\session_seed.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_seed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\configuration.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\configuration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\p2p_node.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\p2p_node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\parser.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_block_in.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_in.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_block_out.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_out.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_block_sync.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_sync.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_header_sync.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_header_sync.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_miner.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_miner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_transaction_in.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_in.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_transaction_out.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_out.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\protocols\protocol_version_quiet.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_version_quiet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\sessions\session_block_sync.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_block_sync.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\sessions\session_header_sync.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_header_sync.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\sessions\session_inbound.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_inbound.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\sessions\session_manual.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_manual.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\sessions\session_outbound.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_outbound.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\utility\header_queue.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\header_queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\utility\performance.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\performance.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\utility\reservation.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\node\utility\reservations.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservations.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\interface.pb.h">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\interface.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\converter.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\converter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\packet.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\packet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\primitives.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\primitives.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\request_packet.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\request_packet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\response_packet.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\response_packet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\authenticator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\authenticator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\certificate.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\certificate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\context.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\context.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\frame.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\identifiers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\identifiers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\poller.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\poller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\socket.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\socket.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\worker.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\worker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\protocol\zmq\zeromq.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\zeromq.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\configuration.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\configuration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\define.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\define.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\parser.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\server_node.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\server_node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\settings.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\version.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\interface\address.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\interface\blockchain.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\blockchain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\interface\protocol.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\protocol.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\interface\transaction_pool.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\transaction_pool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\messages\message.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\messages\message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\messages\route.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\messages\route.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\services\block_service.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\services\block_service.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\services\heartbeat_service.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\services\heartbeat_service.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\services\query_service.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\services\query_service.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\services\transaction_service.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\services\transaction_service.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\utility\address_key.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\address_key.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\utility\authenticator.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\authenticator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\utility\fetch_helpers.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\fetch_helpers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\workers\notification_worker.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\workers\notification_worker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitcoin\server\workers\query_worker.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\server\workers\query_worker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\mvs\executor.hpp">
