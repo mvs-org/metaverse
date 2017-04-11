@@ -1551,8 +1551,10 @@ void block_chain_impl::uppercase_symbol(std::string& symbol)
 }
 bool block_chain_impl::is_valid_address(const std::string& address)
 {	
-	using namespace bc::wallet;
-	return payment_address(address);
+	//using namespace bc::wallet;
+	auto addr = bc::wallet::payment_address(address);
+	return	(addr && ((chain_settings().use_testnet_rules && (addr.version() == 0x7f)) // test net addr
+						|| (!chain_settings().use_testnet_rules && (addr.version() == 0x32))));
 }
 
 organizer& block_chain_impl::get_organizer()
