@@ -146,19 +146,19 @@ bool protocol_block_sync::handle_receive(const code& ec, block_ptr message,
 // This is fired by the base timer and stop handler.
 void protocol_block_sync::handle_event(const code& ec, event_handler complete)
 {
-	if (ec == error::service_stopped)
+	if (ec == (code)error::service_stopped)
 	{
 		complete(ec);
 		return ;
 	}
 
-    if (ec == error::channel_stopped)
+    if (ec == (code)error::channel_stopped)
     {
         complete(ec);
         return;
     }
 
-    if (ec && ec != error::channel_timeout)
+    if (ec && ec != (code)error::channel_timeout)
     {
         log::debug(LOG_NODE)
             << "Failure in block sync timer for slot (" << reservation_->slot()

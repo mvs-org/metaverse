@@ -81,9 +81,15 @@ static std::ostream& cerr_stream()
 }
 
 // Use bc::cin in place of std::cin, etc.
+#ifdef __ANDROID__
+std::istream& cin = std::cin;
+std::ostream& cout = std::cout;
+std::ostream& cerr = std::cerr;
+#else
 std::istream& cin = cin_stream();
 std::ostream& cout = cout_stream();
 std::ostream& cerr = cerr_stream();
+#endif
 
 #ifdef WITH_ICU
 

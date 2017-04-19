@@ -221,7 +221,7 @@ void organizer::replace_chain(uint64_t fork_index,
             if (ec)
             {
                 // If invalid block info is also set for the block.
-                if (ec != error::service_stopped)
+                if (ec != (code)error::service_stopped)
                 {
                     const auto& header = orphan_chain[orphan]->actual()->header;
                     const auto block_hash = encode_hash(header.hash());

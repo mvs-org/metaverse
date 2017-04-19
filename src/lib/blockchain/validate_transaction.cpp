@@ -116,7 +116,7 @@ bool validate_transaction::is_standard() const
 void validate_transaction::handle_duplicate_check(
     const code& ec)
 {
-    if (ec != error::not_found)
+    if (ec != (code)error::not_found)
     {
         ///////////////////////////////////////////////////////////////////////
         // BUGBUG: overly restrictive, spent dups ok (BIP30).
@@ -244,7 +244,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
 void validate_transaction::check_double_spend(const code& ec, 
     const chain::input_point&)
 {
-    if (ec != error::unspent_output)
+    if (ec != (code)error::unspent_output)
     {
         handle_validate_(error::double_spend, tx_, {});
         return;

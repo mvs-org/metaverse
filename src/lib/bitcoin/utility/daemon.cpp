@@ -70,8 +70,8 @@ void daemon() {
 	}
 
 	// Close all non-standard file handles.
-	const int fds { getdtablesize() };
-	for (int fd { STDERR_FILENO + 1 }; fd < fds; ++fd) {
+	const long fds{ sysconf(_SC_OPEN_MAX) };
+	for (long fd { STDERR_FILENO + 1 }; fd < fds; ++fd) {
 		close(fd);
 	}
 

@@ -77,7 +77,7 @@ void protocol_ping::send_ping(const code& ec)
         return;
     }
 
-    if (ec && ec != error::channel_timeout)
+    if (ec && ec != (code)error::channel_timeout)
     {
         log::debug(LOG_NETWORK)
             << "Failure in ping timer for [" << authority() << "] "

@@ -22,15 +22,23 @@ ENDIF()
 
 # --------------- Compiler Settings ------------------
 # Common Definitions 
-SET(COMMON_WARN "-Wall -Werror -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
+
+IF(${CMAKE_CXX_COMPILER} MATCHES .*android.*)
+    SET(ANDROID 1)
+ENDIF()
+
+SET(COMMON_WARN "-Wall -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
+if (NOT ANDROID) 
+		SET(COMMON_WARN "${COMMON_WARN} -Werror")
+endif()
 SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
 SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
 
 # GXX/Clang settings
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 ${COMMON_ARGS}")
     #libbitcoin has too many ignored-qualifiers, and TODOs
-    SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -94,6 +102,8 @@ ENDIF()
 INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/contrib")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
+INCLUDE_DIRECTORIES("${secp256k1_INCLUDE_DIRS}")
+INCLUDE_DIRECTORIES("${ZeroMQ_INCLUDE_DIRS}")
 
 # ------------------ MVS Libraries --------------------
 IF(ENABLE_SHARED_LIBS)

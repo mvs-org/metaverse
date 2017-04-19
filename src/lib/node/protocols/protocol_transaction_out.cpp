@@ -160,10 +160,10 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
 void protocol_transaction_out::send_transaction(const code& ec,
     const chain::transaction& transaction, const hash_digest& hash)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return;
 
-    if (ec == error::not_found)
+    if (ec == (code)error::not_found)
     {
         log::debug(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";
@@ -195,10 +195,10 @@ void protocol_transaction_out::send_transaction(const code& ec,
 bool protocol_transaction_out::handle_floated(const code& ec,
     const index_list& unconfirmed, transaction_ptr message)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return false;
 
-    if (ec == error::mock)
+    if (ec == (code)error::mock)
 	{
 		return true;
 	}

@@ -42,7 +42,11 @@ else()
 endif()
 
 if (UNIX AND NOT APPLE)
-	TARGET_LINK_LIBRARIES(ethash pthread m)
+	if (ANDROID) 
+		TARGET_LINK_LIBRARIES(ethash c++_static c++abi atomic m)
+	else()
+		TARGET_LINK_LIBRARIES(ethash pthread m)
+	endif()
 endif()
 
 install(TARGETS ethash RUNTIME DESTINATION bin ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)

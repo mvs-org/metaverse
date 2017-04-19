@@ -76,7 +76,7 @@ void session_batch::converge(const code& ec, channel::ptr channel,
     {
         // If the last connection attempt is an error, normalize the code.
         auto result = ec ? error::operation_failed : error::success;
-        if (ec == error::not_satisfied)
+        if (ec == (code)error::not_satisfied)
         {
         	result = error::not_satisfied;
         }
@@ -117,7 +117,7 @@ void session_batch::new_connect(connector::ptr connect,
 void session_batch::start_connect(const code& ec, const authority& host,
     connector::ptr connect, atomic_counter_ptr counter, channel_handler handler)
 {
-    if (counter->load() == batch_size_ || ec == error::service_stopped)
+    if (counter->load() == batch_size_ || ec == (code)error::service_stopped)
         return;
 
     // This termination prevents a tight loop in the empty address pool case.

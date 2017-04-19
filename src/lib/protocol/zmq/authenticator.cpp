@@ -84,7 +84,7 @@ void authenticator::work()
 {
     socket router(context_, zmq::socket::role::router);
 
-    if (!started(router.bind(endpoint) == error::success))
+    if (!started(router.bind(endpoint) == (code)error::success))
         return;
 
     poller poller;
@@ -107,7 +107,7 @@ void authenticator::work()
         message request;
         auto ec = router.receive(request);
 
-        if (ec != error::success || request.size() < 8)
+        if (ec != (code)error::success || request.size() < 8)
         {
             status_code = "500";
             status_text = "Internal error.";

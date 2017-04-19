@@ -464,7 +464,11 @@ inline long parse_long(const char* str, int base = 10)
         throw number_parse_error();
     }
 
+#ifdef __ANDROID__
+    volatile int saved_errno = errno; // save errno
+#else
     int saved_errno = errno; // save errno
+#endif
     errno = 0; // reset errno
 
     char* endptr;
@@ -500,7 +504,11 @@ inline double parse_double(const char* str)
         }
     }
 
+#ifdef __ANDROID__
+    volatile int saved_errno = errno; // save errno
+#else
     int saved_errno = errno; // save errno
+#endif
     errno = 0; // reset errno
 
     char* endptr;

@@ -13,6 +13,7 @@ find_path(ZeroMQ_ROOT_DIR
     NAMES include/zmq.h
 )
 
+set(_ZeroMQ_ROOT ${ZeroMQ_ROOT_DIR})
 find_path(ZeroMQ_INCLUDE_DIRS
     NAMES zmq.h
     HINTS ${ZeroMQ_ROOT_DIR}/include
@@ -46,7 +47,12 @@ if (ZeroMQ_INCLUDE_DIRS)
     endif()
 
     if (NOT ${CMAKE_CXX_PLATFORM_ID} STREQUAL "Windows")
-        find_library(ZeroMQ_LIBRARIES NAMES zmq HINTS ${_ZeroMQ_ROOT}/lib)
+        if (ANDROID)
+           find_library(ZeroMQ_LIBRARIES NAMES libzmq.a HINTS ${_ZeroMQ_ROOT}/lib)
+        else()
+           find_library(ZeroMQ_LIBRARIES NAMES zmq HINTS ${_ZeroMQ_ROOT}/lib)
+        endif()
+        message(zeromqlib ${ZeroMQ_LIBRARIES})
     else()
         find_library(
             ZeroMQ_LIBRARY_RELEASE

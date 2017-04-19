@@ -67,7 +67,7 @@ bool obelisk_client::connect(const endpoint& address)
 
     for (auto attempt = 0; attempt < 1 + retries_; ++attempt)
     {
-        if (socket_.connect(host_address) == error::success)
+        if (socket_.connect(host_address) == (code)error::success)
             return true;
 
         // Arbitrary delay between connection attempts.

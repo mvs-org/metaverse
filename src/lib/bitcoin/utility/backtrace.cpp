@@ -21,7 +21,9 @@
 #include <boost/format.hpp>
 #include <fstream>
 #ifndef _WIN32
+#ifndef __ANDROID__
 #include <execinfo.h>
+#endif
 #endif
 
 
@@ -30,6 +32,7 @@ namespace libbitcoin
 void back_trace(std::ostream& os)
 {
 #ifndef _WIN32
+#ifndef __ANDROID__
 	int size = 1024;
 	int j = 0, nptrs = 0;
 
@@ -51,6 +54,7 @@ void back_trace(std::ostream& os)
 	}
 
 	free(strings);
+#endif
 #endif
 }
 

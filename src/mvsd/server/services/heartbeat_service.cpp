@@ -132,7 +132,7 @@ void heartbeat_service::publish(uint32_t count, zmq::socket& publisher)
     message.enqueue_little_endian(count);
     auto ec = publisher.send(message);
 
-    if (ec == error::service_stopped)
+    if (ec == (code)error::service_stopped)
         return;
 
     if (ec)

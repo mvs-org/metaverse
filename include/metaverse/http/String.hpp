@@ -57,17 +57,17 @@ template <std::size_t MaxN>
 class String {
  public:
   template <std::size_t MaxR>
-  constexpr String(const String<MaxR>& rhs) noexcept
+  String(const String<MaxR>& rhs) noexcept
   {
     assign(rhs.data(), rhs.size());
   }
-  constexpr String(string_view rhs) noexcept { assign(rhs.data(), rhs.size()); }
-  constexpr String() noexcept { clear(); }
+  String(string_view rhs) noexcept { assign(rhs.data(), rhs.size()); }
+  String() noexcept { clear(); }
 
   ~String() noexcept = default;
 
   // Copy.
-  constexpr String(const String& rhs) noexcept { assign(rhs.data(), rhs.size()); }
+  String(const String& rhs) noexcept { assign(rhs.data(), rhs.size()); }
   constexpr String& operator=(const String& rhs) const noexcept
   {
     assign(rhs.data(), rhs.size());

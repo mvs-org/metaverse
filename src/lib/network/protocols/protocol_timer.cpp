@@ -56,7 +56,7 @@ void protocol_timer::start(const asio::duration& timeout,
 
 void protocol_timer::handle_notify(const code& ec, event_handler handler)
 {
-    if (ec == error::channel_stopped)
+    if (ec == (code)error::channel_stopped)
         timer_->stop();
 
     handler(ec);

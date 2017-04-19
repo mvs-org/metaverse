@@ -127,7 +127,7 @@ void query_worker::query(zmq::socket& router)
     {
         const auto ec = response.send(router);
 
-        if (ec && ec != error::service_stopped)
+        if (ec && ec != (code)error::service_stopped)
             log::warning(LOG_SERVER)
                 << "Failed to send query response to "
                 << response.route().display() << " " << ec.message();
@@ -136,7 +136,7 @@ void query_worker::query(zmq::socket& router)
     message request(secure_);
     const auto ec = request.receive(router);
 
-    if (ec == error::service_stopped)
+    if (ec == (code)error::service_stopped)
         return;
 
     if (ec)

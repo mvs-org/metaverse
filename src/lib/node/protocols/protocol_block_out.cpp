@@ -168,7 +168,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     const header_list& headers)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return;
 
     if (ec)
@@ -236,7 +236,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
     const hash_list& hashes)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return;
 
     if (ec)
@@ -295,10 +295,10 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
 void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
     const hash_digest& hash)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return;
 
-    if (ec == error::not_found)
+    if (ec == (code)error::not_found)
     {
         log::debug(LOG_NODE)
             << "Block requested by [" << authority() << "] not found." << encode_hash(hash);
@@ -325,10 +325,10 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
 void protocol_block_out::send_merkle_block(const code& ec,
     merkle_block_ptr message, const hash_digest& hash)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return;
 
-    if (ec == error::not_found)
+    if (ec == (code)error::not_found)
     {
         log::debug(LOG_NODE)
             << "Merkle block requested by [" << authority() << "] not found.";
@@ -358,10 +358,10 @@ void protocol_block_out::send_merkle_block(const code& ec,
 bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
     const block_ptr_list& incoming, const block_ptr_list& outgoing)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return false;
 
-    if (ec == error::mock)
+    if (ec == (code)error::mock)
 	{
 		return true;
 	}

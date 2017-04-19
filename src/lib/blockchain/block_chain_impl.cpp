@@ -1582,7 +1582,7 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
 		mutex.lock();
 		auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
 		{
-			if(error::success == ec)
+			if((code)error::success == ec)
 				tx_ptr = tx_;
 			mutex.unlock();
 		};
@@ -1618,7 +1618,7 @@ bool block_chain_impl::get_history(const wallet::payment_address& address,
 	mutex.lock();
 	auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
 	{
-		if(error::success == ec)
+		if((code)error::success == ec)
 			history = history_;
 		mutex.unlock();
 	};

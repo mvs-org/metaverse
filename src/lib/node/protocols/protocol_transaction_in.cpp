@@ -121,7 +121,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
 void protocol_transaction_in::handle_filter_floaters(const code& ec,
     get_data_ptr message)
 {
-    if (stopped() || ec == error::service_stopped ||
+    if (stopped() || ec == (code)error::service_stopped ||
         message->inventories.empty())
         return;
 
@@ -142,7 +142,7 @@ void protocol_transaction_in::handle_filter_floaters(const code& ec,
 void protocol_transaction_in::send_get_data(const code& ec,
     get_data_ptr message)
 {
-    if (stopped() || ec == error::service_stopped || 
+    if (stopped() || ec == (code)error::service_stopped || 
         message->inventories.empty())
         return;
 
@@ -230,10 +230,10 @@ void protocol_transaction_in::handle_store_confirmed(const code& ec,
 bool protocol_transaction_in::handle_reorganized(const code& ec, size_t,
     const block_ptr_list&, const block_ptr_list& outgoing)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return false;
 
-    if (ec == error::mock)
+    if (ec == (code)error::mock)
 	{
 		return true;
 	}

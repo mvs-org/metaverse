@@ -147,7 +147,7 @@ bool block_service::unbind(zmq::socket& xpub, zmq::socket& xsub)
 bool block_service::handle_reorganization(const code& ec, uint64_t fork_point,
     const block_list& new_blocks, const block_list&)
 {
-    if (stopped() || ec == error::service_stopped)
+    if (stopped() || ec == (code)error::service_stopped)
         return false;
 
     if (ec)
@@ -182,7 +182,7 @@ void block_service::publish_blocks(uint32_t fork_point,
     zmq::socket publisher(authenticator_, zmq::socket::role::publisher);
     const auto ec = publisher.connect(endpoint);
 
-    if (ec == error::service_stopped)
+    if (ec == (code)error::service_stopped)
         return;
 
     if (ec)
@@ -219,7 +219,7 @@ void block_service::publish_block(zmq::socket& publisher, uint32_t height,
     broadcast.enqueue(block->to_data(false));
     const auto ec = publisher.send(broadcast);
 
-    if (ec == error::service_stopped)
+    if (ec == (code)error::service_stopped)
         return;
 
     if (ec)
