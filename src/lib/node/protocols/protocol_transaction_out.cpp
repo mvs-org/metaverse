@@ -86,7 +86,7 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting " << message->command << " from ["
             << authority() << "] " << ec.message();
         stop(ec);
@@ -107,7 +107,7 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 void protocol_transaction_out::handle_receive_memory_pool(const code& ec,
     memory_pool_ptr)
 {
-	log::debug(LOG_NODE) << "tx out handle receive memory pool,code is " << ec.message();
+	log::trace(LOG_NODE) << "tx out handle receive memory pool,code is " << ec.message();
     auto message = std::make_shared<inventory>();
     pool_.inventory(message);
     SEND2(*message, handle_send, _1, message->command);
@@ -124,7 +124,7 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting inventory from [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -165,7 +165,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
 
     if (ec == (code)error::not_found)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";
 
         const not_found reply{ { inventory::type_id::transaction, hash } };
@@ -182,7 +182,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
         return;
     }
 
-    log::debug(LOG_NODE) << "send transaction " << encode_hash(transaction.hash()) << ", to " << authority();
+    log::trace(LOG_NODE) << "send transaction " << encode_hash(transaction.hash()) << ", to " << authority();
 
     // TODO: eliminate copy.
     SEND2(transaction_message(transaction), handle_send, _1,
@@ -220,7 +220,7 @@ bool protocol_transaction_out::handle_floated(const code& ec,
     {
         static const auto id = inventory::type_id::transaction;
         const inventory announcement{ { id, message->hash() } };
-        log::debug(LOG_NODE) << "handle floated send transaction hash," << encode_hash(message->hash()) ;
+        log::trace(LOG_NODE) << "handle floated send transaction hash," << encode_hash(message->hash()) ;
         SEND2(announcement, handle_send, _1, announcement.command);
     }
 
@@ -229,7 +229,7 @@ bool protocol_transaction_out::handle_floated(const code& ec,
 
 void protocol_transaction_out::handle_stop(const code&)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Stopped transaction_out protocol";
     pool_.fired();
 }

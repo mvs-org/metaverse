@@ -44,6 +44,9 @@ typedef boost::tuple<double, double, int64_t, miner::transaction_ptr> transactio
 
 miner::miner(p2p_node& node) : node_(node), state_(state::init_), setting_(dynamic_cast<block_chain_impl&>(node_.chain()).chain_settings())
 {
+    if (setting_.use_testnet_rules){
+        bc::HeaderAux::set_as_testnet();
+    }
 }
 
 miner::~miner()
@@ -131,10 +134,10 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 {
 	string text;
 	if(is_mainnet) {
-        //BTC 452527 height witness, send to Satoshi 1Ghf657Wmot55pLzQCq5Qp69CFdqsd6bhn
+        //BTC height 452527 witness, sent to Satoshi:12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX 
 		text = "6e64c2098b84b04a0d9f61a60d5bc8f5f80f37e19f3ad9c39bfe419db422b33c";
 	} else {
-		text = "it is Test net";
+		text = "2017.01.18 MVS start running testnet.";
 	}
 
 	block_ptr pblock = make_shared<block>();
@@ -149,8 +152,8 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
     // init for testnet/mainnet
     if (!is_mainnet)
     {
-        libbitcoin::wallet::ec_public public_key("04a96a414d04d73d492473117059458cbd0dc780c1974a48e7400eab1c3bc0d4db01c928b08b83a3474d4b2f0d4be468a6074e8666215afd62d68c23b9edab27ce");
-        tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(public_key.to_payment_address()));
+        bc::wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
+        tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
 	    pblock->header.timestamp = 1479881397;
     } else {
         bc::wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
@@ -212,15 +215,7 @@ int miner::get_lock_heights_index(uint64_t height)
 
 uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet)
 {
-	uint64_t subsidy = 0;
-	
-	if(is_testnet && block_height < 22000){		//coinage reward changed compatible previous blocks
-		uint64_t old_subsidys[] = {9100000000, 5000000000, 1700000000, 800000000, 400000000};
-		subsidy = old_subsidys[block_height / bucket_size];
-	} else {
-		subsidy = uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
-	}
-	return subsidy;
+    return uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
 }
 
 uint64_t miner::calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num)

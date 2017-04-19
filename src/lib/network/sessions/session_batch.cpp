@@ -132,13 +132,13 @@ void session_batch::start_connect(const code& ec, const authority& host,
     // This creates a tight loop in the case of a small address pool.
     if (blacklisted(host))
     {
-        log::debug(LOG_NETWORK)
+        log::warning(LOG_NETWORK)
             << "Fetched blacklisted address [" << host << "] ";
         handler(error::address_blocked, nullptr);
         return;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connecting to [" << host << "]";
 
     // CONNECT
@@ -155,7 +155,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
 #if 0

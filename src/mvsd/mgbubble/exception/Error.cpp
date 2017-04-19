@@ -13,11 +13,9 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#include "metaverse/http/Exception_error.hpp"
+#include <metaverse/mgbubble/exception/Error.hpp>
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 
-} // mg
-} // http
+} // mgbubble

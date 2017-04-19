@@ -56,23 +56,20 @@ struct utxo_attach_info {
 	std::string output_option; // used by get_tx_encode
 };
 
-class BCX_API colon_height;
-
-// colon_height is currently a private encoding in bx.
-static bool decode_colon_height(colon_height& height, const std::string& tuple);
-
-// colon_height is currently a private encoding in bx.
-static std::string encode_colon_height(const colon_height& height);
-
-class BCX_API colon_height
+template<class T1, class T2>
+class BCX_API colon_delimited2_item
 {
 public:
 
     /**
      * Default constructor.
      */
-    colon_height()
-	: start_height(0), end_height(0)
+	colon_delimited2_item()
+	{
+	};
+	
+    colon_delimited2_item(T1 first, T2 second)
+	: first_(first), second_(second)
 	{
 	};
     
@@ -80,25 +77,47 @@ public:
      * Initialization constructor.
      * @param[in]  tuple  The value to initialize with.
      */
-    colon_height(const std::string& tuple)
+    colon_delimited2_item(const std::string& tuple)
     {
 	    std::stringstream(tuple) >> *this;
 	};
 
+	
+	static bool decode_colon_delimited(colon_delimited2_item<T1, T2>& height, const std::string& tuple)
+	{
+		const auto tokens = split(tuple, BX_TX_POINT_DELIMITER);
+		if (tokens.size() != 2)
+			return false;
+	
+		deserialize(height.first_, tokens[0], true);
+		deserialize(height.second_, tokens[1], true);
+	
+		return true;
+	};
+	
+	// colon_delimited2_item is currently a private encoding in bx.
+	static std::string encode_colon_delimited(const colon_delimited2_item<T1, T2>& height)
+	{
+		std::stringstream result;
+		result << height.first_ << BX_TX_POINT_DELIMITER <<
+			height.second_;
+		return result.str();
+	};
+
     /**
-     * Overload stream in. Throws if colon_height is invalid.
-     * @param[in]   colon_height     The colon_height stream to read the value from.
+     * Overload stream in. Throws if colon_delimited2_item is invalid.
+     * @param[in]   colon_delimited2_item     The colon_delimited2_item stream to read the value from.
      * @param[out]  argument  The object to receive the read value.
-     * @return                The colon_height stream reference.
+     * @return                The colon_delimited2_item stream reference.
      */
     friend std::istream& operator>>(std::istream& stream,
-        colon_height& argument)
+        colon_delimited2_item& argument)
     {
         
 	    std::string tuple;
 	    stream >> tuple;
 
-	    if (!decode_colon_height(argument, tuple))
+	    if (!decode_colon_delimited(argument, tuple))
 	    {
 	        throw std::logic_error{"invalid option " + tuple};
 	    }
@@ -113,39 +132,35 @@ public:
      * @return                The output stream reference.
      */
     friend std::ostream& operator<<(std::ostream& output,
-        const colon_height& argument)
+        const colon_delimited2_item& argument)
     {
-	    output << encode_colon_height(argument);
+	    output << encode_colon_delimited(argument);
 	    return output;
 	};
-//private:
+	// get method
+	T1 first(){
+		return first_;
+	};
+	
+	void set_first(const T1& first){
+		first_ = first;
+	};
+	
+	T2 second(){
+		return second_;
+	};
+
+	void set_second(const T2& second){
+		second_ = second;
+	};
+	
+private:
 	/**
-     * The state of this object.
+     * The state of this object. only for uint64_t
      */
-    uint64_t start_height;
-    uint64_t end_height;
+    T1 first_;
+    T2 second_;
 };
-// colon_height is currently a private encoding in bx.
-static bool decode_colon_height(colon_height& height, const std::string& tuple)
-{
-    const auto tokens = split(tuple, ":");
-    if (tokens.size() != 2)
-        return false;
-
-    deserialize(height.start_height, tokens[0], true);
-    deserialize(height.end_height, tokens[1], true);
-
-    return true;
-}
-
-// colon_height is currently a private encoding in bx.
-static std::string encode_colon_height(const colon_height& height)
-{
-    std::stringstream result;
-    result << height.start_height << BX_TX_POINT_DELIMITER <<
-        height.end_height;
-    return result.str();
-}
 
 class command_extension:public command{
 protected:
@@ -2986,8 +3001,7 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("ADDRESS", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -2996,7 +3010,6 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3025,13 +3038,13 @@ public:
 			"Account password/authorization."
 		)
         (
-            "ADDRESS",
+            "address,a",
             value<std::string>(&argument_.address),
             "Address."
 	    )
 	    (
             "height,e",
-            value<libbitcoin::explorer::commands::colon_height>(&option_.height),
+            value<libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>>(&option_.height),
             "Get tx according height eg: -e start-height:end-height."
         );
 
@@ -3052,9 +3065,9 @@ public:
 
     struct option
     {
-    	libbitcoin::explorer::commands::colon_height height;
-		bool use_height;
-		bool use_address;
+    	option():height(0, 0)
+		{};
+    	libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t> height;
     } option_;
 
 };
@@ -3293,8 +3306,7 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("AMOUNT", 1)
-		    .add("ADDRESS", 1);
+            .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -3304,7 +3316,6 @@ public:
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -3338,7 +3349,7 @@ public:
             "How many you will deposit."
         )
 		(
-			"ADDRESS",
+			"address,a",
 			value<std::string>(&argument_.address),
 			"The deposit target address."
 		)

@@ -1,20 +1,19 @@
-#include "Mongoose.hpp"
 
-#include <metaverse/http/Tokeniser.hpp>
-#include <metaverse/http/Exception_instance.hpp>
-#include <metaverse/http/Stream_buf.hpp>
+#include <metaverse/mgbubble/Mongoose.hpp>
+#include <metaverse/mgbubble/utility/Stream_buf.hpp>
+#include <metaverse/mgbubble/utility/Tokeniser.hpp>
+#include <metaverse/mgbubble/exception/Instances.hpp>
 
 #include <metaverse/client.hpp>
 #include <metaverse/blockchain.hpp>
 #include <metaverse/consensus/miner.hpp> //miner
 #include <metaverse/server/services/query_service.hpp> //public_query
 
-namespace http{
+namespace mgbubble{
 
-using namespace mg;
 using namespace bc;
 
-class RestServ : public mg::Mgr<RestServ>
+class RestServ : public Mgr<RestServ>
 {
 public:
     explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs, consensus::miner& miner)
@@ -37,7 +36,7 @@ public:
     RestServ& operator=(RestServ&&) = delete;
 
     //reset
-    void reset(mg::HttpMessage& data) noexcept;
+    void reset(HttpMessage& data) noexcept;
 
     //request
     void httpStatic (mg_connection& nc, HttpMessage data);
@@ -55,7 +54,7 @@ public:
     std::shared_ptr<Session> push_session(HttpMessage data);
     bool check_sessions();
 
-    std::pair<string_view,string_view> user_check(mg::HttpMessage &data)
+    std::pair<string_view,string_view> user_check(HttpMessage &data)
     {
        auto user = data.header("user");
        auto password = data.header("pass");
@@ -102,7 +101,7 @@ private:
     //miner
 
     // config
-    mg::OStream out_;
+    OStream out_;
     Tokeniser<'/'> uri_;
     int state_{0};
     const char* const servername_{"Http-Metaverse"};
@@ -111,4 +110,4 @@ private:
     string document_root_;
 };
 
-} // http
+} // mgbubble

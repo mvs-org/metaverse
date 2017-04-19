@@ -14,19 +14,18 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#ifndef MVS_ELM_EXCEPTION_HPP
-#define MVS_ELM_EXCEPTION_HPP
-
-#include <metaverse/http/Exception_basic.hpp>
+#pragma once
 
 #include <iosfwd>
+#include <metaverse/mgbubble/exception/Exception.hpp>
+
 
 /**
  * @addtogroup Exception
  * @{
  */
 
-namespace http {
+namespace mgbubble {
 
 class MVS_API ServException : public Exception {
 public:
@@ -273,8 +272,7 @@ public:
     const char* httpReason() const noexcept override;
 };
 
-} // http
+} // mgbubble
 
 /** @} */
 
-#endif // MVS_ELM_EXCEPTION_HPP

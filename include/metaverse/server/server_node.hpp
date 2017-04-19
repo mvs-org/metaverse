@@ -25,6 +25,7 @@
 #include <memory>
 #include <metaverse/node.hpp>
 #include <metaverse/protocol.hpp>
+#include <metaverse/mgbubble.hpp>
 #include <metaverse/server/configuration.hpp>
 #include <metaverse/server/define.hpp>
 #include <metaverse/server/messages/message.hpp>
@@ -36,8 +37,6 @@
 #include <metaverse/server/utility/authenticator.hpp>
 #include <metaverse/server/workers/notification_worker.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
-#include <metaverse/http/Mongoose.hpp>
-#include <metaverse/http/RestServ.hpp>
 #include <metaverse/consensus/miner.hpp>
 
 namespace libbitcoin {
@@ -113,7 +112,7 @@ private:
     // modify.chenhao
     void run_mongoose();
     consensus::miner miner_;
-    http::RestServ rest_server_{webpage_path_.string().data(), blockchain_, miner_};
+    mgbubble::RestServ rest_server_{webpage_path_.string().data(), blockchain_, miner_};
 
     // These are thread safe.
     authenticator authenticator_;

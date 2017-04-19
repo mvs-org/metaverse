@@ -82,7 +82,7 @@ void protocol_header_sync::start(event_handler handler)
 
     SUBSCRIBE3(headers, handle_receive, _1, _2, complete);
 
-    log::debug(LOG_NODE) << "begin to sync header";
+    log::trace(LOG_NODE) << "begin to sync header";
     // This is the end of the start sequence.
     send_get_headers(complete);
 }
@@ -100,7 +100,7 @@ void protocol_header_sync::send_get_headers(event_handler complete)
         { hashes_.last_hash() },
         last_.hash()
     };
-    log::debug(LOG_NODE) << "send get headers, [" << encode_hash(hashes_.last_hash()) << "], stop hash[" << encode_hash(last_.hash()) << ']';
+    log::trace(LOG_NODE) << "send get headers, [" << encode_hash(hashes_.last_hash()) << "], stop hash[" << encode_hash(last_.hash()) << ']';
     SEND2(request, handle_send, _1, complete);
 }
 
@@ -111,7 +111,7 @@ void protocol_header_sync::handle_send(const code& ec, event_handler complete)
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure sending get headers to sync [" << authority() << "] "
             << ec.message();
         complete(ec);
@@ -126,7 +126,7 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure receiving headers from sync ["
             << authority() << "] " << ec.message();
         complete(ec);
@@ -151,7 +151,7 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
     // If we completed the last height the sync is complete/success.
     if (next > last_.height())
     {
-    	log::debug(LOG_NODE) << "protocol header sync handle receive complete";
+    	log::trace(LOG_NODE) << "protocol header sync handle receive complete";
         complete(error::success);
         return false;
     }
@@ -159,7 +159,7 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
     // If we received fewer than 2000 the peer is exhausted, try another.
     if (message->elements.size() < max_header_response)
     {
-    	log::debug(LOG_NODE) << "protocol header sync handle receive message size < max header response";
+    	log::trace(LOG_NODE) << "protocol header sync handle receive message size < max header response";
         complete(error::operation_failed);
         return false;
     }
@@ -193,7 +193,7 @@ void protocol_header_sync::handle_event(const code& ec, event_handler complete)
     // Drop the channel if it falls below the min sync rate averaged over all.
     if (sync_rate() < minimum_rate_)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Header sync rate (" << sync_rate() << "/sec) from ["
             << authority() << "]";
         complete(error::channel_timeout);

@@ -61,6 +61,7 @@ FullAllocation::~FullAllocation()
 /*****************************/
 
 HeaderAux* libbitcoin::HeaderAux::s_this = nullptr;
+bool libbitcoin::HeaderAux::is_testnet = false;
 
 
 HeaderAux* HeaderAux::get()
@@ -140,29 +141,26 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
 {
 	const unsigned c_expDiffPeriod = 100000;
-	auto minimumDifficulty = bigint(914572800);
+	auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 	bigint target;
 
+    // DO NOT MODIFY time_config in release
     static uint32_t time_config{24};
-#ifdef MVS_DEBUG
-    std::ifstream infile("time_config", std::ios::in);
-    if(infile) {
-        infile >> time_config;
-    }
-    infile.close();
-#endif
-
 	if (!_bi.number)
+    {
 		throw GenesisBlockCannotBeCalculated();
-	if(_bi.timestamp >= _parent.timestamp+time_config)
-		target = _parent.bits-(_parent.bits/1024);
-	else
-		target = _parent.bits+(_parent.bits/1024);
-	//target = _parent.bits + _parent.bits / 2048 * max<bigint>(1 - (bigint(_bi.timestamp) - _parent.timestamp) / 10, -99);
-	bigint o = target;
+    }
 
-	o = std::max<bigint>(minimumDifficulty, o);
-	return u256(std::min<bigint>(o, std::numeric_limits<u256>::max()));
+	if(_bi.timestamp >= _parent.timestamp + time_config)
+    {
+		target = _parent.bits - (_parent.bits/1024);
+    } else {
+		target = _parent.bits + (_parent.bits/1024);
+    }
+	bigint result = target;
+
+	result = std::max<bigint>(minimumDifficulty, result);
+	return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
 

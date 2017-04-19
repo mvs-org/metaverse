@@ -23,7 +23,7 @@
  * @{
  */
 
-namespace http {
+namespace mgbubble {
 
 template <typename ValueT>
 class Comparable {

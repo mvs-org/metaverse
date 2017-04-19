@@ -252,7 +252,8 @@ public:
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
 					const std::string& symbol, business_kind kind, uint8_t confirmed);
-	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr);
+	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr, 
+			size_t from_height = 0, size_t limit = 0);
 	std::shared_ptr<std::vector<account_address>> get_addresses();
 	
 	// account message api

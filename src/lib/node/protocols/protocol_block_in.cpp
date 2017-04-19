@@ -68,7 +68,7 @@ void protocol_block_in::start()
     auto pthis = enable_shared_from_base();
 	protocol_events::start([pthis](const code& ec){
 		if(ec){
-			log::debug(LOG_NODE) << "protocol block in handle stop," << ec.message();
+			log::trace(LOG_NODE) << "protocol block in handle stop," << ec.message();
  		}
 	});
 #endif
@@ -111,7 +111,7 @@ void protocol_block_in::get_block_inventory(const code& ec)
 
     if (ec && ec != (code)error::channel_timeout)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure in block timer for [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -125,7 +125,7 @@ void protocol_block_in::get_block_inventory(const code& ec)
         organizer& organizer = blockchain_.get_organizer();
         auto&& hashes = organizer.get_fork_chain_last_block_hashes();
         for(auto &i : hashes){
-            log::debug(LOG_NODE) << "send fetch_more_block hasese size:" << hashes.size() <<  " hash:" << encode_hash(i.first);
+            log::trace(LOG_NODE) << "send fetch_more_block hasese size:" << hashes.size() <<  " hash:" << encode_hash(i.first);
             send_get_blocks(i.first, null_hash);
         }
     }
@@ -166,7 +166,7 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
         return;
     }
 
-    log::debug(LOG_NODE)
+    log::trace(LOG_NODE)
         << "Ask [" << authority() << "] for block inventory from ["
         << encode_hash(locator.front()) << "] (" << locator.size()
         << ") to ["
@@ -201,7 +201,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting headers from [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -212,7 +212,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     // In v3 headers will be used to build block tree before getting blocks.
     const auto response = std::make_shared<get_data>();
     message->to_inventory(response->inventories, inventory::type_id::block);
-    log::debug(LOG_NODE) << "protocol_block_in handle_receive_headers size," << message->elements.size();
+    log::trace(LOG_NODE) << "protocol_block_in handle_receive_headers size," << message->elements.size();
 
     // Remove block hashes found in the orphan pool.
     blockchain_.filter_orphans(response,
@@ -231,14 +231,14 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting inventory from [" << authority() << "] "
             << ec.message();
         stop(ec);
         return false;
     }
 
-    log::debug(LOG_NODE) << "protocol block in, handle receive inventory,size," << message->inventories.size() ;
+    log::trace(LOG_NODE) << "protocol block in, handle receive inventory,size," << message->inventories.size() ;
 
     const auto response = std::make_shared<get_data>();
     message->reduce(response->inventories, inventory::type_id::block);
@@ -306,7 +306,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting block not_found from [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -320,7 +320,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     // This only results from reorganization assuming peer is proper.
     for (const auto hash: hashes)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Block not_found [" << encode_hash(hash) << "] from ["
             << authority() << "]";
     }
@@ -338,7 +338,7 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Failure getting block from [" << authority() << "] "
             << ec.message();
         stop(ec);
@@ -352,7 +352,7 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
     // We will pick this up in handle_reorganized.
     message->set_originator(nonce());
 
-    log::debug(LOG_NODE) << "from " << authority() << ",receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count << ",number," << message->header.number ;
+    log::trace(LOG_NODE) << "from " << authority() << ",receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count << ",number," << message->header.number ;
     --headers_batch_size_;
 	/*
     if(not headers_batch_size_.load())
@@ -375,7 +375,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
     // Ignore the block that we already have, a common result.
     if (ec == (code)error::duplicate)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "Redundant block from [" << authority() << "] "
             << ec.message();
         return;
@@ -383,7 +383,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
 
     if(ec == (code)error::fetch_more_block)
     {
-        log::debug(LOG_NODE)
+        log::trace(LOG_NODE)
             << "fetch more blocks start_hash:"
             << encode_hash(message->header.hash());
         send_get_blocks(message->header.hash(), null_hash); 
@@ -401,7 +401,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
     }
 
     // The block is accepted as an orphan, possibly for immediate acceptance.
-    log::debug(LOG_NODE)
+    log::trace(LOG_NODE)
         << "Potential block from [" << authority() << "].";
 
     // Ask the peer for blocks from the top up to this orphan.
@@ -417,7 +417,7 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 {
     if (stopped() || ec == (code)error::service_stopped || incoming.empty())
     {
-    	log::debug(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
+    	log::trace(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
         return false;
     }
 
@@ -440,7 +440,7 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     current_chain_top_.store(incoming.back()->header.hash());
     auto last_hash = incoming.back()->header.hash();
     blockchain_.fetch_block_height(last_hash, [&last_hash](const code&ec, uint64_t height){
-    	log::debug(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
+    	log::trace(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
     });
 
 
@@ -456,14 +456,14 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     const inventory broadcast(hashes, inventory::type_id::block);
 	SEND2(broadcast, handle_send, _1, inventory::command);
 
-	log::debug(LOG_NODE) << "broadcast block too peer, size," << hashes.size();
+	log::trace(LOG_NODE) << "broadcast block too peer, size," << hashes.size();
 	*/
 
     // Report the blocks that originated from this peer.
     // If originating peer is dropped there will be no report here.
     for (const auto block: incoming)
         if (block->originator() == nonce())
-            log::debug(LOG_NODE)
+            log::trace(LOG_NODE)
                 << "Block [" << encode_hash(block->header.hash()) << "] from ["
                 << authority() << "].";
 

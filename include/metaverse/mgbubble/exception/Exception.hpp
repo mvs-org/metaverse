@@ -14,20 +14,15 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#ifndef MVS_ASH_EXCEPTION_HPP
-#define MVS_ASH_EXCEPTION_HPP
 
-#include <metaverse/http/Stream.hpp>
+#pragma once
 
 #include <cstring> // strcpy()
 #include <exception>
+#include <metaverse/mgbubble/utility/Stream.hpp>
 
-/**
- * @addtogroup Exception
- * @{
- */
 
-namespace http {
+namespace mgbubble {
 
 /**
  * Maximum error message length.
@@ -67,8 +62,6 @@ class MVS_API Exception : public std::exception {
  */
 MVS_API ErrMsg& errMsg() noexcept;
 
-} // http
+} // mgbubble
 
-/** @} */
 
-#endif // MVS_ASH_EXCEPTION_HPP

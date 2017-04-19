@@ -14,13 +14,13 @@
  * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-#include <metaverse/http/Exception_instance.hpp>
+#include <metaverse/mgbubble/exception/Instances.hpp>
 
 #include <iostream>
 
 using namespace std;
 
-namespace http {
+namespace mgbubble {
 
 ServException::~ServException() noexcept = default;
 
@@ -122,4 +122,4 @@ const char* UnauthorizedException::httpReason() const noexcept
   return "Unauthorized";
 }
 
-} // http
+} // mgbubble

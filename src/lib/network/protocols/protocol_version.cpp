@@ -113,14 +113,14 @@ bool protocol_version::handle_receive_version(const code& ec,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure receiving version from [" << authority() << "] "
             << ec.message();
         set_event(ec);
         return false;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Peer [" << authority() << "] version (" << message->value
         << ") services (" << message->services << ") time ("
         << message->timestamp << ") " << message->user_agent;
@@ -140,7 +140,7 @@ bool protocol_version::handle_receive_verack(const code& ec, verack::ptr)
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure receiving verack from [" << authority() << "] "
             << ec.message();
         set_event(ec);
@@ -159,7 +159,7 @@ void protocol_version::handle_version_sent(const code& ec)
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure sending version to [" << authority() << "] "
             << ec.message();
         set_event(ec);
@@ -174,7 +174,7 @@ void protocol_version::handle_verack_sent(const code& ec)
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure sending verack to [" << authority() << "] "
             << ec.message();
         set_event(ec);

@@ -1305,11 +1305,12 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 	return sp_asset_vec;
 }
 /// get business record according address
-std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_business_record(const std::string& addr)
+std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_business_record(const std::string& addr,
+	size_t from_height, size_t limit)
 {
 	auto sp_asset_vec = std::make_shared<std::vector<business_record>>();
 	auto key = get_short_hash(addr);
-	business_record::list asset_vec = database_.address_assets.get(key, 0);
+	business_record::list asset_vec = database_.address_assets.get(key, from_height, limit);
 	const auto add_asset = [&](const business_record& addr_asset)
 	{
 		sp_asset_vec->emplace_back(std::move(addr_asset));
@@ -1550,8 +1551,10 @@ void block_chain_impl::uppercase_symbol(std::string& symbol)
 }
 bool block_chain_impl::is_valid_address(const std::string& address)
 {	
-	using namespace bc::wallet;
-	return payment_address(address);
+	//using namespace bc::wallet;
+	auto addr = bc::wallet::payment_address(address);
+	return	(addr && ((chain_settings().use_testnet_rules && (addr.version() == 0x7f)) // test net addr
+						|| (!chain_settings().use_testnet_rules && (addr.version() == 0x32))));
 }
 
 organizer& block_chain_impl::get_organizer()

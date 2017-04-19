@@ -17,19 +17,18 @@
 #ifndef MVSD_MONGOOSE_HPP
 #define MVSD_MONGOOSE_HPP
 
+
+
+#include <metaverse/mgbubble/utility/String.hpp>
+#include <metaverse/mgbubble/exception/Error.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include "mongoose/mongoose.h"
-
-#include <metaverse/http/String.hpp>
-#include <metaverse/http/Exception_error.hpp>
-
 /**
  * @addtogroup Web
  * @{
  */
 
-namespace http {
-namespace mg {
+namespace mgbubble {
 
 #define SESSION_COOKIE_NAME "2iBXdhW9rQxbnDdNQk9KdjiytM9X"
 
@@ -253,7 +252,6 @@ private:
     mg_mgr mgr_;
 };
 
-} // mg
 } // http
 
 /** @} */

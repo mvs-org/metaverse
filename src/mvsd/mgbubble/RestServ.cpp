@@ -1,13 +1,30 @@
+/*
+ * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS).
+ * Copyright (C) 2013, 2016 Swirly Cloud Limited.
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program; if
+ * not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ */
 #include <exception>
 #include <functional> //hash
-#include "metaverse/http/RestServ.hpp"
-#include <metaverse/http/Exception_instance.hpp>
-#include <metaverse/http/Stream_buf.hpp>
+
+#include <metaverse/mgbubble/RestServ.hpp>
+#include <metaverse/mgbubble/exception/Instances.hpp>
+#include <metaverse/mgbubble/utility/Stream_buf.hpp>
+
 #include <metaverse/explorer/command_extension_func.hpp>
 
-namespace http{
+namespace mgbubble{
 
-using namespace mg;
 
 void RestServ::reset(HttpMessage& data) noexcept
 {
@@ -85,7 +102,6 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 // --------------------- json rpc interface -----------------------
 void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 {
-    using namespace mg;
     using namespace bc::client;
     using namespace bc::protocol;
 
@@ -134,7 +150,6 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 // --------------------- Restful-api interface -----------------------
 void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 {
-    using namespace mg;
     using namespace bc::client;
     using namespace bc::protocol;
 
@@ -308,5 +323,5 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
     return true;
 }
 
-}// namespace http
+}// mgbubble
 

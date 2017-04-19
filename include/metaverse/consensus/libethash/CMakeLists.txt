@@ -38,7 +38,7 @@ if (CRYPTOPP_FOUND)
     MESSAGE(STATUS "CryptoPP found")
 	TARGET_LINK_LIBRARIES(ethash ${CRYPTOPP_LIBRARIES})
 else()
-    MESSAGE(STATUS "CryptoPP not found, use existed implement by libethash")
+    MESSAGE(STATUS "CryptoPP not found, use existed implementation")
 endif()
 
 if (UNIX AND NOT APPLE)

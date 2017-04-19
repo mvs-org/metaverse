@@ -527,6 +527,17 @@ bool transaction_pool::delete_single(const hash_digest& tx_hash, const code& ec)
 
     it->handle_confirm(ec, it->tx);
     buffer_.erase(it);
+
+    while(1){
+        const auto it = std::find_if(buffer_.begin(), buffer_.end(), matched);
+
+        if (it == buffer_.end())
+            break;
+
+        it->handle_confirm(ec, it->tx);
+        buffer_.erase(it);
+    }
+
     return true;
 }
 

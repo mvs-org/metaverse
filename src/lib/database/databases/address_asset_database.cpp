@@ -147,7 +147,7 @@ void address_asset_database::delete_last_row(const short_hash& key)
 }
 /// get all record of key from database
 business_record::list address_asset_database::get(const short_hash& key,
-    size_t from_height) const
+    size_t from_height, size_t limit) const
 {
     // Read the height value from the row.
     const auto read_height = [](uint8_t* data)
@@ -190,12 +190,16 @@ business_record::list address_asset_database::get(const short_hash& key,
 
     for (const auto index: records)
     {
+        // Stop once we reach the limit (if specified).
+        if (limit > 0 && result.size() >= limit)
+            break;
+
         // This obtains a remap safe address pointer against the rows file.
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
 
         // Skip rows below from_height.
-        if (from_height == 0 || read_height(address) >= from_height)
+        if (from_height == 0 || read_height(address) <= from_height) // from current block height
             result.emplace_back(read_row(address));
     }
 
@@ -206,7 +210,7 @@ business_record::list address_asset_database::get(const short_hash& key,
 business_history::list address_asset_database::get_business_history(const short_hash& key,
 		size_t from_height) const
 {
-	business_record::list compact = get(key, from_height);
+	business_record::list compact = get(key, from_height, 0);
 	
     business_history::list result;
 

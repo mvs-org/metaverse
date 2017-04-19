@@ -47,7 +47,7 @@ void protocol_miner::start()
 
 void protocol_miner::handle_stop(const code& ec)
 {
-	log::debug(LOG_NODE) << "protocol miner handle stop," << ec.message();
+	log::trace(LOG_NODE) << "protocol miner handle stop," << ec.message();
 }
 
 /*

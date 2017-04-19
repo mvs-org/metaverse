@@ -21,7 +21,7 @@
 #include <functional>
 #include "mongoose/mongoose.h"
 
-namespace http {
+namespace mgbubble {
 namespace cli {
 
 typedef std::function<void(const http_message*)> reply_handler;
