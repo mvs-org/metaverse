@@ -52,7 +52,7 @@ if (ZeroMQ_INCLUDE_DIRS)
         else()
            find_library(ZeroMQ_LIBRARIES NAMES zmq HINTS ${_ZeroMQ_ROOT}/lib)
         endif()
-        message(zeromqlib ${ZeroMQ_LIBRARIES})
+        #        message(zeromqlib ${ZeroMQ_LIBRARIES})
     else()
         find_library(
             ZeroMQ_LIBRARY_RELEASE
