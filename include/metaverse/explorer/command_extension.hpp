@@ -3389,11 +3389,24 @@ public:
 };
 
 
+class send_command: public command_extension{
+public:
+	virtual bool is_block_height_fullfilled(uint64_t height) override{
+		if (height >= 200000) {
+			return true;
+		}
+		return false;
+	}
+
+	virtual uint64_t minimum_block_height() override{
+		return 200000;
+	}
+};
 
 
 /************************ send *************************/
 
-class send: public command_extension
+class send: public send_command
 {
 public:
     static const char* symbol(){ return "send";}
@@ -3488,7 +3501,7 @@ public:
 
 /************************ sendmore *************************/
 
-class sendmore: public command_extension
+class sendmore: public send_command
 {
 public:
     static const char* symbol(){ return "sendmore";}
@@ -3574,7 +3587,7 @@ public:
 
 /************************ sendfrom *************************/
 
-class sendfrom: public command_extension
+class sendfrom: public send_command
 {
 public:
     static const char* symbol(){ return "sendfrom";}
@@ -3677,7 +3690,7 @@ public:
 
 /************************ sendwithmsg *************************/
 
-class sendwithmsg: public command_extension
+class sendwithmsg: public send_command
 {
 public:
     static const char* symbol(){ return "sendwithmsg";}
@@ -3750,7 +3763,7 @@ public:
 
 /************************ sendwithmsgfrom *************************/
 
-class sendwithmsgfrom: public command_extension
+class sendwithmsgfrom: public send_command
 {
 public:
     static const char* symbol(){ return "sendwithmsgfrom";}

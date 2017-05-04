@@ -114,6 +114,14 @@ public:
         return false;
     }
 
+    virtual bool is_block_height_fullfilled(uint64_t height){
+    	return true;
+    }
+
+    virtual uint64_t minimum_block_height(){
+    	return 0;
+    }
+
     /**
      * Determines if STDIN is required to be raw.
      * @return  True if the type of the STDIN argument is primitive::raw.
