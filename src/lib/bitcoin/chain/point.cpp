@@ -146,26 +146,24 @@ bool point::is_null() const
     return index == max_uint32 && hash == null_hash;
 }
 
+// Changed in v3.0 and again in v3.1 (3.0 was unmasked, lots of collisions).
 // This is used with output_point identification within a set of history rows
 // of the same address. Collision will result in miscorrelation of points by
-// client callers. This is NOT a bitcoin checksum.
+// client callers. This is stored in database. This is NOT a bitcoin checksum.
 uint64_t point::checksum() const
 {
-    static constexpr uint64_t divisor = uint64_t{ 1 } << 63;
-    static_assert(divisor == 9223372036854775808ull, "Wrong divisor value.");
+    // Reserve 49 bits for the tx hash and 15 bits (32768) for the input index.
+    static constexpr uint64_t mask = 0xffffffffffff8000;
 
-    // Write index onto a copy of the outpoint hash.
-    auto copy = hash;
-    auto serial = make_serializer(copy.begin());
-    serial.write_4_bytes_little_endian(index);
-    const auto hash_value = from_little_endian_unsafe<uint64_t>(copy.begin());
+    // Use an offset to the middle of the hash to avoid coincidental mining
+    // of values into the front or back of tx hash (not a security feature).
+    // Use most possible bits of tx hash to make intentional collision hard.
+    const auto tx = from_little_endian_unsafe<uint64_t>(hash.begin() + 12);
+    const auto tx_index = static_cast<uint64_t>(index);
 
-    // x mod 2**n == x & (2**n - 1)
-    return hash_value & (divisor - 1);
-
-    // Above usually provides only 32 bits of entropy, so below is preferred.
-    // But this is stored in the database. Change requires server API change.
-    // return std::hash<point>()(*this);
+    const auto tx_upper_49_bits = tx & mask;
+    const auto index_lower_15_bits = tx_index & ~mask;
+    return tx_upper_49_bits | index_lower_15_bits;
 }
 
 bool operator==(const point& left, const point& right)
