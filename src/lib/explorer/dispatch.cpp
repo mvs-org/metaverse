@@ -166,7 +166,7 @@ console_result dispatch_command(int argc, const char* argv[],
     {
     	uint64_t height{0};
     	blockchain.get_last_height(height);
-    	if (!command->is_block_height_fullfilled(height)) {
+    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
     		error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
     		return console_result::failure;
     	}
@@ -214,7 +214,7 @@ console_result dispatch_command(int argc, const char* argv[],
     {
     	uint64_t height{0};
 		blockchain.get_last_height(height);
-    	if (!command->is_block_height_fullfilled(height)) {
+    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
 			error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
 			return console_result::failure;
 		}
