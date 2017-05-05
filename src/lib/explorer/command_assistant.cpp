@@ -1469,7 +1469,11 @@ void utxo_attach_issuefrom_helper::generate_receiver_list()
     if(0==business_type_.compare("etp") || 0==business_type_.compare("etp-award")) {
 
     } else if(0==business_type_.compare("asset-issue")) {
-        receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, mychange_.second, ""});
+        //receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, mychange_.second, ""});
+        if(amount_)
+        	receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, 0, ""});
+		if(mychange_.second)
+        	receiver_list_.push_back({mychange_.first, 1, "etp", symbol_, amount_, mychange_.second, ""});
     } else if(0==business_type_.compare("asset-transfer")) {
         //auto total_amount = get_asset_amounts();
         //receiver_list_.push_back({mychange_.first, 1, "asset-transfer", symbol_, total_amount-amount_, mychange_.second, ""});
@@ -1789,14 +1793,13 @@ void utxo_attach_sendfrom_helper::generate_receiver_list()
         receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, amount_, mychange_.etp_value, ""});
     } else if(0==business_type_.compare("asset-transfer")) {
         //auto total_amount = get_asset_amounts();
-        if( (0 == mychange_.asset_amount) && (0 == mychange_.etp_value) ) // no asset and etp left for the address
-            ;
-        else if(0 == mychange_.asset_amount) // only no asset just transfer etp
+		if(mychange_.asset_amount)
+            receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, mychange_.asset_amount, 0, ""});
+		if(mychange_.etp_value)
             receiver_list_.push_back({mychange_.addr, 1, "etp", "", 0, mychange_.etp_value, ""});
-        else
-            receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, mychange_.asset_amount, mychange_.etp_value, ""});
         // target asset receiver
-        receiver_list_.push_back({address_, 1, "asset-transfer", symbol_, amount_, 0, ""});
+        if(amount_)
+        	receiver_list_.push_back({address_, 1, "asset-transfer", symbol_, amount_, 0, ""});
     } 
 }
 void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain)
