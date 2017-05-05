@@ -32,9 +32,54 @@
 #include <metaverse/network/define.hpp>
 #include <metaverse/network/socket.hpp>
 #include <metaverse/bitcoin/utility/time.hpp>
+#include <chrono>
+#include <atomic>
+#include <iostream>
 
 namespace libbitcoin {
 namespace network {
+
+#ifndef NDEBUG
+class traffic{
+public:
+	static traffic& instance();
+
+	void rx(uint64_t bytes){
+		rx_.fetch_add(bytes);
+	}
+
+	void tx(uint64_t bytes){
+		tx_.fetch_add(bytes);
+	}
+
+	~traffic(){
+		auto now = std::chrono::system_clock::now();
+		std::cout << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load()  << std::endl;
+	}
+private:
+	static boost::detail::spinlock spinlock_;
+	static std::shared_ptr<traffic> instance_;
+	traffic():rx_{0}, tx_{0}, start_time_{std::chrono::system_clock::now()}
+	{
+	}
+
+private:
+	std::atomic<uint64_t> rx_;
+	std::atomic<uint64_t> tx_;
+	std::chrono::system_clock::time_point start_time_;
+};
+traffic& traffic::instance(){
+	if (instance_ == nullptr) {
+		boost::detail::spinlock::scoped_lock guard{spinlock_};
+		if (instance_ == nullptr) {
+			instance_.reset(new traffic{});
+		}
+	}
+	return *instance_;
+}
+boost::detail::spinlock traffic::spinlock_;
+std::shared_ptr<traffic> traffic::instance_ = nullptr;
+#endif
 
 #define NAME "proxy"
 
@@ -150,7 +195,9 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
         stop(ec);
         return;
     }
-
+#ifndef NDEBUG
+    traffic::instance().rx(heading_buffer_.size());
+#endif
     const auto head = heading::factory_from_data(heading_buffer_);
 
     if (!head.is_valid())
@@ -220,6 +267,10 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
         stop(ec);
         return;
     }
+
+#ifndef NDEBUG
+    traffic::instance().rx(payload_buffer_.size());
+#endif
 
     auto checksum = bitcoin_checksum(payload_buffer_);
     if (head.checksum != checksum)
@@ -353,6 +404,11 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
         log::trace(LOG_NETWORK)
             << "Failure sending " << buffer.size() << " byte message to ["
             << authority() << "] " << error.message();
+    else{
+#ifndef NDEBUG
+    	traffic::instance().tx(buffer.size());
+#endif
+    }
 
     handler(error);
 }
