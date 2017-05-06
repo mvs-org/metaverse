@@ -65,11 +65,11 @@ uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
     {
         results.clear();
         boost::split(results, iter, boost::is_any_of(":"));
-        total_payment_amount += std::stoul(results[1], nullptr, 10);
+        total_payment_amount += std::stoull(results[1], nullptr, 10);
     }
 
     // last one for mychange and fee
-    auto fee = std::stoul(results[1], nullptr, 10);
+    auto fee = std::stoull(results[1], nullptr, 10);
     if (fee > utxo_helper::maximum_fee || fee < utxo_helper::minimum_fee)
         throw std::logic_error{"fee must in [10000, 10000000000]"};
 
