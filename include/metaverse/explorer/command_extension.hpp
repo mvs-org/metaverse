@@ -1670,7 +1670,7 @@ public:
     static const char* symbol(){ return "getnewaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getnewaccount "; }
+    const char* description() override { return "Generate a new account from this wallet."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -1749,7 +1749,7 @@ public:
     static const char* symbol(){ return "getaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getaccount "; }
+    const char* description() override { return "Show account details"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -1796,7 +1796,7 @@ public:
         (
             "LASTWORD",
             value<std::string>(&argument_.last_word)->required(),
-            "The last word of your private-key phrase."
+            "The last word of your master private-key phrase."
 	    );
 
         return options;
@@ -2054,7 +2054,7 @@ public:
     static const char* symbol(){ return "listaddresses";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listaddresses "; }
+    const char* description() override { return "List available addresses of this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -2127,7 +2127,7 @@ public:
     static const char* symbol(){ return "getnewaddress";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getnewaddress "; }
+    const char* description() override { return "Generate new address for this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -2273,7 +2273,7 @@ public:
     static const char* symbol(){ return "getblock";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getblock "; }
+    const char* description() override { return "Get sepcified block header from wallet."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -2286,8 +2286,6 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-//        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-//        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(auth_.auth, "hash", variables, input, raw);
     }
 
@@ -2306,16 +2304,6 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-//	    (
-//            "ACCOUNTNAME",
-//            value<std::string>(&auth_.name)->required(),
-//            "Account name."
-//	    )
-//        (
-//            "ACCOUNTAUTH",
-//            value<std::string>(&auth_.auth)->required(),
-//            "Account password/authorization."
-//	    )
 		(
 				"hash",
 				value<bc::config::hash256>(&argument_.hash)->required(),
@@ -2733,7 +2721,7 @@ public:
     static const char* symbol(){ return "listbalances";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listbalances "; }
+    const char* description() override { return "List all balance details of each address of this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -2765,6 +2753,11 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
+        (
+            "nozero,n",
+            value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
+            "List non-zero upsent records."
+        )
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
@@ -2792,6 +2785,7 @@ public:
 
     struct option
     {
+        bool non_zero;
     } option_;
 
 };
@@ -2806,7 +2800,7 @@ public:
     static const char* symbol(){ return "getbalance";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getbalance "; }
+    const char* description() override { return "Show total balance details of this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -2995,7 +2989,7 @@ public:
     static const char* symbol(){ return "listtxs";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listtxs "; }
+    const char* description() override { return "List transactions details of this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -3299,7 +3293,7 @@ public:
     static const char* symbol(){ return "deposit";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "deposit etp"; }
+    const char* description() override { return "Deposit some etp, then get reward for frozen some etp."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -3412,7 +3406,7 @@ public:
     static const char* symbol(){ return "send";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "send etp to one address"; }
+    const char* description() override { return "send etp to a targert address, mychange goes to another existed address of this account."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -3507,7 +3501,7 @@ public:
     static const char* symbol(){ return "sendmore";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "send etp to more addresses"; }
+    const char* description() override { return "send etp to multi target addresses, can specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -3532,12 +3526,12 @@ public:
 		(
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
-            "Send to more target. Eg: sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address"
+            "Send to more target. "
         )
         (
             BX_CONFIG_VARIABLE ",c",
             value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
+            "Get a description and instructions for this command."
         )
 	    (
             "ACCOUNTNAME",
@@ -3599,7 +3593,7 @@ public:
     static const char* symbol(){ return "sendfrom";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendfrom "; }
+    const char* description() override { return "send etp from a specified address of this account to target address, mychange goes to from_address."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -3848,7 +3842,7 @@ public:
     static const char* symbol(){ return "listassets";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "listassets "; }
+    const char* description() override { return "list assets details."; }
 
     arguments_metadata& load_arguments() override
     {

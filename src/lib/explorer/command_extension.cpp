@@ -815,7 +815,15 @@ console_result listbalances::invoke (std::ostream& output,
 
         pt::ptree address_balance;
         pt::read_json(sout, address_balance);
-        balances.push_back(std::make_pair("", address_balance));
+
+        // non_zero display options
+        if (option_.non_zero){
+            if (address_balance.get<uint64_t>("balance.unspent")){
+                balances.push_back(std::make_pair("", address_balance));
+            }
+        } else {
+            balances.push_back(std::make_pair("", address_balance));
+        }
     }
     
     aroot.add_child("balances", balances);
