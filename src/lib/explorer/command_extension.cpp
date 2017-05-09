@@ -937,7 +937,14 @@ console_result listtxs::invoke (std::ostream& output,
 	const uint64_t limit = 100;
 	uint64_t height = 0;
 	
-    auto sh_tx_hash = std::make_shared<std::set<std::string>>();
+	struct tx_hash_height {
+		std::string  hash_;
+		uint64_t height_;
+	};
+	
+	auto sort_by_height = [](const tx_hash_height &lhs, const tx_hash_height &rhs)->bool { return lhs.height_ < rhs.height_; };
+	
+    auto sh_tx_hash = std::make_shared<std::vector<tx_hash_height>>();
     auto sh_txs = std::make_shared<std::vector<tx_block_info>>();
 	blockchain.get_last_height(height);
 	// 1. no address -- list all account tx
@@ -950,14 +957,18 @@ console_result listtxs::invoke (std::ostream& output,
             auto sh_vec = blockchain.get_address_business_record(elem.get_address(), height, limit);
             // scan all kinds of business
             for (auto each : *sh_vec){
-                auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
-                if(ret.second) { // new item
+				auto pos = std::find_if(sh_tx_hash->begin(), sh_tx_hash->end(), [&](const tx_hash_height& elem){
+						return (elem.hash_ == hash256(each.point.hash).to_string()) && (elem.height_ == each.height);
+						});
+				
+				if (pos == sh_tx_hash->end()){ // new item
+					sh_tx_hash->push_back({hash256(each.point.hash).to_string(), each.height});
                     tx_block_info tx;
                     tx.height = each.height;
                     tx.timestamp = each.data.get_timestamp();
                     tx.hash = hash256(each.point.hash).to_string();
                     sh_txs->push_back(tx);
-                } 
+                }
             }
         }
     } else { // address exist in command
@@ -989,14 +1000,18 @@ console_result listtxs::invoke (std::ostream& output,
                 // scan all kinds of business
                 for (auto each : *sh_vec){
                     if((start <= each.data.get_timestamp()) && (each.data.get_timestamp() < end)) {
-                        auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
-                        if(ret.second) { // new item
-                            tx_block_info tx;
-                            tx.height = each.height;
-                            tx.timestamp = each.data.get_timestamp();
-                            tx.hash = hash256(each.point.hash).to_string();
-                            sh_txs->push_back(tx);
-                        }
+						auto pos = std::find_if(sh_tx_hash->begin(), sh_tx_hash->end(), [&](const tx_hash_height& elem){
+								return (elem.hash_ == hash256(each.point.hash).to_string()) && (elem.height_ == each.height);
+								});
+						
+						if (pos == sh_tx_hash->end()){ // new item
+							sh_tx_hash->push_back({hash256(each.point.hash).to_string(), each.height});
+							tx_block_info tx;
+							tx.height = each.height;
+							tx.timestamp = each.data.get_timestamp();
+							tx.hash = hash256(each.point.hash).to_string();
+							sh_txs->push_back(tx);
+						}
                     }
                 }
             }
@@ -1012,19 +1027,41 @@ console_result listtxs::invoke (std::ostream& output,
             auto sh_vec = blockchain.get_address_business_record(argument_.address);
             // scan all kinds of business
             for (auto each : *sh_vec){
-				if((option_.height.first() <= each.height) && (each.height < option_.height.second())) {
-	                auto ret = sh_tx_hash->insert(hash256(each.point.hash).to_string());
-	                if(ret.second) { // new item
-	                    tx_block_info tx;
-	                    tx.height = each.height;
-	                    tx.timestamp = each.data.get_timestamp();
-	                    tx.hash = hash256(each.point.hash).to_string();
-	                    sh_txs->push_back(tx);
-	                } 
+				if((option_.height.first()==0) && (option_.height.second()==0)){ // only address, no height option
+					auto pos = std::find_if(sh_tx_hash->begin(), sh_tx_hash->end(), [&](const tx_hash_height& elem){
+							return (elem.hash_ == hash256(each.point.hash).to_string()) && (elem.height_ == each.height);
+							});
+					
+					if (pos == sh_tx_hash->end()){ // new item
+						sh_tx_hash->push_back({hash256(each.point.hash).to_string(), each.height});
+						tx_block_info tx;
+						tx.height = each.height;
+						tx.timestamp = each.data.get_timestamp();
+						tx.hash = hash256(each.point.hash).to_string();
+						sh_txs->push_back(tx);
+					}
+				} else {  // address with height option
+					if((option_.height.first() <= each.height) && (each.height < option_.height.second())) {
+						auto pos = std::find_if(sh_tx_hash->begin(), sh_tx_hash->end(), [&](const tx_hash_height& elem){
+								return (elem.hash_ == hash256(each.point.hash).to_string()) && (elem.height_ == each.height);
+								});
+						
+						if (pos == sh_tx_hash->end()){ // new item
+							sh_tx_hash->push_back({hash256(each.point.hash).to_string(), each.height});
+							tx_block_info tx;
+							tx.height = each.height;
+							tx.timestamp = each.data.get_timestamp();
+							tx.hash = hash256(each.point.hash).to_string();
+							sh_txs->push_back(tx);
+						}
+					}
 				}
             }
         }
     }
+	// sort by height
+	std::sort (sh_tx_hash->begin(), sh_tx_hash->end(), sort_by_height);
+	
     // fetch tx according its hash
     const char* cmds[2]{"fetch-tx", nullptr};
     std::stringstream sout;
@@ -1034,7 +1071,7 @@ console_result listtxs::invoke (std::ostream& output,
 
     for (auto& elem: *sh_tx_hash) {
         sout.str("");
-        cmds[1] = elem.c_str();
+        cmds[1] = elem.hash_.c_str();
         
         try {
             if(console_result::okay != dispatch_command(2, cmds + 0, sin, sout, sout))
