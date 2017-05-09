@@ -3532,7 +3532,7 @@ public:
 		(
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
-            "Get a description and instructions for this command."
+            "Send to more target. Eg: sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address"
         )
         (
             BX_CONFIG_VARIABLE ",c",
@@ -3552,7 +3552,12 @@ public:
         (
             "receivers,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [address:amount]"
+            "Send to [address:amount]."
+	    )
+        (
+            "mychange,m",
+            value<std::string>(&argument_.mychange_address),
+            "Mychange to this address"
 	    )
 	    (
             "fee,f",
@@ -3574,6 +3579,7 @@ public:
     struct argument
     {
         std::vector<std::string> receivers;
+        std::string mychange_address;
         uint64_t fee;
     } argument_;
 

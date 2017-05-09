@@ -1347,7 +1347,13 @@ console_result sendmore::invoke (std::ostream& output,
     auto index = random % pvaddr->size();
 
     // my change
-    std::string&& mychange = pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee);
+    std::string mychange;
+    if (argument_.mychange_address.empty()){
+        mychange = pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee);
+    } else {
+        mychange = argument_.mychange_address + ":" + std::to_string(argument_.fee);
+    }
+
     argument_.receivers.push_back(mychange);
 
     utxo_helper utxo(std::move(palist), std::move(argument_.receivers));
