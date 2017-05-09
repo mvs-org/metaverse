@@ -432,7 +432,20 @@ uint64_t utxo_helper::get_my_balance()
 void utxo_helper::set_mychange_by_threshold(std::string& mychange)
 {
     receiver_list_.pop_back();
+
+    // mychange == 0
+    if (std::stoul(mychange) == 0)
+        return;
+
     receiver_list_.push_back({mychange_.first + ":" + mychange});
+
+    // random sort receiver_list_
+    auto random = bc::pseudo_random();
+    std::sort(receiver_list_.begin(), receiver_list_.end(), 
+            [random](const std::string& s1, const std::string& s2){
+                return random%2 == 0;
+            });
+
 }
 
 void utxo_helper::group_utxo()
