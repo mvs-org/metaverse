@@ -105,7 +105,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<submitwork>());
     func(make_shared<setminingaccount>());
     func(make_shared<changepasswd>());
-    func(make_shared<changepasswdext>());
 
 }
 
@@ -247,8 +246,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendassetfrom>();
     if (symbol == stopall::symbol())
         return make_shared<stopall>();
-    if (symbol == changepasswdext::symbol())
-        return make_shared<changepasswdext>();
 
     return nullptr;
 }
