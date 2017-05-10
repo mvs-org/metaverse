@@ -210,6 +210,7 @@ BCX_API pt::ptree prop_list(const tx_output_type& tx_output);
  * @param[in]  output_attach  The attachment in output.
  * @return                A property list.
  */
+BCX_API pt::ptree prop_list(const tx_output_type& tx_output, uint32_t index);
 
 BCX_API pt::ptree prop_list(bc::chain::attachment& output_attach);
 /**

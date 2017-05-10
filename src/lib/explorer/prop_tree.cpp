@@ -249,6 +249,37 @@ ptree prop_list(const tx_output_type& tx_output)
     tree.add_child("attachment", prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data)));
     return tree;
 }
+
+ptree prop_list(const tx_output_type& tx_output, uint32_t index)
+{
+    ptree tree;
+	tree.put("index", index);
+    const auto address = payment_address::extract(tx_output.script);
+    if (address)
+        tree.put("address", address);
+
+    tree.put("script", script(tx_output.script).to_string());
+
+    // TODO: this will eventually change due to privacy problems, see:
+    // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
+
+    if (!address)
+    {
+        uint32_t stealth_prefix;
+        ec_compressed ephemeral_key;
+        if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
+            extract_ephemeral_key(ephemeral_key, tx_output.script))
+        {
+            tree.put("stealth.prefix", stealth_prefix);
+            tree.put("stealth.ephemeral_public_key", ec_public(ephemeral_key));
+        }
+    }
+
+    tree.put("value", tx_output.value);
+    tree.add_child("attachment", prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data)));
+    return tree;
+}
+
 ptree prop_list(bc::chain::attachment& attach_data)
 {
     ptree tree;
@@ -288,11 +319,16 @@ ptree prop_tree(const tx_output_type& tx_output)
 }
 ptree prop_tree(const tx_output_type::list& tx_outputs, bool json)
 {
-    ptree tree;
-    tree.add_child("outputs", prop_tree_list("output", tx_outputs, json));
-    return tree;
-}
 
+    pt::ptree list;
+	uint32_t index = 0;
+    for (const auto& value: tx_outputs){
+        list.push_back(std::make_pair("", prop_list(value, index)));
+		index++;
+    }
+
+    return list;
+}
 // points
 
 ptree prop_list(const chain::point& point)
@@ -329,7 +365,8 @@ ptree prop_list(const transaction& transaction, bool json)
     tree.put("hash", hash256(tx.hash()));
     tree.add_child("inputs", prop_tree_list("input", tx.inputs, json));
     tree.put("lock_time", tx.locktime);
-    tree.add_child("outputs", prop_tree_list("output", tx.outputs, json));
+    //tree.add_child("outputs", prop_tree_list("output", tx.outputs, json)); // old code used template func
+    tree.add_child("outputs", prop_tree(tx.outputs, json)); // only used for output to add new field "index"
     tree.put("version", tx.version);
     return tree;
 }
@@ -342,7 +379,8 @@ ptree prop_list(const transaction& transaction, uint64_t tx_height, bool json)
 	tree.put("height", tx_height);
     tree.add_child("inputs", prop_tree_list("input", tx.inputs, json));
     tree.put("lock_time", tx.locktime);
-    tree.add_child("outputs", prop_tree_list("output", tx.outputs, json));
+    //tree.add_child("outputs", prop_tree_list("output", tx.outputs, json));
+    tree.add_child("outputs", prop_tree(tx.outputs, json)); // only used for output to add new field "index"
     tree.put("version", tx.version);
     return tree;
 }
