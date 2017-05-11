@@ -17,8 +17,8 @@
 #ifndef MVSD_MONGOOSE_HPP
 #define MVSD_MONGOOSE_HPP
 
-
-
+#include <vector>
+#include <metaverse/mgbubble/utility/Queue.hpp>
 #include <metaverse/mgbubble/utility/String.hpp>
 #include <metaverse/mgbubble/exception/Error.hpp>
 #include <metaverse/explorer/dispatch.hpp>
@@ -159,7 +159,7 @@ public:
 
     mg_connection& bind(const char* addr)
     {
-      auto* conn = mg_bind(&mgr_, addr, handler);
+      auto* conn = mg_bind(&mgr_, addr, handler_mt);
       if (!conn)
         throw Error{"mg_bind() failed"};
       conn->user_data = this;
@@ -198,12 +198,52 @@ public:
     }
 
     constexpr static const double session_check_interval = 5.0;
+    static const int thread_num_ = 2;
 
 protected:
-    Mgr() noexcept { mg_mgr_init(&mgr_, this); }
+    Mgr() noexcept { 
+            mg_mgr_init(&mgr_, this);
+            start();
+    }
     ~Mgr() noexcept { mg_mgr_free(&mgr_); }
 
 private:
+
+    void start(){
+        for (int i=0; i < thread_num_; i++) {
+            std::thread th([this, i]{
+                mg_mgr mg;
+                mg_mgr_init(&mg, this);
+
+                Queue<mg_connection*> &queue = queue_connections[i];
+
+                while(1) {
+                    while(1){
+                        mg_connection* conn = NULL;    
+                        if(queue.pop(conn) == false){
+                            break;
+                        }
+                        conn->handler = handler;
+                        mg_add_conn(&mg, conn);
+                    }
+
+                    mg_mgr_poll(&mg, 100);
+                }
+            });
+            th.detach();
+        }
+    }
+
+    static void handler_mt(mg_connection* conn, int event, void* data)
+    {
+        if(event == MG_EV_ACCEPT) {
+            if(conn) {
+                mg_remove_conn(conn);
+                int index = conn->sock % thread_num_;
+                queue_connections[index].push(conn);
+            }
+        }
+    }
 
     static void handler(mg_connection* conn, int event, void* data)
     {
@@ -221,6 +261,7 @@ private:
             break;
         }
        case MG_EV_HTTP_REQUEST:{
+
             // rpc call
             if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
                 self->httpRpcRequest(*conn, hm);
@@ -250,7 +291,11 @@ private:
     }// handler
 
     mg_mgr mgr_;
+    static Queue<mg_connection*> queue_connections[thread_num_];
 };
+
+template<typename DerivedT >
+Queue<mg_connection*> Mgr<DerivedT>::queue_connections[thread_num_];
 
 } // http
 

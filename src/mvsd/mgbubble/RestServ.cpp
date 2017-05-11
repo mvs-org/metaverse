@@ -25,6 +25,9 @@
 
 namespace mgbubble{
 
+thread_local OStream RestServ::out_;
+thread_local Tokeniser<'/'> RestServ::uri_;
+thread_local int RestServ::state_ = 0;
 
 void RestServ::reset(HttpMessage& data) noexcept
 {
