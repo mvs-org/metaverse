@@ -434,7 +434,7 @@ void utxo_helper::set_mychange_by_threshold(std::string& mychange)
     receiver_list_.pop_back();
 
     // mychange == 0
-    if (std::stoul(mychange) == 0)
+    if (std::stoull(mychange) == 0)
         return;
 
     receiver_list_.push_back({mychange_.first + ":" + mychange});
