@@ -64,8 +64,8 @@ MG_INTERNAL int mg_parse_address(const char *str, union socket_address *sa,
 MG_INTERNAL void mg_call(struct mg_connection *nc,
                          mg_event_handler_t ev_handler, int ev, void *ev_data);
 void mg_forward(struct mg_connection *from, struct mg_connection *to);
-MG_INTERNAL void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c);
-MG_INTERNAL void mg_remove_conn(struct mg_connection *c);
+void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c);
+void mg_remove_conn(struct mg_connection *c);
 MG_INTERNAL struct mg_connection *mg_create_connection(
     struct mg_mgr *mgr, mg_event_handler_t callback,
     struct mg_add_sock_opts opts);
@@ -2009,7 +2009,7 @@ void mg_tun_destroy_client(struct mg_tun_client *client);
 #define intptr_t long
 #endif
 
-MG_INTERNAL void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c) {
+void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c) {
   DBG(("%p %p", mgr, c));
   c->mgr = mgr;
   c->next = mgr->active_connections;
@@ -2019,7 +2019,7 @@ MG_INTERNAL void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c) {
   c->iface->vtable->add_conn(c);
 }
 
-MG_INTERNAL void mg_remove_conn(struct mg_connection *conn) {
+void mg_remove_conn(struct mg_connection *conn) {
   if (conn->prev == NULL) conn->mgr->active_connections = conn->next;
   if (conn->prev) conn->prev->next = conn->next;
   if (conn->next) conn->next->prev = conn->prev;

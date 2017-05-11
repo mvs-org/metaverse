@@ -101,9 +101,9 @@ private:
     //miner
 
     // config
-    OStream out_;
-    Tokeniser<'/'> uri_;
-    int state_{0};
+    static thread_local OStream out_;
+    static thread_local Tokeniser<'/'> uri_;
+    static thread_local int state_;
     const char* const servername_{"Http-Metaverse"};
     blockchain::block_chain_impl& blockchain_;
     consensus::miner& miner_;

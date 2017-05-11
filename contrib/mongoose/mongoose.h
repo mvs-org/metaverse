@@ -3181,6 +3181,10 @@ struct mg_connection {
  */
 void mg_mgr_init(struct mg_mgr *mgr, void *user_data);
 
+void mg_add_conn(struct mg_mgr *mgr, struct mg_connection *c);
+void mg_remove_conn(struct mg_connection *conn);
+
+
 /*
  * Optional parameters to `mg_mgr_init_opt()`.
  *
