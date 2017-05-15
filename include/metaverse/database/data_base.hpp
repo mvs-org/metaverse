@@ -70,7 +70,7 @@ public:
     public:
         store(const path& prefix);
         bool touch_all() const;
-
+		
         path database_lock;
         path blocks_lookup;
         path blocks_index;
@@ -91,16 +91,44 @@ public:
 		/* end database for account, asset, address_asset relationship */
     };
 
+	class db_metadata
+	{
+	public:
+		db_metadata();
+		db_metadata(std::string version);
+		void reset();
+		bool from_data(const data_chunk& data);
+		bool from_data(std::istream& stream);
+		bool from_data(reader& source);
+		data_chunk to_data() const;
+		void to_data(std::ostream& stream) const;
+		void to_data(writer& sink) const;
+		uint64_t serialized_size() const;
+		
+#ifdef MVS_DEBUG
+		std::string to_string() const;
+#endif
+		friend std::istream& operator>>(std::istream& input, db_metadata& metadata);
+		friend std::ostream& operator<<(std::ostream& output, const db_metadata& metadata);
+		static const std::string current_version;
+		static const std::string file_name;
+		
+		std::string version_;
+	};
+
     /// Create a new database file with a given path prefix and default paths.
     static bool initialize(const path& prefix, const chain::block& genesis);
     static bool touch_file(const path& file_path);
-
+	static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
+	static void read_metadata(const path& metadata_path, data_base::db_metadata& metadata);
+	static bool is_lower_database(const path& prefix);
+	static bool upgrade_database(const settings& settings, const chain::block& genesis);
     /// Construct all databases.
     data_base(const settings& settings);
 
     /// Stop all databases (threads must be joined).
     ~data_base();
-
+	bool clear_block_db(); 
     // Startup and shutdown.
     // ------------------------------------------------------------------------
 

@@ -145,7 +145,6 @@ bool point::is_null() const
 {
     return index == max_uint32 && hash == null_hash;
 }
-#if 0 // reback to old checksum version incase make user removing database
 // Changed in v3.0 and again in v3.1 (3.0 was unmasked, lots of collisions).
 // This is used with output_point identification within a set of history rows
 // of the same address. Collision will result in miscorrelation of points by
@@ -165,8 +164,7 @@ uint64_t point::checksum() const
     const auto index_lower_15_bits = tx_index & ~mask;
     return tx_upper_49_bits | index_lower_15_bits;
 }
-#endif
-
+#if 0 // old version checksum method
 // This is used with output_point identification within a set of history rows
 // of the same address. Collision will result in miscorrelation of points by
 // client callers. This is NOT a bitcoin checksum.
@@ -188,7 +186,7 @@ uint64_t point::checksum() const
     // But this is stored in the database. Change requires server API change.
     // return std::hash<point>()(*this);
 }
-
+#endif
 bool operator==(const point& left, const point& right)
 {
     return left.hash == right.hash && left.index == right.index;

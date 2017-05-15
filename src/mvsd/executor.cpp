@@ -128,7 +128,18 @@ bool executor::do_initchain()
 		set_admin();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
-    }
+    } else {
+    	if(data_base::is_lower_database(data_path)) {
+	        auto genesis = consensus::miner::create_genesis_block(!metadata_.configured.chain.use_testnet_rules);
+	        const auto result = data_base::upgrade_database(metadata_.configured.database, *genesis);
+	        if (not result)
+	        	throw std::runtime_error{"reinitialize blockchain db failed"};
+			// init admin account
+			// set_admin();
+	        log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
+	        return true;
+    	}
+	}
 
     if (ec.value() == directory_exists)
     {
