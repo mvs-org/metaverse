@@ -470,7 +470,7 @@ class BCX_API depositing_etp : public base_transfer_helper
 public:
 	depositing_etp(bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
 		std::string&& to, std::vector<receiver_record>&& receiver_list, uint16_t deposit_cycle = 7, uint64_t fee = 10000):
-		base_transfer_helper(blockchain, std::move(name), std::move(passwd), std::move(std::string("")), std::move(receiver_list), fee), 
+		base_transfer_helper(blockchain, std::move(name), std::move(passwd), std::string(""), std::move(receiver_list), fee), 
 		to_{to}, deposit_cycle_{deposit_cycle}
 		{};
 
