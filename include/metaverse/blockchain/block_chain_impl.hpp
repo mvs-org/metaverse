@@ -272,6 +272,8 @@ public:
 	
 	bool get_history(const wallet::payment_address& address,
 		uint64_t limit, uint64_t from_height, history_compact::list& history);
+	bool validate_transaction(const chain::transaction& tx);
+	bool broadcast_transaction(const chain::transaction& tx);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

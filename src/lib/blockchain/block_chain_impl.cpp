@@ -1606,7 +1606,76 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
 	
 }
 
+bool block_chain_impl::validate_transaction(const chain::transaction& tx)
+{
+	
+	bool ret = false;
+	if (stopped())
+    {
+        //handler(error::service_stopped, {});
+        return ret;
+    }
 
+	//std::shared_ptr<transaction_message>
+	auto tx_ptr = std::make_shared<transaction_message>(tx);
+	boost::mutex mutex;
+	
+	mutex.lock();
+	auto f = [&ret, &mutex](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
+	{
+		log::trace("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		if((error::success == ec) && idx_vec.empty())
+			ret = true;
+		mutex.unlock();
+	};
+		
+	pool().validate(tx_ptr, f);
+	boost::unique_lock<boost::mutex> lock(mutex);
+
+	return ret;
+	
+}
+	
+bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
+{
+	
+	bool ret = false;
+	if (stopped())
+	{
+		//handler(error::service_stopped, {});
+		return ret;
+	}
+
+	//std::shared_ptr<transaction_message>
+	using transaction_ptr = std::shared_ptr<transaction_message>;
+	auto tx_ptr = std::make_shared<transaction_message>(tx);
+	boost::mutex valid_mutex;
+	
+	valid_mutex.lock();
+	//send_mutex.lock();
+	
+    pool().store(tx_ptr, [tx_ptr](const code& ec, transaction_ptr){
+		//send_mutex.unlock();
+		//ret = true;
+    	log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
+    }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+    	log::trace("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		
+		if((error::success == ec) && idx_vec.empty()){
+    		log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " validated";
+		} else {
+			//send_mutex.unlock(); // incase dead lock
+    		log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " invalidated";
+		}
+		ret = true;
+		valid_mutex.unlock();
+    });
+	boost::unique_lock<boost::mutex> lock(valid_mutex);
+	//boost::unique_lock<boost::mutex> send_lock(send_mutex);
+
+	return ret;
+	
+}
 bool block_chain_impl::get_history(const wallet::payment_address& address,
     uint64_t limit, uint64_t from_height, history_compact::list& history)
 {

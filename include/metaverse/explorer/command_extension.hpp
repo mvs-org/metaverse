@@ -33,6 +33,14 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+struct receiver_record {
+    std::string target;
+	std::string symbol;
+    uint64_t    amount; // etp value
+    uint64_t    asset_amount;
+	asset::asset_status status; // only used for non-etp asset
+};
+
 struct prikey_amount{
     std::string first;
     uint64_t    second;

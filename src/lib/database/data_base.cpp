@@ -31,13 +31,15 @@
 #include <metaverse/bitcoin/utility/path.hpp>
 
 #include <algorithm> 
-
+#include <metaverse/bitcoin/config/base16.hpp>  // used by db_metadata and push_attachment
+#include <metaverse/database/version.hpp>
 namespace libbitcoin {
 namespace database {
 
 using namespace boost::filesystem;
 using namespace bc::chain;
 using namespace bc::wallet;
+using namespace libbitcoin::config;
 
 // BIP30 exception blocks.
 // github.com/bitcoin/bips/blob/master/bip-0030.mediawiki#specification
@@ -69,9 +71,34 @@ bool data_base::initialize(const path& prefix, const chain::block& genesis)
 
     if (!instance.create())
         return false;
-
+	auto metadata_path = prefix / db_metadata::file_name;
+	auto metadata = db_metadata(db_metadata::current_version);
+	data_base::write_metadata(metadata_path, metadata);
     instance.push(genesis);
     return instance.stop();
+}
+bool data_base::is_lower_database(const path& prefix)
+{
+	auto metadata_path = prefix / db_metadata::file_name;
+	auto metadata = db_metadata();
+	data_base::read_metadata(metadata_path, metadata);
+	return metadata.version_ < db_metadata::current_version;
+}
+bool data_base::upgrade_database(const settings& settings, const chain::block& genesis)
+{
+	data_base instance(settings);
+	
+	instance.start();
+	// metadata
+	auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
+	//auto metadata = db_metadata();
+	//data_base::read_metadata(metadata_path, metadata); // maybe do recover according db version
+	auto metadata = db_metadata(db_metadata::current_version);
+	data_base::write_metadata(metadata_path, metadata);
+	// blockchain database
+	instance.clear_block_db(); // only refresh blockchain database, todo -- should add account recover.
+	instance.push(genesis);
+	return instance.stop();
 }
 
 void data_base::set_admin(const std::string& name, const std::string& passwd)
@@ -129,6 +156,93 @@ bool data_base::store::touch_all() const
 		touch_file(account_addresses_rows);
 		/* end database for account, asset, address_asset relationship */
 }
+
+data_base::db_metadata::db_metadata():version_("")
+{	
+}
+data_base::db_metadata::db_metadata(std::string version):version_(version)
+{	
+}
+void data_base::db_metadata::reset()
+{
+	version_ = "";
+}
+bool data_base::db_metadata::from_data(const data_chunk& data)
+{
+	data_source istream(data);
+	return from_data(istream);
+}
+
+bool data_base::db_metadata::from_data(std::istream& stream)
+{
+	istream_reader source(stream);
+	return from_data(source);
+}
+
+bool data_base::db_metadata::from_data(reader& source)
+{	
+	reset();
+	version_ = source.read_string();
+	//auto result = static_cast<bool>(source);
+	return true;	
+}
+
+data_chunk data_base::db_metadata::to_data() const
+{
+	data_chunk data;
+	data_sink ostream(data);
+	to_data(ostream);
+	ostream.flush();
+	//BITCOIN_ASSERT(data.size() == serialized_size());
+	return data;
+}
+
+void data_base::db_metadata::to_data(std::ostream& stream) const
+{
+	ostream_writer sink(stream);
+	to_data(sink);
+}
+
+void data_base::db_metadata::to_data(writer& sink) const
+{
+	sink.write_string(version_);
+}
+
+uint64_t data_base::db_metadata::serialized_size() const
+{
+	return sizeof(version_);
+}
+
+#ifdef MVS_DEBUG
+std::string data_base::db_metadata::to_string() const
+{
+	std::ostringstream ss;
+
+	ss << "\t version = " << version_ << "\n"
+		;		
+	return ss.str();
+}
+#endif
+std::istream& operator>>(std::istream& input, data_base::db_metadata& metadata)
+{
+	std::string hexcode;
+	input >> hexcode;
+
+	metadata.from_data(base16(hexcode));
+
+	return input;
+}
+
+std::ostream& operator<<(std::ostream& output, const data_base::db_metadata& metadata)
+{
+	// tx base16 is a private encoding in bx, used to pass between commands.
+	const auto bytes = metadata.to_data();
+	output << base16(bytes);
+	return output;
+}
+
+const std::string data_base::db_metadata::current_version = MVS_DATABASE_VERSION;
+const std::string data_base::db_metadata::file_name = "metadata";
 
 data_base::file_lock data_base::initialize_lock(const path& lock)
 {
@@ -190,6 +304,34 @@ data_base::~data_base()
     close();
 }
 
+bool data_base::clear_block_db() 
+{
+    size_t current_height;
+    auto empty_chain = blocks.top(current_height);
+	while(empty_chain){
+		pop();
+		empty_chain = blocks.top(current_height);
+	}
+	return true;
+}
+void data_base::write_metadata(const path& metadata_path, data_base::db_metadata& metadata)
+{
+	bc::ofstream file_output(metadata_path.string(), std::ofstream::out);
+	file_output << metadata;
+	file_output << std::flush;		
+	file_output.close();
+}
+void data_base::read_metadata(const path& metadata_path, data_base::db_metadata& metadata)
+{
+	if(!boost::filesystem::exists(metadata_path)) {
+		metadata = data_base::db_metadata();
+		return;
+	}
+	bc::ifstream file_input(metadata_path.string(), std::ofstream::in);
+	if (!file_input.good()) throw std::logic_error{std::string("read_metadata error : ")+ strerror(errno)};
+	file_input >> metadata;
+	file_input.close();
+}
 // Startup and shutdown.
 // ----------------------------------------------------------------------------
 
@@ -634,16 +776,14 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 			data_chunk data(address_str.begin(), address_str.end());
 			short_hash hash = ripemd160_hash(data);
 			address_assets.delete_last_row(hash);
-			// todo -- remove asset from asset database
-			// open later
-			/*
-			if(output.is_asset_issue()) {
-				auto symbol = output.get_asset_symbol();
+			// remove asset from asset database
+			bc::chain::output op = *output;
+			if(op.is_asset_issue()) {
+				auto symbol = op.get_asset_symbol();
 				const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
 				const auto symbol_hash = sha256_hash(symbol_data);
 				assets.remove(symbol_hash);
 			}
-			*/
         }
     }
 }
