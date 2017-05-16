@@ -769,12 +769,14 @@ void utxo_helper::set_mychange_by_threshold(std::string& mychange)
 
     receiver_list_.push_back({mychange_.first + ":" + mychange});
 
+#if 0 //there are some bug when deposit
     // random sort receiver_list_
     auto random = bc::pseudo_random();
     std::sort(receiver_list_.begin(), receiver_list_.end(), 
             [random](const std::string& s1, const std::string& s2){
                 return random%2 == 0;
             });
+#endif
 
 }
 
