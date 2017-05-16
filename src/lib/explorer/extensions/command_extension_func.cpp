@@ -25,8 +25,8 @@
 #include <string>    
 #include <array>     
 #include <metaverse/explorer/command.hpp>                
-#include <metaverse/explorer/command_extension.hpp>      
-#include <metaverse/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/command_extension.hpp>      
+#include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 #include <metaverse/explorer/dispatch.hpp>
 #include <boost/property_tree/ptree.hpp>

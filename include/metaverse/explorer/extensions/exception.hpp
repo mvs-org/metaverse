@@ -1,6 +1,5 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016 mvs developers 
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,28 +17,4 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/explorer/commands/wif-to-ec.hpp>
-
-#include <iostream>
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/config/ec_private.hpp>
-
-
-
-namespace libbitcoin {
-namespace explorer {
-namespace commands {
-
-console_result wif_to_ec::invoke(std::ostream& output, std::ostream& error)
-{
-    // Bound parameters.
-    const auto& secret = get_wif_argument();
-
-    output << config::ec_private(secret) << std::flush;
-    return console_result::okay;
-}
-
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+#pragma once

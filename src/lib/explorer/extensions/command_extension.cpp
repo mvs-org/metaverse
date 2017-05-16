@@ -28,9 +28,9 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/command_extension.hpp>
-#include <metaverse/explorer/command_extension_func.hpp>
-#include <metaverse/explorer/command_assistant.hpp>
+#include <metaverse/explorer/extensions/command_extension.hpp>
+#include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/command_assistant.hpp>
 
 namespace libbitcoin {
 namespace explorer {

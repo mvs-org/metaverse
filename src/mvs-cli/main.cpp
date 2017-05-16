@@ -22,7 +22,7 @@
 #include <metaverse/explorer.hpp>
 #include <metaverse/mgbubble/MongooseCli.hpp>
 #include <json/minijson_writer.hpp>
-#include <metaverse/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 BC_USE_MVS_MAIN
 

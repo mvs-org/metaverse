@@ -28,7 +28,7 @@ using namespace boost::placeholders;
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include <metaverse/explorer/command_assistant.hpp>
+#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {

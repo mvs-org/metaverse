@@ -1,6 +1,5 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016 mvs developers 
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,27 +17,4 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/explorer/commands/base64-encode.hpp>
-
-#include <iostream>
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/explorer/define.hpp>
-
-
-namespace libbitcoin {
-namespace explorer {
-namespace commands {
-using namespace bc::config;
-
-console_result base64_encode::invoke(std::ostream& output, std::ostream& error)
-{
-    // Bound parameters.
-    const auto& data = get_data_argument();
-
-    output << base64(data) << std::flush;
-    return console_result::okay;
-}
-
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+#include <metaverse/explorer/extensions/define.hpp>

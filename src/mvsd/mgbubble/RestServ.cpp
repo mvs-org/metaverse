@@ -21,7 +21,7 @@
 #include <metaverse/mgbubble/exception/Instances.hpp>
 #include <metaverse/mgbubble/utility/Stream_buf.hpp>
 
-#include <metaverse/explorer/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 namespace mgbubble{
 

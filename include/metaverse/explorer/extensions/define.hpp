@@ -1,6 +1,5 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016 mvs developers 
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,24 +17,4 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <metaverse/explorer/commands/hd-to-address.hpp>
-
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/explorer/define.hpp>
-
-
-
-namespace libbitcoin {
-namespace explorer {
-namespace commands {
-
-console_result hd_to_address::invoke(std::ostream& output, std::ostream& error)
-{
-    error << BX_HD_TO_ADDRESS_OBSOLETE << std::flush;
-    return console_result::failure;
-}
-
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+#pragma once
