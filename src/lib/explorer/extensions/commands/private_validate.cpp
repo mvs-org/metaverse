@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 mvs developers 
+ * Copyright (c) 2016-2017 mvs developers 
  *
  * This file is part of metaverse-explorer.
  *
@@ -17,4 +17,4 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include <metaverse/explorer/extensions/commands/private_validate.hpp>
