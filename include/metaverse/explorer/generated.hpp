@@ -48,6 +48,7 @@
 #include <metaverse/explorer/commands/mnemonic-decode.hpp>
 #include <metaverse/explorer/commands/mnemonic-encode.hpp>
 #include <metaverse/explorer/commands/mnemonic-new.hpp>
+#include <metaverse/explorer/commands/mnemonic-to-seed.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>
 #include <metaverse/explorer/commands/settings.hpp>
 #include <metaverse/explorer/commands/stealth-decode.hpp>

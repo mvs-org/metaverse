@@ -65,6 +65,7 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
     func(make_shared<mnemonic_decode>());
     func(make_shared<mnemonic_encode>());
     func(make_shared<mnemonic_new>());
+    func(make_shared<mnemonic_to_seed>());
     func(make_shared<send_tx>());
     func(make_shared<settings>());
     func(make_shared<stealth_decode>());
@@ -131,6 +132,8 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<mnemonic_encode>();
     if (symbol == mnemonic_new::symbol())
         return make_shared<mnemonic_new>();
+    if (symbol == mnemonic_to_seed::symbol())
+        return make_shared<mnemonic_to_seed>();
     if (symbol == send_tx::symbol())
         return make_shared<send_tx>();
     if (symbol == settings::symbol())
