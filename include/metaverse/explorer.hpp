@@ -26,6 +26,7 @@
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/utility.hpp>
 #include <metaverse/explorer/version.hpp>
+#include <metaverse/explorer/commands/seed.hpp>
 #include <metaverse/explorer/commands/ec-to-address.hpp>
 #include <metaverse/explorer/commands/ec-to-public.hpp>
 #include <metaverse/explorer/commands/fetch-balance.hpp>

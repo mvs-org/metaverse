@@ -42,6 +42,7 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
     os <<"== original commands ==\r\n";
 
+    func(make_shared<seed>());
     func(make_shared<ec_to_address>());
     func(make_shared<ec_to_public>());
     func(make_shared<fetch_balance>());
@@ -84,6 +85,8 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
 shared_ptr<command> find(const string& symbol)
 {
+    if (symbol == seed::symbol())
+        return make_shared<seed>();
     if (symbol == ec_to_address::symbol())
         return make_shared<ec_to_address>();
     if (symbol == ec_to_public::symbol())

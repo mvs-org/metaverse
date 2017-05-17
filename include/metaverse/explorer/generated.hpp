@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <metaverse/explorer/command.hpp>
+#include <metaverse/explorer/commands/seed.hpp>
 #include <metaverse/explorer/commands/ec-to-address.hpp>
 #include <metaverse/explorer/commands/ec-to-public.hpp>
 #include <metaverse/explorer/commands/fetch-balance.hpp>
