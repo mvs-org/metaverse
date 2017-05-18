@@ -147,6 +147,8 @@ void hosts::handle_timer(const code& ec)
 	else
 	{
 		log::error(LOG_NETWORK) << "hosts file (" << file_path_.string() << ") open failed" ;
+		mutex_.unlock();
+		return;
 	}
 
 	mutex_.unlock();
@@ -158,8 +160,6 @@ code hosts::start()
 {
     if (disabled_)
         return error::success;
-    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
-    snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex_.lock_upgrade();
@@ -173,6 +173,8 @@ code hosts::start()
 
     mutex_.unlock_upgrade_and_lock();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
+    snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
     stopped_ = false;
     bc::ifstream file(file_path_.string());
     const auto file_error = file.bad();
@@ -232,6 +234,7 @@ code hosts::stop()
 
     mutex_.unlock_upgrade_and_lock();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    snap_timer_->stop();
     stopped_ = true;
     bc::ofstream file(file_path_.string());
     const auto file_error = file.bad();
