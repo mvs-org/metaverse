@@ -1470,7 +1470,7 @@ console_result sendfrom::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-
+#if 0
 
 /************************ sendwithmsg *************************/
 
@@ -1490,7 +1490,7 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
     output << IN_DEVELOPING;
     return console_result::okay;
 }
-
+#endif
 
 /************************ listassets *************************/
 

@@ -25,13 +25,13 @@
 #include <string>    
 #include <array>     
 #include <metaverse/explorer/command.hpp>                
-#include <metaverse/explorer/extensions/command_extension.hpp>      
+#include <metaverse/explorer/extensions/command_extension.hpp>   
+#include <metaverse/explorer/extensions/commands/private_send.hpp>  // for cmd move
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 #include <metaverse/explorer/dispatch.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
 
 namespace libbitcoin {
 namespace explorer {

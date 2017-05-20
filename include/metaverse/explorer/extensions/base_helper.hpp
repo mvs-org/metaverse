@@ -27,24 +27,39 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands{
 
+// output attachment type
+enum utxo_attach_type : uint32_t
+{
+	etp,
+	deposit,
+	asset_issue,
+	asset_transfer,
+	asset_locked_issue,
+	asset_locked_transfer,
+	message,
+	digital_identity
+};
+
 struct address_asset_record{
 	std::string prikey;
 	std::string addr;
 	uint64_t	amount; // spendable etp amount
 	std::string symbol;
 	uint64_t	asset_amount; // spendable asset amount
-	asset::asset_status status; // only used for non-etp asset
+	utxo_attach_type type; // only used for non-etp asset
 	output_point output;
 	chain::script script;
 	uint32_t hd_index; // only used for multisig tx
 };
+
 
 struct receiver_record {
     std::string target;
 	std::string symbol;
     uint64_t    amount; // etp value
     uint64_t    asset_amount;
-	asset::asset_status status; // only used for non-etp asset
+	utxo_attach_type type; // only used for non-etp asset
+	attachment attach_elem;  // only used for message , maybe used for "digital identity" later
 };
 
 struct balances {

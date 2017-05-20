@@ -306,6 +306,8 @@ ptree prop_list(bc::chain::attachment& attach_data)
 		}
 	} else if(attach_data.get_type() == MESSAGE_TYPE) {
 		tree.put("type", "message");
+		auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
+		tree.put("content", msg_info.get_content());
 	} else {
 		tree.put("type", "unknown business");
 	}

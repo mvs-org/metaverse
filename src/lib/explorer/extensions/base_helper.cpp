@@ -435,7 +435,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 					record.amount = row.value;
 					record.symbol = "";
 					record.asset_amount = 0;
-					record.status = asset::asset_status::asset_locked;
+					record.type = utxo_attach_type::etp;
 					record.output = row.output;
 					record.script = output.script;
 					
@@ -452,7 +452,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 						record.amount = row.value;
 						record.symbol = "";
 						record.asset_amount = 0;
-						record.status = asset::asset_status::asset_none;
+						record.type = utxo_attach_type::etp;
 						record.output = row.output;
 						record.script = output.script;
 						
@@ -467,7 +467,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 						record.amount = row.value;
 						record.symbol = output.get_asset_symbol();
 						record.asset_amount = output.get_asset_amount();
-						record.status = asset::asset_status::asset_locked;
+						record.type = utxo_attach_type::asset_issue;
 						record.output = row.output;
 						record.script = output.script;
 						
@@ -484,7 +484,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 						record.amount = row.value;
 						record.symbol = output.get_asset_symbol();
 						record.asset_amount = output.get_asset_amount();
-						record.status = asset::asset_status::asset_transferable;
+						record.type = utxo_attach_type::asset_transfer;
 						record.output = row.output;
 						record.script = output.script;
 						
@@ -497,6 +497,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 						log::trace("unspent_asset_=")<< unspent_asset_;
 						log::trace("unspent_etp_=")<< unspent_etp_;
 					}
+					// not add message process here, because message utxo have no etp value
 				}
 			}
 		}
@@ -562,12 +563,14 @@ void base_transfer_helper::populate_tx_inputs(){
 }
 attachment base_transfer_helper::populate_output_attachment(receiver_record& record){
 			
-	if(record.symbol.empty()
-		|| ((record.amount > 0) && (!record.asset_amount))) { // etp
-		return attachment(ETP_TYPE, attach_version, etp(record.amount));
+	if((record.type == utxo_attach_type::etp)
+		|| (record.type == utxo_attach_type::deposit)
+		|| (((record.type == utxo_attach_type::asset_transfer) || (record.type == utxo_attach_type::asset_locked_transfer)) 
+				&& ((record.amount > 0) && (!record.asset_amount)))) { // etp
+		return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
 	} 
 
-	if(record.status == asset::asset_status::asset_locked) {
+	if(record.type == utxo_attach_type::asset_issue) {
 		//std::shared_ptr<std::vector<business_address_asset>>
 		auto sh_asset = blockchain_.get_account_asset(name_, symbol_);
 		if(sh_asset->empty())
@@ -578,11 +581,14 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
 		sh_asset->at(0).detail.set_address(record.target); // target is setted in metaverse_output.cpp
 		auto ass = asset(ASSET_DETAIL_TYPE, sh_asset->at(0).detail);
 		return attachment(ASSET_TYPE, attach_version, ass);
-	} else if(record.status == asset::asset_status::asset_transferable) {
-		auto transfer = asset_transfer(record.symbol, record.asset_amount);
+	} else if(record.type == utxo_attach_type::asset_transfer) {
+		auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
 		auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
 		return attachment(ASSET_TYPE, attach_version, ass);
-	} 
+	} else if(record.type == utxo_attach_type::message) {
+		auto msg = boost::get<bc::chain::blockchain_message>(record.attach_elem.get_attach());
+		return attachment(MESSAGE_TYPE, attach_version, msg);
+	}
 
 	throw std::logic_error{"invalid attachment value in receiver_record"};
 }
@@ -597,7 +603,14 @@ void base_transfer_helper::populate_tx_outputs(){
 		tx_item_idx_++;
 		
 		// filter zero etp and asset. status check just for issue asset
+		#if 0
 		if( !iter.amount && !iter.asset_amount && (iter.status != asset::asset_status::asset_locked))
+			continue;
+		#endif
+		if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
+			continue;
+		if( !iter.amount && !iter.asset_amount 
+			&& (iter.type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -725,17 +738,15 @@ const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
 
 void depositing_etp::populate_change() {
 	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 }
 
 uint32_t depositing_etp::get_reward_lock_height() {
 	int index = 0;
 	auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_cycle_);
-	if (it == vec_cycle.end()) { // not found cycle
-		index = 0;
-	} else {
+	if (it != vec_cycle.end()) { // found cycle
 		index = std::distance(vec_cycle.begin(), it);
 	}
 
@@ -752,7 +763,10 @@ void depositing_etp::populate_tx_outputs() {
 		tx_item_idx_++;
 		
 		// filter zero etp and asset
-		if( !iter.amount && !iter.asset_amount)
+		if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
+			continue;
+		if( !iter.amount && !iter.asset_amount 
+			&& (iter.type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -762,7 +776,7 @@ void depositing_etp::populate_tx_outputs() {
 			throw std::logic_error{"invalid target address"};
 		auto hash = payment.hash();
 		if((to_ == iter.target)
-			&& (asset::asset_status::asset_locked == iter.status)) {// borrow asset status field in pure etp tx
+			&& (utxo_attach_type::deposit == iter.type)) {
 			payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
 		} else {
 			payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
@@ -781,16 +795,16 @@ void depositing_etp::populate_tx_outputs() {
 		
 void sending_etp::populate_change() {
 	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 }
 
 void sending_multisig_etp::populate_change() {
 	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 }
 #include <metaverse/bitcoin/config/base16.hpp>
 
@@ -1002,9 +1016,9 @@ void issuing_asset::sum_payment_amount() {
 
 void issuing_asset::populate_change() {
 	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
 	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
 }
 void issuing_locked_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
@@ -1021,9 +1035,9 @@ void issuing_locked_asset::sum_payment_amount() {
 
 void issuing_locked_asset::populate_change() {
 	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
 	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, asset::asset_status::asset_none});
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
 }
 uint32_t issuing_locked_asset::get_lock_height(){
 	uint64_t height = (deposit_cycle_*24)*(3600/24);
@@ -1042,7 +1056,10 @@ void issuing_locked_asset::populate_tx_outputs() {
 		tx_item_idx_++;
 		
 		// filter zero etp and asset. status check just for issue asset
-		if( !iter->amount && !iter->asset_amount && (iter->status != asset::asset_status::asset_locked))
+		if( !iter->amount && ((iter->type == utxo_attach_type::etp) || (iter->type == utxo_attach_type::deposit))) // etp business , value == 0
+			continue;
+		if( !iter->amount && !iter->asset_amount 
+			&& (iter->type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -1072,18 +1089,18 @@ void issuing_locked_asset::populate_tx_outputs() {
 void sending_asset::populate_change() {
 	if(from_.empty())
 		receiver_list_.push_back({from_list_.at(0).addr, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
-		asset::asset_status::asset_transferable});
+		utxo_attach_type::asset_transfer, attachment()});
 	else
 		receiver_list_.push_back({from_, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
-		asset::asset_status::asset_transferable});
+		utxo_attach_type::asset_transfer, attachment()});
 }
 void sending_locked_asset::populate_change() {
 	if(from_.empty())
 		receiver_list_.push_back({from_list_.at(0).addr, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
-		asset::asset_status::asset_transferable});
+		utxo_attach_type::asset_locked_transfer, attachment()});
 	else
 		receiver_list_.push_back({from_, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
-		asset::asset_status::asset_transferable});
+		utxo_attach_type::asset_locked_transfer, attachment()});
 }
 uint32_t sending_locked_asset::get_lock_height(){
 	uint64_t height = (deposit_cycle_*24)*(3600/24);
@@ -1102,7 +1119,10 @@ void sending_locked_asset::populate_tx_outputs() {
 		tx_item_idx_++;
 		
 		// filter zero etp and asset. status check just for issue asset
-		if( !iter->amount && !iter->asset_amount && (iter->status != asset::asset_status::asset_locked))
+		if( !iter->amount && ((iter->type == utxo_attach_type::etp) || (iter->type == utxo_attach_type::deposit))) // etp business , value == 0
+			continue;
+		if( !iter->amount && !iter->asset_amount 
+			&& ((iter->type == utxo_attach_type::asset_transfer) || (iter->type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
