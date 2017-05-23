@@ -22,11 +22,13 @@
 #include <cstdint>
 #include <zmq.h>
 #include <metaverse/bitcoin.hpp>
+#include <mutex>
 
 namespace libbitcoin {
 namespace protocol {
 namespace zmq {
 
+std::mutex zmq_mtx;
 static constexpr int32_t zmq_fail = -1;
 
 context::context(bool started)
@@ -46,6 +48,7 @@ bool context::start()
 {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
+    std::unique_lock<std::mutex> zmq_lock(zmq_mtx);
     unique_lock lock(mutex_);
 
     if (self_ != nullptr)
@@ -61,6 +64,7 @@ bool context::stop()
 {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
+    std::unique_lock<std::mutex> zmq_lock(zmq_mtx);
     unique_lock lock(mutex_);
 
     if (self_ == nullptr)

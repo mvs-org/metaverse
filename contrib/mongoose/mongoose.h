@@ -2787,10 +2787,14 @@ struct {								\
 
 #ifndef MG_ENABLE_THREADS /* ifdef-ok */
 #ifdef _WIN32
-#define MG_ENABLE_THREADS 1
+#define MG_ENABLE_THREADS 0
 #else
 #define MG_ENABLE_THREADS 0
 #endif
+#endif
+
+#ifndef MG_ENABLE_MUTITHREADS
+#define MG_ENABLE_MUTITHREADS 1
 #endif
 
 #if MG_ENABLE_DEBUG && !defined(CS_ENABLE_DEBUG)
@@ -3106,6 +3110,10 @@ struct mg_mgr {
   struct mg_iface **ifaces; /* network interfaces */
 #if MG_ENABLE_JAVASCRIPT
   struct v7 *v7;
+#endif
+
+#if MG_ENABLE_MUTITHREADS
+  sock_t mthread_ctl[2];
 #endif
 };
 

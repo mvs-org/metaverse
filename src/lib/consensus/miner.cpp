@@ -595,6 +595,9 @@ bool miner::set_miner_payment_address(const bc::wallet::payment_address& address
 
 miner::block_ptr miner::get_block(bool is_force_create_block)
 {
+	static std::mutex mtx;
+	std::lock_guard<std::mutex> lock(mtx);
+
 	if(is_force_create_block) {
 		new_block_ = create_new_block(pay_address_);
 		log::debug(LOG_HEADER) << "force create new block";

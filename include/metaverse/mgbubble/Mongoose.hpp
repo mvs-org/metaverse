@@ -159,7 +159,11 @@ public:
 
     mg_connection& bind(const char* addr)
     {
+#if MG_ENABLE_MUTITHREADS
       auto* conn = mg_bind(&mgr_, addr, handler_mt);
+#else
+      auto* conn = mg_bind(&mgr_, addr, handler);
+#endif
       if (!conn)
         throw Error{"mg_bind() failed"};
       conn->user_data = this;
@@ -203,17 +207,22 @@ public:
 protected:
     Mgr() noexcept { 
             mg_mgr_init(&mgr_, this);
+#if MG_ENABLE_MUTITHREADS
             start();
+#endif
     }
     ~Mgr() noexcept { mg_mgr_free(&mgr_); }
 
 private:
 
+#if MG_ENABLE_MUTITHREADS
     void start(){
         for (int i=0; i < thread_num_; i++) {
             std::thread th([this, i]{
-                mg_mgr mg;
+                mg_mgr& mg = child_mgrs_[i];
                 mg_mgr_init(&mg, this);
+
+                mg_socketpair(mg.mthread_ctl, SOCK_STREAM);
 
                 Queue<mg_connection*> &queue = queue_connections[i];
 
@@ -241,9 +250,11 @@ private:
                 mg_remove_conn(conn);
                 int index = conn->sock % thread_num_;
                 queue_connections[index].push(conn);
+                MG_SEND_FUNC(child_mgrs_[index].mthread_ctl[1], "a", 1, 0);
             }
         }
     }
+#endif
 
     static void handler(mg_connection* conn, int event, void* data)
     {
@@ -291,11 +302,19 @@ private:
     }// handler
 
     mg_mgr mgr_;
+#if MG_ENABLE_MUTITHREADS
     static Queue<mg_connection*> queue_connections[thread_num_];
+    static mg_mgr child_mgrs_[thread_num_];
+#endif
 };
 
+#if MG_ENABLE_MUTITHREADS
 template<typename DerivedT >
 Queue<mg_connection*> Mgr<DerivedT>::queue_connections[thread_num_];
+
+template<typename DerivedT >
+mg_mgr Mgr<DerivedT>::child_mgrs_[thread_num_];
+#endif
 
 } // http
 

@@ -2130,6 +2130,12 @@ void mg_mgr_init_opt(struct mg_mgr *m, void *user_data,
 #if MG_ENABLE_BROADCAST
   m->ctl[0] = m->ctl[1] = INVALID_SOCKET;
 #endif
+
+#if MG_ENABLE_MUTITHREADS
+  m->mthread_ctl[0] = INVALID_SOCKET;
+  m->mthread_ctl[1] = INVALID_SOCKET;
+#endif
+
   m->user_data = user_data;
 
 #ifdef _WIN32
@@ -3531,6 +3537,13 @@ static void mg_mgr_handle_ctl_sock(struct mg_mgr *mgr) {
 }
 #endif
 
+#if MG_ENABLE_MUTITHREADS
+static void mg_mgr_handle_mthread_ctl_sock(struct mg_mgr *mgr) {
+  char d;
+  MG_RECV_FUNC(mgr->mthread_ctl[0], (char *) &d, 1, 0);
+}
+#endif
+
 /* Associate a socket to a connection. */
 void mg_socket_if_sock_set(struct mg_connection *nc, sock_t sock) {
   mg_set_non_blocking_mode(sock);
@@ -3592,6 +3605,12 @@ time_t mg_socket_if_poll(struct mg_iface *iface, int timeout_ms) {
   FD_ZERO(&err_set);
 #if MG_ENABLE_BROADCAST
   mg_add_to_set(mgr->ctl[1], &read_set, &max_fd);
+#endif
+
+#if MG_ENABLE_MUTITHREADS
+  if(mgr->mthread_ctl[0] != INVALID_SOCKET) {
+    mg_add_to_set(mgr->mthread_ctl[0], &read_set, &max_fd);
+  }
 #endif
 
   /*
@@ -3669,6 +3688,13 @@ time_t mg_socket_if_poll(struct mg_iface *iface, int timeout_ms) {
   }
 #endif
 
+#if MG_ENABLE_MUTITHREADS
+  if (num_ev > 0 && mgr->mthread_ctl[0] != INVALID_SOCKET &&
+    FD_ISSET(mgr->mthread_ctl[0], &read_set)) {
+    mg_mgr_handle_mthread_ctl_sock(mgr);
+  }
+#endif
+
   for (nc = mgr->active_connections; nc != NULL; nc = tmp) {
     int fd_flags = 0;
     if (nc->sock != INVALID_SOCKET) {
@@ -3700,7 +3726,7 @@ time_t mg_socket_if_poll(struct mg_iface *iface, int timeout_ms) {
   return (time_t) now;
 }
 
-#if MG_ENABLE_BROADCAST
+//#if MG_ENABLE_BROADCAST
 int mg_socketpair(sock_t sp[2], int sock_type) {
   union socket_address sa;
   sock_t sock;
@@ -3742,7 +3768,8 @@ int mg_socketpair(sock_t sp[2], int sock_type) {
 
   return ret;
 }
-#endif /* MG_ENABLE_BROADCAST */
+
+//#endif /* MG_ENABLE_BROADCAST */
 
 static void mg_sock_get_addr(sock_t sock, int remote,
                              union socket_address *sa) {
