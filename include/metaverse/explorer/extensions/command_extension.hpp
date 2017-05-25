@@ -3284,7 +3284,7 @@ public:
     } option_;
 
 };
-
+#if 0
 /************************ deposit *************************/
 
 class deposit : public command_extension
@@ -3381,7 +3381,7 @@ public:
     } option_;
 
 };
-
+#endif
 
 class send_command: public command_extension{
 public:

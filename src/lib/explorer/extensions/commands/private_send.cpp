@@ -30,6 +30,48 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
+/************************ deposit *************************/
+console_result deposit::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
+        throw std::logic_error{"invalid address!"};
+
+    if (argument_.deposit != 7 && argument_.deposit != 30 
+		&& argument_.deposit != 90 && argument_.deposit != 182
+		&& argument_.deposit != 365)
+    {
+        throw std::logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
+    }
+	
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr || pvaddr->empty()) 
+        throw std::logic_error{"nullptr for address list"};
+
+    auto random = bc::pseudo_random();
+    auto index = random % pvaddr->size();
+
+    auto addr = argument_.address;
+	if(addr.empty())
+		addr = pvaddr->at(index).get_address();
+		
+	// receiver
+	std::vector<receiver_record> receiver{
+		{addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()} 
+	};
+	auto deposit_helper = depositing_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);
+			
+	deposit_helper.exec();
+
+	// json output
+	auto tx = deposit_helper.get_transaction();
+	pt::write_json(output, prop_tree(tx, true));
+
+    return console_result::okay;
+}
+
 /************************ send *************************/
 
 console_result send::invoke (std::ostream& output,
