@@ -610,7 +610,7 @@ void base_transfer_helper::populate_tx_outputs(){
 		if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
 			continue;
 		if( !iter.amount && !iter.asset_amount 
-			&& (iter.type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
+			&& ((iter.type == utxo_attach_type::asset_transfer)|| (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -737,10 +737,12 @@ std::vector<unsigned char> base_transfer_helper::satoshi_to_chunk(const int64_t&
 const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
 
 void depositing_etp::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	if(unspent_etp_ - payment_etp_) { // etp change value != 0
+		if(from_.empty())
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+		else
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	}
 }
 
 uint32_t depositing_etp::get_reward_lock_height() {
@@ -766,7 +768,7 @@ void depositing_etp::populate_tx_outputs() {
 		if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
 			continue;
 		if( !iter.amount && !iter.asset_amount 
-			&& (iter.type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
+			&& ((iter.type == utxo_attach_type::asset_transfer) || (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -794,17 +796,21 @@ void depositing_etp::populate_tx_outputs() {
 
 		
 void sending_etp::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	if(unspent_etp_ - payment_etp_) {
+		if(from_.empty())
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+		else
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	}
 }
 
 void sending_multisig_etp::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	if(unspent_etp_ - payment_etp_) {
+		if(from_.empty())
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+		else
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	}
 }
 #include <metaverse/bitcoin/config/base16.hpp>
 
@@ -1015,10 +1021,12 @@ void issuing_asset::sum_payment_amount() {
 }
 
 void issuing_asset::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
-	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
+	if(unspent_etp_ - payment_etp_) {
+		if(from_.empty())
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
+		else
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
+	}
 }
 void issuing_locked_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
@@ -1034,10 +1042,12 @@ void issuing_locked_asset::sum_payment_amount() {
 }
 
 void issuing_locked_asset::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
-	else
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
+	if(unspent_etp_ - payment_etp_) {
+		if(from_.empty())
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
+		else
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
+	}
 }
 uint32_t issuing_locked_asset::get_lock_height(){
 	uint64_t height = (deposit_cycle_*24)*(3600/24);
@@ -1059,7 +1069,7 @@ void issuing_locked_asset::populate_tx_outputs() {
 		if( !iter->amount && ((iter->type == utxo_attach_type::etp) || (iter->type == utxo_attach_type::deposit))) // etp business , value == 0
 			continue;
 		if( !iter->amount && !iter->asset_amount 
-			&& (iter->type == utxo_attach_type::asset_transfer)) // asset transfer business, etp == 0 && asset_amount == 0
+			&& ((iter->type == utxo_attach_type::asset_transfer) || (iter->type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
 			continue;
 		
 		// complicated script and asset should be implemented in subclass
@@ -1087,20 +1097,34 @@ void issuing_locked_asset::populate_tx_outputs() {
     }
 }
 void sending_asset::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
+	if(from_.empty()) {
+		// etp utxo
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
+		utxo_attach_type::etp, attachment()});
+		// asset utxo
+		receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_transfer, attachment()});
-	else
-		receiver_list_.push_back({from_, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
+	} else {
+		// etp utxo
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
+		utxo_attach_type::etp, attachment()});
+		// asset utxo
+		receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_transfer, attachment()});
+	}
 }
 void sending_locked_asset::populate_change() {
-	if(from_.empty())
-		receiver_list_.push_back({from_list_.at(0).addr, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
+	if(from_.empty()) {
+		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
+		utxo_attach_type::etp, attachment()});
+		receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_locked_transfer, attachment()});
-	else
-		receiver_list_.push_back({from_, symbol_, unspent_etp_ - payment_etp_, unspent_asset_ - payment_asset_,
+	} else {
+		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
+		utxo_attach_type::etp, attachment()});
+		receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_locked_transfer, attachment()});
+	}
 }
 uint32_t sending_locked_asset::get_lock_height(){
 	uint64_t height = (deposit_cycle_*24)*(3600/24);

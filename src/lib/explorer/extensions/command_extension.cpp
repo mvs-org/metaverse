@@ -1291,7 +1291,7 @@ console_result deposit::invoke (std::ostream& output,
 
     return console_result::okay;
 }
-
+#if 0
 /************************ send *************************/
 
 console_result send::invoke (std::ostream& output,
@@ -1469,7 +1469,7 @@ console_result sendfrom::invoke (std::ostream& output,
 
     return console_result::okay;
 }
-
+#endif
 #if 0
 
 /************************ sendwithmsg *************************/
