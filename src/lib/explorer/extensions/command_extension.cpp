@@ -1837,7 +1837,8 @@ console_result createasset::invoke (std::ostream& output,
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply);
-    acc->set_asset_type(option_.asset_type); // todo -- type not defined
+    //acc->set_asset_type(option_.asset_type); // todo -- type not defined
+    acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
     acc->set_address(option_.address);
     acc->set_description(option_.description);
@@ -1862,7 +1863,7 @@ console_result createasset::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-
+#if 0
 /************************ issue *************************/
 
 console_result issue::invoke (std::ostream& output,
@@ -2241,7 +2242,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
 
     return console_result::okay;
 }
-
+#endif
 
 /************************ getdid *************************/
 

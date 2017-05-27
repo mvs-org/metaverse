@@ -122,12 +122,33 @@ bool account_asset_database::close()
 
 void account_asset_database::store(const short_hash& key, const asset_detail& detail)
 {
-	auto write = [&detail](memory_ptr data)
-	{
-		auto serial = make_serializer(REMAP_ADDRESS(data));
-		serial.write_data(detail.to_data());
-	};
-    rows_multimap_.add_row(key, write);
+	// find the target asset if exist
+	auto asset_vec = get(key);
+	auto pos = std::find_if(asset_vec.begin(), asset_vec.end(), [&](const asset_detail& elem){
+			return (elem.get_symbol() == detail.get_symbol());
+			});
+	
+	if (pos == asset_vec.end()) { // new item
+		// actually store asset
+		auto write = [&detail](memory_ptr data)
+		{
+			auto serial = make_serializer(REMAP_ADDRESS(data));
+			serial.write_data(detail.to_data());
+		};
+		rows_multimap_.add_row(key, write);
+	} else { // delete all and recreate all
+		*pos = detail;
+		for(auto& each : asset_vec)
+			delete_last_row(key);
+		for(auto& each : asset_vec) {
+			auto each_write = [&each](memory_ptr data)
+			{
+				auto serial = make_serializer(REMAP_ADDRESS(data));
+				serial.write_data(each.to_data());
+			};
+			rows_multimap_.add_row(key, each_write);
+		}
+	}
 }
 
 void account_asset_database::delete_last_row(const short_hash& key)

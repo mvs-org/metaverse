@@ -1021,11 +1021,12 @@ void issuing_asset::sum_payment_amount() {
 }
 
 void issuing_asset::populate_change() {
-	if(unspent_etp_ - payment_etp_) {
-		if(from_.empty())
-			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
-		else
-			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_issue, attachment()});
+	if(from_.empty()) {
+		if(unspent_etp_ - payment_etp_) // etp value != 0
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+	} else {
+		if(unspent_etp_ - payment_etp_) // etp value != 0
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	}
 }
 void issuing_locked_asset::sum_payment_amount() {
@@ -1042,15 +1043,19 @@ void issuing_locked_asset::sum_payment_amount() {
 }
 
 void issuing_locked_asset::populate_change() {
-	if(unspent_etp_ - payment_etp_) {
-		if(from_.empty())
-			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
-		else
-			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::asset_locked_issue, attachment()});
+	if(from_.empty()){
+		if(unspent_etp_ - payment_etp_) 
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+		//receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, 0, utxo_attach_type::asset_locked_issue, attachment()});
+	} else {
+		if(unspent_etp_ - payment_etp_) 
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+		//receiver_list_.push_back({from_, symbol_, 0, 0, utxo_attach_type::asset_locked_issue, attachment()});
 	}
 }
 uint32_t issuing_locked_asset::get_lock_height(){
-	uint64_t height = (deposit_cycle_*24)*(3600/24);
+	//uint64_t height = (deposit_cycle_*24)*(3600/24);
+	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
 		throw std::logic_error{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
@@ -1078,13 +1083,10 @@ void issuing_locked_asset::populate_tx_outputs() {
 		if (!payment)
 			throw std::logic_error{"invalid target address"};
 		auto hash = payment.hash();
-		if(iter == (receiver_list_.end() - 1)) { // change record
-			payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+		if(utxo_attach_type::asset_locked_issue == iter->type) { // issue locked asset record
+			payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
 		} else {
-			if(deposit_cycle_)
-				payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
-			else
-				payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+			payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
 		}
 			
 		auto payment_script = chain::script{ payment_ops };
@@ -1099,35 +1101,46 @@ void issuing_locked_asset::populate_tx_outputs() {
 void sending_asset::populate_change() {
 	if(from_.empty()) {
 		// etp utxo
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
+		if(unspent_etp_ - payment_etp_)
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
 		utxo_attach_type::etp, attachment()});
 		// asset utxo
-		receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
+		if(unspent_asset_ - payment_asset_)
+			receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_transfer, attachment()});
 	} else {
 		// etp utxo
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
+		if(unspent_etp_ - payment_etp_)
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
 		utxo_attach_type::etp, attachment()});
 		// asset utxo
-		receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
+		if(unspent_asset_ - payment_asset_)
+			receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_transfer, attachment()});
 	}
 }
 void sending_locked_asset::populate_change() {
 	if(from_.empty()) {
-		receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
+		if(unspent_etp_ - payment_etp_)
+			receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
 		utxo_attach_type::etp, attachment()});
-		receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
+		
+		if(unspent_asset_ - payment_asset_)
+			receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_locked_transfer, attachment()});
 	} else {
-		receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
+		if(unspent_etp_ - payment_etp_)
+			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
 		utxo_attach_type::etp, attachment()});
-		receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
+
+		if(unspent_asset_ - payment_asset_)
+			receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
 		utxo_attach_type::asset_locked_transfer, attachment()});
 	}
 }
 uint32_t sending_locked_asset::get_lock_height(){
-	uint64_t height = (deposit_cycle_*24)*(3600/24);
+	//uint64_t height = (deposit_cycle_*24)*(3600/24);
+	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
 		throw std::logic_error{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
@@ -1155,13 +1168,10 @@ void sending_locked_asset::populate_tx_outputs() {
 		if (!payment)
 			throw std::logic_error{"invalid target address"};
 		auto hash = payment.hash();
-		if(iter == (receiver_list_.end() - 1)) { // change record
-			payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+		if(utxo_attach_type::asset_locked_transfer == iter->type) {
+			payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
 		} else {
-			if(deposit_cycle_)
-				payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
-			else
-				payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+			payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
 		}
 			
 		auto payment_script = chain::script{ payment_ops };

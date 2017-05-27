@@ -49,6 +49,12 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
+	enum asset_detail_type : uint32_t
+	{
+		created,
+		issued_not_in_blockchain,
+		issued_in_blockchain
+	};
 	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,

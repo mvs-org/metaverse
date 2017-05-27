@@ -4265,7 +4265,7 @@ public:
 };
 
 
-
+#if 0
 /************************ issue *************************/
 
 class issue: public command_extension
@@ -4804,7 +4804,7 @@ public:
     } option_;
 
 };
-
+#endif
 
 
 /************************ getdid *************************/

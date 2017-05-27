@@ -624,6 +624,545 @@ public:
 
 };
 
+/************************ issue *************************/
+
+class issue: public command_extension
+{
+public:
+    static const char* symbol(){ return "issue";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issue "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("SYMBOL", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+		(
+			"SYMBOL",
+			value<std::string>(&argument_.symbol)->required(),
+			"issued asset symbol"
+		)
+		(
+			"fee,f",
+			value<uint64_t>(&argument_.fee)->default_value(1000000000),
+			"The fee of tx. default_value 10 etp"
+		);
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+    	std::string symbol;
+    	uint64_t fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuefrom *************************/
+
+class issuefrom: public command_extension
+{
+public:
+    static const char* symbol(){ return "issuefrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuefrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("ADDRESS", 1)
+            .add("SYMBOL", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "ADDRESS", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+		(
+			"ADDRESS",
+			value<std::string>(&argument_.address)->required(),
+			"target address"
+		)
+		(
+			"SYMBOL",
+			value<std::string>(&argument_.symbol)->required(),
+			"issued asset symbol"
+		)
+		(
+			"fee,f",
+			value<uint64_t>(&argument_.fee)->default_value(1000000000),
+			"The fee of tx. default_value 10 etp"
+		);
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+    	std::string address;
+    	std::string symbol;
+    	uint64_t fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuemore *************************/
+
+class issuemore: public command_extension
+{
+public:
+    static const char* symbol(){ return "issuemore";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuemore "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ issuemorefrom *************************/
+
+class issuemorefrom: public command_extension
+{
+public:
+    static const char* symbol(){ return "issuemorefrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "issuemorefrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ sendasset *************************/
+
+class sendasset: public command_extension
+{
+public:
+    static const char* symbol(){ return "sendasset";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendasset "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+			.add("ADDRESS", 1)
+			.add("SYMBOL", 1)
+			.add("AMOUNT", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "ADDRESS", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+		(
+			"ACCOUNTAUTH",
+			value<std::string>(&auth_.auth)->required(),
+			"Account password/authorization."
+		)
+		(
+			"ADDRESS",
+			value<std::string>(&argument_.address)->required(),
+			"Asset receiver."
+		)
+		(
+			"SYMBOL",
+			value<std::string>(&argument_.symbol)->required(),
+			"Asset symbol/name."
+		)
+		(
+			"AMOUNT",
+			value<uint64_t>(&argument_.amount)->required(),
+			"Asset count."
+		)
+	    (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "The fee of tx. default_value 0.0001 etp"
+	    );
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+    	std::string address;
+		std::string symbol;
+    	uint64_t amount;
+    	uint64_t fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+
+/************************ sendassetfrom *************************/
+
+class sendassetfrom: public command_extension
+{
+public:
+    static const char* symbol(){ return "sendassetfrom";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendassetfrom "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("FROMADDRESS", 1)
+            .add("TOADDRESS", 1)
+            .add("SYMBOL", 1)
+            .add("AMOUNT", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
+        load_input(argument_.to, "TOADDRESS", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+		(
+			"FROMADDRESS",
+			value<std::string>(&argument_.from)->required(),
+			"from address"
+		)
+		(
+			"TOADDRESS",
+			value<std::string>(&argument_.to)->required(),
+			"target address"
+		)
+		(
+			"SYMBOL",
+			value<std::string>(&argument_.symbol)->required(),
+			"asset symbol"
+		)
+		(
+			"AMOUNT",
+			value<uint64_t>(&argument_.amount)->required(),
+			"The asset amount shares"
+		)
+		(
+			"fee,f",
+			value<uint64_t>(&argument_.fee)->default_value(10000),
+			"The fee of tx. default_value 0.0001 etp"
+		);
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+
+    struct argument
+    {
+		std::string from;
+		std::string to;
+		std::string symbol;
+		uint64_t amount;
+		uint64_t fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
 }
 } 
 }

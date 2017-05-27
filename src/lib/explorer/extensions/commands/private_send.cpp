@@ -30,6 +30,8 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
+#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
+
 /************************ deposit *************************/
 console_result deposit::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
@@ -208,6 +210,198 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 	pt::write_json(output, prop_tree(tx, true));
 
 	return console_result::okay;
+}
+
+/************************ issue *************************/
+
+console_result issue::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    blockchain.uppercase_symbol(argument_.symbol);
+
+	if(argument_.fee < 1000000000)
+        throw std::logic_error{"issue asset fee less than 1000000000!"};
+    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        throw std::logic_error{"asset symbol length must be less than 64."};
+    // fail if asset is already in blockchain
+    if(blockchain.is_asset_exist(argument_.symbol, false))
+        throw std::logic_error{"asset symbol is already exist in blockchain"};
+	// local database asset check
+	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
+	if(sh_asset->empty())
+		throw std::logic_error{argument_.symbol + " not found"};
+	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
+		throw std::logic_error{argument_.symbol + " has been issued"};
+
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr || pvaddr->empty()) 
+        throw std::logic_error{"nullptr for address list"};
+    
+    // get random address    
+    auto index = bc::pseudo_random() % pvaddr->size();
+    auto addr = pvaddr->at(index).get_address();
+	
+	// receiver
+	std::vector<receiver_record> receiver{
+		{addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
+	};
+	auto issue_helper = issuing_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			"", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+	
+	issue_helper.exec();
+
+	// json output
+	auto tx = issue_helper.get_transaction();
+	pt::write_json(output, prop_tree(tx, true));
+
+	// change asset status
+	sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+	auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
+    blockchain.store_account_asset(detail);
+
+    return console_result::okay;
+}
+
+/************************ issuefrom *************************/
+
+console_result issuefrom::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    blockchain.uppercase_symbol(argument_.symbol);
+
+	if(argument_.fee < 1000000000)
+        throw std::logic_error{"issue asset fee less than 1000000000!"};
+    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        throw std::logic_error{"asset symbol length must be less than 64."};
+    if (!blockchain.is_valid_address(argument_.address))
+        throw std::logic_error{"invalid address parameter!"};
+    // fail if asset is already in blockchain
+    if(blockchain.is_asset_exist(argument_.symbol, false))
+        throw std::logic_error{"asset symbol is already exist in blockchain"};
+
+	// local database asset check
+	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
+	if(sh_asset->empty())
+		throw std::logic_error{argument_.symbol + " not found"};
+	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
+		throw std::logic_error{argument_.symbol + " has been issued"};
+
+	// receiver
+	std::vector<receiver_record> receiver{
+		{argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
+	};
+	auto issue_helper = issuing_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+	
+	issue_helper.exec();
+	// json output
+	auto tx = issue_helper.get_transaction();
+#if 0
+	auto issue_helper = issuing_locked_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
+	
+	issue_helper.exec();
+	// json output
+	auto tx = issue_helper.get_transaction();
+#endif
+	// change asset status
+	sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+	auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
+    blockchain.store_account_asset(detail);
+
+	pt::write_json(output, prop_tree(tx, true));
+
+    return console_result::okay;
+}
+
+/************************ issuemore *************************/
+
+console_result issuemore::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    output << IN_DEVELOPING;
+    return console_result::okay;
+}
+
+
+/************************ issuemorefrom *************************/
+
+console_result issuemorefrom::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    output << IN_DEVELOPING;
+    return console_result::okay;
+}
+
+/************************ sendasset *************************/
+
+console_result sendasset::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	blockchain.uppercase_symbol(argument_.symbol);
+	
+	if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+		throw std::logic_error{"asset symbol length must be less than 64."};
+	if (!blockchain.is_valid_address(argument_.address))
+		throw std::logic_error{"invalid to address parameter!"};
+	if (!argument_.amount)
+		throw std::logic_error{"invalid asset amount parameter!"};
+
+	// receiver
+	std::vector<receiver_record> receiver{
+		{argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+	};
+	auto send_helper = sending_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			"", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+#if 0
+	auto send_helper = sending_locked_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			"", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
+#endif
+	
+	send_helper.exec();
+
+	// json output
+	auto tx = send_helper.get_transaction();
+	pt::write_json(output, prop_tree(tx, true));
+
+	return console_result::okay;
+}
+
+/************************ sendassetfrom *************************/
+
+console_result sendassetfrom::invoke (std::ostream& output,
+        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+{
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    blockchain.uppercase_symbol(argument_.symbol);
+    
+    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        throw std::logic_error{"asset symbol length must be less than 64."};
+    
+    if (!blockchain.is_valid_address(argument_.from))
+        throw std::logic_error{"invalid from address parameter!"};
+    if (!blockchain.is_valid_address(argument_.to))
+        throw std::logic_error{"invalid to address parameter!"};
+    if (!argument_.amount)
+        throw std::logic_error{"invalid asset amount parameter!"};
+
+	// receiver
+	std::vector<receiver_record> receiver{
+		{argument_.to, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+	};
+	auto send_helper = sending_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			std::move(argument_.from), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+	
+	send_helper.exec();
+
+	// json output
+	auto tx = send_helper.get_transaction();
+	pt::write_json(output, prop_tree(tx, true));
+
+    return console_result::okay;
 }
 
 } //commands
