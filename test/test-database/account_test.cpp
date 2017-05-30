@@ -1,9 +1,9 @@
 #ifdef  ACCOUNT_TESTS
 #include <iostream>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/utility.hpp>
-#include <bitcoin/explorer/config/ec_private.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/explorer/define.hpp>
+#include <metaverse/explorer/utility.hpp>
+#include <metaverse/explorer/config/ec_private.hpp>
 #include <string>
 #include <boost/test/unit_test.hpp>
 

@@ -8,10 +8,10 @@
 #include <iostream>
 #include <memory>
 #include <boost/test/unit_test.hpp>
-#include <bitcoin/network/sessions/session_inbound.hpp>
-#include <bitcoin/network/sessions/session_outbound.hpp>
-#include <bitcoin/network/sessions/session_manual.hpp>
-#include <bitcoin/network/p2p.hpp>
+#include <metaverse/network/sessions/session_inbound.hpp>
+#include <metaverse/network/sessions/session_outbound.hpp>
+#include <metaverse/network/sessions/session_manual.hpp>
+#include <metaverse/network/p2p.hpp>
 #include <future>
 
 std::promise<libbitcoin::code> complete;

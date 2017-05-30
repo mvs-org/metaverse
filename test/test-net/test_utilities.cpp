@@ -6,7 +6,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <bitcoin/bitcoin.hpp>
+#include <metaverse/bitcoin.hpp>
 
 BOOST_AUTO_TEST_SUITE(test_utitlities)
 
