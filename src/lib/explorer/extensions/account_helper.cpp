@@ -63,10 +63,20 @@ console_result importaccount::invoke (std::ostream& output,
     cmds[i++] = "-l";
     auto s_lang = lang.str();
     cmds[i++] = s_lang.c_str();
-    // 
-    for(auto& word : argument_.words){
-        cmds[i++] = word.c_str();
-    }
+    // words size check
+    std::vector<std::string> tokens;
+    if(argument_.words.size() == 24) {
+	    for(auto& word : argument_.words){
+	        cmds[i++] = word.c_str();
+	    }
+	} else if(argument_.words.size() == 1) { // all words include in ""
+		tokens = split(argument_.words.at(0));
+	    for(auto& word : tokens){
+	        cmds[i++] = word.c_str();
+	    }
+	} else {
+		throw std::logic_error{"words count should be 24, not " + std::to_string(argument_.words.size())};
+	}
 
     if( console_result::okay != dispatch_command(i, cmds , sin, sout, sout)) {
         output<<sout.str();
