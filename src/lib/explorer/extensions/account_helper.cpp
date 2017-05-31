@@ -139,12 +139,14 @@ console_result changepasswd::invoke (std::ostream& output,
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    if (acc) {
-        blockchain.set_account_passwd(auth_.name, option_.passwd);
-    }else{
-        throw std::logic_error{"account not found"};
-    }
+    std::string mnemonic;
+    acc->get_mnemonic(auth_.auth, mnemonic);
+	
+	acc->set_passwd(option_.passwd);
+    acc->set_mnemonic(mnemonic, option_.passwd);
 
+	blockchain.store_account(acc);
+	
     return console_result::okay;
 }
 
