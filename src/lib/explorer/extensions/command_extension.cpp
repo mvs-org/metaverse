@@ -354,7 +354,7 @@ console_result backupaccount::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-
+#if 0
 /************************ importaccount *************************/
 
 console_result importaccount::invoke (std::ostream& output,
@@ -446,7 +446,7 @@ console_result importaccount::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
+#endif
 /************************ listaccounts *************************/
 
 console_result listaccounts::invoke (std::ostream& output,
@@ -2404,6 +2404,7 @@ console_result encodeattachtx::invoke (std::ostream& output,
     output << transaction(tx) << std::flush;
     return console_result::okay;
 }
+#if 0
 /************************ changepasswd *************************/
 
 console_result changepasswd::invoke (std::ostream& output,
@@ -2485,7 +2486,7 @@ console_result changepasswdext::invoke (std::ostream& output,
 
     return console_result::okay;
 }
-
+#endif
 /************************ xfetchbalance *************************/
 console_result xfetchbalance::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)

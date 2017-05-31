@@ -1491,7 +1491,7 @@ public:
 };
 
 
-
+#if 0
 /************************ importaccount *************************/
 
 class importaccount: public command_extension
@@ -1588,7 +1588,7 @@ public:
     } option_;
 
 };
-
+#endif
 /************************ listaccounts *************************/
 
 class listaccounts: public command_extension
@@ -5218,6 +5218,7 @@ public:
     } option_;
 
 };
+#if 0
 /************************ changepasswd *************************/
 
 class changepasswd: public command_extension
@@ -5390,7 +5391,7 @@ public:
     } option_;
 
 };
-
+#endif
 /************************ getbusinessbytime *************************/
 
 class getbusinessbytime: public command_extension
