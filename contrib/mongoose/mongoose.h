@@ -2794,7 +2794,7 @@ struct {								\
 #endif
 
 #ifndef MG_ENABLE_MUTITHREADS
-#define MG_ENABLE_MUTITHREADS 1
+#define MG_ENABLE_MUTITHREADS 0
 #endif
 
 #if MG_ENABLE_DEBUG && !defined(CS_ENABLE_DEBUG)
