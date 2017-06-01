@@ -67,10 +67,23 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
 
 	boost::unique_lock<boost::mutex> lock(mutex);
 
-	if(transactions.size() > 1) {
+	if(transactions.empty() == false) {
 		set<hash_digest> sets;
 		for(auto i = transactions.begin(); i != transactions.end(); ) {
+			auto& tx = **i;
 			auto hash = (*i)->hash();
+
+			if (tx.version >= transaction_version::check_output_script) {
+        		for(auto& output : tx.outputs){
+            		if(output.script.pattern() == script_pattern::non_standard) {
+						log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
+						node_.pool().delete_tx(hash);
+						i = transactions.erase(i);
+						continue;
+            		}
+        		}
+			}
+
 			if(sets.find(hash) == sets.end()){
 				sets.insert(hash);
 				++i;

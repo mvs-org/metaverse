@@ -37,6 +37,12 @@
 namespace libbitcoin {
 namespace chain {
 
+enum transaction_version{
+    first = 1,   //the frist version
+    check_output_script,   //add check output script 
+    max_version
+};
+
 class BC_API transaction
 {
 public:

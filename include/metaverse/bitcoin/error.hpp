@@ -85,6 +85,8 @@ enum error_code_t
     output_value_overflow,
     invalid_coinbase_script_size,
     previous_output_null,
+    script_not_standard,
+    transaction_version_error,
 
     // validate block
     previous_block_invalid,

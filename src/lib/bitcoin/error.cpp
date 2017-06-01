@@ -108,6 +108,10 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "double spend of input";
         case error::input_not_found:
             return "input not found";
+        case error::script_not_standard:
+            return "script not standard";
+        case error::transaction_version_error:
+            return "transaction version error";
 
         // check_transaction()
         case error::empty_transaction:
