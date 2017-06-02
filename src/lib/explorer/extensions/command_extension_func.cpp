@@ -27,6 +27,7 @@
 #include <metaverse/explorer/command.hpp>                
 #include <metaverse/explorer/extensions/command_extension.hpp>   
 #include <metaverse/explorer/extensions/commands/private_send.hpp>  // for cmd move
+#include <metaverse/explorer/extensions/commands/private_query.hpp>  // for cmd move
 #include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
@@ -67,6 +68,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<listaddresses>());
     func(make_shared<getnewaddress>());
     func(make_shared<getaddress>());
+    func(make_shared<getpublickey>());
     func(make_shared<getblock>());
     func(make_shared<signmessage>());
     func(make_shared<verifymessage>());
@@ -157,6 +159,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getnewaddress>();
     if (symbol == getaddress::symbol())
         return make_shared<getaddress>();
+    if (symbol == getpublickey::symbol())
+        return make_shared<getpublickey>();
     if (symbol == getblock::symbol())
         return make_shared<getblock>();
     if (symbol == signmessage::symbol())
