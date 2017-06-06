@@ -171,6 +171,21 @@ protected:
     } auth_;
 };
 
+class send_command: public command_extension{
+public:
+	virtual bool is_block_height_fullfilled(uint64_t height) override{
+		if (height >= 200000) {
+			return true;
+		}
+		return false;
+	}
+
+	virtual uint64_t minimum_block_height() override{
+		return 200000;
+	}
+};
+
+#if 0
 /************************ setminingaccount *************************/
 
 class setminingaccount: public command_extension
@@ -323,8 +338,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ stop *************************/
 
@@ -762,7 +775,6 @@ public:
 };
 
 
-
 /************************ getpeerinfo *************************/
 
 class getpeerinfo: public command_extension
@@ -833,8 +845,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ ping *************************/
 
@@ -907,8 +917,6 @@ public:
 
 };
 
-
-
 /************************ addnode *************************/
 
 class addnode: public command_extension
@@ -979,8 +987,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ getmininginfo *************************/
 
@@ -1134,7 +1140,6 @@ public:
 
 };
 
-
 /************************ gettransaction *************************/
 
 class gettransaction: public command_extension
@@ -1272,7 +1277,6 @@ public:
 };
 
 
-
 /************************ importwallet *************************/
 
 class importwallet: public command_extension
@@ -1343,7 +1347,6 @@ public:
     } option_;
 
 };
-
 
 
 /************************ lockwallet *************************/
@@ -1491,7 +1494,6 @@ public:
 };
 
 
-#if 0
 /************************ importaccount *************************/
 
 class importaccount: public command_extension
@@ -1588,7 +1590,7 @@ public:
     } option_;
 
 };
-#endif
+
 /************************ listaccounts *************************/
 
 class listaccounts: public command_extension
@@ -1738,8 +1740,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ getaccount *************************/
 
@@ -1899,7 +1899,6 @@ public:
 
 };
 
-
 /************************ lockaccount *************************/
 
 class lockaccount: public command_extension
@@ -1970,8 +1969,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ setaccountinfo *************************/
 
@@ -2044,8 +2041,6 @@ public:
 
 };
 
-
-
 /************************ listaddresses *************************/
 
 class listaddresses: public command_extension
@@ -2116,8 +2111,6 @@ public:
     } option_;
 
 };
-
-
 
 /************************ getnewaddress *************************/
 
@@ -2190,8 +2183,6 @@ public:
 
 };
 
-
-
 /************************ getaddress *************************/
 
 class getaddress: public command_extension
@@ -2262,7 +2253,6 @@ public:
     } option_;
 
 };
-
 
 
 /************************ getblock *************************/
@@ -3284,7 +3274,7 @@ public:
     } option_;
 
 };
-#if 0
+
 /************************ deposit *************************/
 
 class deposit : public command_extension
@@ -3381,23 +3371,7 @@ public:
     } option_;
 
 };
-#endif
 
-class send_command: public command_extension{
-public:
-	virtual bool is_block_height_fullfilled(uint64_t height) override{
-		if (height >= 200000) {
-			return true;
-		}
-		return false;
-	}
-
-	virtual uint64_t minimum_block_height() override{
-		return 200000;
-	}
-};
-
-#if 0
 /************************ send *************************/
 
 class send: public send_command
@@ -3685,8 +3659,6 @@ public:
     } option_;
 
 };
-#endif
-#if 0
 
 /************************ sendwithmsg *************************/
 
@@ -3832,7 +3804,6 @@ public:
 
 };
 
-#endif
 
 /************************ listassets *************************/
 
@@ -4265,7 +4236,6 @@ public:
 };
 
 
-#if 0
 /************************ issue *************************/
 
 class issue: public command_extension
@@ -4804,7 +4774,7 @@ public:
     } option_;
 
 };
-#endif
+
 
 
 /************************ getdid *************************/
@@ -5218,7 +5188,6 @@ public:
     } option_;
 
 };
-#if 0
 /************************ changepasswd *************************/
 
 class changepasswd: public command_extension
@@ -5391,7 +5360,6 @@ public:
     } option_;
 
 };
-#endif
 /************************ getbusinessbytime *************************/
 
 class getbusinessbytime: public command_extension
@@ -5635,7 +5603,7 @@ public:
     } option_;
 
 };
-
+#endif
 
 } // namespace commands
 } // namespace explorer

@@ -1,20 +1,61 @@
-/**
- * Copyright (c) 2016-2017 mvs developers 
+/*
+ * exception.hpp
  *
- * This file is part of metaverse-explorer.
- *
- * metaverse-explorer is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *  Created on: Jun 5, 2017
+ *      Author: jiang
  */
-#pragma once
+
+#ifndef INCLUDE_METAVERSE_EXPLORER_UTILITIES_EXCEPTION_HPP_
+#define INCLUDE_METAVERSE_EXPLORER_UTILITIES_EXCEPTION_HPP_
+
+#include <boost/format.hpp>
+
+#define DEFINE_EXPLORER_EXCEPTION(class_name, exception_code) \
+	class class_name:public explorer_exception{\
+public:\
+	class_name(const std::string& message):\
+	explorer_exception(exception_code, message)\
+{}\
+}
+
+namespace libbitcoin {
+namespace explorer {
+
+
+class explorer_exception:public std::exception
+{
+public:
+	explorer_exception(uint32_t code, const std::string& message);
+	virtual ~explorer_exception() = default;
+	uint32_t code() const { return code_; }
+	const std::string& message() const { return message_; }
+	virtual const char* what() const _GLIBCXX_USE_NOEXCEPT override { return message_.data(); }
+private:
+	uint32_t code_;
+	std::string message_;
+};
+
+std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
+{
+	boost::format fmt{"{\"code\":%d, \"message\":\"%s\", \"result\":null}"};
+	out << (fmt % ex.code() % ex.message());
+	return out;
+}
+
+DEFINE_EXPLORER_EXCEPTION(invalid_account_exception, 1);
+DEFINE_EXPLORER_EXCEPTION(account_not_exist_exception, 2);
+DEFINE_EXPLORER_EXCEPTION(address_mismatch_account_exception, 3);
+DEFINE_EXPLORER_EXCEPTION(invalid_argument_exception, 4);
+DEFINE_EXPLORER_EXCEPTION(tx_not_found_exception, 5);
+DEFINE_EXPLORER_EXCEPTION(account_existed_exception, 6);
+DEFINE_EXPLORER_EXCEPTION(admin_required_exception, 7);
+DEFINE_EXPLORER_EXCEPTION(last_word_mismatch_exception, 8);
+DEFINE_EXPLORER_EXCEPTION(invalid_address_exception, 9);
+DEFINE_EXPLORER_EXCEPTION(query_block_height_failed_exception, 10);
+DEFINE_EXPLORER_EXCEPTION(invalid_block_height_exception, 11);
+DEFINE_EXPLORER_EXCEPTION(no_asset_found_exception, 12);
+
+
+} //namespace explorer
+} //namespace libbitcoin
+#endif /* INCLUDE_METAVERSE_EXPLORER_UTILITIES_EXCEPTION_HPP_ */
