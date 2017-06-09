@@ -147,6 +147,24 @@ console_result changepasswd::invoke (std::ostream& output,
 
 	blockchain.store_account(acc);
 	
+	// reencry address
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr) 
+        throw std::logic_error{"empty address list"};
+	
+	std::string prv_key;
+    for (auto& each : *pvaddr){
+		prv_key = each.get_prv_key(auth_.auth);
+		each.set_prv_key(prv_key, option_.passwd);
+    }
+	// delete all old address
+	blockchain.delete_account_address(auth_.name);
+	// restore address
+	for (auto& each : *pvaddr) {
+		auto addr = std::make_shared<bc::chain::account_address>(each);
+		blockchain.store_account_address(addr);
+	}
+
     return console_result::okay;
 }
 
