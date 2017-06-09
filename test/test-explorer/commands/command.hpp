@@ -25,7 +25,7 @@
 #include <string>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test_suite.hpp>
-#include <bitcoin/explorer.hpp>
+#include <metaverse/explorer.hpp>
 
 #define BX_USING_NAMESPACES()
 using namespace bc; \

@@ -19,7 +19,7 @@
  */
 #include <boost/test/unit_test.hpp>
 
-#include <bitcoin/explorer.hpp>
+#include <metaverse/explorer.hpp>
 
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 
