@@ -84,7 +84,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_etp)
 	auto attach = get_attachment_from_file("attachment-with-etp.data");
 	payment_address addr = payment_address("1viEwgKdzDUxoMJr7soChGZX45g5KD6nK");
 	output_point outpoint{hash_digest(), 0}; 
+#ifdef MVS_DEBUG
 	log::info(LOG_DATABASE_TEST) << attach.to_string();
+#endif
 	sh_db->push_attachemnt(attach, addr, outpoint, 1000, 10);
 	
 	// business_address_asset::list
@@ -98,7 +100,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_etp)
 		
 		const auto action = [&](business_address_asset& elem)
 		{
+#ifdef MVS_DEBUG
 			log::info(LOG_DATABASE_TEST) <<elem.to_string();
+#endif
 		};
 		std::for_each(sh_vec.begin(), sh_vec.end(), action);
 	}
@@ -114,7 +118,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_asset_detail)
 	auto attach = get_attachment_from_file("attachment-with-asset-detail.data");
 	payment_address addr = payment_address("1viEwgKdzDUxoMJr7soChGZX45g5KD6nK");
 	output_point outpoint{hash_digest(), 0}; 
+#ifdef MVS_DEBUG
 	log::info(LOG_DATABASE_TEST) << attach.to_string();
+#endif
 	sh_db->push_attachemnt(attach, addr, outpoint, 1000, 10);
 	
 	// business_address_asset::list 
@@ -124,7 +130,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_asset_detail)
 		
 		const auto action = [&](business_address_asset& elem)
 		{
+#ifdef MVS_DEBUG
 			log::info(LOG_DATABASE_TEST) <<elem.to_string();
+#endif
 		};
 		std::for_each(sh_vec.begin(), sh_vec.end(), action);
 	}
@@ -140,7 +148,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_asset_transfer)
 	auto attach = get_attachment_from_file("attachment-with-asset-transfer.data");
 	payment_address addr = payment_address("1viEwgKdzDUxoMJr7soChGZX45g5KD6nK");
 	output_point outpoint{null_hash, 0}; 
+#ifdef MVS_DEBUG
 	log::info(LOG_DATABASE_TEST) << attach.to_string();
+#endif
 	sh_db->push_attachemnt(attach, addr, outpoint, 1000, 10);
 	
 	// business_address_asset::list 
@@ -150,7 +160,9 @@ BOOST_AUTO_TEST_CASE(push_attachemnt_asset_transfer)
 		
 		const auto action = [&](business_address_asset& elem)
 		{
+#ifdef MVS_DEBUG
 			log::info(LOG_DATABASE_TEST) <<elem.to_string();
+#endif
 		};
 		std::for_each(sh_vec.begin(), sh_vec.end(), action);
 	}

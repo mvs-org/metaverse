@@ -76,7 +76,9 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
 			if (tx.version >= transaction_version::check_output_script) {
         		for(auto& output : tx.outputs){
             		if(output.script.pattern() == script_pattern::non_standard) {
-						log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
+#ifdef MVS_DEBUG
+            			log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
+#endif
 						node_.pool().delete_tx(hash);
 						i = transactions.erase(i);
 						continue;

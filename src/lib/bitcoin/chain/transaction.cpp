@@ -249,6 +249,7 @@ uint64_t transaction::serialized_size() const
     return tx_size;
 }
 
+#ifdef MVS_DEBUG
 std::string transaction::to_string(uint32_t flags) const
 {
     std::ostringstream value;
@@ -267,6 +268,7 @@ std::string transaction::to_string(uint32_t flags) const
     value << "\n";
     return value.str();
 }
+#endif
 
 hash_digest transaction::hash() const
 {
