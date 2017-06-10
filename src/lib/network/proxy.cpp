@@ -100,6 +100,7 @@ proxy::proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
     message_subscriber_(pool),
     stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME)),
 	processing_{false},
+	has_sent_{true},
 	misbehaving_{0}
 {
 }
@@ -173,7 +174,6 @@ void proxy::read_heading()
     // Critical Section (external)
     ///////////////////////////////////////////////////////////////////////////
     const auto socket = socket_->get_socket();
-
     using namespace boost::asio;
     async_read(socket->get(), buffer(heading_buffer_, heading_buffer_.size()),
         std::bind(&proxy::handle_read_heading,
@@ -244,7 +244,6 @@ void proxy::read_payload(const heading& head)
     // Critical Section (external)
     ///////////////////////////////////////////////////////////////////////////
     const auto socket = socket_->get_socket();
-
     using namespace boost::asio;
     async_read(socket->get(), buffer(payload_buffer_, head.payload_size),
         std::bind(&proxy::handle_read_payload,
@@ -385,13 +384,41 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////
     // The socket is locked until async_write returns.
-    const auto socket = socket_->get_socket();
 
+    bool is_ok_to_send{false};
+    RequestCallback h{nullptr};
+    {
+		const auto socket = socket_->get_socket();
+		auto& native_socket = socket->get();
+		auto pThis = shared_from_this();
+		auto f = [this, pThis, &native_socket, buffer, handler](){
+			if (stopped())
+			{
+				handler(error::channel_stopped);
+				return;
+			}
+			async_write(native_socket, buffer,
+					std::bind(&proxy::handle_send,
+						pThis, _1, buffer, handler));
+		};
+		bool is_empty{outbound_queue_.empty()};
+		bool in_sending{!has_sent_.load()};
+		is_ok_to_send = (is_empty && !in_sending);
+		if (is_ok_to_send)
+		{
+			h = std::move(f);
+			has_sent_.store(false);
+		}
+		else{
+			outbound_queue_.push(std::move(f));
+		}
+    }
+
+    if (is_ok_to_send)
+    {
+    	h();
+    }
     // The shared buffer is kept in scope until the handler is invoked.
-    using namespace boost::asio;
-    async_write(socket->get(), buffer,
-        std::bind(&proxy::handle_send,
-            shared_from_this(), _1, buffer, handler));
     ///////////////////////////////////////////////////////////////////////////
 }
 
@@ -411,6 +438,23 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     }
 
     handler(error);
+    if(error){
+    	return;
+    }
+
+    has_sent_.store(true);
+
+    RequestCallback h{nullptr};
+	{
+		const auto socket = socket_->get_socket();
+		if(outbound_queue_.empty())
+			return;
+		log::debug(LOG_NETWORK) << "outbound size," << outbound_queue_.size();
+		h = std::move(outbound_queue_.front());
+		outbound_queue_.pop();
+		has_sent_.store(false);
+	}
+	h();
 }
 
 // Stop sequence.

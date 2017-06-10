@@ -159,6 +159,8 @@ private:
     std::queue<RequestCallback> pendingRequests_;
     std::atomic_bool processing_;
     unique_mutex mutex_;
+    std::queue<RequestCallback> outbound_queue_;
+    std::atomic_bool has_sent_;
 
     std::atomic_int misbehaving_;
 	boost::detail::spinlock spinlock_;
