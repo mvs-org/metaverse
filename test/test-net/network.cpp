@@ -9,7 +9,7 @@
 
 
 #include <future>
-#include <bitcoin/network.hpp>
+#include <metaverse/network.hpp>
 #include <boost/test/unit_test.hpp>
 
 // Send a transaction to a single P2P node.

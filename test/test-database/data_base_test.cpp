@@ -1,25 +1,25 @@
 #ifdef  DATABASE_TESTS
 #include <iostream>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/explorer/define.hpp>
-#include <bitcoin/explorer/utility.hpp>
-#include <bitcoin/explorer/config/ec_private.hpp>
-#include <bitcoin/database/data_base.hpp>
-#include <bitcoin/bitcoin/chain/attachment/account/account.hpp>
-#include <bitcoin/bitcoin/chain/attachment/asset/asset.hpp>
-#include <bitcoin/bitcoin/chain/attachment/asset/asset_detail.hpp>
-#include <bitcoin/bitcoin/chain/attachment/asset/asset_transfer.hpp>
-#include <bitcoin/bitcoin/chain/attachment/etp/etp.hpp>
-#include <bitcoin/database/settings.hpp>
+#include <metaverse/bitcoin.hpp>
+#include <metaverse/explorer/define.hpp>
+#include <metaverse/explorer/utility.hpp>
+#include <metaverse/explorer/config/ec_private.hpp>
+#include <metaverse/database/data_base.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
+#include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
+#include <metaverse/database/settings.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 #include <string>
 #include <boost/test/unit_test.hpp>
 
-#include <bitcoin/bitcoin/config/base16.hpp>
+#include <metaverse/bitcoin/config/base16.hpp>
 using namespace libbitcoin::config;
 
-#include <bitcoin/consensus/miner.hpp>
+#include <metaverse/consensus/miner.hpp>
 using namespace libbitcoin::consensus;
 
 using namespace libbitcoin::database;
@@ -39,7 +39,7 @@ static std::shared_ptr<data_base> get_database_instance()
     {
         std::cout << format("Please wait while initializing %1% directory...") % directory;
 		//const auto genesis = chain::block::genesis_mainnet();
-        auto genesis = consensus::miner::create_genesis_block();
+        auto genesis = consensus::miner::create_genesis_block(true);
         const auto result = data_base::initialize(directory, *genesis);
     }
     //std::cout << format("ec result = %1%  %2%") % directory % ec.message();

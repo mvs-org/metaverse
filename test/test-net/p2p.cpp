@@ -22,7 +22,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/test/unit_test.hpp>
-#include <bitcoin/network.hpp>
+#include <metaverse/network.hpp>
 
 using namespace bc;
 using namespace bc::message;

@@ -7,9 +7,9 @@
 
 
 #include <boost/test/unit_test.hpp>
-#include <bitcoin/bitcoin/utility/threadpool.hpp>
-#include <bitcoin/bitcoin/utility/deadline.hpp>
-#include <bitcoin/bitcoin/utility/asio.hpp>
+#include <metaverse/bitcoin/utility/threadpool.hpp>
+#include <metaverse/bitcoin/utility/deadline.hpp>
+#include <metaverse/bitcoin/utility/asio.hpp>
 #include <memory>
 
 BOOST_AUTO_TEST_SUITE(suit_threadpool)

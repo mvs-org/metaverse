@@ -7,8 +7,8 @@
 
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-#include <bitcoin/bitcoin/message/network_address.hpp>
-#include <bitcoin/bitcoin/config/authority.hpp>
+#include <metaverse/bitcoin/message/network_address.hpp>
+#include <metaverse/bitcoin/config/authority.hpp>
 
 BOOST_AUTO_TEST_SUITE(test_network_address)
 

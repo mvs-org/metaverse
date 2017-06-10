@@ -8,13 +8,13 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <vector>
-#include <bitcoin/bitcoin/chain/script/script.hpp>
-#include <bitcoin/bitcoin/formats/base_58.hpp>
+#include <metaverse/bitcoin/chain/script/script.hpp>
+#include <metaverse/bitcoin/formats/base_58.hpp>
 #include <boost/asio.hpp>
 #include <fstream>
 #include <boost/thread.hpp>
-#include <bitcoin/bitcoin/formats/base_85.hpp>
-#include <bitcoin/bitcoin/utility/daemon.hpp>
+#include <metaverse/bitcoin/formats/base_85.hpp>
+#include <metaverse/bitcoin/utility/daemon.hpp>
 
 BOOST_AUTO_TEST_SUITE(suit_others)
 
