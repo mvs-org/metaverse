@@ -47,6 +47,7 @@
 #include <metaverse/database/databases/account_database.hpp>
 #include <metaverse/database/databases/account_address_database.hpp>
 #include <metaverse/database/databases/asset_database.hpp>
+#include <metaverse/database/databases/blockchain_asset_database.hpp>
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
 //#include <metaverse/bitcoin/wallet/payment_address.hpp>
@@ -88,6 +89,28 @@ public:
         path account_assets_rows;
         path account_addresses_lookup;
         path account_addresses_rows;
+		/* end database for account, asset, address_asset relationship */
+    };
+
+
+    class blockchain_store
+    {
+    public:
+        blockchain_store(const path& prefix);
+        bool touch_all() const;
+		
+        path database_lock;
+        path blocks_lookup;
+        path blocks_index;
+        path history_lookup;
+        path history_rows;
+        path stealth_rows;
+        path spends_lookup;
+        path transactions_lookup;
+		/* begin database for account, asset, address_asset relationship */
+        path assets_lookup;
+        path address_assets_lookup;
+        path address_assets_rows;
 		/* end database for account, asset, address_asset relationship */
     };
 
@@ -134,7 +157,8 @@ public:
 
     /// Create and start all databases.
     bool create();
-
+	bool blockchain_create();
+	bool account_db_start();
     /// Start all databases.
     bool start();
 
@@ -298,7 +322,8 @@ public:
     transaction_database transactions;
 	/* begin database for account, asset, address_asset relationship */
     account_database accounts;
-    asset_database assets;
+    //asset_database assets;
+    blockchain_asset_database assets;
     address_asset_database address_assets;
     account_asset_database account_assets;
     account_address_database account_addresses;

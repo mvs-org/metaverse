@@ -1409,7 +1409,11 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 /// get all the asset in blockchain
 std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_issued_assets()
 {
-	return database_.assets.get_asset_details();
+	auto sp_blockchain_vec = database_.assets.get_blockchain_assets();
+	auto sp_vec = std::make_shared<std::vector<asset_detail>>();
+	for(auto& each : *sp_blockchain_vec) 
+		sp_vec->push_back(each.get_asset());
+	return sp_vec;
 }
 
 // get all addresses
@@ -1523,6 +1527,20 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_lo
 	}
 	
 	return false;
+}
+
+bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t& height)
+{	
+	const data_chunk& data = data_chunk(asset_name.begin(), asset_name.end());
+    const auto hash = sha256_hash(data);
+
+	// std::shared_ptr<blockchain_asset>
+	auto sp_asset = database_.assets.get(hash);
+	if(sp_asset) {
+		height = sp_asset->get_height();
+	}
+	
+	return (sp_asset != nullptr);
 }
 /// get asset from local database including all account's assets
 std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_local_assets()
