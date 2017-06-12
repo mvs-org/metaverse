@@ -42,7 +42,7 @@ namespace pt = boost::property_tree;
 
 /************************ getaccountasset *************************/
 
-onsole_result getaccountasset::invoke (std::ostream& output,
+console_result getaccountasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
     pt::ptree aroot;
