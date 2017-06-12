@@ -42,46 +42,99 @@ namespace pt = boost::property_tree;
 
 /************************ getaccountasset *************************/
 
-console_result getaccountasset::invoke (std::ostream& output,
+onsole_result getaccountasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
 {
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    
-    // std::shared_ptr<std::vector<business_address_asset>>
-    auto sh_local_vec = blockchain.get_account_assets();
-    if (0 == sh_local_vec->size()) // no asset found
-        throw std::logic_error{"no asset found ?"};
-
-#ifdef MVS_DEBUG
-    const auto lc_action = [&](business_address_asset& elem)
-    {
-        log::info("getasset local db") << elem.to_string();
-    };
-    std::for_each(sh_local_vec->begin(), sh_local_vec->end(), lc_action);
-#endif
-    
     pt::ptree aroot;
     pt::ptree assets;
-    
-    // add local database assets
-    for (auto& elem: *sh_local_vec) {
-        pt::ptree asset_data;
-        asset_data.put("symbol", elem.detail.get_symbol());
-        asset_data.put("maximum_supply", elem.detail.get_maximum_supply());
-        asset_data.put("asset_type", elem.detail.get_asset_type());
-        asset_data.put("issuer", elem.detail.get_issuer());
-        asset_data.put("address", elem.detail.get_address());
-        asset_data.put("description", elem.detail.get_description());
-        asset_data.put("status", "unissued");
-        assets.push_back(std::make_pair("", asset_data));
-    }
-    
-    aroot.add_child("assets", assets);
-    pt::write_json(output, aroot);
-    
-    return console_result::okay;
-}
 
+	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	auto pvaddr = blockchain.get_account_addresses(auth_.name);
+	if(!pvaddr) 
+		throw std::logic_error{"nullptr for address list"};
+	
+	// 1. get asset in blockchain
+	auto kind = business_kind::asset_transfer;
+	std::set<std::string> symbol_set;
+	std::vector<asset_detail> asset_vec; // just used asset_detail class to store asset infor
+
+	// make all asset kind vector
+	std::vector<business_kind> kind_vec;
+	kind_vec.push_back(business_kind::asset_transfer);
+	kind_vec.push_back(business_kind::asset_issue);
+	
+	for (auto kind : kind_vec) {
+		// get address unspent asset balance
+		for (auto& each : *pvaddr){
+			auto sh_vec = blockchain.get_address_business_history(each.get_address(), kind, business_status::unspent);
+			const auto sum = [&](const business_history& bh)
+			{
+				// get asset info
+				std::string symbol;
+				uint64_t num;
+				if(kind == business_kind::asset_transfer) {
+					auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
+					symbol = transfer_info.get_address();
+					num = transfer_info.get_quantity();
+				} else { // asset issued
+					auto asset_info = boost::get<asset_detail>(bh.data.get_data());
+					symbol = asset_info.get_symbol();
+					num = asset_info.get_maximum_supply();
+				}
+				
+				// update asset quantity
+				auto r = symbol_set.insert(symbol);
+				if(r.second) { // new symbol
+					asset_vec.push_back(asset_detail(symbol, num, 0, "", each.get_address(), ""));
+				} else { // already exist
+					const auto add_num = [&](asset_detail& elem)
+					{
+						if( 0 == symbol.compare(elem.get_symbol()) )
+							elem.set_maximum_supply(elem.get_maximum_supply()+num);
+					};
+					std::for_each(asset_vec.begin(), asset_vec.end(), add_num);
+				}
+			};
+			std::for_each(sh_vec->begin(), sh_vec->end(), sum);
+		}
+	} 
+	
+	for (auto& elem: asset_vec) {
+		pt::ptree asset_data;
+		asset_data.put("symbol", elem.get_symbol());
+		asset_data.put("amount", elem.get_maximum_supply());
+		asset_data.put("address", elem.get_address());
+		asset_data.put("status", "unspent");
+		assets.push_back(std::make_pair("", asset_data));
+	}
+	// 2. get asset in local database
+	// shoudl filter all issued asset which be stored in local account asset database
+	auto sh_vec = blockchain.get_issued_assets();
+	for (auto& elem: *sh_vec) {
+		symbol_set.insert(elem.get_symbol());
+	}
+	//std::shared_ptr<std::vector<business_address_asset>>
+	auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);		  
+	for (auto& elem: *sh_unissued) {
+		
+		auto symbol = elem.detail.get_symbol();
+		auto r = symbol_set.insert(symbol);
+		if(!r.second) { // asset already issued in blockchain
+			continue; 
+		}
+
+		pt::ptree asset_data;
+		asset_data.put("symbol", elem.detail.get_symbol());
+		asset_data.put("amount", elem.detail.get_maximum_supply());
+		asset_data.put("address", "");
+		asset_data.put("status", "unissued");
+		assets.push_back(std::make_pair("", asset_data));
+	}
+
+	aroot.add_child("assets", assets);
+	pt::write_json(output, aroot);
+	return console_result::okay;
+}
 
 
 } // namespace commands
