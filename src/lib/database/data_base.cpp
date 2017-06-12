@@ -122,6 +122,8 @@ data_base::store::store(const path& prefix)
 	account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
 	/* end database for account, asset, address_asset relationship */
+    block_guard = prefix / "block_guard";
+    account_guard = prefix / "account_guard";
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -153,7 +155,9 @@ bool data_base::store::touch_all() const
         touch_file(account_assets_lookup)&&
         touch_file(account_assets_rows)&&
 		touch_file(account_addresses_lookup)&&
-		touch_file(account_addresses_rows);
+		touch_file(account_addresses_rows)&&
+		touch_file(block_guard)&&
+    	touch_file(account_guard);;
 		/* end database for account, asset, address_asset relationship */
 }
 
@@ -293,8 +297,10 @@ data_base::data_base(const store& paths, size_t history_height,
 	assets(paths.assets_lookup, mutex_),
 	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
 	account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
-    account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
+    account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
 	/* end database for account, asset, address_asset relationship */
+	block_guard{paths.block_guard},
+	account_guard{paths.account_guard}
 {
 }
 
@@ -355,6 +361,8 @@ bool data_base::create()
 		account_assets.create()&&
 		account_addresses.create()
 		/* end database for account, asset, address_asset relationship */
+		&&block_guard.create()
+		&&account_guard.create()
 		;
 }
 
@@ -392,6 +400,12 @@ bool data_base::start()
 		/* end database for account, asset, address_asset relationship */
         ;
     const auto end_exclusive = end_write();
+
+    if (!start_result) return start_result;
+
+    auto guard_result = block_guard.start() && account_guard.start();
+    if (!guard_result) return guard_result;
+//    block_guard.observe();
 
     // Return the result of the database start.
     return start_exclusive && start_result && end_exclusive;

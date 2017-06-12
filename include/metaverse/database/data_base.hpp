@@ -49,6 +49,7 @@
 #include <metaverse/database/databases/asset_database.hpp>
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
+#include <metaverse/database/database_guard.hpp>
 //#include <metaverse/bitcoin/wallet/payment_address.hpp>
 #define  LOG_DATABASE  "database"  // for log_debug output
 
@@ -89,6 +90,8 @@ public:
         path account_addresses_lookup;
         path account_addresses_rows;
 		/* end database for account, asset, address_asset relationship */
+        path block_guard;
+        path account_guard;
     };
 
 	class db_metadata
@@ -303,6 +306,8 @@ public:
     account_asset_database account_assets;
     account_address_database account_addresses;
 	/* end database for account, asset, address_asset relationship */
+    database_guard block_guard;
+    database_guard account_guard;
 };
 
 } // namespace database
