@@ -386,6 +386,7 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     // The socket is locked until async_write returns.
 
     bool is_ok_to_send{false};
+    uint32_t outbound_size{0};
     RequestCallback h{nullptr};
     {
 		const auto socket = socket_->get_socket();
@@ -401,6 +402,7 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
 					std::bind(&proxy::handle_send,
 						pThis, _1, buffer, handler));
 		};
+		outbound_size = outbound_queue_.size();
 		bool is_empty{outbound_queue_.empty()};
 		bool in_sending{!has_sent_.load()};
 		is_ok_to_send = (is_empty && !in_sending);
@@ -412,6 +414,11 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
 		else{
 			outbound_queue_.push(std::move(f));
 		}
+    }
+
+    if (outbound_size > 500) {
+    	stop(error::size_limits);
+    	return;
     }
 
     if (is_ok_to_send)
