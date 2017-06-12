@@ -82,6 +82,8 @@ private:
     /// These methods are NOT thread safe.
     virtual code verify(uint64_t fork_index,
         const block_detail::list& orphan_chain, uint64_t orphan_index);
+    virtual code verify_asset_exist(uint64_t fork_index,
+        const block_detail::list& orphan_chain, uint64_t orphan_index);
     void process(block_detail::ptr process_block);
     void replace_chain(uint64_t fork_index, detail_list& orphan_chain);
     void remove_processed(block_detail::ptr remove_block);

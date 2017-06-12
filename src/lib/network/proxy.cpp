@@ -385,7 +385,9 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     ///////////////////////////////////////////////////////////////////////////
     // The socket is locked until async_write returns.
 
+#ifdef QUEUE_REQUEST
     bool is_ok_to_send{false};
+    uint32_t outbound_size{0};
     RequestCallback h{nullptr};
     {
 		const auto socket = socket_->get_socket();
@@ -401,6 +403,7 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
 					std::bind(&proxy::handle_send,
 						pThis, _1, buffer, handler));
 		};
+		outbound_size = outbound_queue_.size();
 		bool is_empty{outbound_queue_.empty()};
 		bool in_sending{!has_sent_.load()};
 		is_ok_to_send = (is_empty && !in_sending);
@@ -414,10 +417,24 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
 		}
     }
 
+    if (outbound_size > 500) {
+    	stop(error::size_limits);
+    	return;
+    }
+
     if (is_ok_to_send)
     {
     	h();
     }
+#else
+    const auto socket = socket_->get_socket();
+
+    // The shared buffer is kept in scope until the handler is invoked.
+    using namespace boost::asio;
+    async_write(socket->get(), buffer,
+        std::bind(&proxy::handle_send,
+            shared_from_this(), _1, buffer, handler));
+#endif
     // The shared buffer is kept in scope until the handler is invoked.
     ///////////////////////////////////////////////////////////////////////////
 }
@@ -438,6 +455,7 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     }
 
     handler(error);
+#ifdef QUEUE_REQUEST
     if(error){
     	return;
     }
@@ -455,6 +473,7 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
 		has_sent_.store(false);
 	}
 	h();
+#endif
 }
 
 // Stop sequence.

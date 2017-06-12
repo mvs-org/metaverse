@@ -237,7 +237,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     {
         RETURN_IF_STOPPED();
 
-        const auto ec = validate_transaction::check_transaction(tx, chain);
+        const auto ec = validate_transaction::check_transaction_basic(tx, chain);
         if (ec)
             return ec;
 

@@ -57,6 +57,7 @@ public:
         uint32_t flags);
 
     static code check_transaction(const chain::transaction& tx, blockchain::block_chain_impl& chain);
+    static code check_transaction_basic(const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,

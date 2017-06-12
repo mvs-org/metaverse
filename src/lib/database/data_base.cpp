@@ -86,17 +86,26 @@ bool data_base::is_lower_database(const path& prefix)
 }
 bool data_base::upgrade_database(const settings& settings, const chain::block& genesis)
 {
-	data_base instance(settings);
+	log::info("database") << "upgrading blockchain database......";
+    // Create paths.
+    auto prefix = default_data_path() / settings.directory;
+    const blockchain_store paths(prefix);
+
+    if (!paths.touch_all())
+        return false;
 	
-	instance.start();
+	data_base instance(settings);
+
+    if (!instance.blockchain_create())
+        return false;
+	if (!instance.account_db_start())
+		return false;
 	// metadata
 	auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
 	//auto metadata = db_metadata();
 	//data_base::read_metadata(metadata_path, metadata); // maybe do recover according db version
 	auto metadata = db_metadata(db_metadata::current_version);
 	data_base::write_metadata(metadata_path, metadata);
-	// blockchain database
-	instance.clear_block_db(); // only refresh blockchain database, todo -- should add account recover.
 	instance.push(genesis);
 	return instance.stop();
 }
@@ -114,9 +123,9 @@ data_base::store::store(const path& prefix)
     transactions_lookup = prefix / "transaction_table";
 	/* begin database for account, asset, address_asset relationship */
 	accounts_lookup = prefix / "account_table";
-	assets_lookup = prefix / "asset_table";
-	address_assets_lookup = prefix / "address_asset_table";
-	address_assets_rows = prefix / "address_asset_row";
+	assets_lookup = prefix / "asset_table";  // for blockchain assets
+	address_assets_lookup = prefix / "address_asset_table"; // for blockchain 
+	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
 	account_assets_lookup = prefix / "account_asset_table";
 	account_assets_rows = prefix / "account_asset_row";
 	account_addresses_lookup = prefix / "account_address_table";
@@ -159,6 +168,46 @@ bool data_base::store::touch_all() const
 		touch_file(block_guard)&&
     	touch_file(account_guard);;
 		/* end database for account, asset, address_asset relationship */
+}
+
+data_base::blockchain_store::blockchain_store(const path& prefix)
+{
+    // Hash-based lookup (hash tables).
+    blocks_lookup = prefix / "block_table";
+    history_lookup = prefix / "history_table";
+    spends_lookup = prefix / "spend_table";
+    transactions_lookup = prefix / "transaction_table";
+	/* begin database for account, asset, address_asset relationship */
+	assets_lookup = prefix / "asset_table";  // for blockchain assets
+	address_assets_lookup = prefix / "address_asset_table"; // for blockchain 
+	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
+	/* end database for account, asset, address_asset relationship */
+
+    // Height-based (reverse) lookup.
+    blocks_index = prefix / "block_index";
+
+    // One (address) to many (rows).
+    history_rows = prefix / "history_rows";
+    stealth_rows = prefix / "stealth_rows";
+}
+
+bool data_base::blockchain_store::touch_all() const
+{
+    // Return the result of the database file create.
+    return
+        touch_file(blocks_lookup) &&
+        touch_file(blocks_index) &&
+        touch_file(history_lookup) &&
+        touch_file(history_rows) &&
+        touch_file(stealth_rows) &&
+        touch_file(spends_lookup) &&
+        touch_file(transactions_lookup)&&
+		/* begin database for account, asset, address_asset relationship */
+        touch_file(assets_lookup)&&
+        touch_file(address_assets_lookup)&&
+        touch_file(address_assets_rows)
+		/* end database for account, asset, address_asset relationship */
+		;
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -365,7 +414,28 @@ bool data_base::create()
 		&&account_guard.create()
 		;
 }
-
+bool data_base::blockchain_create()
+{
+    // Return the result of the database create.
+    return 
+        blocks.create() &&
+        history.create() &&
+        spends.create() &&
+        stealth.create() &&
+        transactions.create()&&
+		/* begin database for account, asset, address_asset relationship */
+		assets.create()&&
+		address_assets.create()
+		/* end database for account, asset, address_asset relationship */
+		;
+}
+bool data_base::account_db_start()
+{
+	return 
+		accounts.start()&&
+		account_assets.start()&&
+		account_addresses.start();
+}
 // Start must be called before performing queries.
 // Start may be called after stop and/or after close in order to restart.
 bool data_base::start()
@@ -853,7 +923,9 @@ void data_base::push_asset_detail(const asset_detail& sp_detail, const short_has
 {
 	const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
-	assets.store(hash, sp_detail);
+	//assets.store(hash, sp_detail);
+	auto bc_asset = blockchain_asset(0, outpoint,output_height, sp_detail);
+	assets.store(hash, bc_asset);
 	address_assets.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), timestamp_, sp_detail);
 	address_assets.sync();
