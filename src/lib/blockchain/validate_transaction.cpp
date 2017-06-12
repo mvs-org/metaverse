@@ -294,6 +294,21 @@ void validate_transaction::check_fees()
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
 {
+    auto ret = check_transaction_basic(tx, chain);
+    if(ret == error::success) {
+        for(auto& output : const_cast<transaction&>(tx).outputs){
+            if(output.is_asset_issue()) {
+                if(chain.is_asset_exist(output.get_asset_symbol(), false)) {
+                    return error::asset_exist;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+code validate_transaction::check_transaction_basic(const transaction& tx, blockchain::block_chain_impl& chain)
+{
     if(tx.version >= transaction_version::max_version){
         return error::transaction_version_error;
     } else if (tx.version >= transaction_version::check_output_script) {
@@ -338,13 +353,8 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 
     for(auto& output : const_cast<transaction&>(tx).outputs){
         if(output.is_asset_issue()) {
-            const string& symbol = output.get_asset_symbol();
-            if(!chain::output::is_valid_symbol(symbol)) {
+            if(!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
-            }
-
-            if(chain.is_asset_exist(output.get_asset_symbol(), false)) { 
-                return error::asset_exist;
             }
         }
     }
