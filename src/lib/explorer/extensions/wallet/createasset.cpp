@@ -126,10 +126,6 @@ console_result createasset::invoke (std::ostream& output,
         throw std::logic_error{"asset symbol is already exist, please use another one"};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw std::logic_error{"asset symbol length must be less than 64."};
-    if (option_.address.length() > ASSET_DETAIL_ADDRESS_FIX_SIZE)
-        throw std::logic_error{"asset address length must be less than 64."};
-    if (!option_.address.empty() && !blockchain.is_valid_address(option_.address))
-        throw std::logic_error{"invalid address parameter!"};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw std::logic_error{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
@@ -141,7 +137,6 @@ console_result createasset::invoke (std::ostream& output,
     //acc->set_asset_type(option_.asset_type); // todo -- type not defined
     acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
-    acc->set_address(option_.address);
     acc->set_description(option_.description);
     
     blockchain.store_account_asset(acc);

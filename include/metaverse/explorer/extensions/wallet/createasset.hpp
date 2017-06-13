@@ -110,11 +110,6 @@ public:
             "The asset issuer.defaults to account name."
         )
         (
-            "address,a",
-            value<std::string>(&option_.address),
-            "The asset will be issued from which address."
-        )
-        (
             "description,d",
             value<std::string>(&option_.description),
             "The asset description."
@@ -141,7 +136,6 @@ public:
 			maximum_supply(),
 			asset_type(),
 			issuer(),
-			address(),
 			description()
     	{
     	}
@@ -150,7 +144,6 @@ public:
 		uint64_t maximum_supply;
 		uint32_t asset_type;
 		std::string issuer; 
-		std::string address;
 		std::string description;
     } option_;
 
