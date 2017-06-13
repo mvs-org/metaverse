@@ -49,7 +49,8 @@ console_result getnewaddress::invoke (std::ostream& output,
 	std::string mnemonic;
 	acc->get_mnemonic(auth_.auth, mnemonic);
     if (mnemonic.empty()) { throw std::logic_error("mnemonic empty"); }
-
+    if (!option_.count) { throw std::logic_error("invalid address number parameter"); }
+	
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
     std::istringstream sin(mnemonic);
@@ -60,47 +61,62 @@ console_result getnewaddress::invoke (std::ostream& output,
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
 
-    auto addr = std::make_shared<bc::chain::account_address>();
-    addr->set_name(auth_.name);
+	uint32_t idx = 0;
+    pt::ptree aroot;
+    pt::ptree addresses;
 
-    dispatch_command(1, cmds + 0, sin, sout, sout);
-    exec_with(1);
+	for ( idx = 0; idx < option_.count; idx++ ) {
 
-    auto&& argv_index = std::to_string(acc->get_hd_index());
-    const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
-    sin.str(sout.str());
-    sout.str("");
-    dispatch_command(3, hd_private_gen, sin, sout, sout);
+	    auto addr = std::make_shared<bc::chain::account_address>();
+	    addr->set_name(auth_.name);
+		
+		sout.str("");
+		sin.str(mnemonic);
+	    dispatch_command(1, cmds + 0, sin, sout, sout);
+	    exec_with(1);
 
-    exec_with(2);
-    addr->set_prv_key(sout.str(), auth_.auth);
-	// not store public key now
-    exec_with(3);
-    //addr->set_pub_key(sout.str());
+	    auto&& argv_index = std::to_string(acc->get_hd_index());
+	    const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
+	    sin.str(sout.str());
+	    sout.str("");
+	    dispatch_command(3, hd_private_gen, sin, sout, sout);
 
-    // testnet
-    if (blockchain.chain_settings().use_testnet_rules){
-        const char* cmds_tn[]{"ec-to-address", "-v", "127"};
-        sin.str(sout.str());
-        sout.str("");
-        dispatch_command(3, cmds_tn, sin, sout, sout);
-    // mainnet
-    } else {
-        exec_with(4);
-    }
+	    exec_with(2);
+	    addr->set_prv_key(sout.str(), auth_.auth);
+		// not store public key now
+	    exec_with(3);
+	    //addr->set_pub_key(sout.str());
 
-    addr->set_address(sout.str());
-    addr->set_status(1); // 1 -- enable address
-    output<<sout.str();
+	    // testnet
+	    if (blockchain.chain_settings().use_testnet_rules){
+	        const char* cmds_tn[]{"ec-to-address", "-v", "127"};
+	        sin.str(sout.str());
+	        sout.str("");
+	        dispatch_command(3, cmds_tn, sin, sout, sout);
+	    // mainnet
+	    } else {
+	        exec_with(4);
+	    }
 
-    acc->increase_hd_index();
-    addr->set_hd_index(acc->get_hd_index());
-    blockchain.store_account(acc);
-    blockchain.store_account_address(addr);
+	    addr->set_address(sout.str());
+	    addr->set_status(1); // 1 -- enable address
+	    //output<<sout.str();
 
+	    acc->increase_hd_index();
+	    addr->set_hd_index(acc->get_hd_index());
+	    blockchain.store_account(acc);
+	    blockchain.store_account_address(addr);
+		// write to output json
+        pt::ptree address;
+        address.put("", sout.str());
+        addresses.push_back(std::make_pair("", address));
+	}
+	
+    aroot.add_child("addresses", addresses);
+    pt::write_json(output, aroot);
+	
     return console_result::okay;
 }
-
 
 
 } // namespace commands
