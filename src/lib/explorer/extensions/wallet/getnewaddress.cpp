@@ -113,7 +113,10 @@ console_result getnewaddress::invoke (std::ostream& output,
 	}
 	
     aroot.add_child("addresses", addresses);
-    pt::write_json(output, aroot);
+	if(option_.count == 1)
+	    output<<sout.str();
+	else
+    	pt::write_json(output, aroot);
 	
     return console_result::okay;
 }

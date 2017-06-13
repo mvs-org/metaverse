@@ -90,7 +90,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     sin.str("");
     sout.str("");
     dispatch_command(3, cmds2 , sin, sout, sout, blockchain);
-
+    #if 0
 	// parse address from getnewaddress output string
 	pt::ptree tx;
 	sin.str(sout.str());
@@ -100,7 +100,7 @@ console_result getnewaccount::invoke (std::ostream& output,
 	
 	for(auto& addr : addr_array) 
 		sout.str(addr.second.data());
-
+    #endif
     root.put("default-address", sout.str());
     
     pt::write_json(output, root);
