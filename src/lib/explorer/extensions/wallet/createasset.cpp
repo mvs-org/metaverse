@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/createasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -40,6 +41,73 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ createasset *************************/
+static std::vector<std::string> forbidden_str {
+		"hujintao",
+		"wenjiabao",
+		"wjb",
+		"xijinping",
+		"xjp",
+		"tankman",
+		"liusi",
+		"vpn",
+		"64memo",
+		"gfw",
+		"freedom",
+		"freechina",
+		"likeqiang",
+		"zhouyongkang",
+		"lichangchun",
+		"wubangguo",
+		"heguoqiang",
+		"jiangzemin",
+		"jzm",
+		"fuck",
+		"shit",
+		"198964",
+		"64",
+		"gongchandang",
+		"gcd",
+		"tugong",
+		"communism",
+		"falungong",
+		"communist",
+		"party",
+		"ccp",
+		"cpc",
+		"hongzhi",
+		"lihongzhi",
+		"lhz",
+		"dajiyuan",
+		"zangdu",
+		"dalai",
+		"minzhu",
+		"China",
+		"Chinese",
+		"taiwan",
+		"SHABI",
+		"penis",
+		"j8",
+		"Islam",
+		"allha",
+		"USD",
+		"CNY",
+		"EUR",
+		"AUD",
+		"GBP",
+		"CHF",
+		"ETP",
+		"currency",
+		"asset",
+		"balance",
+		"exchange",
+		"token",
+		"BUY",
+		"SELL",
+		"ASK",
+		"BID",
+		"ZEN."
+};
+
 
 console_result createasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
@@ -47,16 +115,17 @@ console_result createasset::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
-    
+	
+	for(auto& each : forbidden_str) {
+		if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
+			throw std::logic_error{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
+	}
+ 
     auto ret = blockchain.is_asset_exist(option_.symbol);
     if(ret) 
         throw std::logic_error{"asset symbol is already exist, please use another one"};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw std::logic_error{"asset symbol length must be less than 64."};
-    if (option_.address.length() > ASSET_DETAIL_ADDRESS_FIX_SIZE)
-        throw std::logic_error{"asset address length must be less than 64."};
-    if (!option_.address.empty() && !blockchain.is_valid_address(option_.address))
-        throw std::logic_error{"invalid address parameter!"};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw std::logic_error{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
@@ -68,7 +137,6 @@ console_result createasset::invoke (std::ostream& output,
     //acc->set_asset_type(option_.asset_type); // todo -- type not defined
     acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
-    acc->set_address(option_.address);
     acc->set_description(option_.description);
     
     blockchain.store_account_asset(acc);

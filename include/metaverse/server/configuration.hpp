@@ -33,6 +33,7 @@ namespace server {
 #define BS_SETTINGS_VARIABLE "settings"
 #define BS_VERSION_VARIABLE "version"
 #define BS_DAEMON_VARIABLE "daemon"
+#define BS_TESTNET_VARIABLE "testnet"
 
 // This must be lower case but the env var part can be any case.
 #define BS_CONFIG_VARIABLE "config"

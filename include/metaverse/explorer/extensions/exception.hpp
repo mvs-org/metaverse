@@ -29,7 +29,11 @@ public:
 	virtual ~explorer_exception() = default;
 	uint32_t code() const { return code_; }
 	const std::string& message() const { return message_; }
+	#ifdef _WIN32
+	virtual const char* what() const override { return message_.data(); }
+	#else
 	virtual const char* what() const _GLIBCXX_USE_NOEXCEPT override { return message_.data(); }
+	#endif
 private:
 	uint32_t code_;
 	std::string message_;

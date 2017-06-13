@@ -249,6 +249,10 @@ console_result listtxs::invoke (std::ostream& output,
             pt::ptree pt_outputs;
             for(auto& op : outputs) {
                 pt::ptree pt_output;
+				if(blockchain.get_account_address(auth_.name, op.second.get<std::string>("address")))
+	                pt_output.put("own", true);
+				else
+                	pt_output.put("own", false);
                 pt_output.put("address", op.second.get<std::string>("address"));
                 pt_output.put("etp-value", op.second.get<uint64_t>("value"));
                 //pt_output.add_child("attachment", op.second.get<pt::ptree>("attachment"));

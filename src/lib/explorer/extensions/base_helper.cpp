@@ -19,6 +19,7 @@
  */
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <unordered_map>
 
 namespace libbitcoin {
 namespace explorer {
@@ -65,12 +66,15 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
 	//addr->set_pub_key(sout.str());
 	pubkey = sout.str();
 }
+
 history::list expand_history(history_compact::list& compact)
 {
     history::list result;
+    result.reserve(compact.size());
 
+    std::unordered_map<uint64_t, history*> map_output;
     // Process and remove all outputs.
-    for (auto output = compact.begin(); output != compact.end();)
+    for (auto output = compact.begin(); output != compact.end(); ++output)
     {
         if (output->kind == point_kind::output)
         {
@@ -81,29 +85,24 @@ history::list expand_history(history_compact::list& compact)
             row.spend = { null_hash, max_uint32 };
             row.temporary_checksum = output->point.checksum();
             result.emplace_back(row);
-            output = compact.erase(output);
-            continue;
+            map_output[row.temporary_checksum] = &result.back();
         }
-
-        ++output;
     }
 
-    // All outputs have been removed, process the spends.
+    //process the spends.
     for (const auto& spend: compact)
     {
         auto found = false;
 
-        // Update outputs with the corresponding spends.
-        for (auto& row: result)
+        if (spend.kind == point_kind::output)
+            continue;
+
+        auto r = map_output.find(spend.previous_checksum);
+        if(r != map_output.end() && r->second->spend.hash == null_hash)
         {
-            if (row.temporary_checksum == spend.previous_checksum &&
-                row.spend.hash == null_hash)
-            {
-                row.spend = spend.point;
-                row.spend_height = spend.height;
-                found = true;
-                break;
-            }
+             r->second->spend = spend.point;
+             r->second->spend_height = spend.height;
+             found = true;
         }
 
         // This will only happen if the history height cutoff comes between
@@ -130,6 +129,7 @@ history::list expand_history(history_compact::list& compact)
     // TODO: sort by height and index of output, spend or both in order.
     return result;
 }
+
 history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
 {
 	history_compact::list cmp_history;

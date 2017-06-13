@@ -88,7 +88,12 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
-	    );
+	    )
+       	(
+			"number,n",
+			value<std::uint32_t>(&option_.count),
+			"The address count."
+		);
 
         return options;
     }
@@ -106,6 +111,9 @@ public:
 
     struct option
     {
+		option():count(1)
+		{};
+    	uint32_t count;
     } option_;
 
 };
