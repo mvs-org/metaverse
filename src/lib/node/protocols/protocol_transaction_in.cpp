@@ -105,9 +105,11 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     // Prior to this level transaction relay is not configurable.
     if (!relay_from_peer_ && !response->inventories.empty())
     {
-        log::trace(LOG_NODE)
-            << "Unexpected transaction inventory from [" << authority() << "]";
-        return ! misbehaving(20);
+//        log::trace(LOG_NODE)
+//            << "Unexpected transaction inventory from [" << authority() << "]";
+//        return ! misbehaving(20);
+    	stop(error::not_found);
+    	return false;
     }
 
     auto hash = message->inventories.empty() ? "" : encode_hash(message->inventories[0].hash);

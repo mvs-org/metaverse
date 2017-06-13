@@ -112,9 +112,16 @@ bool protocol_address::handle_receive_address(const code& ec,
         << "Storing addresses from [" << authority() << "] ("
         << message->addresses.size() << ")";
 
-    if (message->addresses.size() > 1000)
-    {
-    	return ! misbehaving(20);
+//    if (message->addresses.size() > 1000)
+//    {
+//    	return ! misbehaving(20);
+//    }
+    network_address::list addresses;
+    addresses.reserve(message->addresses.size());
+    for (auto& addr:message->addresses) {
+    	if (!channel::blacklisted(addr)) {
+    		addresses.push_back(addr);
+    	}
     }
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).

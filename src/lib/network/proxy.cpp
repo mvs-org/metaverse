@@ -213,7 +213,7 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
         log::warning(LOG_NETWORK)
             << "Invalid heading magic (" << head.magic << ") from ["
             << authority() << "]";
-        stop(error::bad_stream);
+        stop(error::bad_magic);
         return;
     }
 
@@ -502,6 +502,13 @@ void proxy::stop(const code& ec)
 
     // The socket_ is internally guarded against concurrent use.
     socket_->close();
+    {
+    	if (error::bad_magic != ec.value())
+    		return;
+		boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+		auto millissecond = unix_millisecond();
+		banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
+	}
 }
 
 void proxy::stop(const boost_code& ec)
@@ -515,17 +522,22 @@ bool proxy::stopped() const
 }
 
 std::map<config::authority, int64_t> proxy::banned_;
+boost::detail::spinlock proxy::spinlock_;
 
 bool proxy::blacklisted(const config::authority& authority)
 {
-	auto it = banned_.find(authority);
-	if(it != banned_.end())
+	int64_t ms{0};
 	{
-		auto millissecond = unix_millisecond();
-		if (it->second >= millissecond)
-		{
-			return true;
-		}
+		boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+		auto it = banned_.find(authority);
+		if(it == banned_.end())
+			return false;
+		ms = it->second;
+	}
+	auto millissecond = unix_millisecond();
+	if (ms >= millissecond)
+	{
+		return true;
 	}
 	return false;
 }
@@ -537,7 +549,7 @@ bool proxy::misbehaving(int32_t howmuch)
 	if (misbehaving_.load() >= 100)
 	{
 		{
-			boost::detail::spinlock::scoped_lock guard{spinlock_};
+			boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
 			auto millissecond = unix_millisecond();
 			banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
 		}

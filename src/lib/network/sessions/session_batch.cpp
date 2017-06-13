@@ -132,8 +132,8 @@ void session_batch::start_connect(const code& ec, const authority& host,
     // This creates a tight loop in the case of a small address pool.
     if (blacklisted(host))
     {
-        log::warning(LOG_NETWORK)
-            << "Fetched blacklisted address [" << host << "] ";
+//        log::warning(LOG_NETWORK)
+//            << "Fetched blacklisted address [" << host << "] ";
         handler(error::address_blocked, nullptr);
         return;
     }

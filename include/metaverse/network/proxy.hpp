@@ -163,7 +163,7 @@ private:
     std::atomic_bool has_sent_;
 
     std::atomic_int misbehaving_;
-	boost::detail::spinlock spinlock_;
+	static boost::detail::spinlock spinlock_;
 	static std::map<config::authority, int64_t> banned_;
 };
 

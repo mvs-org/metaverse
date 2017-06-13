@@ -136,6 +136,7 @@ enum error_code_t
 
 	//syn block
 	fetch_more_block,
+	bad_magic,
 };
 
 enum error_condition_t

@@ -131,10 +131,10 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
         return false;
     }
 
-    if (message->inventories.size() > 50000)
-    {
-    	return ! misbehaving(20);
-    }
+//    if (message->inventories.size() > 50000)
+//    {
+//    	return ! misbehaving(20);
+//    }
 
     // TODO: these must return message objects or be copied!
     // Ignore non-transaction inventory requests in this protocol.
