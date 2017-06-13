@@ -449,6 +449,12 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         // Clear the config file path if it wasn't used.
         if (!file)
             configured.file.clear();
+
+        if (get_option(variables, BS_TESTNET_VARIABLE))
+        {
+			configured.file = "mvs-test.conf";
+			configured.network.hosts_file = "hosts-test.cache";
+        }
     }
     catch (const boost::program_options::error& e)
     {
