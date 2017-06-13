@@ -439,6 +439,11 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             !get_option(variables, BS_SETTINGS_VARIABLE) &&
             !get_option(variables, BS_HELP_VARIABLE))
         {
+        	if (get_option(variables, BS_TESTNET_VARIABLE))
+			{
+				configured.network.hosts_file = "hosts-test.cache";
+				const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
+			}
             // Returns true if the settings were loaded from a file.
             file = load_configuration_variables(variables, BS_CONFIG_VARIABLE);
         }
@@ -449,12 +454,6 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         // Clear the config file path if it wasn't used.
         if (!file)
             configured.file.clear();
-
-        if (get_option(variables, BS_TESTNET_VARIABLE))
-        {
-			configured.file = "mvs-test.conf";
-			configured.network.hosts_file = "hosts-test.cache";
-        }
     }
     catch (const boost::program_options::error& e)
     {
