@@ -47,7 +47,7 @@ console_result getaddressasset::invoke (std::ostream& output,
 {
     pt::ptree aroot;
     pt::ptree assets;
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.address)) 
         throw std::logic_error{"invalid address!"};
     
@@ -98,7 +98,7 @@ console_result getaddressasset::invoke (std::ostream& output,
     for (auto& elem: asset_vec) {
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("maximum_supply", elem.get_maximum_supply());
+        asset_data.put("balance", elem.get_maximum_supply());
         //asset_data.put("asset_type", elem.detail.get_asset_type());
         //asset_data.put("issuer", elem.detail.get_issuer());
         //asset_data.put("address", elem.detail.get_address());
