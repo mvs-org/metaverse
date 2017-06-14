@@ -81,7 +81,7 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    
+        ( 
 			"ADDRESS",
 			value<std::string>(&argument_.address)->required(),
 			"address"
