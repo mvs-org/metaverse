@@ -47,6 +47,7 @@ console_result getaddressasset::invoke (std::ostream& output,
 {
     pt::ptree aroot;
     pt::ptree assets;
+	std::string symbol;
     //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.address)) 
         throw std::logic_error{"invalid address!"};
@@ -70,7 +71,7 @@ console_result getaddressasset::invoke (std::ostream& output,
             std::string symbol;
             uint64_t num;
             if(kind == business_kind::asset_transfer) {
-                auto transfer_info = boost::get<asset_transfer>(bh.data.get_data());
+                auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
                 symbol = transfer_info.get_address();
                 num = transfer_info.get_quantity();
             } else { // asset issued
@@ -98,7 +99,8 @@ console_result getaddressasset::invoke (std::ostream& output,
     for (auto& elem: asset_vec) {
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("balance", elem.get_maximum_supply());
+		symbol = elem.get_symbol();
+        asset_data.put("balance", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
         //asset_data.put("asset_type", elem.detail.get_asset_type());
         //asset_data.put("issuer", elem.detail.get_issuer());
         //asset_data.put("address", elem.detail.get_address());
@@ -112,7 +114,6 @@ console_result getaddressasset::invoke (std::ostream& output,
     pt::write_json(output, aroot);
     return console_result::okay;
 }
-
 
 
 

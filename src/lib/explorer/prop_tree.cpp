@@ -293,7 +293,8 @@ ptree prop_list(bc::chain::attachment& attach_data)
 			auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
 			tree.put("symbol", detail_info.get_symbol());
 			tree.put("quantity", detail_info.get_maximum_supply());
-			tree.put("asset_type", detail_info.get_asset_type());
+			//tree.put("asset_type", detail_info.get_asset_type());
+			tree.put("decimal_number", detail_info.get_decimal_number());
 			tree.put("issuer", detail_info.get_issuer());
 			tree.put("address", detail_info.get_address());
 			tree.put("description", detail_info.get_description());

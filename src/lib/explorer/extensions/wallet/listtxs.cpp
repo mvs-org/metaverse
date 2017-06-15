@@ -41,7 +41,6 @@ namespace pt = boost::property_tree;
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 /************************ listtxs *************************/
-using namespace libbitcoin::explorer::config;
 
 console_result listtxs::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
@@ -248,7 +247,44 @@ console_result listtxs::invoke (std::ostream& output,
 				pt_output.put("own", false);
             pt_output.put("address", addr);
             pt_output.put("etp-value", op.value);
-            pt_output.add_child("attachment", prop_list(op.attach_data));
+            //pt_output.add_child("attachment", prop_list(op.attach_data));
+			////////////////////////////////////////////////////////////
+			auto attach_data = op.attach_data;
+			std::string symbol;
+			pt::ptree tree;
+			if(attach_data.get_type() == ETP_TYPE) {
+				tree.put("type", "etp");
+			} else if(attach_data.get_type() == ASSET_TYPE) {
+				auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
+				if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+					tree.put("type", "asset-issue");
+					auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
+					tree.put("symbol", detail_info.get_symbol());
+					//tree.put("quantity", detail_info.get_maximum_supply());
+					symbol = detail_info.get_symbol();
+					tree.put("quantity", blockchain.get_asset_amount(symbol, detail_info.get_maximum_supply()));
+					tree.put("decimal_number", detail_info.get_decimal_number());
+					tree.put("issuer", detail_info.get_issuer());
+					tree.put("address", detail_info.get_address());
+					tree.put("description", detail_info.get_description());
+				}
+				if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+					tree.put("type", "asset-transfer");
+					auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
+					tree.put("symbol", trans_info.get_address());
+					//tree.put("quantity", trans_info.get_quantity());
+					symbol = trans_info.get_address();
+					tree.put("quantity", blockchain.get_asset_amount(symbol, trans_info.get_quantity()));
+				}
+			} else if(attach_data.get_type() == MESSAGE_TYPE) {
+				tree.put("type", "message");
+				auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
+				tree.put("content", msg_info.get_content());
+			} else {
+				tree.put("type", "unknown business");
+			}
+            pt_output.add_child("attachment", tree);
+			////////////////////////////////////////////////////////////
 			
             pt_outputs.push_back(std::make_pair("", pt_output));
             
@@ -297,7 +333,6 @@ console_result listtxs::invoke (std::ostream& output,
     pt::write_json(output, aroot);
 
     return console_result::okay;
-}
 
 } // namespace commands
 } // namespace explorer

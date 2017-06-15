@@ -246,6 +246,7 @@ public:
 	bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
 	bool get_asset_height(const std::string& asset_name, uint64_t& height);
 	std::shared_ptr<std::vector<asset_detail>> get_local_assets();
+	std::shared_ptr<asset_detail> get_issued_asset(std::string& symbol);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets();
 	std::shared_ptr<std::vector<asset_detail>> get_issued_assets();
 	std::shared_ptr<std::vector<business_address_asset>> get_account_unissued_assets(const std::string& name);
@@ -266,6 +267,10 @@ public:
 	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
 	void uppercase_symbol(std::string& symbol);
 	bool is_valid_address(const std::string& address);
+	uint64_t shrink_amount(uint64_t amount, uint8_t decimal_number);
+	uint64_t multiple_amount(uint64_t amount, uint8_t decimal_number);
+	uint64_t get_asset_amount(std::string& symbol, uint64_t amount);
+	uint64_t get_asset_multiple_amount(std::string& symbol, uint64_t amount);
 	void fired();
 	organizer& get_organizer();
 	bool get_transaction(const hash_digest& hash,

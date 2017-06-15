@@ -47,7 +47,7 @@ console_result getaccountasset::invoke (std::ostream& output,
 {
     pt::ptree aroot;
     pt::ptree assets;
-
+	std::string symbol;
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	auto pvaddr = blockchain.get_account_addresses(auth_.name);
 	if(!pvaddr) 
@@ -102,7 +102,8 @@ console_result getaccountasset::invoke (std::ostream& output,
 	for (auto& elem: asset_vec) {
 		pt::ptree asset_data;
 		asset_data.put("symbol", elem.get_symbol());
-		asset_data.put("amount", elem.get_maximum_supply());
+		symbol = elem.get_symbol();
+		asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
 		asset_data.put("address", elem.get_address());
 		asset_data.put("status", "unspent");
 		assets.push_back(std::make_pair("", asset_data));
@@ -125,7 +126,8 @@ console_result getaccountasset::invoke (std::ostream& output,
 
 		pt::ptree asset_data;
 		asset_data.put("symbol", elem.detail.get_symbol());
-		asset_data.put("amount", elem.detail.get_maximum_supply());
+		symbol = elem.detail.get_symbol();
+		asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.detail.get_maximum_supply()));
 		asset_data.put("address", "");
 		asset_data.put("status", "unissued");
 		assets.push_back(std::make_pair("", asset_data));
@@ -135,7 +137,6 @@ console_result getaccountasset::invoke (std::ostream& output,
 	pt::write_json(output, aroot);
 	return console_result::okay;
 }
-
 
 } // namespace commands
 } // namespace explorer

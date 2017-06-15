@@ -1416,6 +1416,42 @@ std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_issued_assets()
 	return sp_vec;
 }
 
+uint64_t block_chain_impl::shrink_amount(uint64_t amount, uint8_t decimal_number){
+	double db_amount = static_cast<double>(amount);
+	if(decimal_number) {
+		while(decimal_number--)
+			db_amount = db_amount/10;
+	}
+	return static_cast<uint64_t>(db_amount);	
+}
+uint64_t block_chain_impl::multiple_amount(uint64_t amount, uint8_t decimal_number){
+	uint64_t db_amount = amount;
+	if(decimal_number) {
+		while(decimal_number--)
+			db_amount *= 10;
+	}
+	return db_amount;	
+}
+
+uint64_t block_chain_impl::get_asset_amount(std::string& symbol, uint64_t amount){
+	auto sp_asset = get_issued_asset(symbol);
+	return shrink_amount(amount, sp_asset->get_decimal_number());
+}
+uint64_t block_chain_impl::get_asset_multiple_amount(std::string& symbol, uint64_t amount){
+	auto sp_asset = get_issued_asset(symbol);
+	return multiple_amount(amount, sp_asset->get_decimal_number());
+}
+
+std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(std::string& symbol)
+{
+	std::shared_ptr<asset_detail> sp_asset(nullptr);
+	const auto hash = get_hash(symbol);
+	auto sh_block_asset = database_.assets.get(hash);
+	if(sh_block_asset)
+		sp_asset = std::make_shared<asset_detail>(sh_block_asset->get_asset());
+	return sp_asset;
+}
+
 // get all addresses
 std::shared_ptr<std::vector<account_address>> block_chain_impl::get_addresses()
 {

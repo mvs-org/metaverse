@@ -74,15 +74,16 @@ console_result getasset::invoke (std::ostream& output,
     
     pt::ptree aroot;
     pt::ptree assets;
-    
+    std::string symbol;
     // add blockchain assets
     for (auto& elem: *sh_vec) {
         if( elem.get_symbol().compare(argument_.symbol) != 0 )// not request asset symbol
             continue;
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("maximum_supply", elem.get_maximum_supply());
-        asset_data.put("asset_type", elem.get_asset_type());
+		symbol = elem.get_symbol();
+        asset_data.put("maximum_supply", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
+        asset_data.put("decimal_number", elem.get_decimal_number());
         asset_data.put("issuer", elem.get_issuer());
         asset_data.put("address", elem.get_address());
         asset_data.put("description", elem.get_description());
@@ -100,8 +101,9 @@ console_result getasset::invoke (std::ostream& output,
             continue;
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("maximum_supply", elem.get_maximum_supply());
-        asset_data.put("asset_type", elem.get_asset_type());
+		symbol = elem.get_symbol();
+        asset_data.put("maximum_supply", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
+        asset_data.put("decimal_number", elem.get_decimal_number());
         asset_data.put("issuer", elem.get_issuer());
         asset_data.put("address", elem.get_address());
         asset_data.put("description", elem.get_description());
@@ -117,7 +119,6 @@ console_result getasset::invoke (std::ostream& output,
     pt::write_json(output, aroot);
     return console_result::okay;
 }
-
 
 
 } // namespace commands

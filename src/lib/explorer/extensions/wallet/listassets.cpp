@@ -47,6 +47,8 @@ console_result listassets::invoke (std::ostream& output,
 {
     pt::ptree aroot;
     pt::ptree assets;
+	
+	std::string symbol;
     if(auth_.name.empty()) { // no account -- list whole assets in blockchain
         //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         // std::shared_ptr<std::vector<asset_detail>> 
@@ -62,14 +64,17 @@ console_result listassets::invoke (std::ostream& output,
         };
         std::for_each(sh_vec->begin(), sh_vec->end(), action);
 #endif
-
         // add blockchain assets
         for (auto& elem: *sh_vec) {
             pt::ptree asset_data;
             asset_data.put("symbol", elem.get_symbol());
-            asset_data.put("amount", elem.get_maximum_supply());
+			symbol = elem.get_symbol();
+            asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
             //asset_data.put("address", elem.get_address());
             asset_data.put("status", "issued");
+			uint64_t height;
+			if(blockchain.get_asset_height(elem.get_symbol(), height))
+				asset_data.put("height", height);
             assets.push_back(std::make_pair("", asset_data));
         }
         
@@ -99,7 +104,7 @@ console_result listassets::invoke (std::ostream& output,
                     std::string symbol;
                     uint64_t num;
                     if(kind == business_kind::asset_transfer) {
-                        auto transfer_info = boost::get<asset_transfer>(bh.data.get_data());
+                        auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
                         symbol = transfer_info.get_address();
                         num = transfer_info.get_quantity();
                     } else { // asset issued
@@ -128,7 +133,8 @@ console_result listassets::invoke (std::ostream& output,
         for (auto& elem: asset_vec) {
             pt::ptree asset_data;
             asset_data.put("symbol", elem.get_symbol());
-            asset_data.put("amount", elem.get_maximum_supply());
+			symbol = elem.get_symbol();
+            asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
             //asset_data.put("address", elem.get_address());
             asset_data.put("status", "unspent");
             assets.push_back(std::make_pair("", asset_data));
@@ -151,7 +157,8 @@ console_result listassets::invoke (std::ostream& output,
 
             pt::ptree asset_data;
             asset_data.put("symbol", elem.detail.get_symbol());
-            asset_data.put("amount", elem.detail.get_maximum_supply());
+			symbol = elem.detail.get_symbol();
+            asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.detail.get_maximum_supply()));
             //asset_data.put("address", "");
             asset_data.put("status", "unissued");
             assets.push_back(std::make_pair("", asset_data));
@@ -162,7 +169,6 @@ console_result listassets::invoke (std::ostream& output,
     pt::write_json(output, aroot);
     return console_result::okay;
 }
-
 
 
 } // namespace commands

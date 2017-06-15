@@ -58,13 +58,12 @@ public:
 	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint32_t asset_type, std::string issuer,
+		uint8_t asset_type, std::string issuer,
 		std::string address, std::string description);
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
     static asset_detail factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
@@ -84,8 +83,8 @@ public:
 	void set_symbol(const std::string& symbol);
 	uint64_t get_maximum_supply() const;
 	void set_maximum_supply(uint64_t maximum_supply);
-	uint32_t get_asset_type() const;
-	void set_asset_type(uint32_t asset_type);
+	uint8_t get_decimal_number() const;
+	void set_decimal_number(uint8_t decimal_number);
 	const std::string& get_issuer() const;
 	void set_issuer(const std::string& issuer);
 	const std::string& get_address() const;
@@ -96,7 +95,11 @@ public:
 private:    
     std::string symbol;
     uint64_t maximum_supply;
-    uint32_t asset_type;
+    //uint32_t asset_type;
+    uint8_t decimal_number;
+	uint8_t unused1;
+	uint8_t unused2;
+	uint8_t unused3;
     std::string issuer; 
     std::string address;
     std::string description;

@@ -231,8 +231,10 @@ console_result issue::invoke (std::ostream& output,
 	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
 	if(sh_asset->empty())
 		throw std::logic_error{argument_.symbol + " not found"};
+	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
 		throw std::logic_error{argument_.symbol + " has been issued"};
+	#endif
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
@@ -256,7 +258,7 @@ console_result issue::invoke (std::ostream& output,
 	pt::write_json(output, config::prop_tree(tx, true));
 
 	// change asset status
-	sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+	//sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
 	auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
     blockchain.store_account_asset(detail);
 
@@ -285,8 +287,10 @@ console_result issuefrom::invoke (std::ostream& output,
 	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
 	if(sh_asset->empty())
 		throw std::logic_error{argument_.symbol + " not found"};
+	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
 		throw std::logic_error{argument_.symbol + " has been issued"};
+	#endif
 
 	// receiver
 	std::vector<receiver_record> receiver{
@@ -307,7 +311,7 @@ console_result issuefrom::invoke (std::ostream& output,
 	auto tx = issue_helper.get_transaction();
 #endif
 	// change asset status
-	sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+	//sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
 	auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
     blockchain.store_account_asset(detail);
 

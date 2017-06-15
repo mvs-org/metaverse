@@ -129,12 +129,12 @@ console_result createasset::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
-	
+
 	for(auto& each : forbidden_str) {
 		if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
 			throw std::logic_error{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
 	}
- 
+	
     auto ret = blockchain.is_asset_exist(option_.symbol);
     if(ret) 
         throw std::logic_error{"asset symbol is already exist, please use another one"};
@@ -144,15 +144,22 @@ console_result createasset::invoke (std::ostream& output,
         throw std::logic_error{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
         throw std::logic_error{"asset issue(account name) length must be less than 64."};
+	if (option_.decimal_number <= 0 || option_.decimal_number > 20)
+        throw std::logic_error{"asset decimal number must bigger than 0 and less than 21."};
 
     if(!option_.maximum_supply.volume) 
         throw std::logic_error{"volume must not be zero."};
+	auto amount = blockchain.shrink_amount(std::numeric_limits<uint64_t>::max(), static_cast<uint8_t>(option_.decimal_number));
+
+	if(amount < option_.maximum_supply.volume) 
+        throw std::logic_error{"volume out of max range."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
-    acc->set_maximum_supply(option_.maximum_supply.volume);
-    //acc->set_asset_type(option_.asset_type); // todo -- type not defined
-    acc->set_asset_type(asset_detail::asset_detail_type::created); 
+    acc->set_maximum_supply(blockchain.multiple_amount(option_.maximum_supply.volume, option_.decimal_number));
+    //acc->set_maximum_supply(volume);
+    acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
+    //acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
     
@@ -163,8 +170,8 @@ console_result createasset::invoke (std::ostream& output,
     pt::ptree aroot;
     pt::ptree asset_data;
     asset_data.put("symbol", acc->get_symbol());
-    asset_data.put("maximum_supply", acc->get_maximum_supply());
-    asset_data.put("asset_type", acc->get_asset_type());
+    asset_data.put("maximum-supply", blockchain.shrink_amount(acc->get_maximum_supply(), acc->get_decimal_number()));
+    asset_data.put("decimal_number", acc->get_decimal_number());
     asset_data.put("issuer", acc->get_issuer());
     asset_data.put("address", acc->get_address());
     asset_data.put("description", acc->get_description());
@@ -175,7 +182,6 @@ console_result createasset::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
 
 } // namespace commands
 } // namespace explorer

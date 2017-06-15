@@ -38,10 +38,11 @@ asset_detail::asset_detail()
 }
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
-    uint32_t asset_type, std::string issuer,
+    uint8_t asset_type, std::string issuer,
     std::string address, std::string description):
-    symbol(symbol), maximum_supply(maximum_supply), asset_type(asset_type), 
-	issuer(issuer), address(address), description(description)
+    symbol(symbol), maximum_supply(maximum_supply), decimal_number(asset_type), 
+	issuer(issuer), address(address), description(description),unused1(0),
+	unused2(0), unused3(0)
 {
 }
 
@@ -76,7 +77,11 @@ void asset_detail::reset()
 {	
     symbol = "";
     maximum_supply = 0;
-    asset_type = 0;
+    //asset_type = 0;
+    decimal_number = 0;
+	unused1 = 0;
+	unused2 = 0;
+	unused3 = 0;
     issuer = ""; 
     address = "";
     description = "";
@@ -111,7 +116,11 @@ bool asset_detail::from_data(reader& source)
 
     symbol = source.read_string();
     maximum_supply = source.read_8_bytes_little_endian();
-    asset_type = source.read_4_bytes_little_endian();
+    //asset_type = source.read_4_bytes_little_endian();
+    decimal_number = source.read_byte();
+    unused1 = source.read_byte();
+    unused2 = source.read_byte();
+    unused3 = source.read_byte();
     issuer = source.read_string(); 
     address =  source.read_string();
     description =  source.read_string();
@@ -153,7 +162,11 @@ void asset_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);
-	sink.write_4_bytes_little_endian(asset_type);
+	//sink.write_4_bytes_little_endian(asset_type);
+	sink.write_byte(decimal_number);
+	sink.write_byte(unused1);
+	sink.write_byte(unused2);
+	sink.write_byte(unused3);
 	sink.write_string(issuer);
 	sink.write_string(address);
 	sink.write_string(description);
@@ -172,7 +185,7 @@ std::string asset_detail::to_string() const
 
     ss << "\t symbol = " << symbol << "\n"
 		<< "\t maximum_supply = " << maximum_supply << "\n"
-		<< "\t asset_type = " << asset_type << "\n"
+		<< "\t asset_type = " << decimal_number << "\n"
 		<< "\t issuer = " << issuer << "\n"
 		<< "\t address = " << address << "\n"
         << "\t description=" << description << "\n";
@@ -185,7 +198,7 @@ void asset_detail::to_json(std::ostream& output)
 	minijson::object_writer json_writer(output);
 	json_writer.write("symbol", symbol);
 	json_writer.write("maximum_supply", maximum_supply);
-	json_writer.write("asset_type", asset_type);
+	//json_writer.write("asset_type", asset_type);
 	json_writer.write("issuer", issuer);
 	json_writer.write("address", address);
 	json_writer.write("description", description);
@@ -212,13 +225,13 @@ void asset_detail::set_maximum_supply(uint64_t maximum_supply)
      this->maximum_supply = maximum_supply;
 }
 
-uint32_t asset_detail::get_asset_type() const
+uint8_t asset_detail::get_decimal_number() const
 { 
-    return asset_type;
+    return decimal_number;
 }
-void asset_detail::set_asset_type(uint32_t asset_type)
+void asset_detail::set_decimal_number(uint8_t decimal_number)
 { 
-     this->asset_type = asset_type;
+     this->decimal_number = decimal_number;
 }
 
 const std::string& asset_detail::get_issuer() const
