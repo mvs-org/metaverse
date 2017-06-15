@@ -68,7 +68,7 @@ console_result listassets::invoke (std::ostream& output,
             pt::ptree asset_data;
             asset_data.put("symbol", elem.get_symbol());
             asset_data.put("amount", elem.get_maximum_supply());
-            asset_data.put("address", elem.get_address());
+            //asset_data.put("address", elem.get_address());
             asset_data.put("status", "issued");
             assets.push_back(std::make_pair("", asset_data));
         }
@@ -129,7 +129,7 @@ console_result listassets::invoke (std::ostream& output,
             pt::ptree asset_data;
             asset_data.put("symbol", elem.get_symbol());
             asset_data.put("amount", elem.get_maximum_supply());
-            asset_data.put("address", elem.get_address());
+            //asset_data.put("address", elem.get_address());
             asset_data.put("status", "unspent");
             assets.push_back(std::make_pair("", asset_data));
         }
@@ -152,7 +152,7 @@ console_result listassets::invoke (std::ostream& output,
             pt::ptree asset_data;
             asset_data.put("symbol", elem.detail.get_symbol());
             asset_data.put("amount", elem.detail.get_maximum_supply());
-            asset_data.put("address", "");
+            //asset_data.put("address", "");
             asset_data.put("status", "unissued");
             assets.push_back(std::make_pair("", asset_data));
         }
