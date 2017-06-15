@@ -1549,12 +1549,8 @@ void block_chain_impl::fired()
 bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_local_db)
 {
 	// 1. find from blockchain database
-	auto sh_bc_vec = get_issued_assets();
-	
-	for(auto& acc : *sh_bc_vec) {
-		if(asset_name.compare(acc.get_symbol())==0)
-			return true;
-	}
+	if(get_issued_asset(const_cast<std::string&>(asset_name)))
+		return true;
 
 	// 2. find from local database asset
 	if(add_local_db) {
