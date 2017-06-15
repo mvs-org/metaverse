@@ -86,7 +86,7 @@ bool data_base::is_lower_database(const path& prefix)
 }
 bool data_base::upgrade_database(const settings& settings, const chain::block& genesis)
 {
-	log::info("database") << "upgrading blockchain database......";
+	log::info("database") << "The local database is being upgraded, it may take a while to re-synchronize the block data, please wait...";
     // Create paths.
     auto prefix = default_data_path() / settings.directory;
     const blockchain_store paths(prefix);
