@@ -166,9 +166,7 @@ console_result listassets::invoke (std::ostream& output,
             asset_data.put("symbol", elem.detail.get_symbol());
 			symbol = elem.detail.get_symbol();
             asset_data.put("quantity", elem.detail.get_maximum_supply());
-			auto issued_asset = blockchain.get_issued_asset(symbol);
-			if(issued_asset)
-				asset_data.put("decimal_number", issued_asset->get_decimal_number());
+			asset_data.put("decimal_number", elem.detail.get_decimal_number());
             //asset_data.put("address", "");
             asset_data.put("status", "unissued");
             assets.push_back(std::make_pair("", asset_data));
