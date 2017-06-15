@@ -67,15 +67,13 @@ console_result listassets::invoke (std::ostream& output,
         // add blockchain assets
         for (auto& elem: *sh_vec) {
             pt::ptree asset_data;
-            asset_data.put("symbol", elem.get_symbol());
-			symbol = elem.get_symbol();
-            asset_data.put("quantity", elem.get_maximum_supply());
-            //asset_data.put("address", elem.get_address());
-			auto issued_asset = blockchain.get_issued_asset(symbol);
-			if(issued_asset)
-				asset_data.put("decimal_number", issued_asset->get_decimal_number());
-
-            asset_data.put("status", "issued");
+			asset_data.put("symbol", elem.get_symbol());
+			asset_data.put("maximum_supply", elem.get_maximum_supply());
+			asset_data.put("decimal_number", elem.get_decimal_number());
+			asset_data.put("issuer", elem.get_issuer());
+			asset_data.put("address", elem.get_address());
+			asset_data.put("description", elem.get_description());
+			asset_data.put("status", "issued");
 			uint64_t height;
 			if(blockchain.get_asset_height(elem.get_symbol(), height))
 				asset_data.put("height", height);
