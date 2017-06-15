@@ -109,11 +109,11 @@ public:
             "The asset maximum supply volume."
         )
         (
-            "type,t",
-            value<uint32_t>(&option_.asset_type),
-            "The asset type."
+            "decimalnumber,n",
+            value<uint32_t>(&option_.decimal_number),
+            "The asset amount decimal number."
         )
-        (
+		(
             "issuer,i",
             value<std::string>(&option_.issuer),
             "The asset issuer.defaults to account name."
@@ -140,18 +140,18 @@ public:
 
     struct option
     {
-	    option()
+    	option()
 		  : symbol(""),
 			maximum_supply{0},
-			asset_type(0),
+			decimal_number(0),
 			issuer(""),
 			description("")
     	{
-    	}
-	
+    	};
+		
 		std::string symbol;
 		non_negative_uint64 maximum_supply;
-		uint32_t asset_type;
+		uint32_t decimal_number;
 		std::string issuer; 
 		std::string description;
     } option_;
