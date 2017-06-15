@@ -98,7 +98,14 @@ public:
             "height,e",
             value<libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>>(&option_.height),
             "Get tx according height eg: -e start-height:end-height."
-        );
+        )
+		(
+			"symbol,s",
+			value<std::string>(&argument_.symbol),
+			"Asset symbol."
+		)
+        ;
+
 
         return options;
     }
@@ -112,7 +119,10 @@ public:
 
     struct argument
     {
+    	argument():address(""), symbol("")
+		{};
     	std::string address;
+		std::string symbol;
     } argument_;
 
     struct option

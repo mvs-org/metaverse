@@ -49,7 +49,8 @@ console_result listtxs::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
         throw std::logic_error{"invalid address parameter!"};
-    
+    blockchain.uppercase_symbol(argument_.symbol);
+
     pt::ptree aroot;
     pt::ptree balances;
 	const uint64_t limit = 100;
@@ -179,135 +180,123 @@ console_result listtxs::invoke (std::ostream& output,
     }
 	// sort by height
 	std::sort (sh_tx_hash->begin(), sh_tx_hash->end(), sort_by_height);
-	
+
     // fetch tx according its hash
-    const char* wallet[2]{"fetch-tx", nullptr};
-    std::stringstream sout;
-    std::istringstream sin; 
     std::vector<std::string> vec_ip_addr; // input addr
     std::vector<std::string> vec_op_addr; // output addr
+	chain::transaction tx;
+	uint64_t tx_height;
+	hash_digest trans_hash;
+	
+    for (auto& each: *sh_txs){
+		decode_hash(trans_hash, each.hash);
+		if(!blockchain.get_transaction(trans_hash, tx, tx_height))
+			continue;
 
-    for (auto& elem: *sh_tx_hash) {
-        sout.str("");
-        wallet[1] = elem.hash_.c_str();
+		// filter asset symbol
+		if(!argument_.symbol.empty()) {
+			auto asset_found = false;
+			for(auto& op : tx.outputs) {
+	            if((op.get_asset_symbol() == argument_.symbol)) {
+					asset_found = true;
+					break;
+	            }
+	        }
+			if(!asset_found) // not found asset
+				continue;
+		}
+		
+		pt::ptree tx_item;
+        tx_item.put("hash", each.hash);
+        tx_item.put("height", each.height);
+        tx_item.put("timestamp", each.timestamp);
+        tx_item.put("direction", "send");
+
+        // set inputs content
+        pt::ptree input_addrs;
+        for(auto& input : tx.inputs) {
+            pt::ptree input_addr;
+            std::string addr="";
+			
+			auto script_address = payment_address::extract(input.script);
+			if (script_address)
+				addr = script_address.encoded();
+
+            input_addr.put("address", addr);
+            input_addrs.push_back(std::make_pair("", input_addr));
+
+            // add input address
+            if(!addr.empty()) {
+                vec_ip_addr.push_back(addr);
+            }
+        }
+        tx_item.push_back(std::make_pair("inputs", input_addrs));
         
-        try {
-            if(console_result::okay != dispatch_command(2, wallet + 0, sin, sout, sout))
-                continue;
-        }catch(std::exception& e){
-            log::info("listtxs")<<sout.str();
-            log::info("listtxs")<<e.what();
-            continue;
-        }catch(...){
-            log::info("listtxs")<<sout.str();
-            continue;
+        // set outputs content
+        pt::ptree pt_outputs;
+        for(auto& op : tx.outputs) {
+            pt::ptree pt_output;
+            std::string addr="";
+			
+			auto address = payment_address::extract(op.script);
+			if (address)
+				addr = address.encoded();
+			if(blockchain.get_account_address(auth_.name, addr))
+				pt_output.put("own", true);
+			else
+				pt_output.put("own", false);
+            pt_output.put("address", addr);
+            pt_output.put("etp-value", op.value);
+            pt_output.add_child("attachment", prop_list(op.attach_data));
+			
+            pt_outputs.push_back(std::make_pair("", pt_output));
+            
+            // add output address
+            if(!addr.empty())
+            	vec_op_addr.push_back(addr);
         }
-        pt::ptree tx;
-        sin.str(sout.str());
-        pt::read_json(sin, tx);
-
-        auto tx_hash = tx.get<std::string>("transaction.hash");
-        auto inputs = tx.get_child("transaction.inputs");
-        auto outputs = tx.get_child("transaction.outputs");
-        // not found, try next 
-        if ((inputs.size() == 0) || (outputs.size() == 0)) {
-            continue;
+        tx_item.push_back(std::make_pair("outputs", pt_outputs));
+        
+        // set tx direction
+        // 1. receive check
+        auto pos = std::find_if(vec_ip_addr.begin(), vec_ip_addr.end(), [&](const std::string& i){
+                return blockchain.get_account_address(auth_.name, i) != nullptr;
+                });
+        
+        if (pos == vec_ip_addr.end()){
+            tx_item.put("direction", "receive");
         }
+        // 2. transfer check
+        #if 0
+        auto is_ip_intern = true;
+        auto is_op_intern = true;
 
-        // found, then push_back
-        pt::ptree tx_item;
-        for (auto& each: *sh_txs){
-            if( each.hash.compare(tx_hash) != 0 )
-                continue;
-
-            tx_item.put("hash", each.hash);
-            tx_item.put("height", each.height);
-            tx_item.put("timestamp", each.timestamp);
-            tx_item.put("direction", "send");
-
-            // set inputs content
-            pt::ptree input_addrs;
-            for(auto& input : inputs) {
-                pt::ptree input_addr;
-                std::string addr="";
-                try {
-                    addr = input.second.get<std::string>("address");
-                } catch(...){
-                    log::info("listtxs no input address!");
-                }
-                input_addr.put("address", addr);
-                input_addrs.push_back(std::make_pair("", input_addr));
-
-                // add input address
-                if(!addr.empty()) {
-                    vec_ip_addr.push_back(addr);
-                }
-            }
-            tx_item.push_back(std::make_pair("inputs", input_addrs));
-            
-            // set outputs content
-            pt::ptree pt_outputs;
-            for(auto& op : outputs) {
-                pt::ptree pt_output;
-				if(blockchain.get_account_address(auth_.name, op.second.get<std::string>("address")))
-	                pt_output.put("own", true);
-				else
-                	pt_output.put("own", false);
-                pt_output.put("address", op.second.get<std::string>("address"));
-                pt_output.put("etp-value", op.second.get<uint64_t>("value"));
-                //pt_output.add_child("attachment", op.second.get<pt::ptree>("attachment"));
-                pt_output.add_child("attachment", op.second.get_child("attachment"));
-                pt_outputs.push_back(std::make_pair("", pt_output));
-                
-                // add output address
-                vec_op_addr.push_back(op.second.get<std::string>("address"));
-            }
-            tx_item.push_back(std::make_pair("outputs", pt_outputs));
-            
-            // set tx direction
-            // 1. receive check
-            auto pos = std::find_if(vec_ip_addr.begin(), vec_ip_addr.end(), [&](const std::string& i){
-                    return blockchain.get_account_address(auth_.name, i) != nullptr;
-                    });
-            
-            if (pos == vec_ip_addr.end()){
-                tx_item.put("direction", "receive");
-            }
-            // 2. transfer check
-            #if 0
-            auto is_ip_intern = true;
-            auto is_op_intern = true;
-
-            if(vec_ip_addr.empty())
+        if(vec_ip_addr.empty())
+            is_ip_intern = false;
+        for(auto& each : vec_ip_addr) {
+            if(!blockchain.get_account_address(auth_.name, each))
                 is_ip_intern = false;
-            for(auto& each : vec_ip_addr) {
-                if(!blockchain.get_account_address(auth_.name, each))
-                    is_ip_intern = false;
-            }
-            
-            for(auto& each : vec_op_addr) {
-                if(!blockchain.get_account_address(auth_.name, each))
-                    is_op_intern = false;
-            }
-            
-            if (is_ip_intern && is_ip_intern){
-                tx_item.put("direction", "transfer");
-            }
-            #endif
-            // 3. all address clear
-            vec_ip_addr.clear();
-            vec_op_addr.clear();
         }
-        balances.push_back(std::make_pair("", tx_item));
+        
+        for(auto& each : vec_op_addr) {
+            if(!blockchain.get_account_address(auth_.name, each))
+                is_op_intern = false;
+        }
+        
+        if (is_ip_intern && is_ip_intern){
+            tx_item.put("direction", "transfer");
+        }
+        #endif
+        // 3. all address clear
+        vec_ip_addr.clear();
+        vec_op_addr.clear();
+		balances.push_back(std::make_pair("", tx_item));
     }
-    
     aroot.add_child("transactions", balances);
     pt::write_json(output, aroot);
 
     return console_result::okay;
 }
-
-
 
 } // namespace commands
 } // namespace explorer
