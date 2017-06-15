@@ -333,6 +333,7 @@ console_result listtxs::invoke (std::ostream& output,
     pt::write_json(output, aroot);
 
     return console_result::okay;
+}
 
 } // namespace commands
 } // namespace explorer
