@@ -80,7 +80,7 @@ console_result getasset::invoke (std::ostream& output,
             continue;
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("quantity", elem.get_maximum_supply());
+        asset_data.put("maximum_supply", elem.get_maximum_supply());
         asset_data.put("decimal_number", elem.get_decimal_number());
         asset_data.put("issuer", elem.get_issuer());
         asset_data.put("address", elem.get_address());
@@ -99,7 +99,7 @@ console_result getasset::invoke (std::ostream& output,
             continue;
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("quantity", elem.get_maximum_supply());
+        asset_data.put("maximum_supply", elem.get_maximum_supply());
         asset_data.put("decimal_number", elem.get_decimal_number());
         asset_data.put("issuer", elem.get_issuer());
         asset_data.put("address", elem.get_address());
