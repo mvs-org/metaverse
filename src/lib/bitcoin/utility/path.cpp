@@ -36,7 +36,9 @@ boost::filesystem::path default_data_path()
     // Windows
     char file_path[MAX_PATH];
     SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
-    return boost::filesystem::path(file_path) / "Metaverse";
+    fs::path pathRet = boost::filesystem::path(file_path) / "Metaverse";
+    fs::create_directories(pathRet);
+    return pathRet;
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
