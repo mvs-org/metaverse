@@ -144,8 +144,8 @@ console_result createasset::invoke (std::ostream& output,
         throw std::logic_error{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
         throw std::logic_error{"asset issue(account name) length must be less than 64."};
-	if (option_.decimal_number <= 0 || option_.decimal_number > 20)
-        throw std::logic_error{"asset decimal number must bigger than 0 and less than 21."};
+	if (option_.decimal_number < 0 || option_.decimal_number > 20)
+        throw std::logic_error{"asset decimal number be 0~20."};
 
     if(!option_.maximum_supply.volume) 
         throw std::logic_error{"volume must not be zero."};
