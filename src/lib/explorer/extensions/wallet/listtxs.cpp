@@ -41,6 +41,7 @@ namespace pt = boost::property_tree;
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 /************************ listtxs *************************/
+using namespace libbitcoin::explorer::config;
 
 console_result listtxs::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
