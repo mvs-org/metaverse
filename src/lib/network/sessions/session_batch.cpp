@@ -179,7 +179,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
         return;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected to [" << channel->authority() << "]";
 
     // This is the end of the connect sequence.

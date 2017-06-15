@@ -254,7 +254,7 @@ void session::handle_handshake(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure in handshake with [" << channel->authority()
             << "] " << ec.message();
         handle_started(ec);
@@ -332,14 +332,14 @@ void session::do_remove(const code& ec, channel::ptr channel,
 void session::handle_unpend(const code& ec)
 {
     if (ec)
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failed to unpend a channel: " << ec.message();
 }
 
 void session::handle_remove(const code& ec)
 {
     if (ec)
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failed to remove a channel: " << ec.message();
 }
 

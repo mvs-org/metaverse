@@ -80,7 +80,7 @@ void session_outbound::new_connection(connector::ptr connect)
 {
     if (stopped())
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Suspended outbound connection.";
         return;
     }
@@ -96,12 +96,12 @@ void session_outbound::delay_new_connect(connector::ptr connect)
 	timer->start([this, connect, timer, self](const code& ec){
 		if (ec)
 		{
-			log::debug(LOG_NETWORK) << "delay new connect, " << ec.message() ;
+			log::trace(LOG_NETWORK) << "delay new connect, " << ec.message() ;
 		}
 
 		if (stopped())
 		{
-			log::debug(LOG_NETWORK) << "delay new connect, session stopped" ;
+			log::trace(LOG_NETWORK) << "delay new connect, session stopped" ;
 			return;
 		}
 		auto pThis = shared_from_this();
@@ -117,18 +117,18 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
         if(ec.value() == error::not_satisfied)
 		{
-        	log::debug(LOG_NETWORK) << "session outbound handle connect, not satisfied";
+        	log::trace(LOG_NETWORK) << "session outbound handle connect, not satisfied";
 			return;
 		}
         delay_new_connect(connect);
         return;
     }
 
-    log::info(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected to outbound channel [" << channel->authority() << "]";
 
     register_channel(channel, 
@@ -142,7 +142,7 @@ void session_outbound::handle_channel_start(const code& ec,
     // Treat a start failure just like a stop.
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Outbound channel failed to start ["
             << channel->authority() << "] " << ec.message();
         return;
@@ -160,7 +160,7 @@ void session_outbound::attach_protocols(channel::ptr channel)
 void session_outbound::handle_channel_stop(const code& ec,
     connector::ptr connect, channel::ptr channel)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Outbound channel stopped [" << channel->authority() << "] "
         << ec.message();
 
