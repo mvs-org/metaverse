@@ -149,14 +149,10 @@ console_result createasset::invoke (std::ostream& output,
 
     if(!option_.maximum_supply.volume) 
         throw std::logic_error{"volume must not be zero."};
-	auto amount = blockchain.shrink_amount(std::numeric_limits<uint64_t>::max(), static_cast<uint8_t>(option_.decimal_number));
-
-	if(amount < option_.maximum_supply.volume) 
-        throw std::logic_error{"volume out of max range."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
-    acc->set_maximum_supply(blockchain.multiple_amount(option_.maximum_supply.volume, option_.decimal_number));
+    acc->set_maximum_supply(option_.maximum_supply.volume);
     //acc->set_maximum_supply(volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
     //acc->set_asset_type(asset_detail::asset_detail_type::created); 
@@ -170,7 +166,7 @@ console_result createasset::invoke (std::ostream& output,
     pt::ptree aroot;
     pt::ptree asset_data;
     asset_data.put("symbol", acc->get_symbol());
-    asset_data.put("maximum-supply", blockchain.shrink_amount(acc->get_maximum_supply(), acc->get_decimal_number()));
+    asset_data.put("maximum-supply", acc->get_maximum_supply());
     asset_data.put("decimal_number", acc->get_decimal_number());
     asset_data.put("issuer", acc->get_issuer());
     asset_data.put("address", acc->get_address());
@@ -182,7 +178,6 @@ console_result createasset::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin

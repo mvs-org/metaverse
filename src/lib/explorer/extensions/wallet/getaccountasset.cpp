@@ -103,8 +103,10 @@ console_result getaccountasset::invoke (std::ostream& output,
 		pt::ptree asset_data;
 		asset_data.put("symbol", elem.get_symbol());
 		symbol = elem.get_symbol();
-		asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
-		asset_data.put("address", elem.get_address());
+		asset_data.put("quantity", elem.get_maximum_supply());
+		auto issued_asset = blockchain.get_issued_asset(symbol);
+		if(issued_asset)
+			asset_data.put("decimal_number", issued_asset->get_decimal_number());
 		asset_data.put("status", "unspent");
 		assets.push_back(std::make_pair("", asset_data));
 	}
@@ -127,8 +129,8 @@ console_result getaccountasset::invoke (std::ostream& output,
 		pt::ptree asset_data;
 		asset_data.put("symbol", elem.detail.get_symbol());
 		symbol = elem.detail.get_symbol();
-		asset_data.put("amount", blockchain.get_asset_amount(symbol, elem.detail.get_maximum_supply()));
-		asset_data.put("address", "");
+		asset_data.put("quantity", elem.detail.get_maximum_supply());
+		asset_data.put("decimal_number", elem.detail.get_decimal_number());
 		asset_data.put("status", "unissued");
 		assets.push_back(std::make_pair("", asset_data));
 	}
@@ -137,7 +139,6 @@ console_result getaccountasset::invoke (std::ostream& output,
 	pt::write_json(output, aroot);
 	return console_result::okay;
 }
-
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin

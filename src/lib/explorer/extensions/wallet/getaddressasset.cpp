@@ -100,7 +100,10 @@ console_result getaddressasset::invoke (std::ostream& output,
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
 		symbol = elem.get_symbol();
-        asset_data.put("balance", blockchain.get_asset_amount(symbol, elem.get_maximum_supply()));
+        asset_data.put("quantity", elem.get_maximum_supply());
+		auto issued_asset = blockchain.get_issued_asset(symbol);
+		if(issued_asset)
+			asset_data.put("decimal_number", issued_asset->get_decimal_number());
         //asset_data.put("asset_type", elem.detail.get_asset_type());
         //asset_data.put("issuer", elem.detail.get_issuer());
         //asset_data.put("address", elem.detail.get_address());
@@ -114,7 +117,6 @@ console_result getaddressasset::invoke (std::ostream& output,
     pt::write_json(output, aroot);
     return console_result::okay;
 }
-
 
 
 } // namespace commands

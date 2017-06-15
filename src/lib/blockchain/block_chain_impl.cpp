@@ -1435,11 +1435,15 @@ uint64_t block_chain_impl::multiple_amount(uint64_t amount, uint8_t decimal_numb
 
 uint64_t block_chain_impl::get_asset_amount(std::string& symbol, uint64_t amount){
 	auto sp_asset = get_issued_asset(symbol);
-	return shrink_amount(amount, sp_asset->get_decimal_number());
+	if(sp_asset)
+		return shrink_amount(amount, sp_asset->get_decimal_number());
+	return 0;
 }
 uint64_t block_chain_impl::get_asset_multiple_amount(std::string& symbol, uint64_t amount){
 	auto sp_asset = get_issued_asset(symbol);
-	return multiple_amount(amount, sp_asset->get_decimal_number());
+	if(sp_asset)
+		return multiple_amount(amount, sp_asset->get_decimal_number());
+	return 0;
 }
 
 std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(std::string& symbol)
