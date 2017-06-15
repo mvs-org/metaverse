@@ -40,6 +40,15 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ createasset *************************/
+struct non_negative_uint64
+{
+public:
+    uint64_t volume;
+};
+
+void validate(boost::any& v,
+			  const std::vector<std::string>& values,
+			  non_negative_uint64*, int);
 
 class createasset: public command_extension
 {
@@ -96,7 +105,7 @@ public:
         )
         (
             "volume,v",
-            value<uint64_t>(&option_.maximum_supply)->required(),
+            value<non_negative_uint64>(&option_.maximum_supply)->required(),
             "The asset maximum supply volume."
         )
         (
@@ -131,17 +140,17 @@ public:
 
     struct option
     {
-    	option()
-		  : symbol(),
-			maximum_supply(),
-			asset_type(),
-			issuer(),
-			description()
+	    option()
+		  : symbol(""),
+			maximum_supply{0},
+			asset_type(0),
+			issuer(""),
+			description("")
     	{
     	}
-		
+	
 		std::string symbol;
-		uint64_t maximum_supply;
+		non_negative_uint64 maximum_supply;
 		uint32_t asset_type;
 		std::string issuer; 
 		std::string description;

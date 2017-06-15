@@ -108,6 +108,20 @@ static std::vector<std::string> forbidden_str {
 		"ZEN."
 };
 
+void validate(boost::any& v,
+			  const std::vector<std::string>& values,
+			  non_negative_uint64*, int)
+{
+	using namespace boost::program_options;
+	validators::check_first_occurrence(v);
+
+	std::string const& s = validators::get_single_string(values);
+	if (s[0] == '-') {
+		throw std::logic_error{"volume must not be negative number."};
+	}
+	//v = lexical_cast<unsigned long long>(s);
+	v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
+}
 
 console_result createasset::invoke (std::ostream& output,
         std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
@@ -131,9 +145,12 @@ console_result createasset::invoke (std::ostream& output,
     if (auth_.name.length() > 64) // maybe will be remove later
         throw std::logic_error{"asset issue(account name) length must be less than 64."};
 
+    if(!option_.maximum_supply.volume) 
+        throw std::logic_error{"volume must not be zero."};
+
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
-    acc->set_maximum_supply(option_.maximum_supply);
+    acc->set_maximum_supply(option_.maximum_supply.volume);
     //acc->set_asset_type(option_.asset_type); // todo -- type not defined
     acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
