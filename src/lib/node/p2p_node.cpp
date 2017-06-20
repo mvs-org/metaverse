@@ -255,6 +255,11 @@ block_chain& p2p_node::chain()
     return blockchain_;
 }
 
+block_chain_impl& p2p_node::chain_impl()
+{
+    return blockchain_;
+}
+
 transaction_pool& p2p_node::pool()
 {
     return blockchain_.pool();

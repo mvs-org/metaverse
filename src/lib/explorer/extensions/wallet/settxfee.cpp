@@ -43,7 +43,7 @@ namespace pt = boost::property_tree;
 /************************ settxfee *************************/
 
 console_result settxfee::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     output << IN_DEVELOPING;
     return console_result::okay;

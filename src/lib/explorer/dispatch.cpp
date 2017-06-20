@@ -129,9 +129,56 @@ console_result dispatch_command(int argc, const char* argv[],
     return command->invoke(out, err);
 }
 
+//console_result dispatch_command(int argc, const char* argv[],
+//    std::istream& input, std::ostream& output, std::ostream& error,
+//    bc::blockchain::block_chain_impl& blockchain)
+//{
+//    const std::string target(argv[0]);
+//    const auto command = find(target);
+//
+//    if (!command)
+//    {
+//        const std::string superseding(formerly(target));
+//        display_invalid_command(error, target, superseding);
+//        return console_result::failure;
+//    }
+//
+//    auto& in = get_command_input(*command, input);
+//    auto& err = get_command_error(*command, error);
+//    auto& out = get_command_output(*command, output);
+//
+//    parser metadata(*command);
+//    std::string error_message;
+//
+//    if (!metadata.parse(error_message, in, argc, argv))
+//    {
+//        display_invalid_parameter(error, error_message);
+//        return console_result::failure;
+//    }
+//
+//    if (metadata.help())
+//    {
+//        command->write_help(output);
+//        return console_result::okay;
+//    }
+//
+//    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
+//    {
+//    	uint64_t height{0};
+//    	blockchain.get_last_height(height);
+//    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+//    		error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
+//    		return console_result::failure;
+//    	}
+//        return command->invoke(out, err, blockchain);
+//    }else{
+//        return command->invoke(out, err);
+//    }
+//}
+
 console_result dispatch_command(int argc, const char* argv[],
     std::istream& input, std::ostream& output, std::ostream& error,
-    bc::blockchain::block_chain_impl& blockchain)
+    libbitcoin::server::server_node& node)
 {
     const std::string target(argv[0]);
     const auto command = find(target);
@@ -165,17 +212,18 @@ console_result dispatch_command(int argc, const char* argv[],
     if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
     {
     	uint64_t height{0};
-    	blockchain.get_last_height(height);
-    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+    	node.chain_impl().get_last_height(height);
+    	if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
     		error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
     		return console_result::failure;
     	}
-        return command->invoke(out, err, blockchain);
+    	return static_cast<commands::command_extension*>(command.get())->invoke(out, err, node);
     }else{
         return command->invoke(out, err);
     }
 }
 
+/*
 console_result dispatch_command(int argc, const char* argv[],
     std::istream& input, std::ostream& output, std::ostream& error,
     bc::blockchain::block_chain_impl& blockchain,
@@ -223,6 +271,7 @@ console_result dispatch_command(int argc, const char* argv[],
         return command->invoke(out, err);
     }
 }
+*/
 
 } // namespace explorer
 } // namespace libbitcoin

@@ -34,8 +34,9 @@ namespace pt = boost::property_tree;
 
 /************************ deposit *************************/
 console_result deposit::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
         throw std::logic_error{"invalid address!"};
@@ -77,8 +78,9 @@ console_result deposit::invoke (std::ostream& output,
 /************************ send *************************/
 
 console_result send::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!blockchain.is_valid_address(argument_.address))
         throw std::logic_error{std::string("invalid address : ") + argument_.address};
@@ -102,8 +104,9 @@ console_result send::invoke (std::ostream& output,
 /************************ sendmore *************************/
 
 console_result sendmore::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
 	// receiver
@@ -136,8 +139,9 @@ console_result sendmore::invoke (std::ostream& output,
 
 /************************ sendfrom *************************/
 console_result sendfrom::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.from)) 
         throw std::logic_error{"invalid from address!"};
@@ -163,8 +167,9 @@ console_result sendfrom::invoke (std::ostream& output,
 /************************ sendwithmsg *************************/
 
 console_result sendwithmsg::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
 	// receiver
@@ -187,8 +192,9 @@ console_result sendwithmsg::invoke (std::ostream& output,
 /************************ sendwithmsgfrom *************************/
 
 console_result sendwithmsgfrom::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	if(!blockchain.is_valid_address(argument_.from)) 
 		throw std::logic_error{"invalid from address!"};
@@ -215,8 +221,10 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 /************************ issue *************************/
 
 console_result issue::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
+
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
@@ -270,8 +278,9 @@ console_result issue::invoke (std::ostream& output,
 /************************ issuefrom *************************/
 
 console_result issuefrom::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
@@ -327,7 +336,7 @@ console_result issuefrom::invoke (std::ostream& output,
 /************************ issuemore *************************/
 
 console_result issuemore::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     output << IN_DEVELOPING;
     return console_result::okay;
@@ -337,7 +346,7 @@ console_result issuemore::invoke (std::ostream& output,
 /************************ issuemorefrom *************************/
 
 console_result issuemorefrom::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     output << IN_DEVELOPING;
     return console_result::okay;
@@ -346,8 +355,9 @@ console_result issuemorefrom::invoke (std::ostream& output,
 /************************ sendasset *************************/
 
 console_result sendasset::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	blockchain.uppercase_symbol(argument_.symbol);
 	
@@ -381,8 +391,9 @@ console_result sendasset::invoke (std::ostream& output,
 /************************ sendassetfrom *************************/
 
 console_result sendassetfrom::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
     

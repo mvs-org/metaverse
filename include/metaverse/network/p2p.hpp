@@ -192,6 +192,9 @@ public:
 
     address::list address_list();
 
+    /// Get connection pool.
+    virtual connections::ptr connections_ptr();
+
 protected:
 
     /// Attach a session to the network, caller must start the session.

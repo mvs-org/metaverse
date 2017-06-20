@@ -25,7 +25,6 @@
 #include <memory>
 #include <metaverse/node.hpp>
 #include <metaverse/protocol.hpp>
-#include <metaverse/mgbubble.hpp>
 #include <metaverse/server/configuration.hpp>
 #include <metaverse/server/define.hpp>
 #include <metaverse/server/messages/message.hpp>
@@ -39,6 +38,11 @@
 #include <metaverse/bitcoin/utility/path.hpp>
 #include <metaverse/consensus/miner.hpp>
 
+#include <boost/shared_ptr.hpp>
+
+namespace mgbubble{
+    class RestServ;
+}
 namespace libbitcoin {
 namespace server {
 
@@ -96,6 +100,9 @@ public:
     virtual void subscribe_penetration(const route& reply_to, uint32_t id,
         const hash_digest& tx_hash);
 
+    /// Get miner.
+    virtual consensus::miner& miner();
+
 private:
     void handle_running(const code& ec, result_handler handler);
 
@@ -112,8 +119,7 @@ private:
     // modify.chenhao
     void run_mongoose();
     consensus::miner miner_;
-    mgbubble::RestServ rest_server_{webpage_path_.string().data(), blockchain_, miner_};
-
+    boost::shared_ptr<mgbubble::RestServ> rest_server_;
     // These are thread safe.
     authenticator authenticator_;
     query_service secure_query_service_;

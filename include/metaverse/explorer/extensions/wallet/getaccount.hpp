@@ -105,7 +105,7 @@ public:
     }
 
     console_result invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain) override;
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
 
     struct argument
     {

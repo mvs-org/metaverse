@@ -42,7 +42,7 @@ namespace pt = boost::property_tree;
 /************************ changepasswdext *************************/
 
 console_result changepasswdext::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin("");
     std::ostringstream lang("");
@@ -56,7 +56,7 @@ console_result changepasswdext::invoke (std::ostream& output,
     }
     
     auto mnemonic = sout.str().substr(0, sout.str().size()-1); // remove last space
-    
+    auto& blockchain = node.chain_impl();
     if(!auth_.name.empty()) {
         auto acc = blockchain.get_account(auth_.name);
         if(!acc)

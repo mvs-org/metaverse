@@ -43,8 +43,9 @@ namespace pt = boost::property_tree;
 /************************ validateaddress *************************/
 
 console_result validateaddress::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     if (!blockchain.is_valid_address(argument_.address))
         throw std::logic_error{"invalid address!"};
     output<<"valid address "<<argument_.address;

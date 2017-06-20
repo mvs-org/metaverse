@@ -117,7 +117,7 @@ void send_tx(const std::string& tx_set, std::string& send_ret)
 }
 
 // ---------------------------------------------------------------------------
-bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_impl& blockchain)
+bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 {
     using namespace boost::property_tree;
 
@@ -141,7 +141,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_im
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(5, cmds, sin, sout, sout, blockchain)){
+        if (dispatch_command(5, cmds, sin, sout, sout, node)){
             throw std::logic_error(sout.str());
         }
         sin.str(sout.str());
@@ -482,7 +482,7 @@ void utxo_helper::group_utxo()
 }
 
 // ---------------------------------------------------------------------------
-bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr)
+bool send_impl(utxo_helper& utxo, bc::server::server_node& node, std::ostream& output, std::ostream& cerr)
 {
     // initialization, may throw
     utxo.get_payment_by_receivers();
@@ -492,7 +492,7 @@ bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
 
     // get utxo in each address
     std::string change{""};
-    if (!utxo.fetch_utxo(change, blockchain))
+    if (!utxo.fetch_utxo(change, node))
         return false;
 
     // load pre-transaction
@@ -525,7 +525,7 @@ bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
 }
 
 // ---------------------------------------------------------------------------
-bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::blockchain::block_chain_impl& blockchain)
+bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 {
     using namespace boost::property_tree;
     
@@ -543,7 +543,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::blockchain::b
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(3, cmds, sin, sout, sout, blockchain)){
+        if (dispatch_command(3, cmds, sin, sout, sout, node)){
             throw std::logic_error(sout.str());
         }
         sin.str(sout.str());
@@ -598,7 +598,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::blockchain::b
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(3, cmds, sin, sout, sout, blockchain)){
+        if (dispatch_command(3, cmds, sin, sout, sout, node)){
             throw std::logic_error(sout.str());
         }
         sin.str(sout.str());
@@ -683,7 +683,7 @@ bool utxo_attach_issue_helper::fetch_tx()
 
     return true;
 }
-void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain)
+void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server::server_node& node)
 {
     const char* cmds[1024]{0x00};
     int i = 0;
@@ -711,7 +711,7 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::blockch
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, blockchain))
+    if (dispatch_command(i, cmds, sin, sout, sout, node))
         throw std::logic_error(sout.str());
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
@@ -845,7 +845,7 @@ void utxo_attach_issue_helper::get_utxo_option(utxo_attach_info& info)
 
     info.output_option = ret;
 }
-bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr)
+bool send_impl(utxo_attach_issue_helper& utxo, bc::server::server_node& node, std::ostream& output, std::ostream& cerr)
 {
     //utxo_attach_issue_helper utxo(std::move(name), std::move(passwd), std::move(type), std::move(from), std::move(receiver), fee);
 
@@ -859,7 +859,7 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl&
 
     // get utxo
     std::string change{""};
-    if (!utxo.fetch_utxo(change, blockchain))
+    if (!utxo.fetch_utxo(change, node))
         throw std::logic_error{"not enough etp in utxo of some address"};
         //return false;
 
@@ -868,7 +868,7 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl&
 
     // tx-encode
     std::string tx_encode;
-    utxo.get_tx_encode(tx_encode, blockchain);
+    utxo.get_tx_encode(tx_encode, node);
 
     // input-sign
     utxo.get_input_sign(tx_encode);
@@ -896,7 +896,7 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl&
 
 // ----------------------------------------------------------------------------
 
-bool utxo_attach_send_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
+bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
     using namespace boost::property_tree;
@@ -909,7 +909,7 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& 
 
     std::ostringstream sout("");
     std::istringstream sin;
-    if (dispatch_command(3, cmds, sin, sout, sout, blockchain)){
+    if (dispatch_command(3, cmds, sin, sout, sout, node)){
         throw std::logic_error(sout.str());
     }
     sin.str(sout.str());
@@ -951,16 +951,16 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& 
     
 }
 
-bool utxo_attach_send_helper::fetch_utxo(bc::blockchain::block_chain_impl& blockchain)
+bool utxo_attach_send_helper::fetch_utxo(bc::server::server_node& node)
 {    
     uint64_t change = 0, utxo_change = 0;
     for (auto& fromeach : etp_ls_){
-        fetch_utxo_impl(blockchain, fromeach.first, 0, change);
+        fetch_utxo_impl(node, fromeach.first, 0, change);
         utxo_change += change;
     }
     
     for (auto& fromeach : asset_ls_){ 
-        fetch_utxo_impl(blockchain, fromeach.key, 0, change);
+        fetch_utxo_impl(node, fromeach.key, 0, change);
         utxo_change += change;
     }
     
@@ -1060,7 +1060,7 @@ bool utxo_attach_send_helper::is_cmd_exist(const char* cmds[], size_t len, char*
     }
     return false;
 }
-void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain)
+void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::server::server_node& node)
 {
     const char* cmds[1024]{0x00};
     int i = 0;
@@ -1101,7 +1101,7 @@ void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::blockcha
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, blockchain))
+    if (dispatch_command(i, cmds, sin, sout, sout, node))
         throw std::logic_error(sout.str());
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
@@ -1338,7 +1338,7 @@ void utxo_attach_send_helper::get_utxo_option(utxo_attach_info& info)
 
 // ----------------------------------------------------------------------------
 
-bool send_impl(utxo_attach_send_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr)
+bool send_impl(utxo_attach_send_helper& utxo, bc::server::server_node& node, std::ostream& output, std::ostream& cerr)
 {    
     // clean from_list_ by some algorithm
     if(!utxo.group_utxo())
@@ -1346,7 +1346,7 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::blockchain::block_chain_impl& 
         //return false; // if not enough etp to pay
         
     // get utxo
-    if (!utxo.fetch_utxo(blockchain))
+    if (!utxo.fetch_utxo(node))
         throw std::logic_error{"not enough etp in utxo of some address"};
         //return false;
 
@@ -1355,7 +1355,7 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::blockchain::block_chain_impl& 
 
     // tx-encode
     std::string tx_encode;
-    utxo.get_tx_encode(tx_encode, blockchain);
+    utxo.get_tx_encode(tx_encode, node);
 
     // input-sign
     utxo.get_input_sign(tx_encode);
@@ -1381,7 +1381,7 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::blockchain::block_chain_impl& 
     return true;
 }
 
-bool utxo_attach_issuefrom_helper::fetch_utxo(bc::blockchain::block_chain_impl& blockchain)
+bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
 {
     using namespace boost::property_tree;
     std::string change;
@@ -1395,7 +1395,7 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::blockchain::block_chain_impl& 
 		const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(5, cmds, sin, sout, sout, blockchain)){
+        if (dispatch_command(5, cmds, sin, sout, sout, node)){
             throw std::logic_error(sout.str());
         }
         sin.str(sout.str());
@@ -1495,7 +1495,7 @@ void utxo_attach_issuefrom_helper::generate_receiver_list()
     } 
 }
 
-void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain)
+void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::server::server_node& node)
 {
     const char* cmds[1024]{0x00};
     int i = 0;
@@ -1523,7 +1523,7 @@ void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::blo
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, blockchain))
+    if (dispatch_command(i, cmds, sin, sout, sout, node))
         throw std::logic_error(sout.str());
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
@@ -1628,14 +1628,14 @@ void utxo_attach_issuefrom_helper::get_utxo_option(utxo_attach_info& info)
     info.output_option = ret;
 }
 
-bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
+bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::server::server_node& node,
     std::ostream& output, std::ostream& cerr)
 {
     // clean from_list_ by some algorithm
     utxo.group_utxo();
 
     // get utxo
-    if (!utxo.fetch_utxo(blockchain))
+    if (!utxo.fetch_utxo(node))
         throw std::logic_error{"not enough etp in utxo of some address"};
 
     // load pre-transaction
@@ -1643,7 +1643,7 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::blockchain::block_chain_i
 
     // tx-encode
     std::string tx_encode;
-    utxo.get_tx_encode(tx_encode, blockchain);
+    utxo.get_tx_encode(tx_encode, node);
 
     // input-sign
     utxo.get_input_sign(tx_encode);
@@ -1670,7 +1670,7 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::blockchain::block_chain_i
 }
 
 /*************************************** sendassetfrom *****************************************/
-bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
+bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
     using namespace boost::property_tree;
@@ -1683,7 +1683,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::blockchain::block_chain_im
 
     std::ostringstream sout("");
     std::istringstream sin;
-    if (dispatch_command(3, cmds, sin, sout, sout, blockchain)){
+    if (dispatch_command(3, cmds, sin, sout, sout, node)){
         throw std::logic_error(sout.str());
     }
     sin.str(sout.str());
@@ -1816,7 +1816,7 @@ void utxo_attach_sendfrom_helper::generate_receiver_list()
         	receiver_list_.push_back({address_, 1, "asset-transfer", symbol_, amount_, 0, ""});
     } 
 }
-void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain)
+void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::server::server_node& node)
 {
     const char* cmds[1024]{0x00};
     int i = 0;
@@ -1847,7 +1847,7 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::bloc
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, blockchain))
+    if (dispatch_command(i, cmds, sin, sout, sout, node))
         throw std::logic_error(sout.str());
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
@@ -1985,7 +1985,7 @@ void utxo_attach_sendfrom_helper::get_utxo_option(utxo_attach_info& info)
 
 // ----------------------------------------------------------------------------
 
-bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr)
+bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::server::server_node& node, std::ostream& output, std::ostream& cerr)
 {    
     // clean from_list_ by some algorithm
     utxo.group_utxo();
@@ -1999,7 +1999,7 @@ bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::blockchain::block_chain_im
 
     // tx-encode
     std::string tx_encode;
-    utxo.get_tx_encode(tx_encode, blockchain);
+    utxo.get_tx_encode(tx_encode, node);
 
     // input-sign
     utxo.get_input_sign(tx_encode);

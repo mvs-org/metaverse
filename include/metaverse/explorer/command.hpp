@@ -152,19 +152,6 @@ public:
         return console_result::failure;
     }
 
-    virtual console_result invoke(std::ostream& output,
-        std::ostream& error, bc::blockchain::block_chain_impl& blockchain)
-    {
-        return console_result::failure;
-    }
-
-    virtual console_result invoke(std::ostream& output, std::ostream& error, 
-            bc::blockchain::block_chain_impl& blockchain,
-            bc::consensus::miner& miner)
-    {
-        return console_result::failure;
-    }
-
     /**
      * Load command argument definitions.
      * A value of -1 indicates that the number of instances is unlimited.

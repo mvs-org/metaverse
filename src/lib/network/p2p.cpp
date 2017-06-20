@@ -436,5 +436,9 @@ p2p::address::list p2p::address_list()
 	return hosts_->copy();
 }
 
+connections::ptr p2p::connections_ptr()
+{
+	return connections_;
+}
 } // namespace network
 } // namespace libbitcoin

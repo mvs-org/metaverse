@@ -43,9 +43,9 @@ namespace pt = boost::property_tree;
 /************************ submitwork *************************/
 
 console_result submitwork::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& miner = node.miner();
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
     pt::ptree root;
 

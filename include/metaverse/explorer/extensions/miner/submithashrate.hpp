@@ -41,7 +41,7 @@ namespace pt = boost::property_tree;
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ submithashrate *************************/
 
-class submithashrate: public command
+class submithashrate: public command_extension
 {
 public:
     static const char* symbol(){ return "submithashrate";}
@@ -99,9 +99,7 @@ public:
     }
 
     console_result invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner
-        ) override;
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
 
     struct argument
     {
