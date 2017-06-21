@@ -149,6 +149,8 @@ console_result createasset::invoke (std::ostream& output,
 
     if(!option_.maximum_supply.volume) 
         throw std::logic_error{"volume must not be zero."};
+    if(option_.maximum_supply.volume > blockchain.shrink_amount(max_uint64, option_.decimal_number)) 
+        throw std::logic_error{std::string("volume out of range(") + std::to_string(blockchain.shrink_amount(max_uint64, option_.decimal_number)) + std::string(").")};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
