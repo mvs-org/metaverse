@@ -1677,7 +1677,8 @@ bool block_chain_impl::validate_transaction(const chain::transaction& tx)
 	mutex.lock();
 	auto f = [&ret, &mutex](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
 	{
-		log::trace("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		if(error::success != ec)
+			log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
 		if((error::success == ec) && idx_vec.empty())
 			ret = true;
 		mutex.unlock();
@@ -1713,15 +1714,16 @@ bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
 		//ret = true;
     	log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
     }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
-    	log::trace("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		if(error::success != ec)
+			log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
 		
 		if((error::success == ec) && idx_vec.empty()){
+			ret = true;
     		log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " validated";
 		} else {
 			//send_mutex.unlock(); // incase dead lock
     		log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " invalidated";
 		}
-		ret = true;
 		valid_mutex.unlock();
     });
 	boost::unique_lock<boost::mutex> lock(valid_mutex);

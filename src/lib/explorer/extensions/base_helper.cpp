@@ -688,8 +688,10 @@ void base_transfer_helper::sign_tx_inputs(){
 }
 
 void base_transfer_helper::send_tx(){
+	if(!blockchain_.validate_transaction(tx_)) 
+			throw std::logic_error{"validate transaction failure"};
 	if(!blockchain_.broadcast_transaction(tx_)) 
-			throw std::logic_error{"broadcast_transaction failure"};
+			throw std::logic_error{"broadcast transaction failure"};
 }
 void base_transfer_helper::exec(){	
 	// prepare 
