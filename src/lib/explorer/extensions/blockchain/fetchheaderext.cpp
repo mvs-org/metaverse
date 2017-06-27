@@ -43,17 +43,18 @@ namespace pt = boost::property_tree;
 /************************ fetchheaderext *************************/
 
 console_result fetchheaderext::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     using namespace libbitcoin::config; // for hash256
     
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(argument_.number.empty())
         throw std::logic_error{"Block number or earliest, latest, pending is needed"};
 
     chain::header block_header;
 
+    auto& miner = node.miner();
     auto ret = miner.get_block_header(block_header, argument_.number);
 
     pt::ptree aroot;

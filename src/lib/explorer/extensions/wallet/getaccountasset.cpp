@@ -43,11 +43,12 @@ namespace pt = boost::property_tree;
 /************************ getaccountasset *************************/
 
 console_result getaccountasset::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     pt::ptree aroot;
     pt::ptree assets;
 	std::string symbol;
+	auto& blockchain = node.chain_impl();
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	auto pvaddr = blockchain.get_account_addresses(auth_.name);
 	if(!pvaddr) 

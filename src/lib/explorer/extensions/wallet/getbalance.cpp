@@ -43,8 +43,9 @@ namespace pt = boost::property_tree;
 /************************ getbalance *************************/
 
 console_result getbalance::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     pt::ptree aroot;
@@ -63,7 +64,7 @@ console_result getbalance::invoke (std::ostream& output,
     for (auto& i: *vaddr){
         sout.str("");
         wallet[1] = i.get_address().c_str();
-        dispatch_command(2, wallet + 0, sin, sout, sout, blockchain);
+        dispatch_command(2, wallet + 0, sin, sout, sout, node);
 
         pt::ptree utxo;
         sin.str(sout.str());

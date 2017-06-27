@@ -81,6 +81,9 @@ public:
     /// Blockchain query interface.
     virtual blockchain::block_chain& chain();
 
+    /// BlockchainImpl query interface.
+    virtual blockchain::block_chain_impl& chain_impl();
+
     /// Transaction pool interface.
     virtual blockchain::transaction_pool& pool();
 

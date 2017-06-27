@@ -42,8 +42,10 @@ namespace pt = boost::property_tree;
 
 /************************ stopall *************************/
 console_result stopall::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
+
     if(!blockchain.is_admin_account(auth_.name))
         throw std::logic_error{"not admin account!"};
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);

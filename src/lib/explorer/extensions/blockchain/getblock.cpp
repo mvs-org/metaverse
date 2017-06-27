@@ -43,10 +43,11 @@ namespace pt = boost::property_tree;
 /************************ getblock *************************/
 
 console_result getblock::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto json = argument_.json;
     std::promise<code> p;
+    auto& blockchain = node.chain_impl();
     blockchain.fetch_block(argument_.hash, [&p, &output, json](const code& ec, chain::block::ptr block){
             if(ec){
                     p.set_value(ec);

@@ -51,19 +51,27 @@ public:
             return vargv_[0]; 
         throw std::logic_error{"no command found"};
     }
-    bool is_miner_command() const {
-        auto cmd = get_command();
-         if (cmd == "getwork" ||
-             cmd == "submitwork" ||
-             cmd == "start" ||
-             cmd == "stop"  ||
-             cmd == "setminingaccount" ||
-             cmd == "getmininginfo" ||
-             cmd == "fetchheaderext"){
-            return true;
-        }
-        return false;
-    }
+//    bool is_miner_command() const {
+//        auto cmd = get_command();
+//         if (cmd == "getwork" ||
+//             cmd == "submitwork" ||
+//             cmd == "start" ||
+//             cmd == "stop"  ||
+//             cmd == "setminingaccount" ||
+//             cmd == "getmininginfo" ||
+//             cmd == "fetchheaderext"){
+//            return true;
+//        }
+//        return false;
+//    }
+//
+//    bool is_network_command() const {
+//        auto cmd = get_command();
+//        if (cmd == "getpeerinfo") {
+//            return true;
+//        }
+//        return false;
+//    }
     void add_arg(std::string&& outside);
 
     static const int max_paramters{32};

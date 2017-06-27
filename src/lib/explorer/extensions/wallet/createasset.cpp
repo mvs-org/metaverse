@@ -124,8 +124,9 @@ void validate(boost::any& v,
 }
 
 console_result createasset::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);

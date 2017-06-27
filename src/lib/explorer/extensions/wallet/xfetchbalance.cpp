@@ -42,11 +42,12 @@ namespace pt = boost::property_tree;
 
 /************************ xfetchbalance *************************/
 console_result xfetchbalance::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
 	using namespace bc::client;
 
 	// Bound parameters.
+	auto& blockchain = node.chain_impl();
     if (!blockchain.is_valid_address(argument_.address))
         throw std::logic_error{"invalid address parameter!"};
 	auto addr_str = argument_.address;

@@ -43,8 +43,7 @@ namespace pt = boost::property_tree;
 /************************ start *************************/
 
 console_result start::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin;
     std::ostringstream sout;
@@ -53,7 +52,11 @@ console_result start::invoke (std::ostream& output,
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
     sin.str("");
     sout.str("");
-    dispatch_command(3, cmds2 , sin, sout, sout, blockchain);
+
+    auto& blockchain = node.chain_impl();
+    auto& miner = node.miner();
+
+    dispatch_command(3, cmds2 , sin, sout, sout, node);
     auto&& str_addr = sout.str();
     bc::wallet::payment_address addr(str_addr);
 

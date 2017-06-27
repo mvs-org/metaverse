@@ -43,8 +43,9 @@ namespace pt = boost::property_tree;
 /************************ getnewaccount *************************/
 
 console_result getnewaccount::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name)){
         throw std::logic_error{"account already exist"};
     }
@@ -89,7 +90,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
     sin.str("");
     sout.str("");
-    dispatch_command(3, cmds2 , sin, sout, sout, blockchain);
+    dispatch_command(3, cmds2 , sin, sout, sout, node);
     #if 0
 	// parse address from getnewaddress output string
 	pt::ptree tx;

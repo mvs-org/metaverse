@@ -42,7 +42,7 @@ namespace pt = boost::property_tree;
 /************************ backupaccount *************************/
 
 console_result backupaccount::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     output << IN_DEVELOPING;
     return console_result::okay;

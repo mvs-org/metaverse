@@ -43,12 +43,14 @@ namespace pt = boost::property_tree;
 /************************ getmininginfo *************************/
 
 console_result getmininginfo::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     pt::ptree aroot;
     pt::ptree info;
     
+    auto& blockchain = node.chain_impl();
+    auto& miner = node.miner();
+
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     uint64_t height, rate;

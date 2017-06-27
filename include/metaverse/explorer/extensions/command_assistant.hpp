@@ -53,15 +53,15 @@ void send_tx(const std::string& tx_set, std::string& send_ret);
 uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list, address_amount& mychange);
 
 // etp
-bool send_impl(utxo_helper& utxo, bc::blockchain::block_chain_impl& blockchain, std::ostream& output, std::ostream& cerr);
+bool send_impl(utxo_helper& utxo, bc::server::server_node& node, std::ostream& output, std::ostream& cerr);
 // asset
-bool send_impl(utxo_attach_issue_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
+bool send_impl(utxo_attach_issue_helper& utxo, bc::server::server_node& node,
         std::ostream& output, std::ostream& cerr);
-bool send_impl(utxo_attach_send_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
+bool send_impl(utxo_attach_send_helper& utxo, bc::server::server_node& node,
         std::ostream& output, std::ostream& cerr);
-bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
+bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::server::server_node& node,
     std::ostream& output, std::ostream& cerr);
-bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::blockchain::block_chain_impl& blockchain, 
+bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::server::server_node& node,
     std::ostream& output, std::ostream& cerr);
 
 // ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public:
     void group_utxo();
     inline void set_mychange_by_threshold(std::string& mychange);
 
-    bool fetch_utxo(std::string& change, bc::blockchain::block_chain_impl& blockchain);
+    bool fetch_utxo(std::string& change, bc::server::server_node& node);
     bool fetch_tx();
     void get_tx_encode(std::string& tx_encode);
     void get_input_sign(std::string& tx_encode);
@@ -171,9 +171,9 @@ public:
     uint64_t get_my_balance();
     bool group_utxo();
     //inline void set_mychange_by_threshold(std::string& tgt_addr, uint64_t threshold);
-    bool fetch_utxo(std::string& change, bc::blockchain::block_chain_impl& blockchain);
+    bool fetch_utxo(std::string& change, bc::server::server_node& node);
     bool fetch_tx();
-    void get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain);
+    void get_tx_encode(std::string& tx_encode, bc::server::server_node& node);
     void get_input_sign(std::string& tx_encode);
     void get_input_set(const std::string& tx_encode, std::string& tx_set);
     void get_utxo_option(utxo_attach_info& info);
@@ -221,13 +221,13 @@ public:
     uint64_t get_my_balance();
     bool group_utxo();
     //inline void set_mychange_by_threshold(std::string& tgt_addr, uint64_t threshold);
-    bool fetch_utxo(bc::blockchain::block_chain_impl& blockchain);
+    bool fetch_utxo(bc::server::server_node& node);
     bool fetch_tx();
-    void get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain);
+    void get_tx_encode(std::string& tx_encode, bc::server::server_node& node);
     void get_input_sign(std::string& tx_encode);
     void get_input_set(const std::string& tx_encode, std::string& tx_set);
     void get_utxo_option(utxo_attach_info& info);
-    bool fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
+    bool fetch_utxo_impl(bc::server::server_node& node,
 		std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change);
     void generate_receiver_list();
     uint64_t get_etp_balance();
@@ -279,9 +279,9 @@ public:
     }
     uint64_t get_my_balance();
     void group_utxo();
-    bool fetch_utxo(bc::blockchain::block_chain_impl& blockchain);
+    bool fetch_utxo(bc::server::server_node& node);
     bool fetch_tx();
-    void get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain);
+    void get_tx_encode(std::string& tx_encode, bc::server::server_node& node);
     void get_input_sign(std::string& tx_encode);
     void get_input_set(const std::string& tx_encode, std::string& tx_set);
     void get_utxo_option(utxo_attach_info& info);
@@ -337,11 +337,11 @@ public:
     //inline void set_mychange_by_threshold(std::string& tgt_addr, uint64_t threshold);
     bool fetch_utxo();
     bool fetch_tx();
-    void get_tx_encode(std::string& tx_encode, bc::blockchain::block_chain_impl& blockchain);
+    void get_tx_encode(std::string& tx_encode, bc::server::server_node& node);
     void get_input_sign(std::string& tx_encode);
     void get_input_set(const std::string& tx_encode, std::string& tx_set);
     void get_utxo_option(utxo_attach_info& info);
-    bool fetch_utxo_impl(bc::blockchain::block_chain_impl& blockchain,
+    bool fetch_utxo_impl(bc::server::server_node& node,
 		std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change);
     void generate_receiver_list();
     uint64_t get_asset_balance();
