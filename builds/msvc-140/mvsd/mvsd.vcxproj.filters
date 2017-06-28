@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\mgbubble">
+      <UniqueIdentifier>{3d3e6ea8-6c81-49d0-9d11-a80981df8eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server">
+      <UniqueIdentifier>{8252d3fb-75b1-4df3-8699-e5ba201d3deb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mgbubble\exception">
+      <UniqueIdentifier>{97369d21-3ef0-4b78-af24-347086e5434c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mgbubble\utility">
+      <UniqueIdentifier>{feae5cbd-fa0a-485b-8f5a-5988c3185385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server\interface">
+      <UniqueIdentifier>{54fb6ffe-976c-4f6b-bf45-905bd128efeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server\messages">
+      <UniqueIdentifier>{6e0849c2-20d0-4cdb-bbb9-e777510c657a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server\services">
+      <UniqueIdentifier>{90e8f43a-0862-4671-8f53-cf7c93491525}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server\utility">
+      <UniqueIdentifier>{9e8be2c7-c665-46cc-8119-ee5fdcaf058e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\server\workers">
+      <UniqueIdentifier>{5f8c1f99-d1cd-434c-aa39-49139e679482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\interface">
+      <UniqueIdentifier>{05f9e09b-56a0-48d2-8b47-34034456a4ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\messages">
+      <UniqueIdentifier>{d4ffbbbb-ed72-4684-8529-893a52ad4dfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\services">
+      <UniqueIdentifier>{367281f3-5d41-43a2-9d62-ff3026857908}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utility">
+      <UniqueIdentifier>{1cce9ac5-b872-4caf-a77b-48d29f548532}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\workers">
+      <UniqueIdentifier>{fd052319-a044-48fa-b720-662466f88f43}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\mvsd\executor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\Mongoose.cpp">
+      <Filter>Source Files\mgbubble</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\RestServ.cpp">
+      <Filter>Source Files\mgbubble</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Error.cpp">
+      <Filter>Source Files\mgbubble\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Exception.cpp">
+      <Filter>Source Files\mgbubble\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Instances.cpp">
+      <Filter>Source Files\mgbubble\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream.cpp">
+      <Filter>Source Files\mgbubble\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream_buf.cpp">
+      <Filter>Source Files\mgbubble\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\address_key.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\configuration.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\parser.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\server_node.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\settings.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\interface\address.cpp">
+      <Filter>Source Files\server\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\interface\blockchain.cpp">
+      <Filter>Source Files\server\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\interface\protocol.cpp">
+      <Filter>Source Files\server\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\interface\transaction_pool.cpp">
+      <Filter>Source Files\server\interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\messages\message.cpp">
+      <Filter>Source Files\server\messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\messages\route.cpp">
+      <Filter>Source Files\server\messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\services\heartbeat_service.cpp">
+      <Filter>Source Files\server\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\services\query_service.cpp">
+      <Filter>Source Files\server\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\services\transaction_service.cpp">
+      <Filter>Source Files\server\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\services\block_service.cpp">
+      <Filter>Source Files\server\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\workers\notification_worker.cpp">
+      <Filter>Source Files\server\workers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\workers\query_worker.cpp">
+      <Filter>Source Files\server\workers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\utility\authenticator.cpp">
+      <Filter>Source Files\server\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\mvsd\server\utility\fetch_helpers.cpp">
+      <Filter>Source Files\server\utility</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\mvsd\executor.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\configuration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\server_node.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\settings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\workers\notification_worker.hpp">
+      <Filter>Header Files\workers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\workers\query_worker.hpp">
+      <Filter>Header Files\workers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\authenticator.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\fetch_helpers.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\address_key.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\services\block_service.hpp">
+      <Filter>Header Files\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\services\heartbeat_service.hpp">
+      <Filter>Header Files\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\services\query_service.hpp">
+      <Filter>Header Files\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\services\transaction_service.hpp">
+      <Filter>Header Files\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\messages\message.hpp">
+      <Filter>Header Files\messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\messages\route.hpp">
+      <Filter>Header Files\messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\address.hpp">
+      <Filter>Header Files\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\blockchain.hpp">
+      <Filter>Header Files\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\protocol.hpp">
+      <Filter>Header Files\interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\interface\transaction_pool.hpp">
+      <Filter>Header Files\interface</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\protocols">
+      <UniqueIdentifier>{a5ee19af-beb2-491b-b5b4-0e931aa97e9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sessions">
+      <UniqueIdentifier>{62d231de-970b-45e4-aa50-339951da9e4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utility">
+      <UniqueIdentifier>{05bf206f-af4f-4aa8-88e3-ec0568805ebc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\protocols">
+      <UniqueIdentifier>{c9dfad32-4dd0-4b0d-b47d-e30024ea34bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sessions">
+      <UniqueIdentifier>{e511fd26-0796-439b-aeb1-1b6f8ee4faaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utility">
+      <UniqueIdentifier>{2723450b-c649-4252-822f-4553da655c4e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\node\configuration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\p2p_node.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\settings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_in.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_out.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_sync.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_header_sync.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_miner.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_in.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_out.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_version_quiet.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_block_sync.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_header_sync.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_inbound.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_manual.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_outbound.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\performance.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservation.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservations.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\header_queue.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\node\configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\p2p_node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_out.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_sync.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_header_sync.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_miner.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_transaction_in.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_transaction_out.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_version_quiet.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_in.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_block_sync.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_header_sync.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_inbound.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_manual.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_outbound.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\utility\header_queue.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\utility\performance.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\utility\reservation.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\node\utility\reservations.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
