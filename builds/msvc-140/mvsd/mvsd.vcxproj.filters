@@ -205,5 +205,8 @@
     <ClInclude Include="..\..\..\include\metaverse\server\interface\transaction_pool.hpp">
       <Filter>Header Files\interface</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\coredump.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

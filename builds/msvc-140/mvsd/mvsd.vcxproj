@@ -42,7 +42,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -206,6 +206,7 @@
     <ClInclude Include="..\..\..\include\metaverse\server\settings.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\utility\address_key.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\utility\authenticator.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\server\utility\coredump.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\utility\fetch_helpers.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\version.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\workers\notification_worker.hpp" />

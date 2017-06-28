@@ -24,6 +24,10 @@
 #include <metaverse/bitcoin/utility/daemon.hpp>
 #include "executor.hpp"
 
+#ifdef _MSC_VER
+#include <metaverse/server/utility/coredump.hpp>
+#endif
+
 BC_USE_MVS_MAIN
 
 /**
@@ -37,6 +41,9 @@ int bc::main(int argc, char* argv[])
 {
     using namespace bc;
     using namespace bc::server;
+#ifdef _MSC_VER
+	StartUnhandledExceptionFilter();
+#endif
 	set_utf8_stdio();
 	server::parser metadata(bc::settings::mainnet);
 	const auto& args = const_cast<const char**>(argv);
