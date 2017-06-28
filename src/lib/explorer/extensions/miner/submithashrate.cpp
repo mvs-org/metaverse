@@ -43,8 +43,7 @@ namespace pt = boost::property_tree;
 /************************ submithashrate *************************/
 
 console_result submithashrate::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     output << IN_DEVELOPING;
     return console_result::failure;

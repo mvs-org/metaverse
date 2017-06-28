@@ -43,9 +43,10 @@ namespace pt = boost::property_tree;
 /************************ getbestblockheader *************************/
 
 console_result getbestblockheader::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     uint64_t height = 0;
+    auto& blockchain = node.chain_impl();
     if(!blockchain.get_last_height(height))
         throw std::logic_error{"query last height failure."};
 

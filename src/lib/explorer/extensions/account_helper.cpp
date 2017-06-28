@@ -33,13 +33,14 @@ namespace pt = boost::property_tree;
 
 /************************ importaccount *************************/
 console_result importaccount::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin("");
     std::ostringstream lang("");
     std::ostringstream sout("");
     
     // parameter account name check
+    auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
         throw std::logic_error{"account already exist"};
 
@@ -120,7 +121,7 @@ console_result importaccount::invoke (std::ostream& output,
         pt::ptree addr;
         sin.str("");
         sout.str("");
-        dispatch_command(3, cmds2 , sin, sout, sout, blockchain);
+        dispatch_command(3, cmds2 , sin, sout, sout, node);
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }
@@ -135,8 +136,9 @@ console_result importaccount::invoke (std::ostream& output,
 /************************ changepasswd *************************/
 
 console_result changepasswd::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     std::string mnemonic;

@@ -43,7 +43,7 @@ namespace pt = boost::property_tree;
 /************************ changepasswd *************************/
 #if 0
 console_result changepasswd::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 

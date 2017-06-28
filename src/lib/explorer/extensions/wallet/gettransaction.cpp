@@ -43,10 +43,11 @@ namespace pt = boost::property_tree;
 /************************ gettransaction *************************/
 /// extent fetch-tx command , add tx height in tx content
 console_result gettransaction::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
 	bc::chain::transaction tx;
 	uint64_t tx_height = 0;
+	auto& blockchain = node.chain_impl();
     auto exist = blockchain.get_transaction(argument_.hash, tx, tx_height);
     if(!exist)
         throw std::logic_error{"transaction does not exist!"};

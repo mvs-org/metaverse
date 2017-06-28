@@ -43,12 +43,15 @@ namespace pt = boost::property_tree;
 /************************ getwork *************************/
 
 console_result getwork::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain,
-        bc::consensus::miner& miner)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::string seed_hash;
     std::string header_hash;
     std::string boundary;
+
+    auto& blockchain = node.chain_impl();
+    auto& miner = node.miner();
+
     auto ret = miner.get_work(seed_hash, header_hash, boundary);
 
     if (ret) {

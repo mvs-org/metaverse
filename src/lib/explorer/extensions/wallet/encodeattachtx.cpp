@@ -121,7 +121,7 @@ void encodeattachtx::refill_output_attach(std::vector<explorer::config::metavers
 }
 
 console_result encodeattachtx::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     // Bound parameters.
     const auto locktime = option_.lock_time;
@@ -135,6 +135,7 @@ console_result encodeattachtx::invoke (std::ostream& output,
     for (const tx_input_type& input: option_.inputs)
         tx.inputs.push_back(input);
     // refill attach info in output
+    auto& blockchain = node.chain_impl();
     refill_output_attach(option_.outputs, blockchain);
     
 #ifdef MVS_DEBUG

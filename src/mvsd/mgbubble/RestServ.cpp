@@ -22,6 +22,7 @@
 #include <metaverse/mgbubble/utility/Stream_buf.hpp>
 
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/server/server_node.hpp>
 
 namespace mgbubble{
 
@@ -84,14 +85,15 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
     try{
         ws.data_to_arg();
 
-        if (ws.is_miner_command()){
-            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-                sin, sout, sout, blockchain_, miner_);
-        }else{
-            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), 
-                sin, sout, sout, blockchain_);
-        }
-
+//        if (ws.is_miner_command()){
+//            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
+//                sin, sout, sout, node_.chain_impl(), node_.miner());
+//        }else{
+//            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
+//                sin, sout, sout, node_.chain_impl());
+//        }
+        explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
+        		sin, sout, sout, node_);
     }catch(std::exception& e){
         sout<<"{\"error\":\""<<e.what()<<"\"}";
     }catch(...){
@@ -127,13 +129,18 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
         std::stringstream sout;
         std::istringstream sin;
 
-        if (data.is_miner_command()){
-            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                sin, sout, sout, blockchain_, miner_);
-        }else{
-            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                sin, sout, sout, blockchain_);
-        }
+//        if (data.is_miner_command()){
+//            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+//                sin, sout, sout, node_.chain_impl(), node_.miner());
+//        }else if (data.is_network_command()) {
+//            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+//                sin, sout, sout, node_);
+//        }else{
+//            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+//                sin, sout, sout, node_.chain_impl());
+//        }
+        explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+                		sin, sout, sout, node_);
 		#ifdef MVS_DEBUG
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
 		#endif
@@ -186,14 +193,15 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             std::stringstream sout("");
             std::istringstream sin("");
 
-            if (data.is_miner_command()){
-                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                    sin, sout, sout, blockchain_, miner_);
-            }else{
-                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()), 
-                    sin, sout, sout, blockchain_);
-            }
-
+//            if (data.is_miner_command()){
+//                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+//                    sin, sout, sout, node_.chain_impl(), node_.miner());
+//            }else{
+//                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+//                    sin, sout, sout, node_.chain_impl());
+//            }
+            explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+                    		sin, sout, sout, node_);
             out_<<sout.str();
             state_|= MatchUri;
             state_|= MatchMethod;
@@ -307,7 +315,7 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
 
     try{
         if (ul > 0 && pl > 0){
-            blockchain_.is_account_passwd_valid(std::string(user, ul), std::string(pass, pl));
+            node_.chain_impl().is_account_passwd_valid(std::string(user, ul), std::string(pass, pl));
         }else{
             throw std::logic_error{"Bad Request:user,password required."};
         }

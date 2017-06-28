@@ -43,12 +43,13 @@ namespace pt = boost::property_tree;
 /************************ listassets *************************/
 
 console_result listassets::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     pt::ptree aroot;
     pt::ptree assets;
 	
 	std::string symbol;
+	auto& blockchain = node.chain_impl();
     if(auth_.name.empty()) { // no account -- list whole assets in blockchain
         //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         // std::shared_ptr<std::vector<asset_detail>> 

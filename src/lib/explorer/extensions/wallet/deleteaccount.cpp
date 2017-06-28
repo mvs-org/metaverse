@@ -43,8 +43,9 @@ namespace pt = boost::property_tree;
 /************************ deleteaccount *************************/
 
 console_result deleteaccount::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     std::string mnemonic;

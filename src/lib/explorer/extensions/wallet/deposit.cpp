@@ -43,7 +43,7 @@ namespace pt = boost::property_tree;
 #if 0
 /************************ deposit *************************/
 console_result deposit::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 

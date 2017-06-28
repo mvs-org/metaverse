@@ -44,7 +44,7 @@ namespace pt = boost::property_tree;
 /************************ send *************************/
 
 console_result send::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     auto pvaddr = blockchain.get_account_addresses(auth_.name);

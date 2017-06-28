@@ -6,8 +6,13 @@
 
 #include <metaverse/client.hpp>
 #include <metaverse/blockchain.hpp>
-#include <metaverse/consensus/miner.hpp> //miner
 #include <metaverse/server/services/query_service.hpp> //public_query
+
+namespace libbitcoin{
+namespace server{
+	class server_node;
+}
+}
 
 namespace mgbubble{
 
@@ -16,8 +21,8 @@ using namespace bc;
 class RestServ : public Mgr<RestServ>
 {
 public:
-    explicit RestServ(const char* webroot, blockchain::block_chain_impl& rhs, consensus::miner& miner)
-        :socket_(context_, protocol::zmq::socket::role::dealer), blockchain_(rhs), miner_(miner)
+    explicit RestServ(const char* webroot, libbitcoin::server::server_node &node)
+        :socket_(context_, protocol::zmq::socket::role::dealer), node_(node)
     {
         memset(&httpoptions_, 0x00, sizeof(httpoptions_));
         document_root_ = webroot;	
@@ -98,15 +103,12 @@ private:
 #endif
     std::list< std::shared_ptr<Session> > session_list_;
 
-    //miner
-
     // config
     static thread_local OStream out_;
     static thread_local Tokeniser<'/'> uri_;
     static thread_local int state_;
     const char* const servername_{"Http-Metaverse"};
-    blockchain::block_chain_impl& blockchain_;
-    consensus::miner& miner_;
+    libbitcoin::server::server_node &node_;
     string document_root_;
 };
 

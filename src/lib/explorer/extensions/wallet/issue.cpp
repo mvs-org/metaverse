@@ -43,7 +43,7 @@ namespace pt = boost::property_tree;
 /************************ issue *************************/
 #if 0
 console_result issue::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 

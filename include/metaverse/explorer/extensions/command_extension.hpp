@@ -28,6 +28,7 @@
 #include <metaverse/explorer/command.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>  // used for createasset
 #include <metaverse/explorer/config/metaverse_output.hpp>
+#include <metaverse/server/server_node.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -163,6 +164,13 @@ private:
 };
 
 class command_extension:public command{
+public:
+    virtual console_result invoke(std::ostream& output,
+        std::ostream& error, libbitcoin::server::server_node& node)
+    {
+        return console_result::failure;
+    }
+
 protected:
     struct argument_base
     {

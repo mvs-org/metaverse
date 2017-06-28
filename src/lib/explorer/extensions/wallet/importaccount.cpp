@@ -43,7 +43,7 @@ namespace pt = boost::property_tree;
 /************************ importaccount *************************/
 
 console_result importaccount::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin("");
     std::ostringstream lang("");

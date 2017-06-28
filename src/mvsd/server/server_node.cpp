@@ -27,7 +27,7 @@
 #include <metaverse/server/configuration.hpp>
 #include <metaverse/server/messages/route.hpp>
 #include <metaverse/server/workers/query_worker.hpp>
-
+#include <metaverse/mgbubble.hpp>
 #include <thread>
 
 namespace libbitcoin {
@@ -52,7 +52,8 @@ server_node::server_node(const configuration& configuration)
     public_transaction_service_(authenticator_, *this, false),
     secure_notification_worker_(authenticator_, *this, true),
     public_notification_worker_(authenticator_, *this, false),
-    miner_(*this)
+    miner_(*this),
+	rest_server_(new mgbubble::RestServ(webpage_path_.string().data(), *this))
 {
 }
 
@@ -75,7 +76,7 @@ void server_node::run_mongoose()
     try
     {
         // bind
-        auto& conn = rest_server_.bind(configuration_.server.mongoose_listen.c_str());
+        auto& conn = rest_server_->bind(configuration_.server.mongoose_listen.c_str());
 
         // init for websocket and seesion control
         mg_set_protocol_http_websocket(&conn);
@@ -94,7 +95,7 @@ void server_node::run_mongoose()
 
     // run
     for (;;)
-        rest_server_.poll(1000);
+        rest_server_->poll(1000);
 }
 
 // Run sequence.
@@ -154,6 +155,12 @@ bool server_node::close()
 {
     // Invoke own stop to signal work suspension, then close node and join.
     return server_node::stop() && p2p_node::close();
+}
+
+/// Get miner.
+consensus::miner& server_node::miner()
+{
+	return miner_;
 }
 
 // Notification.

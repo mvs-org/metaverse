@@ -23,6 +23,7 @@
 
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/client.hpp>
+#include <metaverse/node/p2p_node.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/display.hpp>
@@ -43,13 +44,21 @@ namespace pt = boost::property_tree;
 /************************ getpeerinfo *************************/
 
 console_result getpeerinfo::invoke (std::ostream& output,
-        std::ostream& cerr, bc::blockchain::block_chain_impl& blockchain)
+        std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    output << IN_DEVELOPING;
+    pt::ptree root;
+    pt::ptree array;
+    for(auto authority : node.connections_ptr()->authority_list()) {
+    	// invalid authority
+    	if (authority.to_hostname() == "[::]" && authority.port() == 0)
+    		continue;
+    	array.push_back(std::make_pair("", pt::ptree(authority.to_string())));
+    }
+    root.push_back(std::make_pair("peers", array));
+    pt::write_json(output, root);
+
     return console_result::okay;
 }
-
-
 
 } // namespace commands
 } // namespace explorer
