@@ -51,6 +51,9 @@
     <Filter Include="Header Files\workers">
       <UniqueIdentifier>{fd052319-a044-48fa-b720-662466f88f43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{f42b9262-cf35-437a-839a-4759d615a3d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\mvsd\executor.cpp">
@@ -208,5 +211,18 @@
     <ClInclude Include="..\..\..\include\metaverse\server\utility\coredump.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="64bitmvs_favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="metaverse.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

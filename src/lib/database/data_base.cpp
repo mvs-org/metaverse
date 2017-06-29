@@ -299,12 +299,22 @@ data_base::file_lock data_base::initialize_lock(const path& lock)
     const auto lock_file_path = lock.string();
     bc::ofstream file(lock_file_path, std::ios::app);
     file.close();
-
+#ifdef _MSC_VER
+	std::function<std::string(std::wstring)> f = [&](std::wstring wide) ->std::string{
+		int ansiiLen = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
+		char *pAssii = new char[ansiiLen];
+		WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, pAssii, ansiiLen, nullptr, nullptr);
+		return std::string(pAssii);
+	};
+	std::string path_str = f(lock.wstring());
+#elif
+	std::string path_str = lock.str();
+#endif 
     // BOOST:
     // Opens a file lock. Throws interprocess_exception if the file does not
     // exist or there are no operating system resources. The file lock is
     // destroyed on its destruct and does not throw.
-    return file_lock(lock_file_path.c_str());
+	return file_lock(path_str.c_str());
 }
 
 void data_base::uninitialize_lock(const path& lock)

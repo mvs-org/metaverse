@@ -42,14 +42,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -212,6 +212,7 @@
     <ClInclude Include="..\..\..\include\metaverse\server\workers\notification_worker.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\server\workers\query_worker.hpp" />
     <ClInclude Include="..\..\..\src\mvsd\executor.hpp" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\bitcoin\bitcoin.vcxproj">
@@ -244,6 +245,12 @@
     <ProjectReference Include="..\protocol\protocol.vcxproj">
       <Project>{06beb260-0a84-40d3-a0a1-16487e51a4bf}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="64bitmvs_favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="metaverse.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

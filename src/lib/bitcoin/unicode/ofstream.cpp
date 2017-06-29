@@ -36,4 +36,9 @@ ofstream::ofstream(const std::string& path, std::ofstream::openmode mode)
 {
 }
 
+ofstream::ofstream(const std::wstring& path, std::ofstream::openmode mode)
+	: std::ofstream(path, mode)
+{
+}
+
 } // namespace libbitcoin

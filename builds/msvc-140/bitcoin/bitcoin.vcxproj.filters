@@ -982,9 +982,6 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_source.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\coredump.hpp">
-      <Filter>Header Files\utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\daemon.hpp">
       <Filter>Header Files\utility</Filter>
     </ClInclude>

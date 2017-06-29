@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <Dbghelp.h>
+#include <boost/format.hpp>
 
 #pragma comment( lib, "Dbghelp.lib" )
 
@@ -13,15 +14,15 @@ LONG WINAPI ExpFilter(struct _EXCEPTION_POINTERS *pExp)
 {
 	SYSTEMTIME systime;
 	GetLocalTime(&systime);
-	systime.wDayOfWeek;
-
-	WORD;
-	char path[128] = { 0 };
-	sprintf_s(path, ".\\mvsd%d%02d%02d%02d%02d%02d.dmp", systime.wYear, 
-		systime.wMonth, systime.wDay, systime.wHour, systime.wMinute, 
-		systime.wSecond);
+#ifdef UNICODE
+	boost::wformat fmt(L".\\mvsd%d%02d%02d%02d%02d%02d.dmp");
+#else
+	boost::format fmt(".\\mvsd%d%02d%02d%02d%02d%02d.dmp");
+#endif // UNICODE
+	fmt % systime.wYear % systime.wMonth % systime.wDay % systime.wHour %
+		systime.wMinute % systime.wSecond;
 	HANDLE hFile = ::CreateFile(
-		path,
+		fmt.str().c_str(),
 		GENERIC_WRITE,
 		0,
 		NULL,
