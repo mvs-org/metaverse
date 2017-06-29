@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <functional>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/database.hpp>
 #include <metaverse/blockchain/block_chain.hpp>
@@ -250,6 +251,8 @@ public:
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets();
 	std::shared_ptr<std::vector<asset_detail>> get_issued_assets();
 	std::shared_ptr<std::vector<business_address_asset>> get_account_unissued_assets(const std::string& name);
+	std::shared_ptr<asset_detail> get_account_unissued_asset(const std::string& name,
+		const std::string& symbol);
 	std::shared_ptr<std::vector<business_history>> get_account_business_history(const std::string& name,
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr,
@@ -275,11 +278,15 @@ public:
 	organizer& get_organizer();
 	bool get_transaction(const hash_digest& hash,
 		chain::transaction& tx, uint64_t& tx_height);
-	
+	bool get_transaction_callback(const hash_digest& hash,
+    std::function<void(const code&, const chain::transaction&)> handler);
+	bool get_history_callback(const payment_address& address,
+		size_t limit, size_t from_height,
+		std::function<void(const code&, chain::history::list&)> handler);
 	bool get_history(const wallet::payment_address& address,
 		uint64_t limit, uint64_t from_height, history_compact::list& history);
-	bool validate_transaction(const chain::transaction& tx);
-	bool broadcast_transaction(const chain::transaction& tx);
+	bool validate_transaction(const chain::transaction& tx, code& err_code);
+	bool broadcast_transaction(const chain::transaction& tx, code& err_code);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

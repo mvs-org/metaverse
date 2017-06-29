@@ -1388,6 +1388,23 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 
 	return ret_vector;
 }
+std::shared_ptr<asset_detail> block_chain_impl::get_account_unissued_asset(const std::string& name,
+	const std::string& symbol)
+{
+	std::shared_ptr<asset_detail> sp_asset(nullptr);
+	// copy each asset_vec element to sp_asset
+	const auto add_asset = [&](const business_address_asset& addr_asset)
+	{
+		if(addr_asset.detail.get_symbol() == symbol)
+			sp_asset = std::make_shared<asset_detail>(addr_asset.detail);
+	};
+
+	// get account asset which is not issued (not in blockchain)
+	auto no_issued_assets = database_.account_assets.get_unissued_assets(get_short_hash(name));
+	std::for_each(no_issued_assets->begin(), no_issued_assets->end(), add_asset);
+
+	return sp_asset;
+}
 
 // get all local unissued assets belongs to the account/name
 std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_unissued_assets(const std::string& name)
@@ -1660,7 +1677,8 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
 	
 }
 
-bool block_chain_impl::validate_transaction(const chain::transaction& tx)
+bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
+    std::function<void(const code&, const chain::transaction&)> handler)
 {
 	
 	bool ret = false;
@@ -1670,13 +1688,138 @@ bool block_chain_impl::validate_transaction(const chain::transaction& tx)
         return ret;
     }
 
+    const auto result = database_.transactions.get(hash);
+	if(result) {
+		handler(error::success, result.transaction());
+		ret = true;
+	} else {
+		transaction_message::ptr tx_ptr = nullptr;
+		
+		auto f = [&tx_ptr, handler](const code& ec, transaction_message::ptr tx_) -> void
+		{
+			if((code)error::success == ec){
+				tx_ptr = tx_;
+				if(tx_ptr)
+					handler(ec, *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr)));
+			}
+		};
+			
+		pool().fetch(hash, f);
+		if(tx_ptr) {			
+			ret = true;
+		}
+	}
+
+	return ret;
+	
+}
+
+bool block_chain_impl::get_history_callback(const payment_address& address,
+    size_t limit, size_t from_height,
+    std::function<void(const code&, chain::history::list&)> handler)
+{
+	
+	bool ret = false;
+	if (stopped())
+    {
+        //handler(error::service_stopped, {});
+        return ret;
+    }
+	
+	auto f = [&ret, handler](const code& ec, chain::history_compact::list compact) -> void
+	{
+		if((code)error::success == ec){
+		    history::list result;
+
+		    // Process and remove all outputs.
+		    for (auto output = compact.begin(); output != compact.end();)
+		    {
+		        if (output->kind == point_kind::output)
+		        {
+		            history row;
+		            row.output = output->point;
+		            row.output_height = output->height;
+		            row.value = output->value;
+		            row.spend = { null_hash, max_uint32 };
+		            row.temporary_checksum = output->point.checksum();
+		            result.emplace_back(row);
+		            output = compact.erase(output);
+		            continue;
+		        }
+
+		        ++output;
+		    }
+
+		    // All outputs have been removed, process the spends.
+		    for (const auto& spend: compact)
+		    {
+		        auto found = false;
+
+		        // Update outputs with the corresponding spends.
+		        for (auto& row: result)
+		        {
+		            if (row.temporary_checksum == spend.previous_checksum &&
+		                row.spend.hash == null_hash)
+		            {
+		                row.spend = spend.point;
+		                row.spend_height = spend.height;
+		                found = true;
+		                break;
+		            }
+		        }
+
+		        // This will only happen if the history height cutoff comes between
+		        // an output and its spend. In this case we return just the spend.
+		        if (!found)
+		        {
+		            history row;
+		            row.output = { null_hash, max_uint32 };
+		            row.output_height = max_uint64;
+		            row.value = max_uint64;
+		            row.spend = spend.point;
+		            row.spend_height = spend.height;
+		            result.emplace_back(row);
+		        }
+		    }
+
+		    compact.clear();
+
+		    // Clear all remaining checksums from unspent rows.
+		    for (auto& row: result)
+		        if (row.spend.hash == null_hash)
+		            row.spend_height = max_uint64;
+
+		    // TODO: sort by height and index of output, spend or both in order.
+			handler(ec, result);
+			ret = true;
+		}
+	};
+		
+	pool().fetch_history(address, limit, from_height, f);
+
+	return ret;
+	
+}
+
+bool block_chain_impl::validate_transaction(const chain::transaction& tx, code& err_code)
+{
+	
+	bool ret = false;
+	if (stopped())
+    {
+        //handler(error::service_stopped, {});
+        err_code = error::service_stopped;
+        return ret;
+    }
+
 	//std::shared_ptr<transaction_message>
 	auto tx_ptr = std::make_shared<transaction_message>(tx);
 	boost::mutex mutex;
 	
 	mutex.lock();
-	auto f = [&ret, &mutex](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
+	auto f = [&ret, &mutex, &err_code](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
 	{
+		err_code = ec;
 		if(error::success != ec)
 			log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
 		if((error::success == ec) && idx_vec.empty())
@@ -1691,13 +1834,14 @@ bool block_chain_impl::validate_transaction(const chain::transaction& tx)
 	
 }
 	
-bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
+bool block_chain_impl::broadcast_transaction(const chain::transaction& tx, code& err_code)
 {
 	
 	bool ret = false;
 	if (stopped())
 	{
 		//handler(error::service_stopped, {});
+		err_code = error::service_stopped;
 		return ret;
 	}
 
@@ -1713,7 +1857,8 @@ bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
 		//send_mutex.unlock();
 		//ret = true;
     	log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
-    }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+    }, [&valid_mutex, &ret, &err_code, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
+		err_code = ec;
 		if(error::success != ec)
 			log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
 		

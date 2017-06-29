@@ -107,7 +107,7 @@ public:
 	static const uint64_t attach_version{1};
 	
 	virtual void sum_payment_amount();
-	virtual void sync_fetchutxo (const std::string& prikey, const std::string& addr, uint32_t hd_index);
+	virtual void sync_fetchutxo (const std::string& prikey, const std::string& addr);
 	virtual void populate_unspent_list();
 	virtual void populate_change() = 0; 
 

@@ -236,8 +236,8 @@ console_result issue::invoke (std::ostream& output,
     if(blockchain.is_asset_exist(argument_.symbol, false))
         throw std::logic_error{"asset symbol is already exist in blockchain"};
 	// local database asset check
-	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
-	if(sh_asset->empty())
+	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+	if(!sh_asset)
 		throw std::logic_error{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
@@ -295,8 +295,8 @@ console_result issuefrom::invoke (std::ostream& output,
         throw std::logic_error{"asset symbol is already exist in blockchain"};
 
 	// local database asset check
-	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
-	if(sh_asset->empty())
+	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+	if(!sh_asset)
 		throw std::logic_error{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
