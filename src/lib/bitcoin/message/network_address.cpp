@@ -219,14 +219,11 @@ bool network_address::is_private_network()
 
 bool network_address::is_RFC1918() const
 {
-#if 0 //fixme jianglh
     return is_ipv4() && (
         get_byte(3) == 10 ||
         (get_byte(3) == 192 && get_byte(2) == 168) ||
         (get_byte(3) == 172 && (get_byte(2) >= 16 && get_byte(2) <= 31)));
-#else
 	return false;
-#endif
 }
 
 bool network_address::is_RFC3927() const

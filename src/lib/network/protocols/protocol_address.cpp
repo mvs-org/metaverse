@@ -52,13 +52,11 @@ void protocol_address::start()
 
     // Must have a handler to capture a shared self pointer in stop subscriber.
     protocol_events::start(BIND1(handle_stop, _1));
-#if 0
     if (settings.self.port() != 0)
     {
         self_ = address({ { settings.self.to_network_address() } });
         SEND2(self_, handle_send, _1, self_.command);
     }
-#endif
 
     // If we can't store addresses we don't ask for or handle them.
     if (settings.host_pool_capacity == 0)
