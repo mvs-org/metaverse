@@ -357,6 +357,85 @@ void sync_fetchbalance (wallet::payment_address& address,
 	
 }
 
+void sync_fetchbalance (command& cmd, std::string& addr, 
+	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
+{
+	using namespace bc::client;
+
+	auto address = payment_address(addr);
+	const auto connection = get_connection(cmd);
+	obelisk_client client(connection);
+	if (!client.connect(connection))
+	{
+		throw std::logic_error{"failure connection to " + connection.server.to_string()} ;
+	}
+
+	uint64_t height = 0;
+	blockchain.get_last_height(height);
+
+	auto on_done = [&addr_balance, &type, &blockchain, height](const history::list& rows)
+	{		
+		for (auto& row: rows) {
+
+			addr_balance.total_received += row.value;
+			//std::function<void(chain::transaction& tx, uint64_t& tx_height)>
+			auto sum_balance = [&row, &addr_balance, &type, height](const code& ec, const chain::transaction& tx)-> void
+			{
+				auto output = tx.outputs.at(row.output.index);
+				// deposit utxo in transaction pool
+				if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+							&& !row.output_height) { 
+					addr_balance.frozen_balance += row.value;
+				}
+				
+				// deposit utxo in block
+				if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+					&& row.output_height) { 
+					uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+					if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+						addr_balance.frozen_balance += row.value;
+					}
+				}
+				
+				// coin base etp maturity etp check
+				if(tx.is_coinbase()
+					&& !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
+					// add not coinbase_maturity etp into frozen
+					if((!row.output_height ||
+								(row.output_height && (height - row.output_height) < coinbase_maturity))) {
+						addr_balance.frozen_balance += row.value;
+					}
+				}
+				
+				if((type == "all") 
+					|| ((type == "etp") && output.is_etp()))
+					addr_balance.unspent_balance += row.value;
+
+			};
+			// spend unconfirmed (or no spend attempted)
+			if (row.spend.hash == null_hash)
+					blockchain.get_transaction_callback(row.output.hash, sum_balance); 
+			
+			if (row.output_height != 0 &&
+				(row.spend.hash == null_hash || row.spend_height == 0))
+				addr_balance.confirmed_balance += row.value;
+		}
+	};
+
+	auto on_error = [](const code& error)
+	{
+		if(error) {
+			throw std::logic_error{error.message()};
+		}
+	};
+
+	// The v3 client API works with and normalizes either server API.
+	//// client.address_fetch_history(on_error, on_done, address);
+	client.address_fetch_history2(on_error, on_done, address);
+	client.wait();
+
+	return ;
+}
 void base_transfer_helper::sum_payment_amount(){
 	if(receiver_list_.empty())
 		throw std::logic_error{"empty target address"};

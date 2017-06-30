@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getbalance.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -53,37 +54,35 @@ console_result getbalance::invoke (std::ostream& output,
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw std::logic_error{"nullptr for address list"};
 
-    const char* wallet[2]{"xfetchbalance", nullptr};
-    std::ostringstream sout;
-    std::istringstream sin; 
     uint64_t total_confirmed = 0;
     uint64_t total_received = 0;
     uint64_t total_unspent = 0;
 	uint64_t total_frozen = 0;
 
-    for (auto& i: *vaddr){
-        sout.str("");
-        wallet[1] = i.get_address().c_str();
-        dispatch_command(2, wallet + 0, sin, sout, sout, node);
+	//balances addr_balance;
+	std::string type("all");
 
-        pt::ptree utxo;
-        sin.str(sout.str());
-        pt::read_json(sin, utxo);
-        total_confirmed += utxo.get<uint64_t>("balance.confirmed");
-        total_received += utxo.get<uint64_t>("balance.received");
-        total_unspent += utxo.get<uint64_t>("balance.unspent");
-		total_frozen += utxo.get<uint64_t>("balance.frozen");
+    for (auto& i: *vaddr) {
+		balances addr_balance{0, 0, 0, 0};
+		//auto waddr = wallet::payment_address(i.get_address());
+		//sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+		auto addr = i.get_address();
+		sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
+		total_confirmed += addr_balance.confirmed_balance;
+		total_received += addr_balance.total_received;
+		total_unspent += addr_balance.unspent_balance;
+		total_frozen += addr_balance.frozen_balance;
     }
     
     aroot.put("total-confirmed", total_confirmed);
     aroot.put("total-received", total_received);
     aroot.put("total-unspent", total_unspent);
+    aroot.put("total-available", total_unspent - total_frozen);
 	aroot.put("total-frozen", total_frozen);
     pt::write_json(output, aroot);
 
     return console_result::okay;
 }
-
 
 
 } // namespace commands

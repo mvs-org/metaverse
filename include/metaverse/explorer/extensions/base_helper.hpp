@@ -81,6 +81,8 @@ chain::points_info sync_fetchutxo(uint64_t amount, wallet::payment_address& addr
 void sync_fetchbalance (wallet::payment_address& address, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount);
 
+void sync_fetchbalance (command& cmd, std::string& address, 
+	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
 class BCX_API base_transfer_helper 
 {
 public:
