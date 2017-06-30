@@ -1,0 +1,1174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\config">
+      <UniqueIdentifier>{4d9805fa-19ed-4058-b985-4a39e8cd7699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{7bffcf08-03be-462b-afec-9998954b1dea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math\external">
+      <UniqueIdentifier>{9968c5e3-0470-4f71-a3b0-cca03eef5fcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\unicode">
+      <UniqueIdentifier>{bba1ce64-5a8c-4ea0-9dc7-9b9990032535}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\wallet">
+      <UniqueIdentifier>{641011a6-a353-4887-afa4-0e3b37d14667}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\wallet\parse_encrypted_keys">
+      <UniqueIdentifier>{38869aaa-b992-41e5-a516-3825a7cc3fd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain">
+      <UniqueIdentifier>{80f44605-8822-4a78-b950-3f216be7ddce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\script">
+      <UniqueIdentifier>{b3c1c84a-3256-448b-9e78-17f04592fd79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment">
+      <UniqueIdentifier>{7abf9196-498e-418d-ae5d-0f3ba26609e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment\account">
+      <UniqueIdentifier>{ef077653-96ba-4b4e-9ce5-0024d04b12e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment\asset">
+      <UniqueIdentifier>{e0b99707-26f5-43b8-961d-9b61cd564dbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment\etp">
+      <UniqueIdentifier>{9a0ca561-e616-44e2-b86f-92a1fa2203f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment\message">
+      <UniqueIdentifier>{930636be-e9e2-460e-9b4f-f923864ed38b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\formats">
+      <UniqueIdentifier>{8a28fd35-2299-49d9-a47c-b7e704761c4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\message">
+      <UniqueIdentifier>{04341a0f-3404-4640-a931-a04cca1490cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utility">
+      <UniqueIdentifier>{d654d277-1e97-4650-9fe3-71665e6e5144}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\chain">
+      <UniqueIdentifier>{769252f7-e9ad-419c-a978-3ca2bd7e6b8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{80b3137b-7650-498b-b559-873f51d774fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\formats">
+      <UniqueIdentifier>{0d82631b-bcaf-4cd3-88f1-3503a1ff878a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl">
+      <UniqueIdentifier>{0960c2ed-fa57-4a51-a945-553440de6554}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{cbdeffa0-6acf-4e40-b808-08e384a83b33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\message">
+      <UniqueIdentifier>{f968906c-b852-4db4-9b07-2de33d155fda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\unicode">
+      <UniqueIdentifier>{884e9d14-bc63-4309-8483-1ef1ae07cac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utility">
+      <UniqueIdentifier>{4f2aa509-7856-4680-b3f5-8ac443175003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\wallet">
+      <UniqueIdentifier>{d4caf48b-8c72-4900-a998-15e75608cb8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\attachment">
+      <UniqueIdentifier>{d46082b3-7d85-4814-be48-da6a91ece2ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\script">
+      <UniqueIdentifier>{a8145356-1fd3-4aff-ac25-26937e2da78f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\attachment\account">
+      <UniqueIdentifier>{b994e11e-f088-47b9-a41b-768cda82b5c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\attachment\asset">
+      <UniqueIdentifier>{915f9144-750d-4ed3-9b0e-06f09aa41cbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\attachment\etp">
+      <UniqueIdentifier>{220ca917-6fc2-43d3-ab8b-3ff3abceaad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\chain\attachment\message">
+      <UniqueIdentifier>{a9adbc7c-4a53-4662-a607-199970529167}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl\formats">
+      <UniqueIdentifier>{d78a5558-fd38-4280-bf15-3818de2c455c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl\math">
+      <UniqueIdentifier>{a86ca40d-14e3-42d5-86e3-b3cebed77758}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl\utility">
+      <UniqueIdentifier>{c8c20504-4b54-41e1-b579-cb1d645b59ec}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\authority.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base2.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base16.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base58.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base64.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\checkpoint.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\directory.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\endpoint.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\hash160.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\hash256.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\parameter.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\parser.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\printer.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\sodium.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\checksum.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\crypto.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\elliptic_curve.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\hash.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\hash_number.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\script_number.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\stealth.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\uint256.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\aes256.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\crypto_scrypt.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha256.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha512.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\lax_der_parsing.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\pbkdf2_sha256.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\pkcs5_pbkdf2.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\ripemd160.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha1.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha256.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha512.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\zeroize.c">
+      <Filter>Source Files\math\external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\console_streambuf.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\ifstream.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\ofstream.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_istream.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_ostream.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_streambuf.cpp">
+      <Filter>Source Files\unicode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\bitcoin_uri.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\dictionary.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_private.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_public.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_private.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_public.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_token.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\encrypted_keys.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\hd_private.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\hd_public.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\message.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\mini_keys.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\mnemonic.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\payment_address.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\qrcode.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\select_outputs.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\stealth_address.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\uri.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_private.cpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_public.cpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_token.cpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\block.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\business_data.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\header.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\input.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point_iterator.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\transaction.cpp">
+      <Filter>Source Files\chain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.cpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\evaluation_context.cpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\opcode.cpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\operation.cpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\script.cpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\attachment.cpp">
+      <Filter>Source Files\chain\attachment</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\account\account.cpp">
+      <Filter>Source Files\chain\attachment\account</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\account\account_address.cpp">
+      <Filter>Source Files\chain\attachment\account</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_detail.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_transfer.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\blockchain_asset.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp.cpp">
+      <Filter>Source Files\chain\attachment\etp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp_award.cpp">
+      <Filter>Source Files\chain\attachment\etp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\message\message.cpp">
+      <Filter>Source Files\chain\attachment\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_10.cpp">
+      <Filter>Source Files\formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_16.cpp">
+      <Filter>Source Files\formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_58.cpp">
+      <Filter>Source Files\formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_64.cpp">
+      <Filter>Source Files\formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_85.cpp">
+      <Filter>Source Files\formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\address.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert_payload.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_message.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_transactions.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\compact_block.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\fee_filter.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_add.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_clear.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_load.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_address.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_block_transactions.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_blocks.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_data.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_headers.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\header_message.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\headers.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\heading.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\inventory.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\inventory_vector.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\memory_pool.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\merkle_block.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\network_address.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\not_found.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\ping.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\pong.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\prefilled_transaction.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\reject.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\send_compact_blocks.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\send_headers.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\transaction_message.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\verack.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\version.cpp">
+      <Filter>Source Files\message</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\backtrace.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\binary.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\conditional_lock.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\daemon.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\deadline.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\dispatcher.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\istream_reader.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\log.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\logging.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\monitor.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\ostream_writer.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\path.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\png.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\random.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\resource_lock.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\scope_lock.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\string.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\thread.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\threadpool.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\time.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\variable_uint_size.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\work.cpp">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\constants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\aes256.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\crypto_scrypt.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha256.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha512.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\lax_der_parsing.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\pbkdf2_sha256.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\pkcs5_pbkdf2.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\ripemd160.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha1.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha256.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha512.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\zeroize.h">
+      <Filter>Source Files\math\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_key.hpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_prefix.hpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_private.hpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_public.hpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_token.hpp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.hpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\evaluation_context.hpp">
+      <Filter>Source Files\chain\script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\constants.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\error.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\handlers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\messages.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\block.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\business_data.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\header.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\history.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\input.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\output.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point_iterator.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\spend.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\stealth.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\transaction.hpp">
+      <Filter>Header Files\chain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\attachment.hpp">
+      <Filter>Header Files\chain\attachment</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\ser_deser_interface.hpp">
+      <Filter>Header Files\chain\attachment</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\variant_visitor.hpp">
+      <Filter>Header Files\chain\attachment</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account.hpp">
+      <Filter>Header Files\chain\attachment\account</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account_address.hpp">
+      <Filter>Header Files\chain\attachment\account</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_detail.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_interface.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_transfer.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\blockchain_asset.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp.hpp">
+      <Filter>Header Files\chain\attachment\etp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp_award.hpp">
+      <Filter>Header Files\chain\attachment\etp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\message\message.hpp">
+      <Filter>Header Files\chain\attachment\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base2.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base16.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base58.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base64.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\checkpoint.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\directory.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\endpoint.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash160.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash256.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parameter.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parser.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\printer.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\sodium.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\authority.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_16.hpp">
+      <Filter>Header Files\formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_58.hpp">
+      <Filter>Header Files\formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_64.hpp">
+      <Filter>Header Files\formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_85.hpp">
+      <Filter>Header Files\formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_10.hpp">
+      <Filter>Header Files\formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\crypto.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\elliptic_curve.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash_number.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\script_number.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\stealth.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\uint256.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\checksum.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_transactions.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\compact_block.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\fee_filter.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_add.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_clear.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_load.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_address.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_block_transactions.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_blocks.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_data.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_headers.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\header_message.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\headers.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\heading.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory_vector.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\memory_pool.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\merkle_block.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\network_address.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\not_found.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\ping.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\pong.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\prefilled_transaction.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\reject.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_compact_blocks.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_headers.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\transaction_message.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\verack.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\version.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\address.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp">
+      <Filter>Header Files\message</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\console_streambuf.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ifstream.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ofstream.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_istream.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_ostream.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_streambuf.hpp">
+      <Filter>Header Files\unicode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\dictionary.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_private.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_public.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_private.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_public.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_token.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\encrypted_keys.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_private.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_public.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\message.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mini_keys.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mnemonic.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\payment_address.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\qrcode.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\select_outputs.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\settings.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\stealth_address.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri_reader.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\bitcoin_uri.hpp">
+      <Filter>Header Files\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_sink.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_source.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\daemon.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\data.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deadline.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\decorator.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\delegates.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deserializer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\dispatcher.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\enable_shared_from_base.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\endian.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\exceptions.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\istream_reader.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\log.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\logging.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\monitor.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\notifier.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\ostream_writer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\path.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\png.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\random.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\reader.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resource_lock.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resubscriber.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\scope_lock.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\serializer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\string.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\subscriber.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\synchronizer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\thread.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\threadpool.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\time.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\timer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\track.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\variable_uint_size.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\work.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\writer.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\array_slice.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\asio.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\assert.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\atomic.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\backtrace.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\binary.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\collection.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\color.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\conditional_lock.hpp">
+      <Filter>Header Files\utility</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_key.ipp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </None>
+    <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_prefix.ipp">
+      <Filter>Source Files\wallet\parse_encrypted_keys</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_58.ipp">
+      <Filter>Header Files\impl\formats</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_16.ipp">
+      <Filter>Header Files\impl\formats</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\math\checksum.ipp">
+      <Filter>Header Files\impl\math</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\math\hash.ipp">
+      <Filter>Header Files\impl\math</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\collection.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\data.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\deserializer.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\endian.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\istream_reader.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\notifier.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\ostream_writer.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\resubscriber.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\serializer.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\subscriber.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\track.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\array_slice.ipp">
+      <Filter>Header Files\impl\utility</Filter>
+    </None>
+  </ItemGroup>
+</Project>
