@@ -681,17 +681,10 @@ void base_transfer_helper::sign_tx_inputs(){
 }
 
 void base_transfer_helper::send_tx(){
-	code err_code = error::success;
-	if(!blockchain_.validate_transaction(tx_, err_code)) { 
-			log::debug("send_tx")<<"validate_transaction error code = " << err_code;
-			throw std::logic_error{std::string("validate transaction failure--") + err_code.message()};
-	}
-	log::debug("send_tx")<<"after validate transaction error code = " << err_code;
-	if(!blockchain_.broadcast_transaction(tx_, err_code)) { 
-			log::debug("send_tx")<<"broadcast_transaction error code = " << err_code;
-			throw std::logic_error{std::string("broadcast transaction failure--") + err_code.message()};
-	}
-	log::debug("send_tx")<<"after broadcast transaction error code = " << err_code;
+	if(!blockchain_.validate_transaction(tx_))
+			throw std::logic_error{"validate transaction failure"};
+	if(!blockchain_.broadcast_transaction(tx_)) 
+			throw std::logic_error{"broadcast transaction failure"};
 }
 void base_transfer_helper::exec(){	
 	// prepare 
