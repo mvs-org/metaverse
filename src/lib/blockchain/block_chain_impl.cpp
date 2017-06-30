@@ -1801,14 +1801,15 @@ bool block_chain_impl::get_history_callback(const payment_address& address,
 	
 }
 
-bool block_chain_impl::validate_transaction(const chain::transaction& tx)
+code block_chain_impl::validate_transaction(const chain::transaction& tx)
 {
 	
-	bool ret = false;
+	code ret = error::success;
 	if (stopped())
     {
         //handler(error::service_stopped, {});
 		log::debug("validate_transaction") << "ec=error::service_stopped";
+		ret = error::service_stopped;
         return ret;
     }
 
@@ -1819,10 +1820,10 @@ bool block_chain_impl::validate_transaction(const chain::transaction& tx)
 	mutex.lock();
 	auto f = [&ret, &mutex](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
 	{
-		log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
 		log::debug("validate_transaction") << "ec.message=" << ec.message();
-		if((error::success == ec) && idx_vec.empty())
-			ret = true;
+		//if((error::success == ec) && idx_vec.empty())
+		ret = ec;
 		mutex.unlock();
 	};
 		
@@ -1833,14 +1834,15 @@ bool block_chain_impl::validate_transaction(const chain::transaction& tx)
 	
 }
 	
-bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
+code block_chain_impl::broadcast_transaction(const chain::transaction& tx)
 {
 	
-	bool ret = false;
+	code ret = error::success;
 	if (stopped())
 	{
 		//handler(error::service_stopped, {});
 		log::debug("broadcast_transaction") << "ec=error::service_stopped";
+		ret = error::service_stopped;
 		return ret;
 	}
 
@@ -1857,10 +1859,10 @@ bool block_chain_impl::broadcast_transaction(const chain::transaction& tx)
 		//ret = true;
     	log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " confirmed";
     }, [&valid_mutex, &ret, tx_ptr](const code& ec, std::shared_ptr<transaction_message>, chain::point::indexes idx_vec){
-		log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.empty();
+		log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
 		log::debug("broadcast_transaction") << "ec.message=" << ec.message();
-		if((error::success == ec) && idx_vec.empty()){
-			ret = true;
+		ret = ec;
+		if(error::success == ec){
     		log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " validated";
 		} else {
 			//send_mutex.unlock(); // incase dead lock
