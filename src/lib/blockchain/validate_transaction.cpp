@@ -338,18 +338,6 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         if (total_output_value > max_money())
             return error::output_value_overflow;
     }
-    // Check for negative or overflow sset issue/transfer amount
-    uint64_t total_asset_amount = 0;
-    for (const auto& output: tx.outputs)
-    {
-        if (output.get_asset_amount() > max_money())
-            return error::asset_amount_overflow;
-
-        total_asset_amount += output.get_asset_amount();
-
-        if (total_asset_amount > max_money())
-            return error::asset_amount_overflow;
-    }
 
     for(auto& output : const_cast<transaction&>(tx).outputs){
         if(output.is_asset_issue()) {
@@ -474,8 +462,6 @@ bool validate_transaction::connect_input(const transaction& tx,
 	if(previous_output.attach_data.get_type() == ASSET_TYPE) {
 		// 1. do asset transfer amount check
 		asset_transfer_amount = const_cast<output&>(previous_output).get_asset_amount();
-		if(asset_transfer_amount > max_money())
-			return false;
 		
 		// 2. do asset symbol check
 		new_symbol_in = const_cast<output&>(previous_output).get_asset_symbol();
@@ -507,7 +493,7 @@ bool validate_transaction::connect_input(const transaction& tx,
 
     value_in += output_value;
 	asset_amount_in += asset_transfer_amount;
-    return (value_in <= max_money()) && (asset_amount_in <= max_money());
+    return value_in <= max_money();
 }
 
 bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
