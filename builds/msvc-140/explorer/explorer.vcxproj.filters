@@ -1,0 +1,982 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\commands">
+      <UniqueIdentifier>{fd9059b1-13d6-4f81-b721-36c3a5330e15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{4fda2bb3-01fa-44b7-8604-09beaa0f8330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions">
+      <UniqueIdentifier>{1c514702-d542-4365-a2c6-d0fcd5c3ab69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl">
+      <UniqueIdentifier>{71dcdb4a-0ea0-42c9-833e-59787060a47c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions\blockchain">
+      <UniqueIdentifier>{237a3509-e798-4857-8bab-c4b480d3eb0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions\commands">
+      <UniqueIdentifier>{7fedbdae-c9f0-49ae-b18d-be90878d50d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions\miner">
+      <UniqueIdentifier>{642a2c46-5b50-48d0-98a4-7ed62924a12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions\network">
+      <UniqueIdentifier>{ba2b971f-ceaa-4f26-8ac1-c8afefd9994b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\extensions\wallet">
+      <UniqueIdentifier>{4c6393da-05c5-4c20-9058-7ab3fe0eec5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\commands">
+      <UniqueIdentifier>{f923a76a-5324-4c38-9ccf-e9d4438fa0bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\config">
+      <UniqueIdentifier>{46c6b151-0e28-4570-9162-72b3e0e3c93f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions">
+      <UniqueIdentifier>{bfcadd5e-38de-42ca-afad-ce26d7beeebe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\commands\offline">
+      <UniqueIdentifier>{2091f5cf-b2b2-46ec-b3b2-0c91b06b7290}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\blockchain">
+      <UniqueIdentifier>{e171ddeb-1b7a-44a3-ac96-52aaba53153d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\commands">
+      <UniqueIdentifier>{865ba9df-555a-43f5-83a8-629d84f97374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\miner">
+      <UniqueIdentifier>{a982ea8e-3222-4508-a7c0-959f201ac7cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\network">
+      <UniqueIdentifier>{1e818e18-a616-4941-99ec-f4a300fade22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\wallet">
+      <UniqueIdentifier>{20f13740-43c5-4f3d-8268-d5651de24de8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\dispatch.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\display.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\generated.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\prop_tree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-address.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-public.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-balance.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-header.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-height.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-public-key.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx-index.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-utxo.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-new.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-private.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-ec.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-public.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-set.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-sign.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-validate.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-decode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-encode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-new.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-to-seed.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\offline_commands_impl.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\seed.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\settings.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-decode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-encode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-public.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-secret.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-shared.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-decode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-encode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-sign.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-address.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\address.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\algorithm.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\btc.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\byte.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\cert_key.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\ec_private.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\encoding.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\endorsement.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hashtype.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hd_key.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\header.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\input.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\point.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\raw.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\script.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\signature.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\transaction.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\wrapper.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account_helper.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account_query_helper.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\base_helper.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_assistant.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension_func.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\define.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\exception.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\transaction_helper.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\fetchheaderext.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\getbestblockhash.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\getbestblockheader.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\getblock.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\getinfo.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\blockchain\getpeerinfo.hpp">
+      <Filter>Header Files\extensions\blockchain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\private_query.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\private_send.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\private_validate.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\public_query.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\public_send.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\public_validate.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\private_generate.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\getwork.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\setminingaccount.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\start.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\stop.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\stopall.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\submithashrate.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\submitwork.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\miner\getmininginfo.hpp">
+      <Filter>Header Files\extensions\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\network\addnode.hpp">
+      <Filter>Header Files\extensions\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\network\ping.hpp">
+      <Filter>Header Files\extensions\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\changepasswd.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\changepasswdext.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\createasset.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\createmultisig.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\deleteaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\deposit.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\encodeattachtx.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaccountasset.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaccounttx.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaddress.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaddressasset.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaddresstx.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getasset.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbalance.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbusinessbytime.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getdid.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaddress.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\gettransaction.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\gettx.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\importaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\importwallet.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\issue.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\issuefrom.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\issuemore.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\issuemorefrom.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listaccounts.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listaddresses.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listassets.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listbalances.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listtxs.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\lockaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\lockwallet.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\send.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendasset.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendassetfrom.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendfrom.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendmore.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendwithdid.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendwithmsg.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendwithmsgfrom.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\setaccountinfo.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\setdid.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\settxfee.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\signmessage.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\validateaddress.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\verifymessage.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\xfetchbalance.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\xfetchutxo.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\addmultisigaddress.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupaccount.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupwallet.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\metaverse\explorer\impl\prop_tree.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\dispatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\display.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\generated.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\prop_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-balance.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-header.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-height.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-public-key.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx-index.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-utxo.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline_commands_impl.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\send-tx.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\settings.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\validate-tx.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\watch-address.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-public.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-sign.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-validate.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-decode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-encode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-new.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-to-seed.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\seed.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-encode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-public.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-secret.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-shared.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-decode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-encode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-sign.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-address.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-public.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-new.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-private.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-ec.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\hashtype.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\hd_key.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\header.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\input.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\language.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\metaverse_output.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\output.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\point.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\raw.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\script.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\signature.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\transaction.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\wrapper.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\address.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\algorithm.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\btc.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\byte.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\cert_key.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\ec_private.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\encoding.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\endorsement.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_helper.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_query_helper.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\base_helper.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\define.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\transaction_helper.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\getbestblockhash.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\getbestblockheader.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\getblock.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\getinfo.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\getpeerinfo.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\blockchain\fetchheaderext.cpp">
+      <Filter>Source Files\extensions\blockchain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\private_validate.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\public_query.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\public_send.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\public_validate.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\private_generate.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\private_query.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\private_send.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\getwork.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\setminingaccount.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\start.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\stop.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\stopall.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\submithashrate.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\submitwork.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\miner\getmininginfo.cpp">
+      <Filter>Source Files\extensions\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\network\addnode.cpp">
+      <Filter>Source Files\extensions\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\network\ping.cpp">
+      <Filter>Source Files\extensions\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\backupwallet.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\changepasswd.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\changepasswdext.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\createasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\createmultisig.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deposit.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\encodeattachtx.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccountasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccounttx.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaddress.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaddressasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaddresstx.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getbalance.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getdid.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getnewaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getnewaddress.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\gettransaction.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\gettx.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\importaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\importwallet.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\issue.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\issuefrom.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\issuemore.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\issuemorefrom.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listaccounts.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listaddresses.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listassets.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listbalances.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listtxs.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\lockaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\lockwallet.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\send.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendassetfrom.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendfrom.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendmore.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendwithdid.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendwithmsg.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendwithmsgfrom.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\setaccountinfo.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\setdid.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\settxfee.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\signmessage.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\validateaddress.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\verifymessage.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\xfetchbalance.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\xfetchutxo.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\addmultisigaddress.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\backupaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

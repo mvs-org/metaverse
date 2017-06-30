@@ -38,6 +38,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -104,7 +105,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <Optimization>Disabled</Optimization>
+      <Optimization>Full</Optimization>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCX_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;_CRT_SUPPRESS_RESTRICT;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ObjectFileName>$(IntDir)%(RelativeDir)/%(filename).obj</ObjectFileName>
@@ -1112,6 +1113,7 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\stealth.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash_number.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\script_number.hpp" />
+    <ClInclude Include="..\..\..\src\mvsd\coredump.hpp" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
