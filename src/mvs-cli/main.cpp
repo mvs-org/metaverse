@@ -66,7 +66,7 @@ int bc::main(int argc, char* argv[])
     }
 
 	// extension commands
-    HttpReq req("127.0.0.1:8820/rpc", 3000, my_impl);
+    HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
     std::ostringstream sout{""};
     minijson::object_writer writer(sout);
     writer.write("method", argv[1]);
