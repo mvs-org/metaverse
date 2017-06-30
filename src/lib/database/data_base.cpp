@@ -299,7 +299,7 @@ data_base::file_lock data_base::initialize_lock(const path& lock)
     const auto lock_file_path = lock.string();
     bc::ofstream file(lock_file_path, std::ios::app);
     file.close();
-#ifdef _MSC_VER
+#ifdef UNICODE
     std::function<std::string(std::wstring)> f = [&](std::wstring wide) ->std::string {
         int ansiiLen = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
         char *pAssii = new char[ansiiLen];
