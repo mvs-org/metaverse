@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\node\configuration.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\define.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\p2p_node.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\parser.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_in.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_out.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_block_sync.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_header_sync.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_miner.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_in.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_transaction_out.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\protocols\protocol_version_quiet.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_block_sync.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_header_sync.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_inbound.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_manual.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\sessions\session_outbound.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\settings.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\header_queue.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\performance.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservation.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\utility\reservations.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\node\version.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\node\configuration.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\p2p_node.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\parser.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_in.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_out.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_block_sync.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_header_sync.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_miner.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_transaction_in.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_transaction_out.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\protocols\protocol_version_quiet.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_block_sync.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_header_sync.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_inbound.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_manual.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\sessions\session_outbound.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\settings.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\utility\header_queue.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\utility\performance.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\utility\reservation.cpp" />
+    <ClCompile Include="..\..\..\src\lib\node\utility\reservations.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\bitcoin\bitcoin.vcxproj">
+      <Project>{54c72203-a5a0-4714-8d0c-d51aa4aabac8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\blockchain\blockchain.vcxproj">
+      <Project>{c6680c0b-3ece-4b68-8b5c-1a6767b6cc05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\network\network.vcxproj">
+      <Project>{53a1551c-87d3-4a0b-984b-e249e750d783}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6CD3E60A-05B1-4043-899B-9454EC0ADF98}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>node</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>libnode-vc140-mt-gd</TargetName>
+    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>libnode-vc140-mt</TargetName>
+    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCB_STATIC;BCN_STATIC;BCD_STATIC;BCT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;BC_STATIC;BCB_STATIC;BCN_STATIC;BCD_STATIC;BCT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

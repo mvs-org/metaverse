@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\protocols">
+      <UniqueIdentifier>{397240f0-581c-4b33-a006-733e98f606c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sessions">
+      <UniqueIdentifier>{0b1877fe-a63f-4019-96ca-7345e6e7ee94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\protocols">
+      <UniqueIdentifier>{b237e50d-da47-4973-861c-f00c0e693eac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sessions">
+      <UniqueIdentifier>{cac3c8af-7957-4b14-beed-1371b5e8b4fa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\network\acceptor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\channel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\connections.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\connector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\const_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\hosts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\locked_socket.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\message_subscriber.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\p2p.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\pending_channels.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\pending_sockets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\proxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\settings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\socket.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_address.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_events.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_ping.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_seed.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_timer.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\protocols\protocol_version.hpp">
+      <Filter>Header Files\protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_batch.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_inbound.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_manual.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_outbound.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session_seed.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\network\sessions\session.hpp">
+      <Filter>Header Files\sessions</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\network\channel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\connections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\connector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\const_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\hosts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\locked_socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\message_subscriber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\p2p.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\pending_channels.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\pending_sockets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\proxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\acceptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_address.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_events.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_ping.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_seed.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_timer.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol_version.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\protocols\protocol.cpp">
+      <Filter>Source Files\protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session_batch.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session_inbound.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session_manual.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session_outbound.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session_seed.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\network\sessions\session.cpp">
+      <Filter>Source Files\sessions</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
