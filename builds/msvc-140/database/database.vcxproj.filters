@@ -1,0 +1,268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\databases">
+      <UniqueIdentifier>{7e0af2c5-6f42-4fa4-a334-7457a95e6760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl">
+      <UniqueIdentifier>{aed265b0-7aad-4262-a700-61f7e33bba40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\memory">
+      <UniqueIdentifier>{fb5fdc63-3ec6-49a9-93f3-97879c4f6d0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\primitives">
+      <UniqueIdentifier>{a8d55a51-58db-4732-b1de-353748ab3c3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\result">
+      <UniqueIdentifier>{937ab8a2-c119-4874-baf5-d5302bf6e2b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\databases">
+      <UniqueIdentifier>{e51e5c08-c8f7-4e5f-b8a7-179873295d2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\memory">
+      <UniqueIdentifier>{747e8193-a1de-442f-863b-03e4587e6f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mman-win32">
+      <UniqueIdentifier>{fc1f5d1c-3ac5-4236-975b-8a031f91a3dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\primitives">
+      <UniqueIdentifier>{6e7d4f99-89cc-419a-99bf-47e28071f13b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\result">
+      <UniqueIdentifier>{d335f913-86c6-4f29-8cd0-f2b7cb84467f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\database\data_base.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\settings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_address_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_asset_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\address_asset_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\asset_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\base_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\block_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_asset_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\history_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\spend_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\stealth_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\transaction_database.hpp">
+      <Filter>Header Files\databases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\accessor.hpp">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\allocator.hpp">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\memory.hpp">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\memory\memory_map.hpp">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_hash_table.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_list.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_manager.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap_iterable.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\record_multimap_iterator.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\slab_hash_table.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\slab_manager.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\primitives\hash_table_header.hpp">
+      <Filter>Header Files\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_address_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_asset_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\account_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\asset_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\base_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\block_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\result\transaction_result.hpp">
+      <Filter>Header Files\result</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\database\mman-win32\mman.h">
+      <Filter>Source Files\mman-win32</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\metaverse\database\impl\hash_table_header.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\record_hash_table.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\record_multimap.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\record_row.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\remainder.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\slab_hash_table.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+    <None Include="..\..\..\include\metaverse\database\impl\slab_row.ipp">
+      <Filter>Header Files\impl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\database\data_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\account_address_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\account_asset_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\account_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\address_asset_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\asset_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\base_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\block_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_asset_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\history_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\spend_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\stealth_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\transaction_database.cpp">
+      <Filter>Source Files\databases</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\memory\accessor.cpp">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\memory\allocator.cpp">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\memory\memory_map.cpp">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\mman-win32\mman.c">
+      <Filter>Source Files\mman-win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\primitives\record_list.cpp">
+      <Filter>Source Files\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\primitives\record_manager.cpp">
+      <Filter>Source Files\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\primitives\record_multimap_iterable.cpp">
+      <Filter>Source Files\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\primitives\record_multimap_iterator.cpp">
+      <Filter>Source Files\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\primitives\slab_manager.cpp">
+      <Filter>Source Files\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\account_asset_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\account_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\asset_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\block_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\transaction_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\result\account_address_result.cpp">
+      <Filter>Source Files\result</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

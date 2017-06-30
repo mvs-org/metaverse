@@ -34,7 +34,11 @@ boost::filesystem::path default_data_path()
     // Unix: ~/.metaverse
 #ifdef _WIN32
     // Windows
-    char file_path[MAX_PATH];
+#ifdef UNICODE
+	wchar_t file_path[MAX_PATH] = { 0 };
+#else
+	char file_path[MAX_PATH] = { 0 };
+#endif
     SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
     fs::path pathRet = boost::filesystem::path(file_path) / "Metaverse";
     fs::create_directories(pathRet);

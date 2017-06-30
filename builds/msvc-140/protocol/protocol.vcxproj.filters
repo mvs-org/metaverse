@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\zmq">
+      <UniqueIdentifier>{502d5b22-fc72-4c09-b32e-22e11e4c6249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\zmq">
+      <UniqueIdentifier>{bdd3fa5f-2598-429d-aad4-90feab3c0009}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\authenticator.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\certificate.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\context.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\frame.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\identifiers.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\message.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\poller.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\socket.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\worker.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\zeromq.hpp">
+      <Filter>Header Files\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\converter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\interface.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\packet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\primitives.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\request_packet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\response_packet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\protocol\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\protocol\converter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\interface.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\packet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\request_packet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\response_packet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\certificate.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\context.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\frame.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\identifiers.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\message.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\poller.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\socket.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\worker.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\zeromq.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\protocol\zmq\authenticator.cpp">
+      <Filter>Source Files\zmq</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

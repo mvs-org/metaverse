@@ -23,6 +23,7 @@
 #include <metaverse/bitcoin/utility/backtrace.hpp>
 #include <metaverse/bitcoin/utility/daemon.hpp>
 #include "executor.hpp"
+#include <metaverse/server/utility/coredump.hpp>
 
 BC_USE_MVS_MAIN
 
@@ -37,6 +38,9 @@ int bc::main(int argc, char* argv[])
 {
     using namespace bc;
     using namespace bc::server;
+    // core dump catch
+    start_unhandled_exception_filter();
+
 	set_utf8_stdio();
 	server::parser metadata(bc::settings::mainnet);
 	const auto& args = const_cast<const char**>(argv);
