@@ -300,15 +300,17 @@ data_base::file_lock data_base::initialize_lock(const path& lock)
     bc::ofstream file(lock_file_path, std::ios::app);
     file.close();
 #ifdef _MSC_VER
-	std::function<std::string(std::wstring)> f = [&](std::wstring wide) ->std::string{
-		int ansiiLen = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
-		char *pAssii = new char[ansiiLen];
-		WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, pAssii, ansiiLen, nullptr, nullptr);
-		return std::string(pAssii);
-	};
-	std::string path_str = f(lock.wstring());
+    std::function<std::string(std::wstring)> f = [&](std::wstring wide) ->std::string {
+        int ansiiLen = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        char *pAssii = new char[ansiiLen];
+        WideCharToMultiByte(CP_ACP, 0, wide.c_str(), -1, pAssii, ansiiLen, nullptr, nullptr);
+        std::string str(pAssii);
+        delete[] pAssii;
+        return str;
+    };
+    std::string path_str = f(lock.wstring());
 #elif
-	std::string path_str = lock.str();
+    std::string path_str = lock_file_path;
 #endif 
     // BOOST:
     // Opens a file lock. Throws interprocess_exception if the file does not
