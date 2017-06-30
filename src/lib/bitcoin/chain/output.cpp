@@ -143,7 +143,6 @@ uint64_t output::serialized_size() const
 		+ attach_data.serialized_size(); // added for asset issue/transfer
 }
 
-#ifdef MVS_DEBUG
 std::string output::to_string(uint32_t flags) const
 {
     std::ostringstream ss;
@@ -154,7 +153,6 @@ std::string output::to_string(uint32_t flags) const
 
     return ss.str();
 }
-#endif
 
 uint64_t output::get_asset_amount() const // for validate_transaction.cpp to calculate asset transfer amount
 {

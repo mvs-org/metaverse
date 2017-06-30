@@ -76,7 +76,6 @@ public:
 	}
 };
 
-#ifdef MVS_DEBUG
 class to_string_visitor : public boost::static_visitor<std::string>
 {
 public:
@@ -91,7 +90,6 @@ public:
 	  return t.to_string();
 	}
 };
-#endif
 
 class reset_visitor : public boost::static_visitor<void>
 {

@@ -71,10 +71,8 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
 
-#ifdef MVS_DEBUG
     std::string to_string() const;
 	void to_json(std::ostream& out);
-#endif
 
     bool is_valid() const;
     void reset();
