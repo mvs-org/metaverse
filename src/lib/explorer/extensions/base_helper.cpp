@@ -370,12 +370,20 @@ void base_transfer_helper::sum_payment_amount(){
 }
 void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr) 
 {
+	using namespace bc::client;
+
+	auto address = payment_address(addr);
+	const auto connection = get_connection(cmd_);
+	obelisk_client client(connection);
+	if (!client.connect(connection))
+	{
+		throw std::logic_error{"failure connection to " + connection.server.to_string()} ;
+	}
+
 	uint64_t height = 0;
 	blockchain_.get_last_height(height);
 
-	auto mutex = false; // for sync	
-
-	auto on_done = [&addr, &prikey, &mutex, this, height](const code&, const history::list& rows)
+	auto on_done = [&addr, &prikey, this, height](const history::list& rows)
 	{		
 		for (auto& row: rows) {
 			if((unspent_etp_ >= payment_etp_) && (unspent_asset_ >= payment_asset_)) // performance improve
@@ -489,13 +497,20 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 					blockchain_.get_transaction_callback(row.output.hash, sum_balance); 
 		
 		}
-		mutex = true; // for sync
 	};
-	
-	auto address = payment_address(addr);
-	blockchain_.get_history_callback(address, 0, 0, on_done);
-	while(!mutex)
-		log::debug("sync_fetchutxo")<< "waiting callback fuction finished.";
+
+	auto on_error = [](const code& error)
+	{
+		if(error) {
+			throw std::logic_error{error.message()};
+		}
+	};
+
+	// The v3 client API works with and normalizes either server API.
+	//// client.address_fetch_history(on_error, on_done, address);
+	client.address_fetch_history2(on_error, on_done, address);
+	client.wait();
+
 	return ;
 }
 
