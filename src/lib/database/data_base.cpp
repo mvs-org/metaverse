@@ -309,7 +309,7 @@ data_base::file_lock data_base::initialize_lock(const path& lock)
         return str;
     };
     std::string path_str = f(lock.wstring());
-#elif
+#else
     std::string path_str = lock_file_path;
 #endif 
     // BOOST:
