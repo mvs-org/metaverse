@@ -63,7 +63,7 @@ console_result deposit::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()} 
 	};
-	auto deposit_helper = depositing_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);
 			
 	deposit_helper.exec();
@@ -89,7 +89,7 @@ console_result send::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
 	};
-	auto send_helper = sending_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(receiver), argument_.fee);
 	
 	send_helper.exec();
@@ -125,7 +125,7 @@ console_result sendmore::invoke (std::ostream& output,
 		record.type = utxo_attach_type::etp; // attach not used so not do attah init
 		receiver.push_back(record);
 	}
-	auto send_helper = sending_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(receiver), argument_.fee);
 	
 	send_helper.exec();
@@ -152,7 +152,7 @@ console_result sendfrom::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
 	};
-	auto send_helper = sending_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(argument_.from), std::move(receiver), argument_.fee);
 	
 	send_helper.exec();
@@ -177,7 +177,7 @@ console_result sendwithmsg::invoke (std::ostream& output,
 		{argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()},  
 		{argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.message))}  
 	};
-	auto send_helper = sending_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(receiver), argument_.fee);
 	
 	send_helper.exec();
@@ -206,7 +206,7 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 		{argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()},  
 		{argument_.to, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.message))}  
 	};
-	auto send_helper = sending_etp(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(argument_.from), std::move(receiver), argument_.fee);
 	
 	send_helper.exec();
@@ -236,8 +236,8 @@ console_result issue::invoke (std::ostream& output,
     if(blockchain.is_asset_exist(argument_.symbol, false))
         throw std::logic_error{"asset symbol is already exist in blockchain"};
 	// local database asset check
-	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
-	if(sh_asset->empty())
+	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+	if(!sh_asset)
 		throw std::logic_error{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
@@ -256,7 +256,7 @@ console_result issue::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
 	};
-	auto issue_helper = issuing_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 	
 	issue_helper.exec();
@@ -295,8 +295,8 @@ console_result issuefrom::invoke (std::ostream& output,
         throw std::logic_error{"asset symbol is already exist in blockchain"};
 
 	// local database asset check
-	auto sh_asset = blockchain.get_account_asset(auth_.name, argument_.symbol);
-	if(sh_asset->empty())
+	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+	if(!sh_asset)
 		throw std::logic_error{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
@@ -307,14 +307,14 @@ console_result issuefrom::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
 	};
-	auto issue_helper = issuing_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
 	
 	issue_helper.exec();
 	// json output
 	auto tx = issue_helper.get_transaction();
 #if 0
-	auto issue_helper = issuing_locked_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto issue_helper = issuing_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
 	
 	issue_helper.exec();
@@ -372,10 +372,10 @@ console_result sendasset::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
 	};
-	auto send_helper = sending_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 #if 0
-	auto send_helper = sending_locked_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			"", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
 #endif
 	
@@ -411,7 +411,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
 	std::vector<receiver_record> receiver{
 		{argument_.to, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
 	};
-	auto send_helper = sending_asset(blockchain, std::move(auth_.name), std::move(auth_.auth), 
+	auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
 			std::move(argument_.from), std::move(argument_.symbol), std::move(receiver), argument_.fee);
 	
 	send_helper.exec();

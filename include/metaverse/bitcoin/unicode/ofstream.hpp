@@ -42,14 +42,6 @@ public:
      */
     ofstream(const std::string& path,
         std::ofstream::openmode mode=std::ofstream::out);
-
-	/**
-	* Construct bc::ofstream.
-	* @param[in]  path  The unicode path to the file.
-	* @param[in]  mode  The file opening mode.
-	*/
-	ofstream(const std::wstring &path,
-		std::ofstream::openmode mode = std::ofstream::out);
 };
 
 } // namespace libbitcoin

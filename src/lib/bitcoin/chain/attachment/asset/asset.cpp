@@ -158,7 +158,6 @@ uint64_t asset::serialized_size() const
 	return 4 + size;
 }
 
-#ifdef MVS_DEBUG
 std::string asset::to_string() const
 {
     std::ostringstream ss;
@@ -167,7 +166,6 @@ std::string asset::to_string() const
 	ss << boost::apply_visitor(visitor, data);
     return ss.str();
 }
-#endif
 
 uint32_t asset::get_status() const
 {

@@ -55,6 +55,9 @@ public:
     /// Get the set of unprocessed orphans.
     block_detail::list unprocessed() const;
 
+    bool add_pending_block(const hash_digest& needed_block, const block_detail::ptr& pending_block);
+    block_detail::ptr delete_pending_block(const hash_digest& needed_block);
+
 private:
 //    typedef boost::circular_buffer<block_detail::ptr> buffer;
     typedef std::vector<block_detail::ptr> buffer;
@@ -69,6 +72,9 @@ private:
     // The buffer is protected by mutex.
     buffer buffer_;
     mutable upgrade_mutex mutex_;
+
+    std::multimap<hash_digest, block_detail::ptr> pending_blocks_;
+    std::set<hash_digest> pending_blocks_hash_;
 };
 
 } // namespace blockchain

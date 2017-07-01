@@ -25,9 +25,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
-#ifdef MVS_DEBUG
 #include <json/minijson_writer.hpp>
-#endif
 
 namespace libbitcoin {
 namespace chain {
@@ -178,7 +176,6 @@ uint64_t asset_detail::serialized_size() const
     return std::min(ASSET_DETAIL_FIX_SIZE, len);
 }
 
-#ifdef MVS_DEBUG
 std::string asset_detail::to_string() const
 {
     std::ostringstream ss;
@@ -204,7 +201,6 @@ void asset_detail::to_json(std::ostream& output)
 	json_writer.write("description", description);
 	json_writer.close();
 }
-#endif
 
 const std::string& asset_detail::get_symbol() const
 { 

@@ -181,11 +181,17 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::not_satisfied:
         	return "not satisfied";
 
+		// asset errors
+		case error::asset_amount_overflow:
+			return "asset amount overflow";
+		case error::asset_amount_not_equal:
+			return "asset amount not equal";
+		case error::asset_symbol_not_match:
+			return "asset symbol not match";
+		case error::asset_symbol_invalid:
+			return "asset symbol invalid";
         case error::asset_exist:
             return "asset exist";
-
-        case error::asset_symbol_invalid:
-            return "asset symbol invalid";
 
         // unknown errors
         case error::unknown:

@@ -29,7 +29,7 @@ namespace blockchain {
 
 orphan_pool::orphan_pool(size_t capacity)
 {
-	buffer_.reserve(capacity == 0 ? 1 : capacity);
+    buffer_.reserve(capacity == 0 ? 1 : capacity);
 }
 
 // There is no validation whatsoever of the block up to this pont.
@@ -155,6 +155,33 @@ block_detail::list orphan_pool::unprocessed() const
     return unprocessed;
 }
 
+bool orphan_pool::add_pending_block(const hash_digest& needed_block, const block_detail::ptr& pending_block)
+{
+    auto hash = pending_block->actual()->header.hash();
+    if(pending_blocks_hash_.find(hash) != pending_blocks_hash_.end()) 
+    {
+        return false;
+    }
+
+    pending_blocks_.insert(make_pair(needed_block, pending_block));
+    pending_blocks_hash_.insert(hash);
+    return true;
+}
+
+block_detail::ptr orphan_pool::delete_pending_block(const hash_digest& needed_block)
+{
+    block_detail::ptr ret;
+    auto it = pending_blocks_.find(needed_block);
+    if(it != pending_blocks_.end())
+    {
+        ret = it->second;
+        pending_blocks_hash_.erase(it->second->actual()->header.hash());
+        pending_blocks_.erase(it);
+    }
+
+    return ret;
+}
+
 // private
 //-----------------------------------------------------------------------------
 
@@ -186,7 +213,7 @@ orphan_pool::const_iterator orphan_pool::find(buffer::const_iterator begin, cons
         return hash == entry->hash();
     };
 
-	return std::find_if(begin, buffer_.end(), match);
+    return std::find_if(begin, buffer_.end(), match);
 }
 */
 
@@ -197,7 +224,7 @@ orphan_pool::const_reverse_iterator orphan_pool::rfind(buffer::const_reverse_ite
         return hash == entry->hash();
     };
 
-	return std::find_if(begin, buffer_.rend(), match);
+    return std::find_if(begin, buffer_.rend(), match);
 }
 
 } // namespace blockchain

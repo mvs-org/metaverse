@@ -230,51 +230,31 @@ void organizer::filter_orphans(message::get_data::ptr message)
 {
     orphan_pool_.filter(message);
 }
-
 void organizer::process(block_detail::ptr process_block)
 {
     BITCOIN_ASSERT(process_block);
 
-    std::vector<block_detail::ptr> blocks;
-    blocks.push_back(process_block);
+    // Trace the chain in the orphan pool
+    auto orphan_chain = orphan_pool_.trace(process_block);
+    BITCOIN_ASSERT(orphan_chain.size() >= 1);
 
-    while(blocks.empty() == false)
-    {
-        process_block = blocks.back();
-        blocks.pop_back();
-        // Trace the chain in the orphan pool
-        auto orphan_chain = orphan_pool_.trace(process_block);
-        BITCOIN_ASSERT(orphan_chain.size() >= 1);
-
-        uint64_t fork_index;
-        const auto& hash = orphan_chain.front()->actual()->
+    uint64_t fork_index;
+    const auto& hash = orphan_chain.front()->actual()->
         header.previous_block_hash;
 
-        // Verify the blocks in the orphan chain.
-        if (chain_.get_height(fork_index, hash)) 
-        {
-            replace_chain(fork_index, orphan_chain);
-            if(orphan_chain.empty() == false) 
-            {
-                const auto hash = orphan_chain.back()->actual()->header.hash();    
-                block_detail::ptr block;
-                while((block = orphan_pool_.delete_pending_block(hash)))
-                {
-                    blocks.push_back(block);
-                    log::warning(LOG_BLOCKCHAIN) << "pop pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(block->actual()->header.hash());
-                }
-            }
-        } 
-        else 
-        {
-            orphan_pool_.add_pending_block(hash, orphan_chain.back());
-            log::warning(LOG_BLOCKCHAIN) << "push pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(orphan_chain.back()->actual()->header.hash());
-        }
-
-        // Don't mark all orphan_chain as processed here because there might be
-        // a winning fork from an earlier block.
-        process_block->set_processed();
+    // Verify the blocks in the orphan chain.
+    if (chain_.get_height(fork_index, hash)) 
+    {
+        replace_chain(fork_index, orphan_chain);
+    } 
+    else 
+    {
+        log::warning(LOG_BLOCKCHAIN) << "get_height hash:" << encode_hash(hash) << " failed"; 
     }
+
+    // Don't mark all orphan_chain as processed here because there might be
+    // a winning fork from an earlier block.
+    process_block->set_processed();
 }
 
 void organizer::replace_chain(uint64_t fork_index,
@@ -374,14 +354,14 @@ void organizer::replace_chain(uint64_t fork_index,
         {
             log::warning(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
-                << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
+			   	<< " hash:"  << encode_hash(arrival_block->actual()->header.hash())
                 << "failed";
         }
         else
         {
-            log::debug(LOG_BLOCKCHAIN)
+            log::warning(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
-                << " hash:"  << encode_hash(arrival_block->actual()->header.hash());
+			   	<< " hash:"  << encode_hash(arrival_block->actual()->header.hash());
         }
     }
 
