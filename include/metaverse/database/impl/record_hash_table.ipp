@@ -85,6 +85,37 @@ const memory_ptr record_hash_table<KeyType>::find(const KeyType& key) const
     return nullptr;
 }
 
+
+// This is limited to returning all the item in the special index.
+template <typename KeyType>
+std::shared_ptr<std::vector<memory_ptr>> record_hash_table<KeyType>::find(array_index index) const
+{
+	auto vec_memo = std::make_shared<std::vector<memory_ptr>>();
+	// find first item
+    auto current = header_.read(index);
+    static_assert(sizeof(current) == sizeof(array_index), "Invalid size");
+	
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const record_row<KeyType> item(manager_, current);
+
+        // Found.
+        vec_memo->push_back(item.data());
+
+        const auto previous = current;
+        current = item.next_index();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return vec_memo;
+}
+
 // This is limited to unlinking the first of multiple matching key values.
 template <typename KeyType>
 bool record_hash_table<KeyType>::unlink(const KeyType& key)

@@ -52,6 +52,23 @@ array_index record_multimap<KeyType>::lookup(const KeyType& key) const
 }
 
 template <typename KeyType>
+std::shared_ptr<std::vector<array_index>> record_multimap<KeyType>::lookup(array_index index) const
+{
+	auto sh_ret_vec = std::make_shared<std::vector<array_index>>();
+    auto sh_vec = map_.find(index);
+	
+    // Critical Section
+    ///////////////////////////////////////////////////////////////////////////
+    unique_lock lock(mutex_);
+	for(auto each : *sh_vec) {
+    	const auto address = REMAP_ADDRESS(each);
+		sh_ret_vec->push_back(from_little_endian_unsafe<array_index>(address));
+	}
+    ///////////////////////////////////////////////////////////////////////////
+    return sh_ret_vec;
+}
+
+template <typename KeyType>
 void record_multimap<KeyType>::add_row(const KeyType& key,
     write_function write)
 {
