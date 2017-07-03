@@ -64,7 +64,8 @@ console_result getmemorypool::invoke (std::ostream& output,
 			p.set_value(ec);
 			return;
 		}
-		std::vector<config::transaction> txs1{txs.size()};
+		std::vector<config::transaction> txs1;
+		txs1.reserve(txs.size());
 		for (auto tp:txs) {
 			txs1.push_back(*tp);
 		}

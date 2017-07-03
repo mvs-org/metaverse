@@ -103,7 +103,8 @@ void connections::exists(const authority& address, truth_handler handler) const
 
 config::authority::list connections::authority_list()
 {
-	config::authority::list address_list{channels_.size()};
+	config::authority::list address_list;
+	address_list.reserve(channels_.size());
 	mutex_.lock_upgrade();
 	std::find_if(channels_.begin(), channels_.end(), [&address_list](channel::ptr channel){
 		address_list.push_back(channel->authority());
