@@ -19,6 +19,7 @@
  */
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <unordered_map>
 
 namespace libbitcoin {
@@ -367,7 +368,7 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 	obelisk_client client(connection);
 	if (!client.connect(connection))
 	{
-		throw std::logic_error{"failure connection to " + connection.server.to_string()} ;
+		throw connection_exception{"failure connection to " + connection.server.to_string()};
 	}
 
 	uint64_t height = 0;
@@ -425,7 +426,7 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 	auto on_error = [](const code& error)
 	{
 		if(error) {
-			throw std::logic_error{error.message()};
+			throw sync_fetch_balance_exception(error.value(), "fetch address failded");
 		}
 	};
 
