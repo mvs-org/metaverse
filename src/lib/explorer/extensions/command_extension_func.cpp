@@ -100,6 +100,7 @@
 #include <metaverse/explorer/extensions/wallet/changepasswd.hpp>
 #include <metaverse/explorer/extensions/wallet/encodeattachtx.hpp>
 #include <metaverse/explorer/extensions/commands/private_query.hpp>
+#include <metaverse/explorer/extensions/wallet/getmemorypool.hpp>
 
 
 
@@ -174,6 +175,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<submitwork>());
     func(make_shared<setminingaccount>());
     func(make_shared<changepasswd>());
+    func(make_shared<getmemorypool>());
 
 }
 
@@ -313,6 +315,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendassetfrom>();
     if (symbol == stopall::symbol())
         return make_shared<stopall>();
+    if (symbol == getmemorypool::symbol())
+		return make_shared<getmemorypool>();
 
     return nullptr;
 }
