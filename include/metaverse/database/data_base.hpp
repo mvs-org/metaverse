@@ -114,6 +114,15 @@ public:
 		/* end database for account, asset, address_asset relationship */
     };
 
+    class blockchain_asset_store
+    {
+    public:
+        blockchain_asset_store(const path& prefix);
+        bool touch_all() const;
+		/* begin database for account, asset, address_asset relationship */
+        path assets_lookup;
+		/* end database for account, asset, address_asset relationship */
+    };
 	class db_metadata
 	{
 	public:
@@ -158,6 +167,9 @@ public:
     /// Create and start all databases.
     bool create();
 	bool blockchain_create();
+	bool blockchain_asset_create();
+ 
+	void upgrade_blockchain_asset();
 	bool account_db_start();
     /// Start all databases.
     bool start();
