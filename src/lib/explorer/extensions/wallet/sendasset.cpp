@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/sendasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,15 +50,15 @@ console_result sendasset::invoke (std::ostream& output,
 	blockchain.uppercase_symbol(argument_.symbol);
 	
 	if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-		throw std::logic_error{"asset symbol length must be less than 64."};
+		throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 	if (!blockchain.is_valid_address(argument_.address))
-		throw std::logic_error{"invalid to address parameter!"};
+		throw toaddress_invalid_exception{"invalid to address parameter!"};
 	if (!argument_.amount)
-		throw std::logic_error{"invalid asset amount parameter!"};
+		throw asset_amount_exceptionr{"invalid asset amount parameter!"};
 
 	auto pvaddr = blockchain.get_account_addresses(auth_.name);
 	if(!pvaddr) 
-		throw std::logic_error{"nullptr for address list"};
+		throw address_list_nullptr_exception{"nullptr for address list"};
 	
 	auto kind = business_kind::asset_issue;
 	std::shared_ptr<std::vector<business_history>> sh_vec;
@@ -99,7 +100,7 @@ console_result sendasset::invoke (std::ostream& output,
 
 	// not available asset
 	if(!asset_ls.size()) 
-		throw std::logic_error{"the from address has no unspent asset"};
+		throw tx_source_exception{"the from address has no unspent asset"};
 #if 0	
 //#ifdef MVS_DEBUG
 	/* debug code begin */	  

@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/sendassetfrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -50,18 +51,18 @@ console_result sendassetfrom::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
     
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     
     if (!blockchain.is_valid_address(argument_.from))
-        throw std::logic_error{"invalid from address parameter!"};
+        throw fromaddress_invalid_exception{"invalid from address parameter!"};
     if (!blockchain.is_valid_address(argument_.to))
-        throw std::logic_error{"invalid to address parameter!"};
+        throw toaddress_invalid_exception{"invalid to address parameter!"};
     if (!argument_.amount)
-        throw std::logic_error{"invalid asset amount parameter!"};
+        throw asset_amount_exception{"invalid asset amount parameter!"};
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     auto kind = business_kind::asset_issue;
     std::list<prikey_etp_amount> asset_ls;
@@ -104,7 +105,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
 #endif
     
     if(!asset_ls.size()) 
-        throw std::logic_error{"no asset business for from address!"};
+        throw tx_source_exception{"no asset business for from address!"};
 	
 	// etp check incase from address etp < fee
     uint64_t total_balance = 0;

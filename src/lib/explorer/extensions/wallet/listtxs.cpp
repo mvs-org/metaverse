@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/listtxs.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,7 +50,7 @@ console_result listtxs::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address parameter!"};
+        throw address_invalid_exception{"invalid address parameter!"};
     blockchain.uppercase_symbol(argument_.symbol);
 
     pt::ptree aroot;
@@ -71,7 +72,7 @@ console_result listtxs::invoke (std::ostream& output,
     if(argument_.address.empty()) { 
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if(!pvaddr) 
-            throw std::logic_error{"nullptr for address list"};
+            throw address_list_nullptr_exception{"nullptr for address list"};
         
         for (auto& elem: *pvaddr) {
             auto sh_vec = blockchain.get_address_business_record(elem.get_address(), height, limit);
@@ -105,7 +106,7 @@ console_result listtxs::invoke (std::ostream& output,
             const auto tokens = split(argument_.address, BX_TX_POINT_DELIMITER);
             if (tokens.size() != 2)
             {
-                throw std::logic_error{"timestamp is invalid format(eg : 123:456)!"};
+                throw format_timestamp_exception{"timestamp is invalid format(eg : 123:456)!"};
             }
             uint32_t start, end;
             deserialize(start, tokens[0], true);
@@ -113,7 +114,7 @@ console_result listtxs::invoke (std::ostream& output,
 
             auto pvaddr = blockchain.get_account_addresses(auth_.name);
             if(!pvaddr) 
-                throw std::logic_error{"nullptr for address list"};
+                throw address_list_nullptr_exception{"nullptr for address list"};
 
             for (auto& elem: *pvaddr) {
                 auto sh_vec = blockchain.get_address_business_record(elem.get_address());
@@ -142,7 +143,7 @@ console_result listtxs::invoke (std::ostream& output,
         	log::trace("listtxs") << option_.height.second();
 			
         	if(option_.height.first() > option_.height.second()) {
-				throw std::logic_error{"invalid height option!"};
+				throw block_height_exception{"invalid height option!"};
 			}
             auto sh_vec = blockchain.get_address_business_record(argument_.address);
             // scan all kinds of business

@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/miner/stopall.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,7 +48,7 @@ console_result stopall::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
 
     if(!blockchain.is_admin_account(auth_.name))
-        throw std::logic_error{"not admin account!"};
+        throw account_authority_exception{"not admin account!"};
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     output << "mvs server stoped.";

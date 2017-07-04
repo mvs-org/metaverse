@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/sendfrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,13 +50,13 @@ console_result sendfrom::invoke (std::ostream& output,
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.from)) 
-        throw std::logic_error{"invalid from address!"};
+        throw fromaddress_invalid_exception{"invalid from address!"};
     if(!blockchain.is_valid_address(argument_.to)) 
-        throw std::logic_error{"invalid to address!"};
+        throw toaddress_invalid_exception{"invalid to address!"};
     
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     std::list<prikey_amount> palist;
 
@@ -83,7 +84,7 @@ console_result sendfrom::invoke (std::ostream& output,
         }
     }
     if(palist.empty())
-        throw std::logic_error{"not enough etp in from address or you are't own from address!"};
+        throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
     
     // my change
     std::vector<std::string> receiver{

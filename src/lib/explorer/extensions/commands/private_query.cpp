@@ -23,6 +23,7 @@
 #include <metaverse/explorer/extensions/commands/private_query.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -38,11 +39,11 @@ console_result getpublickey::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address parameter!"};
+        throw address_invalid_exception{"invalid address parameter!"};
 	
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 	
 	// set random address
 	if (argument_.address.empty()) {
@@ -67,7 +68,7 @@ console_result getpublickey::invoke (std::ostream& output,
 		}
     }
 
-	if(!found) throw std::logic_error{sout.str()};
+	if(!found) throw get_account_address_exception{sout.str()};
 	
     pt::ptree root;
     root.put("public-key", sout.str());

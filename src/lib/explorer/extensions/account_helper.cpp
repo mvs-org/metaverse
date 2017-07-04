@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -42,10 +43,10 @@ console_result importaccount::invoke (std::ostream& output,
     // parameter account name check
     auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
-        throw std::logic_error{"account already exist"};
+	 throw account_existed_exception{"account already exist"};
 
     if (argument_.words.size() > 24)
-        throw std::logic_error{"word count must be less than or equal 24"};
+		throw argument_exceed_limit_exception{"word count must be less than or equal 24"};
     
     for(auto& i : argument_.words){
         sout<<i<<" ";
@@ -76,7 +77,7 @@ console_result importaccount::invoke (std::ostream& output,
 	        cmds[i++] = word.c_str();
 	    }
 	} else {
-		throw std::logic_error{"words count should be 24, not " + std::to_string(argument_.words.size())};
+		throw argument_size_invalid_exception{"words count should be 24, not " + std::to_string(argument_.words.size())};
 	}
 
     if( console_result::okay != dispatch_command(i, cmds , sin, sout, sout)) {
@@ -152,7 +153,7 @@ console_result changepasswd::invoke (std::ostream& output,
 	// reencry address
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"empty address list"};
+		throw address_list_nullptr_exception{"empty address list"};
 	
 	std::string prv_key;
     for (auto& each : *pvaddr){
