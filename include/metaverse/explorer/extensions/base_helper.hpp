@@ -80,6 +80,8 @@ chain::points_info sync_fetchutxo(uint64_t amount, wallet::payment_address& addr
 	std::string& type, bc::blockchain::block_chain_impl& blockchain);
 void sync_fetchbalance (wallet::payment_address& address, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount);
+void sync_fetch_asset_balance (std::string& addr, 
+	bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
 
 void sync_fetchbalance (command& cmd, std::string& address, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
