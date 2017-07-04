@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,7 +48,7 @@ console_result getnewaccount::invoke (std::ostream& output,
 {
 	auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name)){
-        throw std::logic_error{"account already exist"};
+        throw account_existed_exception{"account already exist"};
     }
 
     const char* cmds[]{"seed"};
@@ -62,7 +63,7 @@ console_result getnewaccount::invoke (std::ostream& output,
 #ifdef NDEBUG
     if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
         auth_.auth.length() > 128 || auth_.auth.length() < 6)
-        throw std::logic_error{"name length in [3, 128], password length in [6, 128]"};
+        throw argument_legality_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
 
     acc->set_name(auth_.name);

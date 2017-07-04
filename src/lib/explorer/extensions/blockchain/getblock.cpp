@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/blockchain/getblock.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -67,7 +68,7 @@ console_result getblock::invoke (std::ostream& output,
 
     auto result = p.get_future().get();
     if(result){
-            throw std::logic_error{result.message()};
+            throw query_block_exception{result.message()};
     }
     return console_result::okay;
 }

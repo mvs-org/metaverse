@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getnewaddress.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,8 +50,8 @@ console_result getnewaddress::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	std::string mnemonic;
 	acc->get_mnemonic(auth_.auth, mnemonic);
-    if (mnemonic.empty()) { throw std::logic_error("mnemonic empty"); }
-    if (!option_.count) { throw std::logic_error("invalid address number parameter"); }
+    if (mnemonic.empty()) { throw account_mnemonicword_empty_exception("mnemonic empty"); }
+    if (!option_.count) { throw address_amount_exception("invalid address number parameter"); }
 	
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::ostringstream sout("");
