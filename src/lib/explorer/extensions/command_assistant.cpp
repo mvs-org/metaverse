@@ -72,7 +72,7 @@ uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
     // last one for mychange and fee
     auto fee = std::stoull(results[1], nullptr, 10);
     if (fee > utxo_helper::maximum_fee || fee < utxo_helper::minimum_fee)
-        throw fee_range_exception{"fee must in [10000, 10000000000]"};
+        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
 
     mychange = std::make_pair(results[0], fee);
 

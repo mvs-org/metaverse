@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/listassets.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -56,7 +57,7 @@ console_result listassets::invoke (std::ostream& output,
         auto sh_vec = blockchain.get_issued_assets();
         
         if ( 0 == sh_vec->size()) // no asset found
-            throw std::logic_error{"no asset found ?"};
+            throw asset_notfound_exception{"no asset found ?"};
 
 #ifdef MVS_DEBUG
         const auto action = [&](asset_detail& elem)
@@ -85,7 +86,7 @@ console_result listassets::invoke (std::ostream& output,
         blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if(!pvaddr) 
-            throw std::logic_error{"nullptr for address list"};
+            throw address_list_nullptr_exception{"nullptr for address list"};
         
         // 1. get asset in blockchain
         auto kind = business_kind::asset_transfer;

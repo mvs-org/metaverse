@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/send.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,7 +50,7 @@ console_result send::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     std::list<prikey_amount> palist;
 

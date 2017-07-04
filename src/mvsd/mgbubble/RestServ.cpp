@@ -22,6 +22,7 @@
 #include <metaverse/mgbubble/utility/Stream_buf.hpp>
 
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/server/server_node.hpp>
 
 namespace mgbubble{
@@ -94,7 +95,11 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 //        }
         explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
         		sin, sout, sout, node_);
-    }catch(std::exception& e){
+	}
+	catch(libbitcoin::explorer::explorer_exception ex){
+		sout << ex;
+	}
+	catch(std::exception& e){
         sout<<"{\"error\":\""<<e.what()<<"\"}";
     }catch(...){
         log::error(LOG_HTTP)<<sout.rdbuf();

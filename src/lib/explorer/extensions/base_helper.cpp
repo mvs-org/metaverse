@@ -439,9 +439,9 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 }
 void base_transfer_helper::sum_payment_amount(){
 	if(receiver_list_.empty())
-		throw address_to_exception{ "empty target address" };
+		throw toaddress_empty_exception{ "empty target address" };
     if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
-		throw fee_range_exception{"fee must in [10000, 10000000000]"};
+		throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -737,7 +737,7 @@ void base_transfer_helper::populate_unspent_list() {
 	// get address list
 	auto pvaddr = blockchain_.get_account_addresses(name_);
 	if(!pvaddr) 
-		throw address_list_empty_exception{ "nullptr for address list" };
+		throw address_list_nullptr_exception{ "nullptr for address list" };
 
 	// get from address balances
 	for (auto& each : *pvaddr){
@@ -801,9 +801,9 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
 		//std::shared_ptr<asset_detail>
 		auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
 		if(!sh_asset)
-			throw asset_issue_exception{ symbol_ + " not found" };
+			throw asset_symbol_notfound_exception{ symbol_ + " not found" };
 		//if(sh_asset->at(0).detail.get_maximum_supply() != record.asset_amount)
-			//throw std::asset_issue_exception{symbol_ + " amount not match with maximum supply"};
+			//throw std::asset_amount_exception{symbol_ + " amount not match with maximum supply"};
 		
 		sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
 		auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
@@ -817,7 +817,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
 		return attachment(MESSAGE_TYPE, attach_version, msg);
 	}
 
-	throw attachment_value_invalid_exception{ "invalid attachment value in receiver_record" };
+	throw tx_attachment_value_exception{ "invalid attachment value in receiver_record" };
 }
 
 void base_transfer_helper::populate_tx_outputs(){
@@ -844,7 +844,7 @@ void base_transfer_helper::populate_tx_outputs(){
 		// generate script			
 		const wallet::payment_address payment(iter.target);
 		if (!payment)
-			throw address_to_exception{"invalid target address"};
+			throw toaddress_invalid_exception{"invalid target address"};
 		auto hash = payment.hash();
 		if((payment.version() == 0x7f) // test net addr
 			|| (payment.version() == 0x32)) { // main net addr
@@ -852,7 +852,7 @@ void base_transfer_helper::populate_tx_outputs(){
 		} else if(payment.version() == 0x5) { // pay to script addr
 			payment_ops = chain::operation::to_pay_script_hash_pattern(hash); // common payment script
 		} else {
-			throw address_to_exception{"unrecognized target address."};
+			throw toaddress_unrecognized_exception{"unrecognized target address."};
 		}
 		auto payment_script = chain::script{ payment_ops };
 		
@@ -1004,7 +1004,7 @@ void depositing_etp::populate_tx_outputs() {
 		// generate script			
 		const wallet::payment_address payment(iter.target);
 		if (!payment)
-			throw address_to_exception{"invalid target address"};
+			throw toaddress_invalid_exception{"invalid target address"};
 		auto hash = payment.hash();
 		if((to_ == iter.target)
 			&& (utxo_attach_type::deposit == iter.type)) {
@@ -1149,7 +1149,7 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 	// get all address of this account
 	auto pvaddr = blockchain_.get_account_addresses(name_);
 	if(!pvaddr) 
-		throw address_list_empty_exception{"nullptr for address list"};
+		throw address_list_nullptr_exception{"nullptr for address list"};
 	bc::chain::script ss;
 	bc::chain::script redeem_script;
     uint32_t hd_index;
@@ -1184,7 +1184,7 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 		#if 0
 		auto it = std::find(pvaddr->begin(), pvaddr->end(), addr_str);
 		if(it == pvaddr->end())
-			throw address_from_exception{std::string("not found address : ") + addr_str};
+			throw fromaddress_unrecognized_exception{std::string("not found address : ") + addr_str};
 		addr_prikey = it->get_prv_key(passwd_);
 		hd_index = it->get_hd_index();
 		#endif
@@ -1198,7 +1198,7 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 			}
 		}
 		if((hd_index == 0xffffffff) && addr_prikey.empty())
-			throw address_from_exception{std::string("not found address : ") + addr_str};
+			throw fromaddress_unrecognized_exception{std::string("not found address : ") + addr_str};
 		// 3. populate unlock script
 		hd_pubkeys.clear();
 		for(auto& each : multisig_pubkeys_) {
@@ -1238,10 +1238,10 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 }
 void issuing_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
-		throw address_to_exception{"empty target address"};
+		throw toaddress_empty_exception{"empty target address"};
 	//if (payment_etp_ < maximum_fee)
 	if (payment_etp_ < 1000000000) // test code 10 etp now
-		throw asset_issue_count_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+		throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
 
 	for (auto& iter : receiver_list_) {
 		payment_etp_ += iter.amount;
@@ -1260,10 +1260,10 @@ void issuing_asset::populate_change() {
 }
 void issuing_locked_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
-		throw address_to_exception{"empty target address"};
+		throw toaddress_empty_exception{"empty target address"};
 	//if (payment_etp_ < maximum_fee)
 	if (payment_etp_ < 1000000000) // test code 10 etp now
-		throw asset_issue_count_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+		throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
 
 	for (auto& iter : receiver_list_) {
 		payment_etp_ += iter.amount;
@@ -1310,7 +1310,7 @@ void issuing_locked_asset::populate_tx_outputs() {
 		// generate script			
 		const wallet::payment_address payment(iter->target);
 		if (!payment)
-			throw address_to_exception{"invalid target address"};
+			throw toaddress_invalid_exception{"invalid target address"};
 		auto hash = payment.hash();
 		if(utxo_attach_type::asset_locked_issue == iter->type) { // issue locked asset record
 			payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
@@ -1395,7 +1395,7 @@ void sending_locked_asset::populate_tx_outputs() {
 		// generate script			
 		const wallet::payment_address payment(iter->target);
 		if (!payment)
-			throw address_to_exception{"invalid target address"};
+			throw toaddress_invalid_exception{"invalid target address"};
 		auto hash = payment.hash();
 		if(utxo_attach_type::asset_locked_transfer == iter->type) {
 			payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());

@@ -40,7 +40,7 @@ console_result deposit::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
-        throw address_deposit_exception{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
 
     if (argument_.deposit != 7 && argument_.deposit != 30 
 		&& argument_.deposit != 90 && argument_.deposit != 182
@@ -51,7 +51,7 @@ console_result deposit::invoke (std::ostream& output,
 	
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
-        throw address_list_empty_exception{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     auto random = bc::pseudo_random();
     auto index = random % pvaddr->size();
@@ -84,7 +84,7 @@ console_result send::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!blockchain.is_valid_address(argument_.address))
-        throw argument_address_invalid_exception{std::string("invalid address : ") + argument_.address};
+        throw address_invalid_exception{std::string("invalid address : ") + argument_.address};
 	
 	// receiver
 	std::vector<receiver_record> receiver{
@@ -119,7 +119,7 @@ console_result sendmore::invoke (std::ostream& output,
 		record.target = item.first();
 		// address check
 		if (!blockchain.is_valid_address(record.target))
-			throw address_to_exception{std::string("invalid address!") + record.target};
+			throw toaddress_invalid_exception{std::string("invalid address!") + record.target};
 		record.symbol = "";
 		record.amount = item.second();
 		record.asset_amount = 0;
@@ -145,9 +145,9 @@ console_result sendfrom::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.from)) 
-        throw address_from_exception{"invalid from address!"};
+        throw fromaddress_invalid_exception{"invalid from address!"};
     if(!blockchain.is_valid_address(argument_.to)) 
-        throw address_to_exception{"invalid to address!"};
+        throw toaddress_invalid_exception{"invalid to address!"};
     
 	// receiver
 	std::vector<receiver_record> receiver{
@@ -198,9 +198,9 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	if(!blockchain.is_valid_address(argument_.from)) 
-		throw address_from_exception{"invalid from address!"};
+		throw fromaddress_invalid_exception{"invalid from address!"};
 	if(!blockchain.is_valid_address(argument_.to)) 
-		throw address_to_exception{"invalid to address!"};
+		throw toaddress_invalid_exception{"invalid to address!"};
 	
 	// receiver
 	std::vector<receiver_record> receiver{
@@ -230,24 +230,24 @@ console_result issue::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
 
 	if(argument_.fee < 1000000000)
-        throw std::logic_error{"issue asset fee less than 1000000000!"};
+        throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     // fail if asset is already in blockchain
     if(blockchain.is_asset_exist(argument_.symbol, false))
-        throw std::logic_error{"asset symbol is already exist in blockchain"};
+        throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
 	// local database asset check
 	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
 	if(!sh_asset)
-		throw std::logic_error{argument_.symbol + " not found"};
+		throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
-		throw std::logic_error{argument_.symbol + " has been issued"};
+		throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
 	#endif
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     // get random address    
     auto index = bc::pseudo_random() % pvaddr->size();
@@ -286,22 +286,22 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
 
 	if(argument_.fee < 1000000000)
-        throw std::logic_error{"issue asset fee less than 1000000000!"};
+        throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address parameter!"};
+        throw address_invalid_exception{"invalid address parameter!"};
     // fail if asset is already in blockchain
     if(blockchain.is_asset_exist(argument_.symbol, false))
-        throw std::logic_error{"asset symbol is already exist in blockchain"};
+        throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
 
 	// local database asset check
 	auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
 	if(!sh_asset)
-		throw std::logic_error{argument_.symbol + " not found"};
+		throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 	#if 0
 	if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
-		throw std::logic_error{argument_.symbol + " has been issued"};
+		throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
 	#endif
 
 	// receiver
@@ -363,11 +363,11 @@ console_result sendasset::invoke (std::ostream& output,
 	blockchain.uppercase_symbol(argument_.symbol);
 	
 	if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-		throw std::logic_error{"asset symbol length must be less than 64."};
+		throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 	if (!blockchain.is_valid_address(argument_.address))
-		throw std::logic_error{"invalid to address parameter!"};
+		throw address_invalid_exception{"invalid to address parameter!"};
 	if (!argument_.amount)
-		throw std::logic_error{"invalid asset amount parameter!"};
+		throw asset_amount_exception{"invalid asset amount parameter!"};
 
 	// receiver
 	std::vector<receiver_record> receiver{
@@ -399,14 +399,14 @@ console_result sendassetfrom::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
     
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     
     if (!blockchain.is_valid_address(argument_.from))
-        throw std::logic_error{"invalid from address parameter!"};
+        throw fromaddress_invalid_exception{"invalid from address parameter!"};
     if (!blockchain.is_valid_address(argument_.to))
-        throw std::logic_error{"invalid to address parameter!"};
+        throw toaddress_invalid_exception{"invalid to address parameter!"};
     if (!argument_.amount)
-        throw std::logic_error{"invalid asset amount parameter!"};
+        throw asset_amount_exception{"invalid asset amount parameter!"};
 
 	// receiver
 	std::vector<receiver_record> receiver{

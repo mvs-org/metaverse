@@ -153,7 +153,7 @@ console_result changepasswd::invoke (std::ostream& output,
 	// reencry address
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-		throw address_list_empty_exception{"empty address list"};
+		throw address_list_nullptr_exception{"empty address list"};
 	
 	std::string prv_key;
     for (auto& each : *pvaddr){
