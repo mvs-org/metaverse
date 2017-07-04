@@ -95,13 +95,11 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 //        }
         explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
         		sin, sout, sout, node_);
-	}
-	catch(libbitcoin::explorer::explorer_exception ex){
+	} catch(libbitcoin::explorer::explorer_exception ex) {
 		sout << ex;
-	}
-	catch(std::exception& e){
+	} catch(std::exception& e) {
         sout<<"{\"error\":\""<<e.what()<<"\"}";
-    }catch(...){
+    } catch(...) {
         log::error(LOG_HTTP)<<sout.rdbuf();
         sout<<"{\"error\":\"fatel error\"}";
     }
@@ -155,7 +153,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     } catch (const ServException& e) {
         out_.reset(e.httpStatus(), e.httpReason());
         out_ << e;
-    } catch (const std::exception& e) {
+    } catch (const libbitcoin::explorer::explorer_exception& e) {
+		out_ << e;
+	} catch (const std::exception& e) {
         out_<<"{\"error\":\""<<e.what()<<"\"}";
     } 
 
@@ -222,7 +222,9 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     } catch (const ServException& e) {
         out_.reset(e.httpStatus(), e.httpReason());
         out_ << e;
-    } catch (const std::exception& e) {
+    } catch (const libbitcoin::explorer::explorer_exception& e) {
+		out_ << e;
+	} catch (const std::exception& e) {
         out_<<"{\"error\":\""<<e.what()<<"\"}";
     }
 
@@ -325,7 +327,9 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
             throw std::logic_error{"Bad Request:user,password required."};
         }
 
-    }catch(std::exception& e){
+    } catch(const libbitcoin::explorer::explorer_exception& e) {
+		out_ << e;
+	} catch(std::exception& e){
         reset(data);
         StreamBuf buf{nc.send_mbuf};
         out_.rdbuf(&buf);
