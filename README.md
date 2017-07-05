@@ -1,23 +1,35 @@
-![logo](https://github.com/mvs-live/metaverse/raw/master/doc/image/logo.png)
-# [Metaverse (MVS)](http://mvs.live)
-Metaverse is a decentralised system based on the blockchain technology, 
+<div style="text-align: center">
+<img src="https://github.com/mvs-org/metaverse/raw/master/doc/image/logo.png"/>
+</div>
+Integration/staging tree
+----------------
+
+# Introduction
+Metaverse(MVS) is a decentralised system based on the blockchain technology, 
 through which, a network of smart properties , digital identities and value intermediators are established.
 
 Features:
-- Digital asset register
+- Digital asset register/transfer
 - Digital asset exchange
 - Digital identities
 - Oralce register/data-feed
 
-# MVS project
+Devlopment Path:
+![path](https://github.com/mvs-org/metaverse/raw/master/doc/image/dev-path.jpg)
+
+
+# MVS Project
 MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
-## toolchain requirements:
-- C++ compiler support C++14 (g++ 5/LLVM 8.0.0)
-- CMake 2.8
+Further read: [Developers Document](https://github.com/mvs-org/metaverse/doc)
 
 # build MVS
+## toolchain requirements:
+- C++ compiler support C++14 standard (g++ 5/LLVM 8.0.0/MSVC14)
+- CMake 2.8 or above
+
 ```bash
-mkdir build && cd build
+git clone https://github.com/mvs-org/metaverse.git
+cd metaverse && mkdir build && cd build
 cmake ..
 make -j4
 make install
@@ -66,6 +78,6 @@ sudo make install && sudo ldconfig
 ```
 
 ## MVS architecture
-![mvs-architecture](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-architecture.png)
+![mvs-architecture](https://github.com/mvs-org/metaverse/raw/master/doc/image/mvs-architecture.png)
 ## MVS libraries
-![mvs-libraries](https://github.com/mvs-live/metaverse/raw/master/doc/image/mvs-libraries.png)
+![mvs-libraries](https://github.com/mvs-org/metaverse/raw/master/doc/image/mvs-libraries.png)
