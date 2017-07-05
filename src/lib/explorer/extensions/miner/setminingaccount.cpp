@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/miner/setminingaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -52,14 +53,14 @@ console_result setminingaccount::invoke (std::ostream& output,
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if (!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
 #if 0 // no random address required for miner
     auto pubkey = pvaddr->begin()->get_pub_key();
 #else
     auto is_found = blockchain.get_account_address(auth_.name, argument_.payment_address.encoded());
     if (!is_found)
-        throw std::logic_error{"address does not match account."};
+        throw address_dismatch_account_exception{"address does not match account."};
 #endif
 
     auto ret = miner.set_miner_payment_address(argument_.payment_address);

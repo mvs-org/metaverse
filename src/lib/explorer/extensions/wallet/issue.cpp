@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/issue.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,7 +48,7 @@ console_result issue::invoke (std::ostream& output,
 {
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     std::vector<prikey_amount> pavec;
 
@@ -72,7 +73,7 @@ console_result issue::invoke (std::ostream& output,
         }
     }
     if(!pavec.size())
-        throw std::logic_error{"not enough etp in your account!"};
+        throw account_etp_lack_exception{"not enough etp in your account!"};
 
     // get random address    
     auto index = bc::pseudo_random() % pavec.size();
@@ -95,7 +96,7 @@ console_result issue::invoke (std::ostream& output,
     sout.str("");
     
     if (dispatch_command(i, wallet, sin, sout, sout, blockchain))
-        throw std::logic_error(sout.str());
+        throw command_issue_asset_exception(sout.str());
     
     output<<sout.str();
     return console_result::okay;

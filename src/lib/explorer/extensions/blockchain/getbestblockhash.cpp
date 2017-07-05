@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/blockchain/getbestblockhash.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,7 +50,7 @@ console_result getbestblockhash::invoke (std::ostream& output,
     uint64_t height = 0;
     auto& blockchain = node.chain_impl();
     if(!blockchain.get_last_height(height))
-        throw std::logic_error{"query last height failure."};
+        throw query_last_block_exception{"query last height failure."};
 
     auto&& height_str = std::to_string(height);
     const char* cmds[]{"fetch-header", "-t", height_str.c_str()};
@@ -58,7 +59,7 @@ console_result getbestblockhash::invoke (std::ostream& output,
     std::istringstream sin("");
 
     if (dispatch_command(3, cmds, sin, sout, sout))
-        throw std::logic_error(sout.str());
+        throw command_get_block_hash_exception(sout.str());
 
     pt::ptree header;
     sin.str(sout.str());

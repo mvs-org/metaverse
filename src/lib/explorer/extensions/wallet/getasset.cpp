@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -50,7 +51,7 @@ console_result getasset::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
     
     if (argument_.symbol.size() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol exceed length ?"};
+        throw asset_symbol_length_exception{"asset symbol exceed length ?"};
 
     // 1. first search asset in blockchain
     // std::shared_ptr<std::vector<asset_detail>> 
@@ -64,7 +65,7 @@ console_result getasset::invoke (std::ostream& output,
     std::for_each(sh_vec->begin(), sh_vec->end(), action);
 #endif
     //if(sh_vec.empty() && sh_local_vec.empty()) // not found any asset
-        //throw std::logic_error{"no asset found ?"};
+        //throw asset_notfound_exception{"no asset found ?"};
 #ifdef MVS_DEBUG
     const auto lc_action = [&](asset_detail& elem)
     {

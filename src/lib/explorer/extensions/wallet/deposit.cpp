@@ -47,16 +47,16 @@ console_result deposit::invoke (std::ostream& output,
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
-        throw std::logic_error{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     if (argument_.deposit != 7 && argument_.deposit != 30 
 		&& argument_.deposit != 90 && argument_.deposit != 182
 		&& argument_.deposit != 365)
     {
-        throw std::logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
+        throw set_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 
     std::list<prikey_amount> palist;
