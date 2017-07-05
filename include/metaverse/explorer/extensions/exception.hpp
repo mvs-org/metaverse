@@ -114,6 +114,8 @@ DEFINE_EXPLORER_EXCEPTION(tx_validate_exception, 5304);
 DEFINE_EXPLORER_EXCEPTION(tx_broadcast_exception, 5305);
 DEFINE_EXPLORER_EXCEPTION(tx_notfound_exception, 5306);
 DEFINE_EXPLORER_EXCEPTION(tx_attachment_value_exception, 5307);
+DEFINE_EXPLORER_EXCEPTION(tx_fetch_exception, 5308);
+
 
 DEFINE_EXPLORER_EXCEPTION(redeem_script_empty_exception, 5401);
 DEFINE_EXPLORER_EXCEPTION(redeem_script_data_exception, 5402);
