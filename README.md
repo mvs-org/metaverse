@@ -1,8 +1,6 @@
-<div style="text-align: center">
-<img src="https://github.com/mvs-org/metaverse/raw/master/doc/image/logo.png"/>
-</div>
+![logo](https://github.com/mvs-org/metaverse/raw/master/doc/image/logo.png)
 Integration/staging tree
-----------------
+=========================
 
 # Introduction
 Metaverse(MVS) is a decentralised system based on the blockchain technology, 
@@ -15,7 +13,8 @@ Features:
 - Oralce register/data-feed
 
 Devlopment Path:
-![path](https://github.com/mvs-org/metaverse/raw/master/doc/image/dev-path.jpg)
+
+![dev-path](https://github.com/mvs-org/metaverse/raw/master/doc/image/dev-path.jpg)
 
 
 # MVS Project
@@ -76,8 +75,3 @@ cd secp256k1
 make -j4
 sudo make install && sudo ldconfig
 ```
-
-## MVS architecture
-![mvs-architecture](https://github.com/mvs-org/metaverse/raw/master/doc/image/mvs-architecture.png)
-## MVS libraries
-![mvs-libraries](https://github.com/mvs-org/metaverse/raw/master/doc/image/mvs-libraries.png)
