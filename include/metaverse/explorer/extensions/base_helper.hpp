@@ -83,7 +83,7 @@ void sync_fetchbalance (wallet::payment_address& address,
 void sync_fetch_asset_balance (std::string& addr, 
 	bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
 
-void sync_fetchbalance (command& cmd, std::string& address, 
+code sync_fetchbalance (command& cmd, std::string& address, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
 class BCX_API base_transfer_helper 
 {

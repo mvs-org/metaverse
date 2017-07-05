@@ -389,11 +389,12 @@ void sync_fetchbalance (wallet::payment_address& address,
 	
 }
 
-void sync_fetchbalance (command& cmd, std::string& addr, 
+code sync_fetchbalance (command& cmd, std::string& addr, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
 {
 	using namespace bc::client;
 
+	code ec = error::success;
 	auto address = payment_address(addr);
 	const auto connection = get_connection(cmd);
 	obelisk_client client(connection);
@@ -454,11 +455,9 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 		}
 	};
 
-	auto on_error = [](const code& error)
+	auto on_error = [&ec](const code& error)
 	{
-		if(error) {
-			throw std::logic_error{error.message()};
-		}
+		ec = error;
 	};
 
 	// The v3 client API works with and normalizes either server API.
@@ -466,7 +465,7 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 	client.address_fetch_history2(on_error, on_done, address);
 	client.wait();
 
-	return ;
+	return ec;
 }
 void base_transfer_helper::sum_payment_amount(){
 	if(receiver_list_.empty())
