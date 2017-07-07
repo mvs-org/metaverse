@@ -1624,6 +1624,8 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 {	
 	//using namespace bc::wallet;
 	auto addr = bc::wallet::payment_address(address);
+	if(addr && (addr.version() == 0x05)) // for multisig address
+		return true;
 	return	(addr && ((chain_settings().use_testnet_rules && (addr.version() == 0x7f)) // test net addr
 						|| (!chain_settings().use_testnet_rules && (addr.version() == 0x32))));
 }

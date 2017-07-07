@@ -127,7 +127,7 @@ public:
 	virtual void check_tx();
 	virtual void sign_tx_inputs();
 	void send_tx();
-	void exec();
+	virtual void exec();
 	tx_type& get_transaction();
 	std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
 			
@@ -193,20 +193,18 @@ class BCX_API sending_multisig_etp : public base_transfer_helper
 public:
 	sending_multisig_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
 		std::string&& from, std::vector<receiver_record>&& receiver_list, uint64_t fee, 
-		uint8_t m, uint8_t n, std::vector<std::string>&& multisig_pubkeys):
+		account_multisig& multisig):
 		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), fee),
-		m_{m}, n_{n}, multisig_pubkeys_{multisig_pubkeys}
+		multisig_{multisig}
 		{};
 
 	~sending_multisig_etp(){};
 			
 	void populate_change() override ;
 	void sign_tx_inputs() override ;
-	void update_tx_inputs_signature() ;
+	void exec() override;
 private:
-	uint8_t m_;
-	uint8_t n_;
-	std::vector<std::string> multisig_pubkeys_;
+	account_multisig multisig_;
 };
 
 class BCX_API issuing_asset : public base_transfer_helper

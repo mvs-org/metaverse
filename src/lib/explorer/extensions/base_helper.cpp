@@ -1070,171 +1070,15 @@ void sending_multisig_etp::populate_change() {
 			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	}
 }
-#include <metaverse/bitcoin/config/base16.hpp>
+//#include <metaverse/bitcoin/config/base16.hpp>
 
 void sending_multisig_etp::sign_tx_inputs() {
     uint32_t index = 0;
-	std::vector<std::string> hd_pubkeys;
 	std::string prikey, pubkey, multisig_script;
 	
     for (auto& fromeach : from_list_){
 		// populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, fromeach.hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
-		log::trace("wdy script=") << multisig_script;
-		wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-		log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
-		// prepare sign
-		explorer::config::hashtype sign_type;
-		uint8_t hash_type = (signature_hash_algorithm)sign_type;
-		
-		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-		const ec_secret& private_key =	  config_private_key;	 
-		
-		bc::explorer::config::script config_contract(multisig_script);
-		const bc::chain::script& contract = config_contract;
-		
-		// gen sign
-		bc::endorsement endorse;
-		if (!bc::chain::script::create_endorsement(endorse, private_key,
-			contract, tx_, index, hash_type))
-		{
-			throw std::logic_error{"get_input_sign sign failure"};
-		}
-		// do script
-		bc::chain::script ss;
-		data_chunk data;
-		ss.operations.push_back({bc::chain::opcode::zero, data});
-		ss.operations.push_back({bc::chain::opcode::special, endorse});
-		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
-
-		chain::script script_encoded;
-		script_encoded.from_string(multisig_script);
-		
-		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-		
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-
-}
-
-void sending_multisig_etp::update_tx_inputs_signature() {
-	#if 0
-    uint32_t index = 0;
-	std::vector<std::string> hd_pubkeys;
-	std::string prikey, pubkey, multisig_script;
-	
-    for (auto& fromeach : from_list_){
-		// populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, fromeach.hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
-		log::trace("wdy script=") << multisig_script;
-		wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-		log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
-		// prepare sign
-		explorer::config::hashtype sign_type;
-		uint8_t hash_type = (signature_hash_algorithm)sign_type;
-		
-		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-		const ec_secret& private_key =	  config_private_key;	 
-		
-		bc::explorer::config::script config_contract(multisig_script);
-		const bc::chain::script& contract = config_contract;
-		
-		// gen sign
-		bc::endorsement endorse;
-		if (!bc::chain::script::create_endorsement(endorse, private_key,
-			contract, tx_, index, hash_type))
-		{
-			throw std::logic_error{"get_input_sign sign failure"};
-		}
-		// do script
-		bc::chain::script ss;
-		data_chunk data;
-		ss.operations.push_back({bc::chain::opcode::zero, data});
-		ss.operations.push_back({bc::chain::opcode::special, endorse});
-		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
-
-		chain::script script_encoded;
-		script_encoded.from_string(multisig_script);
-		
-		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-		
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-	#endif
-	// get all address of this account
-	auto pvaddr = blockchain_.get_account_addresses(name_);
-	if(!pvaddr) 
-		throw std::logic_error{"nullptr for address list"};
-	bc::chain::script ss;
-	bc::chain::script redeem_script;
-    uint32_t hd_index;
-
-	std::vector<std::string> hd_pubkeys;
-	std::string prikey, pubkey, multisig_script, addr_prikey;
-    uint32_t index = 0;
-	for(auto& each_input : tx_.inputs) {
-		ss = each_input.script;
-		log::trace("wdy old script=") << ss.to_string(false);
-		const auto& ops = ss.operations;
-		
-		// 1. extract address from multisig payment script
-		// zero sig1 sig2 ... encoded-multisig
-		const auto& redeem_data = ops.back().data;
-		
-		if (redeem_data.empty())
-			throw std::logic_error{"empty redeem script."};
-		
-		if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
-			throw std::logic_error{"error occured when parse redeem script data."};
-		
-		// Is the redeem script a standard pay (output) script?
-		const auto redeem_script_pattern = redeem_script.pattern();
-		if(redeem_script_pattern != script_pattern::pay_multisig)
-			throw std::logic_error{"redeem script is not pay multisig pattern."};
-		
-		const payment_address address(redeem_script, 5);
-		auto addr_str = address.encoded(); // pay address
-		
-		// 2. get address prikey/hd_index
-		#if 0
-		auto it = std::find(pvaddr->begin(), pvaddr->end(), addr_str);
-		if(it == pvaddr->end())
-			throw std::logic_error{std::string("not found address : ") + addr_str};
-		addr_prikey = it->get_prv_key(passwd_);
-		hd_index = it->get_hd_index();
-		#endif
-		addr_prikey = "";
-		hd_index = 0xffffffff;
-		for (auto& each : *pvaddr){
-			if ( addr_str == each.get_address() ) { // find address
-				addr_prikey = each.get_prv_key(passwd_);
-				hd_index = each.get_hd_index();
-				break;
-			}
-		}
-		if((hd_index == 0xffffffff) && addr_prikey.empty())
-			throw std::logic_error{std::string("not found address : ") + addr_str};
-		// 3. populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
+		multisig_script = multisig_.get_multisig_script();
 		log::trace("wdy script=") << multisig_script;
 		//wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
 		//log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
@@ -1242,7 +1086,7 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 		explorer::config::hashtype sign_type;
 		uint8_t hash_type = (signature_hash_algorithm)sign_type;
 		
-		bc::explorer::config::ec_private config_private_key(addr_prikey);
+		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
 		const ec_secret& private_key =	  config_private_key;	 
 		
 		bc::explorer::config::script config_contract(multisig_script);
@@ -1255,16 +1099,41 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 		{
 			throw std::logic_error{"get_input_sign sign failure"};
 		}
-		// insert endorse
-		auto position = ss.operations.begin();
-		ss.operations.insert(position + 1, {bc::chain::opcode::special, endorse});
+		// do script
+		bc::chain::script ss;
+		data_chunk data;
+		ss.operations.push_back({bc::chain::opcode::zero, data});
+		ss.operations.push_back({bc::chain::opcode::special, endorse});
+		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
+
+		chain::script script_encoded;
+		script_encoded.from_string(multisig_script);
+		
+		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
 		
         // set input script of this tx
-        each_input.script = ss;
-		log::trace("wdy new script=") << ss.to_string(false);
-	}
+        tx_.inputs[index].script = ss;
+        index++;
+    }
 
 }
+
+void sending_multisig_etp::exec(){	
+	// prepare 
+	sum_payment_amount();
+	populate_unspent_list();
+	// construct tx
+	populate_tx_header();
+	populate_tx_inputs();
+	populate_tx_outputs();
+	// check tx
+	check_tx();
+	// sign tx
+	sign_tx_inputs();
+	// send tx in signmultisigtx command
+	//send_tx();
+}
+
 void issuing_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
 		throw std::logic_error{"empty target address"};
