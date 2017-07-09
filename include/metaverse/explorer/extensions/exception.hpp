@@ -134,21 +134,13 @@ DEFINE_EXPLORER_EXCEPTION(locktime_over_exception, 8003);
 DEFINE_EXPLORER_EXCEPTION(locktime_invalid_exception, 8004);
 
 
-DEFINE_EXPLORER_EXCEPTION(mvscli_seed_size_exception, 9001);
-DEFINE_EXPLORER_EXCEPTION(mvscli_seed_length_exception, 9002);
-DEFINE_EXPLORER_EXCEPTION(mvscli_mnemonicwords_amount_exception, 9003);
-DEFINE_EXPLORER_EXCEPTION(mvscli_mnemonicwords_content_exception, 9004);
-DEFINE_EXPLORER_EXCEPTION(mvscli_hd_length_exception, 9005);
-DEFINE_EXPLORER_EXCEPTION(mvscli_hd_key_exception, 9006);
+DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);
+DEFINE_EXPLORER_EXCEPTION(seed_length_exception, 9002);
+DEFINE_EXPLORER_EXCEPTION(mnemonicwords_amount_exception, 9003);
+DEFINE_EXPLORER_EXCEPTION(mnemonicwords_content_exception, 9004);
+DEFINE_EXPLORER_EXCEPTION(hd_length_exception, 9005);
+DEFINE_EXPLORER_EXCEPTION(hd_key_exception, 9006);
 
-
-
-
-
-
-
-
-DEFINE_EXPLORER_EXCEPTION2(address_history_fetch_exception);
 
 } //namespace explorer
 } //namespace libbitcoin
