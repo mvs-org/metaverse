@@ -130,7 +130,9 @@ DEFINE_EXPLORER_EXCEPTION(block_height_exception, 7001);
 
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 8001);
 DEFINE_EXPLORER_EXCEPTION(format_timestamp_exception, 8002);
-DEFINE_EXPLORER_EXCEPTION(over_locktime_exception, 8003);
+DEFINE_EXPLORER_EXCEPTION(locktime_over_exception, 8003);
+DEFINE_EXPLORER_EXCEPTION(locktime_invalid_exception, 8004);
+
 
 DEFINE_EXPLORER_EXCEPTION(mvscli_seed_size_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(mvscli_seed_length_exception, 9002);

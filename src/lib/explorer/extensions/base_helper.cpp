@@ -898,7 +898,7 @@ void base_transfer_helper::populate_tx_outputs(){
 void base_transfer_helper::check_tx(){
     if (tx_.is_locktime_conflict())
     {
-        throw std::logic_error{"The specified lock time is ineffective because all sequences are set to the maximum value."};
+        throw locktime_invalid_exception{"The specified lock time is ineffective because all sequences are set to the maximum value."};
     }
 }
 
@@ -1186,7 +1186,7 @@ uint32_t issuing_locked_asset::get_lock_height(){
 	//uint64_t height = (deposit_cycle_*24)*(3600/24);
 	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
-		throw over_locktime_exception{"lock time outofbound!"};
+		throw locktime_over_exception{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
 }
 // modify lock script
@@ -1271,7 +1271,7 @@ uint32_t sending_locked_asset::get_lock_height(){
 	//uint64_t height = (deposit_cycle_*24)*(3600/24);
 	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
-		throw over_locktime_exception{"lock time outofbound!"};
+		throw locktime_over_exception{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
 }
 // modify lock script
