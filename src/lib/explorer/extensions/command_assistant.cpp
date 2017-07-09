@@ -43,14 +43,21 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
     std::istringstream sin(fromkey);
 
     const char* cmds[]{commands, "-v", "127"};
+	console_result retcode;
     if (use_testnet_rules){
-        if(dispatch_command(3, cmds, sin, sout, sout)){
-            throw command_dispatch_exception(sout.str());
-        }
+		retcode = dispatch_command(3, cmds, sin, sout, sout);
+		if (retcode) {
+			if (retcode == console_result::help)
+				throw command_help_exception(sout.str());
+			throw ec_to_xxx_impl_exception(sout.str());
+		}
     } else {
-        if(dispatch_command(1, cmds, sin, sout, sout)){
-            throw command_dispatch_exception(sout.str());
-        }
+		retcode = dispatch_command(1, cmds, sin, sout, sout);
+		if (retcode) {
+			if (retcode == console_result::help)
+				throw command_help_exception(sout.str());
+			throw ec_to_xxx_impl_exception(sout.str());
+		}
     }
 
     return sout.str();
@@ -85,9 +92,12 @@ void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"tx-decode"};
-    if (dispatch_command(1, cmds, sin, sout, sout))
-        throw command_dispatch_exception(sout.str());
-
+	console_result retcode = dispatch_command(1, cmds, sin, sout, sout);
+	if (retcode) {
+		if (retcode == console_result::help)
+			throw command_help_exception(sout.str());
+		throw command_get_tx_decode_exception(sout.str());
+	}
     tx_decode = sout.str();
 }
 
@@ -97,10 +107,13 @@ void validate_tx(const std::string& tx_set)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"validate-tx"};
-    if (dispatch_command(1, cmds, sin, sout, sout)){
-        log::debug(LOG_COMMAND)<<"validate-tx sout:"<<sout.str();
-        throw command_dispatch_exception(sout.str());
-    }
+	console_result retcode = dispatch_command(1, cmds, sin, sout, sout);
+	if (retcode) {
+		log::debug(LOG_COMMAND) << "validate-tx sout:" << sout.str();
+		if (retcode == console_result::help)
+			throw command_help_exception(sout.str());
+		throw tx_validate_exception(sout.str());
+	}
 }
 
 void send_tx(const std::string& tx_set, std::string& send_ret)
@@ -109,11 +122,13 @@ void send_tx(const std::string& tx_set, std::string& send_ret)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"send-tx"};
-    if (dispatch_command(1, cmds, sin, sout, sout)){
-        log::debug(LOG_COMMAND)<<"send-tx sout:"<<sout.str();
-        throw command_dispatch_exception(sout.str());
-    }
-
+	console_result retcode = dispatch_command(1, cmds, sin, sout, sout);
+	if (retcode) {
+		log::debug(LOG_COMMAND) << "send-tx sout:" << sout.str();
+		if (retcode == console_result::help)
+			throw command_help_exception(sout.str());
+		throw tx_send_exception(sout.str());
+	}
     send_ret = sout.str();
 }
 
@@ -124,6 +139,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 
     uint64_t remaining = total_payment_amount_;
     uint32_t from_list_index = 1;
+	console_result retcode;
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
@@ -142,9 +158,12 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(5, cmds, sin, sout, sout, node)){
-            throw command_dispatch_exception(sout.str());
-        }
+		retcode = dispatch_command(5, cmds, sin, sout, sout, node);
+		if (retcode) {
+			if (retcode == console_result::help)
+				throw command_help_exception(sout.str());
+			throw fetch_utxo_exception(sout.str());
+		}
         sin.str(sout.str());
 
         // parse json
@@ -190,15 +209,19 @@ bool utxo_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-
+	console_result retcode;
     for (auto& fromeach : from_list_){
 
         for (auto& iter : keys_inputs_[fromeach.first]){
             sout.str("");
             sin.str(iter.txhash);
 
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_dispatch_exception(sout.str());
+			retcode = dispatch_command(1, cmds, sin, sout, sout);
+			if (retcode) {
+				if (retcode == console_result::help)
+					throw command_help_exception(sout.str());
+				throw tx_fetch_exception(sout.str());
+			}
             sin.str(sout.str());
 
             ptree pt;
@@ -269,9 +292,13 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout)){
-        throw command_dispatch_exception(sout.str());
-    }
+	console_result retcode = dispatch_command(i, cmds, sin, sout, sout);
+	if (retcode) {
+		if (retcode == console_result::help) {
+			throw command_help_exception(sout.str());
+		}
+		throw command_get_tx_encode_exception(sout.str());
+	}
 
     log::debug(LOG_COMMAND)<<"tx-encode sout:"<<sout.str();
     tx_encode = sout.str();
@@ -411,8 +438,12 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_dispatch_exception(sout.str());
+			console_result retcode = dispatch_command(4, cmds, sin, sout, sout));
+			if (retcode) {
+				if (retcode == console_result::help)
+					throw command_help_exception(sout.str());
+				throw command_get_input_set_exception(sout.str());
+			}
         }
     }
 
@@ -532,6 +563,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
     
     std::string&& amount = std::to_string(total_payment_amount_);
     bool found = false;
+	console_result retcode;
     // 1. find one address whose all utxo balance is bigger than total_payment_amount_
     for (auto& fromeach : from_list_){
 
@@ -544,9 +576,12 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(3, cmds, sin, sout, sout, node)){
-            throw command_dispatch_exception(sout.str());
-        }
+		retcode = dispatch_command(3, cmds, sin, sout, sout, node);
+		if (retcode) {
+			if (retcode == console_result::help)
+				throw command_help_exception(sout.str());
+			throw fetch_utxo_exception(sout.str());
+		}
         sin.str(sout.str());
 
         // parse json
@@ -590,6 +625,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
     found = false;
     mychange_.first = "";
     mychange_.second = 0;
+	console_result retcode;
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
@@ -599,9 +635,13 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(3, cmds, sin, sout, sout, node)){
-            throw command_dispatch_exception(sout.str());
-        }
+		retcode = dispatch_command(3, cmds, sin, sout, sout, node);
+		if (retcode) {
+			if (retcode == console_result::help)
+				throw command_help_exception(sout.str());
+			throw fetch_utxo_exception(sout.str());
+		}
+
         sin.str(sout.str());
 
         // parse json
@@ -651,15 +691,18 @@ bool utxo_attach_issue_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-
+	console_result retcode;
     for (auto& fromeach : from_list_){
 
         for (auto& iter : keys_inputs_[fromeach.first]){
             sout.str("");
             sin.str(iter.txhash);
-
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_dispatch_exception(sout.str());
+			retcode = dispatch_command(1, cmds, sin, sout, sout);
+			if (retcode) {
+				if (retcode == console_result::help)
+					throw command_help_exception(sout.str());
+				throw tx_fetch_exception(sout.str());
+			}
             sin.str(sout.str());
 
             ptree pt;
@@ -712,8 +755,12 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server:
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, node))
-        throw command_dispatch_exception(sout.str());
+	console_result retcode = dispatch_command(i, cmds, sin, sout, sout, node);
+	if (retcode) {
+		if (retcode == console_result::help)
+			throw command_help_exception(sout.str());
+		throw command_get_tx_encode_exception(sout.str());
+	}
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();

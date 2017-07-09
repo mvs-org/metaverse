@@ -54,15 +54,17 @@ DEFINE_EXPLORER_EXCEPTION(argument_size_invalid_exception, 2002);
 DEFINE_EXPLORER_EXCEPTION(argument_legality_exception, 2003);
 DEFINE_EXPLORER_EXCEPTION(argument_dismatch_exception, 2004);
 
-DEFINE_EXPLORER_EXCEPTION(command_dispatch_exception, 2101);
+DEFINE_EXPLORER_EXCEPTION(command_help_exception, 2101);
 DEFINE_EXPLORER_EXCEPTION(command_issue_asset_exception, 2102);
 DEFINE_EXPLORER_EXCEPTION(command_fetch_utxo_exception, 2103);
 DEFINE_EXPLORER_EXCEPTION(command_fetch_tx_exception, 2104);
 DEFINE_EXPLORER_EXCEPTION(command_get_input_sign_exception, 2105);
 DEFINE_EXPLORER_EXCEPTION(command_get_input_set_exception, 2106);
 DEFINE_EXPLORER_EXCEPTION(command_get_tx_encode_exception, 2107);
-DEFINE_EXPLORER_EXCEPTION(command_get_block_hash_exception, 2108);
-DEFINE_EXPLORER_EXCEPTION(command_get_block_header_exception, 2109);
+DEFINE_EXPLORER_EXCEPTION(command_get_tx_decode_exception, 2108);
+DEFINE_EXPLORER_EXCEPTION(command_get_block_hash_exception, 2109);
+DEFINE_EXPLORER_EXCEPTION(command_get_block_header_exception, 2110);
+
 
 DEFINE_EXPLORER_EXCEPTION(account_existed_exception, 3001);
 DEFINE_EXPLORER_EXCEPTION(account_authority_exception, 3002);
@@ -115,6 +117,7 @@ DEFINE_EXPLORER_EXCEPTION(tx_broadcast_exception, 5305);
 DEFINE_EXPLORER_EXCEPTION(tx_notfound_exception, 5306);
 DEFINE_EXPLORER_EXCEPTION(tx_attachment_value_exception, 5307);
 DEFINE_EXPLORER_EXCEPTION(tx_fetch_exception, 5308);
+DEFINE_EXPLORER_EXCEPTION(tx_send_exception, 5309);
 
 
 DEFINE_EXPLORER_EXCEPTION(redeem_script_empty_exception, 5401);
@@ -125,6 +128,8 @@ DEFINE_EXPLORER_EXCEPTION(query_block_exception, 6101);
 DEFINE_EXPLORER_EXCEPTION(query_last_block_exception, 6102);
 DEFINE_EXPLORER_EXCEPTION(get_account_address_exception, 6103);
 DEFINE_EXPLORER_EXCEPTION(set_deposit_period_exception, 6104);
+DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_impl_exception, 6105);
+DEFINE_EXPLORER_EXCEPTION(fetch_utxo_exception, 6106);
 
 DEFINE_EXPLORER_EXCEPTION(block_height_exception, 7001);
 

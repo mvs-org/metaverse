@@ -471,7 +471,7 @@ code sync_fetchbalance (command& cmd, std::string& addr,
 }
 void base_transfer_helper::sum_payment_amount(){
 	if(receiver_list_.empty())
-		throw toaddress_empty_exceptionr{"empty target address"};
+		throw toaddress_empty_exception{"empty target address"};
     if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
         throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
 
