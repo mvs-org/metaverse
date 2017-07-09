@@ -438,7 +438,7 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			console_result retcode = dispatch_command(4, cmds, sin, sout, sout));
+			console_result retcode = dispatch_command(4, cmds, sin, sout, sout);
 			if (retcode) {
 				if (retcode == console_result::help)
 					throw command_help_exception(sout.str());
@@ -625,7 +625,6 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
     found = false;
     mychange_.first = "";
     mychange_.second = 0;
-	console_result retcode;
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
@@ -958,33 +957,12 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::ostringstream sout("");
     std::istringstream sin;
 	console_result retcode = dispatch_command(3, cmds, sin, sout, sout, node);
-	switch (retcode)
-	{
-	case okay:
-		// parse json to get feild code
-		ptree pt;
-		read_json(sin, pt);
-		if ("1000" != pt.get<std::string>("code"))
-		{
-
-		}
-		
-		//auto points = pt.get_child("points");
-		break;
-	case invalid:
-		throw invalid_exception(sout.str());
-	case failure:
-	default:
-		throw failure_exception(sout.str());
+	if (retcode) {
+		if (retcode == console_result::help)
+			throw command_help_exception(sout.str());
+		throw fetch_utxo_exception(sout.str());
 	}
-	if (retcode == okay)
-	{
 
-	}
-    if (dispatch_command(3, cmds, sin, sout, sout, node))
-	{
-        throw command_fetch_utxo_exception(sout.str());
-    }
     sin.str(sout.str());
 
     // parse json
