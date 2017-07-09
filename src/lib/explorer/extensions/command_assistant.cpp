@@ -910,7 +910,32 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     std::ostringstream sout("");
     std::istringstream sin;
-    if (dispatch_command(3, cmds, sin, sout, sout, node)){
+	console_result retcode = dispatch_command(3, cmds, sin, sout, sout, node);
+	switch (retcode)
+	{
+	case okay:
+		// parse json to get feild code
+		ptree pt;
+		read_json(sin, pt);
+		if ("1000" != pt.get<std::string>("code"))
+		{
+
+		}
+		
+		//auto points = pt.get_child("points");
+		break;
+	case invalid:
+		throw invalid_exception(sout.str());
+	case failure:
+	default:
+		throw failure_exception(sout.str());
+	}
+	if (retcode == okay)
+	{
+
+	}
+    if (dispatch_command(3, cmds, sin, sout, sout, node))
+	{
         throw command_fetch_utxo_exception(sout.str());
     }
     sin.str(sout.str());

@@ -121,16 +121,36 @@ bool account_address_database::close()
 
 // ----------------------------------------------------------------------------
 
-void account_address_database::store(const short_hash& key, const account_address& account_address)
+void account_address_database::store(const short_hash& key, const account_address& address)
 {
-	auto write = [&account_address](memory_ptr data)
-	{
-		auto serial = make_serializer(REMAP_ADDRESS(data));
-		serial.write_data(account_address.to_data());
-	};
-    rows_multimap_.add_row(key, write);
+	// find the target asset if exist
+	auto address_vec = get(key);
+	auto pos = std::find_if(address_vec.begin(), address_vec.end(), [&](const account_address& elem){
+			return (elem.get_address() == address.get_address());
+			});
+	
+	if (pos == address_vec.end()) { // new item
+		// actually store 
+		auto write = [&address](memory_ptr data)
+		{
+			auto serial = make_serializer(REMAP_ADDRESS(data));
+			serial.write_data(address.to_data());
+		};
+		rows_multimap_.add_row(key, write);
+	} else { // delete all and recreate all
+		*pos = address;
+		for(auto& each : address_vec)
+			delete_last_row(key);
+		for(auto& each : address_vec) {
+			auto each_write = [&each](memory_ptr data)
+			{
+				auto serial = make_serializer(REMAP_ADDRESS(data));
+				serial.write_data(each.to_data());
+			};
+			rows_multimap_.add_row(key, each_write);
+		}
+	}
 }
-
 void account_address_database::delete_last_row(const short_hash& key)
 {
     rows_multimap_.delete_last_row(key);

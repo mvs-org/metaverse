@@ -175,7 +175,13 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<submitwork>());
     func(make_shared<setminingaccount>());
     func(make_shared<changepasswd>());
+    func(make_shared<getnewmultisig>());
+    func(make_shared<listmultisig>());
+    func(make_shared<deletemultisig>());
+    func(make_shared<sendfrommultisig>());
+	func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
+
 
 }
 
@@ -309,6 +315,16 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<setminingaccount>();
     if (symbol == changepasswd::symbol())
         return make_shared<changepasswd>();
+    if (symbol == getnewmultisig::symbol())
+        return make_shared<getnewmultisig>();
+    if (symbol == listmultisig::symbol())
+        return make_shared<listmultisig>();
+    if (symbol == deletemultisig::symbol())
+        return make_shared<deletemultisig>();
+    if (symbol == sendfrommultisig::symbol())
+        return make_shared<sendfrommultisig>();
+    if (symbol == signmultisigtx::symbol())
+        return make_shared<signmultisigtx>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
     if (symbol == sendassetfrom::symbol())

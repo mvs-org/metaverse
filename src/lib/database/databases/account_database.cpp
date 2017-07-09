@@ -63,18 +63,6 @@ void account_database::set_admin(const std::string& name, const std::string& pas
 void account_database::store(const hash_digest& hash, const account account)
 {
 	// account exist -- remove old value --> store new value
-	#if 0
-	auto record = get(hash);
-	if( nullptr != record) {
-		const auto memory = REMAP_ADDRESS(record);
-		auto deserial = make_deserializer_unsafe(memory);
-		auto acc = account::factory_from_data(deserial);
-		if(acc==account) { // remove the old record if find
-			remove(hash);
-			//sync();
-		}
-	}
-	#endif
 	const auto key = hash;
 	const auto acc_size = account.serialized_size();
 
@@ -86,21 +74,35 @@ void account_database::store(const hash_digest& hash, const account account)
 		auto serial = make_serializer(REMAP_ADDRESS(data));
 		serial.write_data(account.to_data());
 	};
-	//get_lookup_map().store(key, write, value_size);
-	auto record = get(hash);
-	// record exist just modify its data content
-	if( nullptr != record) {
-		const auto memory = REMAP_ADDRESS(record);
-		auto deserial = make_deserializer_unsafe(memory);
-		auto acc = account::factory_from_data(deserial);
-		if(acc==account) { // remove the old record if find
-			lookup_map_.restore(key, write, value_size);
-		} else {
-			log::debug("account_database::store")<<"account not equal, nothing to do!";
-		}
-	} else {
-		// new record Write block data.
+
+	auto account_vec = get_accounts();
+	auto pos = std::find_if(account_vec->begin(), account_vec->end(), [&](const bc::chain::account& elem){
+			return (elem == account);
+			});
+	
+	if (pos == account_vec->end()) { // new item
+		// actually store asset
 		lookup_map_.store(key, write, value_size);
+	} else { // delete all and recreate all
+		*pos = account;
+		for(auto& each : *account_vec) {
+			const auto each_hash = get_hash(each.get_name());
+			remove(each_hash);
+		}
+		for(auto& each : *account_vec) {
+			const auto each_hash = get_hash(each.get_name());
+			
+			const auto size = each.serialized_size();
+			
+			BITCOIN_ASSERT(size <= max_size_t);
+			const auto each_size = static_cast<size_t>(size);
+			auto each_write = [&each](memory_ptr data)
+			{
+				auto serial = make_serializer(REMAP_ADDRESS(data));
+				serial.write_data(each.to_data());
+			};
+			lookup_map_.store(each_hash, each_write, each_size);
+		}
 	}
 }
 //memory_ptr base_database::get(const hash_digest& hash) const
