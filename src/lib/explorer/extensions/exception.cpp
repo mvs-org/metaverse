@@ -33,18 +33,24 @@ console_result capture_excode(std::stringstream& sstream, std::pair<uint32_t, st
 	sstream.str(""); // clear
 	// parse json
 	using namespace boost::property_tree;
-	ptree pt;
-	read_json(sin, pt);
+	try 
+	{
+		ptree pt;
+		read_json(sin, pt);
 
-	std::string code = pt.get<std::string>("code");
-	if (code == "")
+		std::string code = pt.get<std::string>("code");
+		if (code == "")
+			return console_result::failure;
+		std::string msg = pt.get<std::string>("message");
+		std::stringstream ss;
+		ss << code, ss >> ex_pair.first;
+		ex_pair.second = msg;
+		return console_result::okay;
+	}
+	catch (...)
+	{
 		return console_result::failure;
-	std::string msg = pt.get<std::string>("message");
-
-	std::stringstream ss;
-	ss << code, ss >> ex_pair.first;
-	ex_pair.second = msg;
-	return console_result::okay;
+	}
 }
 
 } //namespace explorer
