@@ -58,7 +58,7 @@ console_result getbestblockheader::invoke (std::ostream& output,
     std::istringstream sin("");
 
 	if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-		throw get_block_header_get_exception(sout.str());
+		throw block_header_get_exception(sout.str());
 	}
 	std::pair<uint32_t, std::string> ex_pair;
 	std::stringstream ex_stream;

@@ -1865,7 +1865,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::ostringstream sout("");
     std::istringstream sin;
 
-	if (dispatch_command(3, cmds, sin, sout, sout, node) != console::okay) {
+	if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
 		throw fetch_utxo_exception(sout.str());
 	}
 	std::pair<uint32_t, std::string> ex_pair;
