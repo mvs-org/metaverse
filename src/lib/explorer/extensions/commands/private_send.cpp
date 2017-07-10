@@ -233,17 +233,17 @@ console_result sendfrommultisig::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
 	auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	if(!blockchain.is_valid_address(argument_.from)) 
-		throw std::logic_error{"invalid from address!"};
+		throw fromaddress_invalid_exception{"invalid from address!"};
 	
 	auto addr = bc::wallet::payment_address(argument_.from);
 	if(addr.version() != 0x05) // for multisig address
-		throw std::logic_error{"from address is not script address."};
+		throw fromaddress_invalid_exception{"from address is not script address."};
 	if(!blockchain.is_valid_address(argument_.to)) 
-		throw std::logic_error{"invalid to address!"};
+		throw toaddress_invalid_exception{"invalid to address!"};
 	
 	account_multisig acc_multisig;
 	if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
-		throw std::logic_error{"from address multisig record not found."};
+		throw multisig_notfound_exception{"from address multisig record not found."};
 	// receiver
 	std::vector<receiver_record> receiver{
 		{argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
@@ -292,7 +292,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
 	// get all address of this account
 	auto pvaddr = blockchain.get_account_addresses(auth_.name);
 	if(!pvaddr) 
-		throw std::logic_error{"empty address list for this account."};
+		throw address_list_empty_exception{"empty address list for this account."};
 	
 	bc::chain::script ss;
 	bc::chain::script redeem_script;
@@ -311,15 +311,15 @@ console_result signmultisigtx::invoke (std::ostream& output,
 		const auto& redeem_data = ops.back().data;
 		
 		if (redeem_data.empty())
-			throw std::logic_error{"empty redeem script."};
+			throw redeem_script_empty_exception{"empty redeem script."};
 		
 		if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
-			throw std::logic_error{"error occured when parse redeem script data."};
+			throw redeem_script_data_exception{"error occured when parse redeem script data."};
 		
 		// Is the redeem script a standard pay (output) script?
 		const auto redeem_script_pattern = redeem_script.pattern();
 		if(redeem_script_pattern != script_pattern::pay_multisig)
-			throw std::logic_error{"redeem script is not pay multisig pattern."};
+			throw redeem_script_pattern_exception{"redeem script is not pay multisig pattern."};
 		
 		const payment_address address(redeem_script, 5);
 		auto addr_str = address.encoded(); // pay address
@@ -327,7 +327,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
 		// 2. get address prikey
 		account_multisig acc_multisig;
 		if(!(acc->get_multisig_by_address(acc_multisig, addr_str)))
-			throw std::logic_error{addr_str + " multisig record not found."};
+			throw multisig_notfound_exception{addr_str + " multisig record not found."};
 		
 		if(ops.size() >= acc_multisig.get_m() + 2) { // signed , nothing to do (2 == zero encoded-script)
 			index++;
@@ -342,7 +342,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
 			}
 		}
 		if(addr_prikey.empty())
-			throw std::logic_error{ addr_str + "private key not found."};
+			throw prikey_notfound_exception{ addr_str + "private key not found."};
 		// 3. populate unlock script
 		multisig_script = acc_multisig.get_multisig_script();
 		log::trace("wdy script=") << multisig_script;
@@ -363,7 +363,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
 		if (!bc::chain::script::create_endorsement(endorse, private_key,
 			contract, tx_, index, hash_type))
 		{
-			throw std::logic_error{"get_input_sign sign failure"};
+			throw get_input_sign_exception{"get_input_sign sign failure"};
 		}
 		// insert endorse before multisig script
 		auto position = ss.operations.end();
@@ -415,9 +415,9 @@ console_result signmultisigtx::invoke (std::ostream& output,
 	}
 	if(argument_.send_flag){		
 		if(blockchain.validate_transaction(tx_))
-				throw std::logic_error{std::string("validate transaction failure")};
+				throw tx_validate_exception{std::string("validate transaction failure")};
 		if(blockchain.broadcast_transaction(tx_)) 
-				throw std::logic_error{std::string("broadcast transaction failure")};
+				throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 	}
 	return console_result::okay;
 }

@@ -51,12 +51,10 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 
 console_result capture_excode(std::stringstream&, std::pair<uint32_t, std::string>&);
 
-
 DEFINE_EXPLORER_EXCEPTION(argument_exceed_limit_exception, 2001);
 DEFINE_EXPLORER_EXCEPTION(argument_size_invalid_exception, 2002);
 DEFINE_EXPLORER_EXCEPTION(argument_legality_exception, 2003);
 DEFINE_EXPLORER_EXCEPTION(argument_dismatch_exception, 2004);
-
 
 DEFINE_EXPLORER_EXCEPTION(account_existed_exception, 3001);
 DEFINE_EXPLORER_EXCEPTION(account_authority_exception, 3002);
@@ -107,6 +105,17 @@ DEFINE_EXPLORER_EXCEPTION(block_height_exception, 5103);
 DEFINE_EXPLORER_EXCEPTION(block_hash_get_exception, 5104);
 DEFINE_EXPLORER_EXCEPTION(block_header_get_exception, 5105);
 
+DEFINE_EXPLORER_EXCEPTION(multisig_cosigne_exception, 5201);
+DEFINE_EXPLORER_EXCEPTION(multisig_exist_exception, 5202);
+DEFINE_EXPLORER_EXCEPTION(multisig_notfound_exception, 5203);
+DEFINE_EXPLORER_EXCEPTION(multisig_script_exception, 5204);
+DEFINE_EXPLORER_EXCEPTION(multisig_index_exception, 5205);
+DEFINE_EXPLORER_EXCEPTION(signature_amount_exception, 5220);
+DEFINE_EXPLORER_EXCEPTION(pubkey_amount_exception, 5230);
+DEFINE_EXPLORER_EXCEPTION(pubkey_dismatch_exception, 5231);
+DEFINE_EXPLORER_EXCEPTION(prikey_notfound_exception, 5232);
+
+
 DEFINE_EXPLORER_EXCEPTION(tx_io_exception, 5301);
 DEFINE_EXPLORER_EXCEPTION(tx_source_exception, 5302);
 DEFINE_EXPLORER_EXCEPTION(tx_sign_exception, 5303);
@@ -123,24 +132,19 @@ DEFINE_EXPLORER_EXCEPTION(redeem_script_empty_exception, 5401);
 DEFINE_EXPLORER_EXCEPTION(redeem_script_data_exception, 5402);
 DEFINE_EXPLORER_EXCEPTION(redeem_script_pattern_exception, 5403);
 
+
 DEFINE_EXPLORER_EXCEPTION(set_deposit_period_exception, 6001);
-DEFINE_EXPLORER_EXCEPTION(fetch_utxo_exception, 6003);
-DEFINE_EXPLORER_EXCEPTION(get_input_sign_exception, 6004);
-DEFINE_EXPLORER_EXCEPTION(get_input_set_exception, 6005);
-DEFINE_EXPLORER_EXCEPTION(lack_balance_exception, 6006);
-DEFINE_EXPLORER_EXCEPTION(lack_account_etp_exception, 6007);
-DEFINE_EXPLORER_EXCEPTION(lack_utxo_etp_exception, 6008);
-DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_exception, 6002);
-DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6002);
-DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6002);
-
-DEFINE_EXPLORER_EXCEPTION(mnemonic_new_exception, 6002);
-
-DEFINE_EXPLORER_EXCEPTION(mnemonic_to_seed_exception, 6002);
-DEFINE_EXPLORER_EXCEPTION(hd_new_exception, 6002);
-DEFINE_EXPLORER_EXCEPTION(hd_private_new_exception, 6002);
-DEFINE_EXPLORER_EXCEPTION(hd_to_ec_exception, 6002);
-
+DEFINE_EXPLORER_EXCEPTION(fetch_utxo_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(get_input_sign_exception, 6003);
+DEFINE_EXPLORER_EXCEPTION(get_input_set_exception, 6004);
+DEFINE_EXPLORER_EXCEPTION(lack_balance_exception, 6005);
+DEFINE_EXPLORER_EXCEPTION(lack_account_etp_exception, 6006);
+DEFINE_EXPLORER_EXCEPTION(lack_utxo_etp_exception, 6007);
+DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_exception, 6008);
+DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6009);
+DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6010);
+DEFINE_EXPLORER_EXCEPTION(mnemonic_new_exception, 6011);
+DEFINE_EXPLORER_EXCEPTION(mnemonic_to_seed_exception, 6012);
 
 
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 8001);
@@ -153,9 +157,11 @@ DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_length_exception, 9002);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_amount_exception, 9003);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_content_exception, 9004);
-DEFINE_EXPLORER_EXCEPTION(hd_length_exception, 9005);
-DEFINE_EXPLORER_EXCEPTION(hd_key_exception, 9006);
-
+DEFINE_EXPLORER_EXCEPTION(hd_length_exception, 9101);
+DEFINE_EXPLORER_EXCEPTION(hd_key_exception, 9102);
+DEFINE_EXPLORER_EXCEPTION(hd_new_exception, 9103);
+DEFINE_EXPLORER_EXCEPTION(hd_private_new_exception, 9104);
+DEFINE_EXPLORER_EXCEPTION(hd_to_ec_exception, 9105);
 
 } //namespace explorer
 } //namespace libbitcoin
