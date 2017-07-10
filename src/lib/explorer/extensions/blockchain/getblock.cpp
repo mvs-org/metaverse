@@ -68,7 +68,7 @@ console_result getblock::invoke (std::ostream& output,
 
     auto result = p.get_future().get();
     if(result){
-            throw query_block_exception{result.message()};
+            throw block_height_get_exception{result.message()};
     }
     return console_result::okay;
 }

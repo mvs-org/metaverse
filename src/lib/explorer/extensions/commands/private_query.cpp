@@ -68,7 +68,7 @@ console_result getpublickey::invoke (std::ostream& output,
 		}
     }
 
-	if(!found) throw get_account_address_exception{sout.str()};
+	if(!found) throw account_address_get_exception{sout.str()};
 	
     pt::ptree root;
     root.put("public-key", sout.str());

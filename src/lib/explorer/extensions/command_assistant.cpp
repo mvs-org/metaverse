@@ -47,7 +47,7 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
 	std::stringstream ex_stream;
     if (use_testnet_rules){
 		if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-			throw ec_to_xxx_impl_exception(sout.str());
+			throw ec_to_xxx_exception(sout.str());
 		}
 		ex_stream.str(sout.str());
 		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
@@ -55,7 +55,7 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
 		}
     } else {
 		if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-			throw ec_to_xxx_impl_exception(sout.str());
+			throw ec_to_xxx_exception(sout.str());
 		}
 		ex_stream.str(sout.str());
 		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
@@ -96,7 +96,7 @@ void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
 
     const char* cmds[]{"tx-decode"};
 	if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-		throw command_get_tx_decode_exception(sout.str());
+		throw tx_decode_get_exception(sout.str());
 	}
 	std::pair<uint32_t, std::string> ex_pair;
 	std::stringstream ex_stream;
@@ -312,7 +312,7 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
     std::ostringstream sout;
     std::istringstream sin;
 	if (dispatch_command(i, cmds, sin, sout, sout) != console_result::okay) {
-		throw command_get_tx_encode_exception(sout.str());
+		throw tx_encode_get_exception(sout.str());
 	}
 	std::pair<uint32_t, std::string> ex_pair;
 	std::stringstream ex_stream;
@@ -461,7 +461,7 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
 			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw command_get_input_set_exception(sout.str());
+				throw get_input_set_exception(sout.str());
 			}
 			std::stringstream ex_stream;
 			ex_stream.str(sout.str());
@@ -509,7 +509,7 @@ void utxo_helper::group_utxo()
 {
     auto balance = get_my_balance();
     if (balance < total_payment_amount_)
-        throw balance_lack_exception{"no enough balance"};
+        throw lack_balance_exception{"no enough balance"};
 
     // some utxo can pay
     auto pos = std::find_if(from_list_.begin(), from_list_.end(), [this](const prikey_amount& i){
@@ -785,7 +785,7 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server:
     std::ostringstream sout;
     std::istringstream sin;
 	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw command_get_tx_encode_exception(sout.str());
+		throw tx_encode_get_exception(sout.str());
 	}
 	std::pair<uint32_t, std::string> ex_pair;
 	std::stringstream ex_stream;
@@ -804,6 +804,7 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
     std::istringstream sin;
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             sin.str(tx_encode);
@@ -811,8 +812,14 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
 
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw command_get_input_sign_exception(sout.str());
+			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_sign_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -825,6 +832,7 @@ void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::
     std::istringstream sin;
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -836,8 +844,14 @@ void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_get_input_set_exception(sout.str());
+			if (dispatch_command(4, cmds, sin, sout, sout)) {
+				throw get_input_set_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
         }
     }
 
@@ -858,7 +872,7 @@ bool utxo_attach_issue_helper::group_utxo()
     bool ret = false;
     auto balance = get_my_balance();
     if (balance < total_payment_amount_)
-        throw balance_lack_exception{"Account don't have enough balances"};
+        throw lack_balance_exception{"Account don't have enough balances"};
 
     // some utxo can pay
     auto pos = std::find_if(from_list_.begin(), from_list_.end(), [this](const prikey_amount& i){
@@ -934,13 +948,13 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::server::server_node& node, st
 
     // clean from_list_ by some algorithm
     if(!utxo.group_utxo())
-        throw account_etp_lack_exception{"not enough etp in account addresses"};
+        throw lack_account_etp_exception{"not enough etp in account addresses"};
         //return false; // if not enough etp to pay
 
     // get utxo
     std::string change{""};
     if (!utxo.fetch_utxo(change, node))
-        throw utxo_etp_lack_exception{"not enough etp in utxo of some address"};
+        throw lack_utxo_etp_exception{"not enough etp in utxo of some address"};
         //return false;
 
     // load pre-transaction
@@ -1068,6 +1082,7 @@ bool utxo_attach_send_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
+	std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : etp_ls_){
 
@@ -1075,8 +1090,14 @@ bool utxo_attach_send_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_fetch_tx_exception(sout.str());
+			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+				throw tx_fetch_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             sin.str(sout.str());
 
             ptree pt;
@@ -1105,9 +1126,14 @@ bool utxo_attach_send_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_fetch_tx_exception(sout.str());
-            sin.str(sout.str());
+			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+				throw tx_fetch_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
 
             ptree pt;
             read_json(sin, pt);
@@ -1188,8 +1214,15 @@ void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::server::
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, node))
-        throw command_get_tx_encode_exception(sout.str());
+	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+		throw tx_encode_get_exception(sout.str());
+	}
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1203,6 +1236,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
     const char* bank_cmds[1024]{0x00};
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : etp_ls_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             if(!iter.output.as_input_sign.empty())  // only assign once
@@ -1217,8 +1251,14 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             bank_cmds[i] = ((tx_encode_index + fromeach.first + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"etp input-sign="<<tx_encode_index<<" "<<fromeach.first<<" "<<iter.output.script;
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw command_get_input_sign_exception(sout.str());
+			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_sign_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1238,8 +1278,14 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.key.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach.key<<" "<<iter.output.script;
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw command_get_input_sign_exception(sout.str());
+			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_sign_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1253,6 +1299,7 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
     const char* bank_cmds[1024]{0x00};
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : etp_ls_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -1271,9 +1318,14 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_get_input_set_exception(sout.str());
-            
+			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_set_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
         }
     }
     
@@ -1295,8 +1347,14 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_get_input_set_exception(sout.str());
+			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_set_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
         }
     }
 
@@ -1429,12 +1487,12 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::server::server_node& node, std
 {    
     // clean from_list_ by some algorithm
     if(!utxo.group_utxo())
-        throw account_etp_lack_exception{"not enough etp in account addresses"};
+        throw lack_account_etp_exception{"not enough etp in account addresses"};
         //return false; // if not enough etp to pay
         
     // get utxo
     if (!utxo.fetch_utxo(node))
-        throw utxo_etp_lack_exception{"not enough etp in utxo of some address"};
+        throw lack_utxo_etp_exception{"not enough etp in utxo of some address"};
         //return false;
 
     // load pre-transaction
@@ -1473,6 +1531,8 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
     using namespace boost::property_tree;
     std::string change;
     std::string&& amount = std::to_string(total_payment_amount_);
+	std::pair<uint32_t, std::string> ex_pair;
+
     // find address whose all utxo balance is bigger than total_payment_amount_
     for (auto& fromeach : from_list_){
 
@@ -1482,9 +1542,15 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
 		const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
         std::ostringstream sout("");
         std::istringstream sin;
-        if (dispatch_command(5, cmds, sin, sout, sout, node)){
-            throw command_fetch_utxo_exception(sout.str());
-        }
+		if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
+			throw fetch_utxo_exception(sout.str());
+		}
+
+		std::stringstream ex_stream;
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
         sin.str(sout.str());
 
         // parse json
@@ -1532,6 +1598,7 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
+	std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : from_list_){
 
@@ -1539,8 +1606,14 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_fetch_tx_exception(sout.str());
+			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+				throw tx_fetch_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             sin.str(sout.str());
 
             ptree pt;
@@ -1610,8 +1683,15 @@ void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::ser
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, node))
-        throw command_get_tx_encode_exception(sout.str());
+	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+		throw tx_encode_get_exception(sout.str());
+	}
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1623,6 +1703,7 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
     std::istringstream sin;
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             sin.str(tx_encode);
@@ -1630,8 +1711,14 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
 
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw command_get_input_sign_exception(sout.str());
+			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_sign_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1644,6 +1731,7 @@ void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, s
     std::istringstream sin;
 
     int i = 0;
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -1655,8 +1743,14 @@ void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, s
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_get_input_set_exception(sout.str());
+			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_set_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
         }
     }
 
@@ -1676,7 +1770,7 @@ void utxo_attach_issuefrom_helper::group_utxo()
 {
     auto balance = get_my_balance();
     if (balance < total_payment_amount_)
-        throw balance_lack_exception{"Account don't have enough balances"};
+        throw lack_balance_exception{"Account don't have enough balances"};
 }
 
 void utxo_attach_issuefrom_helper::get_utxo_option(utxo_attach_info& info)
@@ -1723,7 +1817,7 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::server::server_node& node
 
     // get utxo
     if (!utxo.fetch_utxo(node))
-        throw utxo_etp_lack_exception{"not enough etp in utxo of some address"};
+        throw lack_utxo_etp_exception{"not enough etp in utxo of some address"};
 
     // load pre-transaction
     utxo.fetch_tx();
@@ -1770,9 +1864,16 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     std::ostringstream sout("");
     std::istringstream sin;
-    if (dispatch_command(3, cmds, sin, sout, sout, node)){
-        throw command_fetch_utxo_exception(sout.str());
-    }
+
+	if (dispatch_command(3, cmds, sin, sout, sout, node) != console::okay) {
+		throw fetch_utxo_exception(sout.str());
+	}
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
     sin.str(sout.str());
 
     // parse json
@@ -1853,15 +1954,22 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-    
+	std::pair<uint32_t, std::string> ex_pair;
+
     for (auto& fromeach : prikey_set_){
 
         for (auto& iter : keys_inputs_[fromeach]){
             sout.str("");
             sin.str(iter.txhash);
 
-            if (dispatch_command(1, cmds, sin, sout, sout))
-                throw command_fetch_tx_exception(sout.str());
+			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+				throw tx_fetch_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             sin.str(sout.str());
 
             ptree pt;
@@ -1934,8 +2042,15 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::serv
 
     std::ostringstream sout;
     std::istringstream sin;
-    if (dispatch_command(i, cmds, sin, sout, sout, node))
-        throw command_get_tx_encode_exception(sout.str());
+	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+		throw tx_encode_get_exception(sout.str());
+	}
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1949,6 +2064,7 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
     //const char* bank_cmds[1024]{0x00};
 
     int i = 0;    
+	std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : prikey_set_){
         for (auto& iter: keys_inputs_[fromeach]){
             //if(!iter.output.as_input_sign.empty())  // only assign once
@@ -1963,8 +2079,14 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
             //bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach<<" "<<iter.output.script;
-            if (dispatch_command(5, cmds, sin, sout, sout))
-                throw command_get_input_sign_exception(sout.str());
+			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_sign_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1978,7 +2100,8 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
     //const char* bank_cmds[1024]{0x00};
 
     int i = 0;
-    
+	std::pair<uint32_t, std::string> ex_pair;
+
     for (auto& fromeach : prikey_set_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach);
 
@@ -1997,8 +2120,15 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
             log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-            if (dispatch_command(4, cmds, sin, sout, sout))
-                throw command_get_input_set_exception(sout.str());
+
+			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+				throw get_input_set_exception(sout.str());
+			}
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
         }
     }
 
@@ -2079,7 +2209,7 @@ bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::server::server_node& node,
         
     // get utxo
     if (!utxo.fetch_utxo())
-        throw utxo_etp_lack_exception{"not enough etp in utxo of some address"};
+        throw lack_utxo_etp_exception{"not enough etp in utxo of some address"};
 
     // load pre-transaction
     utxo.fetch_tx();

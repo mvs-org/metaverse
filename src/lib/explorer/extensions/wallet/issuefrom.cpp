@@ -98,7 +98,7 @@ console_result issuefrom::invoke (std::ostream& output,
             if (balance){
                 palist.push_back({each.get_prv_key(auth_.auth), balance});
             }else{
-                throw balance_lack_exception{"no enough balance"};
+                throw lack_balance_exception{"no enough balance"};
             }
             break;
     }

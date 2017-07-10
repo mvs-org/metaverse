@@ -51,7 +51,7 @@ console_result fetchheaderext::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(argument_.number.empty())
-        throw query_block_exception{"Block number or earliest, latest, pending is needed"};
+        throw block_height_get_exception{"Block number or earliest, latest, pending is needed"};
 
     chain::header block_header;
 

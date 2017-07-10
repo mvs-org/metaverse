@@ -792,7 +792,7 @@ void base_transfer_helper::populate_unspent_list() {
 
 	// addresses balances check
 	if(unspent_etp_ < payment_etp_)
-		throw balance_lack_exception{"no enough balance"};
+		throw lack_balance_exception{"no enough balance"};
 	if(unspent_asset_ < payment_asset_)
 		throw asset_lack_exception{"no enough asset amount"};
 
