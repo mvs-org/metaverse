@@ -49,6 +49,9 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 
+console_result capture_excode(std::stringstream&, std::pair<uint32_t, std::string>&);
+
+
 DEFINE_EXPLORER_EXCEPTION(argument_exceed_limit_exception, 2001);
 DEFINE_EXPLORER_EXCEPTION(argument_size_invalid_exception, 2002);
 DEFINE_EXPLORER_EXCEPTION(argument_legality_exception, 2003);

@@ -123,7 +123,7 @@ console_result dispatch_command(int argc, const char* argv[],
     if (metadata.help())
     {
         command->write_help(output);
-        return console_result::help;
+        return console_result::okay;
     }
 
     return command->invoke(out, err);
@@ -159,7 +159,7 @@ console_result dispatch_command(int argc, const char* argv[],
 //    if (metadata.help())
 //    {
 //        command->write_help(output);
-//        return console_result::help;
+//        return console_result::okay;
 //    }
 //
 //    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
@@ -206,7 +206,7 @@ console_result dispatch_command(int argc, const char* argv[],
     if (metadata.help())
     {
         command->write_help(output);
-        return console_result::help;
+        return console_result::okay;
     }
 
     if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
@@ -255,7 +255,7 @@ console_result dispatch_command(int argc, const char* argv[],
     if (metadata.help())
     {
         command->write_help(output);
-        return console_result::help;
+        return console_result::okay;
     }
 
     if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
