@@ -58,6 +58,15 @@ console_result importaccount::invoke (std::ostream& output,
     lang<<option_.language;
     sin.str("");
     sout.str("");
+
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	auto exec_capture_excode = [&]() {
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+	};
     //const char* cmds[256]{"mnemonic-to-seed", "-l", lang.str().c_str()};
     const char* cmds[64]{0x00};
     int i = 0;
@@ -80,11 +89,10 @@ console_result importaccount::invoke (std::ostream& output,
 		throw argument_size_invalid_exception{"words count should be 24, not " + std::to_string(argument_.words.size())};
 	}
 
-    if( console_result::okay != dispatch_command(i, cmds , sin, sout, sout)) {
-        output<<sout.str();
-        return console_result::failure;
+    if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
+		throw mnemonic_to_seed_exception(sout.str());
     }
-    
+	exec_capture_excode();
     // 2. check mnemonic exist in account database
     #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;
@@ -122,7 +130,10 @@ console_result importaccount::invoke (std::ostream& output,
         pt::ptree addr;
         sin.str("");
         sout.str("");
-        dispatch_command(3, cmds2 , sin, sout, sout, node);
+		if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+			address_generate_exception(sout.str());
+		}
+		exec_capture_excode();
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }

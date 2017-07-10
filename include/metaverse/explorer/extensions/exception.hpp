@@ -77,6 +77,8 @@ DEFINE_EXPLORER_EXCEPTION(address_list_nullptr_exception, 4002);
 DEFINE_EXPLORER_EXCEPTION(address_dismatch_account_exception, 4003);
 DEFINE_EXPLORER_EXCEPTION(address_amount_exception, 4004);
 DEFINE_EXPLORER_EXCEPTION(address_notfound_exception, 4005);
+DEFINE_EXPLORER_EXCEPTION(address_generate_exception, 4005);
+
 
 DEFINE_EXPLORER_EXCEPTION(address_invalid_exception, 4010);
 DEFINE_EXPLORER_EXCEPTION(toaddress_empty_exception, 4011);
@@ -122,20 +124,31 @@ DEFINE_EXPLORER_EXCEPTION(redeem_script_data_exception, 5402);
 DEFINE_EXPLORER_EXCEPTION(redeem_script_pattern_exception, 5403);
 
 DEFINE_EXPLORER_EXCEPTION(set_deposit_period_exception, 6001);
-DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_exception, 6002);
 DEFINE_EXPLORER_EXCEPTION(fetch_utxo_exception, 6003);
 DEFINE_EXPLORER_EXCEPTION(get_input_sign_exception, 6004);
 DEFINE_EXPLORER_EXCEPTION(get_input_set_exception, 6005);
 DEFINE_EXPLORER_EXCEPTION(lack_balance_exception, 6006);
 DEFINE_EXPLORER_EXCEPTION(lack_account_etp_exception, 6007);
 DEFINE_EXPLORER_EXCEPTION(lack_utxo_etp_exception, 6008);
+DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6002);
+
+DEFINE_EXPLORER_EXCEPTION(mnemonic_new_exception, 6002);
+
+DEFINE_EXPLORER_EXCEPTION(mnemonic_to_seed_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(hd_new_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(hd_private_new_exception, 6002);
+DEFINE_EXPLORER_EXCEPTION(hd_to_ec_exception, 6002);
+
+
 
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 8001);
 DEFINE_EXPLORER_EXCEPTION(format_timestamp_exception, 8002);
 DEFINE_EXPLORER_EXCEPTION(locktime_over_exception, 8003);
 DEFINE_EXPLORER_EXCEPTION(locktime_invalid_exception, 8004);
 
-
+DEFINE_EXPLORER_EXCEPTION(seed_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_length_exception, 9002);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_amount_exception, 9003);

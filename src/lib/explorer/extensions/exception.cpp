@@ -30,7 +30,7 @@ console_result capture_excode(std::stringstream& sstream, std::pair<uint32_t, st
 {
 	std::stringstream sin;
 	sin.str(sstream.str());
-
+	sstream.str(""); // clear
 	// parse json
 	using namespace boost::property_tree;
 	ptree pt;

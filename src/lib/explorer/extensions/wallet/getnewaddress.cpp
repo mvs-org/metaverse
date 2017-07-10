@@ -66,6 +66,7 @@ console_result getnewaddress::invoke (std::ostream& output,
 	uint32_t idx = 0;
     pt::ptree aroot;
     pt::ptree addresses;
+	std::pair<uint32_t, std::string> ex_pair;
 
 	for ( idx = 0; idx < option_.count; idx++ ) {
 
@@ -74,19 +75,53 @@ console_result getnewaddress::invoke (std::ostream& output,
 		
 		sout.str("");
 		sin.str(mnemonic);
-	    dispatch_command(1, cmds + 0, sin, sout, sout);
-	    exec_with(1);
+		if (dispatch_command(1, cmds + 0, sin, sout, sout) != console_result::okay) {
+			throw mnemonic_to_seed_exception(sout.str());
+		}
+		std::stringstream ex_stream;
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+	    
+		if (exec_with(1) != console_result::okay) {
+			hd_new_exception(sout.str());
+		}
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
 
 	    auto&& argv_index = std::to_string(acc->get_hd_index());
 	    const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
 	    sin.str(sout.str());
 	    sout.str("");
-	    dispatch_command(3, hd_private_gen, sin, sout, sout);
 
-	    exec_with(2);
+		if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) {
+			throw hd_private_new_exception(sout.str());
+		}
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+
+		if (exec_with(2) != console_result::okay) {
+			throw hd_to_ec_exception(sout.str());
+		}
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+
 	    addr->set_prv_key(sout.str(), auth_.auth);
 		// not store public key now
-	    exec_with(3);
+		if (exec_with(3) != console_result::okay) {
+			throw ec_to_public_exception(sout.str());
+		}
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
 	    //addr->set_pub_key(sout.str());
 
 	    // testnet
@@ -94,10 +129,24 @@ console_result getnewaddress::invoke (std::ostream& output,
 	        const char* cmds_tn[]{"ec-to-address", "-v", "127"};
 	        sin.str(sout.str());
 	        sout.str("");
-	        dispatch_command(3, cmds_tn, sin, sout, sout);
+			if (dispatch_command(3, cmds_tn, sin, sout, sout) != console_result::okay) {
+				throw ec_to_address_exception(sout.str());
+			}
+			std::pair<uint32_t, std::string> ex_pair;
+			std::stringstream ex_stream;
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
 	    // mainnet
 	    } else {
-	        exec_with(4);
+			if (exec_with(4) != console_result::okay) {
+				throw ec_to_address_exception(sout.str());
+			}
+			ex_stream.str(sout.str());
+			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				throw explorer_exception(ex_pair.first, ex_pair.second);
+			}
 	    }
 
 	    addr->set_address(sout.str());

@@ -43,28 +43,52 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
 	//std::ostringstream sout(encode_hash(bitcoin_hash(data)));
 	std::ostringstream sout(seed);
 	std::istringstream sin("");
-	
+
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+
 	auto exec_with = [&](int i){
 		sin.str(sout.str());
 		sout.str("");
 		return dispatch_command(1, cmds + i, sin, sout, sout);
 	};
 			
-	exec_with(1); // hd-new
-	
+	auto exec_capture_excode = [&]() {
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+	};
+
+	if (exec_with(1) != console_result::okay) { // hd-new
+		throw hd_new_exception(sout.str());
+	}
+	exec_capture_excode();
+
 	auto&& argv_index = std::to_string(hd_index);
 	const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
 	sin.str(sout.str());
 	sout.str("");
-	dispatch_command(3, hd_private_gen, sin, sout, sout); // hd-private
+	if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) { // hd-private
+		throw hd_private_new_exception(sout.str());
+	} 
+	exec_capture_excode();
 	
-	exec_with(2); // hd-to-ec
+	if (exec_with(2) != console_result::okay) { // hd-to-ec
+		throw hd_to_ec_exception(sout.str());
+	}
+	exec_capture_excode();
+
 	prikey = sout.str();
 	//acc->set_multisig_prikey(multisig_prikey);
 	//root.put("multisig-prikey", sout.str());
 	//addr->set_prv_key(sout.str(), auth_.auth);
 	// not store public key now
-	exec_with(3); // ec-to-public
+	if (exec_with(3) != console_result::okay) { // ec-to-public
+		throw ec_to_public_exception(sout.str());
+	}
+	exec_capture_excode();
+
 	//addr->set_pub_key(sout.str());
 	pubkey = sout.str();
 }
