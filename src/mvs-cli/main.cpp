@@ -59,13 +59,13 @@ int bc::main(int argc, char* argv[])
         return std::memcmp(cmd, "fetch-", 6) == 0;
     };
 
-	do{
-		std::stringstream sout;
+	do {
+		std::ostringstream sout;
 		console_result ret;
 		try {
 			if (!cmd_ptr && !is_online_cmd(cmd.c_str())) {
 				ret = bc::explorer::dispatch_command(argc - 1,
-					const_cast<const char**>(argv + 1), bc::cin, sout, bc::cerr);
+					const_cast<const char**>(argv + 1), bc::cin, sout, sout);
 				if (ret != console_result::okay) {
 					throw explorer::command_params_exception(sout.str());
 				}
