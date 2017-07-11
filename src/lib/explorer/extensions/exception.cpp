@@ -39,18 +39,18 @@ console_result capture_excode(std::stringstream& sstream, std::pair<uint32_t, st
 		read_json(sin, pt);
 
 		std::string code = pt.get<std::string>("code");
-		if (code == "")
-			return console_result::failure;
 		std::string msg = pt.get<std::string>("message");
 		std::stringstream ss;
-		ss << code, ss >> ex_pair.first;
-		ex_pair.second = msg;
+		ss << code; 
+		ss >> ex_pair.first;
+		ex_pair.second = msg; 
 		return console_result::okay;
 	}
 	catch (...)
 	{
 		return console_result::failure;
 	}
+
 }
 
 } //namespace explorer
