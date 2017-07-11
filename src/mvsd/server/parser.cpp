@@ -28,6 +28,7 @@
 #include <metaverse/server/define.hpp>
 #include <metaverse/server/parser.hpp>
 #include <metaverse/server/settings.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
 
 BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 
@@ -99,6 +100,12 @@ options_metadata parser::load_options()
 			default_value(false)->zero_tokens(),
 		"Use testnet rules for determination of work required, defaults to false."
 	)
+    (
+        BS_DATADIR_VARIABLE ",D",
+        value<path>(&configured.data_dir)->
+            default_value(""),
+        "Specify database path."
+    )
 	;
 
     return description;
@@ -444,6 +451,11 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
 				configured.network.hosts_file = "hosts-test.cache";
 				const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
 			}
+            auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
+            if (!data_dir.empty())
+            {
+                set_default_data_path(data_dir);
+            }
             // Returns true if the settings were loaded from a file.
             file = load_configuration_variables(variables, BS_CONFIG_VARIABLE);
         }
