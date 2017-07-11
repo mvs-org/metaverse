@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -42,10 +43,10 @@ console_result importaccount::invoke (std::ostream& output,
     // parameter account name check
     auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
-        throw std::logic_error{"account already exist"};
+	 throw account_existed_exception{"account already exist"};
 
     if (argument_.words.size() > 24)
-        throw std::logic_error{"word count must be less than or equal 24"};
+		throw argument_exceed_limit_exception{"word count must be less than or equal 24"};
     
     for(auto& i : argument_.words){
         sout<<i<<" ";
@@ -57,6 +58,15 @@ console_result importaccount::invoke (std::ostream& output,
     lang<<option_.language;
     sin.str("");
     sout.str("");
+
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	auto exec_capture_excode = [&]() {
+		ex_stream.str(sout.str());
+		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+			throw explorer_exception(ex_pair.first, ex_pair.second);
+		}
+	};
     //const char* cmds[256]{"mnemonic-to-seed", "-l", lang.str().c_str()};
     const char* cmds[64]{0x00};
     int i = 0;
@@ -76,14 +86,13 @@ console_result importaccount::invoke (std::ostream& output,
 	        cmds[i++] = word.c_str();
 	    }
 	} else {
-		throw std::logic_error{"words count should be 24, not " + std::to_string(argument_.words.size())};
+		throw argument_size_invalid_exception{"words count should be 24, not " + std::to_string(argument_.words.size())};
 	}
 
-    if( console_result::okay != dispatch_command(i, cmds , sin, sout, sout)) {
-        output<<sout.str();
-        return console_result::failure;
+    if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
+		throw mnemonic_to_seed_exception(sout.str());
     }
-    
+	exec_capture_excode();
     // 2. check mnemonic exist in account database
     #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;
@@ -95,7 +104,7 @@ console_result importaccount::invoke (std::ostream& output,
         }
     }
     if(is_mnemonic_exist)
-        throw std::logic_error{"mnemonic already exist!"};
+        throw account_mnemonicword_existed_exception{"mnemonic already exist!"};
 	#endif
 
     // create account
@@ -121,7 +130,10 @@ console_result importaccount::invoke (std::ostream& output,
         pt::ptree addr;
         sin.str("");
         sout.str("");
-        dispatch_command(3, cmds2 , sin, sout, sout, node);
+		if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+			address_generate_exception(sout.str());
+		}
+		exec_capture_excode();
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }
@@ -152,7 +164,7 @@ console_result changepasswd::invoke (std::ostream& output,
 	// reencry address
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"empty address list"};
+		throw address_list_nullptr_exception{"empty address list"};
 	
 	std::string prv_key;
     for (auto& each : *pvaddr){
@@ -182,21 +194,21 @@ console_result getnewmultisig::invoke (std::ostream& output,
     account_multisig acc_multisig;
 			
 	if(option_.public_keys.empty())
-		throw std::logic_error{"multisig cosigner public key needed."};
+		throw multisig_cosigne_exception{"multisig cosigner public key needed."};
 	// parameter check
 	if( option_.m < 1 )
-		throw std::logic_error{"signature number less than 1."};
+		throw signature_amount_exception{"signature number less than 1."};
 	if( !option_.n || option_.n > 20 )
-		throw std::logic_error{"public key number bigger than 20."};
+		throw pubkey_amount_exception{"public key number bigger than 20."};
 	if( option_.m > option_.n )
-		throw std::logic_error{"signature number bigger than public key number."};
+		throw signature_amount_exception{"signature number bigger than public key number."};
 
 	// add self public key into key vector
 	auto pubkey = option_.self_publickey;
 	if(std::find(option_.public_keys.begin(), option_.public_keys.end(), pubkey) == option_.public_keys.end()) // not found
 		option_.public_keys.push_back(pubkey);
 	if( option_.n != option_.public_keys.size() )
-		throw std::logic_error{"public key number not match with n."};
+		throw pubkey_amount_exception{"public key number not match with n."};
 
 	acc_multisig.set_hd_index(0);
 	acc_multisig.set_m(option_.m);
@@ -206,7 +218,7 @@ console_result getnewmultisig::invoke (std::ostream& output,
 	acc_multisig.set_description(option_.description);
 	
 	if(acc->get_multisig(acc_multisig))
-		throw std::logic_error{"multisig already exists."};
+		throw multisig_exist_exception{"multisig already exists."};
 	
 	acc_multisig.set_index(acc->get_multisig_vec().size() + 1);
 	
@@ -221,7 +233,7 @@ console_result getnewmultisig::invoke (std::ostream& output,
 	// get private key according public key
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 	
     const char* cmds[2]{"ec-to-public", nullptr};
     std::ostringstream sout("");
@@ -241,7 +253,7 @@ console_result getnewmultisig::invoke (std::ostream& output,
 		}
     }
 	if(!found)
-        throw std::logic_error{pubkey + " not belongs to this account"};
+        throw pubkey_dismatch_exception{pubkey + " not belongs to this account"};
 
     addr->set_prv_key(prv_key, auth_.auth);
 
@@ -250,7 +262,7 @@ console_result getnewmultisig::invoke (std::ostream& output,
 	chain::script script_inst;
 	script_inst.from_string(multisig_script);
 	if(script_pattern::pay_multisig != script_inst.pattern())
-		throw std::logic_error{std::string("invalid multisig script : ")+multisig_script};
+		throw multisig_script_exception{std::string("invalid multisig script : ")+multisig_script};
 	payment_address address(script_inst, 5);
 	
     addr->set_address(address.encoded());
@@ -298,7 +310,7 @@ console_result listmultisig::invoke (std::ostream& output,
 
 	if(option_.index) {	// according index
 		if(option_.index > acc->get_multisig_vec().size())
-			throw std::logic_error{"multisig index outofbound."};
+			throw multisig_index_exception{"multisig index outofbound."};
 		
 		account_multisig acc_multisig;
 		acc->get_multisig(acc_multisig, option_.index);
@@ -362,27 +374,27 @@ console_result deletemultisig::invoke (std::ostream& output,
     account_multisig acc_multisig;
 	if(option_.index) {	// according index
 		if(option_.index > acc->get_multisig_vec().size())
-			throw std::logic_error{"multisig index outofbound."};
+			throw multisig_index_exception{"multisig index outofbound."};
 		acc->remove_multisig(acc_multisig, option_.index);
 	} else {
 		if(option_.public_keys.empty())
-			throw std::logic_error{"multisig cosigner public key needed."};
+			throw multisig_cosigne_exception{"multisig cosigner public key needed."};
 		// parameter check
 		if( option_.m < 1 )
-			throw std::logic_error{"signature number less than 1."};
+			throw signature_amount_exception{"signature number less than 1."};
 		if( !option_.n || option_.n > 20 )
-			throw std::logic_error{"public key number bigger than 20."};
+			throw pubkey_amount_exception{"public key number bigger than 20."};
 		if( option_.m > option_.n )
-			throw std::logic_error{"signature number bigger than public key number."};
+			throw signature_amount_exception{"signature number bigger than public key number."};
 		if(option_.self_publickey.empty())
-			throw std::logic_error{"self public key needed."};
+			throw multisig_cosigne_exception{"self public key needed."};
 		
 		// add self public key into key vector
 		auto pubkey = option_.self_publickey;
 		if(std::find(option_.public_keys.begin(), option_.public_keys.end(), pubkey) == option_.public_keys.end()) // not found
 			option_.public_keys.push_back(pubkey);
 		if( option_.n != option_.public_keys.size() )
-			throw std::logic_error{"public key number not match with n."};
+			throw pubkey_amount_exception{"public key number not match with n."};
 		
 		acc_multisig.set_m(option_.m);
 		acc_multisig.set_n(option_.n);
@@ -390,7 +402,7 @@ console_result deletemultisig::invoke (std::ostream& output,
 		acc_multisig.set_cosigner_pubkeys(std::move(option_.public_keys));
 		
 		if(!(acc->get_multisig(acc_multisig)))
-			throw std::logic_error{"multisig not exists."};
+			throw multisig_notfound_exception{"multisig not exists."};
 		
 		acc->remove_multisig(acc_multisig);
 	}
@@ -421,7 +433,7 @@ console_result deletemultisig::invoke (std::ostream& output,
 	
 	// delete account address
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"empty address list for this account"};
+    if(!vaddr) throw address_list_empty_exception{"empty address list for this account"};
 
 	blockchain.delete_account_address(auth_.name);
 	for (auto it = vaddr->begin(); it != vaddr->end();) {

@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -52,7 +53,7 @@ console_result getaddressasset::invoke (std::ostream& output,
 	auto& blockchain = node.chain_impl();
     //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.address)) 
-        throw std::logic_error{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
     
     // 1. get asset in blockchain
     auto kind = business_kind::asset_transfer;

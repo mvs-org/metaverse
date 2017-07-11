@@ -20,6 +20,7 @@
  */
 
 #include <metaverse/explorer/commands/offline_commands_impl.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -34,7 +35,7 @@ data_chunk get_seed(uint16_t bit_length = 256u)
         bit_length % byte_bits != 0)
     {
 		// chenhao exception
-        throw std::logic_error{MVSCLI_SEED_BIT_LENGTH_UNSUPPORTED};
+		throw seed_size_exception{MVSCLI_SEED_BIT_LENGTH_UNSUPPORTED};
     }
 
     return new_seed(bit_length);
@@ -48,7 +49,7 @@ bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_c
     if ((entropy_size % bw::mnemonic_seed_multiple) != 0)
     {
 		// chenhao exception
-        throw std::logic_error{MVSCLI_EC_MNEMONIC_NEW_INVALID_ENTROPY};
+        throw seed_length_exception{MVSCLI_EC_MNEMONIC_NEW_INVALID_ENTROPY};
     }
 
     // If 'any' default to first ('en'), otherwise the one specified.
@@ -67,7 +68,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     if ((word_count % bw::mnemonic_word_multiple) != 0)
     {
 		// chenhao exception
-        throw std::logic_error{MVSCLI_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE};
+        throw mnemonicwords_amount_exception{MVSCLI_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE};
     }
 
     const auto valid = bw::validate_mnemonic(words, language);
@@ -76,12 +77,12 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     {
         // This is fatal because a dictionary was specified explicitly.
 		// chenhao exception
-        throw std::logic_error{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGE};
+        throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGE};
     }
 
 	// chenhao exception
     if (!valid && language.size() > 1)
-        throw std::logic_error{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES};
+        throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES};
 
 #ifdef WITH_ICU
     // Any word set divisible by 3 works regardless of language validation.
@@ -90,7 +91,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     if (!passphrase.empty())
     {
 	    // chenhao exception
-        throw std::logic_error{MVSCLI_EC_MNEMONIC_TO_SEED_PASSPHRASE_UNSUPPORTED};
+        throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_PASSPHRASE_UNSUPPORTED};
     }
 
     // The passphrase requires ICU normalization.
@@ -107,7 +108,7 @@ bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_
     if (seed.size() < minimum_seed_size)
     {
 	    // chenhao exception
-        throw std::logic_error{MVSCLI_HD_NEW_SHORT_SEED};
+        throw hd_length_exception{MVSCLI_HD_NEW_SHORT_SEED};
     }
 
     // We require the private version, but public is unused here.
@@ -117,7 +118,7 @@ bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_
     if (!private_key)
     {
 	    // chenhao exception
-        throw std::logic_error{MVSCLI_HD_NEW_INVALID_KEY};
+        throw hd_key_exception{MVSCLI_HD_NEW_INVALID_KEY};
     }
 
     return private_key;

@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,7 +48,7 @@ console_result getnewaccount::invoke (std::ostream& output,
 {
 	auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name)){
-        throw std::logic_error{"account already exist"};
+        throw account_existed_exception{"account already exist"};
     }
 
     const char* cmds[]{"seed"};
@@ -62,7 +63,7 @@ console_result getnewaccount::invoke (std::ostream& output,
 #ifdef NDEBUG
     if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
         auth_.auth.length() > 128 || auth_.auth.length() < 6)
-        throw std::logic_error{"name length in [3, 128], password length in [6, 128]"};
+        throw argument_legality_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
 
     acc->set_name(auth_.name);
@@ -71,15 +72,28 @@ console_result getnewaccount::invoke (std::ostream& output,
     auto exec_with = [&](int i){
         sin.str(sout.str());
         sout.str("");
-        dispatch_command(1, cmds + i, sin, sout, sout);
+        return dispatch_command(1, cmds + i, sin, sout, sout);
     };
-
-    exec_with(0);
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	if (exec_with(0) != console_result::okay) {
+		throw seed_exception(sout.str());
+	}
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
     const char* cmds3[3]{"mnemonic-new", "-l" , option_.language.c_str()};
     sin.str(sout.str());
     sout.str("");
-    dispatch_command(3, cmds3 , sin, sout, sout);
+	if (dispatch_command(3, cmds3, sin, sout, sout) != console_result::okay) {
+		throw mnemonic_new_exception(sout.str());
+	}
 
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
     root.put("mnemonic", sout.str());
     acc->set_mnemonic(sout.str(), auth_.auth);
     
@@ -90,7 +104,13 @@ console_result getnewaccount::invoke (std::ostream& output,
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
     sin.str("");
     sout.str("");
-    dispatch_command(3, cmds2 , sin, sout, sout, node);
+	if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+		throw address_generate_exception(sout.str());
+	}
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
     #if 0
 	// parse address from getnewaddress output string
 	pt::ptree tx;

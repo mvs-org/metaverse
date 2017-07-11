@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/listaddresses.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -52,7 +53,7 @@ console_result listaddresses::invoke (std::ostream& output,
     pt::ptree addresses;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
     for (auto& i: *vaddr){
         pt::ptree address;
