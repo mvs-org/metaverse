@@ -59,7 +59,7 @@ int bc::main(int argc, char* argv[])
         return std::memcmp(cmd, "fetch-", 6) == 0;
     };
 
-	do {
+	{
 		std::ostringstream sout;
 		console_result ret;
 		try {
@@ -78,11 +78,12 @@ int bc::main(int argc, char* argv[])
 			}
 		}
 		catch (bc::explorer::explorer_exception e) {
+			sout.str("");
 			sout << e;
 		}
 		bc::cout << sout.str() << std::endl;
 		return ret;
-	} while (0);
+	}
 
 
 	// extension commands
