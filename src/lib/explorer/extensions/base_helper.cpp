@@ -816,7 +816,7 @@ void base_transfer_helper::populate_unspent_list() {
 
 	// addresses balances check
 	if(unspent_etp_ < payment_etp_)
-		throw lack_balance_exception{"no enough balance"};
+		throw account_balance_lack_exception{"no enough balance"};
 	if(unspent_asset_ < payment_asset_)
 		throw asset_lack_exception{"no enough asset amount"};
 
@@ -922,7 +922,7 @@ void base_transfer_helper::populate_tx_outputs(){
 void base_transfer_helper::check_tx(){
     if (tx_.is_locktime_conflict())
     {
-        throw locktime_invalid_exception{"The specified lock time is ineffective because all sequences are set to the maximum value."};
+        throw tx_locktime_exception{"The specified lock time is ineffective because all sequences are set to the maximum value."};
     }
 }
 
@@ -1210,7 +1210,7 @@ uint32_t issuing_locked_asset::get_lock_height(){
 	//uint64_t height = (deposit_cycle_*24)*(3600/24);
 	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
-		throw locktime_over_exception{"lock time outofbound!"};
+		throw tx_locktime_exception{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
 }
 // modify lock script
@@ -1295,7 +1295,7 @@ uint32_t sending_locked_asset::get_lock_height(){
 	//uint64_t height = (deposit_cycle_*24)*(3600/24);
 	uint64_t height = (deposit_cycle_)*3600;
 	if(0xffffffff <= height)
-		throw locktime_over_exception{"lock time outofbound!"};
+		throw tx_locktime_exception{"lock time outofbound!"};
 	return static_cast<uint32_t>(height);
 }
 // modify lock script

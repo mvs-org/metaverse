@@ -56,7 +56,7 @@ console_result deposit::invoke (std::ostream& output,
 		&& argument_.deposit != 90 && argument_.deposit != 182
 		&& argument_.deposit != 365)
     {
-        throw set_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
+        throw logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 
     std::list<prikey_amount> palist;

@@ -106,7 +106,7 @@ console_result listtxs::invoke (std::ostream& output,
             const auto tokens = split(argument_.address, BX_TX_POINT_DELIMITER);
             if (tokens.size() != 2)
             {
-                throw format_timestamp_exception{"timestamp is invalid format(eg : 123:456)!"};
+                throw tx_timestamp_exception{"timestamp is invalid format(eg : 123:456)!"};
             }
             uint32_t start, end;
             deserialize(start, tokens[0], true);

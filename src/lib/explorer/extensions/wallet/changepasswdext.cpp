@@ -64,7 +64,7 @@ console_result changepasswdext::invoke (std::ostream& output,
             throw account_name_exception{"non exist account name"};
         
         if(mnemonic != acc->get_mnemonic())
-            throw account_mnemonicword_dismatch_exception{"account is not exist for this mnemonic!"};
+            throw mnemonicword_dismatch_exception{"account is not exist for this mnemonic!"};
         
         user = acc;
     } else { // scan all account to compare mnemonic
@@ -78,7 +78,7 @@ console_result changepasswdext::invoke (std::ostream& output,
     }
 
     if(mnemonic != user->get_mnemonic())
-        throw account_mnemonicword_dismatch_exception{"account is not exist for this mnemonic!"};
+        throw mnemonicword_dismatch_exception{"account is not exist for this mnemonic!"};
 
     lang<<option_.language;
     sin.str("");

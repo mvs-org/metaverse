@@ -87,7 +87,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     sin.str(sout.str());
     sout.str("");
 	if (dispatch_command(3, cmds3, sin, sout, sout) != console_result::okay) {
-		throw mnemonic_new_exception(sout.str());
+		throw mnemonicwords_new_exception(sout.str());
 	}
 
 	ex_stream.str(sout.str());

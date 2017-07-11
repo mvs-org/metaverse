@@ -73,7 +73,7 @@ console_result issue::invoke (std::ostream& output,
         }
     }
     if(!pavec.size())
-        throw lack_account_etp_exception{"not enough etp in your account!"};
+        throw etp_lack_exception{"not enough etp in your account!"};
 
     // get random address    
     auto index = bc::pseudo_random() % pavec.size();

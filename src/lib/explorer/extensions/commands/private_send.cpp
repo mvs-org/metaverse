@@ -46,7 +46,7 @@ console_result deposit::invoke (std::ostream& output,
 		&& argument_.deposit != 90 && argument_.deposit != 182
 		&& argument_.deposit != 365)
     {
-        throw set_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
+        throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 	
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
@@ -363,7 +363,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
 		if (!bc::chain::script::create_endorsement(endorse, private_key,
 			contract, tx_, index, hash_type))
 		{
-			throw get_input_sign_exception{"get_input_sign sign failure"};
+			throw tx_sign_exception{"get_input_sign sign failure"};
 		}
 		// insert endorse before multisig script
 		auto position = ss.operations.end();

@@ -90,7 +90,7 @@ console_result importaccount::invoke (std::ostream& output,
 	}
 
     if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
-		throw mnemonic_to_seed_exception(sout.str());
+		throw mnemonicwords_to_seed_exception(sout.str());
     }
 	exec_capture_excode();
     // 2. check mnemonic exist in account database
@@ -104,7 +104,7 @@ console_result importaccount::invoke (std::ostream& output,
         }
     }
     if(is_mnemonic_exist)
-        throw account_mnemonicword_existed_exception{"mnemonic already exist!"};
+        throw mnemonicword_existed_exception{"mnemonic already exist!"};
 	#endif
 
     // create account
