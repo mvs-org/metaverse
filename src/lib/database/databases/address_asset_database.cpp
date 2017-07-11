@@ -206,6 +206,68 @@ business_record::list address_asset_database::get(const short_hash& key,
     // TODO: we could sort result here.
     return result;
 }
+/// get all record of key from database
+std::shared_ptr<std::vector<business_record>> address_asset_database::get(const std::string& address, size_t start_height,
+    size_t end_height) const
+{
+	data_chunk addr_data(address.begin(), address.end());
+	auto key = ripemd160_hash(addr_data);
+
+    // Read the height value from the row.
+    const auto read_height = [](uint8_t* data)
+    {
+        static constexpr file_offset height_position = 1 + 36;
+        const auto height_address = data + height_position;
+        return from_little_endian_unsafe<uint32_t>(height_address);
+    };
+
+    // Read a row from the data for the history list.
+    const auto read_row = [](uint8_t* data)
+    {
+        auto deserial = make_deserializer_unsafe(data);
+        return business_record
+        {
+            // output or spend?
+            static_cast<point_kind>(deserial.read_byte()),
+
+            // point
+            point::factory_from_data(deserial),
+
+            // height
+            deserial.read_4_bytes_little_endian(),
+
+            // value or checksum
+            { deserial.read_8_bytes_little_endian() },
+            
+			// business_kd;
+            //deserial.read_2_bytes_little_endian(),
+			// timestamp;
+            //deserial.read_4_bytes_little_endian(),
+            
+            business_data::factory_from_data(deserial) // 2 + 4 are in this class
+        };
+    };
+
+    auto result = std::make_shared<std::vector<business_record>>();
+    const auto start = rows_multimap_.lookup(key);
+    const auto records = record_multimap_iterable(rows_list_, start);
+
+    for (const auto index: records)
+    {
+        // This obtains a remap safe address pointer against the rows file.
+        const auto record = rows_list_.get(index);
+        const auto address = REMAP_ADDRESS(record);
+		auto height = read_height(address);
+        // Skip rows below from_height.
+        if (((start_height == 0)&&(end_height == 0)) 
+			|| ((start_height <= height) && (height < end_height))) // from current block height
+            result->emplace_back(read_row(address));
+    }
+
+    // TODO: we could sort result here.
+    return result;
+}
+
 
 /// get all record of key from database
 std::shared_ptr<std::vector<business_record>> address_asset_database::get(size_t idx) const
