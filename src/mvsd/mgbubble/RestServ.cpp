@@ -98,10 +98,12 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 	} catch(libbitcoin::explorer::explorer_exception ex) {
 		sout << ex;
 	} catch(std::exception& e) {
-        sout<<"{\"error\":\""<<e.what()<<"\"}";
+		libbitcoin::explorer::explorer_exception ex(1011, e.what());
+		sout << ex;
     } catch(...) {
         log::error(LOG_HTTP)<<sout.rdbuf();
-        sout<<"{\"error\":\"fatel error\"}";
+		libbitcoin::explorer::explorer_exception ex(1001,"fatal error");
+		sout << ex;
     }
 
     websocketSend(&nc, sout.str().c_str(), sout.str().size());
@@ -156,7 +158,8 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     } catch (const libbitcoin::explorer::explorer_exception& e) {
 		out_ << e;
 	} catch (const std::exception& e) {
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
+		libbitcoin::explorer::explorer_exception ex(1011, e.what());
+		out_ << ex;
     } 
 
     out_.setContentLength(); 
@@ -225,7 +228,8 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
     } catch (const libbitcoin::explorer::explorer_exception& e) {
 		out_ << e;
 	} catch (const std::exception& e) {
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
+		libbitcoin::explorer::explorer_exception ex(1011, e.what());
+		out_ << ex;
     }
 
     out_.setContentLength(); 
@@ -334,7 +338,8 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
         StreamBuf buf{nc.send_mbuf};
         out_.rdbuf(&buf);
         out_.reset(403, "Forbidden");
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
+		libbitcoin::explorer::explorer_exception ex(1011, e.what());
+		out_ << ex;
         out_.setContentLength(); 
 
         return false;

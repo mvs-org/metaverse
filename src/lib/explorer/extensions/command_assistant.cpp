@@ -47,7 +47,7 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
 	std::stringstream ex_stream;
     if (use_testnet_rules){
 		if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-			throw ec_to_xxx_exception(sout.str());
+			throw encode_exception(sout.str());
 		}
 		ex_stream.str(sout.str());
 		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
@@ -55,7 +55,7 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
 		}
     } else {
 		if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-			throw ec_to_xxx_exception(sout.str());
+			throw encode_exception(sout.str());
 		}
 		ex_stream.str(sout.str());
 		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {

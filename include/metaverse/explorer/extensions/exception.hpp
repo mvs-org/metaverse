@@ -51,6 +51,8 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 
 console_result capture_excode(std::stringstream&, std::pair<uint32_t, std::string>&);
 
+DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
+
 DEFINE_EXPLORER_EXCEPTION(argument_exceed_limit_exception, 2001);
 DEFINE_EXPLORER_EXCEPTION(argument_size_invalid_exception, 2002);
 DEFINE_EXPLORER_EXCEPTION(argument_legality_exception, 2003);
@@ -140,7 +142,7 @@ DEFINE_EXPLORER_EXCEPTION(get_input_set_exception, 6004);
 DEFINE_EXPLORER_EXCEPTION(lack_balance_exception, 6005);
 DEFINE_EXPLORER_EXCEPTION(lack_account_etp_exception, 6006);
 DEFINE_EXPLORER_EXCEPTION(lack_utxo_etp_exception, 6007);
-DEFINE_EXPLORER_EXCEPTION(ec_to_xxx_exception, 6008);
+DEFINE_EXPLORER_EXCEPTION(encode_exception, 6008);
 DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6009);
 DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6010);
 DEFINE_EXPLORER_EXCEPTION(mnemonic_new_exception, 6011);
