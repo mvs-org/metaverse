@@ -82,8 +82,18 @@ bool data_base::is_lower_database(const path& prefix)
 	auto metadata_path = prefix / db_metadata::file_name;
 	auto metadata = db_metadata();
 	data_base::read_metadata(metadata_path, metadata);
+	log::info("database") << " database version = " << metadata.version_;
+	log::info("database") << " mvsd db version = " << db_metadata::current_version;
 	return metadata.version_ < db_metadata::current_version;
 }
+bool data_base::is_higher_database(const path& prefix)
+{
+	auto metadata_path = prefix / db_metadata::file_name;
+	auto metadata = db_metadata();
+	data_base::read_metadata(metadata_path, metadata);
+	return metadata.version_ > db_metadata::current_version;
+}
+
 bool data_base::upgrade_database(const settings& settings, const chain::block& genesis)
 {
 	auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
@@ -91,7 +101,6 @@ bool data_base::upgrade_database(const settings& settings, const chain::block& g
 	data_base::read_metadata(metadata_path, metadata);
 	auto ret_flag = false;
 	
-	log::info("database") << " database version = " << metadata.version_;
 	// no need resynchronize blockchain -- blockchain asset structure modified
 	if(metadata.version_<= "0.6.1") {
 		log::info("database") << "The local database is being upgraded, it may take a while to re-synchronize the block data, please wait...";
