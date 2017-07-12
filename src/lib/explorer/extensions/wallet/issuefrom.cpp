@@ -48,7 +48,7 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-	if(argument_.fee < 1000000000)
+    if(argument_.fee < 1000000000)
         throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
@@ -92,9 +92,9 @@ console_result issuefrom::invoke (std::ostream& output,
             pt::ptree pt;
             sin.str(sout.str());
             pt::read_json(sin, pt);
-			auto unspent = pt.get<uint64_t>("balance.unspent");
-			auto frozen = pt.get<uint64_t>("balance.frozen");
-			auto balance = unspent - frozen;
+            auto unspent = pt.get<uint64_t>("balance.unspent");
+            auto frozen = pt.get<uint64_t>("balance.frozen");
+            auto balance = unspent - frozen;
             if (balance){
                 palist.push_back({each.get_prv_key(auth_.auth), balance});
             }else{

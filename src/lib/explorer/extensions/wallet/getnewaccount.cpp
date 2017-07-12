@@ -46,7 +46,7 @@ namespace pt = boost::property_tree;
 console_result getnewaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name)){
         throw account_existed_exception{"account already exist"};
     }
@@ -74,26 +74,26 @@ console_result getnewaccount::invoke (std::ostream& output,
         sout.str("");
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	if (exec_with(0) != console_result::okay) {
-		throw seed_exception(sout.str());
-	}
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    if (exec_with(0) != console_result::okay) {
+        throw seed_exception(sout.str());
+    }
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     const char* cmds3[3]{"mnemonic-new", "-l" , option_.language.c_str()};
     sin.str(sout.str());
     sout.str("");
-	if (dispatch_command(3, cmds3, sin, sout, sout) != console_result::okay) {
-		throw mnemonicwords_new_exception(sout.str());
-	}
+    if (dispatch_command(3, cmds3, sin, sout, sout) != console_result::okay) {
+        throw mnemonicwords_new_exception(sout.str());
+    }
 
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     root.put("mnemonic", sout.str());
     acc->set_mnemonic(sout.str(), auth_.auth);
     
@@ -104,23 +104,23 @@ console_result getnewaccount::invoke (std::ostream& output,
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
     sin.str("");
     sout.str("");
-	if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
-		throw address_generate_exception(sout.str());
-	}
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+        throw address_generate_exception(sout.str());
+    }
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     #if 0
-	// parse address from getnewaddress output string
-	pt::ptree tx;
-	sin.str(sout.str());
-	pt::read_json(sin, tx);
-	
-	auto addr_array = tx.get_child("addresses");
-	
-	for(auto& addr : addr_array) 
-		sout.str(addr.second.data());
+    // parse address from getnewaddress output string
+    pt::ptree tx;
+    sin.str(sout.str());
+    pt::read_json(sin, tx);
+    
+    auto addr_array = tx.get_child("addresses");
+    
+    for(auto& addr : addr_array) 
+        sout.str(addr.second.data());
     #endif
     root.put("default-address", sout.str());
     

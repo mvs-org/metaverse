@@ -46,13 +46,13 @@ namespace pt = boost::property_tree;
 console_result gettransaction::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	bc::chain::transaction tx;
-	uint64_t tx_height = 0;
-	auto& blockchain = node.chain_impl();
+    bc::chain::transaction tx;
+    uint64_t tx_height = 0;
+    auto& blockchain = node.chain_impl();
     auto exist = blockchain.get_transaction(argument_.hash, tx, tx_height);
     if(!exist)
         throw tx_notfound_exception{"transaction does not exist!"};
-	
+    
     pt::write_json(output, config::prop_list(tx, tx_height, true));
 
     return console_result::okay;

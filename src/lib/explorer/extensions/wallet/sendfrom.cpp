@@ -76,8 +76,8 @@ console_result sendfrom::invoke (std::ostream& output,
         pt::ptree pt;
         sin.str(sout.str());
         pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
+        auto unspent = pt.get<uint64_t>("balance.unspent");
+        auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance && (balance >= argument_.fee)){
             palist.push_back({each.get_prv_key(auth_.auth), balance});

@@ -96,10 +96,10 @@ TARGET:TX-VERSION:BUSINESS-TYPE:XXX:XXX
 XXX -- content decided by BUSINESS-TYPE
 
 support format :
-	 target:1:etp                  :amount(value)  // 4
-	 target:1:etp-award     	   :amount(value)  // 4
-	 target:1:asset-issue   :symbol:value          // 4
-	 target:1:asset-transfer:symbol:amount:value   // 5
+     target:1:etp                  :amount(value)  // 4
+     target:1:etp-award            :amount(value)  // 4
+     target:1:asset-issue   :symbol:value          // 4
+     target:1:asset-transfer:symbol:amount:value   // 5
 
 test command eg:
 
@@ -120,36 +120,36 @@ std::istream& operator>>(std::istream& input, metaverse_output& argument)
 
     uint32_t version;
     deserialize(version, tokens[1], true);
-	
+    
     std::string type;
     deserialize(type, tokens[2], true);
 
-	std::string symbol;
+    std::string symbol;
     uint64_t amount = 0;
     uint64_t value = 0;
     auto target = tokens.front();
-	if(type == "etp") {
-		deserialize(value, tokens[3], true);
-		argument.attach_data_ = attachment(ETP_TYPE, version, etp(value));
-	} else if(type == "etp-award") {
-		deserialize(value, tokens[3], true);
-		argument.attach_data_ = attachment(ETP_AWARD_TYPE, version, etp(value));
-	} else if(type == "asset-issue") {
-		deserialize(symbol, tokens[3], true);
-		deserialize(value, tokens[4], true);
-		auto detail = asset_detail(symbol, 0, 0, "", target, ""); // fill later
-		auto ass = asset(ASSET_DETAIL_TYPE, detail);
-		argument.attach_data_ = attachment(ASSET_TYPE, version, ass);
-	} else if(type == "asset-transfer") {
-		deserialize(symbol, tokens[3], true);
-		deserialize(amount, tokens[4], true);
-		deserialize(value, tokens[5], true);
-		auto transfer = asset_transfer(symbol, amount);
-		auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
-		argument.attach_data_ = attachment(ASSET_TYPE, version, ass);
-	} else {
+    if(type == "etp") {
+        deserialize(value, tokens[3], true);
+        argument.attach_data_ = attachment(ETP_TYPE, version, etp(value));
+    } else if(type == "etp-award") {
+        deserialize(value, tokens[3], true);
+        argument.attach_data_ = attachment(ETP_AWARD_TYPE, version, etp(value));
+    } else if(type == "asset-issue") {
+        deserialize(symbol, tokens[3], true);
+        deserialize(value, tokens[4], true);
+        auto detail = asset_detail(symbol, 0, 0, "", target, ""); // fill later
+        auto ass = asset(ASSET_DETAIL_TYPE, detail);
+        argument.attach_data_ = attachment(ASSET_TYPE, version, ass);
+    } else if(type == "asset-transfer") {
+        deserialize(symbol, tokens[3], true);
+        deserialize(amount, tokens[4], true);
+        deserialize(value, tokens[5], true);
+        auto transfer = asset_transfer(symbol, amount);
+        auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
+        argument.attach_data_ = attachment(ASSET_TYPE, version, ass);
+    } else {
         BOOST_THROW_EXCEPTION(invalid_option_value(tuple));
-	}
+    }
     if (amount > max_money())
     {
         BOOST_THROW_EXCEPTION(invalid_option_value(tuple));
@@ -157,11 +157,11 @@ std::istream& operator>>(std::istream& input, metaverse_output& argument)
 
     argument.amount_ = amount;
     argument.value_ = value;
-	log::debug("metaverse_output") << "target=" << target;
-	log::debug("metaverse_output") << "version=" << version;
-	log::debug("metaverse_output") << "type=" << type;
-	log::debug("metaverse_output") << "symbol=" << symbol;
-	log::debug("metaverse_output") << "amount=" << amount;
+    log::debug("metaverse_output") << "target=" << target;
+    log::debug("metaverse_output") << "version=" << version;
+    log::debug("metaverse_output") << "type=" << type;
+    log::debug("metaverse_output") << "symbol=" << symbol;
+    log::debug("metaverse_output") << "amount=" << amount;
     // Is the target a payment address?
     const wallet::payment_address payment(target);
     if (payment)

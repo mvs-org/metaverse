@@ -45,108 +45,108 @@ namespace pt = boost::property_tree;
 console_result xfetchbalance::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	using namespace bc::client;
+    using namespace bc::client;
 
-	// Bound parameters.
-	auto& blockchain = node.chain_impl();
+    // Bound parameters.
+    auto& blockchain = node.chain_impl();
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
-	auto addr_str = argument_.address;
-	auto address = payment_address(argument_.address);
-	auto type = option_.type;
-	const auto connection = get_connection(*this);
+    auto addr_str = argument_.address;
+    auto address = payment_address(argument_.address);
+    auto type = option_.type;
+    const auto connection = get_connection(*this);
 
-	obelisk_client client(connection);
+    obelisk_client client(connection);
 
-	if (!client.connect(connection))
-	{
-		display_connection_failure(cerr, connection.server);
-		return console_result::failure;
-	}
+    if (!client.connect(connection))
+    {
+        display_connection_failure(cerr, connection.server);
+        return console_result::failure;
+    }
 
-	auto on_done = [&addr_str, &type, &output, &blockchain](const history::list& rows)
-	{
-		pt::ptree tree;
-		pt::ptree balance;
-		uint64_t total_received = 0;
-		uint64_t confirmed_balance = 0;
-		uint64_t unspent_balance = 0;
-		uint64_t frozen_balance = 0;
-		
-		chain::transaction tx_temp;
-		uint64_t tx_height; // unused
-		uint64_t height = 0;
-		blockchain.get_last_height(height);
+    auto on_done = [&addr_str, &type, &output, &blockchain](const history::list& rows)
+    {
+        pt::ptree tree;
+        pt::ptree balance;
+        uint64_t total_received = 0;
+        uint64_t confirmed_balance = 0;
+        uint64_t unspent_balance = 0;
+        uint64_t frozen_balance = 0;
+        
+        chain::transaction tx_temp;
+        uint64_t tx_height; // unused
+        uint64_t height = 0;
+        blockchain.get_last_height(height);
 
-		for (auto& row: rows)
-		{
-			total_received += row.value;
-		
-			// spend unconfirmed (or no spend attempted)
-			if (row.spend.hash == null_hash) {
-				blockchain.get_transaction(row.output.hash, tx_temp, tx_height); // todo -- return value check
-				auto output = tx_temp.outputs.at(row.output.index);
+        for (auto& row: rows)
+        {
+            total_received += row.value;
+        
+            // spend unconfirmed (or no spend attempted)
+            if (row.spend.hash == null_hash) {
+                blockchain.get_transaction(row.output.hash, tx_temp, tx_height); // todo -- return value check
+                auto output = tx_temp.outputs.at(row.output.index);
 
-				// deposit utxo in transaction pool
-				if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-							&& !row.output_height) { 
-					frozen_balance += row.value;
-			    }
+                // deposit utxo in transaction pool
+                if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+                            && !row.output_height) { 
+                    frozen_balance += row.value;
+                }
 
-				// deposit utxo in block
-				if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-					&& row.output_height) { 
-					uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-					if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-						frozen_balance += row.value;
-					}
-				}
-				
-				// coin base etp maturity etp check
-				if(tx_temp.is_coinbase()
-					&& !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
-					// add not coinbase_maturity etp into frozen
-					if((!row.output_height ||
-								(row.output_height && (height - row.output_height) < coinbase_maturity))) {
-						frozen_balance += row.value;
-					}
-				}
-				
-				if((type == "all") 
-					|| ((type == "etp") && output.is_etp()))
-					unspent_balance += row.value;
-			}
-		
-			if (row.output_height != 0 &&
-				(row.spend.hash == null_hash || row.spend_height == 0))
-				confirmed_balance += row.value;
-		}
-		
-		balance.put("address", addr_str);
-		balance.put("confirmed", confirmed_balance);
-		balance.put("received", total_received);
-		balance.put("unspent", unspent_balance);
-		balance.put("frozen", frozen_balance);
-		
-		tree.add_child("balance", balance);
-		pt::write_json(output, tree);
-	};
+                // deposit utxo in block
+                if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+                    && row.output_height) { 
+                    uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                    if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+                        frozen_balance += row.value;
+                    }
+                }
+                
+                // coin base etp maturity etp check
+                if(tx_temp.is_coinbase()
+                    && !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
+                    // add not coinbase_maturity etp into frozen
+                    if((!row.output_height ||
+                                (row.output_height && (height - row.output_height) < coinbase_maturity))) {
+                        frozen_balance += row.value;
+                    }
+                }
+                
+                if((type == "all") 
+                    || ((type == "etp") && output.is_etp()))
+                    unspent_balance += row.value;
+            }
+        
+            if (row.output_height != 0 &&
+                (row.spend.hash == null_hash || row.spend_height == 0))
+                confirmed_balance += row.value;
+        }
+        
+        balance.put("address", addr_str);
+        balance.put("confirmed", confirmed_balance);
+        balance.put("received", total_received);
+        balance.put("unspent", unspent_balance);
+        balance.put("frozen", frozen_balance);
+        
+        tree.add_child("balance", balance);
+        pt::write_json(output, tree);
+    };
 
-	auto on_error = [&output](const code& error)
-	{
-		if(error) {
-			output<<error.message();
-		}
-	};
+    auto on_error = [&output](const code& error)
+    {
+        if(error) {
+            output<<error.message();
+        }
+    };
 
-	// The v3 client API works with and normalizes either server API.
-	//// client.address_fetch_history(on_error, on_done, address);
-	client.address_fetch_history2(on_error, on_done, address);
-	client.wait();
+    // The v3 client API works with and normalizes either server API.
+    //// client.address_fetch_history(on_error, on_done, address);
+    client.address_fetch_history2(on_error, on_done, address);
+    client.wait();
 
     //payment_address address(argument_.address);
 
-	return console_result::okay;
+    return console_result::okay;
 }
 
 

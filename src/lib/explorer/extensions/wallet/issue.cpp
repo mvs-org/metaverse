@@ -65,8 +65,8 @@ console_result issue::invoke (std::ostream& output,
         pt::ptree pt;
         sin.str(sout.str());
         pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
+        auto unspent = pt.get<uint64_t>("balance.unspent");
+        auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
             pavec.push_back({each.get_address(), balance});
@@ -95,15 +95,15 @@ console_result issue::invoke (std::ostream& output,
     sin.str("");
     sout.str("");
     
-	if (dispatch_command(i, wallet, sin, sout, sout, blockchain) != console_result::okay) {
-		throw asset_issue_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, wallet, sin, sout, sout, blockchain) != console_result::okay) {
+        throw asset_issue_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     
     output<<sout.str();
     return console_result::okay;

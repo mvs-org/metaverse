@@ -34,8 +34,8 @@ data_chunk get_seed(uint16_t bit_length = 256u)
     if (bit_length < minimum_seed_size * byte_bits ||
         bit_length % byte_bits != 0)
     {
-		// chenhao exception
-		throw seed_size_exception{MVSCLI_SEED_BIT_LENGTH_UNSUPPORTED};
+        // chenhao exception
+        throw seed_size_exception{MVSCLI_SEED_BIT_LENGTH_UNSUPPORTED};
     }
 
     return new_seed(bit_length);
@@ -48,7 +48,7 @@ bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_c
 
     if ((entropy_size % bw::mnemonic_seed_multiple) != 0)
     {
-		// chenhao exception
+        // chenhao exception
         throw seed_length_exception{MVSCLI_EC_MNEMONIC_NEW_INVALID_ENTROPY};
     }
 
@@ -67,7 +67,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
 
     if ((word_count % bw::mnemonic_word_multiple) != 0)
     {
-		// chenhao exception
+        // chenhao exception
         throw mnemonicwords_amount_exception{MVSCLI_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE};
     }
 
@@ -76,11 +76,11 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     if (!valid && language.size() == 1)
     {
         // This is fatal because a dictionary was specified explicitly.
-		// chenhao exception
+        // chenhao exception
         throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGE};
     }
 
-	// chenhao exception
+    // chenhao exception
     if (!valid && language.size() > 1)
         throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES};
 
@@ -90,7 +90,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
 #else
     if (!passphrase.empty())
     {
-	    // chenhao exception
+        // chenhao exception
         throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_PASSPHRASE_UNSUPPORTED};
     }
 
@@ -107,7 +107,7 @@ bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_
 {
     if (seed.size() < minimum_seed_size)
     {
-	    // chenhao exception
+        // chenhao exception
         throw hd_length_exception{MVSCLI_HD_NEW_SHORT_SEED};
     }
 
@@ -117,7 +117,7 @@ bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_
 
     if (!private_key)
     {
-	    // chenhao exception
+        // chenhao exception
         throw hd_key_exception{MVSCLI_HD_NEW_INVALID_KEY};
     }
 

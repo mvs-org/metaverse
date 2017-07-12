@@ -46,8 +46,8 @@ namespace pt = boost::property_tree;
 console_result setminingaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
-	auto& miner = node.miner();
+    auto& blockchain = node.chain_impl();
+    auto& miner = node.miner();
 
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 

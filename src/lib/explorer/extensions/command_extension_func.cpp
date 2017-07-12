@@ -122,8 +122,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getmininginfo>());
     func(make_shared<getbestblockhash>());
     func(make_shared<getbestblockheader>());
-	func(make_shared<fetchheaderext>());
-	func(make_shared<gettransaction>());
+    func(make_shared<fetchheaderext>());
+    func(make_shared<gettransaction>());
     func(make_shared<backupwallet>());
     func(make_shared<importwallet>());
     func(make_shared<lockwallet>());
@@ -179,7 +179,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<listmultisig>());
     func(make_shared<deletemultisig>());
     func(make_shared<sendfrommultisig>());
-	func(make_shared<signmultisigtx>());
+    func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
 
 
@@ -332,7 +332,7 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == stopall::symbol())
         return make_shared<stopall>();
     if (symbol == getmemorypool::symbol())
-		return make_shared<getmemorypool>();
+        return make_shared<getmemorypool>();
 
     return nullptr;
 }

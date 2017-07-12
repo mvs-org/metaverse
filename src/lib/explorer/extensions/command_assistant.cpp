@@ -43,24 +43,24 @@ std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, boo
     std::istringstream sin(fromkey);
 
     const char* cmds[]{commands, "-v", "127"};
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
     if (use_testnet_rules){
-		if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-			throw encode_exception(sout.str());
-		}
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
+            throw encode_exception(sout.str());
+        }
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
     } else {
-		if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-			throw encode_exception(sout.str());
-		}
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+            throw encode_exception(sout.str());
+        }
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
     }
 
     return sout.str();
@@ -95,15 +95,15 @@ void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"tx-decode"};
-	if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-		throw tx_decode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+        throw tx_decode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     tx_decode = sout.str();
 }
 
@@ -113,16 +113,16 @@ void validate_tx(const std::string& tx_set)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"validate-tx"};
-	if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-		log::debug(LOG_COMMAND) << "validate-tx sout:" << sout.str();
-		throw tx_validate_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+        log::debug(LOG_COMMAND) << "validate-tx sout:" << sout.str();
+        throw tx_validate_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 }
 
 void send_tx(const std::string& tx_set, std::string& send_ret)
@@ -131,16 +131,16 @@ void send_tx(const std::string& tx_set, std::string& send_ret)
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"send-tx"};
-	if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-		log::debug(LOG_COMMAND) << "send-tx sout:" << sout.str();
-		throw tx_send_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+        log::debug(LOG_COMMAND) << "send-tx sout:" << sout.str();
+        throw tx_send_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     send_ret = sout.str();
 }
 
@@ -151,7 +151,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 
     uint64_t remaining = total_payment_amount_;
     uint32_t from_list_index = 1;
-	console_result retcode;
+    console_result retcode;
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
@@ -170,15 +170,15 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 
         std::ostringstream sout("");
         std::istringstream sin;
-		if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
-			throw utxo_fetch_exception(sout.str());
-		}
-		std::pair<uint32_t, std::string> ex_pair;
-		std::stringstream ex_stream;
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
+            throw utxo_fetch_exception(sout.str());
+        }
+        std::pair<uint32_t, std::string> ex_pair;
+        std::stringstream ex_stream;
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
 
         sin.str(sout.str());
 
@@ -225,22 +225,22 @@ bool utxo_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
 
         for (auto& iter : keys_inputs_[fromeach.first]){
             sout.str("");
             sin.str(iter.txhash);
 
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
 
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             sin.str(sout.str());
 
             ptree pt;
@@ -311,15 +311,15 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
 
     std::ostringstream sout;
     std::istringstream sin;
-	if (dispatch_command(i, cmds, sin, sout, sout) != console_result::okay) {
-		throw tx_encode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, cmds, sin, sout, sout) != console_result::okay) {
+        throw tx_encode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     log::debug(LOG_COMMAND)<<"tx-encode sout:"<<sout.str();
     tx_encode = sout.str();
@@ -438,7 +438,7 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
     std::ostringstream sout(tx_encode);
     std::istringstream sin;
 
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     int i = 0;
     for (auto& fromeach : from_list_) {
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
@@ -460,14 +460,14 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
 
@@ -587,7 +587,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
     
     std::string&& amount = std::to_string(total_payment_amount_);
     bool found = false;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     // 1. find one address whose all utxo balance is bigger than total_payment_amount_
     for (auto& fromeach : from_list_){
 
@@ -600,14 +600,14 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         std::ostringstream sout("");
         std::istringstream sin;
-		if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
-			throw utxo_fetch_exception(sout.str());
-		}
-		std::stringstream ex_stream;
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
+            throw utxo_fetch_exception(sout.str());
+        }
+        std::stringstream ex_stream;
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
         sin.str(sout.str());
 
         // parse json
@@ -660,14 +660,14 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         std::ostringstream sout("");
         std::istringstream sin;
-		if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
-			throw utxo_fetch_exception(sout.str());
-		}
-		std::stringstream ex_stream;
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
+            throw utxo_fetch_exception(sout.str());
+        }
+        std::stringstream ex_stream;
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
 
         sin.str(sout.str());
 
@@ -723,15 +723,15 @@ bool utxo_attach_issue_helper::fetch_tx()
         for (auto& iter : keys_inputs_[fromeach.first]){
             sout.str("");
             sin.str(iter.txhash);
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
-			std::pair<uint32_t, std::string> ex_pair;
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
+            std::pair<uint32_t, std::string> ex_pair;
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             sin.str(sout.str());
 
             ptree pt;
@@ -784,15 +784,15 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server:
 
     std::ostringstream sout;
     std::istringstream sin;
-	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw tx_encode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw tx_encode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -804,7 +804,7 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
     std::istringstream sin;
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             sin.str(tx_encode);
@@ -812,14 +812,14 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
 
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -832,7 +832,7 @@ void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::
     std::istringstream sin;
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -844,14 +844,14 @@ void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			if (dispatch_command(4, cmds, sin, sout, sout)) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout)) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
 
@@ -1003,15 +1003,15 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     std::ostringstream sout("");
     std::istringstream sin;
-	if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw utxo_fetch_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw utxo_fetch_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     sin.str(sout.str());
 
@@ -1082,7 +1082,7 @@ bool utxo_attach_send_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : etp_ls_){
 
@@ -1090,14 +1090,14 @@ bool utxo_attach_send_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             sin.str(sout.str());
 
             ptree pt;
@@ -1126,14 +1126,14 @@ bool utxo_attach_send_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
 
             ptree pt;
             read_json(sin, pt);
@@ -1214,15 +1214,15 @@ void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::server::
 
     std::ostringstream sout;
     std::istringstream sin;
-	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw tx_encode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw tx_encode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1236,7 +1236,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
     const char* bank_cmds[1024]{0x00};
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : etp_ls_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             if(!iter.output.as_input_sign.empty())  // only assign once
@@ -1251,14 +1251,14 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             bank_cmds[i] = ((tx_encode_index + fromeach.first + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"etp input-sign="<<tx_encode_index<<" "<<fromeach.first<<" "<<iter.output.script;
-			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1278,14 +1278,14 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.key.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach.key<<" "<<iter.output.script;
-			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1299,7 +1299,7 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
     const char* bank_cmds[1024]{0x00};
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : etp_ls_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -1318,14 +1318,14 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
     
@@ -1347,14 +1347,14 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
 
@@ -1531,7 +1531,7 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
     using namespace boost::property_tree;
     std::string change;
     std::string&& amount = std::to_string(total_payment_amount_);
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
 
     // find address whose all utxo balance is bigger than total_payment_amount_
     for (auto& fromeach : from_list_){
@@ -1539,18 +1539,18 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
         std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
 
-		const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
+        const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
         std::ostringstream sout("");
         std::istringstream sin;
-		if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
-			throw utxo_fetch_exception(sout.str());
-		}
+        if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
+            throw utxo_fetch_exception(sout.str());
+        }
 
-		std::stringstream ex_stream;
-		ex_stream.str(sout.str());
-		if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-			throw explorer_exception(ex_pair.first, ex_pair.second);
-		}
+        std::stringstream ex_stream;
+        ex_stream.str(sout.str());
+        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+            throw explorer_exception(ex_pair.first, ex_pair.second);
+        }
         sin.str(sout.str());
 
         // parse json
@@ -1598,7 +1598,7 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : from_list_){
 
@@ -1606,14 +1606,14 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             sin.str(sout.str());
 
             ptree pt;
@@ -1645,9 +1645,9 @@ void utxo_attach_issuefrom_helper::generate_receiver_list()
     } else if(0==business_type_.compare("asset-issue")) {
         //receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, mychange_.second, ""});
         if(amount_)
-        	receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, 0, ""});
-		if(mychange_.second)
-        	receiver_list_.push_back({mychange_.first, 1, "etp", symbol_, amount_, mychange_.second, ""});
+            receiver_list_.push_back({mychange_.first, 1, "asset-issue", symbol_, amount_, 0, ""});
+        if(mychange_.second)
+            receiver_list_.push_back({mychange_.first, 1, "etp", symbol_, amount_, mychange_.second, ""});
     } else if(0==business_type_.compare("asset-transfer")) {
         //auto total_amount = get_asset_amounts();
         //receiver_list_.push_back({mychange_.first, 1, "asset-transfer", symbol_, total_amount-amount_, mychange_.second, ""});
@@ -1683,15 +1683,15 @@ void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::ser
 
     std::ostringstream sout;
     std::istringstream sin;
-	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw tx_encode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw tx_encode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1703,7 +1703,7 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
     std::istringstream sin;
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         for (auto& iter: keys_inputs_[fromeach.first]){
             sin.str(tx_encode);
@@ -1711,14 +1711,14 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
 
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -1731,7 +1731,7 @@ void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, s
     std::istringstream sin;
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : from_list_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
 
@@ -1743,14 +1743,14 @@ void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, s
             std::string&& tx_encode_index = std::to_string(i++);
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
-			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
 
@@ -1865,15 +1865,15 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::ostringstream sout("");
     std::istringstream sin;
 
-	if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw utxo_fetch_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw utxo_fetch_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     sin.str(sout.str());
 
     // parse json
@@ -1954,7 +1954,7 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
 
     std::ostringstream sout;
     std::istringstream sin;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : prikey_set_){
 
@@ -1962,14 +1962,14 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
             sout.str("");
             sin.str(iter.txhash);
 
-			if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-				throw tx_fetch_exception(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
+                throw tx_fetch_exception(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             sin.str(sout.str());
 
             ptree pt;
@@ -2002,13 +2002,13 @@ void utxo_attach_sendfrom_helper::generate_receiver_list()
         receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, amount_, mychange_.etp_value, ""});
     } else if(0==business_type_.compare("asset-transfer")) {
         //auto total_amount = get_asset_amounts();
-		if(mychange_.asset_amount)
+        if(mychange_.asset_amount)
             receiver_list_.push_back({mychange_.addr, 1, "asset-transfer", symbol_, mychange_.asset_amount, 0, ""});
-		if(mychange_.etp_value)
+        if(mychange_.etp_value)
             receiver_list_.push_back({mychange_.addr, 1, "etp", "", 0, mychange_.etp_value, ""});
         // target asset receiver
         if(amount_)
-        	receiver_list_.push_back({address_, 1, "asset-transfer", symbol_, amount_, 0, ""});
+            receiver_list_.push_back({address_, 1, "asset-transfer", symbol_, amount_, 0, ""});
     } 
 }
 void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::server::server_node& node)
@@ -2042,15 +2042,15 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::serv
 
     std::ostringstream sout;
     std::istringstream sin;
-	if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
-		throw tx_encode_get_exception(sout.str());
-	}
-	std::pair<uint32_t, std::string> ex_pair;
-	std::stringstream ex_stream;
-	ex_stream.str(sout.str());
-	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-		throw explorer_exception(ex_pair.first, ex_pair.second);
-	}
+    if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
+        throw tx_encode_get_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -2064,7 +2064,7 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
     //const char* bank_cmds[1024]{0x00};
 
     int i = 0;    
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
     for (auto& fromeach : prikey_set_){
         for (auto& iter: keys_inputs_[fromeach]){
             //if(!iter.output.as_input_sign.empty())  // only assign once
@@ -2079,14 +2079,14 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
             //bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.c_str(), iter.output.script.c_str()};
             log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach<<" "<<iter.output.script;
-			if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
@@ -2100,7 +2100,7 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
     //const char* bank_cmds[1024]{0x00};
 
     int i = 0;
-	std::pair<uint32_t, std::string> ex_pair;
+    std::pair<uint32_t, std::string> ex_pair;
 
     for (auto& fromeach : prikey_set_){
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach);
@@ -2121,14 +2121,14 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
 
-			if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
-				throw logic_error(sout.str());
-			}
-			std::stringstream ex_stream;
-			ex_stream.str(sout.str());
-			if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-				throw explorer_exception(ex_pair.first, ex_pair.second);
-			}
+            if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
+                throw logic_error(sout.str());
+            }
+            std::stringstream ex_stream;
+            ex_stream.str(sout.str());
+            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+                throw explorer_exception(ex_pair.first, ex_pair.second);
+            }
         }
     }
 

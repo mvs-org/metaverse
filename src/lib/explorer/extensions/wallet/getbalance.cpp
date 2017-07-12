@@ -47,7 +47,7 @@ namespace pt = boost::property_tree;
 console_result getbalance::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     pt::ptree aroot;
@@ -58,31 +58,31 @@ console_result getbalance::invoke (std::ostream& output,
     uint64_t total_confirmed = 0;
     uint64_t total_received = 0;
     uint64_t total_unspent = 0;
-	uint64_t total_frozen = 0;
+    uint64_t total_frozen = 0;
 
-	//balances addr_balance;
-	std::string type("all");
+    //balances addr_balance;
+    std::string type("all");
 
     for (auto& i: *vaddr) {
-		balances addr_balance{0, 0, 0, 0};
-		//auto waddr = wallet::payment_address(i.get_address());
-		//sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-		auto addr = i.get_address();
-		auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
-		if(ec)
-			throw std::logic_error{ec.message()};
+        balances addr_balance{0, 0, 0, 0};
+        //auto waddr = wallet::payment_address(i.get_address());
+        //sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        auto addr = i.get_address();
+        auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
+        if(ec)
+            throw std::logic_error{ec.message()};
 
-		total_confirmed += addr_balance.confirmed_balance;
-		total_received += addr_balance.total_received;
-		total_unspent += addr_balance.unspent_balance;
-		total_frozen += addr_balance.frozen_balance;
+        total_confirmed += addr_balance.confirmed_balance;
+        total_received += addr_balance.total_received;
+        total_unspent += addr_balance.unspent_balance;
+        total_frozen += addr_balance.frozen_balance;
     }
     
     aroot.put("total-confirmed", total_confirmed);
     aroot.put("total-received", total_received);
     aroot.put("total-unspent", total_unspent);
     aroot.put("total-available", total_unspent - total_frozen);
-	aroot.put("total-frozen", total_frozen);
+    aroot.put("total-frozen", total_frozen);
     pt::write_json(output, aroot);
 
     return console_result::okay;

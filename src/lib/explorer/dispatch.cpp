@@ -164,12 +164,12 @@ console_result dispatch_command(int argc, const char* argv[],
 //
 //    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
 //    {
-//    	uint64_t height{0};
-//    	blockchain.get_last_height(height);
-//    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
-//    		error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-//    		return console_result::failure;
-//    	}
+//      uint64_t height{0};
+//      blockchain.get_last_height(height);
+//      if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+//          error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
+//          return console_result::failure;
+//      }
 //        return command->invoke(out, err, blockchain);
 //    }else{
 //        return command->invoke(out, err);
@@ -211,13 +211,13 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
     {
-    	uint64_t height{0};
-    	node.chain_impl().get_last_height(height);
-    	if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
-    		error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-    		return console_result::failure;
-    	}
-    	return static_cast<commands::command_extension*>(command.get())->invoke(out, err, node);
+        uint64_t height{0};
+        node.chain_impl().get_last_height(height);
+        if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+            error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
+            return console_result::failure;
+        }
+        return static_cast<commands::command_extension*>(command.get())->invoke(out, err, node);
     }else{
         return command->invoke(out, err);
     }
@@ -260,12 +260,12 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
     {
-    	uint64_t height{0};
-		blockchain.get_last_height(height);
-    	if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
-			error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-			return console_result::failure;
-		}
+        uint64_t height{0};
+        blockchain.get_last_height(height);
+        if (!blockchain.chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+            error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
+            return console_result::failure;
+        }
         return command->invoke(out, err, blockchain, miner);
     }else{
         return command->invoke(out, err);
