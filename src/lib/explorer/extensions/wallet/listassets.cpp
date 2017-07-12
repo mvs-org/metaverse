@@ -32,7 +32,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
-
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -58,7 +58,7 @@ console_result listassets::invoke (std::ostream& output,
 		sh_vec = blockchain.get_issued_assets();
 		
 		if ( 0 == sh_vec->size()) // no asset found
-			throw std::logic_error{"no asset found ?"};
+			throw asset_notfound_exception{"no asset found ?"};
 
 		// add blockchain assets
 		for (auto& elem: *sh_vec) {
@@ -81,7 +81,7 @@ console_result listassets::invoke (std::ostream& output,
 		blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 		auto pvaddr = blockchain.get_account_addresses(auth_.name);
 		if(!pvaddr) 
-			throw std::logic_error{"nullptr for address list"};
+			throw address_list_nullptr_exception{"nullptr for address list"};
 		
 		// 1. get asset in blockchain		
 		// get address unspent asset balance
@@ -138,4 +138,3 @@ console_result listassets::invoke (std::ostream& output,
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

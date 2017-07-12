@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/listaccounts.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -45,10 +46,10 @@ namespace pt = boost::property_tree;
 console_result listaccounts::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_admin_account(auth_.name))
-        throw std::logic_error{"you are not admin account!"};
+        throw account_authority_exception{"you are not admin account!"};
     
     auto sh_vec = blockchain.get_accounts();
     

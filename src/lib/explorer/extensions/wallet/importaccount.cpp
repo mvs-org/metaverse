@@ -51,10 +51,10 @@ console_result importaccount::invoke (std::ostream& output,
     
     // parameter account name check
     if (blockchain.is_account_exist(auth_.name))
-        throw std::logic_error{"account already exist"};
+        throw account_existed_exception{"account already exist"};
 
     if (argument_.words.size() > 24)
-        throw std::logic_error{"word count must be less than or equal 24"};
+        throw mnemonicwords_amount_exception{"word count must be less than or equal 24"};
     
     for(auto& i : argument_.words){
         sout<<i<<" ";
@@ -94,8 +94,8 @@ console_result importaccount::invoke (std::ostream& output,
         }
     }
     if(is_mnemonic_exist)
-        throw std::logic_error{"mnemonic already exist!"};
-	#endif
+        throw mnemonicwords_existed_exception{"mnemonic already exist!"};
+    #endif
 
     // create account
     auto acc = std::make_shared<bc::chain::account>();
