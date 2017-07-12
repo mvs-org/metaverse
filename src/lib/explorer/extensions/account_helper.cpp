@@ -127,7 +127,8 @@ console_result importaccount::invoke (std::ostream& output,
         if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
             address_generate_exception(sout.str());
         }
-        exec_capture_excode();
+        ex_stream.str(sout.str());
+        relay_exception(ex_stream);
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }
