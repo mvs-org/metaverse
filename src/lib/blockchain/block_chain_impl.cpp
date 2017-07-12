@@ -1236,7 +1236,39 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 
 	return ret_vector;
 }
+// get special assets of the account/name, just used for asset_detail/asset_transfer
+std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_business_record(const std::string& addr,
+				uint64_t start, uint64_t end, const std::string& symbol)
+{	
+	auto ret_vector = std::make_shared<std::vector<business_record>>();
+	auto sh_vec = database_.address_assets.get(addr, start, end);
+	std::string asset_symbol;
+	if(symbol.empty()) { // all utxo
+	    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter){
+	        ret_vector->emplace_back(std::move(*iter));
+	    }
+	} else { // asset symbol utxo
+	    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter){
+			// asset business process
+			asset_symbol = "";
+			if(iter->data.get_kind_value() ==  business_kind::asset_issue) {
+				auto transfer = boost::get<asset_detail>(iter->data.get_data());
+				asset_symbol = transfer.get_symbol();
+			}
+			
+			if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
+				auto transfer = boost::get<asset_transfer>(iter->data.get_data());
+				asset_symbol = transfer.get_address();
+			}
+			
+	        if (symbol == asset_symbol) {
+	            ret_vector->emplace_back(std::move(*iter));
+	        }
+	    }
+	}
 
+	return ret_vector;
+}
 // get special assets of the account/name, just used for asset_detail/asset_transfer
 std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
 				business_kind kind, uint8_t confirmed)
