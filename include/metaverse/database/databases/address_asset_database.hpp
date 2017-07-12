@@ -96,7 +96,8 @@ public:
 		const input_point& previous, uint32_t timestamp);
 	
 	business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
-	
+	std::shared_ptr<std::vector<business_record>> get(const std::string& address, size_t start, size_t end) const;
+	std::shared_ptr<std::vector<business_record>> get(size_t idx) const;
 	business_history::list get_business_history(const short_hash& key,
 			size_t from_height) const;
 	business_history::list get_business_history(const std::string& address, 

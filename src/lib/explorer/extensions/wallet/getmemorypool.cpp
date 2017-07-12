@@ -1,5 +1,15 @@
+/*
+ * getmemorypool.cpp
+ *
+ *  Created on: Jul 3, 2017
+ *      Author: jiang
+ */
+
+
+
+
 /**
- * Copyright (c) 2016-2017 mvs developers 
+ * Copyright (c) 2016-2017 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,7 +28,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
+#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include <metaverse/bitcoin.hpp>
@@ -28,7 +38,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/wallet/getbalance.hpp>
+#include <metaverse/explorer/extensions/wallet/getmemorypool.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
@@ -39,51 +49,34 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 /************************ getbalance *************************/
 
-console_result getbalance::invoke (std::ostream& output,
+console_result getmemorypool::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	using transaction_ptr = message::transaction_message::ptr ;
 	auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	std::promise<code> p;
+	blockchain.pool().fetch([&output, &p](const code& ec, const std::vector<transaction_ptr>& txs){
+		if (ec)
+		{
+			p.set_value(ec);
+			return;
+		}
+		std::vector<config::transaction> txs1;
+		txs1.reserve(txs.size());
+		for (auto tp:txs) {
+			txs1.push_back(*tp);
+		}
+		pt::write_json(output, config::prop_tree(txs1, true));
+		p.set_value(ec);
+	});
 
-    pt::ptree aroot;
-
-    auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"nullptr for address list"};
-
-    uint64_t total_confirmed = 0;
-    uint64_t total_received = 0;
-    uint64_t total_unspent = 0;
-	uint64_t total_frozen = 0;
-
-	//balances addr_balance;
-	std::string type("all");
-
-    for (auto& i: *vaddr) {
-		balances addr_balance{0, 0, 0, 0};
-		//auto waddr = wallet::payment_address(i.get_address());
-		//sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-		auto addr = i.get_address();
-		auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
-		if(ec)
-			throw std::logic_error{ec.message()};
-
-		total_confirmed += addr_balance.confirmed_balance;
-		total_received += addr_balance.total_received;
-		total_unspent += addr_balance.unspent_balance;
-		total_frozen += addr_balance.frozen_balance;
-    }
-    
-    aroot.put("total-confirmed", total_confirmed);
-    aroot.put("total-received", total_received);
-    aroot.put("total-unspent", total_unspent);
-    aroot.put("total-available", total_unspent - total_frozen);
-	aroot.put("total-frozen", total_frozen);
-    pt::write_json(output, aroot);
-
+	auto result = p.get_future().get();
+	if(result){
+			throw std::logic_error{result.message()};
+	}
     return console_result::okay;
 }
 

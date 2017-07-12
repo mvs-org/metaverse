@@ -283,6 +283,38 @@ chain::points_info sync_fetchutxo(uint64_t amount, wallet::payment_address& addr
 	return selected_utxos;
 
 }
+void sync_fetch_asset_balance (std::string& addr, 
+	bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
+{
+	auto address = payment_address(addr);
+	// history::list rows
+	auto rows = get_address_history(address, blockchain);
+	
+	chain::transaction tx_temp;
+	uint64_t tx_height;
+	uint64_t height = 0;
+	blockchain.get_last_height(height);
+
+	for (auto& row: rows) {		
+		// spend unconfirmed (or no spend attempted)
+		if ((row.spend.hash == null_hash)
+				&& blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+			auto output = tx_temp.outputs.at(row.output.index);
+			if((output.is_asset_transfer() || output.is_asset_issue())) {
+				auto pos = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), [&](const asset_detail& elem){
+						return output.get_asset_symbol() == elem.get_symbol();
+						});
+				
+				if (pos == sh_asset_vec->end()){ // new item
+					sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, "", addr, ""));
+                } else { // exist just add amount
+					pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
+				}
+			}
+		}
+	
+	}
+}
 /// amount == 0 -- get all address balances
 /// amount != 0 -- get some address balances which bigger than amount 
 void sync_fetchbalance (wallet::payment_address& address, 
@@ -357,11 +389,12 @@ void sync_fetchbalance (wallet::payment_address& address,
 	
 }
 
-void sync_fetchbalance (command& cmd, std::string& addr, 
+code sync_fetchbalance (command& cmd, std::string& addr, 
 	std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
 {
 	using namespace bc::client;
 
+	code ec = error::success;
 	auto address = payment_address(addr);
 	const auto connection = get_connection(cmd);
 	obelisk_client client(connection);
@@ -422,11 +455,9 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 		}
 	};
 
-	auto on_error = [](const code& error)
+	auto on_error = [&ec](const code& error)
 	{
-		if(error) {
-			throw std::logic_error{error.message()};
-		}
+		ec = error;
 	};
 
 	// The v3 client API works with and normalizes either server API.
@@ -434,7 +465,7 @@ void sync_fetchbalance (command& cmd, std::string& addr,
 	client.address_fetch_history2(on_error, on_done, address);
 	client.wait();
 
-	return ;
+	return ec;
 }
 void base_transfer_helper::sum_payment_amount(){
 	if(receiver_list_.empty())
@@ -448,6 +479,144 @@ void base_transfer_helper::sum_payment_amount(){
     }
 }
 void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr) 
+#if 1
+{
+	auto waddr = wallet::payment_address(addr);
+	// history::list rows
+	auto rows = get_address_history(waddr, blockchain_);
+	log::trace("get_history=")<<rows.size();
+		
+	chain::transaction tx_temp;
+	uint64_t tx_height;
+	uint64_t height = 0;
+	auto frozen_flag = false;
+	address_asset_record record;
+	
+	blockchain_.get_last_height(height);
+
+	for (auto& row: rows)
+	{
+		frozen_flag = false;
+		if((unspent_etp_ >= payment_etp_) && (unspent_asset_ >= payment_asset_)) // performance improve
+			break;
+				
+		// spend unconfirmed (or no spend attempted)
+		if ((row.spend.hash == null_hash)
+				&& blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
+			auto output = tx_temp.outputs.at(row.output.index);
+
+			// deposit utxo in transaction pool
+			if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+						&& !row.output_height) { 
+				frozen_flag = true;
+			}
+
+			// deposit utxo in block
+			if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+				&& row.output_height) { 
+				uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+				if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+					frozen_flag = true;
+				}
+			}
+			
+			// coin base etp maturity etp check
+			if(tx_temp.is_coinbase()
+				&& !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
+				// add not coinbase_maturity etp into frozen
+				if((!row.output_height ||
+							(row.output_height && (height - row.output_height) < coinbase_maturity))) {
+					frozen_flag = true;
+				}
+			}
+			log::trace("frozen_flag=")<< frozen_flag;
+			log::trace("payment_asset_=")<< payment_asset_;
+			log::trace("is_etp=")<< output.is_etp();
+			log::trace("value=")<< row.value;
+			log::trace("is_trans=")<< output.is_asset_transfer();
+			log::trace("is_issue=")<< output.is_asset_issue();
+			log::trace("symbol=")<< symbol_;
+			log::trace("outpuy symbol=")<< output.get_asset_symbol();
+			// add to from list
+			if(!frozen_flag){
+				// etp -> etp tx
+				if(!payment_asset_ && output.is_etp()){
+					record.prikey = prikey;
+					record.addr = addr;
+					record.amount = row.value;
+					record.symbol = "";
+					record.asset_amount = 0;
+					record.type = utxo_attach_type::etp;
+					record.output = row.output;
+					record.script = output.script;
+					
+					if(unspent_etp_ < payment_etp_) {
+						from_list_.push_back(record);
+						unspent_etp_ += record.amount;
+					}
+				// asset issue/transfer
+				} else { 
+					if(output.is_etp()){
+						record.prikey = prikey;
+						record.addr = addr;
+						record.amount = row.value;
+						record.symbol = "";
+						record.asset_amount = 0;
+						record.type = utxo_attach_type::etp;
+						record.output = row.output;
+						record.script = output.script;
+						
+						if(unspent_etp_ < payment_etp_) {
+							from_list_.push_back(record);
+							unspent_etp_ += record.amount;
+						}
+					} else if (output.is_asset_issue() && (symbol_ == output.get_asset_symbol())){
+						record.prikey = prikey;
+						record.addr = addr;
+						record.amount = row.value;
+						record.symbol = output.get_asset_symbol();
+						record.asset_amount = output.get_asset_amount();
+						record.type = utxo_attach_type::asset_issue;
+						record.output = row.output;
+						record.script = output.script;
+						
+						if((unspent_asset_ < payment_asset_)
+							|| (unspent_etp_ < payment_etp_)) {
+							from_list_.push_back(record);
+							unspent_asset_ += record.asset_amount;
+							unspent_etp_ += record.amount;
+						}
+					} else if (output.is_asset_transfer() && (symbol_ == output.get_asset_symbol())){
+						record.prikey = prikey;
+						record.addr = addr;
+						record.amount = row.value;
+						record.symbol = output.get_asset_symbol();
+						record.asset_amount = output.get_asset_amount();
+						record.type = utxo_attach_type::asset_transfer;
+						record.output = row.output;
+						record.script = output.script;
+						
+						if((unspent_asset_ < payment_asset_)
+							|| (unspent_etp_ < payment_etp_)){
+							from_list_.push_back(record);
+							unspent_asset_ += record.asset_amount;
+							unspent_etp_ += record.amount;
+						}
+						log::trace("unspent_asset_=")<< unspent_asset_;
+						log::trace("unspent_etp_=")<< unspent_etp_;
+					}
+					// not add message process here, because message utxo have no etp value
+				}
+			}
+		}
+	
+	}
+	rows.clear();
+	
+}
+#endif
+
+#if 0
 {
 	using namespace bc::client;
 
@@ -592,7 +761,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 
 	return ;
 }
-
+#endif
 void base_transfer_helper::populate_unspent_list() {
 	// get address list
 	auto pvaddr = blockchain_.get_account_addresses(name_);
@@ -775,9 +944,9 @@ void base_transfer_helper::sign_tx_inputs(){
 }
 
 void base_transfer_helper::send_tx(){
-	if(!blockchain_.validate_transaction(tx_))
+	if(blockchain_.validate_transaction(tx_))
 			throw std::logic_error{"validate transaction failure"};
-	if(!blockchain_.broadcast_transaction(tx_)) 
+	if(blockchain_.broadcast_transaction(tx_)) 
 			throw std::logic_error{"broadcast transaction failure"};
 }
 void base_transfer_helper::exec(){	
@@ -901,171 +1070,15 @@ void sending_multisig_etp::populate_change() {
 			receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
 	}
 }
-#include <metaverse/bitcoin/config/base16.hpp>
+//#include <metaverse/bitcoin/config/base16.hpp>
 
 void sending_multisig_etp::sign_tx_inputs() {
     uint32_t index = 0;
-	std::vector<std::string> hd_pubkeys;
 	std::string prikey, pubkey, multisig_script;
 	
     for (auto& fromeach : from_list_){
 		// populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, fromeach.hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
-		log::trace("wdy script=") << multisig_script;
-		wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-		log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
-		// prepare sign
-		explorer::config::hashtype sign_type;
-		uint8_t hash_type = (signature_hash_algorithm)sign_type;
-		
-		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-		const ec_secret& private_key =	  config_private_key;	 
-		
-		bc::explorer::config::script config_contract(multisig_script);
-		const bc::chain::script& contract = config_contract;
-		
-		// gen sign
-		bc::endorsement endorse;
-		if (!bc::chain::script::create_endorsement(endorse, private_key,
-			contract, tx_, index, hash_type))
-		{
-			throw std::logic_error{"get_input_sign sign failure"};
-		}
-		// do script
-		bc::chain::script ss;
-		data_chunk data;
-		ss.operations.push_back({bc::chain::opcode::zero, data});
-		ss.operations.push_back({bc::chain::opcode::special, endorse});
-		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
-
-		chain::script script_encoded;
-		script_encoded.from_string(multisig_script);
-		
-		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-		
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-
-}
-
-void sending_multisig_etp::update_tx_inputs_signature() {
-	#if 0
-    uint32_t index = 0;
-	std::vector<std::string> hd_pubkeys;
-	std::string prikey, pubkey, multisig_script;
-	
-    for (auto& fromeach : from_list_){
-		// populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, fromeach.hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
-		log::trace("wdy script=") << multisig_script;
-		wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-		log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
-		// prepare sign
-		explorer::config::hashtype sign_type;
-		uint8_t hash_type = (signature_hash_algorithm)sign_type;
-		
-		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-		const ec_secret& private_key =	  config_private_key;	 
-		
-		bc::explorer::config::script config_contract(multisig_script);
-		const bc::chain::script& contract = config_contract;
-		
-		// gen sign
-		bc::endorsement endorse;
-		if (!bc::chain::script::create_endorsement(endorse, private_key,
-			contract, tx_, index, hash_type))
-		{
-			throw std::logic_error{"get_input_sign sign failure"};
-		}
-		// do script
-		bc::chain::script ss;
-		data_chunk data;
-		ss.operations.push_back({bc::chain::opcode::zero, data});
-		ss.operations.push_back({bc::chain::opcode::special, endorse});
-		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
-
-		chain::script script_encoded;
-		script_encoded.from_string(multisig_script);
-		
-		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-		
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-	#endif
-	// get all address of this account
-	auto pvaddr = blockchain_.get_account_addresses(name_);
-	if(!pvaddr) 
-		throw std::logic_error{"nullptr for address list"};
-	bc::chain::script ss;
-	bc::chain::script redeem_script;
-    uint32_t hd_index;
-
-	std::vector<std::string> hd_pubkeys;
-	std::string prikey, pubkey, multisig_script, addr_prikey;
-    uint32_t index = 0;
-	for(auto& each_input : tx_.inputs) {
-		ss = each_input.script;
-		log::trace("wdy old script=") << ss.to_string(false);
-		const auto& ops = ss.operations;
-		
-		// 1. extract address from multisig payment script
-		// zero sig1 sig2 ... encoded-multisig
-		const auto& redeem_data = ops.back().data;
-		
-		if (redeem_data.empty())
-			throw std::logic_error{"empty redeem script."};
-		
-		if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
-			throw std::logic_error{"error occured when parse redeem script data."};
-		
-		// Is the redeem script a standard pay (output) script?
-		const auto redeem_script_pattern = redeem_script.pattern();
-		if(redeem_script_pattern != script_pattern::pay_multisig)
-			throw std::logic_error{"redeem script is not pay multisig pattern."};
-		
-		const payment_address address(redeem_script, 5);
-		auto addr_str = address.encoded(); // pay address
-		
-		// 2. get address prikey/hd_index
-		#if 0
-		auto it = std::find(pvaddr->begin(), pvaddr->end(), addr_str);
-		if(it == pvaddr->end())
-			throw std::logic_error{std::string("not found address : ") + addr_str};
-		addr_prikey = it->get_prv_key(passwd_);
-		hd_index = it->get_hd_index();
-		#endif
-		addr_prikey = "";
-		hd_index = 0xffffffff;
-		for (auto& each : *pvaddr){
-			if ( addr_str == each.get_address() ) { // find address
-				addr_prikey = each.get_prv_key(passwd_);
-				hd_index = each.get_hd_index();
-				break;
-			}
-		}
-		if((hd_index == 0xffffffff) && addr_prikey.empty())
-			throw std::logic_error{std::string("not found address : ") + addr_str};
-		// 3. populate unlock script
-		hd_pubkeys.clear();
-		for(auto& each : multisig_pubkeys_) {
-			get_multisig_pri_pub_key(prikey, pubkey, each, hd_index);
-			hd_pubkeys.push_back(pubkey);
-		}
-		multisig_script = get_multisig_script(m_, n_, hd_pubkeys);
+		multisig_script = multisig_.get_multisig_script();
 		log::trace("wdy script=") << multisig_script;
 		//wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
 		//log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
@@ -1073,7 +1086,7 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 		explorer::config::hashtype sign_type;
 		uint8_t hash_type = (signature_hash_algorithm)sign_type;
 		
-		bc::explorer::config::ec_private config_private_key(addr_prikey);
+		bc::explorer::config::ec_private config_private_key(fromeach.prikey);
 		const ec_secret& private_key =	  config_private_key;	 
 		
 		bc::explorer::config::script config_contract(multisig_script);
@@ -1086,16 +1099,41 @@ void sending_multisig_etp::update_tx_inputs_signature() {
 		{
 			throw std::logic_error{"get_input_sign sign failure"};
 		}
-		// insert endorse
-		auto position = ss.operations.begin();
-		ss.operations.insert(position + 1, {bc::chain::opcode::special, endorse});
+		// do script
+		bc::chain::script ss;
+		data_chunk data;
+		ss.operations.push_back({bc::chain::opcode::zero, data});
+		ss.operations.push_back({bc::chain::opcode::special, endorse});
+		//ss.operations.push_back({bc::chain::opcode::special, endorse2});
+
+		chain::script script_encoded;
+		script_encoded.from_string(multisig_script);
+		
+		ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
 		
         // set input script of this tx
-        each_input.script = ss;
-		log::trace("wdy new script=") << ss.to_string(false);
-	}
+        tx_.inputs[index].script = ss;
+        index++;
+    }
 
 }
+
+void sending_multisig_etp::exec(){	
+	// prepare 
+	sum_payment_amount();
+	populate_unspent_list();
+	// construct tx
+	populate_tx_header();
+	populate_tx_inputs();
+	populate_tx_outputs();
+	// check tx
+	check_tx();
+	// sign tx
+	sign_tx_inputs();
+	// send tx in signmultisigtx command
+	//send_tx();
+}
+
 void issuing_asset::sum_payment_amount() {
 	if(receiver_list_.empty())
 		throw std::logic_error{"empty target address"};

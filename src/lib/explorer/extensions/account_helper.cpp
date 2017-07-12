@@ -44,6 +44,12 @@ console_result importaccount::invoke (std::ostream& output,
     if (blockchain.is_account_exist(auth_.name))
         throw std::logic_error{"account already exist"};
 
+	#ifdef NDEBUG
+	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
+		option_.passwd.length() > 128 || option_.passwd.length() < 6)
+		throw std::logic_error{"name length in [3, 128], password length in [6, 128]"};
+	#endif
+
     if (argument_.words.size() > 24)
         throw std::logic_error{"word count must be less than or equal 24"};
     
@@ -169,6 +175,280 @@ console_result changepasswd::invoke (std::ostream& output,
 
     return console_result::okay;
 }
+
+/************************ getnewmultisig *************************/
+
+console_result getnewmultisig::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+	auto& blockchain = node.chain_impl();
+    // parameter account name check
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    //auto acc_multisig = acc->get_multisig();
+    account_multisig acc_multisig;
+			
+	if(option_.public_keys.empty())
+		throw std::logic_error{"multisig cosigner public key needed."};
+	// parameter check
+	if( option_.m < 1 )
+		throw std::logic_error{"signature number less than 1."};
+	if( !option_.n || option_.n > 20 )
+		throw std::logic_error{"public key number bigger than 20."};
+	if( option_.m > option_.n )
+		throw std::logic_error{"signature number bigger than public key number."};
+
+	// add self public key into key vector
+	auto pubkey = option_.self_publickey;
+	if(std::find(option_.public_keys.begin(), option_.public_keys.end(), pubkey) == option_.public_keys.end()) // not found
+		option_.public_keys.push_back(pubkey);
+	if( option_.n != option_.public_keys.size() )
+		throw std::logic_error{"public key number not match with n."};
+
+	acc_multisig.set_hd_index(0);
+	acc_multisig.set_m(option_.m);
+	acc_multisig.set_n(option_.n);
+	acc_multisig.set_pubkey(pubkey);
+	acc_multisig.set_cosigner_pubkeys(std::move(option_.public_keys));
+	acc_multisig.set_description(option_.description);
+	
+	if(acc->get_multisig(acc_multisig))
+		throw std::logic_error{"multisig already exists."};
+	
+	acc_multisig.set_index(acc->get_multisig_vec().size() + 1);
+	
+	// change account type
+	acc->set_type(account_type::multisignature);
+
+
+	// store address
+	auto addr = std::make_shared<bc::chain::account_address>();
+	addr->set_name(auth_.name);
+	
+	// get private key according public key
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr) 
+        throw std::logic_error{"nullptr for address list"};
+	
+    const char* cmds[2]{"ec-to-public", nullptr};
+    std::ostringstream sout("");
+    std::istringstream sin; 
+	std::string prv_key;
+    auto found = false;
+    for (auto& each : *pvaddr){
+		prv_key = each.get_prv_key(auth_.auth);
+		cmds[1] = prv_key.c_str();
+		if(console_result::okay == dispatch_command(2, cmds, sin, sout, sout)) {
+			log::trace("pubkey")<<sout.str();
+			if(sout.str() == pubkey){
+				found = true;
+				break;
+			}
+			sout.str("");
+		}
+    }
+	if(!found)
+        throw std::logic_error{pubkey + " not belongs to this account"};
+
+    addr->set_prv_key(prv_key, auth_.auth);
+
+	// multisig address
+	auto multisig_script = acc_multisig.get_multisig_script();
+	chain::script script_inst;
+	script_inst.from_string(multisig_script);
+	if(script_pattern::pay_multisig != script_inst.pattern())
+		throw std::logic_error{std::string("invalid multisig script : ")+multisig_script};
+	payment_address address(script_inst, 5);
+	
+    addr->set_address(address.encoded());
+    //addr->set_status(1); // 1 -- enable address
+	addr->set_status(account_address_status::multisig_addr);
+
+	auto addr_str = address.encoded();
+	acc_multisig.set_address(addr_str);
+	acc->set_multisig(acc_multisig);
+		
+    blockchain.store_account(acc);
+    blockchain.store_account_address(addr);
+	    
+    pt::ptree root, pubkeys;
+
+    root.put("index", acc_multisig.get_index());
+    root.put("m", acc_multisig.get_m());
+    root.put("n", acc_multisig.get_n());
+    root.put("self-publickey", acc_multisig.get_pubkey());
+    root.put("description", acc_multisig.get_description());
+
+	for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+		pt::ptree pubkey;
+		pubkey.put("", each);
+        pubkeys.push_back(std::make_pair("", pubkey));
+	}
+    root.add_child("public-keys", pubkeys);
+	root.put("multisig-script", multisig_script);
+	root.put("address", acc_multisig.get_address());
+    
+    pt::write_json(output, root);
+    
+    return console_result::okay;
+}
+
+/************************ listmultisig *************************/
+
+console_result listmultisig::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+	auto& blockchain = node.chain_impl();
+    // parameter account name check
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	pt::ptree root, nodes;
+
+	if(option_.index) {	// according index
+		if(option_.index > acc->get_multisig_vec().size())
+			throw std::logic_error{"multisig index outofbound."};
+		
+		account_multisig acc_multisig;
+		acc->get_multisig(acc_multisig, option_.index);
+
+		pt::ptree node, pubkeys;
+		node.put("index", acc_multisig.get_index());
+		//node.put("hd_index", acc_multisig.get_hd_index());
+		node.put("m", acc_multisig.get_m());
+		node.put("n", acc_multisig.get_n());
+		node.put("self-publickey", acc_multisig.get_pubkey());
+		node.put("description", acc_multisig.get_description());
+		for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+			pt::ptree pubkey;
+			pubkey.put("", each);
+			pubkeys.push_back(std::make_pair("", pubkey));
+		}
+		node.add_child("public-keys", pubkeys);
+		node.put("multisig-script", acc_multisig.get_multisig_script());
+		node.put("address", acc_multisig.get_address());
+		nodes.push_back(std::make_pair("", node));
+
+	} else {
+	
+	    auto multisig_vec = acc->get_multisig_vec();
+			
+		for(auto& acc_multisig : multisig_vec) {
+			pt::ptree node, pubkeys;
+			node.put("index", acc_multisig.get_index());
+			//node.put("hd_index", acc_multisig.get_hd_index());
+			node.put("m", acc_multisig.get_m());
+			node.put("n", acc_multisig.get_n());
+			node.put("self-publickey", acc_multisig.get_pubkey());
+			node.put("description", acc_multisig.get_description());
+			for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+				pt::ptree pubkey;
+				pubkey.put("", each);
+				pubkeys.push_back(std::make_pair("", pubkey));
+			}
+			node.add_child("public-keys", pubkeys);
+			node.put("multisig-script", acc_multisig.get_multisig_script());
+			node.put("address", acc_multisig.get_address());
+
+			nodes.push_back(std::make_pair("", node));
+		}	
+	}
+	root.add_child("multisig", nodes);    
+    pt::write_json(output, root);
+    
+    return console_result::okay;
+}
+
+/************************ deletemultisig *************************/
+// todo -- delete related address
+console_result deletemultisig::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+	auto& blockchain = node.chain_impl();
+    // parameter account name check
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    //auto acc_multisig = acc->get_multisig();
+    account_multisig acc_multisig;
+	if(option_.index) {	// according index
+		if(option_.index > acc->get_multisig_vec().size())
+			throw std::logic_error{"multisig index outofbound."};
+		acc->remove_multisig(acc_multisig, option_.index);
+	} else {
+		if(option_.public_keys.empty())
+			throw std::logic_error{"multisig cosigner public key needed."};
+		// parameter check
+		if( option_.m < 1 )
+			throw std::logic_error{"signature number less than 1."};
+		if( !option_.n || option_.n > 20 )
+			throw std::logic_error{"public key number bigger than 20."};
+		if( option_.m > option_.n )
+			throw std::logic_error{"signature number bigger than public key number."};
+		if(option_.self_publickey.empty())
+			throw std::logic_error{"self public key needed."};
+		
+		// add self public key into key vector
+		auto pubkey = option_.self_publickey;
+		if(std::find(option_.public_keys.begin(), option_.public_keys.end(), pubkey) == option_.public_keys.end()) // not found
+			option_.public_keys.push_back(pubkey);
+		if( option_.n != option_.public_keys.size() )
+			throw std::logic_error{"public key number not match with n."};
+		
+		acc_multisig.set_m(option_.m);
+		acc_multisig.set_n(option_.n);
+		acc_multisig.set_pubkey(pubkey);
+		acc_multisig.set_cosigner_pubkeys(std::move(option_.public_keys));
+		
+		if(!(acc->get_multisig(acc_multisig)))
+			throw std::logic_error{"multisig not exists."};
+		
+		acc->remove_multisig(acc_multisig);
+	}
+
+	// change account type
+	acc->set_type(account_type::common);
+	if(acc->get_multisig_vec().size())
+		acc->set_type(account_type::multisignature);
+    // flush to db
+    blockchain.store_account(acc);
+
+    pt::ptree root, pubkeys;
+
+    root.put("index", acc_multisig.get_index());
+    root.put("m", acc_multisig.get_m());
+    root.put("n", acc_multisig.get_n());
+    root.put("self-publickey", acc_multisig.get_pubkey());
+    root.put("description", acc_multisig.get_description());
+
+	for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+		pt::ptree pubkey;
+		pubkey.put("", each);
+        pubkeys.push_back(std::make_pair("", pubkey));
+	}
+    root.add_child("public-keys", pubkeys);
+	root.put("multisig-script", acc_multisig.get_multisig_script());
+	root.put("address", acc_multisig.get_address());
+	
+	// delete account address
+    auto vaddr = blockchain.get_account_addresses(auth_.name);
+    if(!vaddr) throw std::logic_error{"empty address list for this account"};
+
+	blockchain.delete_account_address(auth_.name);
+	for (auto it = vaddr->begin(); it != vaddr->end();) {
+		if (it->get_address() == acc_multisig.get_address()) {
+			it = vaddr->erase(it);
+			break;
+		}
+		++it;
+	}
+
+	// restore address
+	for (auto& each : *vaddr) {
+		auto addr = std::make_shared<bc::chain::account_address>(each);
+		blockchain.store_account_address(addr);
+	}
+    
+    pt::write_json(output, root);
+    
+    return console_result::okay;
+}
+
 
 } // libbitcoin
 } // explorer

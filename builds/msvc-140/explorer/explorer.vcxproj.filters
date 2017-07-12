@@ -978,5 +978,8 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\backupaccount.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getmemorypool.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -138,7 +138,11 @@ bool executor::do_initchain()
 			// set_admin();
 	        log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
 	        return true;
-    	}
+    	} else if(data_base::is_higher_database(data_path)) {
+			throw std::runtime_error{"blockchain db not compatible with mvsd. please download the newest mvsd and try!"};
+		} else {
+			// version equal nothing to do 
+		}
 	}
 
     if (ec.value() == directory_exists)

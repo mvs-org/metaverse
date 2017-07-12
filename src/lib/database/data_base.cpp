@@ -82,32 +82,54 @@ bool data_base::is_lower_database(const path& prefix)
 	auto metadata_path = prefix / db_metadata::file_name;
 	auto metadata = db_metadata();
 	data_base::read_metadata(metadata_path, metadata);
+	log::info("database") << " database version = " << metadata.version_;
+	log::info("database") << " mvsd db version = " << db_metadata::current_version;
 	return metadata.version_ < db_metadata::current_version;
 }
+bool data_base::is_higher_database(const path& prefix)
+{
+	auto metadata_path = prefix / db_metadata::file_name;
+	auto metadata = db_metadata();
+	data_base::read_metadata(metadata_path, metadata);
+	return metadata.version_ > db_metadata::current_version;
+}
+
 bool data_base::upgrade_database(const settings& settings, const chain::block& genesis)
 {
-	log::info("database") << "The local database is being upgraded, it may take a while to re-synchronize the block data, please wait...";
-    // Create paths.
-    auto prefix = default_data_path() / settings.directory;
-    const blockchain_store paths(prefix);
-
-    if (!paths.touch_all())
-        return false;
-	
-	data_base instance(settings);
-
-    if (!instance.blockchain_create())
-        return false;
-	if (!instance.account_db_start())
-		return false;
-	// metadata
 	auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
-	//auto metadata = db_metadata();
-	//data_base::read_metadata(metadata_path, metadata); // maybe do recover according db version
-	auto metadata = db_metadata(db_metadata::current_version);
-	data_base::write_metadata(metadata_path, metadata);
-	instance.push(genesis);
-	return instance.stop();
+	auto metadata = db_metadata();
+	data_base::read_metadata(metadata_path, metadata);
+	auto ret_flag = false;
+	
+	// no need resynchronize blockchain -- blockchain asset structure modified
+	if(metadata.version_<= "0.6.1") {
+		log::info("database") << "The local database is being upgraded, it may take a while to re-synchronize the block data, please wait...";
+		// Create paths.
+		auto prefix = default_data_path() / settings.directory;
+		const blockchain_asset_store paths(prefix);
+
+		if (!paths.touch_all())
+			return false;
+		
+		data_base instance(settings);
+
+		if (!instance.blockchain_asset_create())
+			return false;
+		instance.stop();
+		instance.start();
+		//instance.upgrade_address_utxo();
+		instance.upgrade_blockchain_asset();
+		instance.synchronize();
+		// metadata
+		auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
+		//auto metadata = db_metadata();
+		//data_base::read_metadata(metadata_path, metadata); // maybe do recover according db version
+		auto metadata = db_metadata(db_metadata::current_version);
+		data_base::write_metadata(metadata_path, metadata);
+		ret_flag = instance.stop();
+	} 
+
+	return ret_flag;
 }
 
 void data_base::set_admin(const std::string& name, const std::string& passwd)
@@ -204,6 +226,23 @@ bool data_base::blockchain_store::touch_all() const
         touch_file(address_assets_rows)
 		/* end database for account, asset, address_asset relationship */
 		;
+}
+
+data_base::blockchain_asset_store::blockchain_asset_store(const path& prefix)
+{
+    // Hash-based lookup (hash tables).
+	/* begin database for account, asset, address_asset relationship */
+	assets_lookup = prefix / "asset_table";  // for blockchain assets
+	/* end database for account, asset, address_asset relationship */
+}
+
+bool data_base::blockchain_asset_store::touch_all() const
+{
+    // Return the result of the database file create.
+    return
+		/* begin database for account, asset, address_asset relationship */
+		touch_file(assets_lookup);
+		/* end database for account, asset, address_asset relationship */
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -433,6 +472,15 @@ bool data_base::blockchain_create()
 		/* end database for account, asset, address_asset relationship */
 		;
 }
+bool data_base::blockchain_asset_create()
+{
+    // Return the result of the database create.
+    return 
+		/* begin database for account, asset, address_asset relationship */
+		assets.create()
+		/* end database for account, asset, address_asset relationship */
+		;
+}
 bool data_base::account_db_start()
 {
 	return 
@@ -440,6 +488,38 @@ bool data_base::account_db_start()
 		account_assets.start()&&
 		account_addresses.start();
 }
+
+void data_base::upgrade_blockchain_asset()
+ {
+	uint64_t i = 0, record_number = 0;
+	
+	for( i = 0; i < 97210744; i++ ) {  // refer blockchain_asset_database::number_buckets
+		auto sh_addr_assets_vec = address_assets.get(i);
+		
+		for(auto& row : *sh_addr_assets_vec) {
+			record_number++;
+			if(static_cast<attachment_type>(row.data.get_kind_value()) == attachment_type::asset_issue_attach) {
+				if(static_cast<uint8_t>(row.kind) == static_cast<uint8_t>(point_kind::output)) {
+					auto sp_detail = boost::get<asset_detail>(row.data.get_data());
+					const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
+					const auto hash = sha256_hash(data);
+					auto bc_asset = blockchain_asset(0, row.point,row.height, sp_detail);
+					assets.store(hash, bc_asset);
+				}
+			}
+			// present upgrading info to user
+			log::info("database")<<"upgrading record "<<record_number << " at height "<<row.height;
+			log::trace("database")<<"upgrading record "<<record_number << " at height "<<row.height;
+		}
+		
+		// record count check
+		auto asset_stat = address_assets.statinfo();
+		if(record_number == asset_stat.rows)
+			break;
+	}
+	
+}
+
 // Start must be called before performing queries.
 // Start may be called after stop and/or after close in order to restart.
 bool data_base::start()

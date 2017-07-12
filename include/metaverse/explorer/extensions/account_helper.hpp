@@ -207,6 +207,317 @@ public:
     } option_;
 
 };
+
+/************************ getnewmultisig *************************/
+
+class getnewmultisig: public command_extension
+{
+public:
+    static const char* symbol(){ return "getnewmultisig";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "getnewmultisig "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+		(
+			"ACCOUNTNAME",
+			value<std::string>(&auth_.name)->required(),
+			"Account name."
+		)
+		(
+			"ACCOUNTAUTH",
+			value<std::string>(&auth_.auth)->required(),
+			"Account password/authorization."
+		)
+		(
+			"signaturenum,m",
+			value<uint16_t>(&option_.m)->required(),
+			"Account multisig signature number."
+		)
+		(
+			"publickeynum,n",
+			value<uint16_t>(&option_.n)->required(),
+			"Account multisig public key number."
+		)
+		(
+			"selfpublickey,s",
+			value<std::string>(&option_.self_publickey)->required(),
+			"the public key belongs to this account."
+		)
+		(
+			"publickey,k",
+			value<std::vector<std::string>>(&option_.public_keys),
+			"cosigner public key used for multisig"
+		)
+		(
+			"description,d",
+			value<std::string>(&option_.description),
+			"multisig record description."
+		)
+		;
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        argument()
+        {
+        }
+    } argument_;
+
+    struct option
+    {
+        option()
+          : self_publickey(""), description(""), m(0), n(0)
+        {
+        }
+
+		uint16_t m;
+		uint16_t n;
+		std::vector<std::string> public_keys;
+		std::string self_publickey;
+		std::string description;
+		
+    } option_;
+
+};
+
+
+/************************ listmultisig *************************/
+
+class listmultisig: public command_extension
+{
+public:
+    static const char* symbol(){ return "listmultisig";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "listmultisig "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+		(
+			"ACCOUNTNAME",
+			value<std::string>(&auth_.name)->required(),
+			"Account name."
+		)
+		(
+			"ACCOUNTAUTH",
+			value<std::string>(&auth_.auth)->required(),
+			"Account password/authorization."
+		)
+		(
+			"index,i",
+			value<uint16_t>(&option_.index),
+			"Account multisig record index."
+		)
+		;
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        argument()
+        {
+        }
+    } argument_;
+
+    struct option
+    {
+        option()
+          : index(0)
+        {
+        }
+
+		uint16_t index;
+    } option_;
+
+};
+
+
+/************************ deletemultisig *************************/
+
+class deletemultisig: public command_extension
+{
+public:
+    static const char* symbol(){ return "deletemultisig";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "deletemultisig "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+		(
+			"ACCOUNTNAME",
+			value<std::string>(&auth_.name)->required(),
+			"Account name."
+		)
+		(
+			"ACCOUNTAUTH",
+			value<std::string>(&auth_.auth)->required(),
+			"Account password/authorization."
+		)
+		(
+			"signaturenum,m",
+			value<uint16_t>(&option_.m),
+			"Account multisig signature number."
+		)
+		(
+			"publickeynum,n",
+			value<uint16_t>(&option_.n),
+			"Account multisig public key number."
+		)
+		(
+			"selfpublickey,s",
+			value<std::string>(&option_.self_publickey),
+			"the public key belongs to this account."
+		)
+		(
+			"publickey,k",
+			value<std::vector<std::string>>(&option_.public_keys),
+			"cosigner public key used for multisig"
+		)
+		(
+			"index,i",
+			value<uint16_t>(&option_.index),
+			"Account multisig record index."
+		)
+		;
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        argument()
+        {
+        }
+    } argument_;
+
+    struct option
+    {
+        option()
+          : self_publickey(""), m(0), n(0), index(0)
+        {
+        }
+		uint16_t index;
+		uint16_t m;
+		uint16_t n;
+		std::vector<std::string> public_keys;
+		std::string self_publickey;
+		
+    } option_;
+
+};
+
+
 } // commands
 } // explorer
 } // libbitcoin

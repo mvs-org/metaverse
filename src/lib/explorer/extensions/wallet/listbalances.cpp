@@ -65,7 +65,10 @@ console_result listbalances::invoke (std::ostream& output,
 		//async_fetchbalance(waddr, type, blockchain, addr_balance);
 		//sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
 		auto addr = i.get_address();
-		sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
+		auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
+		if(ec)
+			throw std::logic_error{ec.message()};
+
 		address_balances.put("address", i.get_address());
 		address_balances.put("confirmed", addr_balance.confirmed_balance);
 		address_balances.put("received", addr_balance.total_received);

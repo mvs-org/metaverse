@@ -259,6 +259,8 @@ public:
 					const std::string& symbol, business_kind kind, uint8_t confirmed);
 	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr, 
 			size_t from_height = 0, size_t limit = 0);
+	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr,
+					uint64_t start, uint64_t end, const std::string& symbol);
 	std::shared_ptr<std::vector<account_address>> get_addresses();
 	
 	// account message api
@@ -285,8 +287,8 @@ public:
 		std::function<void(const code&, chain::history::list&)> handler);
 	bool get_history(const wallet::payment_address& address,
 		uint64_t limit, uint64_t from_height, history_compact::list& history);
-	bool validate_transaction(const chain::transaction& tx);
-	bool broadcast_transaction(const chain::transaction& tx);
+	code validate_transaction(const chain::transaction& tx);
+	code broadcast_transaction(const chain::transaction& tx);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

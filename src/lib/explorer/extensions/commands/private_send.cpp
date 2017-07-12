@@ -71,6 +71,7 @@ console_result deposit::invoke (std::ostream& output,
 	// json output
 	auto tx = deposit_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
@@ -97,6 +98,7 @@ console_result send::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
 	return console_result::okay;
 }
@@ -133,6 +135,7 @@ console_result sendmore::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
@@ -160,6 +163,7 @@ console_result sendfrom::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
@@ -185,6 +189,7 @@ console_result sendwithmsg::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
 	return console_result::okay;
 }
@@ -214,7 +219,205 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
+	return console_result::okay;
+}
+
+/************************ sendfrommultisig *************************/
+
+console_result sendfrommultisig::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+	auto& blockchain = node.chain_impl();
+	auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	if(!blockchain.is_valid_address(argument_.from)) 
+		throw std::logic_error{"invalid from address!"};
+	
+	auto addr = bc::wallet::payment_address(argument_.from);
+	if(addr.version() != 0x05) // for multisig address
+		throw std::logic_error{"from address is not script address."};
+	if(!blockchain.is_valid_address(argument_.to)) 
+		throw std::logic_error{"invalid to address!"};
+	
+	account_multisig acc_multisig;
+	if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
+		throw std::logic_error{"from address multisig record not found."};
+	// receiver
+	std::vector<receiver_record> receiver{
+		{argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
+	};
+	auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+			std::move(argument_.from), std::move(receiver), argument_.fee, 
+			acc_multisig);
+	
+	send_helper.exec();
+
+	// json output
+	auto tx = send_helper.get_transaction();
+	pt::write_json(output, config::prop_tree(tx, true));
+	
+	// store raw tx to file
+	if(argument_.file_path.string().empty()) { // file path empty, raw tx to std::cout
+		output << "raw tx content" << std::endl << config::transaction(tx);
+	} else { 
+		bc::ofstream file_output(argument_.file_path.string(), std::ofstream::out);
+		file_output << config::transaction(tx);
+		file_output << std::flush;		
+		file_output.close();
+	}
+
+	return console_result::okay;
+}
+
+/************************ signmultisigtx *************************/
+
+console_result signmultisigtx::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+	auto& blockchain = node.chain_impl();
+	auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+	// get not signed tx
+	config::transaction cfg_tx;
+    bc::ifstream file_input(argument_.src.string(), std::ofstream::in);
+	//output << strerror(errno) << std::endl;
+    if (!file_input.good()) throw std::logic_error{strerror(errno)};
+    file_input >> cfg_tx;
+	file_input.close();
+	output << "###### raw tx ######" << std::endl;
+	pt::write_json(output, config::prop_tree(cfg_tx, true));
+	tx_type tx_ = cfg_tx;
+
+	// get all address of this account
+	auto pvaddr = blockchain.get_account_addresses(auth_.name);
+	if(!pvaddr) 
+		throw std::logic_error{"empty address list for this account."};
+	
+	bc::chain::script ss;
+	bc::chain::script redeem_script;
+
+	auto passwd_ = auth_.auth;
+
+	std::string multisig_script, addr_prikey;
+    uint32_t index = 0;
+	for(auto& each_input : tx_.inputs) {
+		ss = each_input.script;
+		log::trace("wdy old script=") << ss.to_string(false);
+		const auto& ops = ss.operations;
+		
+		// 1. extract address from multisig payment script
+		// zero sig1 sig2 ... encoded-multisig
+		const auto& redeem_data = ops.back().data;
+		
+		if (redeem_data.empty())
+			throw std::logic_error{"empty redeem script."};
+		
+		if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
+			throw std::logic_error{"error occured when parse redeem script data."};
+		
+		// Is the redeem script a standard pay (output) script?
+		const auto redeem_script_pattern = redeem_script.pattern();
+		if(redeem_script_pattern != script_pattern::pay_multisig)
+			throw std::logic_error{"redeem script is not pay multisig pattern."};
+		
+		const payment_address address(redeem_script, 5);
+		auto addr_str = address.encoded(); // pay address
+		
+		// 2. get address prikey
+		account_multisig acc_multisig;
+		if(!(acc->get_multisig_by_address(acc_multisig, addr_str)))
+			throw std::logic_error{addr_str + " multisig record not found."};
+		
+		if(ops.size() >= acc_multisig.get_m() + 2) { // signed , nothing to do (2 == zero encoded-script)
+			index++;
+			continue;
+		}
+
+		addr_prikey = "";
+		for (auto& each : *pvaddr){
+			if ( addr_str == each.get_address() ) { // find address
+				addr_prikey = each.get_prv_key(passwd_);
+				break;
+			}
+		}
+		if(addr_prikey.empty())
+			throw std::logic_error{ addr_str + "private key not found."};
+		// 3. populate unlock script
+		multisig_script = acc_multisig.get_multisig_script();
+		log::trace("wdy script=") << multisig_script;
+		//wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
+		//log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
+		// prepare sign
+		explorer::config::hashtype sign_type;
+		uint8_t hash_type = (signature_hash_algorithm)sign_type;
+		
+		bc::explorer::config::ec_private config_private_key(addr_prikey);
+		const ec_secret& private_key =	  config_private_key;	 
+		
+		bc::explorer::config::script config_contract(multisig_script);
+		const bc::chain::script& contract = config_contract;
+		
+		// gen sign
+		bc::endorsement endorse;
+		if (!bc::chain::script::create_endorsement(endorse, private_key,
+			contract, tx_, index, hash_type))
+		{
+			throw std::logic_error{"get_input_sign sign failure"};
+		}
+		// insert endorse before multisig script
+		auto position = ss.operations.end();
+		ss.operations.insert(position - 1, {bc::chain::opcode::special, endorse});
+		// rearange signature order
+		bc::chain::script new_ss;
+		data_chunk data;
+		chain::script script_encoded;
+		script_encoded.from_string(multisig_script);
+		
+		new_ss.operations.push_back(ss.operations.front()); // skip first "m" and last "n checkmultisig"
+		for( auto pubkey_it = (script_encoded.operations.begin() + 1 ); 
+			pubkey_it != (script_encoded.operations.end() - 2); ++pubkey_it) {
+			for (auto it = (ss.operations.begin() + 1); it != (ss.operations.end() - 1); ++it){ // skip first "zero" and last "encoded-script"
+				auto endorsement = it->data;
+				const auto sighash_type = endorsement.back();
+				auto distinguished = endorsement;
+				distinguished.pop_back();
+			
+				ec_signature signature;
+				auto strict = ((script_context::all_enabled & script_context::bip66_enabled) != 0); // from validate_transaction.cpp handle_previous_tx
+				if (!parse_signature(signature, distinguished, strict))
+					continue;
+			
+				if (chain::script::check_signature(signature, sighash_type, pubkey_it->data,
+					script_encoded, tx_, index)) {
+					new_ss.operations.push_back(*it);
+					break;
+				}
+				
+			}
+		}
+		new_ss.operations.push_back(ss.operations.back());
+				
+        // set input script of this tx
+        each_input.script = new_ss;
+		index++;
+		log::trace("wdy new script=") << ss.to_string(false);
+	}
+	output << "###### signed tx ######" << std::endl;
+	pt::write_json(output, config::prop_tree(tx_, true));	
+
+	// output tx
+	if(!argument_.dst.string().empty()) {
+		bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
+		file_output << config::transaction(tx_);
+		file_output << std::flush;		
+		file_output.close();
+	}
+	if(argument_.send_flag){		
+		if(blockchain.validate_transaction(tx_))
+				throw std::logic_error{std::string("validate transaction failure")};
+		if(blockchain.broadcast_transaction(tx_)) 
+				throw std::logic_error{std::string("broadcast transaction failure")};
+	}
 	return console_result::okay;
 }
 
@@ -271,6 +474,7 @@ console_result issue::invoke (std::ostream& output,
 	auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
     blockchain.store_account_asset(detail);
 	#endif
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
@@ -329,6 +533,7 @@ console_result issuefrom::invoke (std::ostream& output,
 	#endif
 
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
@@ -384,6 +589,7 @@ console_result sendasset::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
 	return console_result::okay;
 }
@@ -419,6 +625,7 @@ console_result sendassetfrom::invoke (std::ostream& output,
 	// json output
 	auto tx = send_helper.get_transaction();
 	pt::write_json(output, config::prop_tree(tx, true));
+	log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
