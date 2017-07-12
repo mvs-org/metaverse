@@ -54,7 +54,7 @@ console_result importaccount::invoke (std::ostream& output,
         throw account_existed_exception{"account already exist"};
 
     if (argument_.words.size() > 24)
-        throw saccount_mnemonicword_amount_exception{"word count must be less than or equal 24"};
+        throw mnemonicwords_amount_exception{"word count must be less than or equal 24"};
     
     for(auto& i : argument_.words){
         sout<<i<<" ";

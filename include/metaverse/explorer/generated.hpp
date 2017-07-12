@@ -70,35 +70,35 @@ namespace explorer {
 /**
  * Various shared localizable strings.
  */
-#define BX_COMMANDS_HEADER \
+#define BX_COMMANDS_HEADER                                            \
     "Info: The commands are:"
-#define BX_COMMANDS_HOME_PAGE \
+#define BX_COMMANDS_HOME_PAGE                                         \
     "MVS home page:"
-#define BX_COMMAND_USAGE \
+#define BX_COMMAND_USAGE                                              \
     "Usage: help COMMAND"
-#define BX_CONFIG_DESCRIPTION \
+#define BX_CONFIG_DESCRIPTION                                         \
     "The path to the configuration settings file."
-#define BX_CONNECTION_FAILURE \
+#define BX_CONNECTION_FAILURE                                         \
     "Could not connect to server: %1%"
-#define BX_DEPRECATED_COMMAND \
+#define BX_DEPRECATED_COMMAND                                         \
     "The '%1%' command has been replaced by '%2%'."
-#define BX_HELP_DESCRIPTION \
+#define BX_HELP_DESCRIPTION                                           \
     "Get a description and instructions for this command."
-#define BX_INVALID_COMMAND \
+#define BX_INVALID_COMMAND                                            \
     "'%1%' is not a command. Enter 'help' for a list of commands."
-#define BX_INVALID_PARAMETER \
+#define BX_INVALID_PARAMETER                                          \
     "%1%"
-#define BX_PRINTER_ARGUMENT_TABLE_HEADER \
+#define BX_PRINTER_ARGUMENT_TABLE_HEADER                              \
     "Arguments (positional):"
-#define BX_PRINTER_DESCRIPTION_FORMAT \
+#define BX_PRINTER_DESCRIPTION_FORMAT                                 \
     "Info: %1%"
-#define BX_PRINTER_OPTION_TABLE_HEADER \
+#define BX_PRINTER_OPTION_TABLE_HEADER                                \
     "Options (named):"
-#define BX_PRINTER_USAGE_FORMAT \
+#define BX_PRINTER_USAGE_FORMAT                                       \
     "Usage: %1% %2% %3%"
-#define BX_PRINTER_VALUE_TEXT \
+#define BX_PRINTER_VALUE_TEXT                                         \
     "VALUE"
-#define BX_VERSION_MESSAGE \
+#define BX_VERSION_MESSAGE                                            \
     "Version: %1%"
 
 /**

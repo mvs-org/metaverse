@@ -14,20 +14,20 @@
 class class_name : public explorer_exception                      \
 {                                                                 \
 public:                                                           \
-	class_name(const std::string& message) :                      \
-		explorer_exception(exception_code, message)               \
-	{                                                             \
-	}                                                             \
+    class_name(const std::string& message) :                      \
+        explorer_exception(exception_code, message)               \
+    {                                                             \
+    }                                                             \
 }
 
 #define DEFINE_EXPLORER_EXCEPTION2(class_name)                    \
 class class_name : public explorer_exception                      \
 {                                                                 \
 public:                                                           \
-	class_name(uint32_t code, const std::string& message) :       \
-		explorer_exception(code, message)                         \
-	{                                                             \
-	}                                                             \
+    class_name(uint32_t code, const std::string& message) :       \
+        explorer_exception(code, message)                         \
+    {                                                             \
+    }                                                             \
 }
 
 namespace libbitcoin {
@@ -36,15 +36,15 @@ namespace explorer {
 class explorer_exception : public std::exception
 {
 public:
-	explorer_exception(uint32_t code, const std::string& message);
+    explorer_exception(uint32_t code, const std::string& message);
 
-	virtual ~explorer_exception() = default;
-	uint32_t code() const { return code_; }
-	const std::string& message() const { return message_; }
-	virtual const char* what() const noexcept override { return message_.data(); }
+    virtual ~explorer_exception() = default;
+    uint32_t code() const { return code_; }
+    const std::string& message() const { return message_; }
+    virtual const char* what() const noexcept override { return message_.data(); }
 private:
-	uint32_t code_;
-	std::string message_;
+    uint32_t code_;
+    std::string message_;
 };
 
 std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
