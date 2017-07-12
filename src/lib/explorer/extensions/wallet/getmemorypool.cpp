@@ -42,6 +42,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -75,7 +76,7 @@ console_result getmemorypool::invoke (std::ostream& output,
 
 	auto result = p.get_future().get();
 	if(result){
-			throw std::logic_error{result.message()};
+		throw tx_fetch_exception{result.message()};
 	}
     return console_result::okay;
 }

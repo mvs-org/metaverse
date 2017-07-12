@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/xfetchbalance.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,7 +50,7 @@ console_result xfetchbalance::invoke (std::ostream& output,
 	// Bound parameters.
 	auto& blockchain = node.chain_impl();
     if (!blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address parameter!"};
+        throw address_invalid_exception{"invalid address parameter!"};
 	auto addr_str = argument_.address;
 	auto address = payment_address(argument_.address);
 	auto type = option_.type;

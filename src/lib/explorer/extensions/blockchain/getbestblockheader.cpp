@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/blockchain/getbestblockheader.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -48,7 +49,7 @@ console_result getbestblockheader::invoke (std::ostream& output,
     uint64_t height = 0;
     auto& blockchain = node.chain_impl();
     if(!blockchain.get_last_height(height))
-        throw std::logic_error{"query last height failure."};
+        throw block_height_get_exception{"query last height failure."};
 
     auto&& height_str = std::to_string(height);
     const char* cmds[]{"fetch-header", "-t", height_str.c_str()};
@@ -56,8 +57,15 @@ console_result getbestblockheader::invoke (std::ostream& output,
     std::ostringstream sout("");
     std::istringstream sin("");
 
-    if (dispatch_command(3, cmds, sin, sout, sout))
-        throw std::logic_error(sout.str());
+	if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
+		throw block_header_get_exception(sout.str());
+	}
+	std::pair<uint32_t, std::string> ex_pair;
+	std::stringstream ex_stream;
+	ex_stream.str(sout.str());
+	if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+		throw explorer_exception(ex_pair.first, ex_pair.second);
+	}
 
     output<<sout.str();
 

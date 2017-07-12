@@ -49,22 +49,22 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
 
 	if(argument_.fee < 1000000000)
-        throw std::logic_error{"issue asset fee less than 1000000000!"};
+        throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address parameter!"};
+        throw address_invalid_exception{"invalid address parameter!"};
     // fail if asset is already in blockchain
     if(blockchain.is_asset_exist(argument_.symbol, false))
-        throw std::logic_error{"asset symbol is already exist in blockchain"};
+        throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     auto sh_vec = blockchain.get_account_asset(auth_.name, argument_.symbol);
     log::debug("issue") << "asset size = " << sh_vec->size();
     if(!sh_vec->size())
-        throw std::logic_error{"no such asset"};
+        throw asset_type_exception{"no such asset"};
 
 #ifdef MVS_DEBUG
     /* debug code begin */    
@@ -98,14 +98,14 @@ console_result issuefrom::invoke (std::ostream& output,
             if (balance){
                 palist.push_back({each.get_prv_key(auth_.auth), balance});
             }else{
-                throw std::logic_error{"no enough balance"};
+                throw account_balance_lack_exception{"no enough balance"};
             }
             break;
     }
     }
     // address check
     if(palist.empty())
-        throw std::logic_error{"no such address"};
+        throw address_notfound_exception{"no such address"};
     
 #ifdef MVS_DEBUG
     /* debug code begin */    

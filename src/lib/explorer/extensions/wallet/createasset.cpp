@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/createasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
@@ -117,7 +118,7 @@ void validate(boost::any& v,
 
 	std::string const& s = validators::get_single_string(values);
 	if (s[0] == '-') {
-		throw std::logic_error{"volume must not be negative number."};
+		throw argument_legality_exception{"volume must not be negative number."};
 	}
 	//v = lexical_cast<unsigned long long>(s);
 	v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
@@ -133,23 +134,23 @@ console_result createasset::invoke (std::ostream& output,
 
 	for(auto& each : forbidden_str) {
 		if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
-			throw std::logic_error{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
+			throw asset_symbol_name_exception{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
 	}
 	
     auto ret = blockchain.is_asset_exist(option_.symbol);
     if(ret) 
-        throw std::logic_error{"asset symbol is already exist, please use another one"};
+        throw asset_symbol_existed_exception{"asset symbol is already exist, please use another one"};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
-        throw std::logic_error{"asset description length must be less than 64."};
+        throw asset_description_length_exception{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
-        throw std::logic_error{"asset issue(account name) length must be less than 64."};
+        throw account_length_exception{"asset issue(account name) length must be less than 64."};
 	if (option_.decimal_number > 19u)
-        throw std::logic_error{"asset decimal number must less than 20."};
+        throw asset_amount_exception{"asset decimal number must less than 20."};
 
     if(!option_.maximum_supply.volume) 
-        throw std::logic_error{"volume must not be zero."};
+        throw argument_legality_exception{"volume must not be zero."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);

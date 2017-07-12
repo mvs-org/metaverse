@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/listtxs.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -50,18 +51,18 @@ console_result listtxs::invoke (std::ostream& output,
 	blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 	// address option check
 	if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-		throw std::logic_error{"invalid address parameter!"};
+		throw address_invalid_exception{"invalid address parameter!"};
 	// height check
 	if(option_.height.first() 
 		&& option_.height.second() 
 		&& (option_.height.first() >= option_.height.second())) {
-		throw std::logic_error{"invalid height option!"};
+		throw block_height_exception{"invalid height option!"};
 	}
 	// symbol check
 	if(!argument_.symbol.empty()) {
 		blockchain.uppercase_symbol(argument_.symbol);
 		if(!blockchain.get_issued_asset(argument_.symbol))
-			throw std::logic_error{argument_.symbol + std::string(" not exist!")};
+			throw asset_symbol_notfound_exception{argument_.symbol + std::string(" not exist!")};
 	}
 
 	pt::ptree aroot;
@@ -82,7 +83,7 @@ console_result listtxs::invoke (std::ostream& output,
 	if(argument_.address.empty()) { 
 		auto pvaddr = blockchain.get_account_addresses(auth_.name);
 		if(!pvaddr) 
-			throw std::logic_error{"nullptr for address list"};
+			throw address_invalid_exception{"nullptr for address list"};
 		
 		for (auto& elem: *pvaddr) {
 			sh_addr_vec->push_back(elem.get_address());
@@ -256,4 +257,3 @@ console_result listtxs::invoke (std::ostream& output,
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

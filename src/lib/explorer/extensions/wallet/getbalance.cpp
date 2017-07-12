@@ -32,6 +32,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -52,7 +53,7 @@ console_result getbalance::invoke (std::ostream& output,
     pt::ptree aroot;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
     uint64_t total_confirmed = 0;
     uint64_t total_received = 0;
