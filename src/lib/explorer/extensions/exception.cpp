@@ -34,11 +34,15 @@ void relay_exception(std::stringstream& ss)
     {
         ptree pt;
         read_json(ss, pt);
-        uint32_t code = pt.get<std::string>("code");
+        uint32_t code = pt.get<uint32_t>("code");
         std::string msg = pt.get<std::string>("message");
         if (code) 
             return;
         throw explorer_exception{ex_code, msg};
+    }
+    catch (const std::explorer_exception& e)
+    {
+        throw e;
     }
     catch (const std::exception& e)
     {
