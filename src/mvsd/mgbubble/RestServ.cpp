@@ -98,12 +98,9 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
-        std::pair<uint32_t, std::string> ex_pair;
         std::stringstream ex_stream;
         ex_stream.str(sout.str());
-        if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer::explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        explorer::relay_exception(ex_stream);
     } catch(libbitcoin::explorer::explorer_exception ex) {
         sout << ex;
     } catch(std::exception& e) {
@@ -158,12 +155,10 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
-        std::pair<uint32_t, std::string> ex_pair;
         std::stringstream ex_stream;
         ex_stream.str(sout.str());
-        if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer::explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        explorer::relay_exception(ex_stream);
+
         #ifdef MVS_DEBUG
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
         #endif
@@ -231,12 +226,10 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             if (retcode != console_result::okay) {
                 throw explorer::command_params_exception(sout.str());
             }
-            std::pair<uint32_t, std::string> ex_pair;
             std::stringstream ex_stream;
             ex_stream.str(sout.str());
-            if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) {
-                throw explorer::explorer_exception(ex_pair.first, ex_pair.second);
-            }
+            explorer::relay_exception(ex_stream);
+
             out_<<sout.str();
             state_|= MatchUri;
             state_|= MatchMethod;

@@ -26,11 +26,14 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
     return out;
 }
 
-console_result capture_excode(std::stringstream& sstream, std::pair<uint32_t, std::string>& ex_pair)
+void relay_exception(std::stringstream& ss)
 {
     std::stringstream sin;
-    sin.str(sstream.str());
-    sstream.str(""); // clear
+    sin.str(ss.str());
+    ss.str(""); // clear
+
+    std::string code;
+    std::string msg;
     // parse json
     using namespace boost::property_tree;
     try 
@@ -38,19 +41,18 @@ console_result capture_excode(std::stringstream& sstream, std::pair<uint32_t, st
         ptree pt;
         read_json(sin, pt);
 
-        std::string code = pt.get<std::string>("code");
-        std::string msg = pt.get<std::string>("message");
-        std::stringstream ss;
-        ss << code; 
-        ss >> ex_pair.first;
-        ex_pair.second = msg; 
-        return console_result::okay;
+        code = pt.get<std::string>("code");
+        msg = pt.get<std::string>("message");
     }
     catch (...)
     {
-        return console_result::failure;
+        return;
     }
-
+    uint32_t ex_code;
+    ss << code;
+    ss >> ex_code;
+    ss.str(""); // clear
+    throw explorer_exception{ex_code, msg};
 }
 
 } //namespace explorer

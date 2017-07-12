@@ -49,7 +49,8 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 
-console_result capture_excode(std::stringstream&, std::pair<uint32_t, std::string>&);
+void relay_exception(std::stringstream&);
+
 
 DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);

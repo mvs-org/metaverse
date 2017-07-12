@@ -59,14 +59,6 @@ console_result importaccount::invoke (std::ostream& output,
     sin.str("");
     sout.str("");
 
-    std::pair<uint32_t, std::string> ex_pair;
-    std::stringstream ex_stream;
-    auto exec_capture_excode = [&]() {
-        ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
-    };
     //const char* cmds[256]{"mnemonic-to-seed", "-l", lang.str().c_str()};
     const char* cmds[64]{0x00};
     int i = 0;
@@ -92,7 +84,9 @@ console_result importaccount::invoke (std::ostream& output,
     if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
         throw mnemonicwords_to_seed_exception(sout.str());
     }
-    exec_capture_excode();
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    relay_exception(ex_stream);
     // 2. check mnemonic exist in account database
     #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;

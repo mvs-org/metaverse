@@ -74,15 +74,13 @@ console_result getnewaccount::invoke (std::ostream& output,
         sout.str("");
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
-    std::pair<uint32_t, std::string> ex_pair;
     std::stringstream ex_stream;
     if (exec_with(0) != console_result::okay) {
         throw seed_exception(sout.str());
     }
     ex_stream.str(sout.str());
-    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-        throw explorer_exception(ex_pair.first, ex_pair.second);
-    }
+    relay_exception(ex_stream);
+
     const char* cmds3[3]{"mnemonic-new", "-l" , option_.language.c_str()};
     sin.str(sout.str());
     sout.str("");
@@ -91,9 +89,8 @@ console_result getnewaccount::invoke (std::ostream& output,
     }
 
     ex_stream.str(sout.str());
-    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-        throw explorer_exception(ex_pair.first, ex_pair.second);
-    }
+    relay_exception(ex_stream);
+
     root.put("mnemonic", sout.str());
     acc->set_mnemonic(sout.str(), auth_.auth);
     
@@ -108,9 +105,8 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw address_generate_exception(sout.str());
     }
     ex_stream.str(sout.str());
-    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-        throw explorer_exception(ex_pair.first, ex_pair.second);
-    }
+    relay_exception(ex_stream);
+
     #if 0
     // parse address from getnewaddress output string
     pt::ptree tx;

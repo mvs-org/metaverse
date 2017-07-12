@@ -74,13 +74,10 @@ int bc::main(int argc, char* argv[])
                 {
                     throw explorer::command_params_exception(sout.str());
                 }
-                std::pair<uint32_t, std::string> ex_pair;
                 std::stringstream ex_stream;
                 ex_stream.str(sout.str());
-                if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) 
-                {
-                    throw explorer::explorer_exception(ex_pair.first, ex_pair.second);
-                }
+                explorer::relay_exception(ex_stream);
+
             }
         } 
         catch (bc::explorer::explorer_exception e)

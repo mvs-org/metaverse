@@ -66,7 +66,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     uint32_t idx = 0;
     pt::ptree aroot;
     pt::ptree addresses;
-    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
 
     for ( idx = 0; idx < option_.count; idx++ ) {
 
@@ -78,19 +78,15 @@ console_result getnewaddress::invoke (std::ostream& output,
         if (dispatch_command(1, cmds + 0, sin, sout, sout) != console_result::okay) {
             throw mnemonicwords_to_seed_exception(sout.str());
         }
-        std::stringstream ex_stream;
         ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        relay_exception(ex_stream);
+
         
         if (exec_with(1) != console_result::okay) {
             hd_new_exception(sout.str());
         }
         ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        relay_exception(ex_stream);
 
         auto&& argv_index = std::to_string(acc->get_hd_index());
         const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
@@ -101,17 +97,13 @@ console_result getnewaddress::invoke (std::ostream& output,
             throw hd_private_new_exception(sout.str());
         }
         ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        relay_exception(ex_stream);
 
         if (exec_with(2) != console_result::okay) {
             throw hd_to_ec_exception(sout.str());
         }
         ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        relay_exception(ex_stream);
 
         addr->set_prv_key(sout.str(), auth_.auth);
         // not store public key now
@@ -119,9 +111,8 @@ console_result getnewaddress::invoke (std::ostream& output,
             throw ec_to_public_exception(sout.str());
         }
         ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
+        relay_exception(ex_stream);
+
         //addr->set_pub_key(sout.str());
 
         // testnet
@@ -132,21 +123,16 @@ console_result getnewaddress::invoke (std::ostream& output,
             if (dispatch_command(3, cmds_tn, sin, sout, sout) != console_result::okay) {
                 throw ec_to_address_exception(sout.str());
             }
-            std::pair<uint32_t, std::string> ex_pair;
-            std::stringstream ex_stream;
             ex_stream.str(sout.str());
-            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-                throw explorer_exception(ex_pair.first, ex_pair.second);
-            }
+            relay_exception(ex_stream);
+
         // mainnet
         } else {
             if (exec_with(4) != console_result::okay) {
                 throw ec_to_address_exception(sout.str());
             }
             ex_stream.str(sout.str());
-            if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-                throw explorer_exception(ex_pair.first, ex_pair.second);
-            }
+            relay_exception(ex_stream);
         }
 
         addr->set_address(sout.str());

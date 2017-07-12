@@ -44,8 +44,6 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     std::ostringstream sout(seed);
     std::istringstream sin("");
 
-    std::pair<uint32_t, std::string> ex_pair;
-    std::stringstream ex_stream;
 
     auto exec_with = [&](int i){
         sin.str(sout.str());
@@ -53,17 +51,12 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
             
-    auto exec_capture_excode = [&]() {
-        ex_stream.str(sout.str());
-        if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-            throw explorer_exception(ex_pair.first, ex_pair.second);
-        }
-    };
-
     if (exec_with(1) != console_result::okay) { // hd-new
         throw hd_new_exception(sout.str());
     }
-    exec_capture_excode();
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    relay_exception(ex_stream);
 
     auto&& argv_index = std::to_string(hd_index);
     const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
@@ -72,12 +65,14 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) { // hd-private
         throw hd_private_new_exception(sout.str());
     } 
-    exec_capture_excode();
+    ex_stream.str(sout.str());
+    relay_exception(ex_stream);
     
     if (exec_with(2) != console_result::okay) { // hd-to-ec
         throw hd_to_ec_exception(sout.str());
     }
-    exec_capture_excode();
+    ex_stream.str(sout.str());
+    relay_exception(ex_stream);
 
     prikey = sout.str();
     //acc->set_multisig_prikey(multisig_prikey);
@@ -87,7 +82,8 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     if (exec_with(3) != console_result::okay) { // ec-to-public
         throw ec_to_public_exception(sout.str());
     }
-    exec_capture_excode();
+    ex_stream.str(sout.str());
+    relay_exception(ex_stream);
 
     //addr->set_pub_key(sout.str());
     pubkey = sout.str();

@@ -60,12 +60,10 @@ console_result start::invoke (std::ostream& output,
     if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
-    std::pair<uint32_t, std::string> ex_pair;
     std::stringstream ex_stream;
     ex_stream.str(sout.str());
-    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
-        throw explorer_exception(ex_pair.first, ex_pair.second);
-    }
+    relay_exception(ex_stream);
+
     auto&& str_addr = sout.str();
     bc::wallet::payment_address addr(str_addr);
 
