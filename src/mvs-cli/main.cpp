@@ -36,9 +36,10 @@ BC_USE_MVS_MAIN
  */
 using namespace mgbubble::cli;
 
-void my_impl(const http_message* hm){
+void my_impl(const http_message* hm)
+{
     auto&& reply = std::string(hm->body.p, hm->body.len);
-    bc::cout<<reply<<std::endl;
+    bc::cout << reply << std::endl;
 }
 
 int bc::main(int argc, char* argv[])
@@ -55,29 +56,35 @@ int bc::main(int argc, char* argv[])
     std::string cmd{argv[1]};
 	auto cmd_ptr = bc::explorer::find_extension(cmd);
 
-    auto is_online_cmd = [](const char* cmd){
+    auto is_online_cmd = [](const char* cmd)
+	{
         return std::memcmp(cmd, "fetch-", 6) == 0;
     };
 
 	{
 		std::ostringstream sout;
 		console_result ret;
-		try {
-			if (!cmd_ptr && !is_online_cmd(cmd.c_str())) {
+		try 
+		{
+			if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
+			{
 				ret = bc::explorer::dispatch_command(argc - 1,
 					const_cast<const char**>(argv + 1), bc::cin, sout, sout);
-				if (ret != console_result::okay) {
+				if (ret != console_result::okay)
+				{
 					throw explorer::command_params_exception(sout.str());
 				}
 				std::pair<uint32_t, std::string> ex_pair;
 				std::stringstream ex_stream;
 				ex_stream.str(sout.str());
-				if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) {
+				if (explorer::capture_excode(ex_stream, ex_pair) == console_result::okay) 
+				{
 					throw explorer::explorer_exception(ex_pair.first, ex_pair.second);
 				}
 			}
-		}
-		catch (bc::explorer::explorer_exception e) {
+		} 
+		catch (bc::explorer::explorer_exception e)
+		{
 			sout.str("");
 			sout << e;
 		}
@@ -85,24 +92,23 @@ int bc::main(int argc, char* argv[])
 		return ret;
 	}
 
-
 	// extension commands
     HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
     std::ostringstream sout{""};
     minijson::object_writer writer(sout);
     writer.write("method", argv[1]);
 
-	if (argc > 2){
+	if (argc > 2)
+	{
         minijson::array_writer awriter = writer.nested_array("params");
-        for (int i = 2 ; i < argc; i++) {
+        for (int i = 2 ; i < argc; i++)
+		{
             awriter.write(argv[i]);
         }
         awriter.close();
 	}
 
     writer.close();
-
     req.post(sout.str());
-
     return 0;
 }
