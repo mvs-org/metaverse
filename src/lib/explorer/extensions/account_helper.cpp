@@ -45,6 +45,12 @@ console_result importaccount::invoke (std::ostream& output,
     if (blockchain.is_account_exist(auth_.name))
      throw account_existed_exception{"account already exist"};
 
+	#ifdef NDEBUG
+	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
+		option_.passwd.length() > 128 || option_.passwd.length() < 6)
+		throw std::logic_error{"name length in [3, 128], password length in [6, 128]"};
+	#endif
+
     if (argument_.words.size() > 24)
         throw argument_exceed_limit_exception{"word count must be less than or equal 24"};
     

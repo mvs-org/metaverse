@@ -62,6 +62,7 @@ public:
 
     /// Options and environment vars.
     boost::filesystem::path file;
+    boost::filesystem::path data_dir;
 
     /// Settings.
     node::settings node;
