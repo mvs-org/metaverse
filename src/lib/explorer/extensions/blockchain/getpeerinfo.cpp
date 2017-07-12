@@ -49,10 +49,10 @@ console_result getpeerinfo::invoke (std::ostream& output,
     pt::ptree root;
     pt::ptree array;
     for(auto authority : node.connections_ptr()->authority_list()) {
-    	// invalid authority
-    	if (authority.to_hostname() == "[::]" && authority.port() == 0)
-    		continue;
-    	array.push_back(std::make_pair("", pt::ptree(authority.to_string())));
+        // invalid authority
+        if (authority.to_hostname() == "[::]" && authority.port() == 0)
+            continue;
+        array.push_back(std::make_pair("", pt::ptree(authority.to_string())));
     }
     root.push_back(std::make_pair("peers", array));
     pt::write_json(output, root);

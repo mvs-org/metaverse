@@ -134,6 +134,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbalance.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbusinessbytime.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getdid.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getmemorypool.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\gettransaction.hpp" />
@@ -289,6 +290,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getbalance.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getdid.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getmemorypool.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getnewaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getnewaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\gettransaction.cpp" />
