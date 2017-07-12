@@ -104,7 +104,7 @@ console_result importaccount::invoke (std::ostream& output,
         }
     }
     if(is_mnemonic_exist)
-        throw mnemonicword_existed_exception{"mnemonic already exist!"};
+        throw mnemonicwords_existed_exception{"mnemonic already exist!"};
     #endif
 
     // create account

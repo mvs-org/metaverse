@@ -161,9 +161,9 @@ DEFINE_EXPLORER_EXCEPTION(mnemonicwords_amount_exception, 9201);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_content_exception, 9202);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_new_exception, 9203);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_to_seed_exception, 9204);
-DEFINE_EXPLORER_EXCEPTION(mnemonicword_dismatch_exception, 9205);
-DEFINE_EXPLORER_EXCEPTION(mnemonicword_empty_exception, 9206);
-DEFINE_EXPLORER_EXCEPTION(mnemonicword_existed_exception, 9207);
+DEFINE_EXPLORER_EXCEPTION(mnemonicwords_dismatch_exception, 9205);
+DEFINE_EXPLORER_EXCEPTION(mnemonicwords_empty_exception, 9206);
+DEFINE_EXPLORER_EXCEPTION(mnemonicwords_existed_exception, 9207);
 
 } //namespace explorer
 } //namespace libbitcoin

@@ -50,7 +50,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    if (mnemonic.empty()) { throw mnemonicword_empty_exception("mnemonic empty"); }
+    if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
     if (!option_.count) { throw address_amount_exception("invalid address number parameter"); }
     
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
