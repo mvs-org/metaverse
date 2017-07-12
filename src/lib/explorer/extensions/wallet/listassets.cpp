@@ -105,6 +105,8 @@ console_result listassets::invoke (std::ostream& output,
 		}
 		// 2. get asset in local database
 		// shoudl filter all issued asset which be stored in local account asset database
+        sh_vec->clear();
+        sh_vec = blockchain.get_issued_assets();
 		//std::shared_ptr<std::vector<business_address_asset>>
 		auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);		  
 		for (auto& elem: *sh_unissued) {
