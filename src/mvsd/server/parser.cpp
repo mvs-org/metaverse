@@ -452,6 +452,11 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
 				const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
 			}
             auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
+            //if param is not a path,throw error.
+            if (!boost::filesystem::is_directory(data_dir)) 
+            {
+                BOOST_THROW_EXCEPTION(std::invalid_argument("Datadir is not a path."));
+            }
             if (!data_dir.empty())
             {
                 set_default_data_path(data_dir);

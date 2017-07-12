@@ -404,7 +404,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCC_STATIC;BCX_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCC_STATIC;BCX_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
