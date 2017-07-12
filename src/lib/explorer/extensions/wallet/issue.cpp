@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/issue.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,7 +48,7 @@ console_result issue::invoke (std::ostream& output,
 {
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     std::vector<prikey_amount> pavec;
 
@@ -64,15 +65,15 @@ console_result issue::invoke (std::ostream& output,
         pt::ptree pt;
         sin.str(sout.str());
         pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
+        auto unspent = pt.get<uint64_t>("balance.unspent");
+        auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
             pavec.push_back({each.get_address(), balance});
         }
     }
     if(!pavec.size())
-        throw std::logic_error{"not enough etp in your account!"};
+        throw etp_lack_exception{"not enough etp in your account!"};
 
     // get random address    
     auto index = bc::pseudo_random() % pavec.size();
@@ -94,8 +95,15 @@ console_result issue::invoke (std::ostream& output,
     sin.str("");
     sout.str("");
     
-    if (dispatch_command(i, wallet, sin, sout, sout, blockchain))
-        throw std::logic_error(sout.str());
+    if (dispatch_command(i, wallet, sin, sout, sout, blockchain) != console_result::okay) {
+        throw asset_issue_exception(sout.str());
+    }
+    std::pair<uint32_t, std::string> ex_pair;
+    std::stringstream ex_stream;
+    ex_stream.str(sout.str());
+    if (capture_excode(ex_stream, ex_pair) == console_result::okay) {
+        throw explorer_exception(ex_pair.first, ex_pair.second);
+    }
     
     output<<sout.str();
     return console_result::okay;

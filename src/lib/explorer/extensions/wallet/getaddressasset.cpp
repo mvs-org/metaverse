@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -47,12 +48,12 @@ console_result getaddressasset::invoke (std::ostream& output,
 {
     pt::ptree aroot;
     pt::ptree assets;
-	std::string symbol;
+    std::string symbol;
 
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.address)) 
-        throw std::logic_error{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
     
     // 1. get asset in blockchain
     auto kind = business_kind::asset_transfer;
@@ -101,11 +102,11 @@ console_result getaddressasset::invoke (std::ostream& output,
     for (auto& elem: asset_vec) {
         pt::ptree asset_data;
         asset_data.put("symbol", elem.get_symbol());
-		symbol = elem.get_symbol();
+        symbol = elem.get_symbol();
         asset_data.put("quantity", elem.get_maximum_supply());
-		auto issued_asset = blockchain.get_issued_asset(symbol);
-		if(issued_asset)
-			asset_data.put("decimal_number", issued_asset->get_decimal_number());
+        auto issued_asset = blockchain.get_issued_asset(symbol);
+        if(issued_asset)
+            asset_data.put("decimal_number", issued_asset->get_decimal_number());
         //asset_data.put("asset_type", elem.detail.get_asset_type());
         //asset_data.put("issuer", elem.detail.get_issuer());
         //asset_data.put("address", elem.detail.get_address());

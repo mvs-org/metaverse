@@ -42,6 +42,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -55,28 +56,28 @@ namespace pt = boost::property_tree;
 console_result getmemorypool::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	using transaction_ptr = message::transaction_message::ptr ;
-	auto& blockchain = node.chain_impl();
-	std::promise<code> p;
-	blockchain.pool().fetch([&output, &p](const code& ec, const std::vector<transaction_ptr>& txs){
-		if (ec)
-		{
-			p.set_value(ec);
-			return;
-		}
-		std::vector<config::transaction> txs1;
-		txs1.reserve(txs.size());
-		for (auto tp:txs) {
-			txs1.push_back(*tp);
-		}
-		pt::write_json(output, config::prop_tree(txs1, true));
-		p.set_value(ec);
-	});
+    using transaction_ptr = message::transaction_message::ptr ;
+    auto& blockchain = node.chain_impl();
+    std::promise<code> p;
+    blockchain.pool().fetch([&output, &p](const code& ec, const std::vector<transaction_ptr>& txs){
+        if (ec)
+        {
+            p.set_value(ec);
+            return;
+        }
+        std::vector<config::transaction> txs1;
+        txs1.reserve(txs.size());
+        for (auto tp:txs) {
+            txs1.push_back(*tp);
+        }
+        pt::write_json(output, config::prop_tree(txs1, true));
+        p.set_value(ec);
+    });
 
-	auto result = p.get_future().get();
-	if(result){
-			throw std::logic_error{result.message()};
-	}
+    auto result = p.get_future().get();
+    if(result){
+        throw tx_fetch_exception{result.message()};
+    }
     return console_result::okay;
 }
 

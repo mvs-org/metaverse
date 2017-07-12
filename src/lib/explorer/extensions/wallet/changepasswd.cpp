@@ -50,7 +50,7 @@ console_result changepasswd::invoke (std::ostream& output,
     if (acc) {
         blockchain.set_account_passwd(auth_.name, option_.passwd);
     }else{
-        throw std::logic_error{"account not found"};
+        throw account_notfound_exception{"account not found"};
     }
 
     return console_result::okay;
