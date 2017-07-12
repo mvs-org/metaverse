@@ -27,32 +27,22 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 }
 
 void relay_exception(std::stringstream& ss)
-{
-    std::stringstream sin;
-    sin.str(ss.str());
-    ss.str(""); // clear
-
-    std::string code;
-    std::string msg;
+{    
     // parse json
     using namespace boost::property_tree;
     try 
     {
         ptree pt;
-        read_json(sin, pt);
-
-        code = pt.get<std::string>("code");
-        msg = pt.get<std::string>("message");
+        read_json(ss, pt);
+        uint32_t code = pt.get<std::string>("code");
+        std::string msg = pt.get<std::string>("message");
+        if (code) 
+            return;
+        throw explorer_exception{ex_code, msg};
     }
-    catch (...)
+    catch (const std::exception& e)
     {
-        return;
     }
-    uint32_t ex_code;
-    ss << code;
-    ss >> ex_code;
-    ss.str(""); // clear
-    throw explorer_exception{ex_code, msg};
 }
 
 } //namespace explorer
