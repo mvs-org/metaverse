@@ -454,14 +454,12 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
             if (!data_dir.empty())
             {
-                if ((data_dir.is_relative() || data_dir.is_absolute())
-                    && !boost::filesystem::is_regular_file(data_dir)
-                    && !boost::filesystem::is_symlink(data_dir))
+                if (boost::filesystem::exists(data_dir) && !boost::filesystem::is_directory(data_dir))
                 {
-                    set_default_data_path(data_dir);
-                } else {
                     error << format_invalid_parameter("datadir path is invalid.") << std::endl;
                     return false;
+                } else {
+                    set_default_data_path(data_dir);
                 }
             }
             // Returns true if the settings were loaded from a file.
