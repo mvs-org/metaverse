@@ -75,7 +75,6 @@ int bc::main(int argc, char* argv[])
                     throw explorer::command_params_exception(sout.str());
                 }
                  
-                 
                 explorer::relay_exception(sout);
                 bc::cout << sout.str() << std::endl;
                 return console_result::okay;
@@ -85,6 +84,7 @@ int bc::main(int argc, char* argv[])
         {
             sout.str("");
             sout << e;
+            bc::cout << sout.str() << std::endl;
             return console_result::failure;
         }
     }
