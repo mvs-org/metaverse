@@ -131,7 +131,7 @@ console_result importaccount::invoke (std::ostream& output,
         sin.str("");
         sout.str("");
         if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
-            address_generate_exception(sout.str());
+            throw address_generate_exception(sout.str());
         }
          
         relay_exception(sout);
