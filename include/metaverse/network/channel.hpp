@@ -56,7 +56,7 @@ public:
 
     void set_protocol_start_handler(std::function<void()> handler);
 
-    void invoke_protocol_start_handler();
+    void invoke_protocol_start_handler(const code& ec);
 
 protected:
     virtual void handle_activity();

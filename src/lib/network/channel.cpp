@@ -106,10 +106,17 @@ void channel::set_protocol_start_handler(std::function<void()> handler)
     protocol_start_handler_ = handler;
 }
 
-void channel::invoke_protocol_start_handler()
+void channel::invoke_protocol_start_handler(const code& ec)
 {
-    if (protocol_start_handler_)
-        protocol_start_handler_();
+    if (!protocol_start_handler_)
+        return;
+    if (ec) {
+    	protocol_start_handler_ = nullptr;
+    	return;
+    }
+
+    protocol_start_handler_();
+    protocol_start_handler_ = nullptr;
 }
 
 // Proxy pure virtual protected and ordered handlers.

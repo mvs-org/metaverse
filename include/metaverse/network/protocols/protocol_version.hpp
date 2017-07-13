@@ -55,6 +55,7 @@ public:
     virtual void start(event_handler handler);
 
 protected:
+    void handle_complete(const code& ec);
     /// Override to vary the version message.
     virtual void send_version(const message::version& self);
 
@@ -70,6 +71,7 @@ private:
     bool handle_receive_verack(const code& ec, message::verack::ptr);
 
     p2p& network_;
+    std::function<void(const code& ec)> complete_handler_;
 };
 
 } // namespace network

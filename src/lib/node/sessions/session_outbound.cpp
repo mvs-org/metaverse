@@ -48,8 +48,7 @@ session_outbound::session_outbound(p2p& network, block_chain& blockchain,
 void session_outbound::attach_handshake_protocols(channel::ptr channel,
         result_handler handle_started)
 {
-    auto self = shared_from_this();
-    attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
+    attach<protocol_version>(channel)->start([channel, handle_started, this](const code& ec){
         if (!ec) {
             auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
             auto pt_address = attach<protocol_address>(channel)->do_subscribe();
@@ -57,7 +56,7 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
             auto pt_block_out = attach<protocol_block_out>(channel, blockchain_)->do_subscribe();
             auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
             auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
-            channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out, channel, this]() {
+            channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
                 pt_ping->start([](const code& ec){});
                 pt_address->start();
                 pt_block_in->start();
@@ -65,6 +64,10 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
                 pt_tx_in->start();
                 pt_tx_out->start();
             });
+        }
+        else
+        {
+        	channel->invoke_protocol_start_handler(error::channel_stopped);
         }
         handle_started(ec);
     });
@@ -74,7 +77,7 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
 void session_outbound::attach_protocols(channel::ptr channel)
 {
 //    attach<protocol_miner>(channel, blockchain_)->start();
-    channel->invoke_protocol_start_handler();
+    channel->invoke_protocol_start_handler(error::success);
 }
 
 } // namespace node
