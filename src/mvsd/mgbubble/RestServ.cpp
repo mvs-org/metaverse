@@ -81,7 +81,7 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
     using namespace bc;
 
     //process here
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     try{
         ws.data_to_arg();
@@ -98,9 +98,9 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        explorer::relay_exception(ex_stream);
+         
+         
+        explorer::relay_exception(sout);
     } catch(libbitcoin::explorer::explorer_exception ex) {
         sout << ex;
     } catch(std::exception& e) {
@@ -155,9 +155,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        explorer::relay_exception(ex_stream);
+         
+         
+        explorer::relay_exception(sout);
 
         #ifdef MVS_DEBUG
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
@@ -165,9 +165,6 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 
         out_<<sout.str();
 
-    } catch (const ServException& e) {
-        out_.reset(e.httpStatus(), e.httpReason());
-        out_ << e;
     } catch (const libbitcoin::explorer::explorer_exception& e) {
         out_ << e;
     } catch (const std::exception& e) {
@@ -226,9 +223,9 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             if (retcode != console_result::okay) {
                 throw explorer::command_params_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            explorer::relay_exception(ex_stream);
+             
+             
+            explorer::relay_exception(sout);
 
             out_<<sout.str();
             state_|= MatchUri;
@@ -242,9 +239,6 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
           throw MethodNotAllowedException{errMsg() << "method '" << data.method()
               << "' is not allowed"};
         }
-    } catch (const ServException& e) {
-        out_.reset(e.httpStatus(), e.httpReason());
-        out_ << e;
     } catch (const libbitcoin::explorer::explorer_exception& e) {
         out_ << e;
     } catch (const std::exception& e) {
@@ -354,14 +348,8 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
     } catch(const libbitcoin::explorer::explorer_exception& e) {
         out_ << e;
     } catch(std::exception& e){
-        reset(data);
-        StreamBuf buf{nc.send_mbuf};
-        out_.rdbuf(&buf);
-        out_.reset(403, "Forbidden");
         libbitcoin::explorer::explorer_exception ex(1000, e.what());
         out_ << ex;
-        out_.setContentLength(); 
-
         return false;
     }
 

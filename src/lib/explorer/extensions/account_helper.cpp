@@ -38,7 +38,7 @@ console_result importaccount::invoke (std::ostream& output,
 {
     std::istringstream sin("");
     std::ostringstream lang("");
-    std::ostringstream sout("");
+    std::stringstream sout("");
     
     // parameter account name check
     auto& blockchain = node.chain_impl();
@@ -90,9 +90,9 @@ console_result importaccount::invoke (std::ostream& output,
     if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
         throw mnemonicwords_to_seed_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
     // 2. check mnemonic exist in account database
     #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;
@@ -133,8 +133,8 @@ console_result importaccount::invoke (std::ostream& output,
         if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
             address_generate_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }
@@ -237,7 +237,7 @@ console_result getnewmultisig::invoke (std::ostream& output,
         throw address_list_nullptr_exception{"nullptr for address list"};
     
     const char* cmds[2]{"ec-to-public", nullptr};
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin; 
     std::string prv_key;
     auto found = false;

@@ -62,7 +62,7 @@ int bc::main(int argc, char* argv[])
     };
 
     {
-        std::ostringstream sout;
+        std::stringstream sout;
         console_result ret;
         try 
         {
@@ -74,9 +74,9 @@ int bc::main(int argc, char* argv[])
                 {
                     throw explorer::command_params_exception(sout.str());
                 }
-                std::stringstream ex_stream;
-                ex_stream.str(sout.str());
-                explorer::relay_exception(ex_stream);
+                 
+                 
+                explorer::relay_exception(sout);
 
             }
         } 

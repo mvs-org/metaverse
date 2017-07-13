@@ -47,7 +47,7 @@ console_result changepasswdext::invoke (std::ostream& output,
 {
     std::istringstream sin("");
     std::ostringstream lang("");
-    std::ostringstream sout("");
+    std::stringstream sout("");
     
     // parameter check    
     auto user = std::make_shared<bc::chain::account>();
@@ -97,9 +97,9 @@ console_result changepasswdext::invoke (std::ostream& output,
         output<<sout.str();
         return console_result::failure;
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     user->set_passwd(option_.passwd);
     

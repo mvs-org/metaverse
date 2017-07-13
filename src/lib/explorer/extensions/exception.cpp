@@ -38,9 +38,9 @@ void relay_exception(std::stringstream& ss)
         std::string msg = pt.get<std::string>("message");
         if (code) 
             return;
-        throw explorer_exception{ex_code, msg};
+        throw explorer_exception{code, msg};
     }
-    catch (const std::explorer_exception& e)
+    catch (const explorer_exception& e)
     {
         throw e;
     }

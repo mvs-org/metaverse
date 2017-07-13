@@ -39,23 +39,23 @@ namespace commands {
 // ---------------------------------------------------------------------------
 std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, bool use_testnet_rules)
 {
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin(fromkey);
 
     const char* cmds[]{commands, "-v", "127"};
-    std::stringstream ex_stream;
+     
     if (use_testnet_rules){
         if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
             throw encode_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
     } else {
         if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
             throw encode_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
     }
 
     return sout.str();
@@ -86,22 +86,22 @@ uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
 
 void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
 {
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"tx-decode"};
     if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
         throw tx_decode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
     tx_decode = sout.str();
 }
 
 void validate_tx(const std::string& tx_set)
 {
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"validate-tx"};
@@ -109,14 +109,14 @@ void validate_tx(const std::string& tx_set)
         log::debug(LOG_COMMAND) << "validate-tx sout:" << sout.str();
         throw tx_validate_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 }
 
 void send_tx(const std::string& tx_set, std::string& send_ret)
 {
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin(tx_set);
 
     const char* cmds[]{"send-tx"};
@@ -124,9 +124,9 @@ void send_tx(const std::string& tx_set, std::string& send_ret)
         log::debug(LOG_COMMAND) << "send-tx sout:" << sout.str();
         throw tx_send_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
     send_ret = sout.str();
 }
 
@@ -154,14 +154,14 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
         // exec
         const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
 
-        std::ostringstream sout("");
+        std::stringstream sout("");
         std::istringstream sin;
         if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
             throw utxo_fetch_exception(sout.str());
         }
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+         
+        relay_exception(sout);
 
         sin.str(sout.str());
 
@@ -206,7 +206,7 @@ bool utxo_helper::fetch_tx()
 
     const char* cmds[]{"fetch-tx"};
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     for (auto& fromeach : from_list_){
 
@@ -218,9 +218,9 @@ bool utxo_helper::fetch_tx()
                 throw tx_fetch_exception(sout.str());
             }
 
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
             sin.str(sout.str());
 
             ptree pt;
@@ -289,14 +289,14 @@ void utxo_helper::get_tx_encode(std::string& tx_encode)
         cmds[i++] = iter.c_str();
     }
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout) != console_result::okay) {
         throw tx_encode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     log::debug(LOG_COMMAND)<<"tx-encode sout:"<<sout.str();
     tx_encode = sout.str();
@@ -439,9 +439,9 @@ void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_se
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
         }
     }
 
@@ -571,14 +571,14 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str()};
 
-        std::ostringstream sout("");
+        std::stringstream sout("");
         std::istringstream sin;
         if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
             throw utxo_fetch_exception(sout.str());
         }
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+         
+        relay_exception(sout);
 
         sin.str(sout.str());
 
@@ -630,14 +630,14 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         const char* cmds[]{"xfetchutxo", "0", fromaddress.c_str()};
 
-        std::ostringstream sout("");
+        std::stringstream sout("");
         std::istringstream sin;
         if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
             throw utxo_fetch_exception(sout.str());
         }
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+         
+        relay_exception(sout);
 
         sin.str(sout.str());
 
@@ -686,7 +686,7 @@ bool utxo_attach_issue_helper::fetch_tx()
 
     const char* cmds[]{"fetch-tx"};
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     for (auto& fromeach : from_list_){
 
@@ -696,9 +696,9 @@ bool utxo_attach_issue_helper::fetch_tx()
             if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
                 throw tx_fetch_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             sin.str(sout.str());
 
@@ -750,14 +750,14 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server:
         cmds[i++] = iter.output_option.c_str();
     }
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
         throw tx_encode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -779,9 +779,9 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
@@ -791,7 +791,7 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
 
 void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
-    std::ostringstream sout(tx_encode);
+    std::stringstream sout(tx_encode);
     std::istringstream sin;
 
     int i = 0;
@@ -809,9 +809,9 @@ void utxo_attach_issue_helper::get_input_set(const std::string& tx_encode, std::
             if (dispatch_command(4, cmds, sin, sout, sout)) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
         }
     }
 
@@ -961,14 +961,14 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str()};
 
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin;
     if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
         throw utxo_fetch_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     sin.str(sout.str());
 
@@ -1037,7 +1037,7 @@ bool utxo_attach_send_helper::fetch_tx()
 
     const char* cmds[]{"fetch-tx"};
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
 
     for (auto& fromeach : etp_ls_){
@@ -1049,9 +1049,9 @@ bool utxo_attach_send_helper::fetch_tx()
             if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
                 throw tx_fetch_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             sin.str(sout.str());
 
@@ -1084,9 +1084,9 @@ bool utxo_attach_send_helper::fetch_tx()
             if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
                 throw tx_fetch_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             ptree pt;
             read_json(sin, pt);
@@ -1165,14 +1165,14 @@ void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::server::
         cmds[i++] = iter.output_option.c_str();
     }
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
         throw tx_encode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1180,7 +1180,7 @@ void utxo_attach_send_helper::get_tx_encode(std::string& tx_encode, bc::server::
 
 void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
 {
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     
     const char* bank_cmds[1024]{0x00};
@@ -1203,9 +1203,9 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
@@ -1229,9 +1229,9 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
@@ -1241,7 +1241,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
 
 void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
-    std::ostringstream sout(tx_encode);
+    std::stringstream sout(tx_encode);
     std::istringstream sin;
     const char* bank_cmds[1024]{0x00};
 
@@ -1267,9 +1267,9 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
         }
     }
     
@@ -1294,9 +1294,9 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
         }
     }
@@ -1482,15 +1482,15 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
         std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
 
         const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
-        std::ostringstream sout("");
+        std::stringstream sout("");
         std::istringstream sin;
         if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
             throw utxo_fetch_exception(sout.str());
         }
 
-        std::stringstream ex_stream;
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+         
+        relay_exception(sout);
 
         sin.str(sout.str());
 
@@ -1537,7 +1537,7 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
 
     const char* cmds[]{"fetch-tx"};
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
 
     for (auto& fromeach : from_list_){
@@ -1549,9 +1549,9 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
             if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
                 throw tx_fetch_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             sin.str(sout.str());
 
@@ -1620,14 +1620,14 @@ void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::ser
         cmds[i++] = iter.output_option.c_str();
     }
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
         throw tx_encode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
     tx_encode = sout.str();
@@ -1635,7 +1635,7 @@ void utxo_attach_issuefrom_helper::get_tx_encode(std::string& tx_encode, bc::ser
 
 void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
 {
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
 
     int i = 0;
@@ -1649,9 +1649,9 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
@@ -1661,7 +1661,7 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
 
 void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
-    std::ostringstream sout(tx_encode);
+    std::stringstream sout(tx_encode);
     std::istringstream sin;
 
     int i = 0;
@@ -1679,9 +1679,9 @@ void utxo_attach_issuefrom_helper::get_input_set(const std::string& tx_encode, s
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
         }
     }
 
@@ -1793,15 +1793,15 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str()};
 
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin;
 
     if (dispatch_command(3, cmds, sin, sout, sout, node) != console_result::okay) {
         throw utxo_fetch_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     sin.str(sout.str());
 
@@ -1881,7 +1881,7 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
 
     const char* cmds[]{"fetch-tx"};
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
 
     for (auto& fromeach : prikey_set_){
@@ -1893,9 +1893,9 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
             if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
                 throw tx_fetch_exception(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             sin.str(sout.str());
 
@@ -1967,14 +1967,14 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::serv
         cmds[i++] = iter.output_option.c_str();
     }
 
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     if (dispatch_command(i, cmds, sin, sout, sout, node) != console_result::okay) {
         throw tx_encode_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
 
     log::debug(LOG_COMMAND)<<"encodeattachtx sout:"<<sout.str();
@@ -1983,7 +1983,7 @@ void utxo_attach_sendfrom_helper::get_tx_encode(std::string& tx_encode, bc::serv
 
 void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
 {
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     
     //const char* bank_cmds[1024]{0x00};
@@ -2006,9 +2006,9 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
             log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
@@ -2018,7 +2018,7 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
 
 void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
-    std::ostringstream sout(tx_encode);
+    std::stringstream sout(tx_encode);
     std::istringstream sin;
     //const char* bank_cmds[1024]{0x00};
 
@@ -2046,9 +2046,9 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
-            std::stringstream ex_stream;
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+             
+            relay_exception(sout);
         }
     }
 

@@ -54,15 +54,14 @@ console_result getbestblockheader::invoke (std::ostream& output,
     auto&& height_str = std::to_string(height);
     const char* cmds[]{"fetch-header", "-t", height_str.c_str()};
 
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin("");
 
     if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
         throw block_header_get_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     output<<sout.str();
 

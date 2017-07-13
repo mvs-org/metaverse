@@ -53,7 +53,7 @@ console_result issue::invoke (std::ostream& output,
     std::vector<prikey_amount> pavec;
 
     const char* fetch_wallet[2]{"xfetchbalance", nullptr};
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin; 
 
     // get balance
@@ -98,9 +98,9 @@ console_result issue::invoke (std::ostream& output,
     if (dispatch_command(i, wallet, sin, sout, sout, blockchain) != console_result::okay) {
         throw asset_issue_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
     
     output<<sout.str();
     return console_result::okay;

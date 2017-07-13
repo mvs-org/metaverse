@@ -54,7 +54,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     if (!option_.count) { throw address_amount_exception("invalid address number parameter"); }
     
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin(mnemonic);
 
     auto exec_with = [&](int i){
@@ -66,7 +66,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     uint32_t idx = 0;
     pt::ptree aroot;
     pt::ptree addresses;
-    std::stringstream ex_stream;
+     
 
     for ( idx = 0; idx < option_.count; idx++ ) {
 
@@ -78,15 +78,13 @@ console_result getnewaddress::invoke (std::ostream& output,
         if (dispatch_command(1, cmds + 0, sin, sout, sout) != console_result::okay) {
             throw mnemonicwords_to_seed_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
-
+        relay_exception(sout);
         
         if (exec_with(1) != console_result::okay) {
-            hd_new_exception(sout.str());
+            throw hd_new_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
 
         auto&& argv_index = std::to_string(acc->get_hd_index());
         const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
@@ -96,22 +94,22 @@ console_result getnewaddress::invoke (std::ostream& output,
         if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) {
             throw hd_private_new_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
 
         if (exec_with(2) != console_result::okay) {
             throw hd_to_ec_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
 
         addr->set_prv_key(sout.str(), auth_.auth);
         // not store public key now
         if (exec_with(3) != console_result::okay) {
             throw ec_to_public_exception(sout.str());
         }
-        ex_stream.str(sout.str());
-        relay_exception(ex_stream);
+         
+        relay_exception(sout);
 
         //addr->set_pub_key(sout.str());
 
@@ -123,16 +121,16 @@ console_result getnewaddress::invoke (std::ostream& output,
             if (dispatch_command(3, cmds_tn, sin, sout, sout) != console_result::okay) {
                 throw ec_to_address_exception(sout.str());
             }
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+            relay_exception(sout);
 
         // mainnet
         } else {
             if (exec_with(4) != console_result::okay) {
                 throw ec_to_address_exception(sout.str());
             }
-            ex_stream.str(sout.str());
-            relay_exception(ex_stream);
+             
+            relay_exception(sout);
         }
 
         addr->set_address(sout.str());

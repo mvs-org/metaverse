@@ -47,7 +47,7 @@ console_result importaccount::invoke (std::ostream& output,
 {
     std::istringstream sin("");
     std::ostringstream lang("");
-    std::ostringstream sout("");
+    std::stringstream sout("");
     
     // parameter account name check
     if (blockchain.is_account_exist(auth_.name))

@@ -40,8 +40,8 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     
     //data_chunk data(seed.begin(), seed.end());
-    //std::ostringstream sout(encode_hash(bitcoin_hash(data)));
-    std::ostringstream sout(seed);
+    //std::stringstream sout(encode_hash(bitcoin_hash(data)));
+    std::stringstream sout(seed);
     std::istringstream sin("");
 
 
@@ -54,9 +54,9 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     if (exec_with(1) != console_result::okay) { // hd-new
         throw hd_new_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+     
+    relay_exception(sout);
 
     auto&& argv_index = std::to_string(hd_index);
     const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
@@ -65,14 +65,14 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) { // hd-private
         throw hd_private_new_exception(sout.str());
     } 
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
     
     if (exec_with(2) != console_result::okay) { // hd-to-ec
         throw hd_to_ec_exception(sout.str());
     }
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     prikey = sout.str();
     //acc->set_multisig_prikey(multisig_prikey);
@@ -82,8 +82,8 @@ void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::str
     if (exec_with(3) != console_result::okay) { // ec-to-public
         throw ec_to_public_exception(sout.str());
     }
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     //addr->set_pub_key(sout.str());
     pubkey = sout.str();

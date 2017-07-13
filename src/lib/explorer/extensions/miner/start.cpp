@@ -47,7 +47,7 @@ console_result start::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin;
-    std::ostringstream sout;
+    std::stringstream sout;
     
     // get new address 
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
@@ -60,9 +60,8 @@ console_result start::invoke (std::ostream& output,
     if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
-    std::stringstream ex_stream;
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     auto&& str_addr = sout.str();
     bc::wallet::payment_address addr(str_addr);

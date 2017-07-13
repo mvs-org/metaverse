@@ -54,7 +54,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     const char* cmds[]{"seed"};
     //, "mnemonic-to-seed", "hd-new", 
     //    "hd-to-ec", "ec-to-public", "ec-to-address"};
-    std::ostringstream sout("");
+    std::stringstream sout("");
     std::istringstream sin;
     pt::ptree root;
 
@@ -74,12 +74,12 @@ console_result getnewaccount::invoke (std::ostream& output,
         sout.str("");
         return dispatch_command(1, cmds + i, sin, sout, sout);
     };
-    std::stringstream ex_stream;
+     
     if (exec_with(0) != console_result::okay) {
         throw seed_exception(sout.str());
     }
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     const char* cmds3[3]{"mnemonic-new", "-l" , option_.language.c_str()};
     sin.str(sout.str());
@@ -88,8 +88,8 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw mnemonicwords_new_exception(sout.str());
     }
 
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     root.put("mnemonic", sout.str());
     acc->set_mnemonic(sout.str(), auth_.auth);
@@ -104,8 +104,8 @@ console_result getnewaccount::invoke (std::ostream& output,
     if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
-    ex_stream.str(sout.str());
-    relay_exception(ex_stream);
+     
+    relay_exception(sout);
 
     #if 0
     // parse address from getnewaddress output string

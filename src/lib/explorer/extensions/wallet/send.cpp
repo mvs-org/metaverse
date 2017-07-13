@@ -55,7 +55,7 @@ console_result send::invoke (std::ostream& output,
     std::list<prikey_amount> palist;
 
     const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"};
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin; 
 
     // get balance

@@ -79,7 +79,7 @@ console_result issuefrom::invoke (std::ostream& output,
     std::list<prikey_amount> palist;
 
     const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"}; // only spent pure etp utxo
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin; 
 
     // get balance
