@@ -36,28 +36,28 @@ using namespace bc::consensus;
 
 uint32_t tx_encode::get_reward_lock_block_height()
 {
-	int index;
-	switch(get_period_option()) {
-		case 7 :
-			index = 0;
-			break;
-		case 30 :
-			index = 1;
-			break;
-		case 90 :
-			index = 2;
-			break;
-		case 182 :
-			index = 3;
-			break;
-		case 365 :
-			index = 4;
-			break;
-		default :
-			index = 0;
-			break;
-	}
-	return (uint32_t)bc::consensus::lock_heights[index];
+    int index;
+    switch(get_period_option()) {
+        case 7 :
+            index = 0;
+            break;
+        case 30 :
+            index = 1;
+            break;
+        case 90 :
+            index = 2;
+            break;
+        case 182 :
+            index = 3;
+            break;
+        case 365 :
+            index = 4;
+            break;
+        default :
+            index = 0;
+            break;
+    }
+    return (uint32_t)bc::consensus::lock_heights[index];
 }
 
 
@@ -83,9 +83,9 @@ static bool push_scripts(std::vector<tx_output_type>& outputs,
     if (output.version() != script_version)
     {
         if ((script_version == 6u) // just lock the deposited output
-				&& (deposit.version() == output.version())
-				&& (deposit.pay_to_hash() == output.pay_to_hash())
-				&& (deposit.amount() == output.amount())){ // coin reward
+                && (deposit.version() == output.version())
+                && (deposit.pay_to_hash() == output.pay_to_hash())
+                && (deposit.amount() == output.amount())){ // coin reward
             //payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, bc::coinage_reward_lock_block_heigth);
             payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, lock_block_heigth);
         }else{
@@ -122,7 +122,7 @@ console_result tx_encode::invoke(std::ostream& output, std::ostream& error)
     const auto script_version = get_script_version_option();
     const auto& inputs = get_inputs_option();
     const auto& outputs = get_outputs_option();
-	const auto& deposit = get_deposit_option();
+    const auto& deposit = get_deposit_option();
 
     tx_type tx;
     tx.version = tx_version;

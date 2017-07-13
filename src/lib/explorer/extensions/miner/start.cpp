@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/miner/start.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -46,7 +47,7 @@ console_result start::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin;
-    std::ostringstream sout;
+    std::stringstream sout;
     
     // get new address 
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
@@ -56,7 +57,12 @@ console_result start::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
 
-    dispatch_command(3, cmds2 , sin, sout, sout, node);
+    if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+        throw address_generate_exception(sout.str());
+    }
+     
+    relay_exception(sout);
+
     auto&& str_addr = sout.str();
     bc::wallet::payment_address addr(str_addr);
 

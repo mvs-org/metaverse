@@ -19,10 +19,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+#include <json/minijson_writer.hpp>
 #include <metaverse/explorer.hpp>
 #include <metaverse/mgbubble/MongooseCli.hpp>
-#include <json/minijson_writer.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 BC_USE_MVS_MAIN
 
@@ -35,9 +36,10 @@ BC_USE_MVS_MAIN
  */
 using namespace mgbubble::cli;
 
-void my_impl(const http_message* hm){
+void my_impl(const http_message* hm)
+{
     auto&& reply = std::string(hm->body.p, hm->body.len);
-    bc::cout<<reply<<std::endl;
+    bc::cout << reply << std::endl;
 }
 
 int bc::main(int argc, char* argv[])
@@ -50,38 +52,60 @@ int bc::main(int argc, char* argv[])
         return console_result::okay;
     }
 
-	// original commands
+    // original commands
     std::string cmd{argv[1]};
-	auto cmd_ptr = bc::explorer::find_extension(cmd);
+    auto cmd_ptr = bc::explorer::find_extension(cmd);
 
-    auto is_online_cmd = [](const char* cmd){
+    auto is_online_cmd = [](const char* cmd)
+    {
         return std::memcmp(cmd, "fetch-", 6) == 0;
     };
 
-    if (!cmd_ptr && !is_online_cmd(cmd.c_str())){
-        auto ret = bc::explorer::dispatch_command(argc - 1, 
-            const_cast<const char**>(argv + 1), bc::cin, bc::cout, bc::cerr);
-        bc::cout<<std::endl;
+    {
+        std::stringstream sout;
+        console_result ret;
+        try 
+        {
+            if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
+            {
+                ret = bc::explorer::dispatch_command(argc - 1,
+                    const_cast<const char**>(argv + 1), bc::cin, sout, sout);
+                if (ret != console_result::okay)
+                {
+                    throw explorer::command_params_exception(sout.str());
+                }
+                 
+                 
+                explorer::relay_exception(sout);
+
+            }
+        } 
+        catch (bc::explorer::explorer_exception e)
+        {
+            sout.str("");
+            sout << e;
+        }
+        bc::cout << sout.str() << std::endl;
         return ret;
     }
 
-	// extension commands
-    HttpReq req("127.0.0.1:8820/rpc", 3000, my_impl);
+    // extension commands
+    HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
     std::ostringstream sout{""};
     minijson::object_writer writer(sout);
     writer.write("method", argv[1]);
 
-	if (argc > 2){
+    if (argc > 2)
+    {
         minijson::array_writer awriter = writer.nested_array("params");
-        for (int i = 2 ; i < argc; i++) {
+        for (int i = 2 ; i < argc; i++)
+        {
             awriter.write(argv[i]);
         }
         awriter.close();
-	}
+    }
 
     writer.close();
-
     req.post(sout.str());
-
     return 0;
 }

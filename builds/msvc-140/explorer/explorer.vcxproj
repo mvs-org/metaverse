@@ -134,6 +134,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbalance.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbusinessbytime.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getdid.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getmemorypool.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getnewaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\gettransaction.hpp" />

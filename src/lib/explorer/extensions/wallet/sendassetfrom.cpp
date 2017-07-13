@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/sendassetfrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -50,36 +51,36 @@ console_result sendassetfrom::invoke (std::ostream& output,
     blockchain.uppercase_symbol(argument_.symbol);
     
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     
     if (!blockchain.is_valid_address(argument_.from))
-        throw std::logic_error{"invalid from address parameter!"};
+        throw fromaddress_invalid_exception{"invalid from address parameter!"};
     if (!blockchain.is_valid_address(argument_.to))
-        throw std::logic_error{"invalid to address parameter!"};
+        throw toaddress_invalid_exception{"invalid to address parameter!"};
     if (!argument_.amount)
-        throw std::logic_error{"invalid asset amount parameter!"};
+        throw asset_amount_exception{"invalid asset amount parameter!"};
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
     auto kind = business_kind::asset_issue;
     std::list<prikey_etp_amount> asset_ls;
     //std::shared_ptr<std::vector<business_history>> 
     auto sh_vec = blockchain.get_address_business_history(argument_.from, argument_.symbol, kind, business_status::unspent);
-	if(sh_vec->size()){ // asset issue utxo exist
-		for (auto& each : *pvaddr){
-			if ( 0 != argument_.from.compare(each.get_address()) )
-				continue;
-			const auto sum = [&](const business_history& bh)
-			{
-				auto asset_info = boost::get<asset_detail>(bh.data.get_data());
-				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
-			};
-			std::for_each(sh_vec->begin(), sh_vec->end(), sum);
-			break;
-		}
-	} else { // not found issue asset then search transfer asset 
+    if(sh_vec->size()){ // asset issue utxo exist
+        for (auto& each : *pvaddr){
+            if ( 0 != argument_.from.compare(each.get_address()) )
+                continue;
+            const auto sum = [&](const business_history& bh)
+            {
+                auto asset_info = boost::get<asset_detail>(bh.data.get_data());
+                asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, asset_info.get_maximum_supply(), bh.output});
+            };
+            std::for_each(sh_vec->begin(), sh_vec->end(), sum);
+            break;
+        }
+    } else { // not found issue asset then search transfer asset 
         kind = business_kind::asset_transfer;
         sh_vec = blockchain.get_address_business_history(argument_.from, argument_.symbol, kind, business_status::unspent);
         for (auto& each : *pvaddr){
@@ -104,30 +105,30 @@ console_result sendassetfrom::invoke (std::ostream& output,
 #endif
     
     if(!asset_ls.size()) 
-        throw std::logic_error{"no asset business for from address!"};
-	
-	// etp check incase from address etp < fee
+        throw tx_source_exception{"no asset business for from address!"};
+    
+    // etp check incase from address etp < fee
     uint64_t total_balance = 0;
     for (auto& each : asset_ls){
         total_balance += each.value;
     }
-	if(total_balance < argument_.fee) {
-		total_balance = 0;
-		for (auto& each : *pvaddr){
-			if ( 0 != argument_.from.compare(each.get_address()) )
-				continue;
-			auto etp_ls = blockchain.get_address_business_history(argument_.from, "", business_kind::etp, business_status::unspent);
-			for( auto& bh : *etp_ls){
-				total_balance += bh.value; 
-				asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, 0, bh.output});
-				if(total_balance >= argument_.fee)
-					break;
-			}
-			break;
-		}
-	}
+    if(total_balance < argument_.fee) {
+        total_balance = 0;
+        for (auto& each : *pvaddr){
+            if ( 0 != argument_.from.compare(each.get_address()) )
+                continue;
+            auto etp_ls = blockchain.get_address_business_history(argument_.from, "", business_kind::etp, business_status::unspent);
+            for( auto& bh : *etp_ls){
+                total_balance += bh.value; 
+                asset_ls.push_back({each.get_prv_key(auth_.auth), bh.value, 0, bh.output});
+                if(total_balance >= argument_.fee)
+                    break;
+            }
+            break;
+        }
+    }
 
-	// send
+    // send
     std::string type("asset-transfer");
     auto testnet_rules = blockchain.chain_settings().use_testnet_rules;
     utxo_attach_sendfrom_helper utxo(std::move(auth_.name), std::move(auth_.auth), std::move(type), std::move(asset_ls), 
