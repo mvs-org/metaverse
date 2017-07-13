@@ -296,9 +296,6 @@ code hosts::store(const address& host)
 {
     if (!host.is_routable())
     {
-        log::debug(LOG_NETWORK)
-            << "Invalid host address from peer" << config::authority{host};
-
         // We don't treat invalid address as an error, just log it.
         return error::success;
     }

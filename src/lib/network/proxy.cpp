@@ -42,40 +42,40 @@ namespace network {
 #ifndef NDEBUG
 class traffic{
 public:
-	static traffic& instance();
+    static traffic& instance();
 
-	void rx(uint64_t bytes){
-		rx_.fetch_add(bytes);
-	}
+    void rx(uint64_t bytes){
+        rx_.fetch_add(bytes);
+    }
 
-	void tx(uint64_t bytes){
-		tx_.fetch_add(bytes);
-	}
+    void tx(uint64_t bytes){
+        tx_.fetch_add(bytes);
+    }
 
-	~traffic(){
-		auto now = std::chrono::system_clock::now();
-		std::cout << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load()  << std::endl;
-	}
+    ~traffic(){
+        auto now = std::chrono::system_clock::now();
+        std::cout << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load()  << std::endl;
+    }
 private:
-	static boost::detail::spinlock spinlock_;
-	static std::shared_ptr<traffic> instance_;
-	traffic():rx_{0}, tx_{0}, start_time_{std::chrono::system_clock::now()}
-	{
-	}
+    static boost::detail::spinlock spinlock_;
+    static std::shared_ptr<traffic> instance_;
+    traffic():rx_{0}, tx_{0}, start_time_{std::chrono::system_clock::now()}
+    {
+    }
 
 private:
-	std::atomic<uint64_t> rx_;
-	std::atomic<uint64_t> tx_;
-	std::chrono::system_clock::time_point start_time_;
+    std::atomic<uint64_t> rx_;
+    std::atomic<uint64_t> tx_;
+    std::chrono::system_clock::time_point start_time_;
 };
 traffic& traffic::instance(){
-	if (instance_ == nullptr) {
-		boost::detail::spinlock::scoped_lock guard{spinlock_};
-		if (instance_ == nullptr) {
-			instance_.reset(new traffic{});
-		}
-	}
-	return *instance_;
+    if (instance_ == nullptr) {
+        boost::detail::spinlock::scoped_lock guard{spinlock_};
+        if (instance_ == nullptr) {
+            instance_.reset(new traffic{});
+        }
+    }
+    return *instance_;
 }
 boost::detail::spinlock traffic::spinlock_;
 std::shared_ptr<traffic> traffic::instance_ = nullptr;
@@ -93,15 +93,15 @@ proxy::proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
     authority_(socket->get_authority()),
     heading_buffer_(heading::maximum_size()),
     payload_buffer_(heading::maximum_payload_size(protocol_version_)),
-	dispatch_{pool, "proxy"},
+    dispatch_{pool, "proxy"},
     socket_(socket),
     stopped_(true),
     peer_protocol_version_(message::version::level::maximum),
     message_subscriber_(pool),
     stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME)),
-	processing_{false},
-	has_sent_{true},
-	misbehaving_{0}
+    processing_{false},
+    has_sent_{true},
+    misbehaving_{0}
 {
 }
 
@@ -288,8 +288,8 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
     auto request = std::bind(&proxy::handle_request,
             this->shared_from_this(), payload_buffer_, peer_protocol_version_.load(), head, payload_size);
     {
-    	scoped_lock lock{mutex_};
-    	pendingRequests_.push(std::move(request));
+        scoped_lock lock{mutex_};
+        pending_requests_.push(std::move(request));
     }
     dispatch();
 
@@ -299,67 +299,72 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
 
 void proxy::dispatch()
 {
-	scoped_lock lock{mutex_};
-	if(! processing_.load())
-	{
-		if(! pendingRequests_.empty())
-		{
-			auto req = std::move(pendingRequests_.front() );
-			processing_.store(true);
-			dispatch_.unordered(req);
-			pendingRequests_.pop();
-			return;
-		}
-	}
+    scoped_lock lock{mutex_};
+    if(! processing_.load())
+    {
+        if(! pending_requests_.empty())
+        {
+            auto req = std::move(pending_requests_.front() );
+            processing_.store(true);
+            dispatch_.unordered(req);
+            pending_requests_.pop();
+            return;
+        }
+    }
 }
 
 void proxy::handle_request(data_chunk payload_buffer, uint32_t peer_protocol_version, heading head, size_t payload_size)
 {
-	bool succeed = false;
-	struct clean_up{
-		~clean_up(){
-			processing_.store(false);
-			if(succeed_)
-			{
-				proxy_->dispatch();
-				return;
-			}
-			proxy_->clear_request();
-		}
-		std::atomic_bool& processing_;
-		bool& succeed_;
-		proxy * proxy_;
-	} clean_up_{processing_, succeed, this};
+    bool succeed = false;
+    struct clean_up{
+        ~clean_up(){
+            processing_.store(false);
+            if(succeed_)
+            {
+                proxy_->dispatch();
+                return;
+            }
+            proxy_->clear_request();
+        }
+        std::atomic_bool& processing_;
+        bool& succeed_;
+        proxy * proxy_;
+    } clean_up_{processing_, succeed, this};
 
-	// Notify subscribers of the new message.
-	payload_source source(payload_buffer);
-	payload_stream istream(source);
-	const auto version = peer_protocol_version;
-	const auto code = message_subscriber_.load(head.type(), version, istream);
-	const auto consumed = istream.peek() == std::istream::traits_type::eof();
+    // Notify subscribers of the new message.
+    payload_source source(payload_buffer);
+    payload_stream istream(source);
+    const auto version = peer_protocol_version;
 
-	if (code)
-	{
-		log::warning(LOG_NETWORK)
-			<< "Invalid " << head.command << " payload from [" << authority()
-			<< "] " << code.message();
-		stop(code);
-		return;
-	}
+    if (head.command == "mempool") {
+        log::trace(LOG_NETWORK) << "mempool";
+    }
+    const auto code = message_subscriber_.load(head.type(), version, istream);
 
-	if (!consumed)
-	{
-		log::warning(LOG_NETWORK)
-			<< "Invalid " << head.command << " payload from [" << authority()
-			<< "] trailing bytes.";
-		stop(error::bad_stream);
-		return;
-	}
+    const auto consumed = istream.peek() == std::istream::traits_type::eof();
 
-	log::trace(LOG_NETWORK)
-		<< "Valid " << head.command << " payload from [" << authority()
-		<< "] (" << payload_size << " bytes)";
-	succeed = true;
+    if (code)
+    {
+        log::warning(LOG_NETWORK)
+            << "Invalid " << head.command << " payload from [" << authority()
+            << "] " << code.message();
+        stop(code);
+        return;
+    }
+
+    if (!consumed)
+    {
+        log::warning(LOG_NETWORK)
+            << "Invalid " << head.command << " payload from [" << authority()
+            << "] trailing bytes.";
+        stop(error::bad_stream);
+        return;
+    }
+
+    log::trace(LOG_NETWORK)
+        << "Valid " << head.command << " payload from [" << authority()
+        << "] (" << payload_size << " bytes)";
+    succeed = true;
 }
 
 // Message send sequence.
@@ -384,47 +389,46 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////
     // The socket is locked until async_write returns.
-
 #ifdef QUEUE_REQUEST
     bool is_ok_to_send{false};
     uint32_t outbound_size{0};
-    RequestCallback h{nullptr};
+    request_callback h{nullptr};
     {
-		const auto socket = socket_->get_socket();
-		auto& native_socket = socket->get();
-		auto pThis = shared_from_this();
-		auto f = [this, pThis, &native_socket, buffer, handler](){
-			if (stopped())
-			{
-				handler(error::channel_stopped);
-				return;
-			}
-			async_write(native_socket, buffer,
-					std::bind(&proxy::handle_send,
-						pThis, _1, buffer, handler));
-		};
-		outbound_size = outbound_queue_.size();
-		bool is_empty{outbound_queue_.empty()};
-		bool in_sending{!has_sent_.load()};
-		is_ok_to_send = (is_empty && !in_sending);
-		if (is_ok_to_send)
-		{
-			h = std::move(f);
-			has_sent_.store(false);
-		}
-		else{
-			outbound_queue_.push(std::move(f));
-		}
+        const auto socket = socket_->get_socket();
+        auto& native_socket = socket->get();
+        auto pThis = shared_from_this();
+        auto f = [this, pThis, &native_socket, buffer, handler](){
+            if (stopped())
+            {
+                handler(error::channel_stopped);
+                return;
+            }
+            async_write(native_socket, buffer,
+                    std::bind(&proxy::handle_send,
+                        pThis, _1, buffer, handler));
+        };
+        outbound_size = outbound_queue_.size();
+        bool is_empty{outbound_queue_.empty()};
+        bool in_sending{!has_sent_.load()};
+        is_ok_to_send = (is_empty && !in_sending);
+        if (is_ok_to_send)
+        {
+            h = std::move(f);
+            has_sent_.store(false);
+        }
+        else{
+            outbound_queue_.push(std::move(f));
+        }
     }
 
     if (outbound_size > 500) {
-    	stop(error::size_limits);
-    	return;
+        stop(error::size_limits);
+        return;
     }
 
     if (is_ok_to_send)
     {
-    	h();
+        h();
     }
 #else
     const auto socket = socket_->get_socket();
@@ -450,29 +454,29 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
             << authority() << "] " << error.message();
     else{
 #ifndef NDEBUG
-    	traffic::instance().tx(buffer.size());
+        traffic::instance().tx(buffer.size());
 #endif
     }
 
     handler(error);
 #ifdef QUEUE_REQUEST
     if(error){
-    	return;
+        return;
     }
 
     has_sent_.store(true);
 
-    RequestCallback h{nullptr};
-	{
-		const auto socket = socket_->get_socket();
-		if(outbound_queue_.empty())
-			return;
-		log::debug(LOG_NETWORK) << "outbound size," << outbound_queue_.size();
-		h = std::move(outbound_queue_.front());
-		outbound_queue_.pop();
-		has_sent_.store(false);
-	}
-	h();
+    request_callback h{nullptr};
+    {
+        const auto socket = socket_->get_socket();
+        if(outbound_queue_.empty())
+            return;
+        log::trace(LOG_NETWORK) << "channel:" << reinterpret_cast<int64_t>(this) << " outbound size," << outbound_queue_.size();
+        h = std::move(outbound_queue_.front());
+        outbound_queue_.pop();
+        has_sent_.store(false);
+    }
+    h();
 #endif
 }
 
@@ -503,12 +507,12 @@ void proxy::stop(const code& ec)
     // The socket_ is internally guarded against concurrent use.
     socket_->close();
     {
-    	if (error::bad_magic != ec.value())
-    		return;
-		boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-		auto millissecond = unix_millisecond();
-		banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
-	}
+        if (error::bad_magic != ec.value())
+            return;
+        boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+        auto millissecond = unix_millisecond();
+        banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
+    }
 }
 
 void proxy::stop(const boost_code& ec)
@@ -526,38 +530,38 @@ boost::detail::spinlock proxy::spinlock_;
 
 bool proxy::blacklisted(const config::authority& authority)
 {
-	int64_t ms{0};
-	{
-		boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-		auto it = banned_.find(authority);
-		if(it == banned_.end())
-			return false;
-		ms = it->second;
-	}
-	auto millissecond = unix_millisecond();
-	if (ms >= millissecond)
-	{
-		return true;
-	}
-	return false;
+    int64_t ms{0};
+    {
+        boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+        auto it = banned_.find(authority);
+        if(it == banned_.end())
+            return false;
+        ms = it->second;
+    }
+    auto millissecond = unix_millisecond();
+    if (ms >= millissecond)
+    {
+        return true;
+    }
+    return false;
 }
 
 
 bool proxy::misbehaving(int32_t howmuch)
 {
-	misbehaving_ += howmuch;
-	if (misbehaving_.load() >= 100)
-	{
-		{
-			boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-			auto millissecond = unix_millisecond();
-			banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
-		}
-		log::debug(LOG_NETWORK) << "channel misbehave trigger," << authority();
-		stop(error::bad_stream);
-		return true;
-	}
-	return false;
+    misbehaving_ += howmuch;
+    if (misbehaving_.load() >= 100)
+    {
+        {
+            boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+            auto millissecond = unix_millisecond();
+            banned_.insert({authority(), millissecond + 24 * 3600 * 1000});
+        }
+        log::debug(LOG_NETWORK) << "channel misbehave trigger," << authority();
+        stop(error::bad_stream);
+        return true;
+    }
+    return false;
 }
 
 } // namespace network

@@ -37,7 +37,7 @@ using namespace std::placeholders;
 
 session_inbound::session_inbound(p2p& network)
   : session(network, true, true),
-	network_{network},
+    network_{network},
     CONSTRUCT_TRACK(session_inbound)
 {
 }
@@ -124,6 +124,7 @@ void session_inbound::handle_accept(const code& ec, channel::ptr channel,
         log::trace(LOG_NETWORK)
             << "Rejected inbound connection from ["
             << channel->authority() << "] due to blacklisted address.";
+        channel->stop(error::accept_failed);
         return;
     }
 
@@ -168,8 +169,8 @@ void session_inbound::handle_channel_start(const code& ec,
 
 void session_inbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start([](const code&){});
-    attach<protocol_address>(channel)->start();
+    attach<protocol_ping>(channel)->do_subscribe()->start([](const code&){});
+    attach<protocol_address>(channel)->do_subscribe()->start();
 }
 
 void session_inbound::handle_channel_stop(const code& ec)

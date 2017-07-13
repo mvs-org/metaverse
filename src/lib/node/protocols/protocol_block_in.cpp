@@ -39,7 +39,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 static constexpr auto perpetual_timer = true;
-static const auto get_blocks_interval = asio::seconds(2);
+static const auto get_blocks_interval = asio::seconds(10);
 
 protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
     block_chain& blockchain)
@@ -50,10 +50,23 @@ protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     headers_from_peer_(peer_version().value >= version::level::bip130),
-	headers_batch_size_{0},
+    headers_batch_size_{0},
 
     CONSTRUCT_TRACK(protocol_block_in)
 {
+}
+
+protocol_block_in::ptr protocol_block_in::do_subscribe()
+{
+    // TODO: move headers to a derived class protocol_block_in_31800.
+    SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
+
+    // TODO: move not_found to a derived class protocol_block_in_70001.
+    SUBSCRIBE2(not_found, handle_receive_not_found, _1, _2);
+
+    SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
+    SUBSCRIBE2(block_message, handle_receive_block, _1, _2);
+    return std::dynamic_pointer_cast<protocol_block_in>(protocol::shared_from_this());
 }
 
 // Start.
@@ -66,21 +79,13 @@ void protocol_block_in::start()
     protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
 #else
     auto pthis = enable_shared_from_base();
-	protocol_events::start([pthis](const code& ec){
-		if(ec){
-			log::trace(LOG_NODE) << "protocol block in handle stop," << ec.message();
- 		}
-	});
+    protocol_events::start([pthis](const code& ec){
+        if(ec){
+            log::trace(LOG_NODE) << "protocol block in handle stop," << ec.message();
+         }
+    });
 #endif
 
-    // TODO: move headers to a derived class protocol_block_in_31800.
-    SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
-
-    // TODO: move not_found to a derived class protocol_block_in_70001.
-    SUBSCRIBE2(not_found, handle_receive_not_found, _1, _2);
-
-    SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
-    SUBSCRIBE2(block_message, handle_receive_block, _1, _2);
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     if (headers_from_peer_)
@@ -94,7 +99,8 @@ void protocol_block_in::start()
         BIND4(handle_reorganized, _1, _2, _3, _4));
 
     // Send initial get_[blocks|headers] message by simulating first heartbeat.
-    set_event(error::success);
+//    set_event(error::success);
+    send_get_blocks(null_hash);
 }
 
 // Send get_[headers|blocks] sequence.
@@ -105,7 +111,7 @@ void protocol_block_in::get_block_inventory(const code& ec)
 {
     if (stopped())
     {
-    	blockchain_.fired();
+        blockchain_.fired();
         return;
     }
 
@@ -121,7 +127,8 @@ void protocol_block_in::get_block_inventory(const code& ec)
     static uint32_t num = 0;
     // This is also sent after each reorg.
     send_get_blocks(null_hash);
-    if(num++ % 12 == 0) {
+
+    if(num++ % 4 == 3) {
         organizer& organizer = blockchain_.get_organizer();
         auto&& hashes = organizer.get_fork_chain_last_block_hashes();
         for(auto &i : hashes){
@@ -244,7 +251,7 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
     message->reduce(response->inventories, inventory::type_id::block);
     if(response->inventories.empty())
     {
-    	return true;
+        return true;
     }
 
     // Remove block hashes found in the orphan pool.
@@ -353,15 +360,6 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
     message->set_originator(nonce());
 
     log::trace(LOG_NODE) << "from " << authority() << ",receive block hash," << encode_hash(message->header.hash()) << ",tx-size," << message->header.transaction_count << ",number," << message->header.number ;
-    --headers_batch_size_;
-	/*
-    if(not headers_batch_size_.load())
-    {
-        send_get_blocks(null_hash);
-        send_get_blocks(message->header.hash(), null_hash);
-    }
-	*/
-
 
     blockchain_.store(message, BIND2(handle_store_block, _1, message));
     return true;
@@ -417,14 +415,14 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 {
     if (stopped() || ec == (code)error::service_stopped || incoming.empty())
     {
-    	log::trace(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
+        log::trace(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
         return false;
     }
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {
@@ -435,29 +433,21 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
+    --headers_batch_size_;
+
+    if(not headers_batch_size_.load())
+    {
+        send_get_blocks(null_hash);
+    }
+
     // TODO: use p2p_node instead.
     // Update the top of the chain.
     current_chain_top_.store(incoming.back()->header.hash());
     auto last_hash = incoming.back()->header.hash();
     blockchain_.fetch_block_height(last_hash, [&last_hash](const code&ec, uint64_t height){
-    	log::trace(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
+        log::trace(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
     });
 
-
-    // Ask the peer for blocks above our top (we also do this via stall timer).
-//    send_get_blocks(null_hash);
-
-    /*
-    hash_list hashes;
-    hashes.reserve(incoming.size());
-    std::transform(incoming.begin(), incoming.end(), hashes.begin(), [](const block_ptr block){
-    	return block->header.hash();
-    });
-    const inventory broadcast(hashes, inventory::type_id::block);
-	SEND2(broadcast, handle_send, _1, inventory::command);
-
-	log::trace(LOG_NODE) << "broadcast block too peer, size," << hashes.size();
-	*/
 
     // Report the blocks that originated from this peer.
     // If originating peer is dropped there will be no report here.

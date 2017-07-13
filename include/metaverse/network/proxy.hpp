@@ -51,7 +51,7 @@ public:
     typedef subscriber<const code&> stop_subscriber;
     typedef resubscriber<const code&, const std::string&, const_buffer,
         result_handler> send_subscriber;
-    using RequestCallback = std::function<void()>;
+    using request_callback = std::function<void()>;
 
     /// Construct an instance.
     proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
@@ -102,9 +102,9 @@ public:
     void dispatch();
 
     void clear_request() {
-    	scoped_lock lock{mutex_};
-    	std::queue<RequestCallback>{}.swap(pendingRequests_);
-    	processing_.store(false);
+        scoped_lock lock{mutex_};
+        std::queue<request_callback>{}.swap(pending_requests_);
+        processing_.store(false);
     }
 
     static bool blacklisted(const config::authority&);
@@ -156,15 +156,15 @@ private:
     bc::atomic<message::version::ptr> peer_version_message_;
     message_subscriber message_subscriber_;
     stop_subscriber::ptr stop_subscriber_;
-    std::queue<RequestCallback> pendingRequests_;
+    std::queue<request_callback> pending_requests_;
     std::atomic_bool processing_;
     unique_mutex mutex_;
-    std::queue<RequestCallback> outbound_queue_;
+    std::queue<request_callback> outbound_queue_;
     std::atomic_bool has_sent_;
 
     std::atomic_int misbehaving_;
-	static boost::detail::spinlock spinlock_;
-	static std::map<config::authority, int64_t> banned_;
+    static boost::detail::spinlock spinlock_;
+    static std::map<config::authority, int64_t> banned_;
 };
 
 } // namespace network

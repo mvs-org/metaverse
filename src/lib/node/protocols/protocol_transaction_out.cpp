@@ -51,6 +51,14 @@ protocol_transaction_out::protocol_transaction_out(p2p& network,
 {
 }
 
+protocol_transaction_out::ptr protocol_transaction_out::do_subscribe()
+{
+    SUBSCRIBE2(memory_pool, handle_receive_memory_pool, _1, _2);
+    SUBSCRIBE2(fee_filter, handle_receive_fee_filter, _1, _2);
+    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+    return std::dynamic_pointer_cast<protocol_transaction_out>(protocol::shared_from_this());
+}
+
 // TODO: move not_found to derived class protocol_transaction_out_70001.
 
 // Start.
@@ -58,7 +66,7 @@ protocol_transaction_out::protocol_transaction_out(p2p& network,
 
 void protocol_transaction_out::start()
 {
-	protocol_events::start(BIND1(handle_stop, _1));
+    protocol_events::start(BIND1(handle_stop, _1));
     // TODO: move relay to a derived class protocol_transaction_out_70001.
     // Prior to this level transaction relay is not configurable.
     if (relay_to_peer_)
@@ -69,8 +77,6 @@ void protocol_transaction_out::start()
 
     // TODO: move fee filter to a derived class protocol_transaction_out_70013.
     // Filter announcements by fee if set.
-    SUBSCRIBE2(fee_filter, handle_receive_fee_filter, _1, _2);
-    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
 
 }
 
@@ -104,13 +110,36 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 // Receive mempool sequence.
 //-----------------------------------------------------------------------------
 
-void protocol_transaction_out::handle_receive_memory_pool(const code& ec,
+bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
     memory_pool_ptr)
 {
-	log::trace(LOG_NODE) << "tx out handle receive memory pool,code is " << ec.message();
-    auto message = std::make_shared<inventory>();
-    pool_.inventory(message);
-    SEND2(*message, handle_send, _1, message->command);
+    if (stopped()) {
+        return false;
+    }
+
+    if (ec) {
+        return false;
+    }
+
+    log::debug(LOG_NODE) << "protocol_transaction_out::handle_receive_memory_pool";
+    pool_.fetch([this](const code& ec, const std::vector<transaction_ptr>& txs){
+        if (stopped() || ec) {
+            log::debug(LOG_NODE) << "pool fetch transaction failed," << ec.message();
+            return;
+        }
+
+        if (txs.empty()) {
+            return;
+        }
+        std::vector<hash_digest> hashes;
+        hashes.reserve(txs.size());
+        for(auto& t:txs) {
+            hashes.push_back(t->hash());
+        }
+        log::debug(LOG_NODE) << "memory pool size," << txs.size();
+        send<protocol_transaction_out>(inventory{hashes, inventory::type_id::transaction}, &protocol_transaction_out::handle_send, _1, inventory::command);
+    });
+    return false;
 }
 
 // Receive get_data sequence.
@@ -133,7 +162,7 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
 
 //    if (message->inventories.size() > 50000)
 //    {
-//    	return ! misbehaving(20);
+//        return ! misbehaving(20);
 //    }
 
     // TODO: these must return message objects or be copied!
@@ -141,16 +170,16 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
     for (const auto& inv: message->inventories)
         if (inv.type == inventory::type_id::transaction)
         {
-        	auto pThis = shared_from_this();
-    		pool_.fetch(inv.hash, [this, &inv, pThis](const code& ec, transaction_ptr tx){
-    			auto t = tx ? *tx : chain::transaction{};
-    			send_transaction(ec, t, inv.hash);
-    			if(ec)
-    			{
-    				blockchain_.fetch_transaction(inv.hash,
-    				BIND3(send_transaction, _1, _2, inv.hash));
-    			}
-    		});
+            auto pThis = shared_from_this();
+            pool_.fetch(inv.hash, [this, &inv, pThis](const code& ec, transaction_ptr tx){
+                auto t = tx ? *tx : chain::transaction{};
+                send_transaction(ec, t, inv.hash);
+                if(ec)
+                {
+                    blockchain_.fetch_transaction(inv.hash,
+                    BIND3(send_transaction, _1, _2, inv.hash));
+                }
+            });
         }
 
 
@@ -199,9 +228,9 @@ bool protocol_transaction_out::handle_floated(const code& ec,
         return false;
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {
