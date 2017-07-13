@@ -77,16 +77,16 @@ int bc::main(int argc, char* argv[])
                  
                  
                 explorer::relay_exception(sout);
-
+                bc::cout << sout.str() << std::endl;
+                return console_result::okay;
             }
         } 
         catch (bc::explorer::explorer_exception e)
         {
             sout.str("");
             sout << e;
+            return console_result::failure;
         }
-        bc::cout << sout.str() << std::endl;
-        return ret;
     }
 
     // extension commands
