@@ -412,7 +412,7 @@ void utxo_helper::get_input_sign(std::string& tx_encode)
 
 void utxo_helper::get_input_set(const std::string& tx_encode, std::string& tx_set)
 {
-    std::ostringstream sout(tx_encode);
+    std::stringstream sout(tx_encode);
     std::istringstream sin;
 
     int i = 0;
@@ -765,7 +765,7 @@ void utxo_attach_issue_helper::get_tx_encode(std::string& tx_encode, bc::server:
 
 void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
 {
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
 
     int i = 0;
