@@ -1,4 +1,3 @@
-
 Visual Studio:
 Visual Studio 2015 + Update 3
 
@@ -8,5 +7,5 @@ libzmq
 boost(Version 1.63)
 
 build boost:
-bootstrap.sh
+bootstrap.bat
 b2 address-model=64 runtime-link=static link=static
