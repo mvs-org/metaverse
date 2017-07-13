@@ -7,5 +7,5 @@ libzmq
 boost(Version 1.63)
 
 build boost:
-bootstrap.bat
+bootstrap.sh
 b2 address-model=64 runtime-link=static link=static
