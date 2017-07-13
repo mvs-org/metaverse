@@ -101,6 +101,17 @@ void channel::set_nonce(uint64_t value)
     nonce_ = value;
 }
 
+void channel::set_protocol_start_handler(std::function<void()> handler)
+{
+    protocol_start_handler_ = handler;
+}
+
+void channel::invoke_protocol_start_handler()
+{
+    if (protocol_start_handler_)
+        protocol_start_handler_();
+}
+
 // Proxy pure virtual protected and ordered handlers.
 // ----------------------------------------------------------------------------
 

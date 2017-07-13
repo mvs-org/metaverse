@@ -44,6 +44,8 @@ public:
     protocol_block_out(network::p2p& network, network::channel::ptr channel,
         blockchain::block_chain& blockchain);
 
+    ptr do_subscribe();
+
     /// Start the protocol.
     virtual void start();
 
