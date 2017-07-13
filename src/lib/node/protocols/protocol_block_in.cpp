@@ -435,7 +435,7 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
 
     --headers_batch_size_;
 
-    if(not headers_batch_size_.load())
+    if(!headers_batch_size_.load())
     {
         send_get_blocks(null_hash);
     }
