@@ -50,8 +50,7 @@ console_result validateaddress::invoke (std::ostream& output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
     
-    output << format("{\"validity\":\"%1%\", \"address\":\"%2%\"}") % "true" % argument_.address;
-//    output<<"valid address "<<argument_.address;
+    output<<"valid address "<<argument_.address;
     return console_result::okay;
 }
 
