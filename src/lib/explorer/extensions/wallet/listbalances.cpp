@@ -72,14 +72,17 @@ console_result listbalances::invoke (std::ostream& output,
         address_balance.put("unspent", addr_balance.unspent_balance);
         address_balance.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
         address_balance.put("frozen", addr_balance.frozen_balance);
-
+         
+        pt::ptree null_balances;
         // non_zero display options
         if (option_.non_zero){
             if (addr_balance.unspent_balance){
-                all_balances.add_child("balance", address_balance);
+                null_balances.add_child("balance", address_balance);
+                all_balances.push_back(std::make_pair("", null_balances));
             }
         } else {
-            all_balances.add_child("balance", address_balance);
+            null_balances.add_child("balance", address_balance);
+            all_balances.push_back(std::make_pair("", null_balances));
         }
     }
     
