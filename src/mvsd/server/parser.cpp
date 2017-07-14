@@ -459,7 +459,8 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
                     error << format_invalid_parameter("datadir path is invalid.") << std::endl;
                     return false;
                 } else {
-                    set_default_data_path(data_dir);
+                    path& p = const_cast<path&>(default_data_path());
+                    p = data_dir;
                 }
             }
             // Returns true if the settings were loaded from a file.
