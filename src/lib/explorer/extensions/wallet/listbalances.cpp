@@ -60,32 +60,27 @@ console_result listbalances::invoke (std::ostream& output,
     std::string type("all");
     
     for (auto& i: *vaddr){
-        
+        pt::ptree address_balance;
         balances addr_balance{0, 0, 0, 0};
-        //auto waddr = wallet::payment_address(i.get_address());
-        //async_fetchbalance(waddr, type, blockchain, addr_balance);
-        //sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
         auto addr = i.get_address();
         auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
         if(ec)
             throw std::logic_error{ec.message()};
-
-        address_balances.put("address", i.get_address());
-        address_balances.put("confirmed", addr_balance.confirmed_balance);
-        address_balances.put("received", addr_balance.total_received);
-        address_balances.put("unspent", addr_balance.unspent_balance);
-        address_balances.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
-        address_balances.put("frozen", addr_balance.frozen_balance);
+        address_balance.put("address", i.get_address());
+        address_balance.put("confirmed", addr_balance.confirmed_balance);
+        address_balance.put("received", addr_balance.total_received);
+        address_balance.put("unspent", addr_balance.unspent_balance);
+        address_balance.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
+        address_balance.put("frozen", addr_balance.frozen_balance);
 
         // non_zero display options
         if (option_.non_zero){
             if (addr_balance.unspent_balance){
-                all_balances.push_back(std::make_pair("", address_balances));
+                all_balances.add_child("balance", address_balance);
             }
         } else {
-            all_balances.push_back(std::make_pair("", address_balances));
+            all_balances.add_child("balance", address_balance);
         }
-
     }
     
     aroot.add_child("balances", all_balances);
