@@ -490,34 +490,33 @@ bool data_base::account_db_start()
 }
 
 void data_base::upgrade_blockchain_asset()
- {
-	uint64_t i = 0, record_number = 0;
-	
-	for( i = 0; i < 97210744; i++ ) {  // refer blockchain_asset_database::number_buckets
-		auto sh_addr_assets_vec = address_assets.get(i);
-		
-		for(auto& row : *sh_addr_assets_vec) {
-			record_number++;
-			if(static_cast<attachment_type>(row.data.get_kind_value()) == attachment_type::asset_issue_attach) {
-				if(static_cast<uint8_t>(row.kind) == static_cast<uint8_t>(point_kind::output)) {
-					auto sp_detail = boost::get<asset_detail>(row.data.get_data());
-					const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
-					const auto hash = sha256_hash(data);
-					auto bc_asset = blockchain_asset(0, row.point,row.height, sp_detail);
-					assets.store(hash, bc_asset);
-				}
-			}
-			// present upgrading info to user
-			log::info("database")<<"upgrading record "<<record_number << " at height "<<row.height;
-			log::trace("database")<<"upgrading record "<<record_number << " at height "<<row.height;
-		}
-		
-		// record count check
-		auto asset_stat = address_assets.statinfo();
-		if(record_number == asset_stat.rows)
-			break;
-	}
-	
+{
+    //address_asset_statinfo
+    auto asset_stat = address_assets.statinfo();
+    uint64_t i = 0;
+    business_record row;
+    chain::transaction tx;
+
+    for( i=0; i<asset_stat.rows; i++) {
+        row = address_assets.get_record(i);
+        
+        auto result = transactions.get(row.point.hash);
+        if(result) { // check if row is validate or not
+            if(static_cast<attachment_type>(row.data.get_kind_value()) == attachment_type::asset_issue_attach) {
+                if(static_cast<uint8_t>(row.kind) == static_cast<uint8_t>(point_kind::output)) {
+                    auto sp_detail = boost::get<asset_detail>(row.data.get_data());
+                    const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
+                    const auto hash = sha256_hash(data);
+                    auto bc_asset = blockchain_asset(0, row.point,row.height, sp_detail);
+                    assets.store(hash, bc_asset);
+                    log::debug("database")<<"updating asset "<< sp_detail.get_symbol();
+                }
+            }
+            log::debug("database")<<"scanning record "<< i << " at height "<<row.height;
+        } else {
+            log::debug("database")<<"scanning invalid record "<< i << " at height "<<row.height;
+        }
+    }
 }
 
 // Start must be called before performing queries.

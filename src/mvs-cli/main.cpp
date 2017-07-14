@@ -60,33 +60,28 @@ int bc::main(int argc, char* argv[])
     {
         return std::memcmp(cmd, "fetch-", 6) == 0;
     };
-
+        
+    try 
     {
         std::stringstream sout;
-        console_result ret;
-        try 
+        if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
         {
-            if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
+            auto ret = bc::explorer::dispatch_command(argc - 1,
+                const_cast<const char**>(argv + 1), bc::cin, sout, sout);
+            if (ret != console_result::okay)
             {
-                ret = bc::explorer::dispatch_command(argc - 1,
-                    const_cast<const char**>(argv + 1), bc::cin, sout, sout);
-                if (ret != console_result::okay)
-                {
-                    throw explorer::command_params_exception(sout.str());
-                }
-                 
-                 
-                explorer::relay_exception(sout);
-                bc::cout << sout.str() << std::endl;
-                return console_result::okay;
+                throw explorer::command_params_exception(sout.str());
             }
-        } 
-        catch (bc::explorer::explorer_exception e)
-        {
-            sout.str("");
-            sout << e;
-            return console_result::failure;
+                 
+            explorer::relay_exception(sout);
+            bc::cout << sout.str() << std::endl;
+            return console_result::okay;
         }
+    } 
+    catch (const bc::explorer::explorer_exception& e)
+    {
+        bc::cout << e << std::endl;
+        return console_result::failure;
     }
 
     // extension commands

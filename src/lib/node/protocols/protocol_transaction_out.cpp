@@ -122,7 +122,8 @@ bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
     }
 
     log::debug(LOG_NODE) << "protocol_transaction_out::handle_receive_memory_pool";
-    pool_.fetch([this](const code& ec, const std::vector<transaction_ptr>& txs){
+    auto self = shared_from_this();
+    pool_.fetch([this, self](const code& ec, const std::vector<transaction_ptr>& txs){
         if (stopped() || ec) {
             log::debug(LOG_NODE) << "pool fetch transaction failed," << ec.message();
             return;
