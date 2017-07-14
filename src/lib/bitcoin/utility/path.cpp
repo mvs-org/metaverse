@@ -24,8 +24,11 @@
 #endif
 
 namespace libbitcoin{
-
+#ifdef __GNUC__
+static boost::filesystem::path default_path __attribute__((init_priority(101)));
+#else 
 static boost::filesystem::path default_path;
+#endif
 
 boost::filesystem::path default_data_path()
 {
