@@ -41,14 +41,10 @@ public:
     protocol_block_in(network::p2p& network, network::channel::ptr channel,
         blockchain::block_chain& blockchain);
 
+    ptr do_subscribe();
+
     /// Start the protocol.
     virtual void start();
-
-    protocol_block_in& set_name(const std::string name)
-    {
-    	name_ = name;
-    	return *this;
-    }
 
 private:
     // Local type aliases.
@@ -80,7 +76,6 @@ private:
     bc::atomic<hash_digest> current_chain_top_;
     const bool headers_from_peer_;
     std::atomic_int headers_batch_size_;
-    std::string name_;
 };
 
 } // namespace node

@@ -47,22 +47,22 @@ console_result deposit::invoke (std::ostream& output,
 {
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
-        throw std::logic_error{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
-        throw std::logic_error{"nullptr for address list"};
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     if (argument_.deposit != 7 && argument_.deposit != 30 
-		&& argument_.deposit != 90 && argument_.deposit != 182
-		&& argument_.deposit != 365)
+        && argument_.deposit != 90 && argument_.deposit != 182
+        && argument_.deposit != 365)
     {
-        throw std::logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
+        throw logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
 
     std::list<prikey_amount> palist;
 
     const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"};
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin; 
 
     // get balance
@@ -74,8 +74,8 @@ console_result deposit::invoke (std::ostream& output,
         pt::ptree pt;
         sin.str(sout.str());
         pt::read_json(sin, pt);
-		auto unspent = pt.get<uint64_t>("balance.unspent");
-		auto frozen = pt.get<uint64_t>("balance.frozen");
+        auto unspent = pt.get<uint64_t>("balance.unspent");
+        auto frozen = pt.get<uint64_t>("balance.frozen");
         auto balance = unspent - frozen;
         if (balance){
             palist.push_back({each.get_prv_key(auth_.auth), balance});
@@ -92,12 +92,12 @@ console_result deposit::invoke (std::ostream& output,
 
     // my change
     std::vector<std::string> receiver;
-	if(argument_.address.empty())
-		receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.amount));
-	else
-		receiver.push_back(argument_.address + ":" + std::to_string(argument_.amount));
-	
-	receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee)); // change
+    if(argument_.address.empty())
+        receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.amount));
+    else
+        receiver.push_back(argument_.address + ":" + std::to_string(argument_.amount));
+    
+    receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee)); // change
 
     utxo_helper utxo(std::move(palist), std::move(receiver));
     utxo.set_testnet_rules(blockchain.chain_settings().use_testnet_rules);

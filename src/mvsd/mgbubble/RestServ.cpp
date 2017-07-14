@@ -22,6 +22,7 @@
 #include <metaverse/mgbubble/utility/Stream_buf.hpp>
 
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/server/server_node.hpp>
 
 namespace mgbubble{
@@ -80,7 +81,7 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
     using namespace bc;
 
     //process here
-    std::ostringstream sout;
+    std::stringstream sout;
     std::istringstream sin;
     try{
         ws.data_to_arg();
@@ -92,13 +93,23 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
 //            explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
 //                sin, sout, sout, node_.chain_impl());
 //        }
-        explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
-        		sin, sout, sout, node_);
-    }catch(std::exception& e){
-        sout<<"{\"error\":\""<<e.what()<<"\"}";
-    }catch(...){
+        console_result retcode = explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()),
+                sin, sout, sout, node_);
+        if (retcode != console_result::okay) {
+            throw explorer::command_params_exception(sout.str());
+        }
+         
+         
+        explorer::relay_exception(sout);
+    } catch(libbitcoin::explorer::explorer_exception ex) {
+        sout << ex;
+    } catch(std::exception& e) {
+        libbitcoin::explorer::explorer_exception ex(1000, e.what());
+        sout << ex;
+    } catch(...) {
         log::error(LOG_HTTP)<<sout.rdbuf();
-        sout<<"{\"error\":\"fatel error\"}";
+        libbitcoin::explorer::explorer_exception ex(1001,"fatal error");
+        sout << ex;
     }
 
     websocketSend(&nc, sout.str().c_str(), sout.str().size());
@@ -111,9 +122,9 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
     using namespace bc::protocol;
 
     reset(data);
-	#ifdef MVS_DEBUG
+    #ifdef MVS_DEBUG
     log::debug(LOG_HTTP)<<"req uri:["<<uri_.top()<<"] body:["<<data.body()<<"]";
-	#endif
+    #endif
 
     StreamBuf buf{nc.send_mbuf};
     out_.rdbuf(&buf);
@@ -139,19 +150,26 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
 //            bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
 //                sin, sout, sout, node_.chain_impl());
 //        }
-        explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-                		sin, sout, sout, node_);
-		#ifdef MVS_DEBUG
+        console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+                        sin, sout, sout, node_);
+        if (retcode != console_result::okay) {
+            throw explorer::command_params_exception(sout.str());
+        }
+         
+         
+        explorer::relay_exception(sout);
+
+        #ifdef MVS_DEBUG
         log::debug(LOG_HTTP)<<"cmd result:"<<sout.rdbuf();
-		#endif
+        #endif
 
         out_<<sout.str();
 
-    } catch (const ServException& e) {
-        out_.reset(e.httpStatus(), e.httpReason());
+    } catch (const libbitcoin::explorer::explorer_exception& e) {
         out_ << e;
     } catch (const std::exception& e) {
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
+        libbitcoin::explorer::explorer_exception ex(1000, e.what());
+        out_ << ex;
     } 
 
     out_.setContentLength(); 
@@ -200,8 +218,15 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
 //                bc::explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
 //                    sin, sout, sout, node_.chain_impl());
 //            }
-            explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-                    		sin, sout, sout, node_);
+            console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+                            sin, sout, sout, node_);
+            if (retcode != console_result::okay) {
+                throw explorer::command_params_exception(sout.str());
+            }
+             
+             
+            explorer::relay_exception(sout);
+
             out_<<sout.str();
             state_|= MatchUri;
             state_|= MatchMethod;
@@ -214,11 +239,11 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
           throw MethodNotAllowedException{errMsg() << "method '" << data.method()
               << "' is not allowed"};
         }
-    } catch (const ServException& e) {
-        out_.reset(e.httpStatus(), e.httpReason());
+    } catch (const libbitcoin::explorer::explorer_exception& e) {
         out_ << e;
     } catch (const std::exception& e) {
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
+        libbitcoin::explorer::explorer_exception ex(1000, e.what());
+        out_ << ex;
     }
 
     out_.setContentLength(); 
@@ -320,14 +345,11 @@ bool RestServ::user_auth(mg_connection& nc, HttpMessage data)
             throw std::logic_error{"Bad Request:user,password required."};
         }
 
-    }catch(std::exception& e){
-        reset(data);
-        StreamBuf buf{nc.send_mbuf};
-        out_.rdbuf(&buf);
-        out_.reset(403, "Forbidden");
-        out_<<"{\"error\":\""<<e.what()<<"\"}";
-        out_.setContentLength(); 
-
+    } catch(const libbitcoin::explorer::explorer_exception& e) {
+        out_ << e;
+    } catch(std::exception& e){
+        libbitcoin::explorer::explorer_exception ex(1000, e.what());
+        out_ << ex;
         return false;
     }
 

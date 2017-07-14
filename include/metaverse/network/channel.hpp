@@ -54,6 +54,10 @@ public:
     virtual uint64_t nonce() const;
     virtual void set_nonce(uint64_t value);
 
+    void set_protocol_start_handler(std::function<void()> handler);
+
+    void invoke_protocol_start_handler(const code& ec);
+
 protected:
     virtual void handle_activity();
     virtual void handle_stopping();
@@ -71,6 +75,7 @@ private:
     uint64_t nonce_;
     deadline::ptr expiration_;
     deadline::ptr inactivity_;
+    std::function<void()> protocol_start_handler_;
 };
 
 } // namespace network

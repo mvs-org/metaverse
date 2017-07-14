@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/validateaddress.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -45,9 +46,10 @@ namespace pt = boost::property_tree;
 console_result validateaddress::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     if (!blockchain.is_valid_address(argument_.address))
-        throw std::logic_error{"invalid address!"};
+        throw address_invalid_exception{"invalid address!"};
+    
     output<<"valid address "<<argument_.address;
     return console_result::okay;
 }

@@ -97,30 +97,46 @@ code organizer::verify_asset_exist(uint64_t fork_point,
     block_chain_impl& chain = (block_chain_impl&)chain_;
     auto& block = *orphan_chain[orphan_index]->actual();
     std::set<string> assets;
-       for(auto& tx : block.transactions){
-           for(auto& output : tx.outputs){
-               if(output.is_asset_issue()) {
+    for(auto& tx : block.transactions)
+    {
+        for(auto& output : tx.outputs)
+        {
+            if(output.is_asset_issue())
+            {
                 auto result = assets.insert(output.get_asset_symbol());
-                if(result.second == false){
+                if(result.second == false)
+                {
                     return error::asset_exist;
                 }
             }
         }
     }
 
-    for(auto& i: assets){
+    if(assets.empty())
+    {
+        return error::success;
+    }
+
+    for(auto& i: assets)
+    {
         uint64_t height = 0;
-        if(chain.get_asset_height(i, height) && height <= fork_point) {
+        if(chain.get_asset_height(i, height) && height <= fork_point)
+        {
             return error::asset_exist;
         }
     }
 
-    for(uint64_t i = 0; i < orphan_index; ++i) {
+    for(uint64_t i = 0; i < orphan_index; ++i)
+    {
         auto& block = *orphan_chain[orphan_index - 1]->actual();
-           for(auto& tx : block.transactions){
-               for(auto& output : tx.outputs){
-                   if(output.is_asset_issue()) {
-                    if(assets.find(output.get_asset_symbol()) != assets.end()) {
+        for(auto& tx : block.transactions)
+        {
+            for(auto& output : tx.outputs)
+            {
+                if(output.is_asset_issue())
+                {
+                    if(assets.find(output.get_asset_symbol()) != assets.end())
+                    {
                         return error::asset_exist;
                     }
                 }
@@ -184,7 +200,7 @@ code organizer::verify(uint64_t fork_point,
         hash_digest err_tx;
         // Checks that include input->output traversal.
         ec = validate.connect_block(err_tx);
-        if(ec && err_tx != null_hash) {    
+        if(ec && err_tx != null_hash) {
             dynamic_cast<block_chain_impl&>(chain_).pool().delete_tx(err_tx);
         }
 

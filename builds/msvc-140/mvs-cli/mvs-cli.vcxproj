@@ -18,75 +18,37 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\include\metaverse\protocol\converter.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\define.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\interface.pb.h" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\packet.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\primitives.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\request_packet.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\response_packet.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\version.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\authenticator.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\certificate.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\context.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\frame.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\identifiers.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\message.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\poller.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\socket.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\worker.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\protocol\zmq\zeromq.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\src\lib\protocol\converter.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\interface.pb.cc" />
-    <ClCompile Include="..\..\..\src\lib\protocol\packet.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\request_packet.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\response_packet.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\authenticator.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\certificate.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\context.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\frame.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\identifiers.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\message.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\poller.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\socket.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\worker.cpp" />
-    <ClCompile Include="..\..\..\src\lib\protocol\zmq\zeromq.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{06BEB260-0A84-40D3-A0A1-16487E51A4BF}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>protocol</RootNamespace>
+    <ProjectGuid>{184F436C-5E6E-4556-BF62-05F4AE80D0A9}</ProjectGuid>
+    <RootNamespace>mvscli</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -107,50 +69,37 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\..\zeromq-4.2.1\include;$(IncludePath)</IncludePath>
-    <TargetName>libprotocol-vc140-mt-gd</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\..\zeromq-4.2.1\include;$(IncludePath)</IncludePath>
-    <TargetName>libprotocol-vc140-mt</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;..\..\..\..\secp256k1\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCP_STATIC;ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_MBCS;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCX_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;WITH_CONSENSUS;_CRT_SUPPRESS_RESTRICT;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>..\..\..\..\boost_1_63_0\stage\lib;..\..\..\..\zeromq-4.2.1\bin\x64\Debug\v140\static;..\..\..\..\secp256k1\bin\x64\Debug\v140\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -158,20 +107,57 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_LIB;BC_STATIC;BCP_STATIC;ZMQ_STATIC</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\mvs-cli\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\bitcoin\bitcoin.vcxproj">
+      <Project>{54c72203-a5a0-4714-8d0c-d51aa4aabac8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\blockchain\blockchain.vcxproj">
+      <Project>{c6680c0b-3ece-4b68-8b5c-1a6767b6cc05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\client\client.vcxproj">
+      <Project>{85c5d966-918f-4335-b024-0f47fef079a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\consensus\consensus.vcxproj">
+      <Project>{d21052f1-33b6-4f1f-bb8d-5c0e8173e416}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\database\database.vcxproj">
+      <Project>{5848918e-2f38-4feb-85de-d992fbda4c97}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ethash\ethash.vcxproj">
+      <Project>{2817769d-c482-42d0-a1d5-7e739aebf13d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\explorer\explorer.vcxproj">
+      <Project>{9de1d113-1d5b-401a-a5d4-8364598abee6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\mongoose\mongoose.vcxproj">
+      <Project>{fd3fc1f1-e7db-4cc2-b70f-21fbb87f1a43}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\mvsd\mvsd.vcxproj">
+      <Project>{491dc1bf-1f41-42ed-b283-75533c2489fa}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\network\network.vcxproj">
+      <Project>{53a1551c-87d3-4a0b-984b-e249e750d783}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\node\node.vcxproj">
+      <Project>{6cd3e60a-05b1-4043-899b-9454ec0adf98}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\protocol\protocol.vcxproj">
+      <Project>{06beb260-0a84-40d3-a0a1-16487e51a4bf}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

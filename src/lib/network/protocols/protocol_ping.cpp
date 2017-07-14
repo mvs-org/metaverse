@@ -44,14 +44,19 @@ protocol_ping::protocol_ping(p2p& network, channel::ptr channel)
 {
 }
 
+protocol_ping::ptr protocol_ping::do_subscribe()
+{
+    SUBSCRIBE2(ping, handle_receive_ping, _1, _2);
+    return std::dynamic_pointer_cast<protocol_ping>(protocol::shared_from_this());
+}
+
 void protocol_ping::start(result_handler handler)
 {
     protocol_timer::start(settings_.channel_heartbeat(), BIND1(send_ping, _1));
     {
-    	unique_lock lock{mutex_};
-    	result_handler_ = handler;
+        unique_lock lock{mutex_};
+        result_handler_ = handler;
     }
-    SUBSCRIBE2(ping, handle_receive_ping, _1, _2);
 
     // Send initial ping message by simulating first heartbeat.
     set_event(error::success);
@@ -59,12 +64,12 @@ void protocol_ping::start(result_handler handler)
 
 void protocol_ping::handle_or_not(uint64_t nonce)
 {
-	shared_lock lock{mutex_};
-	if (result_handler_)
-	{
-		log::trace(LOG_NETWORK) << "handle or not";
-		SEND2(ping{ nonce }, handle_send, _1, pong::command);
-	}
+    shared_lock lock{mutex_};
+    if (result_handler_)
+    {
+        log::trace(LOG_NETWORK) << "handle or not";
+        SEND2(ping{ nonce }, handle_send, _1, pong::command);
+    }
 }
 
 // This is fired by the callback (i.e. base timer and stop handler).
@@ -72,8 +77,8 @@ void protocol_ping::send_ping(const code& ec)
 {
     if (stopped())
     {
-    	log::trace(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
-    	test_call_handler(error::channel_stopped);
+        log::trace(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
+        test_call_handler(error::channel_stopped);
         return;
     }
 
@@ -95,28 +100,28 @@ void protocol_ping::send_ping(const code& ec)
     shared_lock lock{mutex_};
     if(result_handler_)
     {
-    	auto line = std::make_shared<deadline>(pool(), asio::seconds{1});
-    	auto pThis = shared_from_this();
-    	line->start([pThis, line, nonce](const code& ec){
-			static_cast<protocol_ping*>(pThis.get())->handle_or_not(nonce);
-		});
+        auto line = std::make_shared<deadline>(pool(), asio::seconds{1});
+        auto pThis = shared_from_this();
+        line->start([pThis, line, nonce](const code& ec){
+            static_cast<protocol_ping*>(pThis.get())->handle_or_not(nonce);
+        });
     }
 }
 
 void protocol_ping::test_call_handler(const code& ec)
 {
-	upgrade_lock upgrade{mutex_};
-	if(result_handler_)
-	{
-		log::trace(LOG_NETWORK) << "test call handler";
-		unique_lock lock(std::move(upgrade));
-		auto handler = std::move(result_handler_);
-		auto action = [handler, ec](){
-			handler(ec);
-		};
-		pool().service().post(action);
-		result_handler_ = nullptr;
-	}
+    upgrade_lock upgrade{mutex_};
+    if(result_handler_)
+    {
+        log::trace(LOG_NETWORK) << "test call handler";
+        unique_lock lock(std::move(upgrade));
+        auto handler = std::move(result_handler_);
+        auto action = [handler, ec](){
+            handler(ec);
+        };
+        pool().service().post(action);
+        result_handler_ = nullptr;
+    }
 }
 
 bool protocol_ping::handle_receive_ping(const code& ec,
@@ -124,8 +129,8 @@ bool protocol_ping::handle_receive_ping(const code& ec,
 {
     if (stopped())
     {
-    	log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
-    	test_call_handler(error::channel_stopped);
+        log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
+        test_call_handler(error::channel_stopped);
         return false;
     }
 
@@ -149,8 +154,8 @@ bool protocol_ping::handle_receive_pong(const code& ec,
 {
     if (stopped())
     {
-    	log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
-    	test_call_handler(error::channel_stopped);
+        log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
+        test_call_handler(error::channel_stopped);
         return false;
     }
 

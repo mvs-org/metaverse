@@ -59,6 +59,23 @@ protocol_block_out::protocol_block_out(p2p& network, channel::ptr channel,
 {
 }
 
+protocol_block_out::ptr protocol_block_out::do_subscribe()
+{
+    if (headers_to_peer_)
+    {
+        // Send headers vs. inventory anncements if headers_to_peer_ is set.
+        log::trace(LOG_NODE) << "protocol block out headers to peer" ;
+        SUBSCRIBE2(send_headers, handle_receive_send_headers, _1, _2);
+    }
+
+    // TODO: move get_headers to a derived class protocol_block_out_31800.
+    SUBSCRIBE2(get_headers, handle_receive_get_headers, _1, _2);
+    SUBSCRIBE2(get_blocks, handle_receive_get_blocks, _1, _2);
+    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+
+    return std::dynamic_pointer_cast<protocol_block_out>(protocol::shared_from_this());
+}
+
 // Start.
 //-----------------------------------------------------------------------------
 
@@ -67,17 +84,6 @@ void protocol_block_out::start()
     protocol_events::start(BIND1(handle_stop, _1));
 
     // TODO: move send_headers to a derived class protocol_block_out_70012.
-    if (headers_to_peer_)
-    {
-        // Send headers vs. inventory anncements if headers_to_peer_ is set.
-    	log::trace(LOG_NODE) << "protocol block out headers to peer" ;
-        SUBSCRIBE2(send_headers, handle_receive_send_headers, _1, _2);
-    }
-
-    // TODO: move get_headers to a derived class protocol_block_out_31800.
-    SUBSCRIBE2(get_headers, handle_receive_get_headers, _1, _2);
-    SUBSCRIBE2(get_blocks, handle_receive_get_blocks, _1, _2);
-    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
 
     // Subscribe to block acceptance notifications (our heartbeat).
     blockchain_.subscribe_reorganize(
@@ -181,11 +187,11 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     }
 
     if(headers.empty())
-	{
-		return;
-	}
+    {
+        return;
+    }
     log::trace(LOG_NODE)
-    	<< "handle fetch locator headers size," << headers.size();
+        << "handle fetch locator headers size," << headers.size();
 
     // Respond to get_headers with headers.
     const message::headers response(headers);
@@ -362,9 +368,9 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
         return false;
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {
@@ -390,7 +396,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
         if (!announcement.elements.empty())
         {
-        	log::trace(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
+            log::trace(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
             SEND2(announcement, handle_send, _1, announcement.command);
         }
         return true;
@@ -405,7 +411,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
     if (!announcement.inventories.empty())
     {
-    	log::trace(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
+        log::trace(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
         SEND2(announcement, handle_send, _1, announcement.command);
     }
     return true;

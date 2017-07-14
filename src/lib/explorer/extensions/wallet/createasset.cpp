@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/createasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
@@ -42,114 +43,114 @@ namespace pt = boost::property_tree;
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ createasset *************************/
 static std::vector<std::string> forbidden_str {
-		"hujintao",
-		"wenjiabao",
-		"wjb",
-		"xijinping",
-		"xjp",
-		"tankman",
-		"liusi",
-		"vpn",
-		"64memo",
-		"gfw",
-		"freedom",
-		"freechina",
-		"likeqiang",
-		"zhouyongkang",
-		"lichangchun",
-		"wubangguo",
-		"heguoqiang",
-		"jiangzemin",
-		"jzm",
-		"fuck",
-		"shit",
-		"198964",
-		"64",
-		"gongchandang",
-		"gcd",
-		"tugong",
-		"communism",
-		"falungong",
-		"communist",
-		"party",
-		"ccp",
-		"cpc",
-		"hongzhi",
-		"lihongzhi",
-		"lhz",
-		"dajiyuan",
-		"zangdu",
-		"dalai",
-		"minzhu",
-		"China",
-		"Chinese",
-		"taiwan",
-		"SHABI",
-		"penis",
-		"j8",
-		"Islam",
-		"allha",
-		"USD",
-		"CNY",
-		"EUR",
-		"AUD",
-		"GBP",
-		"CHF",
-		"ETP",
-		"currency",
-		"asset",
-		"balance",
-		"exchange",
-		"token",
-		"BUY",
-		"SELL",
-		"ASK",
-		"BID",
-		"ZEN."
+        "hujintao",
+        "wenjiabao",
+        "wjb",
+        "xijinping",
+        "xjp",
+        "tankman",
+        "liusi",
+        "vpn",
+        "64memo",
+        "gfw",
+        "freedom",
+        "freechina",
+        "likeqiang",
+        "zhouyongkang",
+        "lichangchun",
+        "wubangguo",
+        "heguoqiang",
+        "jiangzemin",
+        "jzm",
+        "fuck",
+        "shit",
+        "198964",
+        "64",
+        "gongchandang",
+        "gcd",
+        "tugong",
+        "communism",
+        "falungong",
+        "communist",
+        "party",
+        "ccp",
+        "cpc",
+        "hongzhi",
+        "lihongzhi",
+        "lhz",
+        "dajiyuan",
+        "zangdu",
+        "dalai",
+        "minzhu",
+        "China",
+        "Chinese",
+        "taiwan",
+        "SHABI",
+        "penis",
+        "j8",
+        "Islam",
+        "allha",
+        "USD",
+        "CNY",
+        "EUR",
+        "AUD",
+        "GBP",
+        "CHF",
+        "ETP",
+        "currency",
+        "asset",
+        "balance",
+        "exchange",
+        "token",
+        "BUY",
+        "SELL",
+        "ASK",
+        "BID",
+        "ZEN."
 };
 
 void validate(boost::any& v,
-			  const std::vector<std::string>& values,
-			  non_negative_uint64*, int)
+              const std::vector<std::string>& values,
+              non_negative_uint64*, int)
 {
-	using namespace boost::program_options;
-	validators::check_first_occurrence(v);
+    using namespace boost::program_options;
+    validators::check_first_occurrence(v);
 
-	std::string const& s = validators::get_single_string(values);
-	if (s[0] == '-') {
-		throw std::logic_error{"volume must not be negative number."};
-	}
-	//v = lexical_cast<unsigned long long>(s);
-	v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
+    std::string const& s = validators::get_single_string(values);
+    if (s[0] == '-') {
+        throw argument_legality_exception{"volume must not be negative number."};
+    }
+    //v = lexical_cast<unsigned long long>(s);
+    v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
 
 console_result createasset::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-	for(auto& each : forbidden_str) {
-		if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
-			throw std::logic_error{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
-	}
-	
+    for(auto& each : forbidden_str) {
+        if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
+            throw asset_symbol_name_exception{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
+    }
+    
     auto ret = blockchain.is_asset_exist(option_.symbol);
     if(ret) 
-        throw std::logic_error{"asset symbol is already exist, please use another one"};
+        throw asset_symbol_existed_exception{"asset symbol is already exist, please use another one"};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw std::logic_error{"asset symbol length must be less than 64."};
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
-        throw std::logic_error{"asset description length must be less than 64."};
+        throw asset_description_length_exception{"asset description length must be less than 64."};
     if (auth_.name.length() > 64) // maybe will be remove later
-        throw std::logic_error{"asset issue(account name) length must be less than 64."};
-	if (option_.decimal_number > 19u)
-        throw std::logic_error{"asset decimal number must less than 20."};
+        throw account_length_exception{"asset issue(account name) length must be less than 64."};
+    if (option_.decimal_number > 19u)
+        throw asset_amount_exception{"asset decimal number must less than 20."};
 
     if(!option_.maximum_supply.volume) 
-        throw std::logic_error{"volume must not be zero."};
+        throw argument_legality_exception{"volume must not be zero."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);

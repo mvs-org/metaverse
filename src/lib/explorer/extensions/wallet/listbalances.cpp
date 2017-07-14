@@ -32,6 +32,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -51,35 +52,38 @@ console_result listbalances::invoke (std::ostream& output,
 
     pt::ptree aroot;
     pt::ptree all_balances;
-	pt::ptree address_balances;
-	
+    pt::ptree address_balances;
+    
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
-	std::string type("all");
-	
+    std::string type("all");
+    
     for (auto& i: *vaddr){
-		
-		balances addr_balance{0, 0, 0, 0};
-		//auto waddr = wallet::payment_address(i.get_address());
-		//async_fetchbalance(waddr, type, blockchain, addr_balance);
-		//sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-		auto addr = i.get_address();
-		sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
-		address_balances.put("address", i.get_address());
-		address_balances.put("confirmed", addr_balance.confirmed_balance);
-		address_balances.put("received", addr_balance.total_received);
-		address_balances.put("unspent", addr_balance.unspent_balance);
-		address_balances.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
-		address_balances.put("frozen", addr_balance.frozen_balance);
+        
+        balances addr_balance{0, 0, 0, 0};
+        //auto waddr = wallet::payment_address(i.get_address());
+        //async_fetchbalance(waddr, type, blockchain, addr_balance);
+        //sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        auto addr = i.get_address();
+        auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
+        if(ec)
+            throw std::logic_error{ec.message()};
+
+        address_balances.put("address", i.get_address());
+        address_balances.put("confirmed", addr_balance.confirmed_balance);
+        address_balances.put("received", addr_balance.total_received);
+        address_balances.put("unspent", addr_balance.unspent_balance);
+        address_balances.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
+        address_balances.put("frozen", addr_balance.frozen_balance);
 
         // non_zero display options
         if (option_.non_zero){
             if (addr_balance.unspent_balance){
-				all_balances.push_back(std::make_pair("", address_balances));
+                all_balances.push_back(std::make_pair("", address_balances));
             }
         } else {
-			all_balances.push_back(std::make_pair("", address_balances));
+            all_balances.push_back(std::make_pair("", address_balances));
         }
 
     }

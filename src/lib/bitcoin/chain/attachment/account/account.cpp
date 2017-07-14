@@ -37,13 +37,173 @@ using namespace libbitcoin::wallet;
 namespace libbitcoin {
 namespace chain {
 
+account_multisig::account_multisig():hd_index_(0), m_(0),
+	n_(0), pubkey_("")
+{
+	cosigner_pubkeys_.clear();
+}
+account_multisig::account_multisig(uint32_t hd_index, uint8_t m, uint8_t n, 
+	std::vector<std::string>&& cosigner_pubkeys, std::string& pubkey):hd_index_(hd_index), m_(m),
+	n_(n), cosigner_pubkeys_(cosigner_pubkeys), pubkey_(pubkey)
+{
+}
+void account_multisig::set_hd_index(uint32_t hd_index){
+	hd_index_ = hd_index;
+}
+uint32_t account_multisig::get_hd_index() const{
+	return hd_index_;
+}
+void account_multisig::set_index(uint32_t index){
+	index_ = index;
+}
+uint32_t account_multisig::get_index() const{
+	return index_;
+}
+void account_multisig::set_m(uint8_t m){
+	m_ = m;
+}
+uint8_t account_multisig::get_m() const{
+	return m_;
+}
+void account_multisig::set_n(uint8_t n){
+	n_ = n;
+}
+uint8_t account_multisig::get_n() const{
+	return n_;
+}
+std::vector<std::string>& account_multisig::get_cosigner_pubkeys() {
+	return cosigner_pubkeys_;
+}
+void account_multisig::set_cosigner_pubkeys(std::vector<std::string>&& cosigner_pubkeys){
+	cosigner_pubkeys_ = cosigner_pubkeys;
+}
+std::string account_multisig::get_pubkey() const{
+	return pubkey_;
+}
+void account_multisig::set_pubkey(std::string& pubkey){
+	pubkey_ = pubkey;
+}
+std::string account_multisig::get_description() const {
+	return description_;
+}
+void account_multisig::set_description(std::string& description) {
+	description_ = description;
+}
+std::string account_multisig::get_address() const {
+	return address_;
+}
+void account_multisig::set_address(std::string& address) {
+	address_ = address;
+}
+bool account_multisig::from_data(reader& source)
+{
+    hd_index_ = source.read_4_bytes_little_endian();
+    index_ = source.read_4_bytes_little_endian();
+	m_ = source.read_byte();
+	n_ = source.read_byte();
+	pubkey_ = source.read_string();
+	// read consigner pubkeys
+	uint8_t size = source.read_byte();
+	log::trace("from_data")<< size;
+	while(size--)
+		cosigner_pubkeys_.push_back(source.read_string());
+	
+	description_ = source.read_string();
+	address_ = source.read_string();
+	
+    return true;	
+}
+
+void account_multisig::to_data(writer& sink) const
+{
+	sink.write_4_bytes_little_endian(hd_index_);
+	sink.write_4_bytes_little_endian(index_);
+	sink.write_byte(m_);
+	sink.write_byte(n_);
+	sink.write_string(pubkey_);
+	sink.write_byte(cosigner_pubkeys_.size());
+	
+	log::trace("to_data")<< cosigner_pubkeys_.size();
+	
+	//uint8_t size = 15; 
+	if(cosigner_pubkeys_.size()){
+		for(auto& each : cosigner_pubkeys_) {
+			sink.write_string(each);
+			//size--;
+		}
+		
+	} 
+	//while(size--)
+		//sink.write_string(std::string("02b66fcb1064d827094685264aaa90d0126861688932eafbd1d1a4ba149de3308b"));
+	sink.write_string(description_);
+	sink.write_string(address_);
+}
+
+uint64_t account_multisig::serialized_size() const
+{
+	uint64_t size = 4 + 4 + 1 + 1 + (pubkey_.size() + 9) + 1; // hd_index,index,m,n,pubkey,pubkey number
+	
+    for(auto& each : cosigner_pubkeys_)
+    	size += (each.size() + 9);
+	size += (description_.size() + 9); 
+	size += (address_.size() + 9); 
+	return size;
+}
+bool account_multisig::operator==(account_multisig& other) 
+{
+	auto field_flag = (hd_index_ == other.get_hd_index()) 	&& (m_ == other.get_m())
+		&& (n_ == other.get_n()) && (pubkey_ == other.get_pubkey());
+
+	//auto self_pubkeys = get_cosigner_pubkeys();
+	std::sort(cosigner_pubkeys_.begin(), cosigner_pubkeys_.end());
+	std::sort(other.get_cosigner_pubkeys().begin(), other.get_cosigner_pubkeys().end());
+	auto vec_flag = (cosigner_pubkeys_ == other.get_cosigner_pubkeys());
+	
+	return field_flag && vec_flag;
+}
+void account_multisig::reset(){
+	hd_index_ = 0;
+	index_ = 0;
+	m_ = 0;
+	n_ = 0;
+	pubkey_ = ""; 
+	cosigner_pubkeys_.clear();
+	description_ = "";
+	address_ = "";
+}
+#ifdef MVS_DEBUG
+std::string account_multisig::to_string() 
+{
+    std::ostringstream ss;
+
+    ss << "\t hd_index = " << hd_index_ << "\n"
+		<< "\t index = " << index_ << "\n"
+		<< "\t m = " << m_ << "\n"
+		<< "\t n = " << n_ << "\n"
+		<< "\t pubkey = " << pubkey_ << "\n"
+		<< "\t description = " << description_ << "\n";
+	for(auto& each : cosigner_pubkeys_)
+		ss << "\t cosigner-pubkey = " << each << std::endl;
+    return ss.str();
+}
+#endif
+std::string account_multisig::get_multisig_script(){
+	std::sort(cosigner_pubkeys_.begin(), cosigner_pubkeys_.end());
+	std::ostringstream ss;
+	ss << std::to_string(m_);
+	for(auto& each : cosigner_pubkeys_)
+		ss << " [ " << each << " ] ";
+	ss << std::to_string(n_) << " checkmultisig";
+	return ss.str();
+}
+
 account::account()
 {
 	reset();
 }
 account::account(std::string name, std::string mnemonic, hash_digest passwd, 
-		uint32_t hd_index, uint8_t priority, uint16_t status):
-		name(name), mnemonic(mnemonic), passwd(passwd), hd_index(hd_index), priority(priority), status(status)
+		uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type):
+		name(name), mnemonic(mnemonic), passwd(passwd), hd_index(hd_index), priority(priority), status(status), type(type)
 {
 }
 
@@ -110,7 +270,19 @@ bool account::from_data(reader& source)
     passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
-	status = source.read_2_bytes_little_endian();
+	//status = source.read_2_bytes_little_endian();
+	type = source.read_byte();
+	status = source.read_byte();
+	if(type == account_type::multisignature) {
+		//multisig.from_data(source);
+		account_multisig multisig;
+		uint32_t size = source.read_4_bytes_little_endian();
+		while(size--) {
+			multisig.reset();
+			multisig.from_data(source);
+			multisig_vec.push_back(multisig);
+		}
+	}
     return true;	
 }
 
@@ -137,12 +309,31 @@ void account::to_data(writer& sink) const
 	sink.write_hash(passwd);
 	sink.write_4_bytes_little_endian(hd_index);
 	sink.write_byte(priority);
-	sink.write_2_bytes_little_endian(status);
+	//sink.write_2_bytes_little_endian(status);
+	sink.write_byte(type);
+	sink.write_byte(status);
+	if(type == account_type::multisignature) { 
+		//multisig.to_data(sink);
+		sink.write_4_bytes_little_endian(multisig_vec.size());
+		if(multisig_vec.size()){
+			for(auto& each : multisig_vec) {
+				each.to_data(sink);
+			}
+			
+		} 
+	}
 }
 
 uint64_t account::serialized_size() const
 {
-    return name.size() + mnemonic.size() + passwd.size() + 4 + 1 + 3; // 2 "string length" byte
+	uint64_t size = name.size() + mnemonic.size() + passwd.size() + 4 + 1 + 2 + 2*9; // 2 string len 
+	if(type == account_type::multisignature) {
+		//size += multisig.serialized_size();
+		size += 4; // vector size
+		for(auto& each : multisig_vec)
+			size += each.serialized_size();
+	}
+	return size;
 }
 
 account::operator bool() const
@@ -166,8 +357,12 @@ std::string account::to_string()
 		<< "\t password = " << passwd.data() << "\n"
 		<< "\t hd_index = " << hd_index << "\n"
 		<< "\t priority = " << priority << "\n"
+		<< "\t type = " << type << "\n"
 		<< "\t status = " << status << "\n";
-
+		if(type == account_type::multisignature) { 
+			 for(auto& each : multisig_vec)
+			 	ss << "\t\t" << each.to_string();
+		}
     return ss.str();
 }
 void account::to_json(std::ostream& output) 
@@ -225,12 +420,19 @@ void account::set_hd_index(uint32_t hd_index)
 { 
      this->hd_index = hd_index;
 }
-
-uint16_t account::get_status() const
+uint8_t account::get_type() const
+{ 
+    return type;
+}
+void account::set_type(uint8_t type)
+{ 
+     this->type = type;
+}
+uint8_t account::get_status() const
 { 
     return status;
 }
-void account::set_status(uint16_t status)
+void account::set_status(uint8_t status)
 { 
      this->status = status;
 }
@@ -259,6 +461,65 @@ uint8_t account::get_user_status() const
 uint8_t account::get_system_status() const
 { 
 	return static_cast<uint8_t>(status>>sizeof(uint8_t));
+}
+
+const std::vector<account_multisig>& account::get_multisig_vec() const {
+	return multisig_vec;
+}
+void account::set_multisig_vec(std::vector<account_multisig>&& multisig_vec){
+	this->multisig_vec = multisig_vec;
+}
+void account::set_multisig(account_multisig& multisig){
+	if(!get_multisig(multisig))
+		multisig_vec.push_back(multisig);
+}
+void account::remove_multisig(account_multisig& multisig, uint16_t index){
+	uint16_t i = 1;
+	for (auto it = multisig_vec.begin(); it != multisig_vec.end();) {
+		if ((index && (i == index))
+			|| (*it == multisig)) {
+			multisig = *it;
+			it = multisig_vec.erase(it);
+			break;
+		}
+		++it;
+		++i;
+	}
+}
+bool account::get_multisig(account_multisig& multisig, uint16_t index){
+	uint16_t i = 1;
+	auto found = false;
+	for (auto& each : multisig_vec)
+	{
+		if ((index && (i == index))
+				|| (each == multisig) ){
+			multisig = each;
+			found = true;
+			break;
+		}
+		++i;
+	}
+	return found;
+}
+bool account::get_multisig_by_address(account_multisig& multisig, std::string& addr){
+	auto found = false;
+	for (auto& each : multisig_vec) {
+		if (addr == each.get_address()) {
+			multisig = each;
+			found = true;
+			break;
+		}
+	}
+	return found;
+}
+void account::modify_multisig(account_multisig& multisig){
+	for (auto& each : multisig_vec)
+	{
+		if (each == multisig) {
+			each = multisig;
+			break;
+		}
+	}
 }
 
 } // namspace chain

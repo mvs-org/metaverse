@@ -144,7 +144,7 @@ code message_subscriber::load(message_type type, uint32_t version,
         CASE_RELAY_MESSAGE(stream, version, send_compact_blocks);
         CASE_RELAY_MESSAGE(stream, version, transaction_message);
         CASE_RELAY_MESSAGE(stream, version, verack);
-        CASE_RELAY_MESSAGE(stream, version, version);
+        CASE_HANDLE_MESSAGE(stream, version, version);
         case message_type::unknown:
         default:
             return error::not_found;

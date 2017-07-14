@@ -24,43 +24,52 @@
 #endif
 
 namespace libbitcoin{
+#ifdef __GNUC__
+static boost::filesystem::path default_path __attribute__((init_priority(101)));
+#else 
+static boost::filesystem::path default_path;
+#endif
 
 boost::filesystem::path default_data_path()
 {
-    namespace fs = boost::filesystem;
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Metaverse
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Metaverse
-    // Mac: ~/Library/Application Support/Metaverse
-    // Unix: ~/.metaverse
+    if (default_path.empty())
+    {
+        namespace fs = boost::filesystem;
+        // Windows < Vista: C:\Documents and Settings\Username\Application Data\Metaverse
+        // Windows >= Vista: C:\Users\Username\AppData\Roaming\Metaverse
+        // Mac: ~/Library/Application Support/Metaverse
+        // Unix: ~/.metaverse
 #ifdef _WIN32
-    // Windows
+        // Windows
 #ifdef UNICODE
-	wchar_t file_path[MAX_PATH] = { 0 };
+        wchar_t file_path[MAX_PATH] = { 0 };
 #else
-	char file_path[MAX_PATH] = { 0 };
+        char file_path[MAX_PATH] = { 0 };
 #endif
-    SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
-    fs::path pathRet = boost::filesystem::path(file_path) / "Metaverse";
-    fs::create_directories(pathRet);
-    return pathRet;
+        SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
+        fs::path pathRet = boost::filesystem::path(file_path) / "Metaverse";
+        fs::create_directories(pathRet);
+        default_path = pathRet;
 #else
-    fs::path pathRet;
-    char* pszHome = getenv("HOME");
-    if (pszHome == nullptr || strlen(pszHome) == 0)
-        pathRet = fs::path("/");
-    else
-        pathRet = fs::path(pszHome);
+        fs::path pathRet;
+        char* pszHome = getenv("HOME");
+        if (pszHome == nullptr || strlen(pszHome) == 0)
+            pathRet = fs::path("/");
+        else
+            pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
-    // Mac
-    pathRet /= "Library/Application Support";
-    fs::create_directories(pathRet / "Metaverse");
-    return pathRet / "Metaverse";
+        // Mac
+        pathRet /= "Library/Application Support";
+        fs::create_directories(pathRet / "Metaverse");
+        default_path = pathRet / "Metaverse";
 #else
-    // Unix
-    fs::create_directories(pathRet / ".metaverse");
-    return pathRet / ".metaverse";
+        // Unix
+        fs::create_directories(pathRet / ".metaverse");
+        default_path = pathRet / ".metaverse";
 #endif
 #endif
+    }
+    return default_path;
 }
 
 
@@ -71,6 +80,11 @@ boost::filesystem::path webpage_path()
 #else
 	return default_data_path() / "mvs-htmls";
 #endif
+}
+
+void set_default_data_path(boost::filesystem::path path)
+{
+    default_path = path;
 }
 
 }//namespace libbitcoin
