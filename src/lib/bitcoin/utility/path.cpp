@@ -30,7 +30,7 @@ const boost::filesystem::path& default_data_path()
 {
     static boost::filesystem::path default_path("");
     static boost::once_flag once = BOOST_ONCE_INIT;
-    auto path_init = [](boost::filesystem::path& data_path) {
+    auto path_init = []() {
         namespace fs = boost::filesystem;
         // Windows < Vista: C:\Documents and Settings\Username\Application Data\Metaverse
         // Windows >= Vista: C:\Users\Username\AppData\Roaming\Metaverse
@@ -46,7 +46,7 @@ const boost::filesystem::path& default_data_path()
         SHGetSpecialFolderPath(NULL, file_path, CSIDL_APPDATA, true);
         fs::path pathRet = boost::filesystem::path(file_path) / "Metaverse";
         fs::create_directories(pathRet);
-        data_path = pathRet;
+        default_path = pathRet;
 #else
         fs::path pathRet;
         char* pszHome = getenv("HOME");
@@ -62,11 +62,11 @@ const boost::filesystem::path& default_data_path()
 #else
         // Unix
         fs::create_directories(pathRet / ".metaverse");
-        data_path = pathRet / ".metaverse";
+        default_path = pathRet / ".metaverse";
 #endif
 #endif
     };
-    boost::call_once(std::bind(path_init, default_path), once);
+    boost::call_once(path_init, once);
     return default_path;
 }
 
