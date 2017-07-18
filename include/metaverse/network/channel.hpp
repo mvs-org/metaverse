@@ -76,6 +76,7 @@ private:
     deadline::ptr expiration_;
     deadline::ptr inactivity_;
     std::function<void()> protocol_start_handler_;
+    upgrade_mutex mutex_;
 };
 
 } // namespace network

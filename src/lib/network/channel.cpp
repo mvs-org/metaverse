@@ -103,20 +103,26 @@ void channel::set_nonce(uint64_t value)
 
 void channel::set_protocol_start_handler(std::function<void()> handler)
 {
+	log::debug(LOG_NETWORK)  << "set_protocol_start_handler";
     protocol_start_handler_ = handler;
 }
 
 void channel::invoke_protocol_start_handler(const code& ec)
 {
-    if (!protocol_start_handler_)
-        return;
-    if (ec) {
-    	protocol_start_handler_ = nullptr;
-    	return;
-    }
+    std::function<void()> func;
+    {
+        unique_lock lock{mutex_};
+        if (!protocol_start_handler_)
+            return;
+        if (ec) {
+    	    protocol_start_handler_ = nullptr;
+    	    return;
+        }
 
-    protocol_start_handler_();
-    protocol_start_handler_ = nullptr;
+        func = std::move(protocol_start_handler_);
+        protocol_start_handler_ = nullptr;
+    }
+    func();
 }
 
 // Proxy pure virtual protected and ordered handlers.
@@ -125,6 +131,7 @@ void channel::invoke_protocol_start_handler(const code& ec)
 // It is possible that this may be called multiple times.
 void channel::handle_stopping()
 {
+	invoke_protocol_start_handler(error::channel_stopped);
     expiration_->stop();
     inactivity_->stop();
 }
