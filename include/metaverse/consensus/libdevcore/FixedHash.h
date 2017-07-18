@@ -163,7 +163,7 @@ public:
 	struct hash
 	{
 		/// Make a hash of the object's data.
-		size_t operator()(FixedHash const& _value) const { return boost::hash_range(_value.m_data.cbegin(), _value.m_data.cend()); }
+		size_t operator()(FixedHash const& _value) const { return libbitcoin::hash_range(_value.m_data.cbegin(), _value.m_data.cend()); }
 	};
 
 	template <unsigned P, unsigned M> inline FixedHash& shiftBloom(FixedHash<M> const& _h)
@@ -309,7 +309,7 @@ template<> inline bool FixedHash<32>::operator==(FixedHash<32> const& _other) co
 template<> inline size_t FixedHash<32>::hash::operator()(FixedHash<32> const& value) const
 {
 	uint64_t const* data = reinterpret_cast<uint64_t const*>(value.data());
-	return boost::hash_range(data, data + 4);
+	return libbitcoin::hash_range(data, data + 4);
 }
 
 /// Stream I/O for the FixedHash class.
