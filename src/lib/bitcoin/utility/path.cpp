@@ -18,22 +18,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/utility/path.hpp>
+#include <boost/thread/once.hpp>
 
 #ifdef _WIN32
 #include <Shlobj.h>
 #endif
 
 namespace libbitcoin{
-#ifdef __GNUC__
-static boost::filesystem::path default_path __attribute__((init_priority(101)));
-#else 
-static boost::filesystem::path default_path;
-#endif
 
-boost::filesystem::path default_data_path()
+const boost::filesystem::path& default_data_path()
 {
-    if (default_path.empty())
-    {
+    static boost::filesystem::path default_path("");
+    static boost::once_flag once = BOOST_ONCE_INIT;
+    auto path_init = []() {
         namespace fs = boost::filesystem;
         // Windows < Vista: C:\Documents and Settings\Username\Application Data\Metaverse
         // Windows >= Vista: C:\Users\Username\AppData\Roaming\Metaverse
@@ -68,7 +65,8 @@ boost::filesystem::path default_data_path()
         default_path = pathRet / ".metaverse";
 #endif
 #endif
-    }
+    };
+    boost::call_once(path_init, once);
     return default_path;
 }
 
@@ -80,11 +78,6 @@ boost::filesystem::path webpage_path()
 #else
 	return default_data_path() / "mvs-htmls";
 #endif
-}
-
-void set_default_data_path(boost::filesystem::path path)
-{
-    default_path = path;
 }
 
 }//namespace libbitcoin
