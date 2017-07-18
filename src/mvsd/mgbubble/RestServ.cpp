@@ -197,7 +197,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             // username
             if (uri_.top() != "getnewaccount"_sv && bc::explorer::find_extension(data.get_command())) {
                 auto ret = get_from_session_list(data.get());
-                if (!ret) throw explorer::session_nullptr_exception{"nullptr for seesion"};
+                if (!ret) throw explorer::session_expired_exception{"seesion expired"};
                 data.add_arg(std::string(ret->user));
                 data.add_arg(std::string(ret->pass));
             }
