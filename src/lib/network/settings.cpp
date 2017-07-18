@@ -71,6 +71,7 @@ settings::settings(bc::settings context)
             seeds.push_back({ "main-asia.mvs.live", 5251 });
             seeds.push_back({ "main-americas.mvs.live", 5251 });
             seeds.push_back({ "main-europe.mvs.live", 5251 });
+            seeds.push_back({ "getmvs.org", 5251 });
             break;
         }
 
