@@ -48,7 +48,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -71,6 +71,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;..\..\..\..\secp256k1\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;..\..\..\..\secp256k1\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -86,6 +89,7 @@
       </SDLCheck>
       <PreprocessorDefinitions>_MBCS;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCX_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_63_0\stage\lib;..\..\..\..\zeromq-4.2.1\bin\x64\Debug\v140\static;..\..\..\..\secp256k1\bin\x64\Debug\v140\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -112,10 +116,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_MBCS;BCX_STATIC;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\..\..\boost_1_63_0\stage\lib;..\..\..\..\zeromq-4.2.1\bin\x64\Release\v140\static;..\..\..\..\secp256k1\bin\x64\Release\v140\static</AdditionalLibraryDirectories>
+      <AdditionalDependencies>secp256k1.lib;libzmq.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
