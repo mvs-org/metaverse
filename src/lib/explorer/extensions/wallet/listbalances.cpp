@@ -62,10 +62,8 @@ console_result listbalances::invoke (std::ostream& output,
     for (auto& i: *vaddr){
         pt::ptree address_balance;
         balances addr_balance{0, 0, 0, 0};
-        auto addr = i.get_address();
-        auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
-        if(ec)
-            throw std::logic_error{ec.message()};
+        auto waddr = wallet::payment_address(i.get_address());
+        sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
         address_balance.put("address", i.get_address());
         address_balance.put("confirmed", addr_balance.confirmed_balance);
         address_balance.put("received", addr_balance.total_received);

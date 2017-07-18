@@ -25,11 +25,9 @@
 
 namespace libbitcoin
 {
-	boost::filesystem::path default_data_path();
+	const boost::filesystem::path& default_data_path();
 
 	boost::filesystem::path webpage_path();
-
-    void set_default_data_path(boost::filesystem::path path);
 }//namespace libbitcoin
 
 
