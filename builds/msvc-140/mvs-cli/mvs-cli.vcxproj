@@ -84,11 +84,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>
       </SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_MBCS;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCX_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;WITH_CONSENSUS;_CRT_SUPPRESS_RESTRICT;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_MBCS;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCX_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_63_0\stage\lib;..\..\..\..\zeromq-4.2.1\bin\x64\Debug\v140\static;..\..\..\..\secp256k1\bin\x64\Debug\v140\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>secp256k1.lib;libzmq.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -144,9 +145,6 @@
     </ProjectReference>
     <ProjectReference Include="..\mongoose\mongoose.vcxproj">
       <Project>{fd3fc1f1-e7db-4cc2-b70f-21fbb87f1a43}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\mvsd\mvsd.vcxproj">
-      <Project>{491dc1bf-1f41-42ed-b283-75533c2489fa}</Project>
     </ProjectReference>
     <ProjectReference Include="..\network\network.vcxproj">
       <Project>{53a1551c-87d3-4a0b-984b-e249e750d783}</Project>
