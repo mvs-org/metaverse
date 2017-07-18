@@ -68,7 +68,8 @@ public:
     virtual void store(const address::list& hosts, result_handler handler);
     address::list copy();
 private:
-    typedef boost::circular_buffer<address> list;
+//    typedef boost::circular_buffer<address> list;
+    using list = std::vector<address>;
     typedef list::iterator iterator;
 
     iterator find(const address& host);
