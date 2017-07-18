@@ -98,8 +98,6 @@ void RestServ::websocketSend(mg_connection& nc, WebsocketMessage ws)
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
-         
-         
         explorer::relay_exception(sout);
     } catch(libbitcoin::explorer::explorer_exception ex) {
         sout << ex;
@@ -156,7 +154,6 @@ void RestServ::httpRpcRequest(mg_connection& nc, HttpMessage data)
             throw explorer::command_params_exception(sout.str());
         }
          
-         
         explorer::relay_exception(sout);
 
         #ifdef MVS_DEBUG
@@ -200,7 +197,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
             // username
             if (uri_.top() != "getnewaccount"_sv && bc::explorer::find_extension(data.get_command())) {
                 auto ret = get_from_session_list(data.get());
-                if (!ret) throw std::logic_error{"nullptr for seesion"};
+                if (!ret) throw explorer::session_nullptr_exception{"nullptr for seesion"};
                 data.add_arg(std::string(ret->user));
                 data.add_arg(std::string(ret->pass));
             }
@@ -224,9 +221,7 @@ void RestServ::httpRequest(mg_connection& nc, HttpMessage data)
                 throw explorer::command_params_exception(sout.str());
             }
              
-             
             explorer::relay_exception(sout);
-
             out_<<sout.str();
             state_|= MatchUri;
             state_|= MatchMethod;

@@ -54,7 +54,9 @@ void relay_exception(std::stringstream&);
 
 DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);
+DEFINE_EXPLORER_EXCEPTION(session_nullptr_exception, 1012);
 DEFINE_EXPLORER_EXCEPTION(command_params_exception, 1021);
+
 
 DEFINE_EXPLORER_EXCEPTION(argument_exceed_limit_exception, 2001);
 DEFINE_EXPLORER_EXCEPTION(argument_size_invalid_exception, 2002);
