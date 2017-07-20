@@ -34,13 +34,13 @@ namespace network {
 #define NAME "hosts"
 
 hosts::hosts(threadpool& pool, const settings& settings)
-  : buffer_(std::max(settings.host_pool_capacity, 1u)),
-    stopped_(true),
+  : stopped_(true),
     dispatch_(pool, NAME),
     file_path_(default_data_path() / settings.hosts_file),
     disabled_(settings.host_pool_capacity == 0),
 	pool_{pool}
 {
+	buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
 }
 
 // private

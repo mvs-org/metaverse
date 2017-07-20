@@ -48,7 +48,7 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
         result_handler handle_started)
 {
     auto self = shared_from_this();
-    attach<protocol_version>(channel)->start([channel, handle_started, this](const code& ec){
+    attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
         if (!ec) {
             auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
             auto pt_address = attach<protocol_address>(channel)->do_subscribe();
@@ -70,6 +70,8 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
         	channel->invoke_protocol_start_handler(error::channel_stopped);
         }
         handle_started(ec);
+        if(stopped())
+			channel->invoke_protocol_start_handler(error::channel_stopped);
     });
 
 }
