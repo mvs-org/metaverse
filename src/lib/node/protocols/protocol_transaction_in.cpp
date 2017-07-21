@@ -194,7 +194,7 @@ bool protocol_transaction_in::handle_receive_transaction(const code& ec,
         return false;
     }
 
-    log::info(LOG_NODE)
+    log::debug(LOG_NODE)
         << "Potential transaction from [" << authority() << "]." << encode_hash(message->hash());
 
     pool_.store(message,

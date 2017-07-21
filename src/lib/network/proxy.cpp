@@ -189,7 +189,7 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
     // TODO: verify client quick disconnect.
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Heading read failure [" << authority() << "] "
             << code(error::boost_to_error_code(ec)).message();
         stop(ec);
@@ -210,7 +210,7 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
 
     if (head.magic != protocol_magic_)
     {
-        log::warning(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Invalid heading magic (" << head.magic << ") from ["
             << authority() << "]";
         stop(error::bad_magic);
@@ -274,7 +274,7 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
     auto checksum = bitcoin_checksum(payload_buffer_);
     if (head.checksum != checksum)
     {
-        log::warning(LOG_NETWORK) 
+        log::trace(LOG_NETWORK)
             << "Invalid " << head.command << " payload from [" << authority()
             << "] bad checksum. size is " << payload_size;
         stop(error::bad_stream);
@@ -381,7 +381,7 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
 
     //thin log network
     if (command != "getheaders" && command != "headers"){
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Sending " << command << " to [" << authority() << "] ("
             << buffer.size() << " bytes)";
     }

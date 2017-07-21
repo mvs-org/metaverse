@@ -145,7 +145,7 @@ void session_inbound::handle_connection_count(size_t connections,
         return;
     }
    
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected inbound channel [" << channel->authority() << "]";
 
     register_channel(channel, 
@@ -158,7 +158,7 @@ void session_inbound::handle_channel_start(const code& ec,
 {
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Inbound channel failed to start [" << channel->authority()
             << "] " << ec.message();
         return;
