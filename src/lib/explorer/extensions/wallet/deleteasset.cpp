@@ -51,8 +51,28 @@ console_result deleteasset::invoke (std::ostream& output,
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-    if(blockchain.get_account_asset(auth_.name, option_.symbol))
-        throw asset_issued_not_delete{"asset " + option_.symbol + " is issued, it doesn't delete."};
+    if(blockchain.get_issued_asset(option_.symbol))
+        throw asset_issued_not_delete{"Cannot delete asset " + option_.symbol + " which has been issued."};
+
+    std::promise<code> p;
+    std::vector<libbitcoin::blockchain::transaction_pool::transaction_ptr> txs;
+    blockchain.pool().fetch([&txs, &p](const code& ec, const std::vector<libbitcoin::blockchain::transaction_pool::transaction_ptr>& tx){
+        if (!ec)
+        {
+            txs = tx;
+        }
+        p.set_value(ec);
+    });
+    p.get_future().get();
+
+    for(auto& tx : txs)
+    {
+        for(auto& output : tx->outputs)
+        {
+            if(output.is_asset_issue() && output.get_asset_symbol() == option_.symbol)    
+                throw asset_issued_not_delete{"Cannot delete asset " + option_.symbol + " which has been issued."};
+        }
+    }
 
     std::vector<business_address_asset> assets = *blockchain.get_account_unissued_assets(auth_.name);
     bool found = false;
