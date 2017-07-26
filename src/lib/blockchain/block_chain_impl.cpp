@@ -1124,26 +1124,33 @@ std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addr
 	}
 	return sp_addr;
 }
-operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_detail> detail)
+
+operation_result block_chain_impl::store_account_asset(const asset_detail& detail)
 {
 	if (stopped())
 	{
 		return operation_result::failure;
 	}
-	if (!(detail))
-	{
-        throw std::runtime_error{"nullptr for asset"};
-	}
 	///////////////////////////////////////////////////////////////////////////
 	// Critical Section.
 	unique_lock lock(mutex_);
 
-	const auto hash = get_short_hash(detail->get_issuer());
-	database_.account_assets.store(hash, *detail);
+	const auto hash = get_short_hash(detail.get_issuer());
+	database_.account_assets.store(hash, detail);
 	database_.account_assets.sync();
 	///////////////////////////////////////////////////////////////////////////
 	return operation_result::okay;
 }
+
+operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_detail> detail)
+{
+	if (!(detail))
+	{
+        throw std::runtime_error{"nullptr for asset"};
+	}
+	return store_account_asset(*detail);
+}
+
 /// delete account asset by account name
 operation_result block_chain_impl::delete_account_asset(const std::string& name)
 {

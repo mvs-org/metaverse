@@ -236,6 +236,7 @@ public:
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr);
 	// account asset api
+	operation_result store_account_asset(const asset_detail& detail);
 	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
 	operation_result delete_account_asset(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, 
