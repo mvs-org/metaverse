@@ -51,7 +51,7 @@ console_result deleteasset::invoke (std::ostream& output,
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-    if(blockchain.get_issued_asset(const_cast<std::string&>(option_.symbol)))
+    if(blockchain.get_account_asset(auth_.name, option_.symbol))
         throw asset_issued_not_delete{"asset " + option_.symbol + " is issued, it doesn't delete."};
 
     std::vector<business_address_asset> assets = *blockchain.get_account_unissued_assets(auth_.name);
