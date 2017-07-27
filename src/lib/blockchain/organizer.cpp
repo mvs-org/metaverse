@@ -247,6 +247,11 @@ void organizer::filter_orphans(message::get_data::ptr message)
     orphan_pool_.filter(message);
 }
 
+const orphan_pool& organizer::get_orphan_pool() const
+{
+    return orphan_pool_;
+}
+
 void organizer::process(block_detail::ptr process_block)
 {
     BITCOIN_ASSERT(process_block);

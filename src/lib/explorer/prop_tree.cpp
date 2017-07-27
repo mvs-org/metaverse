@@ -320,6 +320,8 @@ ptree prop_tree(const tx_output_type& tx_output)
     tree.add_child("output", prop_list(tx_output));
     return tree;
 }
+
+
 ptree prop_tree(const tx_output_type::list& tx_outputs, bool json)
 {
 
@@ -400,6 +402,19 @@ ptree prop_tree(const std::vector<transaction>& transactions, bool json)
     tree.add_child("transactions",
         prop_tree_list_of_lists("transaction", transactions, json));
     return tree;
+}
+
+ptree prop_tree(const tx_output_type::list& tx_outputs, bool json)
+{
+
+    pt::ptree list;
+    uint32_t index = 0;
+    for (const auto& value : tx_outputs) {
+        list.push_back(std::make_pair("", prop_list(value, index)));
+        index++;
+    }
+
+    return list;
 }
 
 // wrapper
@@ -580,6 +595,21 @@ ptree prop_tree(const block& block)
 	std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
 	tree.add_child("txs", prop_tree(txs, true));
 	return tree;
+}
+
+ptree prop_tree(const block_detail& block, bool json)
+{
+    ptree tree;
+    tree.put("processed", block.processed);
+    tree.put("height", block.height);
+    tree.put("proof_of_work_status", block.is_checked_work_proof);
+    tree.add_child("block", prop_tree(*block.actual_block));
+    return tree;
+}
+
+ptree prop_tree(const std::vector<block_detail>& blocks, bool json)
+{
+    return prop_tree_list("detail", blocks, json);
 }
 
 } // namespace config

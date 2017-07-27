@@ -47,6 +47,16 @@ class output;
 class transaction;
 class wrapper;
 
+struct block_detail
+{
+    typedef message::block_message::ptr block_ptr;
+
+    std::atomic<bool> processed;
+    std::atomic<uint64_t> height;
+    const block_ptr actual_block;
+    bool is_checked_work_proof;
+};
+
 /**
  * A tuple to represent settings and serialized values.
  */
@@ -408,6 +418,10 @@ BCX_API pt::ptree prop_tree(const settings_list& settings);
 BCX_API pt::ptree prop_tree(const wallet::bitcoin_uri& uri);
 
 BCX_API pt::ptree prop_tree(const block& block);
+
+BCX_API pt::ptree prop_tree(const std::vector<block_detail>& blocks, bool json);
+
+BCX_API pt::ptree prop_tree(const block_detail& block, bool json);
 
 } // namespace config
 } // namespace explorer
