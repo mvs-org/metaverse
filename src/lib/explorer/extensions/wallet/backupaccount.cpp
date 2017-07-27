@@ -60,7 +60,7 @@ console_result backupaccount::invoke (std::ostream& output,
     
     fs::file_status status = fs::status(argument_.dst); 
     if(fs::is_directory(status)) // not process filesystem exception here
-        argument_.dst /= auth_.auth;
+        argument_.dst /= auth_.name;
     
     fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
     if(!fs::exists(status2))
@@ -100,6 +100,10 @@ console_result backupaccount::invoke (std::ostream& output,
     file_output << all_info;
     file_output << std::flush;      
     file_output.close();
+
+    pt::ptree root;
+    root.put("result", "success");    
+    pt::write_json(output, root);
 
     return console_result::okay;
 }

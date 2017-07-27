@@ -68,6 +68,11 @@ console_result importaccount::invoke (std::ostream& output,
         file_input >> all_info;
         file_input.close();
         all_info.store(auth_.name, option_.passwd);
+        
+        pt::ptree result;
+        result.put("result", "success");    
+        pt::write_json(output, result);
+
         return console_result::okay;
     }
     
