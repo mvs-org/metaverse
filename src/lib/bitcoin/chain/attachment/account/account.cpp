@@ -406,6 +406,10 @@ void account::set_mnemonic(const std::string& mnemonic, std::string& passphrase)
 	encrypt_string(mnemonic, passphrase, encry_output);
 	this->mnemonic = encry_output;
 }
+void account::set_mnemonic(const std::string& mnemonic)
+{ 
+	this->mnemonic = mnemonic;
+}
 
 const hash_digest& account::get_passwd() const
 { 

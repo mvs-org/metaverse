@@ -31,20 +31,76 @@
 #include <metaverse/explorer/extensions/wallet/backupaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/account/account_info.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
 namespace pt = boost::property_tree;
+namespace fs = boost::filesystem;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ backupaccount *************************/
 
 console_result backupaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    output << IN_DEVELOPING;
+    auto& blockchain = node.chain_impl();
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    std::string mnemonic;
+    acc->get_mnemonic(auth_.auth, mnemonic);
+    std::vector<std::string> results;
+    boost::split(results, mnemonic, boost::is_any_of(" "));
+
+    if (*results.rbegin() != argument_.last_word){
+        throw argument_legality_exception{"last word not matching."};
+    }
+    
+    fs::file_status status = fs::status(argument_.dst); 
+    if(fs::is_directory(status)) // not process filesystem exception here
+        argument_.dst /= auth_.auth;
+    
+    fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
+    if(!fs::exists(status2))
+        throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
+
+    auto passphrase = argument_.passwd;
+    if(passphrase.empty())
+        passphrase = auth_.auth;
+    
+    #ifdef NDEBUG
+    if (passphrase.length() > 128 || passphrase.length() < 6)
+        throw argument_legality_exception{"password length in [6, 128]"};
+    #endif
+        
+    acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
+
+    // store account address info
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr) throw address_list_nullptr_exception{"nullptr for address list"};
+
+    std::string prv_key;
+    for (auto& each : *pvaddr){
+        prv_key = each.get_prv_key(auth_.auth);
+        each.set_prv_key(prv_key); // reset private key to plain text
+    }
+
+    // store account asset info
+    auto sh_asset_vec = std::make_shared<std::vector<asset_detail>>();
+    auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
+    for (auto& elem: *sh_unissued) {
+        sh_asset_vec->push_back(elem.detail);         
+    }
+    account_info all_info(blockchain, passphrase, *acc, *pvaddr, *sh_asset_vec);
+
+    // store encrypted data to file
+    bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
+    file_output << all_info;
+    file_output << std::flush;      
+    file_output.close();
+
     return console_result::okay;
 }
 
