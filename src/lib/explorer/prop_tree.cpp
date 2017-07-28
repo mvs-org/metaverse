@@ -172,7 +172,6 @@ ptree prop_tree(const chain::history::list& rows,
 }
 
 // inputs
-
 ptree prop_list(const tx_input_type& tx_input)
 {
     ptree tree;
@@ -186,12 +185,14 @@ ptree prop_list(const tx_input_type& tx_input)
     tree.put("sequence", tx_input.sequence);
     return tree;
 }
+
 ptree prop_tree(const tx_input_type& tx_input)
 {
     ptree tree;
     tree.add_child("input", prop_list(tx_input));
     return tree;
 }
+
 ptree prop_tree(const tx_input_type::list& tx_inputs, bool json)
 {
     ptree tree;
@@ -204,12 +205,14 @@ ptree prop_list(const input& input)
     const tx_input_type& tx_input = input;
     return prop_list(tx_input);
 }
+
 ptree prop_tree(const input& input)
 {
     ptree tree;
     tree.add_child("input", prop_list(input));
     return tree;
 }
+
 ptree prop_tree(const std::vector<input>& inputs, bool json)
 {
     const auto tx_inputs = cast<input, tx_input_type>(inputs);
@@ -220,7 +223,6 @@ ptree prop_tree(const std::vector<input>& inputs, bool json)
 }
 
 // outputs
-
 ptree prop_list(const tx_output_type& tx_output)
 {
     ptree tree;
@@ -314,6 +316,7 @@ ptree prop_list(bc::chain::attachment& attach_data)
 	}
     return tree;
 }
+
 ptree prop_tree(const tx_output_type& tx_output)
 {
     ptree tree;
@@ -584,7 +587,7 @@ ptree prop_tree(const block& block)
 	return tree;
 }
 
-ptree prop_tree(const block_detail& block, bool json)
+ptree prop_list(const block_detail& block, bool json)
 {
     ptree tree;
     tree.put("processed", block.processed);
@@ -594,12 +597,12 @@ ptree prop_tree(const block_detail& block, bool json)
     return tree;
 }
 
-
 ptree prop_tree(const std::vector<block_detail>& blocks, bool json)
 {
-   /*
-    return prop_tree_list("detail", blocks, json);
-    */
+    ptree tree;
+    for (const auto& block : blocks)
+        tree.add_child("blocks", prop_list(block, json));
+    return tree;
 }
 
 } // namespace config

@@ -101,6 +101,7 @@
 #include <metaverse/explorer/extensions/wallet/encodeattachtx.hpp>
 #include <metaverse/explorer/extensions/commands/private_query.hpp>
 #include <metaverse/explorer/extensions/wallet/getmemorypool.hpp>
+#include <metaverse/explorer/extensions/wallet/getorphanblocks.hpp>
 
 
 
@@ -181,7 +182,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<sendfrommultisig>());
     func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
-
+    func(make_shared<getorphanblocks>());
 
 }
 
@@ -333,6 +334,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<stopall>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
+    if (symbol == getorphanblocks::symbol())
+        return make_shared<getorphanblocks>();
 
     return nullptr;
 }

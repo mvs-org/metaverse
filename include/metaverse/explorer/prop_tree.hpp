@@ -421,7 +421,7 @@ BCX_API pt::ptree prop_tree(const block& block);
 
 BCX_API pt::ptree prop_tree(const std::vector<block_detail>& blocks, bool json);
 
-BCX_API pt::ptree prop_tree(const block_detail& block, bool json);
+BCX_API pt::ptree prop_list(const block_detail& block, bool json);
 
 } // namespace config
 } // namespace explorer
