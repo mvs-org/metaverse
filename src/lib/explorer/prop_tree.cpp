@@ -587,7 +587,7 @@ ptree prop_tree(const block& block)
 	return tree;
 }
 
-ptree prop_list(const block_detail& block, bool json)
+ptree prop_list(const block_detail& block)
 {
     ptree tree;
     tree.put("processed", block.processed);
@@ -600,8 +600,7 @@ ptree prop_list(const block_detail& block, bool json)
 ptree prop_tree(const std::vector<block_detail>& blocks, bool json)
 {
     ptree tree;
-    for (const auto& block : blocks)
-        tree.add_child("blocks", prop_list(block, json));
+    tree.add_child("blocks", prop_tree_list("blocks", blocks, json));
     return tree;
 }
 
