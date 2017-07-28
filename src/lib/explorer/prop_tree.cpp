@@ -404,19 +404,6 @@ ptree prop_tree(const std::vector<transaction>& transactions, bool json)
     return tree;
 }
 
-ptree prop_tree(const tx_output_type::list& tx_outputs, bool json)
-{
-
-    pt::ptree list;
-    uint32_t index = 0;
-    for (const auto& value : tx_outputs) {
-        list.push_back(std::make_pair("", prop_list(value, index)));
-        index++;
-    }
-
-    return list;
-}
-
 // wrapper
 
 ptree prop_list(const wallet::wrapped_data& wrapper)
@@ -607,9 +594,12 @@ ptree prop_tree(const block_detail& block, bool json)
     return tree;
 }
 
+
 ptree prop_tree(const std::vector<block_detail>& blocks, bool json)
 {
+   /*
     return prop_tree_list("detail", blocks, json);
+    */
 }
 
 } // namespace config

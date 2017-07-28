@@ -51,9 +51,9 @@ struct block_detail
 {
     typedef message::block_message::ptr block_ptr;
 
-    std::atomic<bool> processed;
-    std::atomic<uint64_t> height;
-    const block_ptr actual_block;
+    bool processed;
+    uint64_t height;
+    block_ptr actual_block;
     bool is_checked_work_proof;
 };
 
