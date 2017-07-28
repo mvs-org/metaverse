@@ -39,15 +39,15 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ backupaccount *************************/
+/************************ exportaccountasfile *************************/
 
-class backupaccount: public command_extension
+class exportaccountasfile: public command_extension
 {
 public:
-    static const char* symbol(){ return "backupaccount";}
+    static const char* symbol(){ return "exportaccountasfile";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "backupaccount "; }
+    const char* description() override { return "exportaccountasfile "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -103,11 +103,6 @@ public:
             value<boost::filesystem::path>(&argument_.dst)->default_value(default_data_path()),
             "account info storage file path"
         )
-        (
-            "encryptpassword,e",
-            value<std::string>(&argument_.passwd),
-            "password used to encrypt account info file. use account password to encrypt if not use this option"
-        )
         ;
 
         return options;
@@ -122,10 +117,9 @@ public:
 
     struct argument
     {
-        argument():last_word(""), passwd(""), dst("")  
+        argument():last_word(""), dst("")  
         {};
         std::string last_word;
-        std::string passwd;
         boost::filesystem::path dst;
     } argument_;
 

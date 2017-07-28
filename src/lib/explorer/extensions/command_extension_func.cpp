@@ -49,7 +49,8 @@
 #include <metaverse/explorer/extensions/wallet/backupwallet.hpp>
 #include <metaverse/explorer/extensions/wallet/importwallet.hpp>
 #include <metaverse/explorer/extensions/wallet/lockwallet.hpp>
-#include <metaverse/explorer/extensions/wallet/backupaccount.hpp>
+#include <metaverse/explorer/extensions/wallet/exportaccountasfile.hpp>
+#include <metaverse/explorer/extensions/wallet/importaccountfromfile.hpp>
 #include <metaverse/explorer/extensions/wallet/importaccount.hpp>
 #include <metaverse/explorer/extensions/wallet/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/wallet/getaccount.hpp>
@@ -127,7 +128,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<backupwallet>());
     func(make_shared<importwallet>());
     func(make_shared<lockwallet>());
-    func(make_shared<backupaccount>());
+    func(make_shared<exportaccountasfile>());
+    func(make_shared<importaccountfromfile>());
     func(make_shared<importaccount>());
     func(make_shared<getnewaccount>());
     func(make_shared<getaccount>());
@@ -213,8 +215,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<importwallet>();
     if (symbol == lockwallet::symbol())
         return make_shared<lockwallet>();
-    if (symbol == backupaccount::symbol())
-        return make_shared<backupaccount>();
+    if (symbol == exportaccountasfile::symbol())
+        return make_shared<exportaccountasfile>();
+    if (symbol == importaccountfromfile::symbol())
+        return make_shared<importaccountfromfile>();
     if (symbol == importaccount::symbol())
         return make_shared<importaccount>();
     if (symbol == getnewaccount::symbol())

@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/wallet/backupaccount.hpp>
+#include <metaverse/explorer/extensions/wallet/exportaccountasfile.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/account/account_info.hpp>
@@ -41,9 +41,9 @@ namespace commands {
 namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
 
-/************************ backupaccount *************************/
+/************************ exportaccountasfile *************************/
 
-console_result backupaccount::invoke (std::ostream& output,
+console_result exportaccountasfile::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -65,19 +65,10 @@ console_result backupaccount::invoke (std::ostream& output,
     fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
     if(!fs::exists(status2))
         throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
-
-    auto passphrase = argument_.passwd;
-    if(passphrase.empty())
-        passphrase = auth_.auth;
-    
-    #ifdef NDEBUG
-    if (passphrase.length() > 128 || passphrase.length() < 6)
-        throw argument_legality_exception{"password length in [6, 128]"};
-    #endif
         
     acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
 
-    // store account address info
+    // account address info
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
@@ -87,13 +78,13 @@ console_result backupaccount::invoke (std::ostream& output,
         each.set_prv_key(prv_key); // reset private key to plain text
     }
 
-    // store account asset info
+    // account asset info
     auto sh_asset_vec = std::make_shared<std::vector<asset_detail>>();
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         sh_asset_vec->push_back(elem.detail);         
     }
-    account_info all_info(blockchain, passphrase, *acc, *pvaddr, *sh_asset_vec);
+    account_info all_info(blockchain, auth_.auth, *acc, *pvaddr, *sh_asset_vec);
 
     // store encrypted data to file
     bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);

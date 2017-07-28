@@ -69,7 +69,7 @@ public:
         )
 		(
 			"WORD",
-			value<std::vector<std::string>>(&argument_.words),
+			value<std::vector<std::string>>(&argument_.words)->required(),
 			"The set of words that that make up the mnemonic. If not specified the words are read from STDIN."
 		)
 		(
@@ -92,16 +92,6 @@ public:
 			value<std::uint32_t>(&option_.hd_index),
 			"Teh HD index for the account."
 		)
-        (
-            "source,s",
-            value<boost::filesystem::path>(&option_.src),
-            "account info storage file path"
-        )
-        (
-            "dencryptpassword,e",
-            value<std::string>(&option_.depasswd),
-            "password used to dencrypt account info file"
-        )
 		;
 
         return options;
@@ -126,15 +116,13 @@ public:
     struct option
     {
         option()
-          : language(), passwd(""), hd_index(0), src(""), depasswd("")
+          : language(), passwd(""), hd_index(0)
         {
         }
 
         explorer::config::language language;
 		std::string passwd;
 		uint32_t hd_index;
-        boost::filesystem::path src;
-        std::string depasswd;
     } option_;
 
 };

@@ -32,7 +32,6 @@ namespace explorer {
 namespace commands {
 
 namespace pt = boost::property_tree;
-namespace fs = boost::filesystem;
 
 /************************ importaccount *************************/
 console_result importaccount::invoke (std::ostream& output,
@@ -47,34 +46,9 @@ console_result importaccount::invoke (std::ostream& output,
     if (blockchain.is_account_exist(auth_.name))
      throw account_existed_exception{"account already exist"};
 
-	#ifdef NDEBUG
 	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
 		option_.passwd.length() > 128 || option_.passwd.length() < 6)
 		throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
-	#endif
-    // decrypt account info file first
-    if(!option_.src.string().empty()) {
-        if(option_.depasswd.empty())
-            throw argument_legality_exception{"decrypt password is empty."};
-        
-        fs::file_status status = fs::status(option_.src); 
-        if(!fs::exists(status)) // not process filesystem exception here
-            throw argument_legality_exception{option_.src.string() + std::string(" not exist.")};
-        if(!fs::is_regular_file(status)) // not process filesystem exception here
-            throw argument_legality_exception{option_.src.string() + std::string(" not a regular file.")};
-
-        account_info all_info(blockchain, option_.depasswd);
-        std::ifstream file_input(option_.src.string(), std::ofstream::in);
-        file_input >> all_info;
-        file_input.close();
-        all_info.store(auth_.name, option_.passwd);
-        
-        pt::ptree result;
-        result.put("result", "success");    
-        pt::write_json(output, result);
-
-        return console_result::okay;
-    }
     
     if (argument_.words.size() > 24)
         throw argument_exceed_limit_exception{"word count must be less than or equal 24"};
