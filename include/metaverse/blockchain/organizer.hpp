@@ -69,7 +69,7 @@ public:
     void add_fork_chain_hash(const hash_digest&);
     void delete_fork_chain_hash(const hash_digest&);
 
-    const orphan_pool& get_orphan_pool() const;
+    const orphan_pool& orphan_pool() const;
 
 protected:
     virtual bool stopped();

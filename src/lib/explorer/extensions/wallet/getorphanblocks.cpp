@@ -48,15 +48,13 @@ console_result getorphanblocks::invoke(std::ostream& output,
     auto& blockchain = node.chain_impl();
 
     config::block_detail::list block_list;
-    blockchain.get_organizer().get_orphan_pool().fetch_all(block_list);
+    blockchain.get_organizer().orphan_pool().fetch_all(block_list);
 
     // sort
     auto sorter = [](const config::block_detail::ptr& blka, 
         const config::block_detail::ptr& blkb) -> bool
     {
-        if (blka->height() == blkb->height())
-            return blka->height() < blkb->height();
-        return blka->height() < blkb->height();
+        return blka->height() == blkb->height() ? false : blka->height() < blkb->height();
     };
     std::sort(block_list.begin(), block_list.end(), sorter);
     pt::write_json(output, config::prop_tree(block_list, true)); 
