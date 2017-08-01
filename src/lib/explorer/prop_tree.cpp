@@ -574,8 +574,6 @@ ptree prop_tree(const bitcoin_uri& uri)
 }
 
 //block
-
-
 ptree prop_tree(const block& block)
 {
 	ptree tree;
@@ -587,17 +585,17 @@ ptree prop_tree(const block& block)
 	return tree;
 }
 
-ptree prop_list(const block_detail& block)
+ptree prop_list(block_detail::ptr block)
 {
     ptree tree;
-    tree.put("processed", block.processed);
-    tree.put("height", block.height);
-    tree.put("proof_of_work_status", block.is_checked_work_proof);
-    tree.add_child("block", prop_tree(*block.actual_block));
+    tree.put("processed", block->processed());
+    tree.put("height", block->height());
+    tree.put("proof_of_work_status", block->get_is_checked_work_proof());
+    tree.add_child("block", prop_tree(*block->actual()));
     return tree;
 }
 
-ptree prop_tree(const std::vector<block_detail>& blocks, bool json)
+ptree prop_tree(const std::vector<block_detail::ptr>& blocks, bool json)
 {
     ptree tree;
     tree.add_child("blocks", prop_tree_list("blocks", blocks, json));

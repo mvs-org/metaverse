@@ -49,18 +49,7 @@ console_result getorphanblocks::invoke(std::ostream& output,
 
     blockchain::block_detail::list block_list;
     blockchain.get_organizer().get_orphan_pool().fetch_all(block_list);
-    std::vector<config::block_detail> blocks;
-    blocks.reserve(block_list.size());
-
-    for (auto blk : block_list) {
-        config::block_detail* block;
-        block->actual_block = blk->actual();
-        block->height = blk->height();
-        block->is_checked_work_proof = blk->get_is_checked_work_proof();
-        block->processed = blk->processed();
-        blocks.push_back(*block);
-    }
-    pt::write_json(output, config::prop_tree(blocks, true));
+    pt::write_json(output, config::prop_tree(block_list, true)); 
     
     return console_result::okay;
 }
