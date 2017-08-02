@@ -262,6 +262,8 @@ public:
 			size_t from_height = 0, size_t limit = 0);
 	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr,
 					uint64_t start, uint64_t end, const std::string& symbol);
+    std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& address, 
+        const std::string& symbol, size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const;
 	std::shared_ptr<std::vector<account_address>> get_addresses();
 	
 	// account message api

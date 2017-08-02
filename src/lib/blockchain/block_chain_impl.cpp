@@ -1277,6 +1277,12 @@ std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_busi
 	return ret_vector;
 }
 // get special assets of the account/name, just used for asset_detail/asset_transfer
+std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_business_record(const std::string& address, 
+    const std::string& symbol, size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const
+{	
+	return database_.address_assets.get(address, symbol, start_height, end_height, limit, page_number);
+}
+// get special assets of the account/name, just used for asset_detail/asset_transfer
 std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
 				business_kind kind, uint8_t confirmed)
 {
