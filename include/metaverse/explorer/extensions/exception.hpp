@@ -104,6 +104,8 @@ DEFINE_EXPLORER_EXCEPTION(asset_symbol_existed_exception, 5009);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_notfound_exception, 5010);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_length_exception, 5011);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_name_exception, 5012);
+DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
+DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

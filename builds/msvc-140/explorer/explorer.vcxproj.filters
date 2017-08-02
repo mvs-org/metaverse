@@ -988,6 +988,7 @@
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getorphanblocks.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteasset.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
   </ItemGroup>

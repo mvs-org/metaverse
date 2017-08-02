@@ -280,6 +280,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\createasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\createmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteaccount.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\encodeattachtx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccount.cpp" />
