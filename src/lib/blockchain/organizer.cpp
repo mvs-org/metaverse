@@ -247,7 +247,7 @@ void organizer::filter_orphans(message::get_data::ptr message)
     orphan_pool_.filter(message);
 }
 
-const orphan_pool& organizer::orphan_pool() const
+const blockchain::orphan_pool& organizer::orphan_pool() const
 {
     return orphan_pool_;
 }

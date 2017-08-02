@@ -69,7 +69,7 @@ public:
     void add_fork_chain_hash(const hash_digest&);
     void delete_fork_chain_hash(const hash_digest&);
 
-    const orphan_pool& orphan_pool() const;
+    const blockchain::orphan_pool& orphan_pool() const;
 
 protected:
     virtual bool stopped();
@@ -105,7 +105,7 @@ private:
     block_detail::list process_queue_;
 
     // These are thread safe.
-    orphan_pool orphan_pool_;
+    blockchain::orphan_pool orphan_pool_;
     reorganize_subscriber::ptr subscriber_;
     std::unordered_map<hash_digest, uint64_t> fork_chain_last_block_hashes_;
     boost::mutex mutex_fork_chain_last_block_hashes_;
