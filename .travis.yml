@@ -61,4 +61,3 @@ after_success:
 
     # Upload coverage info to coveralls service (--repo-token <private coveralls repo token>).
     - if [[ $LINUX && $GCC   && $STATIC  ]]; then coveralls-lcov coverage.info; fi
-       
