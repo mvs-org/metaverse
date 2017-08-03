@@ -48,7 +48,7 @@ console_result getorphanblocks::invoke(std::ostream& output,
     auto& blockchain = node.chain_impl();
 
     config::block_detail::list block_list;
-    blockchain.get_organizer().orphan_pool().fetch_all(block_list);
+    blockchain.get_organizer().fetch_all_orphanblocks(block_list);
 
     // sort
     auto sorter = [](const config::block_detail::ptr& blka, 
