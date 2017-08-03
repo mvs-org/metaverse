@@ -172,7 +172,6 @@ ptree prop_tree(const chain::history::list& rows,
 }
 
 // inputs
-
 ptree prop_list(const tx_input_type& tx_input)
 {
     ptree tree;
@@ -186,12 +185,14 @@ ptree prop_list(const tx_input_type& tx_input)
     tree.put("sequence", tx_input.sequence);
     return tree;
 }
+
 ptree prop_tree(const tx_input_type& tx_input)
 {
     ptree tree;
     tree.add_child("input", prop_list(tx_input));
     return tree;
 }
+
 ptree prop_tree(const tx_input_type::list& tx_inputs, bool json)
 {
     ptree tree;
@@ -204,12 +205,14 @@ ptree prop_list(const input& input)
     const tx_input_type& tx_input = input;
     return prop_list(tx_input);
 }
+
 ptree prop_tree(const input& input)
 {
     ptree tree;
     tree.add_child("input", prop_list(input));
     return tree;
 }
+
 ptree prop_tree(const std::vector<input>& inputs, bool json)
 {
     const auto tx_inputs = cast<input, tx_input_type>(inputs);
@@ -220,7 +223,6 @@ ptree prop_tree(const std::vector<input>& inputs, bool json)
 }
 
 // outputs
-
 ptree prop_list(const tx_output_type& tx_output)
 {
     ptree tree;
@@ -314,12 +316,15 @@ ptree prop_list(bc::chain::attachment& attach_data)
 	}
     return tree;
 }
+
 ptree prop_tree(const tx_output_type& tx_output)
 {
     ptree tree;
     tree.add_child("output", prop_list(tx_output));
     return tree;
 }
+
+
 ptree prop_tree(const tx_output_type::list& tx_outputs, bool json)
 {
 
@@ -569,8 +574,6 @@ ptree prop_tree(const bitcoin_uri& uri)
 }
 
 //block
-
-
 ptree prop_tree(const block& block)
 {
 	ptree tree;
@@ -580,6 +583,23 @@ ptree prop_tree(const block& block)
 	std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
 	tree.add_child("txs", prop_tree(txs, true));
 	return tree;
+}
+
+ptree prop_list(block_detail::ptr block)
+{
+    ptree tree;
+    tree.put("processed", block->processed());
+    tree.put("height", block->height());
+    tree.put("proof_of_work_status", block->get_is_checked_work_proof());
+    tree.add_child("block", prop_tree(*block->actual()));
+    return tree;
+}
+
+ptree prop_tree(const std::vector<block_detail::ptr>& blocks, bool json)
+{
+    ptree tree;
+    tree.add_child("blocks", prop_tree_list("blocks", blocks, json));
+    return tree;
 }
 
 } // namespace config

@@ -164,5 +164,4 @@
 #include <metaverse/bitcoin/wallet/stealth_address.hpp>
 #include <metaverse/bitcoin/wallet/uri.hpp>
 #include <metaverse/bitcoin/wallet/uri_reader.hpp>
-
 #endif

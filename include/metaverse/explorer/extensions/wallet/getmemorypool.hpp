@@ -29,7 +29,7 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-/************************ getbalance *************************/
+/************************ getmemorypool *************************/
 
 class getmemorypool: public command_extension
 {
