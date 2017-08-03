@@ -1,6 +1,7 @@
 #!/bin/bash
 ###############################################################################
 #  Copyright (c) 2014-2015 libbitcoin-network developers (see COPYING).
+#  Copyright (c) 2016-2017 metaverse core developers (see COPYING).
 #
 #         GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
 #
