@@ -27,7 +27,7 @@ IF(${CMAKE_CXX_COMPILER} MATCHES .*android.*)
     SET(ANDROID 1)
 ENDIF()
 
-SET(COMMON_WARN "-Wall -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
+SET(COMMON_WARN "-Wall -Wextra -Wstrict-aliasing=2 -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
 if (NOT ANDROID) 
 		SET(COMMON_WARN "${COMMON_WARN} -Werror")
 endif()
