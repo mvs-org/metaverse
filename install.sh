@@ -703,8 +703,8 @@ build_all()
 {
     build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
     build_from_github zeromq libzmq master $PARALLEL ${ZMQ_OPTIONS[@]} "$@"
-    build_from_github libbitcoin secp256k1 version4 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
-    build_from_github_ ydxt25 metaverse master $PARALLEL ${METAVERSE_OPTIONS[@]} "$@"
+    build_from_github mvs-org secp256k1 master $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
+    build_from_github_ espressocoder metaverse jeremy $PARALLEL ${METAVERSE_OPTIONS[@]} "$@"
 }
 
 

@@ -48,7 +48,7 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 ENDIF()
 
-MESSAGE("metaverse ${CMAKE_CXX_COMPILER_ID}")
+MESSAGE("**metaverse** ${CMAKE_CXX_COMPILER_ID}")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
 
 # --------------- Macro Definitions ------------------
