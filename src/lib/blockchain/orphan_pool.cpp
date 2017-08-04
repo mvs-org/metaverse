@@ -66,14 +66,14 @@ bool orphan_pool::add(block_detail::ptr block)
 
 void orphan_pool::fetch_all(block_detail::list& blocks) const
 {
+    blocks.reserve(blocks.size());
     mutex_.lock_upgrade();
-    blocks.clear();
-    for (auto block : buffer_)
+    for (auto& block : buffer_)
     {
         if (block)
             blocks.push_back(block);
     }
-    mutex_.unlock();
+    mutex_.unlock_upgrade();
 }
 
 void orphan_pool::remove(block_detail::ptr block)
