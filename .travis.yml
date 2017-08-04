@@ -10,7 +10,7 @@ addons:
             - boost-latest
             - ubuntu-toolchain-r-test
         packages:
-            - g++-5.4
+            - g++-5
 
 matrix:
     include:
