@@ -29,7 +29,7 @@ ENDIF()
 
 SET(COMMON_WARN "-Wall -Wextra -Wstrict-aliasing=2 -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits")
 if (NOT ANDROID) 
-		SET(COMMON_WARN "${COMMON_WARN} -Werror")
+    SET(COMMON_WARN "${COMMON_WARN} -Werror")
 endif()
 SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
 SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
