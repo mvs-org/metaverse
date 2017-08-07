@@ -18,6 +18,7 @@
 #include <json/minijson_reader.hpp>
 #include <metaverse/mgbubble/Mongoose.hpp>
 #include <metaverse/mgbubble/utility/Tokeniser.hpp>
+#include <json/json.h>
 
 namespace mgbubble {
 
@@ -124,32 +125,39 @@ void HttpMessage::data_to_arg() {
 }
 
 void WebsocketMessage::data_to_arg() {
-    Tokeniser<' '> args;
-    args.reset(+*impl_);
-
-    // store args from ws message
-    do {
-        //skip spaces
-        if (args.top().front() == ' '){
-            args.pop();
-            continue;
-        } else if (std::iscntrl(args.top().front())){
-            break;
-        } else {
-            this->vargv_.push_back({args.top().data(), args.top().size()});
-            args.pop();
+    auto vargv_to_argv = [this]() {
+        // convert to char** argv
+        int i = 0;
+        for (auto& iter : this->vargv_) {
+            if (i >= max_paramters) {
+                break;
+            }
+            this->argv_[i++] = iter.c_str();
         }
-    }while(!args.empty());
+        argc_ = i;
+    };
 
-    // convert to char** argv
-    int i = 0;
-    for(auto& iter : vargv_){
-        if (i >= max_paramters){
-            break;
-        }
-        argv_[i++] = iter.c_str();
+    Json::Value root;
+    Json::Reader reader;
+    
+    if (!reader.parse(std::string((char*)impl_->data, impl_->size), root)) {
+        // Todo error log.
+        return;
     }
-    argc_ = i;
+    add_arg(root["method"].asString());
+    Json::Value params = root["params"];
+    
+    if (!params.isNull()) {
+        if (params.type() == Json::arrayValue) {
+            for (auto i = 0; i < params.size(); i++) {
+                add_arg(params[i].asString());
+            }
+        } else {
+            add_arg(params.asString());
+        }
+    }
+  
+    vargv_to_argv();
 }
 
 void ToCommandArg::add_arg(std::string&& outside)

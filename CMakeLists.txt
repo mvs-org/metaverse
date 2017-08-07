@@ -75,6 +75,7 @@ program_options regex thread)
 
 FIND_PACKAGE(secp256k1 REQUIRED)
 FIND_PACKAGE(ZeroMQ 4.2.0 REQUIRED)
+FIND_PACKAGE(Jsoncpp 1.8.1 REQUIRED)
 
 # ---------------- Doxygen --------------------
 FIND_PROGRAM(ENV_EXECUTABLE env QUIET)
