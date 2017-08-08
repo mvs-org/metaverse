@@ -149,7 +149,7 @@ void WebsocketMessage::data_to_arg() {
     
     if (!params.isNull()) {
         if (params.type() == Json::arrayValue) {
-            for (auto i = 0; i < params.size(); i++) {
+            for (Json::Value::ArrayIndex i = 0; i < params.size(); i++) {
                 add_arg(params[i].asString());
             }
         } else {
