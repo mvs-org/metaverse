@@ -90,12 +90,29 @@ public:
 	const std::string& get_description() const;
 	void set_description(const std::string& description);
 
+    bool is_asset_secondissue() { return secondissue_assetshare_threshold >= 128; }
+    void set_asset_secondissue() { secondissue_assetshare_threshold += 128; }
+    uint8_t get_secondissue_assetshare_threshold() const
+    {
+        if(secondissue_assetshare_threshold > 128)
+            return secondissue_assetshare_threshold - 128;
+        else
+            return secondissue_assetshare_threshold;
+    }
+    void set_secondissue_assetshare_threshold(uint8_t share)
+    {
+        if(secondissue_assetshare_threshold > 128)
+            secondissue_assetshare_threshold = share + 128;
+        else
+            secondissue_assetshare_threshold = share;
+    }
+
 private:    
     std::string symbol;
     uint64_t maximum_supply;
     //uint32_t asset_type;
     uint8_t decimal_number;
-	uint8_t unused1;
+    uint8_t secondissue_assetshare_threshold;
 	uint8_t unused2;
 	uint8_t unused3;
     std::string issuer; 

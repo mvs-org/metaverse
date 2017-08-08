@@ -297,16 +297,116 @@ void validate_transaction::check_fees()
     handle_validate_(error::success, tx_, unconfirmed_);
 }
 
+code validate_transaction::check_secondissue_transaction_with_transactionpool(const chain::transaction& tx, blockchain::block_chain_impl& blockchain)
+{
+	return error::success;
+
+	std::string asset_name;
+	std::string asset_issuer;
+	int secondissue_assetshare_threshold = 0;
+	bool has_other_type_output = false;
+	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
+	{
+		if(o.is_asset_secondissue())
+		{
+			if(asset_name.empty() == false)
+				return error::asset_secondissue_error;
+			asset_name = o.get_asset_symbol();
+			auto && asset_detail = o.get_asset_detail();
+			asset_name = asset_detail.get_symbol();
+			asset_issuer = asset_detail.get_issuer();
+			secondissue_assetshare_threshold = asset_detail.get_secondissue_assetshare_threshold();
+		}
+		else if(o.is_etp() == false)
+		{
+			has_other_type_output = true;
+		}
+	}
+
+	if(asset_name.empty() == false)
+	{
+		if(tx.outputs.size() > 2 || has_other_type_output)
+		{
+			return error::asset_secondissue_error;
+		}
+
+		auto total_volume = blockchain.get_asset_volume(asset_name);
+		auto asset_account_volume = blockchain.get_account_asset_volume(asset_issuer, asset_name, true, false);
+		if(secondissue_assetshare_threshold == 0 || asset_account_volume < total_volume / 100 * secondissue_assetshare_threshold)
+			return error::asset_secondissue_share_not_enough;
+	}
+
+	return error::success;
+}
+
+code validate_transaction::check_secondissue_transaction(const chain::transaction& tx, blockchain::block_chain_impl& blockchain)
+{
+	std::string asset_name;
+	std::string asset_issuer;
+	int secondissue_assetshare_threshold = 0;
+	bool has_other_type_output = false;
+	uint64_t asset_amount = 0;
+	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
+	{
+		if(o.is_asset_secondissue())
+		{
+			if(asset_name.empty() == false)
+				return error::asset_secondissue_error;
+			asset_name = o.get_asset_symbol();
+			auto && asset_detail = o.get_asset_detail();
+			asset_name = asset_detail.get_symbol();
+			asset_issuer = asset_detail.get_issuer();
+			secondissue_assetshare_threshold = asset_detail.get_secondissue_assetshare_threshold();
+			asset_amount = asset_detail.get_maximum_supply();
+		}
+		else if(o.is_etp() == false)
+		{
+			has_other_type_output = true;
+		}
+	}
+
+	if(asset_name.empty() == false)
+	{
+		if(tx.outputs.size() > 2 || has_other_type_output)
+		{
+			return error::asset_secondissue_error;
+		}
+
+		auto total_volume = blockchain.get_asset_volume(asset_name) - asset_amount;
+		auto asset_account_volume = blockchain.get_account_asset_volume(asset_issuer, asset_name, false, false) - asset_amount;
+		if(secondissue_assetshare_threshold == 0 || asset_account_volume < total_volume / 100 * secondissue_assetshare_threshold)
+			return error::asset_secondissue_share_not_enough;
+	}
+
+	return error::success;
+}
+
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
 {
     auto ret = check_transaction_basic(tx, chain);
-    if(ret == error::success) {
-        for(auto& output : const_cast<transaction&>(tx).outputs){
-            if(output.is_asset_issue()) {
-                if(chain.is_asset_exist(output.get_asset_symbol(), false)) {
-                    return error::asset_exist;
-                }
+	if(!ret)
+		ret = check_secondissue_transaction_with_transactionpool(tx, chain);
+
+	if(ret)
+		return ret;
+
+    for(auto& output : const_cast<transaction&>(tx).outputs)
+	{
+        if(output.is_asset_issue()) 
+		{
+            if(chain.is_asset_exist(output.get_asset_symbol(), false))
+			{
+                return error::asset_exist;
             }
+			else
+			{
+				asset_detail&& detail = output.get_asset_detail();
+				uint32_t secondissue_assetshare_threshold = detail.get_secondissue_assetshare_threshold();
+				if(secondissue_assetshare_threshold != 0 || secondissue_assetshare_threshold <= 50 || secondissue_assetshare_threshold > 100)
+				{
+					return error::asset_secondissue_assetshare_threshold_invalid;
+				}
+			}
         }
     }
     return ret;
@@ -479,7 +579,7 @@ bool validate_transaction::connect_input(const transaction& tx,
 			}
 		}
 		// 3. set business type
-		if(const_cast<output&>(previous_output).is_asset_issue())
+		if(const_cast<output&>(previous_output).is_asset_issue() || const_cast<output&>(previous_output).is_asset_secondissue())
 			business_tp_in = ASSET_DETAIL_TYPE;
 		if(const_cast<output&>(previous_output).is_asset_transfer())
 			business_tp_in = ASSET_TRANSFERABLE_TYPE;

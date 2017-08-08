@@ -35,6 +35,7 @@
 #include <metaverse/blockchain/organizer.hpp>
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
+#include <metaverse/blockchain/validate_transaction.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -297,6 +298,71 @@ bool block_chain_impl::pop_from(block_detail::list& out_blocks,
     return true;
 }
 
+int block_chain_impl::replace_chain(uint64_t begin_height, const block_detail::list& new_blocks, block_detail::list& released_blocks)
+{
+    int ret = 0;
+    bool result = false;
+
+    start_write();
+    result = pop_from(released_blocks, begin_height);
+    stop_write();
+    if(result)
+    {
+        for (auto it = new_blocks.begin(); ret == 0 && it != new_blocks.end(); ++it)
+        {
+            auto &block =  *it;
+
+            start_write();
+            ret = push(block);
+            stop_write();
+            if(result)
+            {
+                for(auto& tx : block->actual()->transactions)
+                {
+                    if(validate_transaction::check_secondissue_transaction(tx, *this))
+                    {
+                        ret = it - new_blocks.begin() + 1;
+                        block_detail::list blocks;
+                        pop_from(blocks, begin_height);
+                        start_write();
+                        for(auto& b : released_blocks)
+                            push(b);
+                        stop_write();
+
+                        log::error(LOG_BLOCKCHAIN)
+                            << " push block height:" << block->actual()->header.number
+                            << " hash:"  << encode_hash(block->actual()->header.hash());
+
+                        break;
+                    }
+                }
+
+                log::debug(LOG_BLOCKCHAIN)
+                    << " push block height:" << block->actual()->header.number
+                    << " hash:"  << encode_hash(block->actual()->header.hash());
+            }
+            else
+            {
+                ret = -1;
+                log::error(LOG_BLOCKCHAIN)
+                    << " push block height:" << block->actual()->header.number
+                    << " hash:"  << encode_hash(block->actual()->header.hash())
+                    << "failed";
+                break;
+            }
+        }
+    }
+    else
+    {
+        ret = -1;
+        log::error(LOG_BLOCKCHAIN)
+            << " pop_from begin_height:" << begin_height
+            << "failed";
+    }
+
+    return ret;
+}
+
 // block_chain (internal locks).
 // ----------------------------------------------------------------------------
 
@@ -355,11 +421,12 @@ void block_chain_impl::do_store(message::block_message::ptr block,
         return;
     }
 
+    stop_write();
     // Otherwise organize the chain...
     organizer_.organize();
 
     //...and then get the particular block's status.
-    stop_write(handler, detail->error(), detail->height());
+    handler(detail->error(), detail->height());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -947,6 +1014,31 @@ void block_chain_impl::fetch_history(const wallet::payment_address& address,
     fetch_serial(do_fetch);
 }
 
+bool block_chain_impl::fetch_history(const wallet::payment_address& address,
+    uint64_t limit, uint64_t from_height, history_compact::list& history)
+{
+    if (stopped())
+    {
+        return false;
+    }
+
+    boost::mutex mutex;
+    
+    mutex.lock();
+    auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
+    {
+        if((code)error::success == ec)
+            history = history_;
+        mutex.unlock();
+    };
+        
+    // Obtain payment address history from the transaction pool and blockchain.
+    fetch_history(address, limit, from_height, f);
+    boost::unique_lock<boost::mutex> lock(mutex);
+    
+    return true;
+}
+
 void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
     stealth_fetch_handler handler)
 {
@@ -1204,6 +1296,135 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 
 	return ret_vector;
 }
+
+history::list expand_history(history_compact::list& compact)
+{
+    history::list result;
+    result.reserve(compact.size());
+
+    std::unordered_map<uint64_t, history*> map_output;
+    // Process and remove all outputs.
+    for (auto output = compact.begin(); output != compact.end(); ++output)
+    {
+        if (output->kind == point_kind::output)
+        {
+            history row;
+            row.output = output->point;
+            row.output_height = output->height;
+            row.value = output->value;
+            row.spend = { null_hash, max_uint32 };
+            row.temporary_checksum = output->point.checksum();
+            result.emplace_back(row);
+            map_output[row.temporary_checksum] = &result.back();
+        }
+    }
+
+    //process the spends.
+    for (const auto& spend: compact)
+    {
+        auto found = false;
+
+        if (spend.kind == point_kind::output)
+            continue;
+
+        auto r = map_output.find(spend.previous_checksum);
+        if(r != map_output.end() && r->second->spend.hash == null_hash)
+        {
+             r->second->spend = spend.point;
+             r->second->spend_height = spend.height;
+             found = true;
+        }
+
+        // This will only happen if the history height cutoff comes between
+        // an output and its spend. In this case we return just the spend.
+        if (!found)
+        {
+            history row;
+            row.output = { null_hash, max_uint32 };
+            row.output_height = max_uint64;
+            row.value = max_uint64;
+            row.spend = spend.point;
+            row.spend_height = spend.height;
+            result.emplace_back(row);
+        }
+    }
+
+    compact.clear();
+
+    // Clear all remaining checksums from unspent rows.
+    for (auto& row: result)
+        if (row.spend.hash == null_hash)
+            row.spend_height = max_uint64;
+
+    // TODO: sort by height and index of output, spend or both in order.
+    return result;
+}
+
+history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
+{
+	history_compact::list cmp_history;
+
+	if(blockchain.fetch_history(addr, 0, 0, cmp_history)) 
+	{
+		return expand_history(cmp_history);
+	} 
+	else 
+	{
+		return history::list();
+	}
+}
+
+uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+{
+	uint64_t asset_volume = 0;
+	auto address = payment_address(addr);
+	// history::list rows
+	auto rows = get_address_history(address, *this);
+	
+	chain::transaction tx_temp;
+	uint64_t tx_height;
+
+	for (auto& row: rows) 
+	{
+		// spend unconfirmed (or no spend attempted)
+		if ((row.spend.hash == null_hash)
+				&& get_transaction(tx_temp, tx_height, row.output.hash, is_use_transactionpool, is_safe))
+		{
+			auto output = tx_temp.outputs.at(row.output.index);
+
+			if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue())) 
+			{
+				if(output.get_asset_symbol() == asset) 
+				{
+					asset_volume += output.get_asset_amount();	
+				}
+			}
+		}
+	}
+	return asset_volume;
+}
+
+uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+{
+	uint64_t volume = 0;
+	auto pvaddr = get_account_addresses(account);
+		
+	if(pvaddr)
+	{
+		for (auto& each : *pvaddr)
+		{
+			volume += get_address_asset_volume(each.get_address(), asset, is_use_transactionpool, is_safe);
+		}
+	}
+
+	return volume;
+}
+
+uint64_t block_chain_impl::get_asset_volume(const std::string& asset)
+{
+	return database_.assets.get_asset_volume(asset);
+}
+
 // get special assets of the account/name, just used for asset_detail/asset_transfer
 std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_business_history(const std::string& addr,
 				const std::string& symbol, business_kind kind, uint8_t confirmed)
@@ -1776,6 +1997,59 @@ bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
 
 	return ret;
 	
+}
+
+bool block_chain_impl::get_transaction(chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash, bool is_use_transactionpool, bool is_safe)
+{
+	bool ret = false;
+	if (stopped())
+    {
+        return ret;
+    }
+
+    const auto result = database_.transactions.get(hash);
+	if(result) 
+	{
+		tx = result.transaction();
+		tx_height = result.height();
+		ret = true;
+	} 
+	else if(is_use_transactionpool)
+	{
+		boost::mutex mutex;
+		transaction_message::ptr tx_ptr = nullptr;
+		
+		mutex.lock();
+		auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
+		{
+			if((code)error::success == ec)
+				tx_ptr = tx_;
+			mutex.unlock();
+		};
+			
+		if(is_safe)
+		{
+			pool().fetch(hash, f);
+			boost::unique_lock<boost::mutex> lock(mutex);
+		}
+		else
+		{
+			pool().sync_fetch(hash, f);
+		}
+
+		if(tx_ptr) 
+		{
+			tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
+			tx_height = 0;
+			ret = true;
+		}
+	}
+
+	#ifdef MVS_DEBUG
+	log::debug("get_transaction=")<<tx.to_string(1);
+	#endif
+
+	return ret;
 }
 
 bool block_chain_impl::get_history_callback(const payment_address& address,

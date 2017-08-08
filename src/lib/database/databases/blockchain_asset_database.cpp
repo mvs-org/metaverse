@@ -116,7 +116,7 @@ std::shared_ptr<blockchain_asset> blockchain_asset_database::get(const hash_dige
 {
 	std::shared_ptr<blockchain_asset> detail(nullptr);
 	
-    const auto raw_memory = lookup_map_.find(hash);
+    const auto raw_memory = lookup_map_.rfind(hash);
 	if(raw_memory) {
 	    const auto memory = REMAP_ADDRESS(raw_memory);
 		detail = std::make_shared<blockchain_asset>();
@@ -126,6 +126,25 @@ std::shared_ptr<blockchain_asset> blockchain_asset_database::get(const hash_dige
 	
 	return detail;
 }
+
+uint64_t blockchain_asset_database::get_asset_volume(const std::string& name) const
+{
+	
+    uint64_t volume = 0;
+    const auto hash = sha256_hash(data_chunk(name.begin(), name.end()));
+    auto memo = lookup_map_.finds(hash);
+    const auto action = [&](memory_ptr elem)
+    {
+        const auto memory = REMAP_ADDRESS(elem);
+        auto deserial = make_deserializer_unsafe(memory);
+        auto& asset = blockchain_asset::factory_from_data(deserial).get_asset();
+        volume += asset.get_maximum_supply();
+    };
+    std::for_each(memo.begin(), memo.end(), action);
+
+    return volume;
+}
+
 /// 
 std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_blockchain_assets() const
 {

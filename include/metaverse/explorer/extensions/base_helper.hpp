@@ -38,7 +38,8 @@ enum utxo_attach_type : uint32_t
 	asset_locked_issue,
 	asset_locked_transfer,  // 5
 	message,
-	digital_identity
+	digital_identity,
+    asset_secondissue
 };
 
 struct address_asset_record{
@@ -329,6 +330,27 @@ public:
 	
 	void populate_change() override;
 };
+
+class BCX_API secondissuing_asset : public base_transfer_helper
+{
+public:
+    secondissuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
+        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
+        fee, std::move(symbol)), volume_(volume)
+    {};
+
+    ~secondissuing_asset(){};
+    void sum_payment_amount() override;
+    void populate_change() override;
+    void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
+    attachment populate_output_attachment(receiver_record& record) override;
+    uint64_t get_volume() { return volume_; };
+
+private:
+    uint64_t volume_;
+};
+
 class BCX_API issuing_locked_asset : public base_transfer_helper
 {
 public:

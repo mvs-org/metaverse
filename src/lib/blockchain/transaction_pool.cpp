@@ -281,6 +281,29 @@ void transaction_pool::fetch(const hash_digest& transaction_hash,
     dispatch_.ordered(tx_fetcher);
 }
 
+void transaction_pool::sync_fetch(const hash_digest& transaction_hash,
+    fetch_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto tx_fetcher = [this, transaction_hash, handler]()
+    {
+        const auto it = find(transaction_hash);
+
+        if (it == buffer_.end())
+            handler(error::not_found, {});
+        else
+            handler(error::success, it->tx);
+    };
+
+    tx_fetcher();
+}
+
+
 void transaction_pool::fetch_history(const payment_address& address,
     size_t limit, size_t from_height,
     block_chain::history_fetch_handler handler)

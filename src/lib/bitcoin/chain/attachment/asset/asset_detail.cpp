@@ -39,7 +39,7 @@ asset_detail::asset_detail(
     uint8_t asset_type, std::string issuer,
     std::string address, std::string description):
     symbol(symbol), maximum_supply(maximum_supply), decimal_number(asset_type), 
-	issuer(issuer), address(address), description(description),unused1(0),
+	issuer(issuer), address(address), description(description),secondissue_assetshare_threshold(0),
 	unused2(0), unused3(0)
 {
 }
@@ -77,7 +77,7 @@ void asset_detail::reset()
     maximum_supply = 0;
     //asset_type = 0;
     decimal_number = 0;
-	unused1 = 0;
+	secondissue_assetshare_threshold = 0;
 	unused2 = 0;
 	unused3 = 0;
     issuer = ""; 
@@ -116,7 +116,7 @@ bool asset_detail::from_data(reader& source)
     maximum_supply = source.read_8_bytes_little_endian();
     //asset_type = source.read_4_bytes_little_endian();
     decimal_number = source.read_byte();
-    unused1 = source.read_byte();
+    secondissue_assetshare_threshold = source.read_byte();
     unused2 = source.read_byte();
     unused3 = source.read_byte();
     issuer = source.read_string(); 
@@ -162,7 +162,7 @@ void asset_detail::to_data(writer& sink) const
     sink.write_8_bytes_little_endian(maximum_supply);
 	//sink.write_4_bytes_little_endian(asset_type);
 	sink.write_byte(decimal_number);
-	sink.write_byte(unused1);
+	sink.write_byte(secondissue_assetshare_threshold);
 	sink.write_byte(unused2);
 	sink.write_byte(unused3);
 	sink.write_string(issuer);

@@ -192,6 +192,14 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 			return "asset symbol invalid";
         case error::asset_exist:
             return "asset exist";
+        case error::asset_not_exist:
+            return "asset not exist";
+        case error::asset_secondissue_error:
+            return "second issue asset error";
+        case error::asset_secondissue_share_not_enough:
+            return "user asset share is not enought to second issue asset ";
+        case error::asset_secondissue_assetshare_threshold_invalid:
+            return "asset secondissue assetshare threshold value invalid";
 
         // unknown errors
         case error::unknown:

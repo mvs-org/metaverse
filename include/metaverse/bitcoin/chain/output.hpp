@@ -58,6 +58,8 @@ public:
 	bool is_asset_transfer();
 	bool is_asset_issue();
 	bool is_etp();
+    bool is_asset_secondissue();
+    asset_detail get_asset_detail();
 	
     uint64_t value;
     chain::script script;
