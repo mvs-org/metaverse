@@ -36,7 +36,7 @@ void relay_exception(std::stringstream& ss)
         read_json(ss, pt);
         uint32_t code = pt.get<uint32_t>("code");
         std::string msg = pt.get<std::string>("message");
-        if (code) 
+        if (!code) 
             return;
         throw explorer_exception{code, msg};
     }
