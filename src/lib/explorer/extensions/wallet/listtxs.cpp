@@ -132,6 +132,13 @@ console_result listtxs::invoke (std::ostream& output,
     }
 
     // page limit & page index paramenter check
+    if(!argument_.index) 
+        throw argument_legality_exception{"page index parameter must not be zero"};    
+    if(!argument_.limit) 
+        throw argument_legality_exception{"page record limit parameter must not be zero"};    
+    if(argument_.limit > 100)
+        throw argument_legality_exception{"page record limit must not be bigger than 100."};
+
     uint64_t start, end, total_page, tx_count;
     if(argument_.index && argument_.limit) {
         start = (argument_.index - 1)*argument_.limit;

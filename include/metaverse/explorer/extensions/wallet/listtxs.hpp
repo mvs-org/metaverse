@@ -104,13 +104,11 @@ public:
             value<std::string>(&argument_.symbol),
             "Asset symbol."
         )
-        #if 1
         (
             "limit,l",
             value<uint64_t>(&argument_.limit)->default_value(100),
             "Transaction count per page."
         )
-        #endif
         (
             "index,i",
             value<uint64_t>(&argument_.index)->default_value(1),
