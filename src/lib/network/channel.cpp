@@ -103,7 +103,6 @@ void channel::set_nonce(uint64_t value)
 
 void channel::set_protocol_start_handler(std::function<void()> handler)
 {
-	log::debug(LOG_NETWORK)  << "set_protocol_start_handler";
     protocol_start_handler_ = handler;
 }
 

@@ -46,6 +46,9 @@ public:
     /// Remove a block from the pool.
     void remove(block_detail::ptr block);
 
+    /// Obtain blocks from the pool
+    void fetch_all(block_detail::list& blocks) const;
+
     /// Remove from the message all vectors that match orphans.
     void filter(message::get_data::ptr message) const;
 

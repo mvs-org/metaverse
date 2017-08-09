@@ -33,6 +33,7 @@
 #include <metaverse/explorer/config/point.hpp>
 #include <metaverse/explorer/config/transaction.hpp>
 #include <metaverse/explorer/config/wrapper.hpp>
+#include <metaverse/blockchain/block_detail.hpp>
 
 /* NOTE: don't declare 'using namespace foo' in headers. */
 
@@ -46,6 +47,7 @@ class input;
 class output;
 class transaction;
 class wrapper;
+using block_detail = blockchain::block_detail;
 
 /**
  * A tuple to represent settings and serialized values.
@@ -408,6 +410,10 @@ BCX_API pt::ptree prop_tree(const settings_list& settings);
 BCX_API pt::ptree prop_tree(const wallet::bitcoin_uri& uri);
 
 BCX_API pt::ptree prop_tree(const block& block);
+
+BCX_API pt::ptree prop_tree(const std::vector<block_detail::ptr>& blocks, bool json);
+
+BCX_API pt::ptree prop_list(block_detail::ptr block);
 
 } // namespace config
 } // namespace explorer

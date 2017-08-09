@@ -84,6 +84,7 @@
 #include <metaverse/explorer/extensions/wallet/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/wallet/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/wallet/createasset.hpp>
+#include <metaverse/explorer/extensions/wallet/deleteasset.hpp>
 #include <metaverse/explorer/extensions/wallet/issue.hpp>
 #include <metaverse/explorer/extensions/wallet/issuefrom.hpp>
 #include <metaverse/explorer/extensions/wallet/issuemore.hpp>
@@ -101,6 +102,7 @@
 #include <metaverse/explorer/extensions/wallet/encodeattachtx.hpp>
 #include <metaverse/explorer/extensions/commands/private_query.hpp>
 #include <metaverse/explorer/extensions/wallet/getmemorypool.hpp>
+#include <metaverse/explorer/extensions/wallet/getorphanblocks.hpp>
 
 
 
@@ -163,6 +165,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getaddressasset>());
     func(make_shared<getaccountasset>());
     func(make_shared<createasset>());
+    func(make_shared<deleteasset>());
     func(make_shared<issue>());
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
@@ -181,7 +184,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<sendfrommultisig>());
     func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
-
+    func(make_shared<getorphanblocks>());
 
 }
 
@@ -289,6 +292,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaccountasset>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
+    if (symbol == deleteasset::symbol())
+        return make_shared<deleteasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
     if (symbol == issuefrom::symbol())
@@ -333,6 +338,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<stopall>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
+    if (symbol == getorphanblocks::symbol())
+        return make_shared<getorphanblocks>();
 
     return nullptr;
 }

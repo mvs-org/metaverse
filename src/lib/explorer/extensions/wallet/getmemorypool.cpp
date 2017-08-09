@@ -51,7 +51,7 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 
-/************************ getbalance *************************/
+/************************ getmemorypool *************************/
 
 console_result getmemorypool::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
