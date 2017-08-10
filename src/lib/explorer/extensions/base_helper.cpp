@@ -337,6 +337,40 @@ void sync_fetch_asset_balance (std::string& addr,
     
     }
 }
+
+void sync_fetch_asset_balance_record (std::string& addr, 
+    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
+{
+    auto address = payment_address(addr);
+    // history::list rows
+    auto rows = get_address_history(address, blockchain);
+    
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows) {     
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+            auto output = tx_temp.outputs.at(row.output.index);
+            if((output.is_asset_transfer() || output.is_asset_issue())) {
+                auto pos = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), [&](const asset_detail& elem){
+                        return ((output.get_asset_symbol() == elem.get_symbol()) 
+                            && (addr == elem.get_address()));
+                        });
+                
+                if (pos == sh_asset_vec->end()){ // new item
+                    sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, "", addr, ""));
+                } else { // exist just add amount
+                    pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
+                }
+            }
+        }
+    
+    }
+}
 /// amount == 0 -- get all address balances
 /// amount != 0 -- get some address balances which bigger than amount 
 void sync_fetchbalance (wallet::payment_address& address, 
