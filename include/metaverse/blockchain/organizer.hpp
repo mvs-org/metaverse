@@ -69,6 +69,8 @@ public:
     void add_fork_chain_hash(const hash_digest&);
     void delete_fork_chain_hash(const hash_digest&);
 
+    void fetch_all_orphanblocks(block_detail::list& blocks) const;
+
 protected:
     virtual bool stopped();
 

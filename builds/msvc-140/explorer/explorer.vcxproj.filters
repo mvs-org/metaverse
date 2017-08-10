@@ -524,6 +524,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupwallet.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getorphanblocks.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getmemorypool.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
     </ClInclude>
@@ -979,6 +982,9 @@
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\backupaccount.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getorphanblocks.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getmemorypool.cpp">
