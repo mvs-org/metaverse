@@ -313,7 +313,7 @@ int block_chain_impl::replace_chain(uint64_t begin_height, const block_detail::l
             auto &block =  *it;
 
             start_write();
-            ret = push(block);
+            result = push(block);
             stop_write();
             if(result)
             {

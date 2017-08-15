@@ -299,8 +299,6 @@ void validate_transaction::check_fees()
 
 code validate_transaction::check_secondissue_transaction_with_transactionpool(const chain::transaction& tx, blockchain::block_chain_impl& blockchain)
 {
-	return error::success;
-
 	std::string asset_name;
 	std::string asset_issuer;
 	int secondissue_assetshare_threshold = 0;
@@ -402,7 +400,7 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 			{
 				asset_detail&& detail = output.get_asset_detail();
 				uint32_t secondissue_assetshare_threshold = detail.get_secondissue_assetshare_threshold();
-				if(secondissue_assetshare_threshold != 0 || secondissue_assetshare_threshold <= 50 || secondissue_assetshare_threshold > 100)
+				if(secondissue_assetshare_threshold != 0 && (secondissue_assetshare_threshold < 51 || secondissue_assetshare_threshold > 100))
 				{
 					return error::asset_secondissue_assetshare_threshold_invalid;
 				}
