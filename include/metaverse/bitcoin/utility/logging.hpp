@@ -29,7 +29,7 @@
 namespace libbitcoin {
 
 /// Set up global logging.
-BCT_API void initialize_logging(std::ofstream& debug, std::ofstream& error,
+BCT_API void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
     std::ostream& output_stream, std::ostream& error_stream);
 
 /// Class Logger
@@ -58,8 +58,8 @@ static BC_CONSTEXPR std::ofstream::openmode log_open_mode =
     std::ofstream::out | std::ofstream::app;
 
 private:
-    std::ofstream debug_log_{"debug.log", log_open_mode};
-    std::ofstream error_log_{"error.log", log_open_mode};
+    bc::ofstream debug_log_{"debug.log", log_open_mode};
+    bc::ofstream error_log_{"error.log", log_open_mode};
 
 #undef self
 };// class Logger
