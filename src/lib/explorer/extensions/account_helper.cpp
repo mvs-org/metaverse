@@ -309,13 +309,9 @@ console_result listmultisig::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     pt::ptree root, nodes;
 
-    if(option_.index) { // according index
-        if(option_.index > acc->get_multisig_vec().size())
-            throw multisig_index_exception{"multisig index outofbound."};
+    auto multisig_vec = acc->get_multisig_vec();
         
-        account_multisig acc_multisig;
-        acc->get_multisig(acc_multisig, option_.index);
-
+    for(auto& acc_multisig : multisig_vec) {
         pt::ptree node, pubkeys;
         node.put("index", acc_multisig.get_index());
         //node.put("hd_index", acc_multisig.get_hd_index());
@@ -331,32 +327,10 @@ console_result listmultisig::invoke (std::ostream& output,
         node.add_child("public-keys", pubkeys);
         node.put("multisig-script", acc_multisig.get_multisig_script());
         node.put("address", acc_multisig.get_address());
+
         nodes.push_back(std::make_pair("", node));
-
-    } else {
-    
-        auto multisig_vec = acc->get_multisig_vec();
-            
-        for(auto& acc_multisig : multisig_vec) {
-            pt::ptree node, pubkeys;
-            node.put("index", acc_multisig.get_index());
-            //node.put("hd_index", acc_multisig.get_hd_index());
-            node.put("m", acc_multisig.get_m());
-            node.put("n", acc_multisig.get_n());
-            node.put("self-publickey", acc_multisig.get_pubkey());
-            node.put("description", acc_multisig.get_description());
-            for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-                pt::ptree pubkey;
-                pubkey.put("", each);
-                pubkeys.push_back(std::make_pair("", pubkey));
-            }
-            node.add_child("public-keys", pubkeys);
-            node.put("multisig-script", acc_multisig.get_multisig_script());
-            node.put("address", acc_multisig.get_address());
-
-            nodes.push_back(std::make_pair("", node));
-        }   
     }
+    
     root.add_child("multisig", nodes);    
     pt::write_json(output, root);
     
@@ -364,7 +338,6 @@ console_result listmultisig::invoke (std::ostream& output,
 }
 
 /************************ deletemultisig *************************/
-// todo -- delete related address
 console_result deletemultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -373,40 +346,11 @@ console_result deletemultisig::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     //auto acc_multisig = acc->get_multisig();
     account_multisig acc_multisig;
-    if(option_.index) { // according index
-        if(option_.index > acc->get_multisig_vec().size())
-            throw multisig_index_exception{"multisig index outofbound."};
-        acc->remove_multisig(acc_multisig, option_.index);
-    } else {
-        if(option_.public_keys.empty())
-            throw multisig_cosigne_exception{"multisig cosigner public key needed."};
-        // parameter check
-        if( option_.m < 1 )
-            throw signature_amount_exception{"signature number less than 1."};
-        if( !option_.n || option_.n > 20 )
-            throw pubkey_amount_exception{"public key number bigger than 20."};
-        if( option_.m > option_.n )
-            throw signature_amount_exception{"signature number bigger than public key number."};
-        if(option_.self_publickey.empty())
-            throw multisig_cosigne_exception{"self public key needed."};
         
-        // add self public key into key vector
-        auto pubkey = option_.self_publickey;
-        if(std::find(option_.public_keys.begin(), option_.public_keys.end(), pubkey) == option_.public_keys.end()) // not found
-            option_.public_keys.push_back(pubkey);
-        if( option_.n != option_.public_keys.size() )
-            throw pubkey_amount_exception{"public key number not match with n."};
-        
-        acc_multisig.set_m(option_.m);
-        acc_multisig.set_n(option_.n);
-        acc_multisig.set_pubkey(pubkey);
-        acc_multisig.set_cosigner_pubkeys(std::move(option_.public_keys));
-        
-        if(!(acc->get_multisig(acc_multisig)))
-            throw multisig_notfound_exception{"multisig not exists."};
-        
-        acc->remove_multisig(acc_multisig);
-    }
+    if(!(acc->get_multisig_by_address(acc_multisig, option_.address)))
+        throw multisig_notfound_exception{option_.address + std::string(" multisig record not found.")};
+    
+    acc->remove_multisig(acc_multisig);
 
     // change account type
     acc->set_type(account_type::common);
