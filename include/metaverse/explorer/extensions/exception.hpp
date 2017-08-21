@@ -56,7 +56,8 @@ DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);
 DEFINE_EXPLORER_EXCEPTION(session_expired_exception, 1012);
 DEFINE_EXPLORER_EXCEPTION(command_params_exception, 1021);
-DEFINE_EXPLORER_EXCEPTION(ui_invoke_explorer_exception, 1022);
+DEFINE_EXPLORER_EXCEPTION(command_platform_compat_exception, 1022);
+DEFINE_EXPLORER_EXCEPTION(ui_invoke_explorer_exception, 1023);
 
 
 
