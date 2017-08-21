@@ -527,6 +527,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getmemorypool.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\openwalletui.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\prop_tree.ipp">
@@ -985,6 +988,9 @@
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\openwalletui.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
   </ItemGroup>

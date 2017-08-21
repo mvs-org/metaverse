@@ -41,7 +41,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -111,11 +111,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\windows\mvstray\mvstray.cpp" />
-    <ClCompile Include="..\..\..\windows\mvstray\tray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\windows\mvstray\resource.h" />
     <ClInclude Include="..\..\..\windows\mvstray\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="metaverse.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

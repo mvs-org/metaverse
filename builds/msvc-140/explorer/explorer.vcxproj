@@ -152,6 +152,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\listtxs.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\lockaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\lockwallet.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\openwalletui.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendassetfrom.hpp" />
@@ -309,6 +310,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listtxs.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\lockaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\lockwallet.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\openwalletui.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendassetfrom.cpp" />

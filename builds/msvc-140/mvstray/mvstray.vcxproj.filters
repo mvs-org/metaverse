@@ -18,9 +18,6 @@
     <ClCompile Include="..\..\..\windows\mvstray\mvstray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\windows\mvstray\tray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\windows\mvstray\resource.h">
@@ -29,5 +26,10 @@
     <ClInclude Include="..\..\..\windows\mvstray\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="metaverse.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

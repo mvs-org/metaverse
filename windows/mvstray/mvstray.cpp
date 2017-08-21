@@ -178,7 +178,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 
 	if (metaverseHandle == INVALID_HANDLE_VALUE)
 	{
-		// Launch parity
+		// Launch Metaverse
 		TCHAR path[MAX_PATH] = { 0 };
 		if (!GetMetaverseExePath(path, MAX_PATH))
 			return false;
@@ -311,7 +311,7 @@ bool MetaverseIsRunning()
 
 void OpenUI()
 {
-	// Launch parity
+	// Launch Metaverse
 	TCHAR path[MAX_PATH] = { 0 };
 	if (!GetMetaverseExePath(path, MAX_PATH))
 		return;
@@ -334,7 +334,7 @@ bool AutostartEnabled() {
 	WCHAR szBuffer[512];
 	DWORD dwBufferSize = sizeof(szBuffer);
 	ULONG nError;
-	nError = RegQueryValueExW(hKey, L"Parity", 0, nullptr, (LPBYTE)szBuffer, &dwBufferSize);
+	nError = RegQueryValueExW(hKey, L"Metaverse", 0, nullptr, (LPBYTE)szBuffer, &dwBufferSize);
 	if (ERROR_SUCCESS != nError)
 		return false;
 	return true;
@@ -353,13 +353,13 @@ void EnableAutostart(bool enable) {
 		{
 			lstrcat(args, L" ");
 			lstrcat(args, commandLineFiltered);
-			RegSetValueEx(hKey, L"Parity", 0, REG_SZ, (LPBYTE)args, MAX_PATH);
+			RegSetValueEx(hKey, L"Metaverse", 0, REG_SZ, (LPBYTE)args, MAX_PATH);
 		}
 		delete[] args;
 	}
 	else
 	{
-		RegDeleteValue(hKey, L"Parity");
+		RegDeleteValue(hKey, L"Metaverse");
 	}
 }
 
