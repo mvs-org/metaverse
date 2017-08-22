@@ -31,7 +31,7 @@
 
 #include <SDKDDKVer.h>
 
-#include "resource.h"
+#include "../../builds/msvc-140/mvstray/resource.h"
 
 #pragma comment(lib, "shlwapi.lib")
 
@@ -138,24 +138,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 {
-	if (lstrlen(cmdLine) > 0)
-	{
-		int commandLineArgs = 0;
-		LPWSTR* commandLine = CommandLineToArgvW(cmdLine, &commandLineArgs);
-		LPWSTR filteredArgs = new WCHAR[lstrlen(cmdLine) + 2];
-		filteredArgs[0] = '\0';
-		for (int i = 0; i < commandLineArgs; i++)
-		{
-			// Remove "ui" from command line
-			if (lstrcmp(commandLine[i], L"ui") != 0)
-			{
-				lstrcat(filteredArgs, commandLine[i]);
-				lstrcat(filteredArgs, L" ");
-			}
-		}
-		commandLineFiltered = filteredArgs;
-	}
-
 	// Check if already running
 	PROCESSENTRY32 entry;
 	entry.dwSize = sizeof(PROCESSENTRY32);
@@ -207,7 +189,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 
 	nidApp.cbSize = sizeof(NOTIFYICONDATA); // sizeof the struct in bytes 
 	nidApp.hWnd = (HWND)hWnd;              //handle of the window which will process this app. messages 
-	nidApp.uID = IDI_MVSTRAY;           //ID of the icon that willl appear in the system tray 
+	nidApp.uID = IDI_MVSTRAY;           //ID of the icon that will appear in the system tray 
 	nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP; //ORing of all the flags 
 	nidApp.hIcon = hMainIcon; // handle of the Icon to be displayed, obtained from LoadIcon 
 	nidApp.uCallbackMessage = WM_USER_SHELLICON;
@@ -311,18 +293,10 @@ bool MetaverseIsRunning()
 
 void OpenUI()
 {
-	// Launch Metaverse
-	TCHAR path[MAX_PATH] = { 0 };
-	if (!GetMetaverseExePath(path, MAX_PATH))
-		return;
-
-	PROCESS_INFORMATION procInfo = { 0 };
-	STARTUPINFO startupInfo = { sizeof(STARTUPINFO) };
-
-	LPWSTR args = new WCHAR[lstrlen(commandLineFiltered) + MAX_PATH + 2];
-	lstrcpy(args, L"mvsd.exe ui ");
-	lstrcat(args, commandLineFiltered);
-	CreateProcess(path, args, nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &procInfo);
+    // Launch Metaverse
+    const TCHAR szOperation[] = _T("open");
+    const TCHAR szAddress[] = _T("http://127.0.0.1:8820/");
+    ShellExecute(NULL, szOperation, szAddress, NULL, NULL, SW_SHOWNORMAL);
 }
 
 bool AutostartEnabled() {
@@ -362,4 +336,3 @@ void EnableAutostart(bool enable) {
 		RegDeleteValue(hKey, L"Metaverse");
 	}
 }
-
