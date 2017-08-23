@@ -142,21 +142,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="mvstray.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="mvstray.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="mvstray.ico" />
-    <Image Include="small.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\..\windows\mvstray\mvstray.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\windows\mvstray\mvstray.h" />
+    <ClInclude Include="..\..\..\windows\mvstray\resource.h" />
+    <ClInclude Include="..\..\..\windows\mvstray\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\windows\mvstray\mvstray.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\windows\mvstray\mvstray.ico" />
+    <Image Include="..\..\..\windows\mvstray\small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
