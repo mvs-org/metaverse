@@ -7,12 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A7A475D1E3D2CDD0093D1AB /* parity in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0A7A475C1E3D2CDD0093D1AB /* parity */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		0ACF9AC21E30FAB600D5C935 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ACF9AC11E30FAB600D5C935 /* AppDelegate.swift */; };
-		0ACF9AC41E30FAB600D5C935 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0ACF9AC31E30FAB600D5C935 /* Assets.xcassets */; };
-		0ACF9AC71E30FAB600D5C935 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0ACF9AC51E30FAB600D5C935 /* MainMenu.xib */; };
-		0AE564F11E3CE42C00BD01F7 /* GetBSDProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE564F01E3CE42C00BD01F7 /* GetBSDProcessList.swift */; };
-		0AED4DA01E3E22F800BF87C0 /* ethstore in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0AED4D9F1E3E22F800BF87C0 /* ethstore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4CE027C71F4FC6DB004FB704 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */; };
+		4CE027C91F4FC6F6004FB704 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027C81F4FC6F6004FB704 /* Assets.xcassets */; };
+		4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */; };
+		4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CE1F4FC70A004FB704 /* Info.plist */; };
+		4CE027D11F4FC715004FB704 /* install-licence.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027D01F4FC715004FB704 /* install-licence.txt */; };
+		4CE027D31F4FC71D004FB704 /* install-readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027D21F4FC71D004FB704 /* install-readme.txt */; };
+		4CE027D51F4FC728004FB704 /* GetBSDProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,22 +23,20 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				0AED4DA01E3E22F800BF87C0 /* ethstore in CopyFiles */,
-				0A7A475D1E3D2CDD0093D1AB /* parity in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0A7A475C1E3D2CDD0093D1AB /* parity */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = parity; path = ../target/release/parity; sourceTree = "<group>"; };
-		0ACF9ABE1E30FAB600D5C935 /* Parity Ethereum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Parity Ethereum.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0ACF9AC11E30FAB600D5C935 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		0ACF9AC31E30FAB600D5C935 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		0ACF9AC61E30FAB600D5C935 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		0ACF9AC81E30FAB600D5C935 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0AE564F01E3CE42C00BD01F7 /* GetBSDProcessList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetBSDProcessList.swift; sourceTree = "<group>"; };
-		0AED4D9F1E3E22F800BF87C0 /* ethstore */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = ethstore; path = ../target/release/ethstore; sourceTree = "<group>"; };
+		0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metaverse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Metaverse/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
+		4CE027C81F4FC6F6004FB704 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Metaverse/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		4CE027CC1F4FC6FE004FB704 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = MainMenu.xib; sourceTree = "<group>"; };
+		4CE027CE1F4FC70A004FB704 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Metaverse/Info.plist; sourceTree = SOURCE_ROOT; };
+		4CE027D01F4FC715004FB704 /* install-licence.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "install-licence.txt"; sourceTree = "<group>"; };
+		4CE027D21F4FC71D004FB704 /* install-readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "install-readme.txt"; sourceTree = "<group>"; };
+		4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GetBSDProcessList.swift; path = Metaverse/GetBSDProcessList.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,9 +53,9 @@
 		0ACF9AB51E30FAB600D5C935 = {
 			isa = PBXGroup;
 			children = (
-				0AED4D9F1E3E22F800BF87C0 /* ethstore */,
-				0A7A475C1E3D2CDD0093D1AB /* parity */,
-				0ACF9AC01E30FAB600D5C935 /* Parity Ethereum */,
+				4CE027D21F4FC71D004FB704 /* install-readme.txt */,
+				4CE027D01F4FC715004FB704 /* install-licence.txt */,
+				0ACF9AC01E30FAB600D5C935 /* Metaverse */,
 				0ACF9ABF1E30FAB600D5C935 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,23 +63,32 @@
 		0ACF9ABF1E30FAB600D5C935 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0ACF9ABE1E30FAB600D5C935 /* Parity Ethereum.app */,
+				0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0ACF9AC01E30FAB600D5C935 /* Parity Ethereum */ = {
+		0ACF9AC01E30FAB600D5C935 /* Metaverse */ = {
 			isa = PBXGroup;
 			children = (
-				0ACF9AC11E30FAB600D5C935 /* AppDelegate.swift */,
-				0ACF9AC31E30FAB600D5C935 /* Assets.xcassets */,
-				0ACF9AC51E30FAB600D5C935 /* MainMenu.xib */,
-				0ACF9AC81E30FAB600D5C935 /* Info.plist */,
-				0AE564F01E3CE42C00BD01F7 /* GetBSDProcessList.swift */,
+				4CE027CE1F4FC70A004FB704 /* Info.plist */,
+				4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */,
+				4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */,
+				4CE027C81F4FC6F6004FB704 /* Assets.xcassets */,
+				4CE027CA1F4FC6FE004FB704 /* Base.lproj */,
 			);
-			name = "Parity Ethereum";
+			name = Metaverse;
 			path = Parity;
 			sourceTree = "<group>";
+		};
+		4CE027CA1F4FC6FE004FB704 /* Base.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */,
+			);
+			name = Base.lproj;
+			path = Metaverse/Base.lproj;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -100,7 +108,7 @@
 			);
 			name = "Parity Ethereum";
 			productName = Parity;
-			productReference = 0ACF9ABE1E30FAB600D5C935 /* Parity Ethereum.app */;
+			productReference = 0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -110,17 +118,17 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 0800;
-				ORGANIZATIONNAME = "Parity Technologies";
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = "Metaverse Fundation";
 				TargetAttributes = {
 					0ACF9ABD1E30FAB600D5C935 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = P2PX3JU8FT;
-						ProvisioningStyle = Manual;
+						DevelopmentTeam = 6EDHACMBKZ;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = 0ACF9AB91E30FAB600D5C935 /* Build configuration list for PBXProject "Parity Ethereum" */;
+			buildConfigurationList = 0ACF9AB91E30FAB600D5C935 /* Build configuration list for PBXProject "Metaverse" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -143,8 +151,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0ACF9AC41E30FAB600D5C935 /* Assets.xcassets in Resources */,
-				0ACF9AC71E30FAB600D5C935 /* MainMenu.xib in Resources */,
+				4CE027D31F4FC71D004FB704 /* install-readme.txt in Resources */,
+				4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */,
+				4CE027C91F4FC6F6004FB704 /* Assets.xcassets in Resources */,
+				4CE027D11F4FC715004FB704 /* install-licence.txt in Resources */,
+				4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,18 +166,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AE564F11E3CE42C00BD01F7 /* GetBSDProcessList.swift in Sources */,
-				0ACF9AC21E30FAB600D5C935 /* AppDelegate.swift in Sources */,
+				4CE027D51F4FC728004FB704 /* GetBSDProcessList.swift in Sources */,
+				4CE027C71F4FC6DB004FB704 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		0ACF9AC51E30FAB600D5C935 /* MainMenu.xib */ = {
+		4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				0ACF9AC61E30FAB600D5C935 /* Base */,
+				4CE027CC1F4FC6FE004FB704 /* Base */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -192,6 +203,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -241,6 +253,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -270,12 +283,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = P2PX3JU8FT;
+				DEVELOPMENT_TEAM = 6EDHACMBKZ;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				INFOPLIST_FILE = Parity/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Metaverse/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = io.parity.ethereum;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.mvs.metaverse;
+				PRODUCT_NAME = Metaverse;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -284,14 +298,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = P2PX3JU8FT;
+				DEVELOPMENT_TEAM = 6EDHACMBKZ;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				INFOPLIST_FILE = Parity/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Metaverse/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = io.parity.ethereum;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.mvs.metaverse;
+				PRODUCT_NAME = Metaverse;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -299,14 +314,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0ACF9AB91E30FAB600D5C935 /* Build configuration list for PBXProject "Parity Ethereum" */ = {
+		0ACF9AB91E30FAB600D5C935 /* Build configuration list for PBXProject "Metaverse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0ACF9AC91E30FAB600D5C935 /* Debug */,
 				0ACF9ACA1E30FAB600D5C935 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Parity Ethereum" */ = {
 			isa = XCConfigurationList;
@@ -315,7 +330,7 @@
 				0ACF9ACD1E30FAB600D5C935 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

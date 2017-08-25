@@ -38,7 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 	}
 
 	func metaversePath() -> String {
-		return Bundle.main.bundlePath + "/Contents/MacOS/metaverse"
+		return Bundle.main.bundlePath + "/Contents/MacOS/mvsd"
 	}
 
 	func isAlreadyRunning() -> Bool {
@@ -61,32 +61,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 	
 	func openUI() {
 		let metaverse = Process()
-		metaverse.launchPath = self.metaversePath()
-		metaverse.arguments = self.commandLine
-		metaverse.arguments!.append("ui")
+		metaverse.launchPath = "/usr/bin/open"
+		metaverse.arguments = ["http:127.0.0.1:8820"]
 		metaverse.launch()
-	}
-	
-	func writeConfigFiles() {
-		let basePath = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-			.appendingPathComponent(Bundle.main.bundleIdentifier!, isDirectory: true)
-		
-		if FileManager.default.fileExists(atPath: basePath!.path) {
-			return
-		}
-		
-		do {
-			let defaultsFileDir = basePath?.appendingPathComponent("chains").appendingPathComponent("ethereum")
-			let defaultsFile = defaultsFileDir?.appendingPathComponent("user_defaults")
-			
-			try FileManager.default.createDirectory(atPath: (defaultsFileDir?.path)!, withIntermediateDirectories: true, attributes: nil)
-			if !FileManager.default.fileExists(atPath: defaultsFile!.path) {
-				try defaultDefaults.write(to: defaultsFile!, atomically: false, encoding: String.Encoding.utf8)
-			}
-		
-			let configFile = basePath?.appendingPathComponent("config.toml")
-		}
-		catch {}
 	}
 	
 	func autostartEnabled() -> Bool {
@@ -191,7 +168,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 			return
 		}
 
-		self.writeConfigFiles()
 		self.launchMetaverse()
 		Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: {_ in 
 			if !self.isMetaverseRunning() {

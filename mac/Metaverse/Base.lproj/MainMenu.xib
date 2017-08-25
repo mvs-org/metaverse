@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16C67" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -21,7 +21,7 @@
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
         <menu id="Pmu-69-HGa">
             <items>
-                <menuItem title="Open Parity" id="ZzF-PB-QOY">
+                <menuItem title="Open Metaverse" id="ZzF-PB-QOY">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="openClicked:" target="Voe-Tx-rLC" id="xHx-QA-a4a"/>
