@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4CD414641F4FF0F800A6CA41 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CD414631F4FF0F800A6CA41 /* Assets.xcassets */; };
 		4CE027C71F4FC6DB004FB704 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */; };
-		4CE027C91F4FC6F6004FB704 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027C81F4FC6F6004FB704 /* Assets.xcassets */; };
 		4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */; };
 		4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CE1F4FC70A004FB704 /* Info.plist */; };
 		4CE027D11F4FC715004FB704 /* install-licence.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027D01F4FC715004FB704 /* install-licence.txt */; };
@@ -30,8 +30,8 @@
 
 /* Begin PBXFileReference section */
 		0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metaverse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CD414631F4FF0F800A6CA41 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Metaverse/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Metaverse/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
-		4CE027C81F4FC6F6004FB704 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Metaverse/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4CE027CC1F4FC6FE004FB704 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = MainMenu.xib; sourceTree = "<group>"; };
 		4CE027CE1F4FC70A004FB704 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Metaverse/Info.plist; sourceTree = SOURCE_ROOT; };
 		4CE027D01F4FC715004FB704 /* install-licence.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "install-licence.txt"; sourceTree = "<group>"; };
@@ -74,7 +74,7 @@
 				4CE027CE1F4FC70A004FB704 /* Info.plist */,
 				4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */,
 				4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */,
-				4CE027C81F4FC6F6004FB704 /* Assets.xcassets */,
+				4CD414631F4FF0F800A6CA41 /* Assets.xcassets */,
 				4CE027CA1F4FC6FE004FB704 /* Base.lproj */,
 			);
 			name = Metaverse;
@@ -153,9 +153,9 @@
 			files = (
 				4CE027D31F4FC71D004FB704 /* install-readme.txt in Resources */,
 				4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */,
-				4CE027C91F4FC6F6004FB704 /* Assets.xcassets in Resources */,
 				4CE027D11F4FC715004FB704 /* install-licence.txt in Resources */,
 				4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */,
+				4CD414641F4FF0F800A6CA41 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
