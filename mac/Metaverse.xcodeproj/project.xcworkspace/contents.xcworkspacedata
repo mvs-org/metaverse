@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/arkady/src/rust/parity/mac/Parity/Parity Ethereum.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>

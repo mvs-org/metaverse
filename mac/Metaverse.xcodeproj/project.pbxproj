@@ -78,7 +78,7 @@
 				4CE027CA1F4FC6FE004FB704 /* Base.lproj */,
 			);
 			name = Metaverse;
-			path = Parity;
+			path = Metaverse;
 			sourceTree = "<group>";
 		};
 		4CE027CA1F4FC6FE004FB704 /* Base.lproj */ = {
@@ -93,9 +93,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0ACF9ABD1E30FAB600D5C935 /* Parity Ethereum */ = {
+		0ACF9ABD1E30FAB600D5C935 /* Metaverse */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Parity Ethereum" */;
+			buildConfigurationList = 0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Metaverse" */;
 			buildPhases = (
 				0ACF9ABA1E30FAB600D5C935 /* Sources */,
 				0ACF9ABB1E30FAB600D5C935 /* Frameworks */,
@@ -106,8 +106,8 @@
 			);
 			dependencies = (
 			);
-			name = "Parity Ethereum";
-			productName = Parity;
+			name = "Metaverse";
+			productName = Metaverse;
 			productReference = 0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -141,7 +141,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0ACF9ABD1E30FAB600D5C935 /* Parity Ethereum */,
+				0ACF9ABD1E30FAB600D5C935 /* Metaverse */,
 			);
 		};
 /* End PBXProject section */
@@ -323,7 +323,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Parity Ethereum" */ = {
+		0ACF9ACB1E30FAB600D5C935 /* Build configuration list for PBXNativeTarget "Metaverse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0ACF9ACC1E30FAB600D5C935 /* Debug */,
