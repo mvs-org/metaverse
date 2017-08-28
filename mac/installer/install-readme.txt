@@ -1,5 +1,4 @@
 Metaverse Wallet
-=============
 
 Welcome to Metaverse Wallet, your all-in-one Metaverse node and wallet.
 
