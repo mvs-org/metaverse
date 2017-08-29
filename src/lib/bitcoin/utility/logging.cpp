@@ -24,75 +24,91 @@
 #include <utility>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <mutex>
 #include <boost/date_time.hpp>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/network/define.hpp>
-#include <mutex>
 
 namespace libbitcoin {
 
-// Guard against concurrent console writes.
-static std::mutex console_mutex;
+    // Guard against concurrent console writes.
+    static std::mutex console_mutex;
 
-// Guard against concurrent file writes.
-static std::mutex file_mutex;
+    // Guard against concurrent file writes.
+    static std::mutex file_mutex;
 
-template<class T>
-//		 class = typename std::enable_if<std::is_base_of<std::basic_ostream&, T>::value>::type>
-static inline void do_logging(T& ofs, log::level level, const std::string& domain,
-    const std::string& body)
-{
-    if (body.empty())
+    template<class T>
+    // class = typename std::enable_if<std::is_base_of<std::basic_ostream&, T>::value>::type>
+    static inline void do_logging(T& ofs, log::level level, const std::string& domain,
+        const std::string& body)
     {
-        return;
-    }
+        if (body.empty())
+        {
+            return;
+        }
 
-	static uint8_t flush_times = 0;
-    static const auto form = "%1% %2% [%3%] %4%\n";
-    const auto message = boost::format(form) %
-        boost::posix_time::microsec_clock::local_time().time_of_day() %
-        log::to_text(level) %
-        domain %
-        body;
+        static uint8_t flush_times = 0;
+        static const auto form = "%1% %2% [%3%] %4%\n";
+        const auto message = boost::format(form) %
+            boost::posix_time::microsec_clock::local_time().time_of_day() %
+            log::to_text(level) %
+            domain %
+            body;
 
-	{
-        // Critical Section
-        ///////////////////////////////////////////////////////////////////////
-    	std::unique_lock<std::mutex> lock_file(file_mutex);
-		ofs<<message;
-        ofs.flush();
-        ///////////////////////////////////////////////////////////////////////
-	}
+        {
+            // Critical Section
+            ///////////////////////////////////////////////////////////////////////
+            std::unique_lock<std::mutex> lock_file(file_mutex);
+            ofs << message;
+            if (std::is_same<T, bc::ofstream>::value)
+            {
+                bc::ofstream& bo = dynamic_cast<bc::ofstream&>(ofs);
+                //bo.increment(message.size());
+                auto& current_size = bo.current_size();
+                current_size += message.size();
+                if (bo.current_size() > bo.max_size())
+                {
+                    bo.close();
+                    bo.open(bo.path(), std::ios::trunc | std::ios::out);
+                    current_size = 0;
+                }
+            }
+
+            ofs.flush();
+            ///////////////////////////////////////////////////////////////////////
+
+        }
 
 }
 #if 0
-static void log_to_file(std::ofstream& file, log::level level,
+static void log_to_file(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
 	do_logging(file, level, domain, body);	
 }
 
-static void log_to_both(std::ostream& device, std::ofstream& file,
+static void log_to_both(std::ostream& device, bc::ofstream& file,
     log::level level, const std::string& domain, const std::string& body)
 {
 	do_logging(file, level, domain, body);	
 	do_logging(device, level, domain, body);	
 }
 #endif
-static void output_ignore(std::ofstream& file, log::level level,
+static void output_ignore(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
 
 }
 
-static void output_file(std::ofstream& file, log::level level,
+static void output_file(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
 	do_logging(file, level, domain, body);	
     //log_to_file(file, level, domain, body);
 }
 
-static void output_both(std::ofstream& file, std::ostream& output,
+static void output_both(bc::ofstream& file, std::ostream& output,
     log::level level, const std::string& domain, const std::string& body)
 {
     //log_to_both(output, file, level, domain, body);
@@ -100,14 +116,14 @@ static void output_both(std::ofstream& file, std::ostream& output,
 	do_logging(output, level, domain, body);	
 }
 
-static void error_file(std::ofstream& file, log::level level,
+static void error_file(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
     //log_to_file(file, level, domain, body);
 	do_logging(file, level, domain, body);	
 }
 
-static void error_both(std::ofstream& file, std::ostream& error,
+static void error_both(bc::ofstream& file, std::ostream& error,
     log::level level, const std::string& domain, const std::string& body)
 {
     //log_to_both(error, file, level, domain, body);
@@ -115,7 +131,7 @@ static void error_both(std::ofstream& file, std::ostream& error,
 	do_logging(error, level, domain, body);	
 }
 
-void initialize_logging(std::ofstream& debug, std::ofstream& error,
+void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
     std::ostream& output_stream, std::ostream& error_stream)
 {
     using namespace std::placeholders;
