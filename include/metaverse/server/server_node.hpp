@@ -113,6 +113,8 @@ private:
     bool start_block_services();
     bool start_transaction_services();
     bool start_query_workers(bool secure);
+    
+    bool open_ui();
 
     const configuration& configuration_;
     static boost::filesystem::path webpage_path_;
