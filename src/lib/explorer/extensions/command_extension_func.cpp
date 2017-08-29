@@ -77,8 +77,6 @@
 #include <metaverse/explorer/extensions/wallet/send.hpp>
 #include <metaverse/explorer/extensions/wallet/sendmore.hpp>
 #include <metaverse/explorer/extensions/wallet/sendfrom.hpp>
-#include <metaverse/explorer/extensions/wallet/sendwithmsg.hpp>
-#include <metaverse/explorer/extensions/wallet/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/wallet/listassets.hpp>
 #include <metaverse/explorer/extensions/wallet/getasset.hpp>
 #include <metaverse/explorer/extensions/wallet/getaddressasset.hpp>
@@ -157,8 +155,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
-    func(make_shared<sendwithmsg>());
-    func(make_shared<sendwithmsgfrom>());
     func(make_shared<listassets>());
     func(make_shared<getasset>());
     func(make_shared<getaddressasset>());
@@ -277,10 +273,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendmore>();
     if (symbol == sendfrom::symbol())
         return make_shared<sendfrom>();
-    if (symbol == sendwithmsg::symbol())
-        return make_shared<sendwithmsg>();
-    if (symbol == sendwithmsgfrom::symbol())
-        return make_shared<sendwithmsgfrom>();
     if (symbol == listassets::symbol())
         return make_shared<listassets>();
     if (symbol == getasset::symbol())

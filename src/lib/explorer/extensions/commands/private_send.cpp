@@ -91,6 +91,8 @@ console_result send::invoke (std::ostream& output,
     std::vector<receiver_record> receiver{
         {argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
+    if(!argument_.memo.empty())
+        receiver.push_back({argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
     auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             "", std::move(receiver), argument_.fee);
     
@@ -156,6 +158,9 @@ console_result sendfrom::invoke (std::ostream& output,
     std::vector<receiver_record> receiver{
         {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
+    if(!argument_.memo.empty())
+        receiver.push_back({argument_.to, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
+    
     auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             std::move(argument_.from), std::move(receiver), argument_.fee);
     
