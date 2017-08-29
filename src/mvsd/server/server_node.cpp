@@ -30,9 +30,12 @@
 #include <metaverse/mgbubble.hpp>
 
 #include <thread>
+
+#ifdef _WIN32
 #include <tchar.h>
 #include <windows.h>
 #include <shellapi.h>
+#endif
 
 namespace libbitcoin {
 namespace server {

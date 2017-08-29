@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 #include <metaverse/bitcoin/unicode/unicode.hpp>
+#include <boost/filesystem.hpp>
 
 namespace libbitcoin {
 
