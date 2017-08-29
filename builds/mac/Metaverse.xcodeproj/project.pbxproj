@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		4C05ECA81F502042006CCA1D /* mvsd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C05ECA71F502042006CCA1D /* mvsd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4CD414641F4FF0F800A6CA41 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CD414631F4FF0F800A6CA41 /* Assets.xcassets */; };
-		4CE027C71F4FC6DB004FB704 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */; };
 		4CE027CD1F4FC6FE004FB704 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CB1F4FC6FE004FB704 /* MainMenu.xib */; };
 		4CE027CF1F4FC70A004FB704 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4CE027CE1F4FC70A004FB704 /* Info.plist */; };
-		4CE027D51F4FC728004FB704 /* GetBSDProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */; };
+		4CEF0CD41F553C3400328974 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CEF0CD31F553C3400328974 /* AppDelegate.swift */; };
+		4CEF0CD61F553C4700328974 /* GetBSDProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CEF0CD51F553C4700328974 /* GetBSDProcessList.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,10 +32,10 @@
 		0ACF9ABE1E30FAB600D5C935 /* Metaverse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metaverse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C05ECA71F502042006CCA1D /* mvsd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = mvsd; path = ../build/bin/mvsd; sourceTree = "<group>"; };
 		4CD414631F4FF0F800A6CA41 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Metaverse/Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Metaverse/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
 		4CE027CC1F4FC6FE004FB704 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = MainMenu.xib; sourceTree = "<group>"; };
 		4CE027CE1F4FC70A004FB704 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Metaverse/Info.plist; sourceTree = SOURCE_ROOT; };
-		4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GetBSDProcessList.swift; path = Metaverse/GetBSDProcessList.swift; sourceTree = SOURCE_ROOT; };
+		4CEF0CD31F553C3400328974 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4CEF0CD51F553C4700328974 /* GetBSDProcessList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetBSDProcessList.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,10 +69,10 @@
 		0ACF9AC01E30FAB600D5C935 /* Metaverse */ = {
 			isa = PBXGroup;
 			children = (
+				4CEF0CD31F553C3400328974 /* AppDelegate.swift */,
 				4CE027CE1F4FC70A004FB704 /* Info.plist */,
-				4CE027D41F4FC728004FB704 /* GetBSDProcessList.swift */,
-				4CE027C61F4FC6DB004FB704 /* AppDelegate.swift */,
 				4CD414631F4FF0F800A6CA41 /* Assets.xcassets */,
+				4CEF0CD51F553C4700328974 /* GetBSDProcessList.swift */,
 				4CE027CA1F4FC6FE004FB704 /* Base.lproj */,
 			);
 			path = Metaverse;
@@ -121,6 +121,7 @@
 					0ACF9ABD1E30FAB600D5C935 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = 6EDHACMBKZ;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -161,8 +162,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4CE027D51F4FC728004FB704 /* GetBSDProcessList.swift in Sources */,
-				4CE027C71F4FC6DB004FB704 /* AppDelegate.swift in Sources */,
+				4CEF0CD61F553C4700328974 /* GetBSDProcessList.swift in Sources */,
+				4CEF0CD41F553C3400328974 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,6 +279,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 6EDHACMBKZ;
@@ -287,6 +289,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.mvs.metaverse;
 				PRODUCT_NAME = Metaverse;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -295,6 +298,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 6EDHACMBKZ;
