@@ -183,8 +183,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<sendfrommultisig>());
     func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
-
-
 }
 
 shared_ptr<command> find_extension(const string& symbol)
@@ -337,7 +335,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<stopall>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
-
     return nullptr;
 }
 
