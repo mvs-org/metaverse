@@ -62,6 +62,7 @@ executor::executor(parser& metadata, std::istream& input,
     handle_stop(initialize_stop);
 }
 
+
 // Command line options.
 // ----------------------------------------------------------------------------
 // Emit directly to standard output (not the log).

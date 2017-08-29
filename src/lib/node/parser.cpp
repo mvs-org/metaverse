@@ -93,7 +93,14 @@ options_metadata parser::load_options()
 		value<bool>(&configured.daemon)->
 			default_value(false)->zero_tokens(),
 		"Run in daemon mode or not"
-	);
+	)
+//   (
+//        BS_UI_VARIABLE "ui,u",
+//        value<bool>(&configured.ui)->
+//        default_value(false),
+//       "Open wallet UI."
+//    )
+    ;
 
     return description;
 }
