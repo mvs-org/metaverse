@@ -31,7 +31,7 @@
 
 #include <SDKDDKVer.h>
 
-#include "resource.h"
+#include "../../../builds/msvc-140/mvstray/resource.h"
 
 #pragma comment(lib, "shlwapi.lib")
 
