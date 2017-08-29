@@ -39,21 +39,23 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ backupaccount *************************/
+/************************ exportaccountasfile *************************/
 
-class backupaccount: public command_extension
+class exportaccountasfile: public command_extension
 {
 public:
-    static const char* symbol(){ return "backupaccount";}
+    static const char* symbol(){ return "exportaccountasfile";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "backupaccount "; }
+    const char* description() override { return "exportaccountasfile "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("LASTWORD", 1)
+            .add("DESTINATION", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -62,6 +64,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.last_word, "LASTWORD", variables, input, raw);
+        load_input(argument_.dst, "DESTINATION", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -88,7 +92,18 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
-	    );
+	    )
+        (
+            "LASTWORD",
+            value<std::string>(&argument_.last_word)->required(),
+            "The last word of your master private-key phrase."
+        )
+        (
+            "DESTINATION",
+            value<boost::filesystem::path>(&argument_.dst)->default_value(default_data_path()),
+            "account info storage file path"
+        )
+        ;
 
         return options;
     }
@@ -102,6 +117,10 @@ public:
 
     struct argument
     {
+        argument():last_word(""), dst("")  
+        {};
+        std::string last_word;
+        boost::filesystem::path dst;
     } argument_;
 
     struct option

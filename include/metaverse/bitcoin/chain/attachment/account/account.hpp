@@ -134,6 +134,7 @@ public:
 	const std::string& get_mnemonic(std::string& passphrase, std::string& decry_output) const;
 	const std::string& get_mnemonic() const;
 	void set_mnemonic(const std::string& mnemonic, std::string& passphrase);
+    void set_mnemonic(const std::string& mnemonic);
 	const hash_digest& get_passwd() const;
 
 	void set_passwd(const std::string& outside_passwd){
@@ -168,7 +169,7 @@ public:
 	bool get_multisig(account_multisig& multisig, uint16_t index = 0);
 	bool get_multisig_by_address(account_multisig& multisig, std::string& addr);
 	void modify_multisig(account_multisig& multisig);
-
+    
 private:	
     std::string name;
     std::string mnemonic;
@@ -184,6 +185,7 @@ private:
 	std::vector<account_multisig> multisig_vec;
 	//account_multisig multisig;
 };
+
 
 } // namespace chain
 } // namespace libbitcoin
