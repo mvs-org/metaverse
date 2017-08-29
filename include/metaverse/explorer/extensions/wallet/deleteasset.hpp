@@ -44,10 +44,10 @@ namespace pt = boost::property_tree;
 class deleteasset: public command_extension
 {
 public:
-    static const char* symbol(){ return "deleteasset";}
+    static const char* symbol(){ return "deleteunissuedasset";}
     const char* name() override { return symbol();}
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "deleteasset "; }
+    const char* description() override { return "deleteunissuedasset"; }
 
     arguments_metadata& load_arguments() override
     {
