@@ -158,7 +158,7 @@ console_result listtxs::invoke (std::ostream& output,
     }
 
     // sort by height
-    std::vector<tx_block_info> result(unique_txs.begin() + start, unique_txs.begin() + start + tx_count);
+    std::vector<tx_block_info> result(sh_txs->begin() + start, sh_txs->begin() + start + tx_count);
 
     // fetch tx according its hash
     std::vector<std::string> vec_ip_addr; // input addr
