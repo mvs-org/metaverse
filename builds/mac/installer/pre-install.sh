@@ -24,7 +24,7 @@ if [[ "$SUDO_USER" == "" ]] ; then
 fi
 
 # uninstall any ancient version
-test -f /usr/local/bin/uninstall-metaverse.sh && /usr/local/bin/uninstall-metaverse.sh || true
+test -f /usr/local/bin/demvs && /usr/local/bin/demvs || true
 killall -9 mvsd && sleep 5
 METAVERSE=/Applications/Metaverse.app
 if [ -d "$METAVERSE" ]; then
