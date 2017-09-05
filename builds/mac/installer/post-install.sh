@@ -16,30 +16,31 @@
 #       CREATED: 2017/08/28 17:14
 #      REVISION:  ---
 #===============================================================================
-su $USER
 WORKDIR=`dirname $0`
-FRONT=mvs-htmls
+METAVERSE="~/Library/Application\ Support/Metaverse"
+HTML=mvs-htmls.tar.gz
 MVSBIN=bin
-FTARGET=$WORKDIR/mvs-pkg/$FRONT
-BTARGET=$WORKDIR/mvs-pkg/$MVSBIN
-if [ -d "$FTARGET" ]; then
-    echo "=> copy $FRONT to ~/Library/Application\ Support/Metaverse"
-else
-    echo "$FTARGET not found"
-fi
-su $USER -c "mkdir -p ~/Library/Application\ Support/Metaverse"
-/bin/rm -rf ~/Library/Application\ Support/Metaverse/mvs-htmls
-/bin/cp -rf $FTARGET ~/Library/Application\ Support/Metaverse
+HTMLTARGET=$WORKDIR/mvs-pkg/$HTML
+BINTARGET=$WORKDIR/mvs-pkg/$MVSBIN
 
-if [ -d "$BTARGET" ]; then
-    echo "=> copy bin files to /usr/local/bin"
-else
-    echo "$BTARGET not found"
-fi
-/bin/cp -rf $BTARGET/* /usr/local/bin 
-echo "=> Installed successfully."
+su $USER -c "mkdir -p $METAVERSE"
+
+# copy htmls
+/bin/rm -rf $METAVERSE/$HTML 
+su $USER -c  "cp -rf $HTMLTARGET $METAVERSE"
+su $USER -c "tar -zxvf $METAVERSE/$HTML -C $METAVERSE"
+sleep 1
+su $USER -c "rm -rf $METAVERSE/$HTML"
+
+# install
+/bin/cp -rf $BINTARGET/* /usr/local/bin 
+
+# initialize
+su $USER -c "mvsd -i" 
+sleep 5
+
 
 su $USER -c "open /Applications/Metaverse.app"
-sleep 15
+sleep 20
 su $USER -c "open http://127.0.0.1:8820/"
 exit 0
