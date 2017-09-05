@@ -18,12 +18,22 @@
 #===============================================================================
 WORKDIR=`dirname $0`
 METAVERSE="~/Library/Application\ Support/Metaverse"
+MAINNET=mainnet.tar.gz
 HTML=mvs-htmls.tar.gz
 MVSBIN=bin
+DBTARGET=$WORKDIR/mvs-pkg/$MAINNET
 HTMLTARGET=$WORKDIR/mvs-pkg/$HTML
 BINTARGET=$WORKDIR/mvs-pkg/$MVSBIN
 
 su $USER -c "mkdir -p $METAVERSE"
+# copy mainnet database if not exist
+if [ ! -d "/Users/impressiver/Library/Application Support/Metaverse/mainnet" ]; then
+    echo "=="
+    su $USER -c "cp -rf $DBTARGET $METAVERSE"
+    su $USER -c "tar -zxvf $METAVERSE/$MAINNET -C $METAVERSE"
+    sleep 1
+    su $USER -c "rm -rf $METAVERSE/$MAINNET"
+fi
 
 # copy htmls
 /bin/rm -rf $METAVERSE/$HTML 
