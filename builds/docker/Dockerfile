@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
-LABEL maintainer="Jeremy Lan <air.petrichor@gmail.com>" version="0.1.1" \
-  description="This is mvs-org/metaverse image" website="http://mvs.org/" \
-  , etc..."
+#LABEL maintainer="Jeremy Lan <air.petrichor@gmail.com>" version="0.1.1" \
+#  description="This is mvs-org/metaverse image" website="http://mvs.org/" \
+#  , etc..."
 
 RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
   && echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
@@ -9,11 +9,11 @@ RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget net-tools ca-certificates unzip
 
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y git-core automake autoconf libtool build-essential pkg-config libtool \
-    mpi-default-dev libicu-dev libbz2-dev zlib1g-dev libssl-dev libgmp-dev
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y git-core automake autoconf libtool build-essential pkg-config libtool apt-utils \
+    mpi-default-dev libicu-dev libbz2-dev zlib1g-dev openssl libssl-dev libgmp-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y libboost-all-dev
+RUN apt-get update && apt-get install -y libboost-all-dev
 
 RUN cd /tmp && wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh \
   && mkdir /opt/cmake && chmod +x /tmp/cmake-3.9.0-Linux-x86_64.sh \
@@ -22,7 +22,7 @@ RUN cd /tmp && wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh \
 
 RUN cd /tmp && git clone https://github.com/mvs-org/secp256k1 \
   && cd secp256k1 \
-  && ./autogen.sh && ./configure --enable-module-recovery && make -j4 && make install \
+  && ./autogen.sh && ./configure --enable-module-recovery --without-bignum && make -j4 && make install \
   && ldconfig && rm -rf /tmp/secp256k1*
 
 RUN cd /tmp && wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz && tar zxf zeromq-4.2.1.tar.gz \
@@ -38,10 +38,12 @@ RUN cd /tmp && git clone https://github.com/mvs-org/metaverse.git \
 
 RUN mkdir -p /opt/metaverse && cp -rf /tmp/metaverse/build/bin /opt/metaverse
 
-VOLUME /opt/metaverse/bin
+COPY docker/entrypoint.sh /sbin
+RUN chmod +x /sbin/entrypoint.sh
+VOLUME ~/.metaverse
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/opt/metaverse/bin
 
 #EXPOSE 8820
-ENTRYPOINT ["mvsd"]
+ENTRYPOINT ["/sbin/entrypoint.sh"]
