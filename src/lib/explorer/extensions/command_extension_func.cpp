@@ -49,7 +49,8 @@
 #include <metaverse/explorer/extensions/wallet/backupwallet.hpp>
 #include <metaverse/explorer/extensions/wallet/importwallet.hpp>
 #include <metaverse/explorer/extensions/wallet/lockwallet.hpp>
-#include <metaverse/explorer/extensions/wallet/backupaccount.hpp>
+#include <metaverse/explorer/extensions/wallet/exportaccountasfile.hpp>
+#include <metaverse/explorer/extensions/wallet/importaccountfromfile.hpp>
 #include <metaverse/explorer/extensions/wallet/importaccount.hpp>
 #include <metaverse/explorer/extensions/wallet/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/wallet/getaccount.hpp>
@@ -77,13 +78,12 @@
 #include <metaverse/explorer/extensions/wallet/send.hpp>
 #include <metaverse/explorer/extensions/wallet/sendmore.hpp>
 #include <metaverse/explorer/extensions/wallet/sendfrom.hpp>
-#include <metaverse/explorer/extensions/wallet/sendwithmsg.hpp>
-#include <metaverse/explorer/extensions/wallet/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/wallet/listassets.hpp>
 #include <metaverse/explorer/extensions/wallet/getasset.hpp>
 #include <metaverse/explorer/extensions/wallet/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/wallet/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/wallet/createasset.hpp>
+#include <metaverse/explorer/extensions/wallet/deleteasset.hpp>
 #include <metaverse/explorer/extensions/wallet/issue.hpp>
 #include <metaverse/explorer/extensions/wallet/issuefrom.hpp>
 #include <metaverse/explorer/extensions/wallet/issuemore.hpp>
@@ -127,7 +127,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<backupwallet>());
     func(make_shared<importwallet>());
     func(make_shared<lockwallet>());
-    func(make_shared<backupaccount>());
+    func(make_shared<exportaccountasfile>());
+    func(make_shared<importaccountfromfile>());
     func(make_shared<importaccount>());
     func(make_shared<getnewaccount>());
     func(make_shared<getaccount>());
@@ -156,13 +157,12 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
-    func(make_shared<sendwithmsg>());
-    func(make_shared<sendwithmsgfrom>());
     func(make_shared<listassets>());
     func(make_shared<getasset>());
     func(make_shared<getaddressasset>());
     func(make_shared<getaccountasset>());
     func(make_shared<createasset>());
+    func(make_shared<deleteasset>());
     func(make_shared<issue>());
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
@@ -178,11 +178,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getnewmultisig>());
     func(make_shared<listmultisig>());
     func(make_shared<deletemultisig>());
-    func(make_shared<sendfrommultisig>());
+    func(make_shared<createmultisigtx>());
     func(make_shared<signmultisigtx>());
     func(make_shared<getmemorypool>());
-
-
 }
 
 shared_ptr<command> find_extension(const string& symbol)
@@ -213,8 +211,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<importwallet>();
     if (symbol == lockwallet::symbol())
         return make_shared<lockwallet>();
-    if (symbol == backupaccount::symbol())
-        return make_shared<backupaccount>();
+    if (symbol == exportaccountasfile::symbol())
+        return make_shared<exportaccountasfile>();
+    if (symbol == importaccountfromfile::symbol())
+        return make_shared<importaccountfromfile>();
     if (symbol == importaccount::symbol())
         return make_shared<importaccount>();
     if (symbol == getnewaccount::symbol())
@@ -275,10 +275,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendmore>();
     if (symbol == sendfrom::symbol())
         return make_shared<sendfrom>();
-    if (symbol == sendwithmsg::symbol())
-        return make_shared<sendwithmsg>();
-    if (symbol == sendwithmsgfrom::symbol())
-        return make_shared<sendwithmsgfrom>();
     if (symbol == listassets::symbol())
         return make_shared<listassets>();
     if (symbol == getasset::symbol())
@@ -289,6 +285,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaccountasset>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
+    if (symbol == deleteasset::symbol())
+        return make_shared<deleteasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
     if (symbol == issuefrom::symbol())
@@ -321,8 +319,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<listmultisig>();
     if (symbol == deletemultisig::symbol())
         return make_shared<deletemultisig>();
-    if (symbol == sendfrommultisig::symbol())
-        return make_shared<sendfrommultisig>();
+    if (symbol == createmultisigtx::symbol())
+        return make_shared<createmultisigtx>();
     if (symbol == signmultisigtx::symbol())
         return make_shared<signmultisigtx>();
     if (symbol == issuefrom::symbol())
@@ -333,7 +331,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<stopall>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
-
     return nullptr;
 }
 

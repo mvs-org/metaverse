@@ -56,6 +56,9 @@ DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);
 DEFINE_EXPLORER_EXCEPTION(session_expired_exception, 1012);
 DEFINE_EXPLORER_EXCEPTION(command_params_exception, 1021);
+DEFINE_EXPLORER_EXCEPTION(command_platform_compat_exception, 1022);
+DEFINE_EXPLORER_EXCEPTION(ui_invoke_explorer_exception, 1023);
+
 
 
 DEFINE_EXPLORER_EXCEPTION(argument_exceed_limit_exception, 2001);
@@ -104,6 +107,8 @@ DEFINE_EXPLORER_EXCEPTION(asset_symbol_existed_exception, 5009);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_notfound_exception, 5010);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_length_exception, 5011);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_name_exception, 5012);
+DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
+DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

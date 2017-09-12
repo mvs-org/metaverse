@@ -35,6 +35,8 @@ namespace server {
 #define BS_DAEMON_VARIABLE "daemon"
 #define BS_TESTNET_VARIABLE "testnet"
 #define BS_DATADIR_VARIABLE "datadir"
+#define BS_UI_VARIABLE "ui"
+
 
 // This must be lower case but the env var part can be any case.
 #define BS_CONFIG_VARIABLE "config"

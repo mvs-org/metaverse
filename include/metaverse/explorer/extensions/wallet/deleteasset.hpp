@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017 mvs developers 
+ * Copyright (c) 2016-2017 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
+#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include <metaverse/bitcoin.hpp>
@@ -39,15 +39,15 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ backupaccount *************************/
+/************************ deleteasset *************************/
 
-class backupaccount: public command_extension
+class deleteasset: public command_extension
 {
 public:
-    static const char* symbol(){ return "backupaccount";}
-    const char* name() override { return symbol();} 
+    static const char* symbol(){ return "deleteunissuedasset";}
+    const char* name() override { return symbol();}
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "backupaccount "; }
+    const char* description() override { return "deleteunissuedasset"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -56,7 +56,7 @@ public:
             .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -69,7 +69,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -79,16 +79,21 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             "Account name."
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
-	    );
+        )
+        (
+            "symbol,s",
+            value<std::string>(&option_.symbol)->required(),
+            "The asset symbol/name. Global unique."
+        );
 
         return options;
     }
@@ -106,13 +111,17 @@ public:
 
     struct option
     {
+        option()
+          : symbol("")
+        {
+        };
+
+        std::string symbol;
     } option_;
 
 };
 
 
-
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

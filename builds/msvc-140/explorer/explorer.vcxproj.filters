@@ -63,6 +63,12 @@
     <Filter Include="Source Files\extensions\wallet">
       <UniqueIdentifier>{20f13740-43c5-4f3d-8268-d5651de24de8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\extensions\account">
+      <UniqueIdentifier>{8203541a-7ddf-4b32-9795-e36e68f93f44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\extensions\account">
+      <UniqueIdentifier>{57c6f6e9-9855-410d-99df-9e85719c8ec3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
@@ -518,14 +524,20 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\addmultisigaddress.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupaccount.hpp">
-      <Filter>Header Files\extensions\wallet</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupwallet.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getmemorypool.hpp">
       <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\exportaccountasfile.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\importaccountfromfile.hpp">
+      <Filter>Header Files\extensions\wallet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account\account_info.hpp">
+      <Filter>Header Files\extensions\account</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -978,11 +990,20 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\addmultisigaddress.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\backupaccount.cpp">
-      <Filter>Source Files\extensions\wallet</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getmemorypool.cpp">
       <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\deleteasset.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\exportaccountasfile.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\importaccountfromfile.cpp">
+      <Filter>Source Files\extensions\wallet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account\account_info.cpp">
+      <Filter>Source Files\extensions\account</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

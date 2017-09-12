@@ -217,8 +217,12 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     unsigned int coinbase_count = 0;
     for(auto i : transactions){
-        if(i.is_coinbase())
+        if(i.is_coinbase()) {
+            if(i.outputs.size() > 1 || i.outputs[0].is_etp() == false) {
+                return error::first_not_coinbase;
+            }
             ++coinbase_count;
+        }
     }
     if(coinbase_count == 0){
         return error::first_not_coinbase;

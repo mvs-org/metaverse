@@ -99,13 +99,6 @@ private:
 };
 
 /*************************************business assisant class begin******************************************/
-class BC_API tx_block_info
-{
-public:
-    uint64_t height;
-	uint32_t timestamp;
-    std::string hash;
-};
 class BC_API business_record
 {
 public:

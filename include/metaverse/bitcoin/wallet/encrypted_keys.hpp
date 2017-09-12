@@ -152,6 +152,9 @@ BC_API bool create_key_pair(encrypted_private& out_private,
     const encrypted_token& token, const ek_seed& seed, uint8_t version,
     bool compressed=true);
 
+void aes256_common_encrypt(data_chunk& mnemonic, data_chunk& passphrase, data_chunk& encry_output);
+void aes256_common_decrypt(const data_chunk& mnemonic, data_chunk& passphrase, data_chunk& decry_output);
+
 void encrypt_string(const std::string& mnemonic, 
 	std::string& passphrase, std::string& encry_output);
 

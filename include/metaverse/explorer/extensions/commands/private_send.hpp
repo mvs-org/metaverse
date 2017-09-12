@@ -189,6 +189,11 @@ public:
             value<uint64_t>(&argument_.amount)->required(),
             "How many you will spend"
         )
+        (
+            "memo,m",
+            value<std::string>(&argument_.memo),
+            "The memo to descript transaction"
+        )
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -207,9 +212,12 @@ public:
 
     struct argument
     {
+        argument():address(""), memo("")
+		{};
         std::string address;
         uint64_t amount;
         uint64_t fee;
+        std::string memo;
     } argument_;
 
     struct option
@@ -383,6 +391,11 @@ public:
 			value<uint64_t>(&argument_.amount)->required(),
 			"How many you will spend"
 		)
+        (
+            "memo,m",
+            value<std::string>(&argument_.memo),
+            "The memo to descript transaction"
+        )
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -401,10 +414,14 @@ public:
 
     struct argument
     {
+    
+        argument():from(""), to(""), memo("")
+        {};
     	std::string from;
 		std::string to;
 		uint64_t amount;
 		uint64_t fee;
+        std::string memo;
     } argument_;
 
     struct option
@@ -625,15 +642,15 @@ public:
 };
 
 
-/************************ sendfrommultisig *************************/
+/************************ createmultisigtx *************************/
 
-class sendfrommultisig: public command_extension
+class createmultisigtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "sendfrommultisig";}
+    static const char* symbol(){ return "createmultisigtx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "sendfrommultisig "; }
+    const char* description() override { return "createmultisigtx "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -701,11 +718,6 @@ public:
 			value<uint64_t>(&argument_.fee)->default_value(10000),
 			"The fee of tx. default_value 0.0001 etp"
 		)
-		(
-			"destination,d",
-			value<boost::filesystem::path>(&argument_.file_path),
-			"Tx storage file path."
-		)
 		;
 
         return options;
@@ -724,7 +736,6 @@ public:
 		std::string to;
 		uint64_t amount;
 		uint64_t fee;
-		boost::filesystem::path file_path;
     } argument_;
 
     struct option
@@ -748,7 +759,8 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("TRANSACTION", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -757,6 +769,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -784,16 +797,11 @@ public:
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
 	    )
-		(
-			"destination,d",
-			value<boost::filesystem::path>(&argument_.dst),
-			"Tx storage file path after finishing signature."
-		)
-		(
-			"source,s",
-			value<boost::filesystem::path>(&argument_.src),
-			"Tx file path before signature(raw tx)"
-		)
+        (
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to sign."
+        )
 		(
 			"broadcast,b",
             value<bool>(&argument_.send_flag)->zero_tokens(),
@@ -812,9 +820,8 @@ public:
 
     struct argument
     {
-    	boost::filesystem::path dst;
-		boost::filesystem::path src;
 		bool send_flag;
+        explorer::config::transaction transaction;
     } argument_;
 
     struct option

@@ -91,7 +91,8 @@ public:
 			"hd_index,i",
 			value<std::uint32_t>(&option_.hd_index),
 			"Teh HD index for the account."
-		);
+		)
+		;
 
         return options;
     }
@@ -370,11 +371,6 @@ public:
 			value<std::string>(&auth_.auth)->required(),
 			"Account password/authorization."
 		)
-		(
-			"index,i",
-			value<uint16_t>(&option_.index),
-			"Account multisig record index."
-		)
 		;
 
         return options;
@@ -421,7 +417,8 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("ADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -430,6 +427,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(option_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -458,29 +456,9 @@ public:
 			"Account password/authorization."
 		)
 		(
-			"signaturenum,m",
-			value<uint16_t>(&option_.m),
-			"Account multisig signature number."
-		)
-		(
-			"publickeynum,n",
-			value<uint16_t>(&option_.n),
-			"Account multisig public key number."
-		)
-		(
-			"selfpublickey,s",
-			value<std::string>(&option_.self_publickey),
-			"the public key belongs to this account."
-		)
-		(
-			"publickey,k",
-			value<std::vector<std::string>>(&option_.public_keys),
-			"cosigner public key used for multisig"
-		)
-		(
-			"index,i",
-			value<uint16_t>(&option_.index),
-			"Account multisig record index."
+			"ADDRESS",
+			value<std::string>(&option_.address)->required(),
+			"The multisig script corresponding address."
 		)
 		;
 
@@ -504,7 +482,7 @@ public:
     struct option
     {
         option()
-          : self_publickey(""), m(0), n(0), index(0)
+          : address(""), m(0), n(0), index(0)
         {
         }
 		uint16_t index;
@@ -512,6 +490,7 @@ public:
 		uint16_t n;
 		std::vector<std::string> public_keys;
 		std::string self_publickey;
+        std::string address;
 		
     } option_;
 

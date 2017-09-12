@@ -236,6 +236,7 @@ public:
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr);
 	// account asset api
+	operation_result store_account_asset(const asset_detail& detail);
 	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
 	operation_result delete_account_asset(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, 
@@ -261,6 +262,8 @@ public:
 			size_t from_height = 0, size_t limit = 0);
 	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr,
 					uint64_t start, uint64_t end, const std::string& symbol);
+    std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& address, 
+        const std::string& symbol, size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const;
 	std::shared_ptr<std::vector<account_address>> get_addresses();
 	
 	// account message api

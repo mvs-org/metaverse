@@ -106,6 +106,12 @@ options_metadata parser::load_options()
             default_value(""),
         "Specify database path."
     )
+    (
+        BS_UI_VARIABLE ",u",
+        value<bool>(&configured.ui)->
+        default_value(false),
+        "Open wallet UI."
+    )
 	;
 
     return description;

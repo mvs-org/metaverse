@@ -28,7 +28,14 @@
 #include <metaverse/server/messages/route.hpp>
 #include <metaverse/server/workers/query_worker.hpp>
 #include <metaverse/mgbubble.hpp>
+
 #include <thread>
+
+#ifdef _WIN32
+#include <tchar.h>
+#include <windows.h>
+#include <shellapi.h>
+#endif
 
 namespace libbitcoin {
 namespace server {
@@ -93,6 +100,9 @@ void server_node::run_mongoose()
     }
     log::info(LOG_SERVER) << "http server listen on (" << configuration_.server.mongoose_listen << ")";;
 
+    // for open ui
+    if (configuration_.ui)
+        open_ui();
     // run
     for (;;)
         rest_server_->poll(1000);
@@ -310,6 +320,22 @@ bool server_node::start_query_workers(bool secure)
         subscribe_stop([=](const code&) { worker->stop(); });
     }
 
+    return true;
+}
+
+bool server_node::open_ui()
+{
+#ifdef _WIN32
+    const TCHAR szOperation[] = _T("open");
+    const TCHAR szAddress[] = _T("http://127.0.0.1:8820");
+    HINSTANCE hRslt = ShellExecute(NULL, szOperation,
+        szAddress, NULL, NULL, SW_SHOWNORMAL);
+
+    if (hRslt <= (HINSTANCE)HINSTANCE_ERROR)
+        log::error("shell execute failed when open UI");
+        return false;
+    log::info("UI on display");
+#endif
     return true;
 }
 

@@ -41,6 +41,37 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
+class BC_API tx_block_info
+{
+public:
+    tx_block_info(uint64_t height, uint32_t timestamp, hash_digest hash):
+        height_(height), timestamp_(timestamp), hash_(hash)
+    {}
+    uint64_t get_height() {
+        return height_;
+    }
+    uint32_t get_timestamp() {
+        return timestamp_;
+    }
+    hash_digest get_hash(){
+        return hash_;
+    }
+    bool operator<(const tx_block_info & rinfo) const
+    {
+        return hash_ < const_cast<tx_block_info&>(rinfo).get_hash();
+    }
+    bool operator==(const tx_block_info& rinfo) const
+    {
+        return hash_ == const_cast<tx_block_info&>(rinfo).get_hash();
+    }
+    
+private:
+    uint64_t height_;
+    uint32_t timestamp_;
+    hash_digest hash_;
+};
+
+
 /************************ listtxs *************************/
 
 console_result listtxs::invoke (std::ostream& output,
@@ -68,14 +99,10 @@ console_result listtxs::invoke (std::ostream& output,
     pt::ptree aroot;
     pt::ptree balances;
     
-    struct tx_hash_height {
-        std::string  hash_;
-        uint64_t height_;
+    auto sort_by_height = [](const tx_block_info &lhs, const tx_block_info &rhs)->bool { 
+        return const_cast<tx_block_info&>(lhs).get_height() > const_cast<tx_block_info&>(rhs).get_height(); 
     };
     
-    auto sort_by_height = [](const tx_hash_height &lhs, const tx_hash_height &rhs)->bool { return lhs.height_ < rhs.height_; };
-    
-    auto sh_tx_hash = std::make_shared<std::vector<tx_hash_height>>();
     auto sh_txs = std::make_shared<std::vector<tx_block_info>>();
     auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
 
@@ -91,45 +118,63 @@ console_result listtxs::invoke (std::ostream& output,
     } else { // address exist in command
         sh_addr_vec->push_back(argument_.address);
     }
+
     // scan all addresses business record
     for (auto& each: *sh_addr_vec) {
-        auto sh_vec = blockchain.get_address_business_record(each, option_.height.first(), 
-            option_.height.second(), argument_.symbol);
-        // scan all kinds of business
-        for (auto each : *sh_vec){
-            auto pos = std::find_if(sh_tx_hash->begin(), sh_tx_hash->end(), [&](const tx_hash_height& elem){
-                    return (elem.hash_ == hash256(each.point.hash).to_string()) && (elem.height_ == each.height);
-                    });
-            
-            if (pos == sh_tx_hash->end()){ // new item
-                sh_tx_hash->push_back({hash256(each.point.hash).to_string(), each.height});
-                tx_block_info tx;
-                tx.height = each.height;
-                tx.timestamp = each.data.get_timestamp();
-                tx.hash = hash256(each.point.hash).to_string();
-                sh_txs->push_back(tx);
-            }
-        }
+        auto sh_vec = blockchain.get_address_business_record(each, argument_.symbol,
+                option_.height.first(), option_.height.second(), 0, 0);
+        for(auto& elem : *sh_vec)
+            sh_txs->push_back(tx_block_info(elem.height, elem.data.get_timestamp(), elem.point.hash));
+    }
+    std::sort (sh_txs->begin(), sh_txs->end());
+    sh_txs->erase(std::unique(sh_txs->begin(), sh_txs->end()), sh_txs->end());
+    std::sort (sh_txs->begin(), sh_txs->end(), sort_by_height);
+
+    // page limit & page index paramenter check
+    if(!argument_.index) 
+        throw argument_legality_exception{"page index parameter must not be zero"};    
+    if(!argument_.limit) 
+        throw argument_legality_exception{"page record limit parameter must not be zero"};    
+    if(argument_.limit > 100)
+        throw argument_legality_exception{"page record limit must not be bigger than 100."};
+
+    uint64_t start, end, total_page, tx_count;
+    if(argument_.index && argument_.limit) {
+        start = (argument_.index - 1)*argument_.limit;
+        end = (argument_.index)*argument_.limit;
+        if(start >= sh_txs->size() || !sh_txs->size())
+            throw argument_legality_exception{"no record in this page"};
+
+        total_page = sh_txs->size() % argument_.limit ? (sh_txs->size()/argument_.limit + 1) : (sh_txs->size()/argument_.limit);
+        tx_count = end >=sh_txs->size()? (sh_txs->size() - start) : argument_.limit ;
+        
+    } else if(!argument_.index && !argument_.limit) { // all tx records
+        start = 0;
+        tx_count = sh_txs->size();
+        argument_.index = 1;
+        total_page = 1;
+    } else {
+        throw argument_legality_exception{"invalid limit or index parameter"};
     }
 
     // sort by height
-    std::sort (sh_tx_hash->begin(), sh_tx_hash->end(), sort_by_height);
+    std::vector<tx_block_info> result(sh_txs->begin() + start, sh_txs->begin() + start + tx_count);
 
     // fetch tx according its hash
     std::vector<std::string> vec_ip_addr; // input addr
     std::vector<std::string> vec_op_addr; // output addr
     chain::transaction tx;
     uint64_t tx_height;
-    hash_digest trans_hash;
-    for (auto& each: *sh_txs){
-        decode_hash(trans_hash, each.hash);
-        if(!blockchain.get_transaction(trans_hash, tx, tx_height))
+    //hash_digest trans_hash;
+    for (auto& each: result){
+        //decode_hash(trans_hash, each.hash);
+        if(!blockchain.get_transaction(each.get_hash(), tx, tx_height))
             continue;
         
         pt::ptree tx_item;
-        tx_item.put("hash", each.hash);
-        tx_item.put("height", each.height);
-        tx_item.put("timestamp", each.timestamp);
+        tx_item.put("hash", encode_hash(each.get_hash()));
+        tx_item.put("height", each.get_height());
+        tx_item.put("timestamp", each.get_timestamp());
         tx_item.put("direction", "send");
 
         // set inputs content
@@ -143,6 +188,7 @@ console_result listtxs::invoke (std::ostream& output,
                 addr = script_address.encoded();
 
             input_addr.put("address", addr);
+            input_addr.put("script", script(input.script).to_string(1));
             input_addrs.push_back(std::make_pair("", input_addr));
 
             // add input address
@@ -166,6 +212,7 @@ console_result listtxs::invoke (std::ostream& output,
             else
                 pt_output.put("own", false);
             pt_output.put("address", addr);
+            pt_output.put("script", script(op.script).to_string(1));
             pt_output.put("etp-value", op.value);
             //pt_output.add_child("attachment", prop_list(op.attach_data));
             ////////////////////////////////////////////////////////////
@@ -249,6 +296,9 @@ console_result listtxs::invoke (std::ostream& output,
         vec_op_addr.clear();
         balances.push_back(std::make_pair("", tx_item));
     }
+    aroot.put("total_page", total_page);
+    aroot.put("current_page", argument_.index);
+    aroot.put("transaction_count", tx_count);
     aroot.add_child("transactions", balances);
     pt::write_json(output, aroot);
 

@@ -27,6 +27,7 @@
 
 namespace libbitcoin {
 
+const uint64_t LOG_MAX_SIZE = 1024 * 1024 * 512;
 /**
  * Use bc::ofstream in place of std::ofstream.
  * This provides utf8 to utf16 path translation for Windows.
@@ -41,8 +42,33 @@ public:
      * @param[in]  mode  The file opening mode.
      */
     ofstream(const std::string& path,
-        std::ofstream::openmode mode=std::ofstream::out);
+        std::ofstream::openmode mode = std::ofstream::out);
+
+    std::string path() const;
+    uint64_t max_size() const;
+    uint64_t& current_size();
+    uint64_t increment(uint64_t size);
+
+private:
+    std::string path_;
+    uint64_t current_size_;
+    uint64_t max_size_;
 };
+
+inline std::string ofstream::path() const
+{
+    return path_;
+}
+
+inline uint64_t ofstream::max_size() const
+{
+    return max_size_;
+}
+
+inline uint64_t& ofstream::current_size()
+{
+    return current_size_;
+}
 
 } // namespace libbitcoin
 

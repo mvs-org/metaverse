@@ -91,6 +91,8 @@ console_result send::invoke (std::ostream& output,
     std::vector<receiver_record> receiver{
         {argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
+    if(!argument_.memo.empty())
+        receiver.push_back({argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
     auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             "", std::move(receiver), argument_.fee);
     
@@ -156,6 +158,9 @@ console_result sendfrom::invoke (std::ostream& output,
     std::vector<receiver_record> receiver{
         {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
+    if(!argument_.memo.empty())
+        receiver.push_back({argument_.to, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
+    
     auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             std::move(argument_.from), std::move(receiver), argument_.fee);
     
@@ -225,9 +230,9 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-/************************ sendfrommultisig *************************/
+/************************ createmultisigtx *************************/
 
-console_result sendfrommultisig::invoke (std::ostream& output,
+console_result createmultisigtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -256,18 +261,10 @@ console_result sendfrommultisig::invoke (std::ostream& output,
 
     // json output
     auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    
-    // store raw tx to file
-    if(argument_.file_path.string().empty()) { // file path empty, raw tx to std::cout
-        output << "raw tx content" << std::endl << config::transaction(tx);
-    } else { 
-        bc::ofstream file_output(argument_.file_path.string(), std::ofstream::out);
-        file_output << config::transaction(tx);
-        file_output << std::flush;      
-        file_output.close();
-    }
 
+    //pt::write_json(output, config::prop_tree(tx, true));
+    //output << "raw tx content" << std::endl << config::transaction(tx);
+    output << config::transaction(tx);
     return console_result::okay;
 }
 
@@ -279,15 +276,9 @@ console_result signmultisigtx::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // get not signed tx
-    config::transaction cfg_tx;
-    bc::ifstream file_input(argument_.src.string(), std::ofstream::in);
-    //output << strerror(errno) << std::endl;
-    if (!file_input.good()) throw std::logic_error{strerror(errno)};
-    file_input >> cfg_tx;
-    file_input.close();
-    output << "###### raw tx ######" << std::endl;
-    pt::write_json(output, config::prop_tree(cfg_tx, true));
-    tx_type tx_ = cfg_tx;
+    //output << "###### raw tx ######" << std::endl;
+    //pt::write_json(output, config::prop_tree(argument_.transaction, true));
+    tx_type tx_ = argument_.transaction;
 
     // get all address of this account
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
@@ -403,16 +394,11 @@ console_result signmultisigtx::invoke (std::ostream& output,
         index++;
         log::trace("wdy new script=") << ss.to_string(false);
     }
-    output << "###### signed tx ######" << std::endl;
-    pt::write_json(output, config::prop_tree(tx_, true));   
+        
+    //pt::write_json(output, config::prop_tree(tx_, true));
+    //output << "raw tx content" << std::endl << config::transaction(tx_);
+    output << config::transaction(tx_);
 
-    // output tx
-    if(!argument_.dst.string().empty()) {
-        bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
-        file_output << config::transaction(tx_);
-        file_output << std::flush;      
-        file_output.close();
-    }
     if(argument_.send_flag){        
         if(blockchain.validate_transaction(tx_))
                 throw tx_validate_exception{std::string("validate transaction failure")};
