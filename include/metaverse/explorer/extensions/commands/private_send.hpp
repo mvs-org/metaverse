@@ -285,7 +285,7 @@ public:
 	    )
         (
             "mychange,m",
-            value<std::string>(&argument_.mychange_address)->required(),
+            value<std::string>(&argument_.mychange_address),
             "Mychange to this address"
 	    )
 	    (
@@ -307,6 +307,8 @@ public:
 
     struct argument
     {
+        argument():mychange_address("")
+        {};
         std::vector<std::string> receivers;
         std::string mychange_address;
         uint64_t fee;
