@@ -115,8 +115,8 @@ console_result sendmore::invoke (std::ostream& output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if (!blockchain.is_valid_address(argument_.mychange_address))
         throw toaddress_invalid_exception{std::string("invalid address!") + argument_.mychange_address};
-    if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
-        throw argument_legality_exception{argument_.mychange_address + std::string(" not owned to ") + auth_.name};
+    //if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
+        //throw argument_legality_exception{argument_.mychange_address + std::string(" not owned to ") + auth_.name};
     // receiver
     receiver_record record;
     std::vector<receiver_record> receiver;
