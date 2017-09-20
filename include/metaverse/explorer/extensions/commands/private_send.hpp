@@ -236,7 +236,7 @@ public:
     static const char* symbol(){ return "sendmore";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "send etp to multi target addresses, can specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
+    const char* description() override { return "send etp to multi target addresses, must specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -307,6 +307,8 @@ public:
 
     struct argument
     {
+        argument():mychange_address("")
+        {};
         std::vector<std::string> receivers;
         std::string mychange_address;
         uint64_t fee;

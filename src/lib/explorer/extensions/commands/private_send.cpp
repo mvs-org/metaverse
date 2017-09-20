@@ -113,7 +113,10 @@ console_result sendmore::invoke (std::ostream& output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-
+    if (!argument_.mychange_address.empty() && !blockchain.is_valid_address(argument_.mychange_address))
+        throw toaddress_invalid_exception{std::string("invalid address!") + argument_.mychange_address};
+    //if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
+        //throw argument_legality_exception{argument_.mychange_address + std::string(" not owned to ") + auth_.name};
     // receiver
     receiver_record record;
     std::vector<receiver_record> receiver;
@@ -126,12 +129,14 @@ console_result sendmore::invoke (std::ostream& output,
             throw toaddress_invalid_exception{std::string("invalid address!") + record.target};
         record.symbol = "";
         record.amount = item.second();
+        if (!record.amount)
+            throw argument_legality_exception{std::string("invalid amount parameter!") + each};
         record.asset_amount = 0;
         record.type = utxo_attach_type::etp; // attach not used so not do attah init
         receiver.push_back(record);
     }
-    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(receiver), argument_.fee);
+    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
     
     send_helper.exec();
 
