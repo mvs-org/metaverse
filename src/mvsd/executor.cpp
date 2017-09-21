@@ -186,6 +186,7 @@ bool executor::menu()
 
 	try
 	{
+	    log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
 		auto result = do_initchain(); // false means no need to initial chain
 	    if (config.initchain)
 	    {
