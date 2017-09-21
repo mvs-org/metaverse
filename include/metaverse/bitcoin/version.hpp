@@ -12,9 +12,9 @@
  * For interpretation of the versioning scheme see: http://semver.org
  */
 
-#define MVS_VERSION "0.6.10"
+#define MVS_VERSION "0.7.1"
 #define MVS_MAJOR_VERSION 0
-#define MVS_MINOR_VERSION 6
-#define MVS_PATCH_VERSION 10
+#define MVS_MINOR_VERSION 7
+#define MVS_PATCH_VERSION 1
 
 #endif
