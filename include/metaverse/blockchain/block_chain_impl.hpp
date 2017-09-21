@@ -275,6 +275,7 @@ public:
 	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
 	void uppercase_symbol(std::string& symbol);
 	bool is_valid_address(const std::string& address);
+    bool is_script_address(const std::string& address);
 	uint64_t shrink_amount(uint64_t amount, uint8_t decimal_number);
 	uint64_t multiple_amount(uint64_t amount, uint8_t decimal_number);
 	uint64_t get_asset_amount(std::string& symbol, uint64_t amount);

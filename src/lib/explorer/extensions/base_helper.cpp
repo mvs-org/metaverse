@@ -826,6 +826,9 @@ void base_transfer_helper::populate_unspent_list() {
 
     // get from address balances
     for (auto& each : *pvaddr){
+        // filter script address
+        if(blockchain_.is_script_address(each.get_address()))
+            continue;
         if(from_.empty()) { // select utxo in all account addresses
             base_transfer_helper::sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
             if((unspent_etp_ >= payment_etp_)
@@ -1133,6 +1136,45 @@ void sending_multisig_etp::populate_change() {
         else
             receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
+}
+
+void sending_multisig_etp::populate_unspent_list() {
+    // get address list
+    auto pvaddr = blockchain_.get_account_addresses(name_);
+    if(!pvaddr) 
+        throw address_list_nullptr_exception{"nullptr for address list"};
+
+    // get from address balances
+    for (auto& each : *pvaddr){
+        // must be script address
+        if(!blockchain_.is_script_address(each.get_address()))
+            continue;
+        if(from_.empty()) { // select utxo in all account addresses
+            base_transfer_helper::sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
+            if((unspent_etp_ >= payment_etp_)
+                && (unspent_asset_ >= payment_asset_))
+                break;
+        } else { // select utxo only in from_ address
+            if ( from_ == each.get_address() ) { // find address
+                base_transfer_helper::sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
+                if((unspent_etp_ >= payment_etp_)
+                    && (unspent_asset_ >= payment_asset_))
+                    break;
+            }
+        }
+    }
+    
+    if(from_list_.empty())
+        throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
+
+    // addresses balances check
+    if(unspent_etp_ < payment_etp_)
+        throw account_balance_lack_exception{"no enough balance"};
+    if(unspent_asset_ < payment_asset_)
+        throw asset_lack_exception{"no enough asset amount"};
+
+    // change
+    populate_change();
 }
 //#include <metaverse/bitcoin/config/base16.hpp>
 

@@ -217,6 +217,7 @@ public:
 	~sending_multisig_etp(){};
 			
 	void populate_change() override ;
+    void populate_unspent_list() override;
 	void sign_tx_inputs() override ;
 	void exec() override;
 private:
