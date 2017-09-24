@@ -97,13 +97,23 @@ public:
 	    (
             "height,e",
             value<libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>>(&option_.height),
-            "Get tx according height eg: -e start-height:end-height."
+            "Get tx according height eg: -e start-height:end-height will return tx between [start-height, end-height)"
         )
-		(
-			"symbol,s",
-			value<std::string>(&argument_.symbol),
-			"Asset symbol."
-		)
+        (
+            "symbol,s",
+            value<std::string>(&argument_.symbol),
+            "Asset symbol."
+        )
+        (
+            "limit,l",
+            value<uint64_t>(&argument_.limit)->default_value(100),
+            "Transaction count per page."
+        )
+        (
+            "index,i",
+            value<uint64_t>(&argument_.index)->default_value(1),
+            "Page index."
+        )
         ;
 
 
@@ -119,10 +129,12 @@ public:
 
     struct argument
     {
-    	argument():address(""), symbol("")
+    	argument():address(""), symbol(""), limit(100), index(0)
 		{};
     	std::string address;
 		std::string symbol;
+        uint64_t limit;
+        uint64_t index;
     } argument_;
 
     struct option

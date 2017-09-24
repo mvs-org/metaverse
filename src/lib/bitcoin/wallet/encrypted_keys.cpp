@@ -277,6 +277,67 @@ bool create_key_pair(encrypted_private& out_private, ec_compressed& out_point,
     return create_key_pair(out_private, out_public, out_point, token, seed,
         version, compressed);
 }
+/* encrypt string with extra 0 value */
+void aes256_common_encrypt(data_chunk& mnemonic, data_chunk& passphrase, data_chunk& encry_output)
+{ 
+	aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
+	
+	encry_output.clear();
+
+	data_chunk& data = mnemonic;
+	uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
+	
+	encry_output.push_back(static_cast<uint8_t>(left)); // bytes counts which not be encrypted
+
+	while(left--)
+		data.push_back(uint8_t(0)); // data must to be multiple blocksize
+		
+	auto mnem_encrypt = [&encry_output](aes_secret& sec, data_chunk& data){
+		uint64_t start = 0, i = 0;
+		aes_block block;
+		while( start < data.size() ) {
+			for( i = 0; i < aes256_block_size; i++)
+				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+			
+			aes256_encrypt(sec, block);
+			
+			for( auto x : block )
+				encry_output.push_back(static_cast<char>(x));
+			
+			start += aes256_block_size;
+		}
+	};
+	mnem_encrypt(sec, data);
+}
+
+/* decrypt string */
+void aes256_common_decrypt(const data_chunk& mnemonic, data_chunk& passphrase, data_chunk& decry_output)
+{ 
+	aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
+	
+	decry_output.clear();
+	
+	uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
+	
+	auto mnem_decrypt = [&decry_output](aes_secret& sec, const data_chunk& data){
+		uint32_t start = 1, i = 0; // escape first byte
+		aes_block block;
+		while( start < data.size() ) {
+			for( i = 0; i < aes256_block_size; i++)
+				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+			
+			aes256_decrypt(sec, block);
+			
+			for( auto x : block )
+				decry_output.push_back(static_cast<char>(x));
+			
+			start += aes256_block_size;
+		}
+	};
+	mnem_decrypt(sec, mnemonic);
+    while(left--)
+        decry_output.pop_back(); // remove left bytes
+}
 
 /* encrypt string with extra 0 value */
 void encrypt_string(const std::string& mnemonic, std::string& passphrase, std::string& encry_output)

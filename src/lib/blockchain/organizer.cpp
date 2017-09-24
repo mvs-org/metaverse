@@ -97,30 +97,46 @@ code organizer::verify_asset_exist(uint64_t fork_point,
     block_chain_impl& chain = (block_chain_impl&)chain_;
     auto& block = *orphan_chain[orphan_index]->actual();
     std::set<string> assets;
-       for(auto& tx : block.transactions){
-           for(auto& output : tx.outputs){
-               if(output.is_asset_issue()) {
+    for(auto& tx : block.transactions)
+    {
+        for(auto& output : tx.outputs)
+        {
+            if(output.is_asset_issue())
+            {
                 auto result = assets.insert(output.get_asset_symbol());
-                if(result.second == false){
+                if(result.second == false)
+                {
                     return error::asset_exist;
                 }
             }
         }
     }
 
-    for(auto& i: assets){
+    if(assets.empty())
+    {
+        return error::success;
+    }
+
+    for(auto& i: assets)
+    {
         uint64_t height = 0;
-        if(chain.get_asset_height(i, height) && height <= fork_point) {
+        if(chain.get_asset_height(i, height) && height <= fork_point)
+        {
             return error::asset_exist;
         }
     }
 
-    for(uint64_t i = 0; i < orphan_index; ++i) {
+    for(uint64_t i = 0; i < orphan_index; ++i)
+    {
         auto& block = *orphan_chain[orphan_index - 1]->actual();
-           for(auto& tx : block.transactions){
-               for(auto& output : tx.outputs){
-                   if(output.is_asset_issue()) {
-                    if(assets.find(output.get_asset_symbol()) != assets.end()) {
+        for(auto& tx : block.transactions)
+        {
+            for(auto& output : tx.outputs)
+            {
+                if(output.is_asset_issue())
+                {
+                    if(assets.find(output.get_asset_symbol()) != assets.end())
+                    {
                         return error::asset_exist;
                     }
                 }
@@ -184,9 +200,9 @@ code organizer::verify(uint64_t fork_point,
         hash_digest err_tx;
         // Checks that include input->output traversal.
         ec = validate.connect_block(err_tx);
-        if(ec && err_tx != null_hash) {	
+        if(ec && err_tx != null_hash) {
             dynamic_cast<block_chain_impl&>(chain_).pool().delete_tx(err_tx);
-		}
+        }
 
     };
 
@@ -230,25 +246,51 @@ void organizer::filter_orphans(message::get_data::ptr message)
 {
     orphan_pool_.filter(message);
 }
+
 void organizer::process(block_detail::ptr process_block)
 {
     BITCOIN_ASSERT(process_block);
 
-    // Trace the chain in the orphan pool
-    auto orphan_chain = orphan_pool_.trace(process_block);
-    BITCOIN_ASSERT(orphan_chain.size() >= 1);
+    std::vector<block_detail::ptr> blocks;
+    blocks.push_back(process_block);
 
-    uint64_t fork_index;
-    const auto& hash = orphan_chain.front()->actual()->
+    while(blocks.empty() == false)
+    {
+        process_block = blocks.back();
+        blocks.pop_back();
+        // Trace the chain in the orphan pool
+        auto orphan_chain = orphan_pool_.trace(process_block);
+        BITCOIN_ASSERT(orphan_chain.size() >= 1);
+
+        uint64_t fork_index;
+        const auto& hash = orphan_chain.front()->actual()->
         header.previous_block_hash;
 
-    // Verify the blocks in the orphan chain.
-    if (chain_.get_height(fork_index, hash))
-        replace_chain(fork_index, orphan_chain);
+        // Verify the blocks in the orphan chain.
+        if (chain_.get_height(fork_index, hash)) 
+        {
+            replace_chain(fork_index, orphan_chain);
+            if(orphan_chain.empty() == false) 
+            {
+                const auto hash = orphan_chain.back()->actual()->header.hash();    
+                block_detail::ptr block;
+                while((block = orphan_pool_.delete_pending_block(hash)))
+                {
+                    blocks.push_back(block);
+                    log::warning(LOG_BLOCKCHAIN) << "pop pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(block->actual()->header.hash());
+                }
+            }
+        } 
+        else 
+        {
+            orphan_pool_.add_pending_block(hash, orphan_chain.back());
+            log::warning(LOG_BLOCKCHAIN) << "push pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(orphan_chain.back()->actual()->header.hash());
+        }
 
-    // Don't mark all orphan_chain as processed here because there might be
-    // a winning fork from an earlier block.
-    process_block->set_processed();
+        // Don't mark all orphan_chain as processed here because there might be
+        // a winning fork from an earlier block.
+        process_block->set_processed();
+    }
 }
 
 void organizer::replace_chain(uint64_t fork_index,
@@ -276,16 +318,19 @@ void organizer::replace_chain(uint64_t fork_index,
 
                 // Block is invalid, clip the orphans.
                 clip_orphans(orphan_chain, orphan, ec);
-                if(orphan_chain.empty())
+                if(orphan_chain.empty()) 
+                {
+                    log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()"; 
                     return;
+                }
 
                 // Stop summing work once we discover an invalid block
                 break;
-            }
-	    else
-	    {
+            } 
+            else 
+            {
                 orphan_chain[orphan]->set_is_checked_work_proof(true);
-	    }
+            }
         }
 
         const auto& orphan_block = orphan_chain[orphan]->actual();
@@ -303,9 +348,9 @@ void organizer::replace_chain(uint64_t fork_index,
     delete_fork_chain_hash(orphan_chain[orphan_chain.size() - 1]->actual()->header.previous_block_hash);
     if (orphan_work <= main_work)
     {
- 		if(orphan_chain.size() % node::locator_cap  == 0)
-			(*(orphan_chain.end() - 1))->set_error(error::fetch_more_block);
-	    add_fork_chain_hash((*(orphan_chain.end() - 1))->actual()->header.hash());
+        if(orphan_chain.size() % node::locator_cap  == 0)
+            orphan_chain.back()->set_error(error::fetch_more_block);
+        add_fork_chain_hash(orphan_chain.back()->actual()->header.hash());
 
         log::debug(LOG_BLOCKCHAIN)
             << "Insufficient work to reorganize at [" << begin_index << "]" << "orphan_work:" << orphan_work << " main_work:" << main_work;
@@ -341,14 +386,19 @@ void organizer::replace_chain(uint64_t fork_index,
         arrival_block->set_height(++arrival_index);
 
         // THIS IS THE DATABASE BLOCK WRITE AND INDEX OPERATION.
-        DEBUG_ONLY(const auto result =) chain_.push(arrival_block);
-        BITCOIN_ASSERT(result);
-
-        if (!released_blocks.empty())
-        log::debug(LOG_BLOCKCHAIN)
-            << " blockchain fork new block number:" << arrival_block->actual()->header.number 
-            << " hash_index:"  << encode_hash(arrival_block->actual()->header.hash())
-            << " miner address:"  << wallet::payment_address::extract(arrival_block->actual()->transactions[0].outputs[0].script);
+        if(chain_.push(arrival_block) == false)
+        {
+            log::warning(LOG_BLOCKCHAIN)
+                << " push block height:" << arrival_block->actual()->header.number
+                << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
+                << "failed";
+        }
+        else
+        {
+            log::debug(LOG_BLOCKCHAIN)
+                << " push block height:" << arrival_block->actual()->header.number
+                << " hash:"  << encode_hash(arrival_block->actual()->header.hash());
+        }
     }
 
     // Add the old blocks back to the pool (as processed with orphan height).
@@ -357,11 +407,14 @@ void organizer::replace_chain(uint64_t fork_index,
         replaced_block->set_processed();
         orphan_pool_.add(replaced_block);
 
-        if (!released_blocks.empty())
-            log::debug(LOG_BLOCKCHAIN)
-                << " blockchain fork old block number:" << replaced_block->actual()->header.number 
-                << " hash_index:"  << encode_hash(replaced_block->actual()->header.hash())
-                << " miner address:"  << wallet::payment_address::extract(replaced_block->actual()->transactions[0].outputs[0].script);
+        log::warning(LOG_BLOCKCHAIN)
+            << " blockchain fork old block number:" << replaced_block->actual()->header.number 
+            << " hash_index:"  << encode_hash(replaced_block->actual()->header.hash())
+            << " miner address:"  << wallet::payment_address::extract(replaced_block->actual()->transactions[0].outputs[0].script);
+        for(auto& tx : replaced_block->actual()->transactions) 
+        {
+            log::warning(LOG_BLOCKCHAIN) << " forked transaction hash:" << encode_hash(tx.hash()) << " data:" << tx.to_string(0);
+        }
     }
 
     notify_reorganize(fork_index, orphan_chain, released_blocks);
@@ -424,7 +477,7 @@ void organizer::notify_reorganize(uint64_t fork_point,
 
 void organizer::fired()
 {
-	subscriber_->relay(error::success, 0, {}, {});
+    subscriber_->relay(error::success, 0, {}, {});
 }
 
 std::unordered_map<hash_digest, uint64_t> organizer::get_fork_chain_last_block_hashes()

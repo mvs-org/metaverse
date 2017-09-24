@@ -42,6 +42,8 @@ public:
         network::channel::ptr channel, blockchain::block_chain& blockchain,
         blockchain::transaction_pool& pool);
 
+    ptr do_subscribe();
+
     /// Start the protocol.
     virtual void start();
 
@@ -58,7 +60,7 @@ private:
 
     bool handle_receive_get_data(const code& ec, get_data_ptr message);
     bool handle_receive_fee_filter(const code& ec, fee_filter_ptr message);
-    void handle_receive_memory_pool(const code& ec, memory_pool_ptr message);
+    bool handle_receive_memory_pool(const code& ec, memory_pool_ptr message);
 
     void handle_stop(const code&);
     bool handle_floated(const code& ec, const index_list& unconfirmed,

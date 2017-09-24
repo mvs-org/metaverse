@@ -56,6 +56,13 @@ protocol_transaction_in::protocol_transaction_in(p2p& network,
 {
 }
 
+protocol_transaction_in::ptr protocol_transaction_in::do_subscribe()
+{
+    SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
+    SUBSCRIBE2(transaction_message, handle_receive_transaction, _1, _2);
+    return std::dynamic_pointer_cast<protocol_transaction_in>(protocol::shared_from_this());
+}
+
 // Start.
 //-----------------------------------------------------------------------------
 
@@ -67,7 +74,7 @@ void protocol_transaction_in::start()
     // Prior to this level the mempool message is not available.
     if (refresh_pool_)
     {
-    	log::trace(LOG_NODE) << "protocol transaction in refresh pool";
+        log::trace(LOG_NODE) << "protocol transaction in refresh pool";
         // Refresh transaction pool on connect.
         SEND2(memory_pool(), handle_send, _1, memory_pool::command);
 
@@ -76,8 +83,6 @@ void protocol_transaction_in::start()
             BIND4(handle_reorganized, _1, _2, _3, _4));
     }
 
-    SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
-    SUBSCRIBE2(transaction_message, handle_receive_transaction, _1, _2);
 }
 
 // Receive inventory sequemessagence.
@@ -108,8 +113,8 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
 //        log::trace(LOG_NODE)
 //            << "Unexpected transaction inventory from [" << authority() << "]";
 //        return ! misbehaving(20);
-    	stop(error::not_found);
-    	return false;
+        stop(error::not_found);
+        return false;
     }
 
     auto hash = message->inventories.empty() ? "" : encode_hash(message->inventories[0].hash);
@@ -189,7 +194,7 @@ bool protocol_transaction_in::handle_receive_transaction(const code& ec,
         return false;
     }
 
-    log::info(LOG_NODE)
+    log::debug(LOG_NODE)
         << "Potential transaction from [" << authority() << "]." << encode_hash(message->hash());
 
     pool_.store(message,
@@ -236,9 +241,9 @@ bool protocol_transaction_in::handle_reorganized(const code& ec, size_t,
         return false;
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {

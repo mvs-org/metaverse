@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files\libdevcore">
+      <UniqueIdentifier>{2ba7f172-a85a-48b1-8529-0d0a920b171d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\miner">
+      <UniqueIdentifier>{0eb1e4b2-f279-45ad-8afc-f7795a8c785f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\clone">
+      <UniqueIdentifier>{eec04dff-f82f-4678-9ff6-02b7a791b9fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{e0118082-9b90-4149-926c-db4d9dc45b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\consensus">
+      <UniqueIdentifier>{9e96a520-1d90-46d6-bb33-26f5674ed8b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\clone\compat">
+      <UniqueIdentifier>{e5a60c6f-b7be-47eb-ac33-d44845f23b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\clone\crypto">
+      <UniqueIdentifier>{83b53502-c498-40cf-ba6e-e0eb93c4024d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\clone\primitives">
+      <UniqueIdentifier>{2b29d4f8-ef14-4f86-8f43-2fed03c56470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\clone\script">
+      <UniqueIdentifier>{8c663477-b918-4bc7-bda5-128926a9853d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\libdevcore">
+      <UniqueIdentifier>{d5d03145-011b-4b01-a278-6af78f7d2e37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\miner">
+      <UniqueIdentifier>{a28b8e4a-7933-4fe7-bad2-ea1452849b98}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\consensus.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\define.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\export.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\miner.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Base64.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\BasicType.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\boost_multiprecision_number_compare_bug_workaround.hpp">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\BuildInfo.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Common.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\CommonData.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\CommonIO.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Exceptions.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\FixedHash.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Guards.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Log.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\picosha2.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\RLP.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\SHA3.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\Terminal.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\libdevcore\vector_ref.h">
+      <Filter>Header Files\libdevcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\miner\MinerAux.h">
+      <Filter>Header Files\miner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\amount.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\hash.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\prevector.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\pubkey.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\serialize.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\tinyformat.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\uint256.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\utilstrencodings.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\version.h">
+      <Filter>Source Files\clone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\compat\byteswap.h">
+      <Filter>Source Files\clone\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\compat\endian.h">
+      <Filter>Source Files\clone\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\hmac_sha512.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\ripemd160.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\sha1.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\sha256.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\sha512.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\crypto\common.h">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\primitives\transaction.h">
+      <Filter>Source Files\clone\primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\script\interpreter.h">
+      <Filter>Source Files\clone\script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\script\script.h">
+      <Filter>Source Files\clone\script</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\lib\consensus\clone\script\script_error.h">
+      <Filter>Source Files\clone\script</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\consensus\miner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\hash.cpp">
+      <Filter>Source Files\clone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\pubkey.cpp">
+      <Filter>Source Files\clone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\uint256.cpp">
+      <Filter>Source Files\clone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\utilstrencodings.cpp">
+      <Filter>Source Files\clone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\crypto\hmac_sha512.cpp">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\crypto\ripemd160.cpp">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\crypto\sha1.cpp">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\crypto\sha256.cpp">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\crypto\sha512.cpp">
+      <Filter>Source Files\clone\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\primitives\transaction.cpp">
+      <Filter>Source Files\clone\primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\script\interpreter.cpp">
+      <Filter>Source Files\clone\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\clone\script\script.cpp">
+      <Filter>Source Files\clone\script</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\Base64.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\BasicType.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\Common.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\CommonData.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\CommonIO.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\FixedHash.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\Guards.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\Log.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\RLP.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\libdevcore\SHA3.cpp">
+      <Filter>Source Files\common\libdevcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\common\miner\MinerAux.cpp">
+      <Filter>Source Files\common\miner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\consensus\consensus.cpp">
+      <Filter>Source Files\consensus</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -45,7 +45,7 @@ namespace pt = boost::property_tree;
 console_result stop::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& miner = node.miner();
+    auto& miner = node.miner();
     auto ret = miner.stop();
     if (ret) {
         output<<"mining stoped.";

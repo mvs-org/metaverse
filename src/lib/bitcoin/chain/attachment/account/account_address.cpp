@@ -211,12 +211,20 @@ const std::string account_address::get_prv_key(std::string& passphrase) const
 	decrypt_string(prv_key, passphrase, decry_output);
 	return decry_output;
 }
+const std::string account_address::get_prv_key() const
+{
+	return prv_key;
+}
 void account_address::set_prv_key(const std::string& prv_key, std::string& passphrase)
 {
 	std::string encry_output("");
 
 	encrypt_string(prv_key, passphrase, encry_output);
 	this->prv_key = encry_output;
+}
+void account_address::set_prv_key(const std::string& prv_key)
+{
+	this->prv_key = prv_key;
 }
 
 const std::string& account_address::get_pub_key() const

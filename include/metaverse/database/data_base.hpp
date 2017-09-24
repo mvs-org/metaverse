@@ -114,6 +114,15 @@ public:
 		/* end database for account, asset, address_asset relationship */
     };
 
+    class blockchain_asset_store
+    {
+    public:
+        blockchain_asset_store(const path& prefix);
+        bool touch_all() const;
+		/* begin database for account, asset, address_asset relationship */
+        path assets_lookup;
+		/* end database for account, asset, address_asset relationship */
+    };
 	class db_metadata
 	{
 	public:
@@ -145,6 +154,7 @@ public:
 	static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
 	static void read_metadata(const path& metadata_path, data_base::db_metadata& metadata);
 	static bool is_lower_database(const path& prefix);
+	static bool is_higher_database(const path& prefix);
 	static bool upgrade_database(const settings& settings, const chain::block& genesis);
     /// Construct all databases.
     data_base(const settings& settings);
@@ -158,6 +168,9 @@ public:
     /// Create and start all databases.
     bool create();
 	bool blockchain_create();
+	bool blockchain_asset_create();
+ 
+	void upgrade_blockchain_asset();
 	bool account_db_start();
     /// Start all databases.
     bool start();

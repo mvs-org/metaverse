@@ -66,7 +66,8 @@ void poller::clear()
 identifiers poller::wait()
 {
     // This is the maximum safe value on all platforms, due to zeromq bug.
-    static constexpr int32_t maximum_safe_wait_milliseconds = 1000;
+    //static constexpr int32_t maximum_safe_wait_milliseconds = 1000;
+    static constexpr int32_t maximum_safe_wait_milliseconds = -1;
 
     return wait(maximum_safe_wait_milliseconds);
 }

@@ -31,6 +31,8 @@
 #include <metaverse/explorer/extensions/wallet/listbalances.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -45,42 +47,48 @@ namespace pt = boost::property_tree;
 console_result listbalances::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     pt::ptree aroot;
-    pt::ptree balances;
-
+    pt::ptree all_balances;
+    pt::ptree address_balances;
+    
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw std::logic_error{"nullptr for address list"};
+    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
-    const char* wallet[2]{"xfetchbalance", nullptr};
-    std::stringstream sout;
-    std::istringstream sin; 
-
+    std::string type("all");
+    
     for (auto& i: *vaddr){
-        sout.str("");
-        wallet[1] = i.get_address().c_str();
-        dispatch_command(2, wallet + 0, sin, sout, sout, node);
-
         pt::ptree address_balance;
-        pt::read_json(sout, address_balance);
-
+        balances addr_balance{0, 0, 0, 0};
+        auto waddr = wallet::payment_address(i.get_address());
+        sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        address_balance.put("address", i.get_address());
+        address_balance.put("confirmed", addr_balance.confirmed_balance);
+        address_balance.put("received", addr_balance.total_received);
+        address_balance.put("unspent", addr_balance.unspent_balance);
+        address_balance.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
+        address_balance.put("frozen", addr_balance.frozen_balance);
+         
+        pt::ptree null_balances;
         // non_zero display options
         if (option_.non_zero){
-            if (address_balance.get<uint64_t>("balance.unspent")){
-                balances.push_back(std::make_pair("", address_balance));
+            if (addr_balance.unspent_balance){
+                null_balances.add_child("balance", address_balance);
+                all_balances.push_back(std::make_pair("", null_balances));
             }
         } else {
-            balances.push_back(std::make_pair("", address_balance));
+            null_balances.add_child("balance", address_balance);
+            all_balances.push_back(std::make_pair("", null_balances));
         }
     }
     
-    aroot.add_child("balances", balances);
+    aroot.add_child("balances", all_balances);
     pt::write_json(output, aroot);
     return console_result::okay;
-}
 
+}
 
 
 } // namespace commands

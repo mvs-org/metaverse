@@ -53,6 +53,8 @@ public:
      */
     protocol_ping(p2p& network, channel::ptr channel);
 
+    ptr do_subscribe();
+
     /**
      * Start the protocol.
      */

@@ -54,6 +54,7 @@
 #endif
 //#include <boost/multiprecision/detail/number_compare.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <metaverse/bitcoin/math/hash.hpp>
 //#pragma warning(pop)
 //#pragma GCC diagnostic pop
 #include "vector_ref.h"
@@ -328,7 +329,7 @@ template <> struct hash<libbitcoin::u256>
 	{
 		unsigned size = _a.backend().size();
 		auto limbs = _a.backend().limbs();
-		return boost::hash_range(limbs, limbs + size);
+		return libbitcoin::hash_range(limbs, limbs + size);
 	}
 };
 

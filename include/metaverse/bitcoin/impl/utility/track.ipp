@@ -26,7 +26,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/assert.hpp>
 #include <metaverse/bitcoin/utility/log.hpp>
-
+#define RESOURCE_INSCREASE
 template <class Shared>
 std::atomic<size_t> track<Shared>::instances(0);
 
@@ -37,11 +37,12 @@ track<Shared>::track(const std::string& DEBUG_ONLY(class_name))
 #endif
 {
 #ifndef NDEBUG
+    #ifndef RESOURCE_INSCREASE
 	count_ = ++instances;
     bc::log::trace(LOG_SYSTEM)
-    #ifndef RESOURCE_INSCREASE
         << class_ << "(" << count_ << ")";
     #else
+    bc::log::trace(LOG_SYSTEM)
     	<< class_ << "(" << ++instances << ")";
     #endif
 #endif

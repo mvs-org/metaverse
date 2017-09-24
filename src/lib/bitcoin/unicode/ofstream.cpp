@@ -23,17 +23,26 @@
 #include <fstream>
 #include <string>
 #include <metaverse/bitcoin/unicode/unicode.hpp>
+#include <boost/filesystem.hpp>
 
 namespace libbitcoin {
 
 // Construct bc::ofstream.
 ofstream::ofstream(const std::string& path, std::ofstream::openmode mode)
 #ifdef _MSC_VER
-  : std::ofstream(bc::to_utf16(path), mode)
+    : std::ofstream(bc::to_utf16(path), mode), max_size_(LOG_MAX_SIZE), path_(path)
 #else
-  : std::ofstream(path, mode)
+    : std::ofstream(path, mode), max_size_(LOG_MAX_SIZE), path_(path)
 #endif
 {
+    current_size_ = boost::filesystem::file_size(path);
 }
+
+uint64_t ofstream::increment(uint64_t size)
+{
+    current_size_ += size;
+    return current_size_;
+}
+
 
 } // namespace libbitcoin

@@ -56,6 +56,15 @@ enum business_status : uint8_t
 	confirmed = 1, // in blockchain confirmed
 	unissued = 2 //  in local database ,special for asset related business
 };
+enum attachment_type : uint16_t
+{
+    etp_attach = 0,
+    asset_issue_attach = 1,
+    asset_transfer_attach = 2,
+    message_attach = 3,
+	etp_award_attach = 4, // miner award etp
+	etp_deposit_attach = 5
+};
 class BC_API business_data
 {
 public:
@@ -90,13 +99,6 @@ private:
 };
 
 /*************************************business assisant class begin******************************************/
-class BC_API tx_block_info
-{
-public:
-    uint64_t height;
-	uint32_t timestamp;
-    std::string hash;
-};
 class BC_API business_record
 {
 public:

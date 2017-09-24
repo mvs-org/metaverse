@@ -37,7 +37,7 @@ using namespace std::placeholders;
 
 session_inbound::session_inbound(p2p& network)
   : session(network, true, true),
-	network_{network},
+    network_{network},
     CONSTRUCT_TRACK(session_inbound)
 {
 }
@@ -124,6 +124,7 @@ void session_inbound::handle_accept(const code& ec, channel::ptr channel,
         log::trace(LOG_NETWORK)
             << "Rejected inbound connection from ["
             << channel->authority() << "] due to blacklisted address.";
+        channel->stop(error::accept_failed);
         return;
     }
 
@@ -144,7 +145,7 @@ void session_inbound::handle_connection_count(size_t connections,
         return;
     }
    
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected inbound channel [" << channel->authority() << "]";
 
     register_channel(channel, 
@@ -157,7 +158,7 @@ void session_inbound::handle_channel_start(const code& ec,
 {
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Inbound channel failed to start [" << channel->authority()
             << "] " << ec.message();
         return;
@@ -168,8 +169,8 @@ void session_inbound::handle_channel_start(const code& ec,
 
 void session_inbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start([](const code&){});
-    attach<protocol_address>(channel)->start();
+    attach<protocol_ping>(channel)->do_subscribe()->start([](const code&){});
+    attach<protocol_address>(channel)->do_subscribe()->start();
 }
 
 void session_inbound::handle_channel_stop(const code& ec)

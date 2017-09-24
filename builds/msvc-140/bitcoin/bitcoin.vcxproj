@@ -1,0 +1,502 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\account\account.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\account\account_address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_detail.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_transfer.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\blockchain_asset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\attachment.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp_award.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\message\message.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\block.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\business_data.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\header.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\input.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point_iterator.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\evaluation_context.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\opcode.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\operation.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\script.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\transaction.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\authority.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base16.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base2.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base58.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\base64.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\checkpoint.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\directory.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\endpoint.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\hash160.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\hash256.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\parameter.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\parser.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\printer.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\config\sodium.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\constants.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\error.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_10.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_16.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_58.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_64.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\formats\base_85.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\checksum.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\crypto.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\elliptic_curve.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\aes256.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\crypto_scrypt.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha256.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha512.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\lax_der_parsing.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\pbkdf2_sha256.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\pkcs5_pbkdf2.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\ripemd160.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha1.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha256.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\sha512.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\external\zeroize.c" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\hash.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\hash_number.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\script_number.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\stealth.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\uint256.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert_payload.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_message.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_transactions.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\compact_block.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\fee_filter.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_add.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_clear.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\filter_load.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_blocks.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_block_transactions.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_data.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_headers.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\headers.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\header_message.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\heading.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\inventory.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\inventory_vector.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\memory_pool.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\merkle_block.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\network_address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\not_found.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\ping.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\pong.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\prefilled_transaction.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\reject.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\send_compact_blocks.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\send_headers.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\transaction_message.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\verack.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\message\version.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\console_streambuf.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\ifstream.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\ofstream.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_istream.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_ostream.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\unicode\unicode_streambuf.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\backtrace.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\binary.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\conditional_lock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\daemon.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\deadline.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\dispatcher.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\istream_reader.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\log.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\logging.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\monitor.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\ostream_writer.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\path.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\png.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\random.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\resource_lock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\scope_lock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\string.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\thread.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\threadpool.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\time.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\variable_uint_size.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\utility\work.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\bitcoin_uri.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\dictionary.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_private.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_public.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_private.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_public.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_token.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\encrypted_keys.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\hd_private.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\hd_public.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\message.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\mini_keys.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\mnemonic.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_private.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_public.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_token.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\payment_address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\qrcode.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\select_outputs.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\stealth_address.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\uri.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account_address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_detail.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_interface.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_transfer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\blockchain_asset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\attachment.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp_award.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\message\message.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\ser_deser_interface.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\variant_visitor.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\block.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\business_data.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\header.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\history.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\input.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\output.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\point_iterator.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\spend.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\stealth.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\transaction.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.h" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\compat.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\authority.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base16.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base2.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base58.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\base64.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\checkpoint.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\directory.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\endpoint.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash160.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\hash256.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parameter.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\parser.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\printer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\config\sodium.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\constants.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\define.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\error.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_10.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_16.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_58.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_64.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\formats\base_85.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\handlers.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\checksum.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\crypto.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\elliptic_curve.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\hash_number.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\script_number.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\stealth.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\uint256.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\messages.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_transactions.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\compact_block.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\fee_filter.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_add.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_clear.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_load.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_blocks.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_block_transactions.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_data.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\get_headers.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\headers.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\header_message.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\heading.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory_vector.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\memory_pool.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\merkle_block.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\network_address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\not_found.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\ping.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\pong.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\prefilled_transaction.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\reject.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_compact_blocks.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_headers.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\transaction_message.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\verack.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\version.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\console_streambuf.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ifstream.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\ofstream.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_istream.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_ostream.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\unicode_streambuf.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\array_slice.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\asio.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\assert.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\atomic.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\backtrace.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\binary.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\collection.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\color.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\conditional_lock.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_sink.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\container_source.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\daemon.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\data.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deadline.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\decorator.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\delegates.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\deserializer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\dispatcher.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\enable_shared_from_base.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\endian.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\exceptions.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\istream_reader.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\log.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\logging.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\monitor.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\notifier.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\ostream_writer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\path.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\png.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\random.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\reader.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resource_lock.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\resubscriber.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\scope_lock.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\serializer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\string.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\subscriber.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\synchronizer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\thread.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\threadpool.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\time.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\timer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\track.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\variable_uint_size.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\work.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\utility\writer.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\version.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\bitcoin_uri.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\dictionary.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_private.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ec_public.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_private.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_public.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\ek_token.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\encrypted_keys.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_private.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\hd_public.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\message.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mini_keys.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\mnemonic.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\payment_address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\qrcode.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\select_outputs.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\settings.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\stealth_address.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri_reader.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\evaluation_context.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\aes256.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\crypto_scrypt.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha256.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\hmac_sha512.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\lax_der_parsing.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\pbkdf2_sha256.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\pkcs5_pbkdf2.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\ripemd160.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha1.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha256.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\sha512.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\zeroize.h" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_key.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_prefix.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_private.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_public.hpp" />
+    <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_token.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_16.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_58.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\math\checksum.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\math\hash.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\array_slice.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\collection.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\data.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\deserializer.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\endian.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\istream_reader.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\notifier.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\ostream_writer.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\resubscriber.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\serializer.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\subscriber.ipp" />
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\track.ipp" />
+    <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_key.ipp" />
+    <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_prefix.ipp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{54C72203-A5A0-4714-8D0C-D51AA4AABAC8}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>bitcoin</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>libbitcoin-vc140-mt-gd</TargetName>
+    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>libbitcoin-vc140-mt</TargetName>
+    <IncludePath>..\..\..\..\metaverse\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;$(IncludePath)</IncludePath>
+    <IntDir>$(Platform)\$(Configuration)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCB_STATIC;_CRT_SUPPRESS_RESTRICT;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)a\a%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;BC_STATIC;_CRT_SUPPRESS_RESTRICT;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;_LIB;BC_STATIC;BCB_STATIC;_CRT_SUPPRESS_RESTRICT;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)a\a%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

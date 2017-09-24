@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/deleteaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -45,7 +46,7 @@ namespace pt = boost::property_tree;
 console_result deleteaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     std::string mnemonic;
@@ -54,16 +55,16 @@ console_result deleteaccount::invoke (std::ostream& output,
     boost::split(results, mnemonic, boost::is_any_of(" "));
 
     if (*results.rbegin() != argument_.last_word){
-        throw std::logic_error{"last word not matching."};
+        throw argument_dismatch_exception{"last word not matching."};
     }
-	// delete account addresses
-	blockchain.delete_account_address(acc->get_name());
+    // delete account addresses
+    blockchain.delete_account_address(acc->get_name());
 
-	// delete account asset
-	blockchain.delete_account_asset(acc->get_name());
-	// delete account
-	blockchain.delete_account(acc->get_name());
-	output<<"delete successfully!";
+    // delete account asset
+    blockchain.delete_account_asset(acc->get_name());
+    // delete account
+    blockchain.delete_account(acc->get_name());
+    output<<"delete successfully!";
 
     return console_result::okay;
 }

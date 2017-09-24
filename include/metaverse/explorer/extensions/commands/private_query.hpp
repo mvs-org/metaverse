@@ -81,7 +81,7 @@ public:
 		)
         (
             "ADDRESS",
-            value<std::string>(&argument_.address),
+            value<std::string>(&argument_.address)->required(),
             "Address."
 	    );
 

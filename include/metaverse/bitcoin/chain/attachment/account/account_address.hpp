@@ -42,6 +42,13 @@ BC_CONSTEXPR size_t ADDRESS_ADDRESS_FIX_SIZE = 48;
 BC_CONSTEXPR size_t ADDRESS_STATUS_FIX_SIZE = 1;
 
 /// used for store account_address related information 
+enum account_address_status : uint8_t
+{
+	diabale = 0,
+	enable = 1, // common address
+	multisig_addr // multisig address
+};
+
 class BC_API account_address
 {
 public:
@@ -72,7 +79,9 @@ public:
 	const std::string& get_name() const;
 	void set_name(const std::string& name);
 	const std::string get_prv_key(std::string& passphrase) const;
+    const std::string get_prv_key() const;
 	void set_prv_key(const std::string& prv_key, std::string& passphrase);
+    void set_prv_key(const std::string& prv_key);
 	const std::string& get_pub_key() const;
 	void set_pub_key(const std::string& pub_key);
 	uint32_t get_hd_index() const;

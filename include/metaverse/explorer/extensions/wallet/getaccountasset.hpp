@@ -53,7 +53,8 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("SYMBOL", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -62,6 +63,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -88,7 +90,13 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             "Account password/authorization."
-	    );
+	    )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol),
+            "Asset symbol."
+        )
+	    ;
 
         return options;
     }
@@ -102,6 +110,7 @@ public:
 
     struct argument
     {
+        std::string  symbol;
     } argument_;
 
     struct option

@@ -236,6 +236,7 @@ public:
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
 	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& addr);
 	// account asset api
+	operation_result store_account_asset(const asset_detail& detail);
 	operation_result store_account_asset(std::shared_ptr<asset_detail> detail);
 	operation_result delete_account_asset(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_asset(const std::string& name, 
@@ -259,6 +260,10 @@ public:
 					const std::string& symbol, business_kind kind, uint8_t confirmed);
 	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr, 
 			size_t from_height = 0, size_t limit = 0);
+	std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& addr,
+					uint64_t start, uint64_t end, const std::string& symbol);
+    std::shared_ptr<std::vector<business_record>> get_address_business_record(const std::string& address, 
+        const std::string& symbol, size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const;
 	std::shared_ptr<std::vector<account_address>> get_addresses();
 	
 	// account message api
@@ -270,6 +275,7 @@ public:
 	std::shared_ptr<std::vector<account_address>> get_account_addresses(const std::string& name);
 	void uppercase_symbol(std::string& symbol);
 	bool is_valid_address(const std::string& address);
+    bool is_script_address(const std::string& address);
 	uint64_t shrink_amount(uint64_t amount, uint8_t decimal_number);
 	uint64_t multiple_amount(uint64_t amount, uint8_t decimal_number);
 	uint64_t get_asset_amount(std::string& symbol, uint64_t amount);
@@ -285,8 +291,8 @@ public:
 		std::function<void(const code&, chain::history::list&)> handler);
 	bool get_history(const wallet::payment_address& address,
 		uint64_t limit, uint64_t from_height, history_compact::list& history);
-	bool validate_transaction(const chain::transaction& tx, code& err_code);
-	bool broadcast_transaction(const chain::transaction& tx, code& err_code);
+	code validate_transaction(const chain::transaction& tx);
+	code broadcast_transaction(const chain::transaction& tx);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;

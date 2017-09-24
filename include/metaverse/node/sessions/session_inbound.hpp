@@ -40,6 +40,9 @@ public:
     session_inbound(network::p2p& network, blockchain::block_chain& blockchain,
         blockchain::transaction_pool& pool);
 
+    virtual void attach_handshake_protocols(network::channel::ptr channel,
+                result_handler handle_started) override;
+
 protected:
     /// Overridden to attach blockchain protocols.
     void attach_protocols(network::channel::ptr channel) override;

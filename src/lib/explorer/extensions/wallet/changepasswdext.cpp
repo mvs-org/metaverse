@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/wallet/changepasswdext.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -46,7 +47,7 @@ console_result changepasswdext::invoke (std::ostream& output,
 {
     std::istringstream sin("");
     std::ostringstream lang("");
-    std::ostringstream sout("");
+    std::stringstream sout("");
     
     // parameter check    
     auto user = std::make_shared<bc::chain::account>();
@@ -60,10 +61,10 @@ console_result changepasswdext::invoke (std::ostream& output,
     if(!auth_.name.empty()) {
         auto acc = blockchain.get_account(auth_.name);
         if(!acc)
-            throw std::logic_error{"non exist account name"};
+            throw account_name_exception{"non exist account name"};
         
         if(mnemonic != acc->get_mnemonic())
-            throw std::logic_error{"account is not exist for this mnemonic!"};
+            throw mnemonicwords_dismatch_exception{"account is not exist for this mnemonic!"};
         
         user = acc;
     } else { // scan all account to compare mnemonic
@@ -77,7 +78,7 @@ console_result changepasswdext::invoke (std::ostream& output,
     }
 
     if(mnemonic != user->get_mnemonic())
-        throw std::logic_error{"account is not exist for this mnemonic!"};
+        throw mnemonicwords_dismatch_exception{"account is not exist for this mnemonic!"};
 
     lang<<option_.language;
     sin.str("");
@@ -96,6 +97,9 @@ console_result changepasswdext::invoke (std::ostream& output,
         output<<sout.str();
         return console_result::failure;
     }
+     
+     
+    relay_exception(sout);
 
     user->set_passwd(option_.passwd);
     

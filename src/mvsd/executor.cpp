@@ -62,6 +62,7 @@ executor::executor(parser& metadata, std::istream& input,
     handle_stop(initialize_stop);
 }
 
+
 // Command line options.
 // ----------------------------------------------------------------------------
 // Emit directly to standard output (not the log).
@@ -122,8 +123,11 @@ bool executor::do_initchain()
         auto genesis = consensus::miner::create_genesis_block(!metadata_.configured.chain.use_testnet_rules);
 
         const auto result = data_base::initialize(data_path, *genesis);
-        if (! result)
-        	throw std::runtime_error{"initialize chain failed"};
+        if (!result) {
+            //rm directories
+            remove_all(data_path);
+            throw std::runtime_error{ "initialize chain failed" };
+        }
 		// init admin account
 		set_admin();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
@@ -138,7 +142,11 @@ bool executor::do_initchain()
 			// set_admin();
 	        log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
 	        return true;
-    	}
+    	} else if(data_base::is_higher_database(data_path)) {
+			throw std::runtime_error{"blockchain db not compatible with mvsd. please download the newest mvsd and try!"};
+		} else {
+			// version equal nothing to do 
+		}
 	}
 
     if (ec.value() == directory_exists)
@@ -178,6 +186,7 @@ bool executor::menu()
 
 	try
 	{
+	    log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
 		auto result = do_initchain(); // false means no need to initial chain
 	    if (config.initchain)
 	    {

@@ -202,6 +202,26 @@ BC_API data_chunk scrypt(data_slice data, data_slice salt, uint64_t N,
 
 // Extend std and boost namespaces with our hash wrappers.
 
+namespace libbitcoin
+{
+    // by boost 1.58 on ubuntu
+    //TODO hash_range cross platform
+    template <class It>
+    std::size_t hash_range(It first, It last)
+    {
+#ifdef _WIN32
+        return boost::hash_range(first, last);
+#else
+        std::size_t seed = 0;
+        for (; first != last; ++first)
+        {
+            seed ^= *first + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+#endif
+    }
+} // namespace libbitcoin
+
 namespace std
 {
 template <size_t Size>
@@ -209,7 +229,7 @@ struct hash<bc::byte_array<Size>>
 {
     size_t operator()(const bc::byte_array<Size>& hash) const
     {
-        return boost::hash_range(hash.begin(), hash.end());
+        return libbitcoin::hash_range(hash.begin(), hash.end());
     }
 };
 } // namespace std
@@ -221,7 +241,7 @@ struct hash<bc::byte_array<Size>>
 {
     size_t operator()(const bc::byte_array<Size>& hash) const
     {
-        return boost::hash_range(hash.begin(), hash.end());
+        return libbitcoin::hash_range(hash.begin(), hash.end());
     }
 };
 } // namespace boost

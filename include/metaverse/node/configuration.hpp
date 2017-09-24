@@ -38,6 +38,7 @@ namespace node {
 #define BN_SETTINGS_VARIABLE "settings"
 #define BN_VERSION_VARIABLE "version"
 #define BN_DAEMON_VARIABLE "daemon"
+//#define BS_UI_VARIABLE "ui"
 
 // This must be lower case but the env var part can be any case.
 #define BN_CONFIG_VARIABLE "config"
@@ -59,9 +60,11 @@ public:
     bool version;
     bool daemon;
     bool use_testnet_rules;
+    bool ui;
 
     /// Options and environment vars.
     boost::filesystem::path file;
+    boost::filesystem::path data_dir;
 
     /// Settings.
     node::settings node;

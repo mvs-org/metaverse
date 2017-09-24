@@ -165,7 +165,7 @@ uint64_t attachment::serialized_size() const
 
 	return size;
 }
-#ifdef MVS_DEBUG
+
 std::string attachment::to_string() const
 {
     std::ostringstream ss;
@@ -177,7 +177,6 @@ std::string attachment::to_string() const
 
     return ss.str();
 }
-#endif
 
 uint32_t attachment::get_version() const
 { 

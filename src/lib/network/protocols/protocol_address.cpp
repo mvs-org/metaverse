@@ -43,6 +43,13 @@ protocol_address::protocol_address(p2p& network, channel::ptr channel)
 {
 }
 
+protocol_address::ptr protocol_address::do_subscribe()
+{
+    SUBSCRIBE2(address, handle_receive_address, _1, _2);
+    SUBSCRIBE2(get_address, handle_receive_get_address, _1, _2);
+    return std::dynamic_pointer_cast<protocol_address>(protocol::shared_from_this());
+}
+
 // Start sequence.
 // ----------------------------------------------------------------------------
 
@@ -62,8 +69,6 @@ void protocol_address::start()
     if (settings.host_pool_capacity == 0)
         return;
 
-    SUBSCRIBE2(address, handle_receive_address, _1, _2);
-    SUBSCRIBE2(get_address, handle_receive_get_address, _1, _2);
     SEND2(get_address(), handle_send, _1, get_address::command);
 }
 
@@ -73,18 +78,18 @@ void protocol_address::remove_useless_address(address::ptr& message)
     const auto& settings = network_.network_settings();
     if(settings.self.port() != 0)
     {
-    	auto iter = std::find_if(addresses.begin(), addresses.end(), [&settings](const message::network_address& addr){
-    		if(config::authority{addr} == settings.self)
-    		{
-    			return true;
-    		}
-    		return false;
-    	});
+        auto iter = std::find_if(addresses.begin(), addresses.end(), [&settings](const message::network_address& addr){
+            if(config::authority{addr} == settings.self)
+            {
+                return true;
+            }
+            return false;
+        });
 
-    	if(iter != addresses.end())
-    	{
-    		addresses.erase(iter);
-    	}
+        if(iter != addresses.end())
+        {
+            addresses.erase(iter);
+        }
     }
 }
 
@@ -112,14 +117,14 @@ bool protocol_address::handle_receive_address(const code& ec,
 
 //    if (message->addresses.size() > 1000)
 //    {
-//    	return ! misbehaving(20);
+//        return ! misbehaving(20);
 //    }
     network_address::list addresses;
     addresses.reserve(message->addresses.size());
     for (auto& addr:message->addresses) {
-    	if (!channel::blacklisted(addr)) {
-    		addresses.push_back(addr);
-    	}
+        if (!channel::blacklisted(addr)) {
+            addresses.push_back(addr);
+        }
     }
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).
@@ -152,20 +157,20 @@ bool protocol_address::handle_receive_get_address(const code& ec,
     auto channel_authorithy = authority();
 
     auto iter = std::find_if(address_list.begin(), address_list.end(), [&channel_authorithy](const message::network_address& address){
-    	if(config::authority{address} == channel_authorithy)
-		{
-    		return true;
-		}
-    	return false;
+        if(config::authority{address} == channel_authorithy)
+        {
+            return true;
+        }
+        return false;
     });
     if(iter != address_list.end() )
     {
-    	address_list.erase(iter);
+        address_list.erase(iter);
     }
 
     if(address_list.empty())
     {
-    	return true;
+        return true;
     }
 //    if (self_.addresses.empty())
 //        return false;

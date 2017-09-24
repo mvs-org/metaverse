@@ -189,6 +189,11 @@ public:
             value<uint64_t>(&argument_.amount)->required(),
             "How many you will spend"
         )
+        (
+            "memo,m",
+            value<std::string>(&argument_.memo),
+            "The memo to descript transaction"
+        )
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -207,9 +212,12 @@ public:
 
     struct argument
     {
+        argument():address(""), memo("")
+		{};
         std::string address;
         uint64_t amount;
         uint64_t fee;
+        std::string memo;
     } argument_;
 
     struct option
@@ -228,7 +236,7 @@ public:
     static const char* symbol(){ return "sendmore";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "send etp to multi target addresses, can specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
+    const char* description() override { return "send etp to multi target addresses, must specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -299,6 +307,8 @@ public:
 
     struct argument
     {
+        argument():mychange_address("")
+        {};
         std::vector<std::string> receivers;
         std::string mychange_address;
         uint64_t fee;
@@ -383,6 +393,11 @@ public:
 			value<uint64_t>(&argument_.amount)->required(),
 			"How many you will spend"
 		)
+        (
+            "memo,m",
+            value<std::string>(&argument_.memo),
+            "The memo to descript transaction"
+        )
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -401,10 +416,14 @@ public:
 
     struct argument
     {
+    
+        argument():from(""), to(""), memo("")
+        {};
     	std::string from;
 		std::string to;
 		uint64_t amount;
 		uint64_t fee;
+        std::string memo;
     } argument_;
 
     struct option
@@ -624,6 +643,194 @@ public:
 
 };
 
+
+/************************ createmultisigtx *************************/
+
+class createmultisigtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "createmultisigtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "createmultisigtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("FROMADDRESS", 1)
+            .add("TOADDRESS", 1)
+            .add("AMOUNT", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
+        load_input(argument_.to, "TOADDRESS", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+		(
+			"FROMADDRESS",
+			value<std::string>(&argument_.from)->required(),
+			"Send from this address"
+		)
+		(
+			"TOADDRESS",
+			value<std::string>(&argument_.to)->required(),
+			"Send to this address"
+		)
+		(
+			"AMOUNT",
+			value<uint64_t>(&argument_.amount)->required(),
+			"How many you will spend"
+		)
+		(
+			"fee,f",
+			value<uint64_t>(&argument_.fee)->default_value(10000),
+			"The fee of tx. default_value 0.0001 etp"
+		)
+		;
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+    	std::string from;
+		std::string to;
+		uint64_t amount;
+		uint64_t fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+/************************ signmultisigtx *************************/
+
+class signmultisigtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "signmultisigtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "signmultisigtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("TRANSACTION", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+        (
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to sign."
+        )
+		(
+			"broadcast,b",
+            value<bool>(&argument_.send_flag)->zero_tokens(),
+			"Broadcast the tx if it is fullly signed."
+		);
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+		bool send_flag;
+        explorer::config::transaction transaction;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
 /************************ issue *************************/
 
 class issue: public command_extension
