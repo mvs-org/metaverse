@@ -1,4 +1,4 @@
 #!/bin/sh
-cd /opt/metaverse/bin
+cd /usr/local/bin
 
-exec /opt/metaverse/bin/mvsd
+exec /usr/local/bin/mvsd

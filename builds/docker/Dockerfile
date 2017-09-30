@@ -36,14 +36,9 @@ RUN mkdir -p ~/.metaverse && cd /tmp && git clone https://github.com/mvs-org/mvs
 RUN cd /tmp && git clone https://github.com/mvs-org/metaverse.git \
   && cd metaverse && mkdir build && cd build && cmake .. && make -j4 && make install
 
-RUN mkdir -p /opt/metaverse && cp -rf /tmp/metaverse/build/bin /opt/metaverse
+RUN mkdir -p ~/.metaverse
 
-COPY docker/entrypoint.sh /sbin
-RUN chmod +x /sbin/entrypoint.sh
-VOLUME ~/.metaverse
+VOLUME [~/.metaverse]
 
-# Add additional binaries into PATH for convenience
-ENV PATH=$PATH:/opt/metaverse/bin
-
-#EXPOSE 8820
-ENTRYPOINT ["/sbin/entrypoint.sh"]
+EXPOSE 8820
+ENTRYPOINT ["mvsd"]
