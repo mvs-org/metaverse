@@ -20,66 +20,60 @@
  */
 
 #include <metaverse/explorer/commands/fetch-height.hpp>
-
-#include <cstddef>
-#include <iostream>
-#include <metaverse/client.hpp>
 #include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/utility.hpp>
-
 
 namespace libbitcoin {
-namespace explorer {
-namespace commands {
-using namespace bc::client;
-using namespace bc::explorer::config;
+    namespace explorer {
+        namespace commands {
+            using namespace bc::client;
+            using namespace bc::explorer::config;
+            using namespace pt;
 
-console_result fetch_height::invoke(std::ostream& output, std::ostream& error)
-{
-    // Bound parameters.
-    const auto& server_url = get_server_url_argument();
-    const auto connection = get_connection(*this);
+            console_result fetch_height::invoke(std::ostream& output, std::ostream& error)
+            {
+                // Bound parameters.
+                const auto& server_url = get_server_url_argument();
+                const auto connection = get_connection(*this);
 
-    obelisk_client client(connection);
+                obelisk_client client(connection);
 
-    // For this command only, allow command line to override server config.
-    if (!server_url.empty())
-    {
-        if (!client.connect(server_url))
-        {
-            display_connection_failure(error, server_url);
-            return console_result::failure;
-        }
-    }
-    else
-    {
-        if (!client.connect(connection))
-        {
-            display_connection_failure(error, connection.server);
-            return console_result::failure;
-        }
-    }
+                // For this command only, allow command line to override server config.
+                if (!server_url.empty())
+                {
+                    if (!client.connect(server_url))
+                    {
+                        display_connection_failure(error, server_url);
+                        return console_result::failure;
+                    }
+                }
+                else
+                {
+                    if (!client.connect(connection))
+                    {
+                        display_connection_failure(error, connection.server);
+                        return console_result::failure;
+                    }
+                }
 
-    callback_state state(error, output);
+                callback_state state(error, output);
 
-    auto on_done = [&state](size_t height)
-    {
-        state.output(height);
-    };
+                auto on_done = [&state](size_t height)
+                {
+                    state.output(prop_tree(height));
+                };
 
-    auto on_error = [&state](const code& error)
-    {
-        state.succeeded(error);
-    };
+                auto on_error = [&state](const code& error)
+                {
+                    state.succeeded(error);
+                };
 
-    client.blockchain_fetch_last_height(on_error, on_done);
-    client.wait();
+                client.blockchain_fetch_last_height(on_error, on_done);
+                client.wait();
 
-    return state.get_result();
-}
+                return state.get_result();
+            }
 
-} //namespace commands 
-} //namespace explorer 
+        } //namespace commands
+    } //namespace explorer
 } //namespace libbitcoin 
