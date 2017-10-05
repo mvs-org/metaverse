@@ -37,7 +37,7 @@ You can run the `mvs-cli` commands via `docker exec` command. Example:
 docker exec metaverse mvs-cli getbestblockhash
 ```
 
-## Access Shell of Running EOS Container
+## Access Shell of Running Docker Container
 
 ```bash
 sudo docker exec -i -t metaverse /bin/bash
