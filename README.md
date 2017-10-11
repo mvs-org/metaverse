@@ -60,6 +60,7 @@ yum/apt-get/brew install automake/autoconf/libtool
 Module server/explorer required.
 ```bash
 wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
+tar -xzvf zeromq-4.2.1.tar.gz
 cd zeromq-4.2.1
 ./autogen.sh
 ./configure
