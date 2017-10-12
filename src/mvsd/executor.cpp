@@ -134,16 +134,9 @@ bool executor::do_initchain()
         return true;
     } else {
     	if(data_base::is_lower_database(data_path)) {
-	        auto genesis = consensus::miner::create_genesis_block(!metadata_.configured.chain.use_testnet_rules);
-	        const auto result = data_base::upgrade_database(metadata_.configured.database, *genesis);
-	        if (! result)
-	        	throw std::runtime_error{"reinitialize blockchain db failed"};
-			// init admin account
-			// set_admin();
-	        log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
-	        return true;
+            throw std::runtime_error{"lower blockchain db not compatible with mvsd. please download the newest mvsd with blockdata!"};
     	} else if(data_base::is_higher_database(data_path)) {
-			throw std::runtime_error{"blockchain db not compatible with mvsd. please download the newest mvsd and try!"};
+            throw std::runtime_error{"higher blockchain db not compatible with mvsd. please download the newest mvsd with blockdata!"};
 		} else {
 			// version equal nothing to do 
 		}
