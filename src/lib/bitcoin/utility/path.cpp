@@ -73,7 +73,11 @@ const boost::filesystem::path& default_data_path()
 
 boost::filesystem::path webpage_path()
 {
-	return default_data_path() / "mvs-htmls";
+#ifdef _MSC_VER
+    return "./mvs-htmls";
+#else
+    return default_data_path() / "mvs-htmls";
+#endif
 }
 
 }//namespace libbitcoin
