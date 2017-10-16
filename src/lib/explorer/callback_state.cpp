@@ -58,7 +58,8 @@ void callback_state::error(const ptree& tree)
 // std::endl adds "/n" and flushes the stream.
 void callback_state::error(const format& message)
 {
-    error_ << message << std::endl;
+    error_ << message;
+    error_.flush();
 }
 
 void callback_state::error(const std::string& message)
@@ -74,7 +75,8 @@ void callback_state::output(const pt::ptree& tree)
 // std::endl adds "/n" and flushes the stream.
 void callback_state::output(const format& message)
 {
-    output_ << message  << std::endl;
+    output_ << message;
+    output_.flush();
 }
 
 void callback_state::output(const std::string& message)
