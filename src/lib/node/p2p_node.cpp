@@ -171,6 +171,9 @@ bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
     if (stopped() || ec == (code)error::service_stopped)
         return false;
 
+    if (ec == (code)error::mock)
+        return true;
+
     if (ec)
     {
         log::error(LOG_NODE)

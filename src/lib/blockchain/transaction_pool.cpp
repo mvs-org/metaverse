@@ -343,6 +343,9 @@ bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
+    if (ec == error::mock)
+    	return true;
+
     if (ec)
     {
         log::debug(LOG_BLOCKCHAIN)

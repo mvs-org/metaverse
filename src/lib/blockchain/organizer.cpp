@@ -477,7 +477,7 @@ void organizer::notify_reorganize(uint64_t fork_point,
 
 void organizer::fired()
 {
-    subscriber_->relay(error::success, 0, {}, {});
+    subscriber_->relay(error::mock, 0, {}, {});//event to check whether service is stopped
 }
 
 std::unordered_map<hash_digest, uint64_t> organizer::get_fork_chain_last_block_hashes()
