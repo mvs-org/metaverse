@@ -162,10 +162,9 @@ void query_worker::query(zmq::socket& router)
         return;
     }
 
-    if (settings_.log_requests)
-        log::info(LOG_SERVER)
-            << "Query " << request.command() << " from "
-            << request.route().display();
+    log::info(LOG_SERVER)
+        << "Query " << request.command() << " from "
+        << request.route().display();
 
     // The query executor is the delegate bound by the attach method.
     const auto& query_execute = handler->second;
