@@ -150,6 +150,9 @@ bool block_service::handle_reorganization(const code& ec, uint64_t fork_point,
     if (stopped() || ec == (code)error::service_stopped)
         return false;
 
+    if (ec == error::mock)
+    	return true;
+
     if (ec)
     {
         log::warning(LOG_SERVER)
