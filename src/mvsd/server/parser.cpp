@@ -350,9 +350,9 @@ options_metadata parser::load_settings()
         "The maximum number of subscriptions, defaults to 100000000."
     )
     (
-        "server.log_requests",
-        value<bool>(&configured.server.log_requests),
-        "Write service requests to the log, defaults to false."
+        "server.log_level",
+        value<std::string>(&configured.server.log_level),
+        "Setup log level of debug log in level [TRACE,DEBUG,INFO], defaults to DEBUG."
     )
     (
         "server.secure_only",

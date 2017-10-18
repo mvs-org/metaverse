@@ -231,10 +231,9 @@ void block_service::publish_block(zmq::socket& publisher, uint32_t height,
     }
 
     // This isn't actually a request, should probably update settings.
-    if (settings_.log_requests)
-        log::debug(LOG_SERVER)
-            << "Published " << security << " block ["
-            << encode_hash(block->header.hash()) << "]";
+    log::debug(LOG_SERVER)
+        << "Published " << security << " block ["
+        << encode_hash(block->header.hash()) << "]";
 }
 
 } // namespace server

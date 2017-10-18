@@ -30,7 +30,7 @@ namespace libbitcoin {
 
 /// Set up global logging.
 BCT_API void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
-    std::ostream& output_stream, std::ostream& error_stream);
+    std::ostream& output_stream, std::ostream& error_stream, std::string level = "DEBUG");
 
 /// Class Logger
 class Logger{

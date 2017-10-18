@@ -144,9 +144,8 @@ void heartbeat_service::publish(uint32_t count, zmq::socket& publisher)
     }
 
     // This isn't actually a request, should probably update settings.
-    if (settings_.log_requests)
-        log::debug(LOG_SERVER)
-            << "Published " << security << " heartbeat [" << count << "].";
+    log::debug(LOG_SERVER)
+        << "Published " << security << " heartbeat [" << count << "].";
 }
 
 } // namespace server
