@@ -58,7 +58,7 @@ executor::executor(parser& metadata, std::istream& input,
     debug_file_((default_data_path() / metadata_.configured.network.debug_file).string(), append),
     error_file_((default_data_path() / metadata_.configured.network.error_file).string(), append)
 {
-    initialize_logging(debug_file_, error_file_, output, error);
+    initialize_logging(debug_file_, error_file_, output, error, metadata_.configured.server.log_level);
     handle_stop(initialize_stop);
 }
 

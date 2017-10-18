@@ -216,10 +216,9 @@ void transaction_service::publish_transaction(const transaction& tx)
     }
 
     // This isn't actually a request, should probably update settings.
-    if (settings_.log_requests)
-        log::debug(LOG_SERVER)
-            << "Published " << security << " transaction ["
-            << encode_hash(tx_msg.hash()) << "]";
+    log::debug(LOG_SERVER)
+        << "Published " << security << " transaction ["
+        << encode_hash(tx_msg.hash()) << "]";
 }
 
 } // namespace server
