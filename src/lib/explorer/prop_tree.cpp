@@ -22,6 +22,8 @@
 #include <metaverse/explorer/prop_tree.hpp>
 
 #include <metaverse/explorer/config/script.hpp>
+#include <json/minijson_writer.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace pt;
 using namespace bc::client;
@@ -540,10 +542,13 @@ namespace libbitcoin {
                 return tree;
             }
 
-            ptree prop_tree(const size_t height) {
-                ptree tree;
-                tree.put("height", height);
-                return tree;
+            std::string prop_tree(const size_t height) {
+
+                std::stringstream ss;
+                minijson::object_writer json_writer(ss);
+                json_writer.write("height", height);
+                json_writer.close();
+                return ss.str();
             }
 
 
