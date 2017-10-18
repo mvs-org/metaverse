@@ -232,7 +232,6 @@ void connector::handle_timer(const code& ec, socket::ptr socket,
    connect_handler handler)
 {
     // This is the end of the timer sequence.
-	bc::log::trace(NAME)<<"timer called here: "<<__func__;
     if (ec)
         handler(ec, nullptr);
     else
