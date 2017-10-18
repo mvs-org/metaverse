@@ -45,7 +45,7 @@ public:
     uint32_t subscription_expiration_minutes;
     uint32_t subscription_limit;
     std::string mongoose_listen;
-    bool log_requests{true}; //FIXME.chenhao
+    std::string log_level;
     bool secure_only;
 
     bool query_service_enabled;
