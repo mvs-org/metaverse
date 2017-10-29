@@ -18,7 +18,7 @@ Metaverse(MVS) is a decentralised system based on the blockchain technology, thr
 # MVS Project
 MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
 
-Further Read: [Developers Document](https://github.com/mvs-org/dev-docs)
+Further Read: [Wiki Documents](https://github.com/mvs-org/metaverse/wiki)
 
 # build MVS
 ## toolchain requirements:
