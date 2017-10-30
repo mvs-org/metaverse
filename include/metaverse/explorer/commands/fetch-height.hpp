@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
+#include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/explorer/command.hpp>
 #include <metaverse/explorer/define.hpp>
