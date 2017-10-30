@@ -640,8 +640,8 @@ console_result broadcasttx::invoke (std::ostream& output,
             throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
     pt::ptree aroot;
-    aroot.add_child("result", "success");
-    aroot.add_child("hash", encode_hash(tx_.hash()));
+    aroot.put("result", "success");
+    aroot.put("hash", encode_hash(tx_.hash()));
     pt::write_json(output, aroot);
     
     return console_result::okay;
