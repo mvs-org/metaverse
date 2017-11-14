@@ -180,6 +180,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<deletemultisig>());
     func(make_shared<createmultisigtx>());
     func(make_shared<signmultisigtx>());
+    func(make_shared<broadcasttx>());
     func(make_shared<getmemorypool>());
 }
 
@@ -323,6 +324,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<createmultisigtx>();
     if (symbol == signmultisigtx::symbol())
         return make_shared<signmultisigtx>();
+    if (symbol == broadcasttx::symbol())
+        return make_shared<broadcasttx>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
     if (symbol == sendassetfrom::symbol())

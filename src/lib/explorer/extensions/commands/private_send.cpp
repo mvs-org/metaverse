@@ -622,6 +622,31 @@ console_result sendassetfrom::invoke (std::ostream& output,
     return console_result::okay;
 }
 
+/************************ broadcasttx *************************/
+
+console_result broadcasttx::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+    auto& blockchain = node.chain_impl();
+    // get raw tx
+    std::ostringstream buffer;
+    pt::write_json(buffer, config::prop_tree(argument_.transaction, true));
+    log::trace("broadcasttx=") << buffer.str();
+    tx_type tx_ = argument_.transaction;
+    
+    if(blockchain.validate_transaction(tx_))
+            throw tx_validate_exception{std::string("validate transaction failure")};
+    if(blockchain.broadcast_transaction(tx_)) 
+            throw tx_broadcast_exception{std::string("broadcast transaction failure")};
+
+    pt::ptree aroot;
+    aroot.put("result", "success");
+    aroot.put("hash", encode_hash(tx_.hash()));
+    pt::write_json(output, aroot);
+    
+    return console_result::okay;
+}
+
 } //commands
 } // explorer
 } // libbitcoin
