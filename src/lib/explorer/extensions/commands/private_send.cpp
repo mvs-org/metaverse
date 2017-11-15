@@ -720,7 +720,7 @@ console_result signcommontx::invoke (std::ostream& output,
 
     // get raw tx
     std::ostringstream buffer;
-    pt::write_json(buffer, config::prop_tree(argument_.transaction, true));
+    pt::write_json(buffer, config::prop_tree(tx_, true));
     log::trace("signcommontx=") << buffer.str();
 
     if(blockchain.validate_transaction(tx_))
