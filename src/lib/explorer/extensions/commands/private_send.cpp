@@ -623,6 +623,29 @@ console_result sendassetfrom::invoke (std::ostream& output,
 }
 
 /************************ signcommontx *************************/
+// copy from src/lib/consensus/clone/script/script.h
+static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
+{
+    if(value == 0)
+        return std::vector<unsigned char>();
+
+    std::vector<unsigned char> result;
+    const bool neg = value < 0;
+    uint64_t absvalue = neg ? -value : value;
+
+    while(absvalue)
+    {
+        result.push_back(absvalue & 0xff);
+        absvalue >>= 8;
+    }
+
+    if (result.back() & 0x80)
+        result.push_back(neg ? 0x80 : 0);
+    else if (neg)
+        result.back() |= 0x80;
+
+    return result;
+}
 
 console_result signcommontx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -633,7 +656,7 @@ console_result signcommontx::invoke (std::ostream& output,
     tx_type tx_ = argument_.transaction;
     // sign tx
     {
-        //uint32_t index = 0;
+        uint32_t index = 0;
         chain::transaction tx_temp;
         uint64_t tx_height;  
         
@@ -689,6 +712,7 @@ console_result signcommontx::invoke (std::ostream& output,
             }
             // set input script of this tx
             tx_.inputs[index].script = ss;
+            //fromeach.script = ss;
             index++;
         }
 
