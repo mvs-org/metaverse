@@ -729,6 +729,10 @@ console_result signcommontx::invoke (std::ostream& output,
     pt::ptree aroot;
     aroot.put("result", "success");
     aroot.put("hash", encode_hash(tx_.hash()));
+    std::ostringstream tx_buf;
+    tx_buf << config::transaction(tx_);
+    aroot.put("content", tx_buf.str());
+    
     pt::write_json(output, aroot);
     
     return console_result::okay;
