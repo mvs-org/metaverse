@@ -622,7 +622,49 @@ console_result sendassetfrom::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-/************************ signcommontx *************************/
+/************************ createrawtx *************************/
+enum transaction_type : uint16_t
+{
+     transfer_etp = 1,
+     deposit_etp,
+     issue_asset,
+     transfer_asset,
+};
+
+console_result createrawtx::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+    auto& blockchain = node.chain_impl();
+    
+    uint16_t type;
+    std::vector<std::string> senders;
+    std::vector<std::string> receivers;
+    std::string symbol;
+    std::string mychange_address;
+    uint64_t fee;
+
+    if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
+        throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
+
+    for (auto& each : option_.senders){
+        // filter script address
+        if(blockchain.is_script_address(each))
+            throw fromaddress_invalid_exception{std::string("invalid address ") + each};
+    }
+    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
+    
+    send_helper.exec();
+
+    // json output
+    auto tx = send_helper.get_transaction();
+    pt::write_json(output, config::prop_tree(tx, true));
+    log::debug("command")<<"transaction="<<output.rdbuf();
+
+    return console_result::okay;
+}
+
+/************************ signrawtx *************************/
 // copy from src/lib/consensus/clone/script/script.h
 static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
 {
@@ -647,7 +689,7 @@ static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
     return result;
 }
 
-console_result signcommontx::invoke (std::ostream& output,
+console_result signrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -693,7 +735,7 @@ console_result signcommontx::invoke (std::ostream& output,
             if (!bc::chain::script::create_endorsement(endorse, private_key,
                 contract, tx_, index, hash_type))
             {
-                throw tx_sign_exception{"signcommontx sign failure"};
+                throw tx_sign_exception{"signrawtx sign failure"};
             }
 
             // do script
@@ -721,17 +763,16 @@ console_result signcommontx::invoke (std::ostream& output,
     // get raw tx
     std::ostringstream buffer;
     pt::write_json(buffer, config::prop_tree(tx_, true));
-    log::trace("signcommontx=") << buffer.str();
+    log::trace("signrawtx=") << buffer.str();
 
     if(blockchain.validate_transaction(tx_))
             throw tx_validate_exception{std::string("validate transaction failure")};
 
     pt::ptree aroot;
-    aroot.put("result", "success");
     aroot.put("hash", encode_hash(tx_.hash()));
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    aroot.put("content", tx_buf.str());
+    aroot.put("hex", tx_buf.str());
     
     pt::write_json(output, aroot);
     
