@@ -663,6 +663,18 @@ console_result createrawtx::invoke (std::ostream& output,
     return console_result::okay;
 }
 
+/************************ decoderawtx *************************/
+
+console_result decoderawtx::invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node)
+{
+    tx_type tx_ = argument_.transaction;    
+    pt::write_json(output, config::prop_tree(tx_, true));
+    
+    return console_result::okay;
+}
+
+
 /************************ signrawtx *************************/
 // copy from src/lib/consensus/clone/script/script.h
 static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
