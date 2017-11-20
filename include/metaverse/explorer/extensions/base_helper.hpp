@@ -156,13 +156,16 @@ class BCX_API base_transaction_constructor
 public:
 	base_transaction_constructor(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type, 
         std::vector<std::string>&& from_vec, std::vector<std::string>&& receiver_vec, std::string&& symbol, std::string&& mychange, 
-        uint64_t fee):
+        std::string&& message, uint64_t fee):
 		blockchain_{blockchain},
         type_{type},
 		from_vec_{from_vec},
 		receiver_vec_{receiver_vec},
+		symbol_{symbol},
+		mychange_{mychange},
+		message_{message},
 		payment_etp_{fee},
-		symbol_{symbol}
+		
 		{
 		};
 
@@ -199,14 +202,15 @@ public:
 protected:
 	tx_type                           tx_; // target transaction
 	bc::blockchain::block_chain_impl& blockchain_;
-	std::string 				      symbol_;
-	std::string                       mychange_;
     utxo_attach_type                  type_;
 	uint64_t					      payment_etp_{0};
 	uint64_t					      payment_asset_{0};
 	uint64_t                          unspent_etp_{0};
 	uint64_t                          unspent_asset_{0};
 	uint64_t                          tx_item_idx_{0};
+	std::string 				      symbol_;
+	std::string                       mychange_;
+    std::string                       message_;
     // to
     std::vector<receiver_record>      receiver_list_;
     std::vector<std::string>          receiver_vec_; // to address:amount vector

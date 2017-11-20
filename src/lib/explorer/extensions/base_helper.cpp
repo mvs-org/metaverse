@@ -1233,6 +1233,10 @@ void base_transaction_constructor::populate_change() {
     if(unspent_asset_ - payment_asset_)
         receiver_list_.push_back({mychange_, symbol_, 0, unspent_asset_ - payment_asset_,
     utxo_attach_type::asset_transfer, attachment()});
+
+    if(!message_.empty()) // etp transfer/asset transfer  -- with message
+        receiver_list_.push_back({mychange_, "", 0, 0, 
+        utxo_attach_type::message, attachment()}); 
 }
 
 void base_transaction_constructor::populate_unspent_list() {
@@ -1289,7 +1293,7 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
         //std::shared_ptr<asset_detail>
         //auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         //if(!sh_asset)
-            //throw asset_symbol_notfound_exception{symbol_ + " not found"};
+        throw tx_attachment_value_exception{"not support this utxo type"};
         
         //sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         //auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
@@ -1299,8 +1303,7 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::message) {
-        auto msg = boost::get<bc::chain::blockchain_message>(record.attach_elem.get_attach());
-        return attachment(MESSAGE_TYPE, attach_version, msg);
+        return attachment(MESSAGE_TYPE, attach_version, bc::chain::blockchain_message(message_));
     }
 
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
@@ -1353,49 +1356,6 @@ void base_transaction_constructor::check_tx(){
     }
 }
 
-void base_transaction_constructor::sign_tx_inputs(){
-    uint32_t index = 0;
-    for (auto& fromeach : from_list_){
-        // paramaters
-        explorer::config::hashtype sign_type;
-        uint8_t hash_type = (signature_hash_algorithm)sign_type;
-
-        bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        const ec_secret& private_key =    config_private_key;    
-        bc::wallet::ec_private ec_private_key(private_key, 0u, true);
-
-        bc::explorer::config::script config_contract(fromeach.script);
-        const bc::chain::script& contract = config_contract;
-
-        // gen sign
-        bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, private_key,
-            contract, tx_, index, hash_type))
-        {
-            throw tx_sign_exception{"get_input_sign sign failure"};
-        }
-
-        // do script
-        auto&& public_key = ec_private_key.to_public();
-        data_chunk public_key_data;
-        public_key.to_data(public_key_data);
-        bc::chain::script ss;
-        ss.operations.push_back({bc::chain::opcode::special, endorse});
-        ss.operations.push_back({bc::chain::opcode::special, public_key_data});
-        
-        // if pre-output script is deposit tx.
-        if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
-            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                contract.operations);
-            ss.operations.push_back({bc::chain::opcode::special, satoshi_to_chunk(lock_height)});
-        }
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-
-}
-
 void base_transaction_constructor::exec(){  
     // prepare 
     sum_payment_amount();
@@ -1409,30 +1369,6 @@ void base_transaction_constructor::exec(){
 }
 tx_type& base_transaction_constructor::get_transaction(){
     return tx_;
-}
-
-// copy from src/lib/consensus/clone/script/script.h
-std::vector<unsigned char> base_transaction_constructor::satoshi_to_chunk(const int64_t& value)
-{
-    if(value == 0)
-        return std::vector<unsigned char>();
-
-    std::vector<unsigned char> result;
-    const bool neg = value < 0;
-    uint64_t absvalue = neg ? -value : value;
-
-    while(absvalue)
-    {
-        result.push_back(absvalue & 0xff);
-        absvalue >>= 8;
-    }
-
-    if (result.back() & 0x80)
-        result.push_back(neg ? 0x80 : 0);
-    else if (neg)
-        result.back() |= 0x80;
-
-    return result;
 }
 
 const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};

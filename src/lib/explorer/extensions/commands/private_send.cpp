@@ -623,26 +623,12 @@ console_result sendassetfrom::invoke (std::ostream& output,
 }
 
 /************************ createrawtx *************************/
-enum transaction_type : uint16_t
-{
-     transfer_etp = 1,
-     deposit_etp,
-     issue_asset,
-     transfer_asset,
-};
 
 console_result createrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     
-    uint16_t type;
-    std::vector<std::string> senders;
-    std::vector<std::string> receivers;
-    std::string symbol;
-    std::string mychange_address;
-    uint64_t fee;
-
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
         throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
 
@@ -651,15 +637,28 @@ console_result createrawtx::invoke (std::ostream& output,
         if(blockchain.is_script_address(each))
             throw fromaddress_invalid_exception{std::string("invalid address ") + each};
     }
-    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
+
+    auto type = static_cast<utxo_attach_type>(option_.type);
+    base_transaction_constructor send_helper;
+    if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
+        send_helper = base_transaction_constructor(blockchain, type, 
+                std::move(senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
+                std::move(option_.message), option_.fee);
+    } else {
+        throw argument_invalid_exception{"invalid transaction type."};
+    }
     
     send_helper.exec();
 
     // json output
-    auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    log::debug("command")<<"transaction="<<output.rdbuf();
+    auto tx_ = send_helper.get_transaction();
+
+    pt::ptree aroot;
+    std::ostringstream tx_buf;
+    tx_buf << config::transaction(tx_);
+    aroot.put("hex", tx_buf.str());
+    
+    pt::write_json(output, aroot);
 
     return console_result::okay;
 }
