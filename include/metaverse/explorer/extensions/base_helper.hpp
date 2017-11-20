@@ -30,12 +30,12 @@ namespace commands{
 // output attachment type
 enum utxo_attach_type : uint32_t
 {
-	etp,
+	etp,  // 0
 	deposit,
 	asset_issue,
 	asset_transfer,
 	asset_locked_issue,
-	asset_locked_transfer,
+	asset_locked_transfer,  // 5
 	message,
 	digital_identity
 };

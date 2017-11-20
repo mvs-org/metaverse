@@ -1411,7 +1411,7 @@ public:
 		(
 			"type,t",
 			value<uint16_t>(&option_.type)->required(),
-			"Transaction type. 1 -- transfer etp, 2 -- deposit etp, 3 -- issue asset, 4 -- transfer asset"
+			"Transaction type. 0 -- transfer etp, 3 -- transfer asset, 6 -- just only send message"
 		)
 		(
 			"senders,s",
@@ -1432,6 +1432,11 @@ public:
             "mychange,m",
             value<std::string>(&option_.mychange_address),
             "Mychange to this address, includes etp and asset change"
+        )
+        (
+            "message,i",
+            value<std::string>(&option_.mychange_address),
+            "Message/Information attached to this transaction"
         )
         (
             "fee,f",
@@ -1463,6 +1468,7 @@ public:
 		std::vector<std::string> receivers;
 		std::string symbol;
         std::string mychange_address;
+        std::string message;
 		uint64_t fee;
 		
     } option_;

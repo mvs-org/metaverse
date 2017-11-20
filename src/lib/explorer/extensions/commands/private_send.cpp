@@ -628,6 +628,7 @@ console_result createrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
+    tx_type tx_;
     
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
         throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
@@ -638,6 +639,7 @@ console_result createrawtx::invoke (std::ostream& output,
             throw fromaddress_invalid_exception{std::string("invalid address ") + each};
     }
 
+    auto type = static_cast<utxo_attach_type>(option_.type);
     // receiver
     receiver_record record;
     std::vector<receiver_record> receivers;
@@ -655,26 +657,23 @@ console_result createrawtx::invoke (std::ostream& output,
             record.amount = 0;
             record.asset_amount = item.second();
         }
-        record.type = option_.type;
+        record.type = type;
         if (!record.amount)
             throw argument_legality_exception{std::string("invalid amount parameter ") + each};
         receivers.push_back(record);
     }
 
-    auto type = static_cast<utxo_attach_type>(option_.type);
-    base_transaction_constructor send_helper;
     if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
-        send_helper = base_transaction_constructor(blockchain, type, 
+        auto send_helper = base_transaction_constructor(blockchain, type, 
                 std::move(option_.senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
                 std::move(option_.message), option_.fee);
+
+        send_helper.exec();
+        tx_ = send_helper.get_transaction();
     } else {
-        throw argument_invalid_exception{"invalid transaction type."};
+        throw argument_legality_exception{"invalid transaction type."};
     }
     
-    send_helper.exec();
-
-    // json output
-    auto tx_ = send_helper.get_transaction();
 
     pt::ptree aroot;
     std::ostringstream tx_buf;
