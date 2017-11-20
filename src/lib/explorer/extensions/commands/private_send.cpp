@@ -631,18 +631,41 @@ console_result createrawtx::invoke (std::ostream& output,
     
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
         throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
-
+    // senders check
     for (auto& each : option_.senders){
         // filter script address
         if(blockchain.is_script_address(each))
             throw fromaddress_invalid_exception{std::string("invalid address ") + each};
     }
 
+    // receiver
+    receiver_record record;
+    std::vector<receiver_record> receivers;
+    for( auto& each : option_.receivers){
+        colon_delimited2_item<std::string, uint64_t> item(each);
+        record.target = item.first();
+        // address check
+        if (!blockchain.is_valid_address(record.target))
+            throw toaddress_invalid_exception{std::string("invalid address ") + record.target};
+        record.symbol = option_.symbol;
+        if(record.symbol.empty()) {
+            record.amount = item.second(); // etp amount
+            record.asset_amount = 0;
+        } else {
+            record.amount = 0;
+            record.asset_amount = item.second();
+        }
+        record.type = option_.type;
+        if (!record.amount)
+            throw argument_legality_exception{std::string("invalid amount parameter ") + each};
+        receivers.push_back(record);
+    }
+
     auto type = static_cast<utxo_attach_type>(option_.type);
     base_transaction_constructor send_helper;
     if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
         send_helper = base_transaction_constructor(blockchain, type, 
-                std::move(senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
+                std::move(option_.senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
                 std::move(option_.message), option_.fee);
     } else {
         throw argument_invalid_exception{"invalid transaction type."};
