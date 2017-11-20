@@ -1061,8 +1061,8 @@ void base_transaction_constructor::sum_payment_amount() {
     
     for( auto& each : receiver_list_){
         // sum etp and asset amount
-        payment_etp_ += record.amount;
-        payment_asset_ += record.asset_amount;
+        payment_etp_ += each.amount;
+        payment_asset_ += each.asset_amount;
     }
 
 }
