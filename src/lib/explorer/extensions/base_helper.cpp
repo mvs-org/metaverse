@@ -1054,32 +1054,12 @@ std::vector<unsigned char> base_transfer_helper::satoshi_to_chunk(const int64_t&
 void base_transaction_constructor::sum_payment_amount() {
     if(from_vec_.empty())
         throw fromaddress_empty_exception{"empty from address"};
-    if(receiver_vec_.empty())
+    if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
     if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
         throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
     
-    // receiver
-    receiver_record record;
-    for( auto& each : receiver_vec_){
-        colon_delimited2_item<std::string, uint64_t> item(each);
-        record.target = item.first();
-        // address check
-        if (!blockchain.is_valid_address(record.target))
-            throw toaddress_invalid_exception{std::string("invalid address ") + record.target};
-        record.symbol = symbol_;
-        if(symbol_.empty()) {
-            record.amount = item.second(); // etp amount
-            record.asset_amount = 0;
-        } else {
-            record.amount = 0;
-            record.asset_amount = item.second();
-        }
-        record.type = type_;
-        if (!record.amount)
-            throw argument_legality_exception{std::string("invalid amount parameter!") + each};
-        receiver_list_.push_back(record);
-        
+    for( auto& each : receiver_list_){
         // sum etp and asset amount
         payment_etp_ += record.amount;
         payment_asset_ += record.asset_amount;
