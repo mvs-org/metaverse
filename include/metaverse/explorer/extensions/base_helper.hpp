@@ -30,12 +30,12 @@ namespace commands{
 // output attachment type
 enum utxo_attach_type : uint32_t
 {
-	etp,
+	etp,  // 0
 	deposit,
 	asset_issue,
 	asset_transfer,
 	asset_locked_issue,
-	asset_locked_transfer,
+	asset_locked_transfer,  // 5
 	message,
 	digital_identity
 };
@@ -149,6 +149,71 @@ protected:
     std::vector<receiver_record>      receiver_list_;
     // from
     std::vector<address_asset_record>   from_list_;// put xxx.first as keys_inputs_ key
+};
+
+class BCX_API base_transaction_constructor 
+{
+public:
+	base_transaction_constructor(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type, 
+        std::vector<std::string>&& from_vec, std::vector<receiver_record>&& receiver_list, std::string&& symbol, std::string&& mychange, 
+        std::string&& message, uint64_t fee):
+		blockchain_{blockchain},
+        type_{type},
+		from_vec_{from_vec},
+		receiver_list_{receiver_list},
+		symbol_{symbol},
+		mychange_{mychange},
+		message_{message},
+		payment_etp_{fee}
+		{
+		};
+
+	virtual ~base_transaction_constructor(){
+		receiver_list_.clear();
+        from_vec_.clear();
+		from_list_.clear();
+	};
+
+	static const uint64_t maximum_fee{10000000000};
+	static const uint64_t minimum_fee{10000};
+	static const uint64_t tx_limit{677};
+	static const uint64_t attach_version{1};
+	
+	virtual void sum_payment_amount();
+	virtual void sync_fetchutxo (const std::string& addr);
+	virtual void populate_unspent_list();
+	virtual void populate_change(); 
+
+	virtual void populate_tx_header(){
+	    tx_.version = transaction_version::max_version - 1;
+	    tx_.locktime = 0;
+	};
+
+	virtual void populate_tx_inputs();
+	virtual attachment populate_output_attachment(receiver_record& record);
+	virtual void populate_tx_outputs();
+	virtual void check_tx();
+	virtual void exec();
+	tx_type& get_transaction();
+	std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
+			
+protected:
+	tx_type                           tx_; // target transaction
+	bc::blockchain::block_chain_impl& blockchain_;
+    utxo_attach_type                  type_;
+	uint64_t					      payment_etp_{0};
+	uint64_t					      payment_asset_{0};
+	uint64_t                          unspent_etp_{0};
+	uint64_t                          unspent_asset_{0};
+	uint64_t                          tx_item_idx_{0};
+	std::string 				      symbol_;
+	std::string                       mychange_;
+    std::string                       message_;
+    // to
+    std::vector<receiver_record>      receiver_list_;
+    // from
+    std::vector<address_asset_record> from_list_;// put xxx.first as keys_inputs_ key
+    std::vector<std::string>          from_vec_; // from address vector
 };
 
 
