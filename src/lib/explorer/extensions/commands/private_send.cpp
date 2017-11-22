@@ -628,6 +628,8 @@ console_result createrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
+    blockchain.uppercase_symbol(option_.symbol);
+
     tx_type tx_;
     
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
@@ -653,13 +655,15 @@ console_result createrawtx::invoke (std::ostream& output,
         if(record.symbol.empty()) {
             record.amount = item.second(); // etp amount
             record.asset_amount = 0;
+            if (!record.amount)
+                throw argument_legality_exception{std::string("invalid amount parameter ") + each};
         } else {
             record.amount = 0;
             record.asset_amount = item.second();
+            if (!record.asset_amount)
+                throw argument_legality_exception{std::string("invalid asset amount parameter ") + each};
         }
         record.type = type;
-        if (!record.amount)
-            throw argument_legality_exception{std::string("invalid amount parameter ") + each};
         receivers.push_back(record);
     }
 
