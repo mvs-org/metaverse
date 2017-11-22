@@ -1435,7 +1435,7 @@ public:
         )
         (
             "message,i",
-            value<std::string>(&option_.mychange_address),
+            value<std::string>(&option_.message),
             "Message/Information attached to this transaction"
         )
         (
