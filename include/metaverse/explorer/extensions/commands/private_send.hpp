@@ -1621,15 +1621,15 @@ public:
 
 };
 
-/************************ broadcasttx *************************/
+/************************ sendrawtx *************************/
 
-class broadcasttx: public command_extension
+class sendrawtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "broadcasttx";}
+    static const char* symbol(){ return "sendrawtx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "broadcasttx "; }
+    const char* description() override { return "sendrawtx "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -1663,6 +1663,11 @@ public:
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
             "The input Base16 transaction to broadcast."
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(1000000000),
+            "The max tx fee. default_value 10 etp"
         );
 
         return options;
@@ -1678,6 +1683,7 @@ public:
     struct argument
     {
         explorer::config::transaction transaction;
+        uint64_t                      fee;
     } argument_;
 
     struct option
