@@ -213,6 +213,10 @@ console_result listtxs::invoke (std::ostream& output,
                 pt_output.put("own", false);
             pt_output.put("address", addr);
             pt_output.put("script", script(op.script).to_string(1));
+            uint64_t lock_height = 0;
+            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
+                lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
+            pt_output.put("locked_height_range", lock_height);
             pt_output.put("etp-value", op.value);
             //pt_output.add_child("attachment", prop_list(op.attach_data));
             ////////////////////////////////////////////////////////////
