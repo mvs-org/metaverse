@@ -229,7 +229,10 @@ ptree prop_list(const tx_output_type& tx_output)
         tree.put("address", address);
 
     tree.put("script", script(tx_output.script).to_string());
-
+    uint64_t lock_height = 0;
+    if(chain::operation::is_pay_key_hash_with_lock_height_pattern(tx_output.script.operations))
+        lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(tx_output.script.operations);
+    tree.put("locked_height_range", lock_height);
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
@@ -259,7 +262,10 @@ ptree prop_list(const tx_output_type& tx_output, uint32_t index)
         tree.put("address", address);
 
     tree.put("script", script(tx_output.script).to_string());
-
+    uint64_t lock_height = 0;
+    if(chain::operation::is_pay_key_hash_with_lock_height_pattern(tx_output.script.operations))
+        lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(tx_output.script.operations);
+    tree.put("locked_height_range", lock_height);
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
