@@ -1961,6 +1961,28 @@ bool block_chain_impl::get_history(const wallet::payment_address& address,
 	
 }
 
+bool block_chain_impl::get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val) 
+{
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    etp_val = 0;
+    
+    for (auto& each : tx.inputs) {
+                
+        if (get_transaction(each.previous_output.hash, tx_temp, tx_height)) {
+            auto output = tx_temp.outputs.at(each.previous_output.index);
+            etp_val += output.value;
+        } else {
+            log::debug("get_tx_inputs_etp_value=")<<each.to_string(true);
+            return false;
+        }
+    
+    }
+    
+    return true;
+    
+}
+
 
 } // namespace blockchain
 } // namespace libbitcoin

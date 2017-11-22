@@ -183,7 +183,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<createrawtx>());
     func(make_shared<decoderawtx>());
     func(make_shared<signrawtx>());
-    func(make_shared<broadcasttx>());
+    func(make_shared<sendrawtx>());
     func(make_shared<getmemorypool>());
 }
 
@@ -333,8 +333,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<decoderawtx>();
     if (symbol == signrawtx::symbol())
         return make_shared<signrawtx>();
-    if (symbol == broadcasttx::symbol())
-        return make_shared<broadcasttx>();
+    if (symbol == sendrawtx::symbol())
+        return make_shared<sendrawtx>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
     if (symbol == sendassetfrom::symbol())

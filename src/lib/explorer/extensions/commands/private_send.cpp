@@ -816,25 +816,30 @@ console_result signrawtx::invoke (std::ostream& output,
     return console_result::okay;
 }
 
-/************************ broadcasttx *************************/
+/************************ sendrawtx *************************/
 
-console_result broadcasttx::invoke (std::ostream& output,
+console_result sendrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // get raw tx
     std::ostringstream buffer;
     pt::write_json(buffer, config::prop_tree(argument_.transaction, true));
-    log::trace("broadcasttx=") << buffer.str();
+    log::trace("sendrawtx=") << buffer.str();
     tx_type tx_ = argument_.transaction;
-    
+
+    // max transfer fee check
+    uint64_t inputs_etp_val = 0, outputs_etp_val = tx_.total_output_value();
+    if(!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
+        throw tx_validate_exception{std::string("get transaction inputs etp value error!")};
+    if((inputs_etp_val - outputs_etp_val) > argument_.fee) //  fee more than max limit etp
+        throw tx_validate_exception{std::string("invalid tx fee")};
     if(blockchain.validate_transaction(tx_))
-            throw tx_validate_exception{std::string("validate transaction failure")};
+        throw tx_validate_exception{std::string("validate transaction failure")};
     if(blockchain.broadcast_transaction(tx_)) 
-            throw tx_broadcast_exception{std::string("broadcast transaction failure")};
+        throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
     pt::ptree aroot;
-    aroot.put("result", "success");
     aroot.put("hash", encode_hash(tx_.hash()));
     pt::write_json(output, aroot);
     
