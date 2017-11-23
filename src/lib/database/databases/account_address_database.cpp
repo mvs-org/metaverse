@@ -151,6 +151,18 @@ void account_address_database::store(const short_hash& key, const account_addres
 		}
 	}
 }
+
+void account_address_database::safe_store(const short_hash& key, const account_address& address)
+{
+    // actually store
+    auto write = [&address](memory_ptr data)
+    {
+        auto serial = make_serializer(REMAP_ADDRESS(data));
+        serial.write_data(address.to_data());
+    };
+    rows_multimap_.add_row(key, write);
+}
+
 void account_address_database::delete_last_row(const short_hash& key)
 {
     rows_multimap_.delete_last_row(key);
