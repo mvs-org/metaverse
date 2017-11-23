@@ -56,101 +56,94 @@ console_result getnewaddress::invoke (std::ostream& output,
     const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
     std::stringstream sout("");
     std::istringstream sin(mnemonic);
+    std::vector<std::string> words;
+    words.reserve(24);
 
-    auto exec_with = [&](int i){
-        sin.str(sout.str());
-        sout.str("");
-        return dispatch_command(1, cmds + i, sin, sout, sout);
-    };
+    //split mnemonic to words
+    string::size_type pos1, pos2;
+    std::string c{" "};
+    pos2 = mnemonic.find(c);
+    pos1 = 0;
+    while(string::npos != pos2)
+    {
+        words.push_back(mnemonic.substr(pos1, pos2-pos1));
+
+        pos1 = pos2 + c.size();
+        pos2 = mnemonic.find(c, pos1);
+    }
+    if(pos1 != mnemonic.length())
+        words.push_back(mnemonic.substr(pos1));
+    //end split
+
+    if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
+        return console_result::failure;
+    }
+
 
     uint32_t idx = 0;
     pt::ptree aroot;
     pt::ptree addresses;
-     
+
+    std::vector<std::shared_ptr<account_address>> account_addresses;
+    account_addresses.reserve(option_.count);
+    const auto seed = decode_mnemonic(words);
+    libbitcoin::config::base16 bs(seed);
+    const data_chunk& ds = static_cast<const data_chunk&>(bs);
+    const auto prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);//76066276 is HD private key version
+    const bc::wallet::hd_private private_key(ds, prefixes);
+    // mainnet payment address version
+    auto payment_version = 50;
+
+    if (blockchain.chain_settings().use_testnet_rules){
+         // testnetpayment address version
+         payment_version = 127;
+    }
 
     for ( idx = 0; idx < option_.count; idx++ ) {
 
         auto addr = std::make_shared<bc::chain::account_address>();
         addr->set_name(auth_.name);
-        
-        sout.str("");
-        sin.str(mnemonic);
-        if (dispatch_command(1, cmds + 0, sin, sout, sout) != console_result::okay) {
-            throw mnemonicwords_to_seed_exception(sout.str());
-        }
-        relay_exception(sout);
-        
-        if (exec_with(1) != console_result::okay) {
-            throw hd_new_exception(sout.str());
-        }
-         
-        relay_exception(sout);
 
-        auto&& argv_index = std::to_string(acc->get_hd_index());
-        const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
-        sin.str(sout.str());
-        sout.str("");
+        const auto child_private_key = private_key.derive_private(acc->get_hd_index());
+        auto hk = child_private_key.encoded();
 
-        if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) {
-            throw hd_private_new_exception(sout.str());
-        }
-         
-        relay_exception(sout);
+        // Create the private key from hd_key and the public version.
+        const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
+        auto pk = encode_base16(derive_private_key.secret());
 
-        if (exec_with(2) != console_result::okay) {
-            throw hd_to_ec_exception(sout.str());
-        }
-         
-        relay_exception(sout);
-
-        addr->set_prv_key(sout.str(), auth_.auth);
+        addr->set_prv_key(pk.c_str(), auth_.auth);
         // not store public key now
-        if (exec_with(3) != console_result::okay) {
-            throw ec_to_public_exception(sout.str());
-        }
-         
-        relay_exception(sout);
+        ec_compressed point;
+        libbitcoin::secret_to_public(point, derive_private_key.secret());
+
+        // Serialize to the original compression state.
+        auto ep =  ec_public(point, true);
 
         //addr->set_pub_key(sout.str());
 
-        // testnet
-        if (blockchain.chain_settings().use_testnet_rules){
-            const char* cmds_tn[]{"ec-to-address", "-v", "127"};
-            sin.str(sout.str());
-            sout.str("");
-            if (dispatch_command(3, cmds_tn, sin, sout, sout) != console_result::okay) {
-                throw ec_to_address_exception(sout.str());
-            }
-             
-            relay_exception(sout);
+        payment_address pa(ep, payment_version);
 
-        // mainnet
-        } else {
-            if (exec_with(4) != console_result::okay) {
-                throw ec_to_address_exception(sout.str());
-            }
-             
-            relay_exception(sout);
-        }
-
-        addr->set_address(sout.str());
+        addr->set_address(pa.encoded());
         addr->set_status(1); // 1 -- enable address
         //output<<sout.str();
 
         acc->increase_hd_index();
         addr->set_hd_index(acc->get_hd_index());
-        blockchain.store_account(acc);
-        blockchain.store_account_address(addr);
+        account_addresses.push_back(addr);
+
         // write to output json
         pt::ptree address;
-        address.put("", sout.str());
+        address.put("", addr->get_address());
         addresses.push_back(std::make_pair("", address));
+        if(option_.count == 1)
+            output<<addr->get_address();
     }
-    
+
+    blockchain.safe_store_account(*acc, account_addresses);
+
     aroot.add_child("addresses", addresses);
-    if(option_.count == 1)
-        output<<sout.str();
-    else
+
+    if(option_.count != 1)
         pt::write_json(output, aroot);
     
     return console_result::okay;
