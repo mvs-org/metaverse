@@ -99,7 +99,7 @@ void session_manual::start_connect(const std::string& hostname, uint16_t port,
 
     // MANUAL CONNECT OUTBOUND
     connector->connect(hostname, port,
-        BIND6(handle_connect, _1, _2, hostname, port, handler, retries));
+        BIND6(handle_connect, _1, _2, hostname, port, handler, retries - 1));
 }
 
 void session_manual::handle_connect(const code& ec, channel::ptr channel,
@@ -108,22 +108,31 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::warning(LOG_NETWORK)
+        log::debug(LOG_NETWORK)
             << "Failure connecting [" << config::endpoint(hostname, port)
             << "] manually: " << ec.message();
 
+        auto shared_this = shared_from_base<session_manual>();
+        const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
+        
         // Retry logic.
-        if (settings_.manual_attempt_limit == 0)
-            start_connect(hostname, port, handler, 0);
-        else if (retries > 0)
-            start_connect(hostname, port, handler, retries - 1);
+        if (settings_.manual_attempt_limit == 0) {
+            timer->start(std::bind([shared_this, hostname, port, handler]() {
+                shared_this->start_connect(hostname, port, handler, 0);
+            }));
+        }
+        else if (retries > 0) {
+            timer->start(std::bind([shared_this, hostname, port, handler, retries]() {
+                shared_this->start_connect(hostname, port, handler, retries);
+            }));
+        }
         else
             handler(ec, nullptr);
 
         return;
     }
 
-    log::info(LOG_NETWORK)
+    log::debug(LOG_NETWORK)
         << "Connected manual channel [" << config::endpoint(hostname, port)
         << "] as [" << channel->authority() << "]";
 
@@ -139,7 +148,7 @@ void session_manual::handle_channel_start(const code& ec,
     // Treat a start failure just like a stop, but preserve the start handler.
     if (ec)
     {
-        log::info(LOG_NETWORK)
+        log::debug(LOG_NETWORK)
             << "Manual channel failed to start [" << channel->authority()
             << "] " << ec.message();
 
@@ -150,7 +159,6 @@ void session_manual::handle_channel_start(const code& ec,
             return;
         }
 
-        connect(hostname, port, handler);
         return;
     }
 
@@ -174,7 +182,14 @@ void session_manual::handle_channel_stop(const code& ec,
     log::debug(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
-    connect(hostname, port);
+    if (stopped() || (ec.value() == error::service_stopped))
+        return;
+
+    auto shared_this = shared_from_base<session_manual>();
+    const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
+    timer->start(std::bind([shared_this, hostname, port]() {
+        shared_this->connect(hostname, port);
+    }));   
 }
 
 } // namespace network
