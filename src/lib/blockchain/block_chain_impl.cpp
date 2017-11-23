@@ -1983,6 +1983,23 @@ bool block_chain_impl::get_tx_inputs_etp_value (chain::transaction& tx, uint64_t
     
 }
 
+void block_chain_impl::safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses)
+{
+    if (stopped())
+        return;
+
+    for(auto& address:addresses) {
+        const auto hash = get_short_hash(address->get_name());
+        database_.account_addresses.safe_store(hash, *address);
+    }
+
+    const auto hash = get_hash(acc.get_name());
+    database_.accounts.store(hash, acc);
+    database_.account_addresses.sync();
+    database_.accounts.sync();
+
+}
+
 
 } // namespace blockchain
 } // namespace libbitcoin
