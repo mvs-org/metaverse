@@ -294,6 +294,7 @@ public:
 	code validate_transaction(const chain::transaction& tx);
 	code broadcast_transaction(const chain::transaction& tx);
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
+    void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
