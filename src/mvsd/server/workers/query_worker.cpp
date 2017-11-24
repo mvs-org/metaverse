@@ -162,7 +162,7 @@ void query_worker::query(zmq::socket& router)
         return;
     }
 
-    log::info(LOG_SERVER)
+    log::debug(LOG_SERVER)
         << "Query " << request.command() << " from "
         << request.route().display();
 
