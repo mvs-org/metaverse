@@ -335,6 +335,16 @@ options_metadata parser::load_settings()
 		"Whether wallet needs administrator to execute non-account commands(shutdown/getinfo...), defaults to false."
 	)
     (
+        "server.mongoose_listen",
+        value<std::string>(&configured.server.mongoose_listen),
+        "the listening port for mongoose, defaults to 127.0.0.1:8820."
+    )
+    (
+        "server.ws_stream_listen",
+        value<std::string>(&configured.server.ws_stream_listen),
+        "the listening port for websocket stream, defaults to 127.0.0.1:8821."
+    )
+    (
         "server.query_workers",
         value<uint16_t>(&configured.server.query_workers),
         "The number of query worker threads per endpoint, defaults to 1."

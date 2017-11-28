@@ -60,7 +60,8 @@ server_node::server_node(const configuration& configuration)
     secure_notification_worker_(authenticator_, *this, true),
     public_notification_worker_(authenticator_, *this, false),
     miner_(*this),
-	rest_server_(new mgbubble::RestServ(webpage_path_.string().data(), *this))
+    rest_server_(new mgbubble::RestServ(webpage_path_.string().data(), *this)),
+    push_server_(new mgbubble::WsPushServ(*this))
 {
 }
 
@@ -139,7 +140,7 @@ void server_node::handle_running(const code& ec, result_handler handler)
     return;
     }
 
-    if (!start_services())
+    if (!start_services() || !push_server_->start())
     {
         handler(error::operation_failed);
         return;
