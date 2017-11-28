@@ -19,8 +19,7 @@
 
 #include <atomic>
 #include <metaverse/bitcoin.hpp>
-
-#include <mongoose/mongoose.h>
+#include <metaverse/mgbubble/WsServer.hpp>
 
 namespace libbitcoin {
     namespace server {
@@ -29,46 +28,38 @@ namespace libbitcoin {
 }
 
 namespace mgbubble {
-class WsPushServ {
+class WsPushServ : public WsServer {
     typedef bc::chain::point::indexes index_list;
+    typedef WsServer base;
+
 public:
-    WsPushServ(libbitcoin::server::server_node& node) : node_(node), nc_(nullptr), running_(false)
+    explicit WsPushServ(libbitcoin::server::server_node& node, const std::string& srv_addr)
+        : node_(node), WsServer(srv_addr)
     {
-        mg_mgr_init(&mgr_, this);
+        if (nc_)
+        {
+            nc_->flags |= MG_F_USER_1;
+        }
     }
 
-    virtual ~WsPushServ()
-    {
-        mg_mgr_free(&mgr_);
-    }
-
-    bool start();
+    bool start() override;
 
 private:
-    void run();
+    void run() override;
 
     bool handle_transaction(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
 
     void publish_transaction(const bc::chain::transaction& tx);
 
-    void on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg);
-    void on_ws_handshake_done_handler(struct mg_connection& nc);
-    void on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg);
-    void on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg);
-    void on_timer_handler(struct mg_connection& nc);
-    void on_close_handler(struct mg_connection& nc);
-    void on_broadcast(struct mg_connection& nc, const struct mg_str& msg);
+    void on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg) override;
+    void on_ws_handshake_done_handler(struct mg_connection& nc) override;
+    void on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg) override;
+    void on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg) override;
+    void on_timer_handler(struct mg_connection& nc) override;
+    void on_close_handler(struct mg_connection& nc) override;
+    void on_broadcast(struct mg_connection& nc, int ev, void *ev_data) override;
 
 private:
-    static void ev_broadcast(struct mg_connection *nc, int ev, void *ev_data);
-    static void ev_handler(struct mg_connection *nc, int ev, void *ev_data);
-
-private:
-    struct mg_mgr mgr_;
-    struct mg_connection *nc_;
-    struct mg_serve_http_opts s_http_server_opts_;
-
-    std::atomic<bool> running_;
     libbitcoin::server::server_node& node_;
 };
 }
