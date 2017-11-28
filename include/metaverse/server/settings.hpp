@@ -45,6 +45,7 @@ public:
     uint32_t subscription_expiration_minutes;
     uint32_t subscription_limit;
     std::string mongoose_listen;
+    std::string ws_stream_listen;
     std::string log_level;
     bool administrator_required;
     bool secure_only;

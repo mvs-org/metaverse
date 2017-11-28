@@ -42,6 +42,7 @@
 
 namespace mgbubble{
     class RestServ;
+    class WsPushServ;
 }
 namespace libbitcoin {
 namespace server {
@@ -122,6 +123,7 @@ private:
     void run_mongoose();
     consensus::miner miner_;
     boost::shared_ptr<mgbubble::RestServ> rest_server_;
+    boost::shared_ptr<mgbubble::WsPushServ> push_server_;
     // These are thread safe.
     authenticator authenticator_;
     query_service secure_query_service_;

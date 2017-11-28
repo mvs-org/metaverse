@@ -1,0 +1,135 @@
+
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+<style>
+p {
+	margin: 0.5em;
+	padding: 0.5em;
+	border-radius: 0.2em;
+       transition: opacity 0.4s ease-out;
+	opacity: 0;
+	white-space: pre-wrap;
+}
+
+p.show {
+	opacity: 1;
+}
+
+body {
+	height: 100vh;
+	margin: 0;
+	background-color: #FFFFFF;
+	display: flex;
+	flex-direction: column;
+	font-family: 'Roboto', sans-serif;
+	font-size: 16px;
+}
+
+textarea {
+	padding: 1em;
+	border: none;
+	outline: none;
+	border-top: 1px solid black;
+	font-family: 'Roboto', sans-serif;
+	font-size: 16px;
+	height: 8em;
+	min-height: 5em;
+}
+
+#messagesPanel {
+	border-top: 1px solid black;
+	overflow-y: scroll;
+	color: black;
+	flex: 1;
+}
+
+#statusBar {
+	background-color: white;
+	height: 2em;
+	min-height: 2em;
+	font-size: 16px;
+	font-family: 'Roboto', sans-serif;
+	justify-content: center;
+	align-items: center;
+	display: flex;
+}
+</style>
+<script>
+var messagesPanel, typedMessage, first = true, ws, id;
+var messages = [];
+function main() {
+	messagesPanel = document.getElementById("messagesPanel");
+	typedMessage = document.getElementById("typedMessage");
+	id = Math.floor(Math.random() * 1000000);
+	typedMessage.onkeydown = function(e) {
+		if (e.keyCode === 13 && !e.shiftKey) {
+			if (typedMessage.value.length) {
+				typedMessage.value = typedMessage.value.substring();
+				addMessage(id, typedMessage.value, false);
+				ws.send(typedMessage.value);
+			}
+			//typedMessage.value = "";
+			return false;
+		}
+		return true;
+	};
+
+	typedMessage.onclick = function() {
+		if (first) {
+			typedMessage.value = '{event: "subscribe", channel: "tx.monitor", "addresses":[]}';
+			first = false;
+		}
+	}
+
+	ws = new WebSocket("ws://127.0.0.1:8821/ws");
+	ws.onopen = function(event) {  
+		statusBar.textContent = 'metaverse websocket playground' ;
+		typedMessage.disabled = false;
+		console.log("connected");
+        };  
+	ws.onmessage = function(e) {
+		var incomingId = Math.floor(Math.random() * 100000);
+		if (! typedMessage.disabled) {
+			addMessage(incomingId, e.data.substring(), true);
+		}
+	};
+
+	ws.onclose = function() {
+		statusBar.textContent = 'Connection lost';
+		typedMessage.disabled = true;
+	};
+}
+
+function addMessage(id, message, left) {
+	var flexBox = document.createElement('div');
+	flexBox.style = 'display: flex; ' + (left ? '' : 'justify-content: flex-end');
+
+	var messageBox = document.createElement('p');
+	messageBox.style = "background-color: hsl(" + (id / 16 * 360) + ", 100%, 50%); overflow: hidden; text-overflow: ellipsis;";
+	messageBox.textContent = message;
+	
+	flexBox.appendChild(messageBox);
+	if (messages.length == 50) {
+		messagesPanel.removeChild(messages.shift());
+	}
+	messages.push(flexBox);
+	setTimeout(function() {
+		messageBox.className = "show";
+	}, 10);
+
+	var wereBottomScrolled = true;
+	messagesPanel.appendChild(flexBox);
+	if (wereBottomScrolled) {
+		messagesPanel.scrollTop = messagesPanel.scrollHeight;
+	}
+}
+</script>
+</head>
+	<body onload="main();">
+		<div id="statusBar">Connecting...</div>
+		<div id="messagesPanel"></div>
+		<textarea id="typedMessage" disabled>Type your message here...</textarea>
+	</body>
+</html>
