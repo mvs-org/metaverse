@@ -26,32 +26,23 @@ using namespace std::placeholders;
 
 bool WsPushServ::start()
 {
-    const char* svr_addr = node_.server_settings().ws_stream_listen.c_str();
-    nc_ = mg_bind(&mgr_, svr_addr, ev_handler);
     if (!nc_)
         return false;
 
-    nc_->flags |= MG_F_USER_1;
-    mg_set_protocol_http_websocket(nc_);
-    mg_set_timer(nc_, mg_time() + 0.1);
-
     node_.subscribe_stop([this](const libbitcoin::code& ec) { running_ = false; });
-    std::thread([this]() { this->run(); }).detach();
-    return true;
+    mg_set_timer(nc_, mg_time() + 0.1);
+    
+    return base::start();
 }
 
 void WsPushServ::run() {
-    bc::log::info(NAME) << "WsPushServ listen on " << node_.server_settings().ws_stream_listen;
+    bc::log::info(NAME) << "WsPushServ listen on " << svr_addr_;
     
     node_.subscribe_transaction_pool(
         std::bind(&WsPushServ::handle_transaction,
             this, _1, _2, _3));
     
-    running_ = true;
-    while (running_)
-    {
-        mg_mgr_poll(&mgr_, 1000);
-    }
+    base::run();
 }
 
 bool WsPushServ::handle_transaction(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx)
@@ -106,7 +97,7 @@ void WsPushServ::on_timer_handler(struct mg_connection& nc)
     if (nc.flags & MG_F_USER_1)
     {
         mg_set_timer(&nc, mg_time() + 0.1);
-        std::thread([this](){ mg_broadcast(&mgr_, ev_broadcast, "b", 1); }).detach();        
+        std::thread([this](){ mg_broadcast(&mgr_, base::ev_broadcast, "b", 1); }).detach();        
     }
 }
 
@@ -118,7 +109,7 @@ void WsPushServ::on_close_handler(struct mg_connection& nc)
     }
 }
 
-void WsPushServ::on_broadcast(struct mg_connection& nc, const struct mg_str& msg)
+void WsPushServ::on_broadcast(struct mg_connection& nc, int ev, void *ev_data)
 {
     if (nc.flags & MG_F_USER_1)
         return;
@@ -132,52 +123,6 @@ void WsPushServ::on_broadcast(struct mg_connection& nc, const struct mg_str& msg
     snprintf(buf, sizeof(buf), "%s %s", addr, ping);
 
     mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, ping, strlen(ping));
-}
-
-void WsPushServ::ev_broadcast(struct mg_connection *nc, int ev, void *ev_data)
-{
-    auto* self = dynamic_cast<WsPushServ*>(static_cast<WsPushServ*>(nc->mgr->user_data));
-    if (!self)
-        return;
-    struct mg_str d = { (char *)ev_data, 1 };
-    self->on_broadcast(*nc, d);
-}
-
-void WsPushServ::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
-{
-    auto* self = dynamic_cast<WsPushServ*>(static_cast<WsPushServ*>(nc->mgr->user_data));
-    if (!self)
-        return;
-    switch (ev)
-    {
-    case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST: {
-        struct http_message *msg = (struct http_message *)ev_data;   
-        self->on_ws_handshake_req_handler(*nc, *msg);
-        break;
-    }
-    case MG_EV_WEBSOCKET_HANDSHAKE_DONE: {
-        self->on_ws_handshake_done_handler(*nc);
-        break;
-    }
-    case MG_EV_WEBSOCKET_FRAME: {
-        struct websocket_message *msg = (struct websocket_message *)ev_data;
-        self->on_ws_frame_handler(*nc, *msg);
-        break;
-    }
-    case MG_EV_WEBSOCKET_CONTROL_FRAME: {
-        struct websocket_message *msg = (struct websocket_message *)ev_data;
-        self->on_ws_ctrlf_handler(*nc, *msg);
-        break;
-    }
-    case MG_EV_TIMER: {
-        self->on_timer_handler(*nc);
-        break;
-    }
-    case MG_EV_CLOSE: {
-        self->on_close_handler(*nc);
-        break;
-    }
-    }
 }
 
 }

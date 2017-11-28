@@ -61,7 +61,7 @@ server_node::server_node(const configuration& configuration)
     public_notification_worker_(authenticator_, *this, false),
     miner_(*this),
     rest_server_(new mgbubble::RestServ(webpage_path_.string().data(), *this)),
-    push_server_(new mgbubble::WsPushServ(*this))
+    push_server_(new mgbubble::WsPushServ(*this, configuration.server.ws_stream_listen))
 {
 }
 
