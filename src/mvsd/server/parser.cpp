@@ -340,9 +340,9 @@ options_metadata parser::load_settings()
         "the listening port for mongoose, defaults to 127.0.0.1:8820."
     )
     (
-        "server.ws_stream_listen",
-        value<std::string>(&configured.server.ws_stream_listen),
-        "the listening port for websocket stream, defaults to 127.0.0.1:8821."
+        "server.websocket_listen",
+        value<std::string>(&configured.server.websocket_listen),
+        "the listening port for websocket pub/sub service, defaults to 127.0.0.1:8821."
     )
     (
         "server.query_workers",
@@ -393,6 +393,11 @@ options_metadata parser::load_settings()
         "server.transaction_service_enabled",
         value<bool>(&configured.server.transaction_service_enabled),
         "Enable the transaction publishing service, defaults to false."
+    )
+    (
+        "server.websocket_service_enabled",
+        value<bool>(&configured.server.websocket_service_enabled),
+        "Enable the websocket pub/sub service, defaults to false."
     )
     (
         "server.public_query_endpoint",
