@@ -33,6 +33,7 @@ public:
         nc_ = mg_bind(&mgr_, svr_addr_.c_str(), ev_handler);
         if (nc_ != nullptr)
         {
+            nc_->flags |= MG_F_USER_1; // mark as listen socket
             mg_set_protocol_http_websocket(nc_);
         }
     }
@@ -43,6 +44,24 @@ public:
     }
 
     virtual bool start();
+    virtual void stop();
+    bool stopped() { return running_ == false; }
+    bool is_websocket(const struct mg_connection& nc) const { return !!(nc.flags & MG_F_IS_WEBSOCKET); }
+    bool is_listen_socket(const struct mg_connection& nc) const { return !!(nc.flags & MG_F_USER_1); }
+
+    // DO NOT CALL IN WsServer Worker Thread
+    // on_broadcast called after broadcasted
+    // max buffer is 8k (mongoose default)
+    bool broadcast(const std::string& msg);
+    bool broadcast(const char* msg, size_t len);
+
+    // ONLY CALLED IN WsServer Worker Thread
+    bool send(struct mg_connection& nc, const std::string& msg, bool binary = false);
+    bool send(struct mg_connection& nc, const char* msg, size_t len, bool binary = false);
+
+protected:
+    struct mg_mgr& mg_mgr() { return mgr_; }
+    struct mg_connection& mg_listen() { return *nc_; }
 
 protected:
     virtual void run();
@@ -53,7 +72,9 @@ protected:
     virtual void on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg);
     virtual void on_timer_handler(struct mg_connection& nc);
     virtual void on_close_handler(struct mg_connection& nc);
-    virtual void on_broadcast(struct mg_connection& nc, int ev, void *ev_data);
+
+    // called for each connection after broadcast
+    virtual void on_broadcast(struct mg_connection& nc, const char* ev_data);
 
     virtual void ev_handler_default(struct mg_connection *nc, int ev, void *ev_data);
 
@@ -61,13 +82,14 @@ protected:
     static void ev_broadcast(struct mg_connection *nc, int ev, void *ev_data);
     static void ev_handler(struct mg_connection *nc, int ev, void *ev_data);
 
-protected:
+private:
     struct mg_mgr mgr_;
     struct mg_connection *nc_;
     struct mg_serve_http_opts s_http_server_opts_;
 
     std::string svr_addr_;
     std::atomic<bool> running_;
+    std::shared_ptr<std::thread> worker_;
 };
 }
 

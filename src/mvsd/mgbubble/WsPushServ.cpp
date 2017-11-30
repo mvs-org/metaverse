@@ -17,112 +17,156 @@
 
 #include <thread>
 #include <functional>
+#include <boost/property_tree/json_parser.hpp>
 #include <metaverse/mgbubble/WsPushServ.hpp>
 #include <metaverse/server/server_node.hpp>
+#include <metaverse/explorer/prop_tree.hpp>
 
-#define NAME "PUSH"
-namespace mgbubble {
-using namespace std::placeholders;
-
-bool WsPushServ::start()
-{
-    if (!nc_)
-        return false;
-
-    node_.subscribe_stop([this](const libbitcoin::code& ec) { running_ = false; });
-    mg_set_timer(nc_, mg_time() + 0.1);
-    
-    return base::start();
+namespace std {
+    using namespace std::placeholders;
 }
 
+namespace mgbubble {
+using namespace bc;
+using namespace libbitcoin;
+
 void WsPushServ::run() {
-    bc::log::info(NAME) << "WsPushServ listen on " << svr_addr_;
-    
+    log::info(NAME) << "WsPushServ listen on " << node_.server_settings().ws_stream_listen;
+
+    node_.subscribe_stop([this](const libbitcoin::code& ec) { stop(); });
+
     node_.subscribe_transaction_pool(
-        std::bind(&WsPushServ::handle_transaction,
-            this, _1, _2, _3));
+        std::bind(&WsPushServ::handle_transaction_pool,
+            this, std::_1, std::_2, std::_3));
     
+    node_.subscribe_blockchain(
+        std::bind(&WsPushServ::handle_blockchain_reorganization,
+            this, std::_1, std::_2, std::_3, std::_4));
+
     base::run();
 }
 
-bool WsPushServ::handle_transaction(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx)
+bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, message::transaction_message::ptr tx)
 {
-    if (!running_)
+    if (stopped())
         return false;
+    if (ec == (code)error::mock)
+    {
+        return true;
+    }
     if (ec)
     {
-        bc::log::info(NAME)
+        log::info(NAME)
             << "Failure handling new transaction: " << ec.message();
         return true;
     }
 
-    publish_transaction(*tx);
+    notify_transaction(0, null_hash, *tx);
     return true;
 }
 
-void WsPushServ::publish_transaction(const bc::chain::transaction& tx)
+bool WsPushServ::handle_blockchain_reorganization(const code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&)
 {
-    bc::message::transaction_message tx_msg(tx);
-    std::stringstream otx;
-    tx_msg.to_data(bc::message::version::level::maximum, otx);
-    bc::log::info(NAME) << "publish TX: " << otx.str();
+    if (stopped() || ec == (code)error::service_stopped)
+        return false;
+
+    if (ec)
+    {
+        log::warning(NAME)
+            << "Failure handling new block: " << ec.message();
+
+        return true;
+    }
+
+    const auto fork_point32 = static_cast<uint32_t>(fork_point);
+
+    notify_blocks(fork_point32, new_blocks);
+    return true;
 }
 
-void WsPushServ::on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg)
+void WsPushServ::notify_blocks(uint32_t fork_point, const block_list& blocks)
 {
-    if (memcmp(msg.uri.p, "/ws", 3) != 0 || (msg.uri.len > 3 && msg.uri.p[3] != '/')) {
-        nc.flags |= MG_F_SEND_AND_CLOSE;
+    if (stopped())
+        return;
+    
+    auto height = fork_point;
+
+    for (const auto block : blocks)
+        notify_block(height++, block);
+}
+
+void WsPushServ::notify_block(uint32_t height, const block::ptr block)
+{
+    if (stopped())
+        return;
+
+    const auto block_hash = block->header.hash();
+
+    for (const auto& tx : block->transactions)
+    {
+        const auto tx_hash = tx.hash();
+
+        notify_transaction(height, block_hash, tx);
     }
 }
 
+void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_hash, const transaction& tx)
+{
+    if (stopped() || tx.outputs.empty())
+        return;
+
+    for (const auto& input : tx.inputs)
+    {
+        const auto address = payment_address::extract(input.script);
+
+        if (address)
+        {
+            notify_payment(address, height, block_hash, tx);
+        }
+    }
+
+    for (const auto& output : tx.outputs)
+    {
+        const auto address = payment_address::extract(output.script);
+
+        if (address)
+        {
+            notify_payment(address, height, block_hash, tx);
+        }
+    }
+}
+
+void WsPushServ::notify_payment(const wallet::payment_address& address, uint32_t height, const hash_digest& block_hash, const chain::transaction& tx)
+{
+    std::stringstream ss;
+    pt::write_json(ss, explorer::config::prop_list(tx, block_hash, address, true));
+
+    broadcast(ss.str());
+}
+
+
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
-    //mg_set_timer(&nc, mg_time() + 1);
 }
 
 // {event: "subscribe", channel: "tx.monitor", "addresses":[]}
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
 {
-    struct mg_str d = { (char *)msg.data, msg.size };
-    bc::log::info(NAME) << std::string(d.p, d.len);
-    mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, msg.data, msg.size);
-}
-
-void WsPushServ::on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg)
-{
-}
-
-void WsPushServ::on_timer_handler(struct mg_connection& nc)
-{
-    if (nc.flags & MG_F_USER_1)
-    {
-        mg_set_timer(&nc, mg_time() + 0.1);
-        std::thread([this](){ mg_broadcast(&mgr_, base::ev_broadcast, "b", 1); }).detach();        
-    }
 }
 
 void WsPushServ::on_close_handler(struct mg_connection& nc)
 {
-    if (nc.flags & MG_F_IS_WEBSOCKET)
+    if (is_websocket(nc))
     {
-
     }
 }
 
-void WsPushServ::on_broadcast(struct mg_connection& nc, int ev, void *ev_data)
+void WsPushServ::on_broadcast(struct mg_connection& nc, const char* ev_data)
 {
-    if (nc.flags & MG_F_USER_1)
+    if (is_listen_socket(nc))
         return;
 
-    struct mg_connection *c;
-    char buf[500];
-    char addr[32];
-    static const char* ping = "{\"event\":\"ping\"}";
-
-    mg_sock_addr_to_str(&nc.sa, addr, sizeof(addr), MG_SOCK_STRINGIFY_IP | MG_SOCK_STRINGIFY_PORT);
-    snprintf(buf, sizeof(buf), "%s %s", addr, ping);
-
-    mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, ping, strlen(ping));
+    send(nc, ev_data, strlen(ev_data));
 }
 
 }
