@@ -38,6 +38,8 @@ public:
         : node_(node), WsServer(srv_addr)
     {}
 
+    bool start() override;
+
 protected:
     bool handle_blockchain_reorganization(const bc::code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&);
     bool handle_transaction_pool(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
@@ -46,8 +48,6 @@ protected:
     void notify_block(uint32_t height, const bc::chain::block::ptr block);
 
     void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
-
-    void notify_payment(const bc::wallet::payment_address& address, uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
 
 protected:
     void run() override;

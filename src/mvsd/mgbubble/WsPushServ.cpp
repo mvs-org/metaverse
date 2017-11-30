@@ -16,6 +16,7 @@
 */
 
 #include <thread>
+#include <sstream>
 #include <functional>
 #include <boost/property_tree/json_parser.hpp>
 #include <metaverse/mgbubble/WsPushServ.hpp>
@@ -27,11 +28,23 @@ namespace std {
 }
 
 namespace mgbubble {
+    constexpr auto EV_VERSION    = "version";
+    constexpr auto EV_SUBSCRIBE  = "subscribe";
+    constexpr auto EV_SUBSCRIBED = "subscribed";
+    constexpr auto EV_PUBLISH    = "publish";
+    constexpr auto EV_REQUEST    = "request";
+    constexpr auto EV_RESPONSE   = "response";
+
+    constexpr auto CH_BLOCK       = "block";
+    constexpr auto CH_TRANSACTION = "tx";
+}
+namespace mgbubble {
 using namespace bc;
+using namespace pt;
 using namespace libbitcoin;
 
 void WsPushServ::run() {
-    log::info(NAME) << "WsPushServ listen on " << node_.server_settings().ws_stream_listen;
+    log::info(NAME) << "Websocket Service listen on " << node_.server_settings().websocket_listen;
 
     node_.subscribe_stop([this](const libbitcoin::code& ec) { stop(); });
 
@@ -46,18 +59,23 @@ void WsPushServ::run() {
     base::run();
 }
 
+bool WsPushServ::start()
+{
+    if (node_.server_settings().websocket_service_enabled == false)
+        return true;
+
+    return base::start();
+}
+
 bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, message::transaction_message::ptr tx)
 {
     if (stopped())
         return false;
-    if (ec == (code)error::mock)
-    {
+    if (ec == (code)error::mock || ec == (code)error::service_stopped)
         return true;
-    }
     if (ec)
     {
-        log::info(NAME)
-            << "Failure handling new transaction: " << ec.message();
+        log::debug(NAME) << "Failure handling new transaction: " << ec.message();
         return true;
     }
 
@@ -67,14 +85,13 @@ bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, mess
 
 bool WsPushServ::handle_blockchain_reorganization(const code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped())
         return false;
-
+    if (ec == (code)error::mock || ec == (code)error::service_stopped)
+        return true;
     if (ec)
     {
-        log::warning(NAME)
-            << "Failure handling new block: " << ec.message();
-
+        log::debug(NAME) << "Failure handling new block: " << ec.message();
         return true;
     }
 
@@ -115,43 +132,27 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     if (stopped() || tx.outputs.empty())
         return;
 
-    for (const auto& input : tx.inputs)
-    {
-        const auto address = payment_address::extract(input.script);
-
-        if (address)
-        {
-            notify_payment(address, height, block_hash, tx);
-        }
-    }
-
-    for (const auto& output : tx.outputs)
-    {
-        const auto address = payment_address::extract(output.script);
-
-        if (address)
-        {
-            notify_payment(address, height, block_hash, tx);
-        }
-    }
-}
-
-void WsPushServ::notify_payment(const wallet::payment_address& address, uint32_t height, const hash_digest& block_hash, const chain::transaction& tx)
-{
     std::stringstream ss;
-    pt::write_json(ss, explorer::config::prop_list(tx, block_hash, address, true));
+    ptree root;
+    root.put("event", EV_PUBLISH);
+    root.put("channel", CH_TRANSACTION);
+    root.add_child("result", explorer::config::prop_list(tx, height, true));
+    write_json(ss, root);
 
+    bc::log::info(NAME) << " ******** notify_payment: height [" << height << "]  ******** ";
     broadcast(ss.str());
 }
 
 
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
+    std::string version("{\"event\": \"version\", " "\"result\": \"" MVS_VERSION "\"}");
+    send(nc, version);
 }
 
-// {event: "subscribe", channel: "tx.monitor", "addresses":[]}
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
 {
+    base::on_ws_frame_handler(nc, msg);
 }
 
 void WsPushServ::on_close_handler(struct mg_connection& nc)
