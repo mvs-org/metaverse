@@ -27,15 +27,61 @@ bool WsServer::start()
 {
     if (!nc_)
         return false;
+    if (running_)
+        return true;
 
-    std::thread([this]() { this->run(); }).detach();
+    running_ = true;
+    worker_ = std::make_shared<std::thread>([this]() { this->run(); });
+    return !!worker_;
+}
+
+void WsServer::stop()
+{
+    if (running_) {
+        running_ = false;
+        if (!!worker_)
+            worker_->join();
+    }
+}
+
+bool WsServer::broadcast(const std::string& msg)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_broadcast(&mgr_, ev_broadcast, (void*)(msg.data()), msg.size() + 1);
+    return true;
+}
+
+bool WsServer::broadcast(const char* msg, size_t len)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_broadcast(&mgr_, ev_broadcast, (void*)(msg), len + 1);
+    return true;
+}
+
+bool WsServer::send(struct mg_connection& nc, const std::string& msg, bool binary)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_send_websocket_frame(&nc, (binary ? WEBSOCKET_OP_BINARY : WEBSOCKET_OP_TEXT), (void*)(msg.data()), msg.size());
+    return true;
+}
+
+bool WsServer::send(struct mg_connection& nc, const char* msg, size_t len, bool binary)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_send_websocket_frame(&nc, (binary ? WEBSOCKET_OP_BINARY : WEBSOCKET_OP_TEXT), (void*)(msg), len);
     return true;
 }
 
 void WsServer::run() {
     bc::log::info(NAME) << "WsServer Started.";
-
-    running_ = true;
     while (running_)
     {
         mg_mgr_poll(&mgr_, 1000);
@@ -75,7 +121,7 @@ void WsServer::on_close_handler(struct mg_connection& nc)
 {
 }
 
-void WsServer::on_broadcast(struct mg_connection& nc, int ev, void *ev_data)
+void WsServer::on_broadcast(struct mg_connection& nc, const char* ev_data)
 {
 }
 
@@ -90,7 +136,7 @@ void WsServer::ev_broadcast(struct mg_connection *nc, int ev, void *ev_data)
     if (!self)
         return;
 
-    self->on_broadcast(*nc, ev, ev_data);
+    self->on_broadcast(*nc, (const char*)ev_data);
 }
 
 void WsServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)

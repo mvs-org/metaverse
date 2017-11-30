@@ -30,34 +30,32 @@ namespace libbitcoin {
 namespace mgbubble {
 class WsPushServ : public WsServer {
     typedef bc::chain::point::indexes index_list;
+    typedef bc::message::block_message::ptr_list block_list;
     typedef WsServer base;
 
 public:
     explicit WsPushServ(libbitcoin::server::server_node& node, const std::string& srv_addr)
         : node_(node), WsServer(srv_addr)
-    {
-        if (nc_)
-        {
-            nc_->flags |= MG_F_USER_1;
-        }
-    }
+    {}
 
-    bool start() override;
+protected:
+    bool handle_blockchain_reorganization(const bc::code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&);
+    bool handle_transaction_pool(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
 
-private:
+    void notify_blocks(uint32_t fork_point, const block_list& blocks);
+    void notify_block(uint32_t height, const bc::chain::block::ptr block);
+
+    void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
+
+    void notify_payment(const bc::wallet::payment_address& address, uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
+
+protected:
     void run() override;
 
-    bool handle_transaction(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
-
-    void publish_transaction(const bc::chain::transaction& tx);
-
-    void on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg) override;
     void on_ws_handshake_done_handler(struct mg_connection& nc) override;
     void on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg) override;
-    void on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg) override;
-    void on_timer_handler(struct mg_connection& nc) override;
     void on_close_handler(struct mg_connection& nc) override;
-    void on_broadcast(struct mg_connection& nc, int ev, void *ev_data) override;
+    void on_broadcast(struct mg_connection& nc, const char* ev_data) override;
 
 private:
     libbitcoin::server::server_node& node_;
