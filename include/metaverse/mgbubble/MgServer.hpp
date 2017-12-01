@@ -56,8 +56,12 @@ public:
     bool broadcast(const std::string& msg);
     bool broadcast(const char* msg, size_t len);
 
+    void set_document_root(const char* root) { s_http_server_opts_.document_root = root; }
+
 protected:
     // ONLY CALLED IN WsServer Worker Thread
+    bool send(struct mg_connection& nc, const std::string& msg, bool close_required = false);
+    bool send(struct mg_connection& nc, const char* msg, size_t len, bool close_required = false);
     bool send_frame(struct mg_connection& nc, const std::string& msg, bool binary = false);
     bool send_frame(struct mg_connection& nc, const char* msg, size_t len, bool binary = false);
 
@@ -68,6 +72,7 @@ protected:
 protected:
     virtual void run();
 
+    virtual void on_http_req_handler(struct mg_connection& nc, http_message& msg);
     virtual void on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg);
     virtual void on_ws_handshake_done_handler(struct mg_connection& nc);
     virtual void on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg);

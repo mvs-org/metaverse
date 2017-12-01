@@ -40,7 +40,7 @@ settings::settings()
     heartbeat_service_enabled(false),
     block_service_enabled(false),
     transaction_service_enabled(false),
-    websocket_service_enabled(true),
+    websocket_service_enabled(false),
     public_query_endpoint("tcp://*:9091"),
     public_heartbeat_endpoint("tcp://*:9092"),
     public_block_endpoint("tcp://*:9093"),
