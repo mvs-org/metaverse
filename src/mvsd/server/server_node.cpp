@@ -81,10 +81,12 @@ const settings& server_node::server_settings() const
 
 void server_node::run_mongoose()
 {
+    std::shared_ptr<mg_connection> listen_sock;
     try
     {
         // bind
         auto& conn = rest_server_->bind(configuration_.server.mongoose_listen.c_str());
+        listen_sock.reset(&conn, [](mg_connection*) {});
 
         // init for websocket and seesion control
         mg_set_protocol_http_websocket(&conn);
@@ -99,14 +101,18 @@ void server_node::run_mongoose()
     {
         throw std::runtime_error("can not listen on " + configuration_.server.mongoose_listen);
     }
-    log::info(LOG_SERVER) << "http server listen on (" << configuration_.server.mongoose_listen << ")";;
+    log::info(LOG_SERVER) << "http server listen on (" << configuration_.server.mongoose_listen << ")";
 
     // for open ui
     if (configuration_.ui)
         open_ui();
     // run
-    for (;;)
+    for (;!stopped();)
         rest_server_->poll(1000);
+
+    // cancel timer, otherwise check_sessions will be called after RestServ deconstractor
+    if(listen_sock)
+        mg_set_timer(listen_sock.get(), 0);
 }
 
 // Run sequence.
@@ -145,7 +151,9 @@ void server_node::handle_running(const code& ec, result_handler handler)
         handler(error::operation_failed);
         return;
     }
-    std::thread httpserver(std::bind(&server_node::run_mongoose, this));
+
+    auto rest_server = rest_server_;
+    std::thread httpserver([rest_server, this]() { run_mongoose(); });
     httpserver.detach();
 
     // This is the end of the derived run sequence.
