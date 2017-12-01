@@ -139,7 +139,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root.add_child("result", explorer::config::prop_list(tx, height, true));
     write_json(ss, root);
 
-    bc::log::info(NAME) << " ******** notify_payment: height [" << height << "]  ******** ";
+    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
     broadcast(ss.str());
 }
 
@@ -147,7 +147,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
     std::string version("{\"event\": \"version\", " "\"result\": \"" MVS_VERSION "\"}");
-    send(nc, version);
+    send_frame(nc, version);
 }
 
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
@@ -167,7 +167,7 @@ void WsPushServ::on_broadcast(struct mg_connection& nc, const char* ev_data)
     if (is_listen_socket(nc))
         return;
 
-    send(nc, ev_data, strlen(ev_data));
+    send_frame(nc, ev_data, strlen(ev_data));
 }
 
 }

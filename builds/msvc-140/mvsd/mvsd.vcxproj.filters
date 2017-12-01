@@ -143,7 +143,7 @@
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\WsPushServ.cpp">
       <Filter>Source Files\mgbubble</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\mvsd\mgbubble\WsServer.cpp">
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\MgServer.cpp">
       <Filter>Source Files\mgbubble</Filter>
     </ClCompile>
   </ItemGroup>

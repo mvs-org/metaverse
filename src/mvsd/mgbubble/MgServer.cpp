@@ -17,14 +17,14 @@
 
 #include <thread>
 #include <functional>
-#include <metaverse/mgbubble/WsServer.hpp>
+#include <metaverse/mgbubble/MgServer.hpp>
 #include <metaverse/bitcoin/utility/log.hpp>
 #include <metaverse/bitcoin/version.hpp>
 
 namespace mgbubble {
 using namespace std::placeholders;
 
-bool WsServer::start()
+bool MgServer::start()
 {
     if (!nc_)
         return false;
@@ -36,7 +36,7 @@ bool WsServer::start()
     return !!worker_;
 }
 
-void WsServer::stop()
+void MgServer::stop()
 {
     if (running_) {
         running_ = false;
@@ -45,7 +45,7 @@ void WsServer::stop()
     }
 }
 
-bool WsServer::broadcast(const std::string& msg)
+bool MgServer::broadcast(const std::string& msg)
 {
     if (!nc_ || !running_)
         return false;
@@ -54,7 +54,7 @@ bool WsServer::broadcast(const std::string& msg)
     return true;
 }
 
-bool WsServer::broadcast(const char* msg, size_t len)
+bool MgServer::broadcast(const char* msg, size_t len)
 {
     if (!nc_ || !running_)
         return false;
@@ -63,7 +63,29 @@ bool WsServer::broadcast(const char* msg, size_t len)
     return true;
 }
 
-bool WsServer::send(struct mg_connection& nc, const std::string& msg, bool binary)
+bool MgServer::send(struct mg_connection& nc, const std::string& msg, bool close_required)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_send(&nc, msg.c_str(), msg.size());
+    if(close_required)
+        nc.flags |= MG_F_SEND_AND_CLOSE;
+    return true;
+}
+
+bool MgServer::send(struct mg_connection& nc, const char* msg, size_t len, bool close_required)
+{
+    if (!nc_ || !running_)
+        return false;
+
+    mg_send(&nc, msg, len);
+    if (close_required)
+        nc.flags |= MG_F_SEND_AND_CLOSE;
+    return true;
+}
+
+bool MgServer::send_frame(struct mg_connection& nc, const std::string& msg, bool binary)
 {
     if (!nc_ || !running_)
         return false;
@@ -72,7 +94,7 @@ bool WsServer::send(struct mg_connection& nc, const std::string& msg, bool binar
     return true;
 }
 
-bool WsServer::send(struct mg_connection& nc, const char* msg, size_t len, bool binary)
+bool MgServer::send_frame(struct mg_connection& nc, const char* msg, size_t len, bool binary)
 {
     if (!nc_ || !running_)
         return false;
@@ -81,72 +103,82 @@ bool WsServer::send(struct mg_connection& nc, const char* msg, size_t len, bool 
     return true;
 }
 
-void WsServer::run() {
-    bc::log::info(NAME) << "WsServer Started.";
+void MgServer::run() {
+    bc::log::info(NAME) << "MgServer Started.";
     while (running_)
     {
         mg_mgr_poll(&mgr_, 1000);
     }
-    bc::log::info(NAME) << "WsServer Stopped.";
+    bc::log::info(NAME) << "MgServer Stopped.";
+}
+
+void MgServer::on_http_req_handler(struct mg_connection& nc, http_message& msg)
+{
+    mg_http_send_error(&nc, 403, nullptr);
 }
 
 // demo
-void WsServer::on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg)
+void MgServer::on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg)
 {
     if (memcmp(msg.uri.p, "/ws", 3) != 0 || (msg.uri.len > 3 && msg.uri.p[3] != '/')) {
         nc.flags |= MG_F_SEND_AND_CLOSE;
     }
 }
 
-void WsServer::on_ws_handshake_done_handler(struct mg_connection& nc)
+void MgServer::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
 }
 
 // echo
-void WsServer::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
+void MgServer::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
 {
     struct mg_str d = { (char *)msg.data, msg.size };
     bc::log::info(NAME) << std::string(d.p, d.len);
     mg_send_websocket_frame(&nc, WEBSOCKET_OP_TEXT, msg.data, msg.size);
 }
 
-void WsServer::on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg)
+void MgServer::on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg)
 {
 }
 
-void WsServer::on_timer_handler(struct mg_connection& nc)
+void MgServer::on_timer_handler(struct mg_connection& nc)
 {
 }
 
-void WsServer::on_close_handler(struct mg_connection& nc)
+void MgServer::on_close_handler(struct mg_connection& nc)
 {
 }
 
-void WsServer::on_broadcast(struct mg_connection& nc, const char* ev_data)
+void MgServer::on_broadcast(struct mg_connection& nc, const char* ev_data)
 {
 }
 
-void WsServer::ev_handler_default(struct mg_connection *nc, int ev, void *ev_data)
+void MgServer::ev_handler_default(struct mg_connection *nc, int ev, void *ev_data)
 {
 
 }
 
-void WsServer::ev_broadcast(struct mg_connection *nc, int ev, void *ev_data)
+void MgServer::ev_broadcast(struct mg_connection *nc, int ev, void *ev_data)
 {
-    auto* self = dynamic_cast<WsServer*>(static_cast<WsServer*>(nc->mgr->user_data));
-    if (!self)
+    auto* self = dynamic_cast<MgServer*>(static_cast<MgServer*>(nc->mgr->user_data));
+    if (!self || self->stopped())
         return;
 
     self->on_broadcast(*nc, (const char*)ev_data);
 }
 
-void WsServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
+void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
-    auto* self = dynamic_cast<WsServer*>(static_cast<WsServer*>(nc->mgr->user_data));
-    if (!self)
+    auto* self = dynamic_cast<MgServer*>(static_cast<MgServer*>(nc->mgr->user_data));
+    if (!self || self->stopped())
         return;
     switch (ev)
     {
+    case MG_EV_HTTP_REQUEST: {
+        struct http_message *msg = (struct http_message *)ev_data;
+        self->on_ws_handshake_req_handler(*nc, *msg);
+        break;
+    }
     case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST: {
         struct http_message *msg = (struct http_message *)ev_data;   
         self->on_ws_handshake_req_handler(*nc, *msg);

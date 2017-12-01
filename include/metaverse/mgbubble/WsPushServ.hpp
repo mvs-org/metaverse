@@ -19,7 +19,7 @@
 
 #include <atomic>
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/mgbubble/WsServer.hpp>
+#include <metaverse/mgbubble/MgServer.hpp>
 
 namespace libbitcoin {
     namespace server {
@@ -28,14 +28,14 @@ namespace libbitcoin {
 }
 
 namespace mgbubble {
-class WsPushServ : public WsServer {
+class WsPushServ : public MgServer {
     typedef bc::chain::point::indexes index_list;
     typedef bc::message::block_message::ptr_list block_list;
-    typedef WsServer base;
+    typedef MgServer base;
 
 public:
     explicit WsPushServ(libbitcoin::server::server_node& node, const std::string& srv_addr)
-        : node_(node), WsServer(srv_addr)
+        : node_(node), MgServer(srv_addr)
     {}
 
     bool start() override;
