@@ -149,13 +149,20 @@ void MgServer::on_close_handler(struct mg_connection& nc)
 {
 }
 
+void MgServer::on_send_handler(struct mg_connection& nc, int bytes_transfered)
+{
+}
+
+void MgServer::on_notify_handler(struct mg_connection& nc, struct mg_event& ev)
+{
+}
+
 void MgServer::on_broadcast(struct mg_connection& nc, const char* ev_data)
 {
 }
 
 void MgServer::ev_handler_default(struct mg_connection *nc, int ev, void *ev_data)
 {
-
 }
 
 void MgServer::ev_broadcast(struct mg_connection *nc, int ev, void *ev_data)
@@ -174,6 +181,10 @@ void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
         return;
     switch (ev)
     {
+    case MG_EV_SEND: {
+        self->on_send_handler(*nc, *((int*)ev_data));
+        break;
+    }
     case MG_EV_HTTP_REQUEST: {
         struct http_message *msg = (struct http_message *)ev_data;
         self->on_ws_handshake_req_handler(*nc, *msg);
@@ -208,6 +219,26 @@ void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     }
     default:
         self->ev_handler_default(nc, ev, ev_data);
+    }
+}
+
+void MgServer::ev_notify_handler(struct mg_connection *nc, int ev, void *ev_data)
+{
+
+    auto* self = dynamic_cast<MgServer*>(static_cast<MgServer*>(nc->mgr->user_data));
+    if (!self || self->stopped())
+        return;
+    switch (ev)
+    {
+    case MG_EV_RECV: {
+        if (nc->flags & MG_F_USER_2)
+        {
+            struct mg_event* pev = (struct mg_event*)(nc->recv_mbuf.buf);
+            self->on_notify_handler(*nc, *pev);
+            mbuf_remove(&nc->recv_mbuf, nc->recv_mbuf.len);
+        }
+        break;
+    }
     }
 }
 

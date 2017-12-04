@@ -23,6 +23,12 @@
 #include <mongoose/mongoose.h>
 
 namespace mgbubble {
+
+struct mg_event {
+    uint64_t id;
+    void* data;
+};
+
 class MgServer {
 public:
     static constexpr auto NAME = "MONGO";
@@ -37,6 +43,9 @@ public:
             nc_->flags |= MG_F_USER_1; // mark as listen socket
             mg_set_protocol_http_websocket(nc_);
         }
+
+        notify_sock_[0] = notify_sock_[1] = INVALID_SOCKET;
+        nc_notify_ = nullptr;
     }
 
     virtual ~MgServer()
@@ -49,6 +58,7 @@ public:
     bool stopped() { return running_ == false; }
     bool is_websocket(const struct mg_connection& nc) const { return !!(nc.flags & MG_F_IS_WEBSOCKET); }
     bool is_listen_socket(const struct mg_connection& nc) const { return !!(nc.flags & MG_F_USER_1); }
+    bool is_on_sending(struct mg_connection& nc) { return (nc.send_mbuf.len != 0); }
 
     // DO NOT CALL IN WsServer Worker Thread
     // on_broadcast called after broadcasted
@@ -57,6 +67,30 @@ public:
     bool broadcast(const char* msg, size_t len);
 
     void set_document_root(const char* root) { s_http_server_opts_.document_root = root; }
+
+    bool attach_notify(mg_event_handler_t callback = nullptr) {
+        if ((notify_sock_[0] == INVALID_SOCKET) && (mg_socketpair(notify_sock_, SOCK_DGRAM) == 1))
+        {
+            nc_notify_ = mg_add_sock(&mgr_, notify_sock_[1], (callback != nullptr) ? callback : ev_handler);
+            if(nc_notify_ != nullptr)
+                nc_notify_->flags |= MG_F_USER_2; // mark as notify socket
+            nc_notify_->handler = ev_notify_handler;
+        }
+        return nc_notify_ != nullptr;
+    }
+    bool is_notify_socket(struct mg_connection& nc) const { return !!(nc.flags & MG_F_USER_2); }
+
+    bool notify(uint64_t id, void* data) {
+        struct mg_event ev{id, data};
+        return notify(ev);
+    }
+    bool notify(struct mg_event ev)
+    {
+        if (notify_sock_[0] == INVALID_SOCKET)
+            return false;
+        int n = ::MG_SEND_FUNC(notify_sock_[0], (const char*)&ev, sizeof(ev), 0);
+        return n > 0;
+    }
 
 protected:
     // ONLY CALLED IN WsServer Worker Thread
@@ -79,6 +113,8 @@ protected:
     virtual void on_ws_ctrlf_handler(struct mg_connection& nc, websocket_message& msg);
     virtual void on_timer_handler(struct mg_connection& nc);
     virtual void on_close_handler(struct mg_connection& nc);
+    virtual void on_send_handler(struct mg_connection& nc, int bytes_transfered);
+    virtual void on_notify_handler(struct mg_connection& nc, struct mg_event& ev);
 
     // called for each connection after broadcast
     virtual void on_broadcast(struct mg_connection& nc, const char* ev_data);
@@ -88,11 +124,15 @@ protected:
 protected:
     static void ev_broadcast(struct mg_connection *nc, int ev, void *ev_data);
     static void ev_handler(struct mg_connection *nc, int ev, void *ev_data);
+    static void ev_notify_handler(struct mg_connection *nc, int ev, void *ev_data);
 
 private:
     struct mg_mgr mgr_;
     struct mg_connection *nc_;
     struct mg_serve_http_opts s_http_server_opts_;
+
+    sock_t notify_sock_[2]; // 0 is used out of thread, 1 is used in mongoose event loop
+    struct mg_connection *nc_notify_;
 
     std::string svr_addr_;
     std::atomic<bool> running_;
