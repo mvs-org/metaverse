@@ -28,6 +28,28 @@ namespace libbitcoin {
 }
 
 namespace mgbubble {
+
+class WsEvent {
+public:
+    void operator()(uint64_t id) 
+    {
+        if (callback_)
+            callback_(id);
+        
+        auto tmp = std::move(callback_);
+    }
+
+    // called on mongoose thread
+    void callback(const std::function<void(uint64_t)>&& handler)
+    {
+        callback_ = std::move(handler);
+    }
+
+private:
+
+    std::function<void(uint64_t id)> callback_;
+};
+
 class WsPushServ : public MgServer {
     typedef bc::chain::point::indexes index_list;
     typedef bc::message::block_message::ptr_list block_list;
@@ -40,6 +62,8 @@ public:
 
     bool start() override;
 
+    void spawn_to_mongoose(const std::function<void(uint64_t)> handler);
+
 protected:
     bool handle_blockchain_reorganization(const bc::code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&);
     bool handle_transaction_pool(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
@@ -50,12 +74,17 @@ protected:
     void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
 
 protected:
+    void send_bad_request(struct mg_connection& nc);
+
+protected:
     void run() override;
 
     void on_ws_handshake_done_handler(struct mg_connection& nc) override;
     void on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg) override;
     void on_close_handler(struct mg_connection& nc) override;
     void on_broadcast(struct mg_connection& nc, const char* ev_data) override;
+    void on_send_handler(struct mg_connection& nc, int bytes_transfered) override;
+    void on_notify_handler(struct mg_connection& nc, struct mg_event& ev) override;
 
 private:
     libbitcoin::server::server_node& node_;

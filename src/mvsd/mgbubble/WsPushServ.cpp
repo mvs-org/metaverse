@@ -17,15 +17,10 @@
 
 #include <thread>
 #include <sstream>
-#include <functional>
 #include <boost/property_tree/json_parser.hpp>
+#include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/mgbubble/WsPushServ.hpp>
 #include <metaverse/server/server_node.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-
-namespace std {
-    using namespace std::placeholders;
-}
 
 namespace mgbubble {
     constexpr auto EV_VERSION    = "version";
@@ -34,6 +29,7 @@ namespace mgbubble {
     constexpr auto EV_PUBLISH    = "publish";
     constexpr auto EV_REQUEST    = "request";
     constexpr auto EV_RESPONSE   = "response";
+    constexpr auto EV_ERROR      = "error";
 
     constexpr auto CH_BLOCK       = "block";
     constexpr auto CH_TRANSACTION = "tx";
@@ -50,11 +46,11 @@ void WsPushServ::run() {
 
     node_.subscribe_transaction_pool(
         std::bind(&WsPushServ::handle_transaction_pool,
-            this, std::_1, std::_2, std::_3));
+            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     
     node_.subscribe_blockchain(
         std::bind(&WsPushServ::handle_blockchain_reorganization,
-            this, std::_1, std::_2, std::_3, std::_4));
+            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     base::run();
 }
@@ -63,8 +59,21 @@ bool WsPushServ::start()
 {
     if (node_.server_settings().websocket_service_enabled == false)
         return true;
-
+    if (!attach_notify())
+        return false;
     return base::start();
+}
+
+void WsPushServ::spawn_to_mongoose(const std::function<void(uint64_t)> handler)
+{
+    static uint64_t id = 0;
+    auto pmsg = std::make_shared<WsEvent>();
+    auto evid = ++id;
+    struct mg_event ev { evid, pmsg.get() };
+    if (notify(ev))
+    {
+        pmsg->callback([pmsg, handler](uint64_t id) { handler(id); });
+    }
 }
 
 bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, message::transaction_message::ptr tx)
@@ -138,11 +147,33 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root.put("channel", CH_TRANSACTION);
     root.add_child("result", explorer::config::prop_list(tx, height, true));
     write_json(ss, root);
+    
+    static uint64_t i = 0;
+    auto evid = ++i;
 
-    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
-    broadcast(ss.str());
+    log::info(NAME) << " ******** notify_transaction: height [" << height << " " << evid << "]  ******** ";
+    
+    auto pmsg = std::make_shared<WsEvent>();
+    struct mg_event ev { evid, pmsg.get() };
+    if (notify(ev))
+    {
+        pmsg->callback([height, pmsg](uint64_t id) {
+            log::info(NAME) << " ******** on message: [" << height << " " << id << "]  ******** ";
+        });
+    }
+    
 }
 
+void WsPushServ::send_bad_request(struct mg_connection& nc)
+{
+    std::stringstream ss;
+    ptree root;
+    root.put("event", EV_ERROR);
+    root.put("msg", "bad request");
+    write_json(ss, root);
+    auto&& tmp = ss.str();
+    send_frame(nc, tmp.c_str(), tmp.size());
+}
 
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
@@ -152,7 +183,13 @@ void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
 {
-    base::on_ws_frame_handler(nc, msg);
+    std::istringstream iss;
+    iss.str(std::string((const char*)msg.data, msg.size));
+    ptree parser;
+    read_json(iss, parser);
+    auto event = parser.get<std::string>("event");
+    auto channel = parser.get<std::string>("channel");
+    send_bad_request(nc);
 }
 
 void WsPushServ::on_close_handler(struct mg_connection& nc)
@@ -164,10 +201,22 @@ void WsPushServ::on_close_handler(struct mg_connection& nc)
 
 void WsPushServ::on_broadcast(struct mg_connection& nc, const char* ev_data)
 {
-    if (is_listen_socket(nc))
+    if (is_listen_socket(nc) || is_notify_socket(nc))
         return;
 
     send_frame(nc, ev_data, strlen(ev_data));
+}
+
+void WsPushServ::on_send_handler(struct mg_connection& nc, int bytes_transfered)
+{
+}
+
+void WsPushServ::on_notify_handler(struct mg_connection& nc, struct mg_event& ev)
+{
+    if (ev.data == nullptr)
+        return;
+    auto& msg = *(WsEvent*)ev.data;
+    msg(ev.id);
 }
 
 }

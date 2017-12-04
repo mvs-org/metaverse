@@ -78,7 +78,7 @@ function main() {
 
 	typedMessage.onclick = function() {
 		if (first) {
-			typedMessage.value = '{event: "subscribe", channel: "tx.monitor", "addresses":[]}';
+			typedMessage.value = '{"event": "subscribe", "channel": "tx", "addresses":[]}';
 			first = false;
 		}
 	}
