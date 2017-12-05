@@ -32,6 +32,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/commands/offline_commands_impl.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -39,26 +40,11 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
 /************************ getnewaccount *************************/
 
 console_result getnewaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    auto& blockchain = node.chain_impl();
-    if (blockchain.is_account_exist(auth_.name)){
-        throw account_existed_exception{"account already exist"};
-    }
-
-    const char* cmds[]{"seed"};
-    //, "mnemonic-to-seed", "hd-new", 
-    //    "hd-to-ec", "ec-to-public", "ec-to-address"};
-    std::stringstream sout("");
-    std::istringstream sin;
-    pt::ptree root;
-
-    auto acc = std::make_shared<bc::chain::account>();
 
 #ifdef NDEBUG
     if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
@@ -66,38 +52,31 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw argument_legality_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
 
+    auto& blockchain = node.chain_impl();
+    if (blockchain.is_account_exist(auth_.name)){
+        throw account_existed_exception{"account already exist"};
+    }
+
+    pt::ptree root;
+
+    auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);
     acc->set_passwd(auth_.auth);
 
-    auto exec_with = [&](int i){
-        sin.str(sout.str());
-        sout.str("");
-        return dispatch_command(1, cmds + i, sin, sout, sout);
-    };
-     
-    if (exec_with(0) != console_result::okay) {
-        throw seed_exception(sout.str());
-    }
-     
-    relay_exception(sout);
+    bc::explorer::config::language opt_language(option_.language);
+    auto&& seed = get_seed();
+    auto&& words_list = get_mnemonic_new(opt_language , seed);
+    auto&& words = bc::join(words_list);
 
-    const char* cmds3[3]{"mnemonic-new", "-l" , option_.language.c_str()};
-    sin.str(sout.str());
-    sout.str("");
-    if (dispatch_command(3, cmds3, sin, sout, sout) != console_result::okay) {
-        throw mnemonicwords_new_exception(sout.str());
-    }
-
-     
-    relay_exception(sout);
-
-    root.put("mnemonic", sout.str());
-    acc->set_mnemonic(sout.str(), auth_.auth);
+    root.put("mnemonic", words);
+    acc->set_mnemonic(words, auth_.auth);
     
     // flush to db
     auto ret = blockchain.store_account(acc);
 
     // get 1 new sub-address by default
+    std::stringstream sout("");
+    std::istringstream sin;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
     sin.str("");
     sout.str("");
@@ -107,17 +86,6 @@ console_result getnewaccount::invoke (std::ostream& output,
      
     relay_exception(sout);
 
-    #if 0
-    // parse address from getnewaddress output string
-    pt::ptree tx;
-    sin.str(sout.str());
-    pt::read_json(sin, tx);
-    
-    auto addr_array = tx.get_child("addresses");
-    
-    for(auto& addr : addr_array) 
-        sout.str(addr.second.data());
-    #endif
     root.put("default-address", sout.str());
     
     pt::write_json(output, root);

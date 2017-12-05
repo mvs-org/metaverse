@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/miner/stop.hpp>
+#include <metaverse/explorer/extensions/commands/stop.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 
