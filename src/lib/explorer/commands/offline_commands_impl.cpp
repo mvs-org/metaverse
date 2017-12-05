@@ -27,7 +27,7 @@ namespace explorer {
 namespace commands {
 
 //seed
-data_chunk get_seed(uint16_t bit_length = 256u)
+data_chunk get_seed(uint16_t bit_length)
 {
     // These are soft requirements for security and rationality.
     // We use bit vs. byte length input as the more familiar convention.

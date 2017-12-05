@@ -61,7 +61,7 @@ const uint32_t hd_default_public_version = 76067358;
 // -------------------------------------------------------------------
 // decalration for functions
 
-data_chunk get_seed(uint16_t bit_length);
+data_chunk get_seed(uint16_t bit_length = 256u);
 
 bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_chunk& entropy);
 
