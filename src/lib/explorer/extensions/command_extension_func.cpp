@@ -37,13 +37,13 @@
 #include <metaverse/explorer/extensions/commands/stopall.hpp>
 #include <metaverse/explorer/extensions/commands/stop.hpp>
 #include <metaverse/explorer/extensions/commands/start.hpp>
-#include <metaverse/explorer/commands/getinfo.hpp>
-#include <metaverse/explorer/commands/getpeerinfo.hpp>
+#include <metaverse/explorer/extensions/commands/getinfo.hpp>
+#include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
 #include <metaverse/explorer/extensions/commands/ping.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
-#include <metaverse/explorer/commands/getbestblockhash.hpp>
-#include <metaverse/explorer/commands/getbestblockheader.hpp>
+#include <metaverse/explorer/extensions/commands/getbestblockhash.hpp>
+#include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/gettransaction.hpp>
 #include <metaverse/explorer/extensions/commands/exportaccountasfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccountfromfile.hpp>
@@ -53,7 +53,7 @@
 #include <metaverse/explorer/extensions/commands/deleteaccount.hpp>
 #include <metaverse/explorer/extensions/commands/listaddresses.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaddress.hpp>
-#include <metaverse/explorer/commands/getblock.hpp>
+#include <metaverse/explorer/extensions/commands/getblock.hpp>
 #include <metaverse/explorer/extensions/commands/validateaddress.hpp>
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
