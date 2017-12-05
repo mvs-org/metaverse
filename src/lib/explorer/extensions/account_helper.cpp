@@ -25,7 +25,7 @@
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <metaverse/explorer/extensions/account/account_info.hpp>
+#include <metaverse/explorer/extensions/account_info.hpp>
 
 namespace libbitcoin {
 namespace explorer {
