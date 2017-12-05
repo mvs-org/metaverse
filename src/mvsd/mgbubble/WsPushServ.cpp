@@ -64,16 +64,12 @@ bool WsPushServ::start()
     return base::start();
 }
 
-void WsPushServ::spawn_to_mongoose(const std::function<void(uint64_t)> handler)
+void WsPushServ::spawn_to_mongoose(const std::function<void(uint64_t)>&& handler)
 {
-    static uint64_t id = 0;
-    auto pmsg = std::make_shared<WsEvent>();
-    auto evid = ++id;
-    struct mg_event ev { evid, pmsg.get() };
-    if (notify(ev))
-    {
-        pmsg->callback([pmsg, handler](uint64_t id) { handler(id); });
-    }
+    auto msg = std::make_shared<WsEvent>(std::move(handler));
+    struct mg_event ev { msg->hook() };
+    if (!notify(ev))
+        msg->unhook();
 }
 
 bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, message::transaction_message::ptr tx)
@@ -148,20 +144,11 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root.add_child("result", explorer::config::prop_list(tx, height, true));
     write_json(ss, root);
     
-    static uint64_t i = 0;
-    auto evid = ++i;
-
-    log::info(NAME) << " ******** notify_transaction: height [" << height << " " << evid << "]  ******** ";
+    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
     
-    auto pmsg = std::make_shared<WsEvent>();
-    struct mg_event ev { evid, pmsg.get() };
-    if (notify(ev))
-    {
-        pmsg->callback([height, pmsg](uint64_t id) {
-            log::info(NAME) << " ******** on message: [" << height << " " << id << "]  ******** ";
-        });
-    }
-    
+    spawn_to_mongoose([height](uint64_t id) {
+        log::info(NAME) << " ******** on message: [" << height << " " << id << "]  ******** ";
+    });
 }
 
 void WsPushServ::send_bad_request(struct mg_connection& nc)
@@ -186,10 +173,18 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
     std::istringstream iss;
     iss.str(std::string((const char*)msg.data, msg.size));
     ptree parser;
-    read_json(iss, parser);
-    auto event = parser.get<std::string>("event");
-    auto channel = parser.get<std::string>("channel");
+    try {
+        read_json(iss, parser);
+        auto event = parser.get<std::string>("event");
+        auto channel = parser.get<std::string>("channel");
+    }
+    catch (std::exception& e) {
+        log::info("TEST") << "on on_ws_frame_handler: " << e.what();
+    }
     send_bad_request(nc);
+    spawn_to_mongoose([](size_t id) {
+        log::info("TEST") << "on on_ws_frame_handler: " << id;
+    });
 }
 
 void WsPushServ::on_close_handler(struct mg_connection& nc)
@@ -213,10 +208,13 @@ void WsPushServ::on_send_handler(struct mg_connection& nc, int bytes_transfered)
 
 void WsPushServ::on_notify_handler(struct mg_connection& nc, struct mg_event& ev)
 {
+    static uint64_t api_call_counter = 0;
+
     if (ev.data == nullptr)
         return;
+
     auto& msg = *(WsEvent*)ev.data;
-    msg(ev.id);
+    msg(++api_call_counter);
 }
 
 }

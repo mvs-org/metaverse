@@ -156,6 +156,22 @@ void server_node::handle_running(const code& ec, result_handler handler)
     std::thread httpserver([rest_server, this]() { run_mongoose(); });
     httpserver.detach();
 
+	// for test MgServer event performance
+    for (auto i = 0; i < 10; ++i)
+    {
+        std::thread([this, i]() {
+            constexpr int test = 3000;
+            for (auto k = 0; k<test; ++k)
+            {
+                push_server_->spawn_to_mongoose([i, k](size_t id) {
+                    log::info("TEST") << "[" << i << " - " << k << "] on spawn_to_mongoose: " << id;
+                });
+                //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            log::info("TEST") << " ======================== " << i << " " << test;
+        }).detach();
+    }
+	
     // This is the end of the derived run sequence.
     handler(error::success);
 }

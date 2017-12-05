@@ -224,7 +224,6 @@ void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 
 void MgServer::ev_notify_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
-
     auto* self = dynamic_cast<MgServer*>(static_cast<MgServer*>(nc->mgr->user_data));
     if (!self || self->stopped())
         return;
@@ -233,9 +232,15 @@ void MgServer::ev_notify_handler(struct mg_connection *nc, int ev, void *ev_data
     case MG_EV_RECV: {
         if (nc->flags & MG_F_USER_2)
         {
-            struct mg_event* pev = (struct mg_event*)(nc->recv_mbuf.buf);
-            self->on_notify_handler(*nc, *pev);
-            mbuf_remove(&nc->recv_mbuf, nc->recv_mbuf.len);
+            assert(nc->recv_mbuf.len >= sizeof(struct mg_event));
+            assert(*((int*)(ev_data)) >= sizeof(struct mg_event));
+            int len = 0;
+            int maxlen = nc->recv_mbuf.len / sizeof(struct mg_event) * sizeof(struct mg_event);
+            for (; len < maxlen; len += sizeof(struct mg_event)) {
+                struct mg_event* pev = (struct mg_event*)(nc->recv_mbuf.buf + len);
+                self->on_notify_handler(*nc, *pev);
+            }
+            mbuf_remove(&nc->recv_mbuf, len);
         }
         break;
     }

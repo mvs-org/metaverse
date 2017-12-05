@@ -29,24 +29,33 @@ namespace libbitcoin {
 
 namespace mgbubble {
 
-class WsEvent {
+class WsEvent : public std::enable_shared_from_this<WsEvent> {
 public:
-    void operator()(uint64_t id) 
+    explicit WsEvent(const std::function<void(uint64_t)>&& handler) 
+        :callback_(std::move(handler))
+    {}
+
+    WsEvent* hook()
     {
-        if (callback_)
-            callback_(id);
-        
-        auto tmp = std::move(callback_);
+        self_ = this->shared_from_this();
+        return this;
     }
 
-    // called on mongoose thread
-    void callback(const std::function<void(uint64_t)>&& handler)
+    void unhook()
     {
-        callback_ = std::move(handler);
+        self_.reset();
+    }
+
+    virtual void operator()(uint64_t id) 
+    {
+        callback_(id);
+        self_.reset();
     }
 
 private:
+    std::shared_ptr<WsEvent> self_;
 
+    // called on mongoose thread
     std::function<void(uint64_t id)> callback_;
 };
 
@@ -62,7 +71,7 @@ public:
 
     bool start() override;
 
-    void spawn_to_mongoose(const std::function<void(uint64_t)> handler);
+    void spawn_to_mongoose(const std::function<void(uint64_t)>&& handler);
 
 protected:
     bool handle_blockchain_reorganization(const bc::code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&);

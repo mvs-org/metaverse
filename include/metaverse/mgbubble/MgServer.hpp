@@ -25,7 +25,7 @@
 namespace mgbubble {
 
 struct mg_event {
-    uint64_t id;
+    //uint64_t id;
     void* data;
 };
 
@@ -69,19 +69,22 @@ public:
     void set_document_root(const char* root) { s_http_server_opts_.document_root = root; }
 
     bool attach_notify(mg_event_handler_t callback = nullptr) {
-        if ((notify_sock_[0] == INVALID_SOCKET) && (mg_socketpair(notify_sock_, SOCK_DGRAM) == 1))
+        if ((notify_sock_[0] == INVALID_SOCKET) && (mg_socketpair(notify_sock_, SOCK_STREAM) == 1))
         {
             nc_notify_ = mg_add_sock(&mgr_, notify_sock_[1], (callback != nullptr) ? callback : ev_handler);
-            if(nc_notify_ != nullptr)
+            if (nc_notify_ != nullptr)
+            {
                 nc_notify_->flags |= MG_F_USER_2; // mark as notify socket
-            nc_notify_->handler = ev_notify_handler;
+                nc_notify_->handler = ev_notify_handler;
+            }
         }
         return nc_notify_ != nullptr;
     }
     bool is_notify_socket(struct mg_connection& nc) const { return !!(nc.flags & MG_F_USER_2); }
 
     bool notify(uint64_t id, void* data) {
-        struct mg_event ev{id, data};
+        (void)(id);
+        struct mg_event ev{data};
         return notify(ev);
     }
     bool notify(struct mg_event ev)
