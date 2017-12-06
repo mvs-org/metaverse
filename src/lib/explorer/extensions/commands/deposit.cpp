@@ -31,14 +31,14 @@
 #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp> 
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
 namespace pt = boost::property_tree;
-
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 console_result deposit::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
