@@ -60,8 +60,8 @@ bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_c
 
 //mnemonic-to-seed
 data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language, 
-    const std::string& passphrase, 
-    const bw::word_list& words)
+    const bw::word_list& words,
+    std::string passphrase)
 {
     const auto word_count = words.size();
 
@@ -103,7 +103,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
 }
 
 //hd-new
-bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_secret_version)
+bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version)
 {
     if (seed.size() < minimum_seed_size)
     {
