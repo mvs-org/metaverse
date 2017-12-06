@@ -40,75 +40,48 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
-#if 0
-/************************ deposit *************************/
 console_result deposit::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
         throw address_invalid_exception{"invalid address!"};
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
-        throw address_list_nullptr_exception{"nullptr for address list"};
 
     if (argument_.deposit != 7 && argument_.deposit != 30 
         && argument_.deposit != 90 && argument_.deposit != 182
         && argument_.deposit != 365)
     {
-        throw logic_error{"deposit must be one in [7, 30, 90, 182, 365]."};
+        throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
-
-    std::list<prikey_amount> palist;
-
-    const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"};
-    std::stringstream sout;
-    std::istringstream sin; 
-
-    // get balance
-    for (auto& each : *pvaddr){
-        sout.str("");
-        wallet[1] = each.get_address().c_str();
-        dispatch_command(4, wallet + 0, sin, sout, sout, blockchain);
-
-        pt::ptree pt;
-        sin.str(sout.str());
-        pt::read_json(sin, pt);
-        auto unspent = pt.get<uint64_t>("balance.unspent");
-        auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
-        if (balance){
-            palist.push_back({each.get_prv_key(auth_.auth), balance});
-        }
-    }
-
-    // sort
-    palist.sort([](const prikey_amount& first, const prikey_amount& last){
-            return first.second < last.second;
-            });
+    
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr || pvaddr->empty()) 
+        throw address_list_nullptr_exception{"nullptr for address list"};
 
     auto random = bc::pseudo_random();
     auto index = random % pvaddr->size();
 
-    // my change
-    std::vector<std::string> receiver;
-    if(argument_.address.empty())
-        receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.amount));
-    else
-        receiver.push_back(argument_.address + ":" + std::to_string(argument_.amount));
-    
-    receiver.push_back(pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee)); // change
+    auto addr = argument_.address;
+    if(addr.empty())
+        addr = pvaddr->at(index).get_address();
+        
+    // receiver
+    std::vector<receiver_record> receiver{
+        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()} 
+    };
+    auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);
+            
+    deposit_helper.exec();
 
-    utxo_helper utxo(std::move(palist), std::move(receiver));
-    utxo.set_testnet_rules(blockchain.chain_settings().use_testnet_rules);
-    utxo.set_reward(argument_.deposit);
-
-    // send
-    send_impl(utxo, blockchain, output, output);
+    // json output
+    auto tx = deposit_helper.get_transaction();
+    pt::write_json(output, config::prop_tree(tx, true));
+    log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
-#endif
 
 } // namespace commands
 } // namespace explorer

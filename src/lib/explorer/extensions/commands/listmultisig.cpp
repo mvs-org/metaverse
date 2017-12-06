@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/sendasset.hpp>
+#include <metaverse/explorer/extensions/commands/listmultisig.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -39,40 +39,39 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
-console_result sendasset::invoke (std::ostream& output,
+console_result listmultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    blockchain.uppercase_symbol(argument_.symbol);
+    // parameter account name check
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    pt::ptree root, nodes;
+
+    auto multisig_vec = acc->get_multisig_vec();
+        
+    for(auto& acc_multisig : multisig_vec) {
+        pt::ptree node, pubkeys;
+        node.put("index", acc_multisig.get_index());
+        //node.put("hd_index", acc_multisig.get_hd_index());
+        node.put("m", acc_multisig.get_m());
+        node.put("n", acc_multisig.get_n());
+        node.put("self-publickey", acc_multisig.get_pubkey());
+        node.put("description", acc_multisig.get_description());
+        for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+            pt::ptree pubkey;
+            pubkey.put("", each);
+            pubkeys.push_back(std::make_pair("", pubkey));
+        }
+        node.add_child("public-keys", pubkeys);
+        node.put("multisig-script", acc_multisig.get_multisig_script());
+        node.put("address", acc_multisig.get_address());
+
+        nodes.push_back(std::make_pair("", node));
+    }
     
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid to address parameter!"};
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
-
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
-    };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
+    root.add_child("multisig", nodes);    
+    pt::write_json(output, root);
     
-    send_helper.exec();
-
-    // json output
-    auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    log::debug("command")<<"transaction="<<output.rdbuf();
-
     return console_result::okay;
 }
 

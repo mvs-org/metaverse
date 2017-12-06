@@ -28,7 +28,7 @@ namespace explorer {
 namespace commands {
 
 /************************ getpublickey *************************/
-
+#if 0
 class getpublickey: public command_extension
 {
 public:
@@ -105,6 +105,7 @@ public:
     } option_;
 
 };
+#endif
 } // commands
 } // explorer
 } // libbitcoin

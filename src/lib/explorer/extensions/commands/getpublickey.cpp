@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/sendasset.hpp>
+#include <metaverse/explorer/extensions/commands/getpublickey.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -39,40 +39,52 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
-console_result sendasset::invoke (std::ostream& output,
+console_result getpublickey::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    blockchain.uppercase_symbol(argument_.symbol);
+    if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
+        throw address_invalid_exception{"invalid address parameter!"};
+
+    auto addr = bc::wallet::payment_address(argument_.address);
+    if(addr.version() == 0x05) // for multisig address
+        throw argument_legality_exception{"script address parameter not allowed!"};
     
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid to address parameter!"};
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
-
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
-    };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
+    auto pvaddr = blockchain.get_account_addresses(auth_.name);
+    if(!pvaddr) 
+        throw address_list_nullptr_exception{"nullptr for address list"};
     
-    send_helper.exec();
+    // set random address
+    if (argument_.address.empty()) {
+        auto random = bc::pseudo_random();
+        auto index = random % pvaddr->size();
+        argument_.address = pvaddr->at(index).get_address();
+    }
 
-    // json output
-    auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    log::debug("command")<<"transaction="<<output.rdbuf();
+    const char* cmds[2]{"ec-to-public", nullptr};
+    std::ostringstream sout("account not have the address!");
+    std::istringstream sin; 
+    std::string prv_key;
+    // get public key
+    auto found = false;
+    for (auto& each : *pvaddr){
+        if(each.get_address() == argument_.address) {
+            prv_key = each.get_prv_key(auth_.auth);
+            cmds[1] = prv_key.c_str();
+            if(console_result::okay == dispatch_command(2, cmds, sin, sout, sout))
+                found = true;
+            break;
+        }
+    }
 
+    if(!found) throw account_address_get_exception{sout.str()};
+    
+    pt::ptree root;
+    root.put("public-key", sout.str());
+    root.put("address", argument_.address);
+    pt::write_json(output, root);
+    
     return console_result::okay;
 }
 

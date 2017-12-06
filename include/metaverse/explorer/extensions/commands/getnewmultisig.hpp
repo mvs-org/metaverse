@@ -38,20 +38,21 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-class deposit : public command_extension
+/************************ getnewmultisig *************************/
+
+class getnewmultisig: public command_extension
 {
 public:
-    static const char* symbol(){ return "deposit";}
+    static const char* symbol(){ return "getnewmultisig";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "Deposit some etp, then get reward for frozen some etp."; }
+    const char* description() override { return "getnewmultisig "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("AMOUNT", 1);
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -60,7 +61,6 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -78,36 +78,42 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            "Account name."
-	    )
-        (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
-	    )
-        (
-            "AMOUNT",
-            value<uint64_t>(&argument_.amount)->required(),
-            "How many you will deposit."
-        )
 		(
-			"address,a",
-			value<std::string>(&argument_.address),
-			"The deposit target address."
+			"ACCOUNTNAME",
+			value<std::string>(&auth_.name)->required(),
+			"Account name."
 		)
-	    (
-            "deposit,d",
-            value<uint16_t>(&argument_.deposit)->default_value(7),
-            "Deposits support [7, 30, 90, 182, 365] days. defaluts to 7 days"
-	    )
-	    (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "The fee of tx. default_value 0.0001 etp"
-	    );
+		(
+			"ACCOUNTAUTH",
+			value<std::string>(&auth_.auth)->required(),
+			"Account password/authorization."
+		)
+		(
+			"signaturenum,m",
+			value<uint16_t>(&option_.m)->required(),
+			"Account multisig signature number."
+		)
+		(
+			"publickeynum,n",
+			value<uint16_t>(&option_.n)->required(),
+			"Account multisig public key number."
+		)
+		(
+			"selfpublickey,s",
+			value<std::string>(&option_.self_publickey)->required(),
+			"the public key belongs to this account."
+		)
+		(
+			"publickey,k",
+			value<std::vector<std::string>>(&option_.public_keys),
+			"cosigner public key used for multisig"
+		)
+		(
+			"description,d",
+			value<std::string>(&option_.description),
+			"multisig record description."
+		)
+		;
 
         return options;
     }
@@ -121,18 +127,27 @@ public:
 
     struct argument
     {
-        uint64_t amount;
-        uint64_t fee;
-        uint16_t deposit;
-		std::string address;
+        argument()
+        {
+        }
     } argument_;
 
     struct option
     {
+        option()
+          : self_publickey(""), description(""), m(0), n(0)
+        {
+        }
+
+		uint16_t m;
+		uint16_t n;
+		std::vector<std::string> public_keys;
+		std::string self_publickey;
+		std::string description;
+		
     } option_;
 
 };
-
 
 } // namespace commands
 } // namespace explorer

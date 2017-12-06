@@ -77,7 +77,18 @@
 #include <metaverse/explorer/extensions/commands/changepasswd.hpp>
 #include <metaverse/explorer/extensions/commands/private_query.hpp>
 #include <metaverse/explorer/extensions/commands/getmemorypool.hpp>
-
+#include <metaverse/explorer/extensions/commands/createmultisigtx.hpp>
+#include <metaverse/explorer/extensions/commands/createrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/decoderawtx.hpp>
+#include <metaverse/explorer/extensions/commands/deletemultisig.hpp>
+#include <metaverse/explorer/extensions/commands/getnewmultisig.hpp>
+#include <metaverse/explorer/extensions/commands/getpublickey.hpp>
+#include <metaverse/explorer/extensions/commands/listmultisig.hpp>
+#include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/sendwithmsg.hpp>
+#include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
+#include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
+#include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 
 
 namespace libbitcoin {

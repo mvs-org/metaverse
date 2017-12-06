@@ -38,10 +38,6 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ send *************************/
-
-#if 0
 class send: public send_command
 {
 public:
@@ -104,6 +100,11 @@ public:
             value<uint64_t>(&argument_.amount)->required(),
             "How many you will spend"
         )
+        (
+            "memo,m",
+            value<std::string>(&argument_.memo),
+            "The memo to descript transaction"
+        )
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -122,9 +123,12 @@ public:
 
     struct argument
     {
+        argument():address(""), memo("")
+		{};
         std::string address;
         uint64_t amount;
         uint64_t fee;
+        std::string memo;
     } argument_;
 
     struct option
@@ -132,8 +136,6 @@ public:
     } option_;
 
 };
-#endif
-
 
 
 } // namespace commands

@@ -38,9 +38,8 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ sendassetfrom *************************/
-#if 0
+
 class sendassetfrom: public command_extension
 {
 public:
@@ -147,8 +146,6 @@ public:
     } option_;
 
 };
-#endif
-
 
 } // namespace commands
 } // namespace explorer

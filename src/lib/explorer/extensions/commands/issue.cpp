@@ -41,71 +41,62 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
-/************************ issue *************************/
-#if 0
 console_result issue::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    auto& blockchain = node.chain_impl();
+
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    blockchain.uppercase_symbol(argument_.symbol);
+
+    if(argument_.fee < 1000000000)
+        throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
+    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    // fail if asset is already in blockchain
+    if(blockchain.is_asset_exist(argument_.symbol, false))
+        throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
+    // local database asset check
+    auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+    if(!sh_asset)
+        throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
+    #if 0
+    if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
+        throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
+    #endif
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
         throw address_list_nullptr_exception{"nullptr for address list"};
     
-    std::vector<prikey_amount> pavec;
-
-    const char* fetch_wallet[2]{"xfetchbalance", nullptr};
-    std::stringstream sout;
-    std::istringstream sin; 
-
-    // get balance
-    for (auto& each : *pvaddr){
-        sout.str("");
-        fetch_wallet[1] = each.get_address().c_str();
-        dispatch_command(2, fetch_wallet + 0, sin, sout, sout, blockchain);
-
-        pt::ptree pt;
-        sin.str(sout.str());
-        pt::read_json(sin, pt);
-        auto unspent = pt.get<uint64_t>("balance.unspent");
-        auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
-        if (balance){
-            pavec.push_back({each.get_address(), balance});
-        }
-    }
-    if(!pavec.size())
-        throw etp_lack_exception{"not enough etp in your account!"};
-
     // get random address    
-    auto index = bc::pseudo_random() % pavec.size();
-    auto addr = pavec.at(index).first;
+    auto index = bc::pseudo_random() % pvaddr->size();
+    auto addr = pvaddr->at(index).get_address();
     
-    // make issuefrom command 
-    // eg : issuefrom m m t9Vns3EmKtreq68GEMiq5njs4egGc623hm CAR -f fee
-    const char* wallet[256]{0x00};
-    int i = 0;
-    wallet[i++] = "issuefrom";
-    wallet[i++] = auth_.name.c_str();
-    wallet[i++] = auth_.auth.c_str();
-    wallet[i++] = addr.c_str();
-    wallet[i++] = argument_.symbol.c_str();
-    wallet[i++] = "-f";
-    wallet[i++] = std::to_string(argument_.fee).c_str();
+    // receiver
+    std::vector<receiver_record> receiver{
+        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
+    };
+    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    
+    issue_helper.exec();
 
-    // exec command
-    sin.str("");
-    sout.str("");
-    
-    if (dispatch_command(i, wallet, sin, sout, sout, blockchain) != console_result::okay) {
-        throw asset_issue_exception(sout.str());
-    }
-     
-     
-    relay_exception(sout);
-    
-    output<<sout.str();
+    // json output
+    auto tx = issue_helper.get_transaction();
+    pt::write_json(output, config::prop_tree(tx, true));
+
+    // change asset status
+    #if 0
+    sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+    auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
+    blockchain.store_account_asset(detail);
+    #endif
+    log::debug("command")<<"transaction="<<output.rdbuf();
+
     return console_result::okay;
 }
-#endif
+
 
 } // namespace commands
 } // namespace explorer
