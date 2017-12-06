@@ -40,11 +40,10 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
-/************************ issuefrom *************************/
-#if 0
 console_result issuefrom::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
@@ -57,79 +56,46 @@ console_result issuefrom::invoke (std::ostream& output,
     // fail if asset is already in blockchain
     if(blockchain.is_asset_exist(argument_.symbol, false))
         throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
-        throw address_list_nullptr_exception{"nullptr for address list"};
-    
-    auto sh_vec = blockchain.get_account_asset(auth_.name, argument_.symbol);
-    log::debug("issue") << "asset size = " << sh_vec->size();
-    if(!sh_vec->size())
-        throw asset_type_exception{"no such asset"};
 
-#ifdef MVS_DEBUG
-    /* debug code begin */    
-    const auto action = [&](business_address_asset& elem)
-    {
-        log::debug("issuefrom") <<elem.to_string();
+    // local database asset check
+    auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
+    if(!sh_asset)
+        throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
+    #if 0
+    if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
+        throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
+    #endif
+
+    // receiver
+    std::vector<receiver_record> receiver{
+        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
     };
-    std::for_each(sh_vec->begin(), sh_vec->end(), action);
-    /* debug code end */    
-#endif
-
-    std::list<prikey_amount> palist;
-
-    const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"}; // only spent pure etp utxo
-    std::stringstream sout;
-    std::istringstream sin; 
-
-    // get balance
-    for (auto& each : *pvaddr){
-        if( 0 == each.get_address().compare(argument_.address) ) {
-            sout.str("");
-            wallet[1] = each.get_address().c_str();
-            dispatch_command(4, wallet + 0, sin, sout, sout, blockchain);
-
-            pt::ptree pt;
-            sin.str(sout.str());
-            pt::read_json(sin, pt);
-            auto unspent = pt.get<uint64_t>("balance.unspent");
-            auto frozen = pt.get<uint64_t>("balance.frozen");
-            auto balance = unspent - frozen;
-            if (balance){
-                palist.push_back({each.get_prv_key(auth_.auth), balance});
-            }else{
-                throw account_balance_lack_exception{"no enough balance"};
-            }
-            break;
-    }
-    }
-    // address check
-    if(palist.empty())
-        throw address_notfound_exception{"no such address"};
+    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
     
-#ifdef MVS_DEBUG
-    /* debug code begin */    
-    const auto gaction = [&](prikey_amount& elem)
-    {
-        log::debug("issuefrom") <<"palist="<<elem.first<< " "<<elem.second;
-    };
-    std::for_each(palist.begin(), palist.end(), gaction);
-    /* debug code end */    
-#endif
+    issue_helper.exec();
+    // json output
+    auto tx = issue_helper.get_transaction();
+#if 0
+    auto issue_helper = issuing_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
     
-    // send
-    std::string type("asset-issue");
-    auto testnet_rules = blockchain.chain_settings().use_testnet_rules;
+    issue_helper.exec();
+    // json output
+    auto tx = issue_helper.get_transaction();
+#endif
+    // change asset status
+    #if 0
+    sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
+    auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
+    blockchain.store_account_asset(detail);
+    #endif
 
-    utxo_attach_issuefrom_helper utxo(std::move(auth_.name), std::move(auth_.auth), std::move(type), std::move(palist), 
-        std::move(argument_.address), argument_.fee, std::move(argument_.symbol), sh_vec->begin()->quantity, testnet_rules);
-
-    send_impl(utxo, blockchain, output, output);
+    pt::write_json(output, config::prop_tree(tx, true));
+    log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
-#endif
-
 
 
 } // namespace commands

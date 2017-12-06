@@ -38,29 +38,28 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-class deposit : public command_extension
+
+/************************ decoderawtx *************************/
+
+class decoderawtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "deposit";}
+    static const char* symbol(){ return "decoderawtx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "Deposit some etp, then get reward for frozen some etp."; }
+    const char* description() override { return "decoderawtx "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("AMOUNT", 1);
+            .add("TRANSACTION", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.amount, "AMOUNT", variables, input, raw);
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -78,36 +77,11 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            "Account name."
-	    )
         (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
-	    )
-        (
-            "AMOUNT",
-            value<uint64_t>(&argument_.amount)->required(),
-            "How many you will deposit."
-        )
-		(
-			"address,a",
-			value<std::string>(&argument_.address),
-			"The deposit target address."
-		)
-	    (
-            "deposit,d",
-            value<uint16_t>(&argument_.deposit)->default_value(7),
-            "Deposits support [7, 30, 90, 182, 365] days. defaluts to 7 days"
-	    )
-	    (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "The fee of tx. default_value 0.0001 etp"
-	    );
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to sign."
+        );
 
         return options;
     }
@@ -121,10 +95,7 @@ public:
 
     struct argument
     {
-        uint64_t amount;
-        uint64_t fee;
-        uint16_t deposit;
-		std::string address;
+        explorer::config::transaction transaction;
     } argument_;
 
     struct option
@@ -132,7 +103,6 @@ public:
     } option_;
 
 };
-
 
 } // namespace commands
 } // namespace explorer

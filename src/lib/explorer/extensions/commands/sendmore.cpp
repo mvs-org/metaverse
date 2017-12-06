@@ -41,65 +41,45 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
-/************************ sendmore *************************/
-#if 0
 console_result sendmore::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
-        throw address_list_nullptr_exception{"nullptr for address list"};
-
-    std::list<prikey_amount> palist;
-
-    const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"};
-    std::stringstream sout;
-    std::istringstream sin; 
-
-    // get balance
-    for (auto& each : *pvaddr){
-        sout.str("");
-        wallet[1] = each.get_address().c_str();
-        dispatch_command(4, wallet + 0, sin, sout, sout, blockchain);
-
-        pt::ptree pt;
-        sin.str(sout.str());
-        pt::read_json(sin, pt);
-        auto unspent = pt.get<uint64_t>("balance.unspent");
-        auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
-        if (balance){
-            palist.push_back({each.get_prv_key(auth_.auth), balance});
-        }
+    if (!argument_.mychange_address.empty() && !blockchain.is_valid_address(argument_.mychange_address))
+        throw toaddress_invalid_exception{std::string("invalid address!") + argument_.mychange_address};
+    //if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
+        //throw argument_legality_exception{argument_.mychange_address + std::string(" not owned to ") + auth_.name};
+    // receiver
+    receiver_record record;
+    std::vector<receiver_record> receiver;
+    
+    for( auto& each : argument_.receivers){
+        colon_delimited2_item<std::string, uint64_t> item(each);
+        record.target = item.first();
+        // address check
+        if (!blockchain.is_valid_address(record.target))
+            throw toaddress_invalid_exception{std::string("invalid address!") + record.target};
+        record.symbol = "";
+        record.amount = item.second();
+        if (!record.amount)
+            throw argument_legality_exception{std::string("invalid amount parameter!") + each};
+        record.asset_amount = 0;
+        record.type = utxo_attach_type::etp; // attach not used so not do attah init
+        receiver.push_back(record);
     }
+    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
+    
+    send_helper.exec();
 
-    // sort
-    palist.sort([](const prikey_amount& first, const prikey_amount& last){
-            return first.second < last.second;
-            });
-
-    auto random = bc::pseudo_random();
-    auto index = random % pvaddr->size();
-
-    // my change
-    std::string mychange;
-    if (argument_.mychange_address.empty()){
-        mychange = pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee);
-    } else {
-        mychange = argument_.mychange_address + ":" + std::to_string(argument_.fee);
-    }
-
-    argument_.receivers.push_back(mychange);
-
-    utxo_helper utxo(std::move(palist), std::move(argument_.receivers));
-    utxo.set_testnet_rules(blockchain.chain_settings().use_testnet_rules);
-    // send
-    send_impl(utxo, blockchain, output, output);
+    // json output
+    auto tx = send_helper.get_transaction();
+    pt::write_json(output, config::prop_tree(tx, true));
+    log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
-#endif
 
 
 } // namespace commands

@@ -28,7 +28,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-
+#if 0
 /************************ importaccount *************************/
 
 class importaccount: public command_extension
@@ -495,7 +495,7 @@ public:
     } option_;
 
 };
-
+#endif
 
 } // commands
 } // explorer

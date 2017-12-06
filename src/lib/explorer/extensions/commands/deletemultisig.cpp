@@ -28,9 +28,10 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/changepasswd.hpp>
+#include <metaverse/explorer/extensions/commands/deletemultisig.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -38,38 +39,65 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-console_result changepasswd::invoke (std::ostream& output,
+console_result deletemultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
+    // parameter account name check
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-
-    std::string mnemonic;
-    acc->get_mnemonic(auth_.auth, mnemonic);
+    //auto acc_multisig = acc->get_multisig();
+    account_multisig acc_multisig;
+        
+    if(!(acc->get_multisig_by_address(acc_multisig, option_.address)))
+        throw multisig_notfound_exception{option_.address + std::string(" multisig record not found.")};
     
-    acc->set_passwd(option_.passwd);
-    acc->set_mnemonic(mnemonic, option_.passwd);
+    acc->remove_multisig(acc_multisig);
 
+    // change account type
+    acc->set_type(account_type::common);
+    if(acc->get_multisig_vec().size())
+        acc->set_type(account_type::multisignature);
+    // flush to db
     blockchain.store_account(acc);
-    
-    // reencry address
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
-        throw address_list_nullptr_exception{"empty address list"};
-    
-    std::string prv_key;
-    for (auto& each : *pvaddr){
-        prv_key = each.get_prv_key(auth_.auth);
-        each.set_prv_key(prv_key, option_.passwd);
+
+    pt::ptree root, pubkeys;
+
+    root.put("index", acc_multisig.get_index());
+    root.put("m", acc_multisig.get_m());
+    root.put("n", acc_multisig.get_n());
+    root.put("self-publickey", acc_multisig.get_pubkey());
+    root.put("description", acc_multisig.get_description());
+
+    for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
+        pt::ptree pubkey;
+        pubkey.put("", each);
+        pubkeys.push_back(std::make_pair("", pubkey));
     }
-    // delete all old address
+    root.add_child("public-keys", pubkeys);
+    root.put("multisig-script", acc_multisig.get_multisig_script());
+    root.put("address", acc_multisig.get_address());
+    
+    // delete account address
+    auto vaddr = blockchain.get_account_addresses(auth_.name);
+    if(!vaddr) throw address_list_empty_exception{"empty address list for this account"};
+
     blockchain.delete_account_address(auth_.name);
+    for (auto it = vaddr->begin(); it != vaddr->end();) {
+        if (it->get_address() == acc_multisig.get_address()) {
+            it = vaddr->erase(it);
+            break;
+        }
+        ++it;
+    }
+
     // restore address
-    for (auto& each : *pvaddr) {
+    for (auto& each : *vaddr) {
         auto addr = std::make_shared<bc::chain::account_address>(each);
         blockchain.store_account_address(addr);
     }
-
+    
+    pt::write_json(output, root);
+    
     return console_result::okay;
 }
 

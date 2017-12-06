@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/sendasset.hpp>
+#include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -39,40 +39,31 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
-console_result sendasset::invoke (std::ostream& output,
+console_result sendrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    blockchain.uppercase_symbol(argument_.symbol);
+    // get raw tx
+    std::ostringstream buffer;
+    pt::write_json(buffer, config::prop_tree(argument_.transaction, true));
+    log::trace("sendrawtx=") << buffer.str();
+    tx_type tx_ = argument_.transaction;
+
+    // max transfer fee check
+    uint64_t inputs_etp_val = 0, outputs_etp_val = tx_.total_output_value();
+    if(!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
+        throw tx_validate_exception{std::string("get transaction inputs etp value error!")};
+    if((inputs_etp_val - outputs_etp_val) > argument_.fee) //  fee more than max limit etp
+        throw tx_validate_exception{std::string("invalid tx fee")};
+    if(blockchain.validate_transaction(tx_))
+        throw tx_validate_exception{std::string("validate transaction failure")};
+    if(blockchain.broadcast_transaction(tx_)) 
+        throw tx_broadcast_exception{std::string("broadcast transaction failure")};
+
+    pt::ptree aroot;
+    aroot.put("hash", encode_hash(tx_.hash()));
+    pt::write_json(output, aroot);
     
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid to address parameter!"};
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
-
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
-    };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
-    
-    send_helper.exec();
-
-    // json output
-    auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    log::debug("command")<<"transaction="<<output.rdbuf();
-
     return console_result::okay;
 }
 

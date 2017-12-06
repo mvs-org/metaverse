@@ -38,11 +38,6 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ importaccount *************************/
-
-#if 0
-
 class importaccount: public command_extension
 {
 public:
@@ -103,7 +98,8 @@ public:
 			"hd_index,i",
 			value<std::uint32_t>(&option_.hd_index),
 			"Teh HD index for the account."
-		);
+		)
+		;
 
         return options;
     }
@@ -137,7 +133,6 @@ public:
     } option_;
 
 };
-#endif
 
 } // namespace commands
 } // namespace explorer

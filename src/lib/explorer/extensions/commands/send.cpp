@@ -41,64 +41,32 @@ namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
-#if 0
-/************************ send *************************/
-
 console_result send::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
-        throw address_list_nullptr_exception{"nullptr for address list"};
-
-    std::list<prikey_amount> palist;
-
-    const char* wallet[4]{"xfetchbalance", nullptr, "-t", "etp"};
-    std::stringstream sout;
-    std::istringstream sin; 
-
-    // get balance
-    for (auto& each : *pvaddr){
-        sout.str("");
-        wallet[1] = each.get_address().c_str();
-        dispatch_command(4, wallet + 0, sin, sout, sout, blockchain);
-
-        pt::ptree pt;
-        sin.str(sout.str());
-        pt::read_json(sin, pt);
-        auto unspent = pt.get<uint64_t>("balance.unspent");
-        auto frozen = pt.get<uint64_t>("balance.frozen");
-        auto balance = unspent - frozen;
-        if (balance){
-            palist.push_back({each.get_prv_key(auth_.auth), balance});
-        }
-    }
-
-    auto random = bc::pseudo_random();
-
-    // sort
-    palist.sort([random](const prikey_amount& first, const prikey_amount& last){
-            return first.second < last.second;
-            });
-
-    auto index = random % pvaddr->size();
-
-    // my change
-    std::vector<std::string> receiver{
-        {argument_.address + ":" + std::to_string(argument_.amount)},
-        {pvaddr->at(index).get_address() + ":" + std::to_string(argument_.fee)}
+    if (!blockchain.is_valid_address(argument_.address))
+        throw address_invalid_exception{std::string("invalid address : ") + argument_.address};
+    
+    // receiver
+    std::vector<receiver_record> receiver{
+        {argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
+    if(!argument_.memo.empty())
+        receiver.push_back({argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
+    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            "", std::move(receiver), argument_.fee);
+    
+    send_helper.exec();
 
-    utxo_helper utxo(std::move(palist), std::move(receiver));
-    utxo.set_testnet_rules(blockchain.chain_settings().use_testnet_rules);
-
-    // send
-    send_impl(utxo, blockchain, output, output);
+    // json output
+    auto tx = send_helper.get_transaction();
+    pt::write_json(output, config::prop_tree(tx, true));
+    log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }
-#endif
 
 
 } // namespace commands

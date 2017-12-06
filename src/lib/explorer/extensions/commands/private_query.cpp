@@ -32,7 +32,7 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 /************************ getpublickey *************************/
-
+#if 0
 console_result getpublickey::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -81,7 +81,7 @@ console_result getpublickey::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
+#endif
 } // commands
 } // explorer
 } // libbitcoin

@@ -29,7 +29,7 @@ namespace explorer {
 namespace commands {
 
 /************************ deposit *************************/
-
+#if 0
 class deposit : public command_extension
 {
 public:
@@ -1691,7 +1691,7 @@ public:
     } option_;
 
 };
-
+#endif
 }
 } 
 }

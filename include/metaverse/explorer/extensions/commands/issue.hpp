@@ -38,10 +38,7 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ issue *************************/
-
-#if 0
 class issue: public command_extension
 {
 public:
@@ -124,8 +121,6 @@ public:
     } option_;
 
 };
-
-#endif
 
 
 } // namespace commands

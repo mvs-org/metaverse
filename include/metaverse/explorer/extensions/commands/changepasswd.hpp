@@ -38,9 +38,8 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 /************************ changepasswd *************************/
-#if 0
+
 class changepasswd: public command_extension
 {
 public:
@@ -120,7 +119,6 @@ public:
     } option_;
 
 };
-#endif
 
 } // namespace commands
 } // namespace explorer

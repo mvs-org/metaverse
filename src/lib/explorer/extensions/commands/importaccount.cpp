@@ -38,10 +38,6 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-#if 0
-/************************ importaccount *************************/
-
 console_result importaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -50,11 +46,16 @@ console_result importaccount::invoke (std::ostream& output,
     std::stringstream sout("");
     
     // parameter account name check
+    auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
-        throw account_existed_exception{"account already exist"};
+     throw account_existed_exception{"account already exist"};
 
+	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
+		option_.passwd.length() > 128 || option_.passwd.length() < 6)
+		throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
+    
     if (argument_.words.size() > 24)
-        throw mnemonicwords_amount_exception{"word count must be less than or equal 24"};
+        throw argument_exceed_limit_exception{"word count must be less than or equal 24"};
     
     for(auto& i : argument_.words){
         sout<<i<<" ";
@@ -66,23 +67,35 @@ console_result importaccount::invoke (std::ostream& output,
     lang<<option_.language;
     sin.str("");
     sout.str("");
-    //const char* wallet[256]{"mnemonic-to-seed", "-l", lang.str().c_str()};
-    const char* wallet[64]{0x00};
+
+    //const char* cmds[256]{"mnemonic-to-seed", "-l", lang.str().c_str()};
+    const char* cmds[64]{0x00};
     int i = 0;
-    wallet[i++] = "mnemonic-to-seed";
-    wallet[i++] = "-l";
+    cmds[i++] = "mnemonic-to-seed";
+    cmds[i++] = "-l";
     auto s_lang = lang.str();
-    wallet[i++] = s_lang.c_str();
-    // 
-    for(auto& word : argument_.words){
-        wallet[i++] = word.c_str();
+    cmds[i++] = s_lang.c_str();
+    // words size check
+    std::vector<std::string> tokens;
+    if(argument_.words.size() == 24) {
+        for(auto& word : argument_.words){
+            cmds[i++] = word.c_str();
+        }
+    } else if(argument_.words.size() == 1) { // all words include in ""
+        tokens = split(argument_.words.at(0));
+        for(auto& word : tokens){
+            cmds[i++] = word.c_str();
+        }
+    } else {
+        throw argument_size_invalid_exception{"words count should be 24, not " + std::to_string(argument_.words.size())};
     }
 
-    if( console_result::okay != dispatch_command(i, wallet , sin, sout, sout)) {
-        output<<sout.str();
-        return console_result::failure;
+    if(dispatch_command(i, cmds , sin, sout, sout) != console_result::okay) {
+        throw mnemonicwords_to_seed_exception(sout.str());
     }
-    
+     
+     
+    relay_exception(sout);
     // 2. check mnemonic exist in account database
     #if 0 // mnemonic is encrypted by passwd so no check now
     auto is_mnemonic_exist = false;
@@ -113,14 +126,18 @@ console_result importaccount::invoke (std::ostream& output,
     root.put("hd_index", option_.hd_index);
     
     uint32_t idx = 0;
-    const char* wallet2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};
+    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};
     pt::ptree addresses;
     
     for( idx = 0; idx < option_.hd_index; idx++ ) {
         pt::ptree addr;
         sin.str("");
         sout.str("");
-        dispatch_command(3, wallet2 , sin, sout, sout, blockchain);
+        if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+            throw address_generate_exception(sout.str());
+        }
+         
+        relay_exception(sout);
         addr.put("", sout.str());
         addresses.push_back(std::make_pair("", addr));
     }
@@ -131,7 +148,6 @@ console_result importaccount::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-#endif
 
 } // namespace commands
 } // namespace explorer

@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/sendasset.hpp>
+#include <metaverse/explorer/extensions/commands/createmultisigtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -39,40 +39,39 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
-console_result sendasset::invoke (std::ostream& output,
+console_result createmultisigtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    blockchain.uppercase_symbol(argument_.symbol);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    if(!blockchain.is_valid_address(argument_.from)) 
+        throw fromaddress_invalid_exception{"invalid from address!"};
     
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid to address parameter!"};
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
-
+    auto addr = bc::wallet::payment_address(argument_.from);
+    if(addr.version() != 0x05) // for multisig address
+        throw fromaddress_invalid_exception{"from address is not script address."};
+    if(!blockchain.is_valid_address(argument_.to)) 
+        throw toaddress_invalid_exception{"invalid to address!"};
+    
+    account_multisig acc_multisig;
+    if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
+        throw multisig_notfound_exception{"from address multisig record not found."};
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
+    auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+            std::move(argument_.from), std::move(receiver), argument_.fee, 
+            acc_multisig);
     
     send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
-    log::debug("command")<<"transaction="<<output.rdbuf();
 
+    //pt::write_json(output, config::prop_tree(tx, true));
+    //output << "raw tx content" << std::endl << config::transaction(tx);
+    output << config::transaction(tx);
     return console_result::okay;
 }
 

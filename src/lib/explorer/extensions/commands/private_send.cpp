@@ -32,7 +32,7 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 #define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-
+#if 0
 /************************ deposit *************************/
 console_result deposit::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -845,7 +845,7 @@ console_result sendrawtx::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
+#endif
 } //commands
 } // explorer
 } // libbitcoin
