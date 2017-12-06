@@ -31,6 +31,7 @@
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp> 
 
 namespace libbitcoin {
 namespace explorer {
