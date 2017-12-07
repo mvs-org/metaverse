@@ -142,11 +142,7 @@ void session_manual::handle_channel_start(const code& ec,
     // Treat a start failure just like a stop, but preserve the start handler.
     if (ec)
     {
-<<<<<<< HEAD
-        log::debug(LOG_NETWORK)
-=======
         log::trace(LOG_NETWORK)
->>>>>>> origin/bugfix/block_subscriber_release
             << "Manual channel failed to start [" << channel->authority()
             << "] " << ec.message();
 
@@ -157,10 +153,7 @@ void session_manual::handle_channel_start(const code& ec,
             return;
         }
 
-<<<<<<< HEAD
-=======
 //        connect(hostname, port, handler);
->>>>>>> origin/bugfix/block_subscriber_release
         return;
     }
 
@@ -202,19 +195,11 @@ void session_manual::handle_channel_stop(const code& ec,
     log::debug(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
-<<<<<<< HEAD
     if (stopped() || (ec.value() == error::service_stopped))
         return;
 
-    auto shared_this = shared_from_base<session_manual>();
-    const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
-    timer->start(std::bind([shared_this, hostname, port]() {
-        shared_this->connect(hostname, port);
-    }));   
-=======
     delay_new_connection(hostname, port, [](code, channel::ptr){}, 0);
 
->>>>>>> origin/bugfix/block_subscriber_release
 }
 
 } // namespace network
