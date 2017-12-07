@@ -117,13 +117,13 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
         delay_new_connect(connect);
         return;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected to outbound channel [" << channel->authority() << "]";
 
     register_channel(channel, 
@@ -158,6 +158,7 @@ void session_outbound::handle_channel_stop(const code& ec,
     connector::ptr connect, channel::ptr channel)
 {
     channel->invoke_protocol_start_handler(error::channel_stopped);
+    log::debug(LOG_NETWORK) << "channel stopped," << ec.message();
 
     if(! stopped() && ec.value() != error::service_stopped)
     {
