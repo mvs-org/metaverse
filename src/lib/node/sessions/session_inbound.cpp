@@ -50,14 +50,22 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
     auto self = shared_from_this();
     attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
         if (!ec) {
-            auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
-            auto pt_address = attach<protocol_address>(channel)->do_subscribe();
-            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_)->do_subscribe();
-            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_)->do_subscribe();
-            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
-            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
+            auto pt_ping = attach<protocol_ping>(channel);
+            auto pt_address = attach<protocol_address>(channel);
+            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_);
+            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_);
+            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_);
+            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_);
+
+            pt_ping->do_subscribe();
+            pt_address->do_subscribe();
+            pt_block_in->do_subscribe();
+            pt_block_out->do_subscribe();
+            pt_tx_in->do_subscribe();
+            pt_tx_out->do_subscribe();
+
             channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
-                pt_ping->start([](const code& ec){});
+                pt_ping->start();
                 pt_address->start();
                 pt_block_in->start();
                 pt_block_out->start();
@@ -65,13 +73,12 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
                 pt_tx_out->start();
             });
         }
-        else
+
+        if (stopped() || ec)
         {
         	channel->invoke_protocol_start_handler(error::channel_stopped);
         }
         handle_started(ec);
-        if(stopped())
-			channel->invoke_protocol_start_handler(error::channel_stopped);
     });
 
 }

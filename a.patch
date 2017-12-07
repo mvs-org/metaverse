@@ -1,0 +1,1761 @@
+diff --git a/include/metaverse/network/connector.hpp b/include/metaverse/network/connector.hpp
+index ac48630..7fb5817 100644
+--- a/include/metaverse/network/connector.hpp
++++ b/include/metaverse/network/connector.hpp
+@@ -80,7 +80,7 @@ private:
+         connect_handler handler, resolve_handler);
+     void handle_timer(const code& ec, socket::ptr socket,
+         connect_handler handler);
+-    void handle_connect(const boost_code& ec, asio::iterator iter, socket::ptr socket, deadline::ptr timer, connect_handler handler);
++    void handle_connect(const boost_code& ec, socket::ptr socket, deadline::ptr timer, connect_handler handler);
+ 
+     std::atomic<bool> stopped_;
+     threadpool& pool_;
+diff --git a/include/metaverse/network/hosts.hpp b/include/metaverse/network/hosts.hpp
+index 4b346af..497938d 100644
+--- a/include/metaverse/network/hosts.hpp
++++ b/include/metaverse/network/hosts.hpp
+@@ -40,6 +40,14 @@ namespace network {
+ /// The store can be loaded and saved from/to the specified file path.
+ /// The file is a line-oriented set of config::authority serializations.
+ /// Duplicate addresses and those with zero-valued ports are disacarded.
++
++struct address_compare{
++    bool operator()(const libbitcoin::message::network_address& lhs, const libbitcoin::message::network_address& rhs)
++    {
++        return lhs.ip < rhs.ip ? true : (lhs.ip > rhs.ip ? false : lhs.port < rhs.port);
++    }
++};
++
+ class BCT_API hosts
+   : public enable_shared_from_base<hosts>
+ {
+@@ -69,7 +77,7 @@ public:
+     address::list copy();
+ private:
+ //    typedef boost::circular_buffer<address> list;
+-    using list = std::vector<address>;
++    using list = std::set<address, address_compare >;
+     typedef list::iterator iterator;
+ 
+     iterator find(const address& host);
+@@ -78,6 +86,7 @@ private:
+ 
+     // These are protected by a mutex.
+     list buffer_;
++    list inactive_;
+     std::atomic<bool> stopped_;
+     mutable upgrade_mutex mutex_;
+ 
+diff --git a/include/metaverse/network/protocols/protocol.hpp b/include/metaverse/network/protocols/protocol.hpp
+index 327a043..b55e552 100644
+--- a/include/metaverse/network/protocols/protocol.hpp
++++ b/include/metaverse/network/protocols/protocol.hpp
+@@ -112,6 +112,8 @@ protected:
+     /// complete before any other thread could read the peer version.
+     virtual void set_peer_version(message::version::ptr value);
+ 
++    uint32_t peer_start_height();
++
+     /// Get the threadpool.
+     virtual threadpool& pool();
+ 
+@@ -120,6 +122,8 @@ protected:
+ 
+     virtual bool misbehaving(int32_t howmuch);
+ 
++    bool channel_stopped() { return channel_->stopped(); }
++
+ private:
+     threadpool& pool_;
+     channel::ptr channel_;
+diff --git a/include/metaverse/network/protocols/protocol_ping.hpp b/include/metaverse/network/protocols/protocol_ping.hpp
+index 1482c31..9db7a65 100644
+--- a/include/metaverse/network/protocols/protocol_ping.hpp
++++ b/include/metaverse/network/protocols/protocol_ping.hpp
+@@ -43,8 +43,6 @@ class BCT_API protocol_ping
+ {
+ public:
+     typedef std::shared_ptr<protocol_ping> ptr;
+-    using result_handler = std::function<void(const code&)>;
+-    using ready_handler = std::function<void()>;
+ 
+     /**
+      * Construct a ping protocol instance.
+@@ -58,7 +56,7 @@ public:
+     /**
+      * Start the protocol.
+      */
+-    virtual void start(result_handler handler);
++    virtual void start();
+ 
+     void handle_or_not(uint64_t nonce);
+ 
+@@ -70,8 +68,6 @@ private:
+         uint64_t nonce);
+ 
+     const settings& settings_;
+-    result_handler result_handler_;
+-    shared_mutex mutex_;
+ };
+ 
+ } // namespace network
+diff --git a/include/metaverse/network/proxy.hpp b/include/metaverse/network/proxy.hpp
+index c38282c..8504ee6 100644
+--- a/include/metaverse/network/proxy.hpp
++++ b/include/metaverse/network/proxy.hpp
+@@ -93,6 +93,8 @@ public:
+     /// Save the p2p protocol version object of the peer.
+     virtual void set_version(message::version::ptr value);
+ 
++    uint32_t peer_start_height() { return peer_version_message_.load() ? peer_version_message_.load()->start_height : 0; }
++
+     /// Read messages from this socket.
+     virtual void start(result_handler handler);
+ 
+@@ -101,18 +103,12 @@ public:
+ 
+     void dispatch();
+ 
+-    void clear_request() {
+-        scoped_lock lock{mutex_};
+-        std::queue<request_callback>{}.swap(pending_requests_);
+-        processing_.store(false);
+-    }
+-
+     static bool blacklisted(const config::authority&);
+ 
+     virtual bool misbehaving(int32_t howmuch);
+ 
+-protected:
+     virtual bool stopped() const;
++protected:
+     virtual void handle_activity() = 0;
+     virtual void handle_stopping() = 0;
+ 
+@@ -156,9 +152,6 @@ private:
+     bc::atomic<message::version::ptr> peer_version_message_;
+     message_subscriber message_subscriber_;
+     stop_subscriber::ptr stop_subscriber_;
+-    std::queue<request_callback> pending_requests_;
+-    std::atomic_bool processing_;
+-    unique_mutex mutex_;
+     std::queue<request_callback> outbound_queue_;
+     std::atomic_bool has_sent_;
+ 
+diff --git a/include/metaverse/network/sessions/session.hpp b/include/metaverse/network/sessions/session.hpp
+index c4e0687..8b3d4f3 100644
+--- a/include/metaverse/network/sessions/session.hpp
++++ b/include/metaverse/network/sessions/session.hpp
+@@ -144,6 +144,8 @@ protected:
+ 
+     void remove(const message::network_address& address, result_handler handler);
+ 
++    void store(const message::network_address& address);
++
+     /// Socket creators.
+     virtual acceptor::ptr create_acceptor();
+     virtual connector::ptr create_connector();
+diff --git a/include/metaverse/network/sessions/session_manual.hpp b/include/metaverse/network/sessions/session_manual.hpp
+index 2bb6242..80c461a 100644
+--- a/include/metaverse/network/sessions/session_manual.hpp
++++ b/include/metaverse/network/sessions/session_manual.hpp
+@@ -62,6 +62,9 @@ protected:
+     /// Override to attach specialized protocols upon channel start.
+     virtual void attach_protocols(channel::ptr channel);
+ 
++    void delay_new_connection(const std::string& hostname, uint16_t port
++            , channel_handler handler, uint32_t retries);
++
+ private:
+     void handle_started(const code& ec, result_handler handler);
+     void start_connect(const std::string& hostname, uint16_t port,
+diff --git a/include/metaverse/node/sessions/session_manual.hpp b/include/metaverse/node/sessions/session_manual.hpp
+index 737f6ea..d744cf9 100644
+--- a/include/metaverse/node/sessions/session_manual.hpp
++++ b/include/metaverse/node/sessions/session_manual.hpp
+@@ -41,6 +41,7 @@ public:
+         blockchain::transaction_pool& pool);
+ 
+ protected:
++    void attach_handshake_protocols(network::channel::ptr channel, result_handler handle_started);
+     /// Overridden to attach blockchain protocols.
+     void attach_protocols(network::channel::ptr channel) override;
+ 
+diff --git a/src/lib/blockchain/validate_transaction.cpp b/src/lib/blockchain/validate_transaction.cpp
+index dd28593..b2b5fd4 100644
+--- a/src/lib/blockchain/validate_transaction.cpp
++++ b/src/lib/blockchain/validate_transaction.cpp
+@@ -70,7 +70,12 @@ void validate_transaction::start(validate_handler handler)
+ 
+     if (ec)
+     {
+-        handle_validate_(ec, tx_, {});
++        if (ec == error::input_not_found)
++        {
++            handle_validate_(ec, tx_, {current_input_});
++            return;
++        }
++        handle_validate_(ec, tx_, {});
+         return;
+     }
+ 
+diff --git a/src/lib/network/channel.cpp b/src/lib/network/channel.cpp
+index 33a9bc2..e88a615 100644
+--- a/src/lib/network/channel.cpp
++++ b/src/lib/network/channel.cpp
+@@ -103,7 +103,7 @@ void channel::set_nonce(uint64_t value)
+ 
+ void channel::set_protocol_start_handler(std::function<void()> handler)
+ {
+-    protocol_start_handler_ = handler;
++    protocol_start_handler_ = std::move(handler);
+ }
+ 
+ void channel::invoke_protocol_start_handler(const code& ec)
+@@ -151,12 +151,16 @@ void channel::start_expiration()
+     expiration_->start(
+         std::bind(&channel::handle_expiration,
+             shared_from_base<channel>(), _1));
++    if (stopped())
++        expiration_->stop();
+ }
+ 
+ void channel::handle_expiration(const code& ec)
+ {
+     if (stopped())
++    {
+         return;
++    }
+ 
+     log::debug(LOG_NETWORK)
+         << "Channel lifetime expired [" << authority() << "]";
+@@ -172,12 +176,16 @@ void channel::start_inactivity()
+     inactivity_->start(
+         std::bind(&channel::handle_inactivity,
+             shared_from_base<channel>(), _1));
++    if (stopped())
++        inactivity_->stop();
+ }
+ 
+ void channel::handle_inactivity(const code& ec)
+ {
+     if (stopped())
++    {
+         return;
++    }
+ 
+     log::debug(LOG_NETWORK)
+         << "Channel inactivity timeout [" << authority() << "]";
+diff --git a/src/lib/network/connector.cpp b/src/lib/network/connector.cpp
+index b7c6bc2..890941c 100644
+--- a/src/lib/network/connector.cpp
++++ b/src/lib/network/connector.cpp
+@@ -29,6 +29,8 @@
+ #include <metaverse/network/proxy.hpp>
+ #include <metaverse/network/settings.hpp>
+ #include <metaverse/network/socket.hpp>
++#include <boost/format.hpp>
++#include <boost/regex.hpp>
+ 
+ namespace libbitcoin {
+ namespace network {
+@@ -104,11 +106,67 @@ void connector::connect(const endpoint& endpoint, connect_handler handler
+     connect(endpoint.host(), endpoint.port(), handler, h);
+ }
+ 
++static std::string to_ipv4_hostname(const asio::address& ip_address)
++{
++    // std::regex requires gcc 4.9, so we are using boost::regex for now.
++    static const boost::regex regular("^::ffff:([0-9\\.]+)$");
++
++    const auto address = ip_address.to_string();
++    boost::sregex_iterator it(address.begin(), address.end(), regular), end;
++    if (it == end)
++        return "";
++
++    const auto& match = *it;
++    return match[1];
++}
++
++static std::string to_ipv6(const std::string& ipv4_address)
++{
++    return std::string("::ffff:") + ipv4_address;
++}
++
++static asio::ipv6 to_ipv6(const asio::ipv4& ipv4_address)
++{
++    // Create an IPv6 mapped IPv4 address via serialization.
++    const auto ipv6 = to_ipv6(ipv4_address.to_string());
++    return asio::ipv6::from_string(ipv6);
++}
++
++static asio::ipv6 to_ipv6(const asio::address& ip_address)
++{
++    if (ip_address.is_v6())
++        return ip_address.to_v6();
++
++    BITCOIN_ASSERT_MSG(ip_address.is_v4(),
++        "The address must be either IPv4 or IPv6.");
++
++    return to_ipv6(ip_address.to_v4());
++}
++
++static std::string to_ipv6_hostname(const asio::address& ip_address)
++{
++    // IPv6 URLs use a bracketed IPv6 address, see rfc2732.
++    const auto hostname = boost::format("%1%") % to_ipv6(ip_address);
++    return hostname.str();
++}
++
++static asio::ipv6 to_boost_address(const message::ip_address& in)
++{
++    asio::ipv6::bytes_type bytes;
++    BITCOIN_ASSERT(bytes.size() == in.size());
++    std::copy(in.begin(), in.end(), bytes.begin());
++    const asio::ipv6 out(bytes);
++    return out;
++}
++
+ // public:
+ void connector::connect(const authority& authority, connect_handler handler
+         , resolve_handler h)
+ {
+-    connect(authority.to_hostname(), authority.port(), handler, h);
++//    connect(authority.to_hostname(), authority.port(), handler, h);
++    auto ip = to_boost_address(authority.ip());
++    auto ipv4_hostname = to_ipv4_hostname(ip);
++    connect(ipv4_hostname.empty() ? to_ipv6_hostname(ip) : ipv4_hostname, authority.port(), handler, h);
+ }
+ 
+ // public:
+@@ -128,7 +186,6 @@ void connector::connect(const std::string& hostname, uint16_t port,
+         //---------------------------------------------------------------------
+         return;
+     }
+-
+     auto query = std::make_shared<asio::query>(hostname, std::to_string(port));
+ 
+     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+@@ -191,7 +248,6 @@ void connector::handle_resolve(const boost_code& ec, asio::iterator iterator,
+         timer->start(
+             std::bind(&connector::handle_timer,
+                 shared_from_this(), _1, socket, handle_connect));
+-    
+         safe_connect(resolver_iterator, socket, timer, handle_connect);
+     };
+     
+@@ -216,11 +272,10 @@ void connector::safe_connect(asio::iterator iterator, socket::ptr socket,
+     // This is branch #2 of the connnect sequence.
+     using namespace boost::asio;
+     ip::tcp::endpoint endpoint = *iterator;
+-    bc::log::trace(NAME)<< "conecting addr:" << endpoint;
+ 
+-    async_connect(locked->get(), iterator,
++    locked->get().async_connect(endpoint,
+         std::bind(&connector::handle_connect,
+-            shared_from_this(), _1, _2, socket, timer, handler));
++            shared_from_this(), _1, socket, timer, handler));
+     /////////////////////////////////////////////////////////////////////////// 
+ }
+ 
+@@ -244,7 +299,7 @@ void connector::handle_timer(const code& ec, socket::ptr socket,
+ // ----------------------------------------------------------------------------
+ 
+ // private:
+-void connector::handle_connect(const boost_code& ec, asio::iterator iter,
++void connector::handle_connect(const boost_code& ec,
+     socket::ptr socket, deadline::ptr timer, connect_handler handler)
+ {
+     pending_.remove(socket);
+diff --git a/src/lib/network/hosts.cpp b/src/lib/network/hosts.cpp
+index 77dc182..f0c7662 100644
+--- a/src/lib/network/hosts.cpp
++++ b/src/lib/network/hosts.cpp
+@@ -33,6 +33,7 @@ namespace network {
+ 
+ #define NAME "hosts"
+ 
++
+ hosts::hosts(threadpool& pool, const settings& settings)
+   : stopped_(true),
+     dispatch_(pool, NAME),
+@@ -40,7 +41,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
+     disabled_(settings.host_pool_capacity == 0),
+     pool_{pool}
+ {
+-    buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
++//    buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
+ }
+ 
+ // private
+@@ -50,8 +51,8 @@ hosts::iterator hosts::find(const address& host)
+     {
+         return entry.port == host.port && entry.ip == host.ip;
+     };
+-
+-    return std::find_if(buffer_.begin(), buffer_.end(), found);
++    return buffer_.find(host);
++//    return std::find_if(buffer_.begin(), buffer_.end(), found);
+ }
+ 
+ size_t hosts::count() const
+@@ -64,45 +65,54 @@ size_t hosts::count() const
+     ///////////////////////////////////////////////////////////////////////////
+ }
+ 
++static std::atomic<uint64_t> fetch_times{0};
++
++static std::vector<config::authority> hosts_{config::authority("198.199.84.199:5252")};
++
+ code hosts::fetch(address& out, const config::authority::list& excluded_list)
+ {
+     ///////////////////////////////////////////////////////////////////////////
+     // Critical Section
+-//    shared_lock lock(mutex_);
+-    mutex_.lock_upgrade();
+-
+-    if (stopped_)
+-    {
+-        mutex_.unlock_upgrade();
+-        return error::service_stopped;
+-    }
+-
+-    mutex_.unlock_upgrade_and_lock();
+-    if (buffer_.empty())
+-    {
+-        mutex_.unlock();
+-        return error::not_found;
+-    }
++    shared_lock lock(mutex_);
++    fetch_times++;
++    config::authority::list addresses;
++    list* buffer=nullptr;
++    {
+ 
+-    // Randomly select an address from the buffer.
++        if (stopped_)
++        {
++            return error::service_stopped;
++        }
+ 
+-    config::authority::list addresses;
++        if (fetch_times % 5 == 4)
++            buffer = &buffer_;
++        else
++            buffer = &inactive_;
++    }
+ 
+-    for(auto entry: buffer_)
+-    {
++    for(auto entry: *buffer)
++    {
+         auto iter = std::find(excluded_list.begin(), excluded_list.end(), config::authority(entry) );
+         if(iter == excluded_list.end())
+         {
+             addresses.push_back(config::authority(entry));
+         }
+-    }
+-    mutex_.unlock();
++    }
+ 
+-    if(addresses.empty()){
+-        return error::not_satisfied;
+-    }
+-    const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
+-    out = addresses[index].to_network_address();
++    if (addresses.empty()) {
++        if (inactive_.empty()) {
++            return error::not_found;
++        }
++        const auto index = static_cast<size_t>(pseudo_random() % inactive_.size());
++        out = addresses[index].to_network_address();
++        return error::success;
++    }
++
++    const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
++    out = addresses[index].to_network_address();
++
++//    const auto index = static_cast<size_t>(pseudo_random() % hosts_.size());
++//    out = hosts_[index].to_network_address();
+     return error::success;
+     ///////////////////////////////////////////////////////////////////////////
+ }
+@@ -113,10 +123,9 @@ hosts::address::list hosts::copy()
+ 
+     shared_lock lock{mutex_};
+     copy.reserve(buffer_.size());
+-    std::find_if(buffer_.begin(), buffer_.end(), [&copy](const address& addr){
+-        copy.push_back(addr);
+-        return false;
+-    });
++    for (auto& h:buffer_) {
++        copy.push_back(h);
++    }
+     return copy;
+ }
+ 
+@@ -140,9 +149,12 @@ void hosts::handle_timer(const code& ec)
+ 
+     if (!file_error)
+     {
+-        log::debug(LOG_NETWORK) << "sync hosts to file(" << file_path_.string() << "), " << buffer_.size() << " hosts found";
++        log::debug(LOG_NETWORK) << "sync hosts to file(" << file_path_.string() << "), active hosts size is "
++                << buffer_.size() << " hosts found, inactive hosts size is " << inactive_.size();
+         for (const auto& entry: buffer_)
+             file << config::authority(entry) << std::endl;
++        for (const auto& entry: inactive_)
++            file << config::authority(entry) << std::endl;
+     }
+     else
+     {
+@@ -192,7 +204,7 @@ code hosts::start()
+                 auto network_address = host.to_network_address();
+                 if(network_address.is_routable())
+                 {
+-                    buffer_.push_back(network_address);
++                    buffer_.insert(network_address);
+                 }
+                 else
+                 {
+@@ -286,10 +298,15 @@ code hosts::remove(const address& host)
+         return error::success;
+     }
+ 
+-    mutex_.unlock_upgrade();
++    mutex_.unlock_upgrade_and_lock();
++    auto iter = inactive_.find(host);
++    if (iter == inactive_.end()) {
++        inactive_.insert(host);
++    }
++    mutex_.unlock();
+     ///////////////////////////////////////////////////////////////////////////
+ 
+-    return error::not_found;
++    return error::success;
+ }
+ 
+ code hosts::store(const address& host)
+@@ -315,7 +332,11 @@ code hosts::store(const address& host)
+     {
+         mutex_.unlock_upgrade_and_lock();
+         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-        buffer_.push_back(host);
++        buffer_.insert(host);
++        auto iter = inactive_.find(host);
++        if (iter != inactive_.end()){
++            inactive_.erase(iter);
++        }
+ 
+         mutex_.unlock();
+         //---------------------------------------------------------------------
+diff --git a/src/lib/network/protocols/protocol.cpp b/src/lib/network/protocols/protocol.cpp
+index 48909e7..7f7978e 100644
+--- a/src/lib/network/protocols/protocol.cpp
++++ b/src/lib/network/protocols/protocol.cpp
+@@ -61,6 +61,11 @@ void protocol::set_peer_version(message::version::ptr value)
+     channel_->set_version(value);
+ }
+ 
++uint32_t protocol::peer_start_height()
++{
++    return channel_->peer_start_height();
++}
++
+ threadpool& protocol::pool()
+ {
+     return pool_;
+diff --git a/src/lib/network/protocols/protocol_address.cpp b/src/lib/network/protocols/protocol_address.cpp
+index 7b86840..25c6fb2 100644
+--- a/src/lib/network/protocols/protocol_address.cpp
++++ b/src/lib/network/protocols/protocol_address.cpp
+@@ -47,6 +47,8 @@ protocol_address::ptr protocol_address::do_subscribe()
+ {
+     SUBSCRIBE2(address, handle_receive_address, _1, _2);
+     SUBSCRIBE2(get_address, handle_receive_get_address, _1, _2);
++    // Must have a handler to capture a shared self pointer in stop subscriber.
++    protocol_events::start(BIND1(handle_stop, _1));
+     return std::dynamic_pointer_cast<protocol_address>(protocol::shared_from_this());
+ }
+ 
+@@ -57,8 +59,6 @@ void protocol_address::start()
+ {
+     const auto& settings = network_.network_settings();
+ 
+-    // Must have a handler to capture a shared self pointer in stop subscriber.
+-    protocol_events::start(BIND1(handle_stop, _1));
+     if (settings.self.port() != 0)
+     {
+         self_ = address({ { settings.self.to_network_address() } });
+@@ -107,7 +107,8 @@ bool protocol_address::handle_receive_address(const code& ec,
+         log::trace(LOG_NETWORK)
+             << "Failure receiving address message from ["
+             << authority() << "] " << ec.message();
+-        stop(ec);
++          stop(ec);
++
+         return false;
+     }
+     remove_useless_address(message);
+@@ -145,10 +146,11 @@ bool protocol_address::handle_receive_get_address(const code& ec,
+         log::trace(LOG_NETWORK)
+             << "Failure receiving get_address message from ["
+             << authority() << "] " << ec.message();
+-        stop(ec);
++           stop(ec);
+         return false;
+     }
+ 
++
+     // TODO: allowing repeated queries can allow a channel to map our history.
+     // TODO: pull active hosts from host cache (currently just resending self).
+     // TODO: need to distort for privacy, don't send currently-connected peers.
+diff --git a/src/lib/network/protocols/protocol_events.cpp b/src/lib/network/protocols/protocol_events.cpp
+index 49b985d..1a1b99f 100644
+--- a/src/lib/network/protocols/protocol_events.cpp
++++ b/src/lib/network/protocols/protocol_events.cpp
+@@ -55,6 +55,8 @@ void protocol_events::start(event_handler handler)
+ {
+     handler_.store(handler);
+     SUBSCRIBE_STOP1(handle_stopped, _1);
++    if (channel_stopped())
++        set_event(error::channel_stopped);
+ }
+ 
+ // Stop.
+diff --git a/src/lib/network/protocols/protocol_ping.cpp b/src/lib/network/protocols/protocol_ping.cpp
+index fa0b89d..b0f0cc1 100644
+--- a/src/lib/network/protocols/protocol_ping.cpp
++++ b/src/lib/network/protocols/protocol_ping.cpp
+@@ -1,10 +1,9 @@
+ /**
+  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+  *
+- * This file is part of metaverse.
++ * This file is part of libbitcoin.
+  *
+- * metaverse is free software: you can redistribute it and/or modify
++ * libbitcoin is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU Affero General Public License with
+  * additional permissions to the one published by the Free Software
+  * Foundation, either version 3 of the License, or (at your option)
+@@ -47,47 +46,30 @@ protocol_ping::protocol_ping(p2p& network, channel::ptr channel)
+ protocol_ping::ptr protocol_ping::do_subscribe()
+ {
+     SUBSCRIBE2(ping, handle_receive_ping, _1, _2);
++    protocol_timer::start(settings_.channel_heartbeat(), BIND1(send_ping, _1));
+     return std::dynamic_pointer_cast<protocol_ping>(protocol::shared_from_this());
+ }
+ 
+-void protocol_ping::start(result_handler handler)
++void protocol_ping::start()
+ {
+-    protocol_timer::start(settings_.channel_heartbeat(), BIND1(send_ping, _1));
+-    {
+-        unique_lock lock{mutex_};
+-        result_handler_ = handler;
+-    }
++
++//    SUBSCRIBE2(ping, handle_receive_ping, _1, _2);
+ 
+     // Send initial ping message by simulating first heartbeat.
+     set_event(error::success);
+ }
+ 
+-void protocol_ping::handle_or_not(uint64_t nonce)
+-{
+-    shared_lock lock{mutex_};
+-    if (result_handler_)
+-    {
+-        log::trace(LOG_NETWORK) << "handle or not";
+-        SEND2(ping{ nonce }, handle_send, _1, pong::command);
+-    }
+-}
+-
+ // This is fired by the callback (i.e. base timer and stop handler).
+ void protocol_ping::send_ping(const code& ec)
+ {
+     if (stopped())
+-    {
+-        log::trace(LOG_NETWORK) << "protocol_ping::send ping stopped" ;
+-        test_call_handler(error::channel_stopped);
+         return;
+-    }
+ 
+-    if (ec && ec != (code)error::channel_timeout)
++    if (ec && ec != error::channel_timeout)
+     {
+         log::trace(LOG_NETWORK)
+             << "Failure in ping timer for [" << authority() << "] "
+             << ec.message();
+-        test_call_handler(ec);
+         stop(ec);
+         return;
+     }
+@@ -96,53 +78,23 @@ void protocol_ping::send_ping(const code& ec)
+ 
+     SUBSCRIBE3(pong, handle_receive_pong, _1, _2, nonce);
+     SEND2(ping{ nonce }, handle_send, _1, pong::command);
+-
+-    shared_lock lock{mutex_};
+-    if(result_handler_)
+-    {
+-        auto line = std::make_shared<deadline>(pool(), asio::seconds{1});
+-        auto pThis = shared_from_this();
+-        line->start([pThis, line, nonce](const code& ec){
+-            static_cast<protocol_ping*>(pThis.get())->handle_or_not(nonce);
+-        });
+-    }
+-}
+-
+-void protocol_ping::test_call_handler(const code& ec)
+-{
+-    upgrade_lock upgrade{mutex_};
+-    if(result_handler_)
+-    {
+-        log::trace(LOG_NETWORK) << "test call handler";
+-        unique_lock lock(std::move(upgrade));
+-        auto handler = std::move(result_handler_);
+-        auto action = [handler, ec](){
+-            handler(ec);
+-        };
+-        pool().service().post(action);
+-        result_handler_ = nullptr;
+-    }
+ }
+ 
+ bool protocol_ping::handle_receive_ping(const code& ec,
+     message::ping::ptr message)
+ {
+     if (stopped())
+-    {
+-        log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_ping stopped" ;
+-        test_call_handler(error::channel_stopped);
+         return false;
+-    }
+ 
+     if (ec)
+     {
+         log::trace(LOG_NETWORK)
+             << "Failure getting ping from [" << authority() << "] "
+             << ec.message();
+-        test_call_handler(ec);
+         stop(ec);
+         return false;
+     }
++
+     SEND2(pong{ message->nonce }, handle_send, _1, pong::command);
+ 
+     // RESUBSCRIBE
+@@ -153,13 +105,7 @@ bool protocol_ping::handle_receive_pong(const code& ec,
+     message::pong::ptr message, uint64_t nonce)
+ {
+     if (stopped())
+-    {
+-        log::trace(LOG_NETWORK) << "protocol_ping::handle_receive_pong stopped" ;
+-        test_call_handler(error::channel_stopped);
+         return false;
+-    }
+-
+-    test_call_handler(ec);
+ 
+     if (ec)
+     {
+diff --git a/src/lib/network/protocols/protocol_timer.cpp b/src/lib/network/protocols/protocol_timer.cpp
+index 950b68b..b29454d 100644
+--- a/src/lib/network/protocols/protocol_timer.cpp
++++ b/src/lib/network/protocols/protocol_timer.cpp
+@@ -72,18 +72,19 @@ void protocol_timer::reset_timer()
+         return;
+ 
+     timer_->start(BIND1(handle_timer, _1));
++    if (stopped())
++    {
++        timer_->stop();
++        return;
++    }
+ }
+ 
+ void protocol_timer::handle_timer(const code& ec)
+ {
+     if (stopped())
++    {
+         return;
+-
+-#if 0 //huge log genareted here
+-    log::trace(LOG_NETWORK)
+-        << "Fired protocol_" << name() << " timer on [" << authority() << "] "
+-        << ec.message();
+-#endif
++    }
+ 
+     // The handler completes before the timer is reset.
+     set_event(error::channel_timeout);
+diff --git a/src/lib/network/proxy.cpp b/src/lib/network/proxy.cpp
+index 192e28b..3df1c16 100644
+--- a/src/lib/network/proxy.cpp
++++ b/src/lib/network/proxy.cpp
+@@ -99,7 +99,6 @@ proxy::proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
+     peer_protocol_version_(message::version::level::maximum),
+     message_subscriber_(pool),
+     stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME)),
+-    processing_{false},
+     has_sent_{true},
+     misbehaving_{0}
+ {
+@@ -227,8 +226,8 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
+         return;
+     }
+ 
+-    read_payload(head);
+     handle_activity();
++    read_payload(head);
+ }
+ 
+ void proxy::read_payload(const heading& head)
+@@ -260,7 +259,7 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
+     // TODO: verify client quick disconnect.
+     if (ec)
+     {
+-        log::debug(LOG_NETWORK)
++        log::trace(LOG_NETWORK)
+             << "Payload read failure [" << authority() << "] "
+             << code(error::boost_to_error_code(ec)).message();
+         stop(ec);
+@@ -285,60 +284,22 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
+     // TODO: we aren't getting a stream benefit if we read the full payload
+     // before parsing the message. Should just make this a message parse.
+     ///////////////////////////////////////////////////////////////////////////
+-    auto request = std::bind(&proxy::handle_request,
+-            this->shared_from_this(), payload_buffer_, peer_protocol_version_.load(), head, payload_size);
+-    {
+-        scoped_lock lock{mutex_};
+-        pending_requests_.push(std::move(request));
+-    }
+-    dispatch();
++
++    handle_request(payload_buffer_, peer_protocol_version_.load(), head, payload_size);
+ 
+     handle_activity();
+     read_heading();
+ }
+ 
+-void proxy::dispatch()
+-{
+-    scoped_lock lock{mutex_};
+-    if(! processing_.load())
+-    {
+-        if(! pending_requests_.empty())
+-        {
+-            auto req = std::move(pending_requests_.front() );
+-            processing_.store(true);
+-            dispatch_.unordered(req);
+-            pending_requests_.pop();
+-            return;
+-        }
+-    }
+-}
+-
+ void proxy::handle_request(data_chunk payload_buffer, uint32_t peer_protocol_version, heading head, size_t payload_size)
+ {
+     bool succeed = false;
+-    struct clean_up{
+-        ~clean_up(){
+-            processing_.store(false);
+-            if(succeed_)
+-            {
+-                proxy_->dispatch();
+-                return;
+-            }
+-            proxy_->clear_request();
+-        }
+-        std::atomic_bool& processing_;
+-        bool& succeed_;
+-        proxy * proxy_;
+-    } clean_up_{processing_, succeed, this};
+ 
+     // Notify subscribers of the new message.
+     payload_source source(payload_buffer);
+     payload_stream istream(source);
+     const auto version = peer_protocol_version;
+ 
+-    if (head.command == "mempool") {
+-        log::trace(LOG_NETWORK) << "mempool";
+-    }
+     const auto code = message_subscriber_.load(head.type(), version, istream);
+ 
+     const auto consumed = istream.peek() == std::istream::traits_type::eof();
+@@ -379,33 +340,36 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
+         return;
+     }
+ 
+-    //thin log network
+-    if (command != "getheaders" && command != "headers"){
+-        log::trace(LOG_NETWORK)
+-            << "Sending " << command << " to [" << authority() << "] ("
+-            << buffer.size() << " bytes)";
++    if (command == "headers") {
++        log::trace(LOG_NETWORK) << "";
+     }
+ 
++    //thin log network
++    log::trace(LOG_NETWORK)
++        << "Sending " << command << " to [" << authority() << "] ("
++        << buffer.size() << " bytes)";
++
+     // Critical Section (protect socket)
+     ///////////////////////////////////////////////////////////////////////////
+     // The socket is locked until async_write returns.
++#define QUEUE_REQUEST
+ #ifdef QUEUE_REQUEST
+     bool is_ok_to_send{false};
+     uint32_t outbound_size{0};
+     request_callback h{nullptr};
+     {
+-        const auto socket = socket_->get_socket();
+-        auto& native_socket = socket->get();
+         auto pThis = shared_from_this();
+-        auto f = [this, pThis, &native_socket, buffer, handler](){
++        auto f = [this, pThis, buffer, handler](){
+             if (stopped())
+             {
+                 handler(error::channel_stopped);
+                 return;
+             }
++            const auto socket = socket_->get_socket();
++            auto& native_socket = socket->get();
+             async_write(native_socket, buffer,
+                     std::bind(&proxy::handle_send,
+-                        pThis, _1, buffer, handler));
++                            shared_from_this(), _1, buffer, handler));
+         };
+         outbound_size = outbound_queue_.size();
+         bool is_empty{outbound_queue_.empty()};
+@@ -461,6 +425,8 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
+     handler(error);
+ #ifdef QUEUE_REQUEST
+     if(error){
++        const auto socket = socket_->get_socket();
++        std::queue<request_callback>{}.swap(outbound_queue_);
+         return;
+     }
+ 
+@@ -503,6 +469,10 @@ void proxy::stop(const code& ec)
+ 
+     // Give channel opportunity to terminate timers.
+     handle_stopping();
++    {
++        const auto socket = socket_->get_socket();
++        std::queue<request_callback>{}.swap(outbound_queue_);
++    }
+ 
+     // The socket_ is internally guarded against concurrent use.
+     socket_->close();
+diff --git a/src/lib/network/sessions/session.cpp b/src/lib/network/sessions/session.cpp
+index b3272ed..ecad0de 100644
+--- a/src/lib/network/sessions/session.cpp
++++ b/src/lib/network/sessions/session.cpp
+@@ -105,6 +105,11 @@ void session::remove(const message::network_address& address, result_handler han
+     network_.remove(address, handler);
+ }
+ 
++void session::store(const message::network_address& address)
++{
++    network_.store(address, [](const code&){});
++}
++
+ // Socket creators.
+ // ----------------------------------------------------------------------------
+ // Must not change context in the stop handlers (must use bind).
+diff --git a/src/lib/network/sessions/session_batch.cpp b/src/lib/network/sessions/session_batch.cpp
+index ef86d39..caff2c8 100644
+--- a/src/lib/network/sessions/session_batch.cpp
++++ b/src/lib/network/sessions/session_batch.cpp
+@@ -76,10 +76,6 @@ void session_batch::converge(const code& ec, channel::ptr channel,
+     {
+         // If the last connection attempt is an error, normalize the code.
+         auto result = ec ? error::operation_failed : error::success;
+-        if (ec == (code)error::not_satisfied)
+-        {
+-            result = error::not_satisfied;
+-        }
+         handler(result, channel);
+     }
+ }
+@@ -132,8 +128,6 @@ void session_batch::start_connect(const code& ec, const authority& host,
+     // This creates a tight loop in the case of a small address pool.
+     if (blacklisted(host))
+     {
+-//        log::warning(LOG_NETWORK)
+-//            << "Fetched blacklisted address [" << host << "] ";
+         handler(error::address_blocked, nullptr);
+         return;
+     }
+@@ -158,27 +152,16 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
+         log::trace(LOG_NETWORK)
+             << "Failure connecting to [" << host << "] " << count << ","
+             << ec.message();
+-#if 0
+-        if(count)
+-        {
+-            connect->connect(host, BIND7(handle_connect, _1, _2, host, connect,
+-                    counter, --count, handler));
+-            return;
+-        }
+-        else{
+-            remove(host.to_network_address(), [&host](const code& ec){
+-                if(ec)
+-                {
+-                    log::debug(LOG_NETWORK) << "remove host " << host << " failed," << ec.message() ;
+-                }
+-                log::debug(LOG_NETWORK) << "remove host failed," << ec.message() ;
+-            });
+-        }
+-#endif
+-        handler(ec, nullptr);
++        if (ec == error::channel_timeout) // if connect is not aviliable, change it into inactive state
++            remove(host.to_network_address(), [](const code&){});
++        else
++            store(host.to_network_address());
++        handler(ec, channel);
+         return;
+     }
+ 
++    store(host.to_network_address());
++
+     log::trace(LOG_NETWORK)
+         << "Connected to [" << channel->authority() << "]";
+ 
+diff --git a/src/lib/network/sessions/session_inbound.cpp b/src/lib/network/sessions/session_inbound.cpp
+index 13aadd9..fb1dc35 100644
+--- a/src/lib/network/sessions/session_inbound.cpp
++++ b/src/lib/network/sessions/session_inbound.cpp
+@@ -161,6 +161,7 @@ void session_inbound::handle_channel_start(const code& ec,
+         log::trace(LOG_NETWORK)
+             << "Inbound channel failed to start [" << channel->authority()
+             << "] " << ec.message();
++        channel->stop(ec);
+         return;
+     }
+ 
+@@ -169,7 +170,7 @@ void session_inbound::handle_channel_start(const code& ec,
+ 
+ void session_inbound::attach_protocols(channel::ptr channel)
+ {
+-    attach<protocol_ping>(channel)->do_subscribe()->start([](const code&){});
++    attach<protocol_ping>(channel)->do_subscribe()->start();
+     attach<protocol_address>(channel)->do_subscribe()->start();
+ }
+ 
+diff --git a/src/lib/network/sessions/session_manual.cpp b/src/lib/network/sessions/session_manual.cpp
+index de79878..afd81bd 100644
+--- a/src/lib/network/sessions/session_manual.cpp
++++ b/src/lib/network/sessions/session_manual.cpp
+@@ -114,16 +114,16 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
+ 
+         // Retry logic.
+         if (settings_.manual_attempt_limit == 0)
+-            start_connect(hostname, port, handler, 0);
++            delay_new_connection(hostname, port, handler, 0);
+         else if (retries > 0)
+-            start_connect(hostname, port, handler, retries - 1);
++            delay_new_connection(hostname, port, handler, retries - 1);
+         else
+             handler(ec, nullptr);
+ 
+         return;
+     }
+ 
+-    log::info(LOG_NETWORK)
++    log::trace(LOG_NETWORK)
+         << "Connected manual channel [" << config::endpoint(hostname, port)
+         << "] as [" << channel->authority() << "]";
+ 
+@@ -139,7 +139,7 @@ void session_manual::handle_channel_start(const code& ec,
+     // Treat a start failure just like a stop, but preserve the start handler.
+     if (ec)
+     {
+-        log::info(LOG_NETWORK)
++        log::trace(LOG_NETWORK)
+             << "Manual channel failed to start [" << channel->authority()
+             << "] " << ec.message();
+ 
+@@ -150,7 +150,7 @@ void session_manual::handle_channel_start(const code& ec,
+             return;
+         }
+ 
+-        connect(hostname, port, handler);
++//        connect(hostname, port, handler);
+         return;
+     }
+ 
+@@ -163,8 +163,26 @@ void session_manual::handle_channel_start(const code& ec,
+ 
+ void session_manual::attach_protocols(channel::ptr channel)
+ {
+-    attach<protocol_ping>(channel)->start([](const code&){});
+-    attach<protocol_address>(channel)->start();
++    attach<protocol_ping>(channel)->do_subscribe()->start();
++    attach<protocol_address>(channel)->do_subscribe()->start();
++}
++
++void session_manual::delay_new_connection(const std::string& hostname, uint16_t port
++        , channel_handler handler, uint32_t retries)
++{
++    auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
++    auto self = shared_from_this();
++    timer->start([this, timer, self, hostname, port, handler, retries](const code& ec){
++        if (stopped())
++        {
++            return;
++        }
++        auto pThis = shared_from_this();
++        auto action = [this, pThis, hostname, port, handler, retries](){
++            start_connect(hostname, port, handler, retries);
++        };
++        pool_.service().post(action);
++    });
+ }
+ 
+ // After a stop we don't use the caller's start handler, but keep connecting.
+@@ -174,7 +192,8 @@ void session_manual::handle_channel_stop(const code& ec,
+     log::debug(LOG_NETWORK)
+         << "Manual channel stopped: " << ec.message();
+ 
+-    connect(hostname, port);
++    delay_new_connection(hostname, port, [](code, channel::ptr){}, 0);
++
+ }
+ 
+ } // namespace network
+diff --git a/src/lib/network/sessions/session_outbound.cpp b/src/lib/network/sessions/session_outbound.cpp
+index 10b63db..034348f 100644
+--- a/src/lib/network/sessions/session_outbound.cpp
++++ b/src/lib/network/sessions/session_outbound.cpp
+@@ -67,7 +67,10 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
+ 
+     const auto connect = create_connector();
+     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
++    {
++        log::debug(LOG_NETWORK) << "new connection";
+         new_connection(connect);
++    }
+ 
+     // This is the end of the start sequence.
+     handler(error::success);
+@@ -84,18 +87,21 @@ void session_outbound::new_connection(connector::ptr connect)
+             << "Suspended outbound connection.";
+         return;
+     }
+-
++    static int i{0};
++    int b = i++;
+     this->connect(connect, BIND3(handle_connect, _1, _2, connect));
+ }
+ 
+ void session_outbound::delay_new_connect(connector::ptr connect)
+ {
++    static std::atomic<uint32_t> times;
+     auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
+     auto self = shared_from_this();
+-    timer->start([this, connect, timer, self](const code& ec){
++    auto t = times.load();
++    times++;
++    timer->start([this, connect, timer, self, t](const code& ec){
+         if (stopped())
+         {
+-            log::trace(LOG_NETWORK) << "delay new connect, session stopped" ;
+             return;
+         }
+         auto pThis = shared_from_this();
+@@ -111,18 +117,13 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
+ {
+     if (ec)
+     {
+-        log::trace(LOG_NETWORK)
++        log::debug(LOG_NETWORK)
+             << "Failure connecting outbound: " << ec.message();
+-        if(ec.value() == error::not_satisfied)
+-        {
+-            log::trace(LOG_NETWORK) << "session outbound handle connect, not satisfied";
+-            return;
+-        }
+         delay_new_connect(connect);
+         return;
+     }
+ 
+-    log::trace(LOG_NETWORK)
++    log::debug(LOG_NETWORK)
+         << "Connected to outbound channel [" << channel->authority() << "]";
+ 
+     register_channel(channel, 
+@@ -139,6 +140,8 @@ void session_outbound::handle_channel_start(const code& ec,
+         log::trace(LOG_NETWORK)
+             << "Outbound channel failed to start ["
+             << channel->authority() << "] " << ec.message();
++        channel->invoke_protocol_start_handler(error::channel_stopped);
++        channel->stop(ec);
+         return;
+     }
+ 
+@@ -147,16 +150,14 @@ void session_outbound::handle_channel_start(const code& ec,
+ 
+ void session_outbound::attach_protocols(channel::ptr channel)
+ {
+-    attach<protocol_ping>(channel)->start([](const code&){});
+-    attach<protocol_address>(channel)->start();
++    attach<protocol_ping>(channel)->do_subscribe()->start();
++    attach<protocol_address>(channel)->do_subscribe()->start();
+ }
+ 
+ void session_outbound::handle_channel_stop(const code& ec,
+     connector::ptr connect, channel::ptr channel)
+ {
+-    log::trace(LOG_NETWORK)
+-        << "Outbound channel stopped [" << channel->authority() << "] "
+-        << ec.message();
++    channel->invoke_protocol_start_handler(error::channel_stopped);
+ 
+     if(! stopped() && ec.value() != error::service_stopped)
+     {
+diff --git a/src/lib/network/sessions/session_seed.cpp b/src/lib/network/sessions/session_seed.cpp
+index 24c722b..8555856 100644
+--- a/src/lib/network/sessions/session_seed.cpp
++++ b/src/lib/network/sessions/session_seed.cpp
+@@ -176,7 +176,7 @@ void session_seed::handle_channel_start(const code& ec, channel::ptr channel,
+ void session_seed::attach_protocols(channel::ptr channel,
+     result_handler handler)
+ {
+-    attach<protocol_ping>(channel)->start([](const code&){});
++    attach<protocol_ping>(channel)->start();
+     attach<protocol_seed>(channel)->start(handler);
+ }
+ 
+diff --git a/src/lib/node/protocols/protocol_block_in.cpp b/src/lib/node/protocols/protocol_block_in.cpp
+index 99c48bb..9980571 100644
+--- a/src/lib/node/protocols/protocol_block_in.cpp
++++ b/src/lib/node/protocols/protocol_block_in.cpp
+@@ -39,7 +39,7 @@ using namespace bc::network;
+ using namespace std::placeholders;
+ 
+ static constexpr auto perpetual_timer = true;
+-static const auto get_blocks_interval = asio::seconds(10);
++static const auto get_blocks_interval = asio::seconds(100);
+ 
+ protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
+     block_chain& blockchain)
+@@ -66,6 +66,7 @@ protocol_block_in::ptr protocol_block_in::do_subscribe()
+ 
+     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
+     SUBSCRIBE2(block_message, handle_receive_block, _1, _2);
++    protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
+     return std::dynamic_pointer_cast<protocol_block_in>(protocol::shared_from_this());
+ }
+ 
+@@ -75,32 +76,25 @@ protocol_block_in::ptr protocol_block_in::do_subscribe()
+ void protocol_block_in::start()
+ {
+     // Use perpetual protocol timer to prevent stall (our heartbeat).
+-#if 1
+-    protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
+-#else
+-    auto pthis = enable_shared_from_base();
+-    protocol_events::start([pthis](const code& ec){
+-        if(ec){
+-            log::trace(LOG_NODE) << "protocol block in handle stop," << ec.message();
+-         }
+-    });
+-#endif
+-
+ 
+     // TODO: move send_headers to a derived class protocol_block_in_70012.
+     if (headers_from_peer_)
+     {
+         // Allow peer to send headers vs. inventory block anncements.
+-        SEND2(send_headers(), handle_send, _1, send_headers::command);
++//        SEND2(send_headers(), handle_send, _1, send_headers::command);
+     }
+ 
+     // Subscribe to block acceptance notifications (for gap fill redundancy).
+     blockchain_.subscribe_reorganize(
+         BIND4(handle_reorganized, _1, _2, _3, _4));
++    if (channel_stopped()) {
++        blockchain_.fired();
++    }
+ 
+     // Send initial get_[blocks|headers] message by simulating first heartbeat.
+ //    set_event(error::success);
+-    send_get_blocks(null_hash);
++//    send_get_blocks(null_hash);
++    get_block_inventory(error::success);
+ }
+ 
+ // Send get_[headers|blocks] sequence.
+@@ -124,6 +118,16 @@ void protocol_block_in::get_block_inventory(const code& ec)
+         return;
+     }
+ 
++    auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
++    size_t top;
++    auto is_got = blockchain.get_last_height(top);
++    int64_t block_interval = 20000;
++    auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
++    if (!is_got || res > 0)
++    {
++        return ;
++    }
++
+     static uint32_t num = 0;
+     // This is also sent after each reorg.
+     send_get_blocks(null_hash);
+diff --git a/src/lib/node/protocols/protocol_block_out.cpp b/src/lib/node/protocols/protocol_block_out.cpp
+index f2309ed..1e8b3f0 100644
+--- a/src/lib/node/protocols/protocol_block_out.cpp
++++ b/src/lib/node/protocols/protocol_block_out.cpp
+@@ -73,6 +73,7 @@ protocol_block_out::ptr protocol_block_out::do_subscribe()
+     SUBSCRIBE2(get_blocks, handle_receive_get_blocks, _1, _2);
+     SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+ 
++    protocol_events::start(BIND1(handle_stop, _1));
+     return std::dynamic_pointer_cast<protocol_block_out>(protocol::shared_from_this());
+ }
+ 
+@@ -81,13 +82,15 @@ protocol_block_out::ptr protocol_block_out::do_subscribe()
+ 
+ void protocol_block_out::start()
+ {
+-    protocol_events::start(BIND1(handle_stop, _1));
+ 
+     // TODO: move send_headers to a derived class protocol_block_out_70012.
+ 
+     // Subscribe to block acceptance notifications (our heartbeat).
+     blockchain_.subscribe_reorganize(
+         BIND4(handle_reorganized, _1, _2, _3, _4));
++    if (channel_stopped()) {
++        blockchain_.fired();
++    }
+ }
+ 
+ // Receive send_headers.
+@@ -147,9 +150,9 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
+ 
+     const auto locator_size = message->start_hashes.size();
+ 
+-    if (locator_size > 100)//locator_limit())
++    if (locator_size > locator_limit())
+     {
+-        log::warning(LOG_NODE)
++        log::debug(LOG_NODE)
+             << "Invalid get_headers locator size (" << locator_size
+             << ") from [" << authority() << "] ";
+         stop(error::channel_stopped);
+@@ -163,10 +166,30 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
+     // and one of its other peers populates the chain back to this level. In
+     // that case we would not respond but our peer's other peer should.
+     const auto threshold = last_locator_top_.load();
+-    log::trace(LOG_NODE) << "protocol block out handle receive get headers, locator size," << locator_size;
+ 
+-    blockchain_.fetch_locator_block_headers(*message, threshold, locator_cap,
+-        BIND2(handle_fetch_locator_headers, _1, _2));
++    auto need_to_locate = true;
++    if (locator_size > 0)
++    {
++        auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
++        uint64_t height{0};
++        auto ok = blockchain.get_height(height, message->start_hashes.back());
++        if (!ok)
++        {
++            need_to_locate = false;
++        }
++    }
++
++    if (need_to_locate)
++    {
++        auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
++        size_t top;
++        auto is_got = blockchain.get_last_height(top);
++        int64_t block_interval = 2000;
++        auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
++        blockchain_.fetch_locator_block_headers(*message, threshold, res>0?locator_cap:10,
++            BIND2(handle_fetch_locator_headers, _1, _2));
++    }
++
+     return true;
+ }
+ 
+@@ -219,7 +242,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
+ 
+     if (locator_size > locator_limit())
+     {
+-        log::trace(LOG_NODE)
++        log::warning(LOG_NODE)
+             << "Invalid get_blocks locator size (" << locator_size
+             << ") from [" << authority() << "] ";
+         stop(error::channel_stopped);
+@@ -233,8 +256,13 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
+     // and one of its other peers populates the chain back to this level. In
+     // that case we would not respond but our peer's other peer should.
+     const auto threshold = last_locator_top_.load();
++    auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
++    size_t top;
++    auto is_got = blockchain.get_last_height(top);
++    int64_t block_interval = 2000;
++    auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
+ 
+-    blockchain_.fetch_locator_block_hashes(*message, threshold, locator_cap,
++    blockchain_.fetch_locator_block_hashes(*message, threshold, res>0?locator_cap:10,
+         BIND2(handle_fetch_locator_hashes, _1, _2));
+     return true;
+ }
+@@ -271,7 +299,9 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
+     get_data_ptr message)
+ {
+     if (stopped())
++    {
+         return false;
++    }
+ 
+     if (ec)
+     {
+@@ -302,15 +332,17 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
+     const hash_digest& hash)
+ {
+     if (stopped() || ec == (code)error::service_stopped)
++    {
+         return;
++    }
+ 
+     if (ec == (code)error::not_found)
+     {
+         log::trace(LOG_NODE)
+             << "Block requested by [" << authority() << "] not found." << encode_hash(hash);
+ 
+-        const not_found reply{ { inventory::type_id::block, hash } };
+-        SEND2(reply, handle_send, _1, reply.command);
++//        const not_found reply{ { inventory::type_id::block, hash } };
++//        SEND2(reply, handle_send, _1, reply.command);
+         return;
+     }
+ 
+@@ -339,8 +371,8 @@ void protocol_block_out::send_merkle_block(const code& ec,
+         log::trace(LOG_NODE)
+             << "Merkle block requested by [" << authority() << "] not found.";
+ 
+-        const not_found reply{ { inventory::type_id::filtered_block, hash } };
+-        SEND2(reply, handle_send, _1, reply.command);
++//        const not_found reply{ { inventory::type_id::filtered_block, hash } };
++//        SEND2(reply, handle_send, _1, reply.command);
+         return;
+     }
+ 
+@@ -396,7 +428,15 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
+ 
+         if (!announcement.elements.empty())
+         {
+-            log::trace(LOG_NODE) << "protocol block out announcement headers size," << announcement.elements.size();
++            auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
++            size_t top;
++            auto is_got = blockchain.get_last_height(top);
++            int64_t block_interval = 20000;
++            auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
++            if (!is_got || res > block_interval)
++            {
++                return true;
++            }
+             SEND2(announcement, handle_send, _1, announcement.command);
+         }
+         return true;
+@@ -411,7 +451,15 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
+ 
+     if (!announcement.inventories.empty())
+     {
+-        log::trace(LOG_NODE) << "protocol block out announcement inventories size," << announcement.inventories.size();
++        auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
++        size_t top;
++        auto is_got = blockchain.get_last_height(top);
++        int64_t block_interval = 20000;
++        auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
++        if (!is_got || res > block_interval)
++        {
++            return true;
++        }
+         SEND2(announcement, handle_send, _1, announcement.command);
+     }
+     return true;
+diff --git a/src/lib/node/protocols/protocol_transaction_in.cpp b/src/lib/node/protocols/protocol_transaction_in.cpp
+index b59a31e..793d109 100644
+--- a/src/lib/node/protocols/protocol_transaction_in.cpp
++++ b/src/lib/node/protocols/protocol_transaction_in.cpp
+@@ -60,6 +60,7 @@ protocol_transaction_in::ptr protocol_transaction_in::do_subscribe()
+ {
+     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
+     SUBSCRIBE2(transaction_message, handle_receive_transaction, _1, _2);
++    protocol_events::start(BIND1(handle_stop, _1));
+     return std::dynamic_pointer_cast<protocol_transaction_in>(protocol::shared_from_this());
+ }
+ 
+@@ -68,7 +69,6 @@ protocol_transaction_in::ptr protocol_transaction_in::do_subscribe()
+ 
+ void protocol_transaction_in::start()
+ {
+-    protocol_events::start(BIND1(handle_stop, _1));
+ 
+     // TODO: move memory_pool to a derived class protocol_transaction_in_70002.
+     // Prior to this level the mempool message is not available.
+@@ -81,6 +81,9 @@ void protocol_transaction_in::start()
+         // Refresh transaction pool on blockchain reorganization.
+         blockchain_.subscribe_reorganize(
+             BIND4(handle_reorganized, _1, _2, _3, _4));
++        if (channel_stopped()) {
++            blockchain_.fired();
++        }
+     }
+ 
+ }
+diff --git a/src/lib/node/protocols/protocol_transaction_out.cpp b/src/lib/node/protocols/protocol_transaction_out.cpp
+index 88ca607..ddddc97 100644
+--- a/src/lib/node/protocols/protocol_transaction_out.cpp
++++ b/src/lib/node/protocols/protocol_transaction_out.cpp
+@@ -56,6 +56,7 @@ protocol_transaction_out::ptr protocol_transaction_out::do_subscribe()
+     SUBSCRIBE2(memory_pool, handle_receive_memory_pool, _1, _2);
+     SUBSCRIBE2(fee_filter, handle_receive_fee_filter, _1, _2);
+     SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
++    protocol_events::start(BIND1(handle_stop, _1));
+     return std::dynamic_pointer_cast<protocol_transaction_out>(protocol::shared_from_this());
+ }
+ 
+@@ -66,13 +67,15 @@ protocol_transaction_out::ptr protocol_transaction_out::do_subscribe()
+ 
+ void protocol_transaction_out::start()
+ {
+-    protocol_events::start(BIND1(handle_stop, _1));
+     // TODO: move relay to a derived class protocol_transaction_out_70001.
+     // Prior to this level transaction relay is not configurable.
+     if (relay_to_peer_)
+     {
+         // Subscribe to transaction pool notifications and relay txs.
+         pool_.subscribe_transaction(BIND3(handle_floated, _1, _2, _3));
++        if (channel_stopped()) {
++            pool_.fired();
++        }
+     }
+ 
+     // TODO: move fee filter to a derived class protocol_transaction_out_70013.
+@@ -136,7 +139,6 @@ bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
+         for(auto& t:txs) {
+             hashes.push_back(t->hash());
+         }
+-        log::debug(LOG_NODE) << "memory pool size," << txs.size();
+         send<protocol_transaction_out>(inventory{hashes, inventory::type_id::transaction}, &protocol_transaction_out::handle_send, _1, inventory::command);
+     });
+     return false;
+@@ -197,8 +199,8 @@ void protocol_transaction_out::send_transaction(const code& ec,
+         log::trace(LOG_NODE)
+             << "Transaction requested by [" << authority() << "] not found.";
+ 
+-        const not_found reply{ { inventory::type_id::transaction, hash } };
+-        SEND2(reply, handle_send, _1, reply.command);
++//        const not_found reply{ { inventory::type_id::transaction, hash } };
++//        SEND2(reply, handle_send, _1, reply.command);
+         return;
+     }
+ 
+@@ -228,9 +230,7 @@ bool protocol_transaction_out::handle_floated(const code& ec,
+         return false;
+ 
+     if (ec == (code)error::mock)
+-    {
+         return true;
+-    }
+ 
+     if (ec)
+     {
+diff --git a/src/lib/node/sessions/session_block_sync.cpp b/src/lib/node/sessions/session_block_sync.cpp
+index 4649312..58701d9 100644
+--- a/src/lib/node/sessions/session_block_sync.cpp
++++ b/src/lib/node/sessions/session_block_sync.cpp
+@@ -173,16 +173,10 @@ void session_block_sync::handle_channel_start(const code& ec,
+ void session_block_sync::attach_protocols(channel::ptr channel,
+     connector::ptr connect, reservation::ptr row, result_handler handler)
+ {
+-    attach<protocol_ping>(channel)->start([channel, row, connect, handler, this](const code& ec){
+-        if(ec)
+-        {
+-            handle_complete(ec, channel, connect, row, handler);
+-            return;
+-        }
+-        attach<protocol_address>(channel)->start();
+-        attach<protocol_block_sync>(channel, row)->start(
+-            BIND5(handle_complete, _1, channel, connect, row, handler));
+-    });
++    attach<protocol_ping>(channel)->start();
++    attach<protocol_address>(channel)->start();
++    attach<protocol_block_sync>(channel, row)->start(
++        BIND5(handle_complete, _1, channel, connect, row, handler));
+ }
+ 
+ void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
+diff --git a/src/lib/node/sessions/session_header_sync.cpp b/src/lib/node/sessions/session_header_sync.cpp
+index 077fb5b..7229ab8 100644
+--- a/src/lib/node/sessions/session_header_sync.cpp
++++ b/src/lib/node/sessions/session_header_sync.cpp
+@@ -153,18 +153,10 @@ void session_header_sync::handle_channel_start(const code& ec,
+ void session_header_sync::attach_protocols(channel::ptr channel,
+     connector::ptr connect, result_handler handler)
+ {
+-    attach<protocol_ping>(channel)->start([channel, connect, handler, this](const code& ec){
+-        if(ec)
+-        {
+-            handle_complete(ec, channel, connect, handler);
+-//            handler(ec);
+-            return;
+-        }
+-        log::debug(LOG_NODE) << "header sync, last," << encode_hash(last_.hash()) ;
+-        attach<protocol_address>(channel)->start();
+-        attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
+-            ->start(BIND4(handle_complete, _1, channel, connect, handler));
+-    });
++    attach<protocol_ping>(channel)->start();
++    attach<protocol_address>(channel)->start();
++    attach<protocol_header_sync>(channel, hashes_, minimum_rate_, last_)
++        ->start(BIND4(handle_complete, _1, channel, connect, handler));
+ }
+ 
+ void session_header_sync::handle_complete(const code& ec, channel::ptr channel,
+diff --git a/src/lib/node/sessions/session_inbound.cpp b/src/lib/node/sessions/session_inbound.cpp
+index 306f6fb..51e11d0 100644
+--- a/src/lib/node/sessions/session_inbound.cpp
++++ b/src/lib/node/sessions/session_inbound.cpp
+@@ -50,14 +50,22 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
+     auto self = shared_from_this();
+     attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
+         if (!ec) {
+-            auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
+-            auto pt_address = attach<protocol_address>(channel)->do_subscribe();
+-            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_)->do_subscribe();
+-            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_)->do_subscribe();
+-            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
+-            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
++            auto pt_ping = attach<protocol_ping>(channel);
++            auto pt_address = attach<protocol_address>(channel);
++            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_);
++            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_);
++            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_);
++            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_);
++
++            pt_ping->do_subscribe();
++            pt_address->do_subscribe();
++            pt_block_in->do_subscribe();
++            pt_block_out->do_subscribe();
++            pt_tx_in->do_subscribe();
++            pt_tx_out->do_subscribe();
++
+             channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
+-                pt_ping->start([](const code& ec){});
++                pt_ping->start();
+                 pt_address->start();
+                 pt_block_in->start();
+                 pt_block_out->start();
+@@ -65,13 +73,12 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
+                 pt_tx_out->start();
+             });
+         }
+-        else
++
++        if (stopped() || ec)
+         {
+             channel->invoke_protocol_start_handler(error::channel_stopped);
+         }
+         handle_started(ec);
+-        if(stopped())
+-            channel->invoke_protocol_start_handler(error::channel_stopped);
+     });
+ 
+ }
+diff --git a/src/lib/node/sessions/session_manual.cpp b/src/lib/node/sessions/session_manual.cpp
+index 1064904..43b01a4 100644
+--- a/src/lib/node/sessions/session_manual.cpp
++++ b/src/lib/node/sessions/session_manual.cpp
+@@ -44,14 +44,41 @@ session_manual::session_manual(p2p& network, block_chain& blockchain,
+         << "Starting manual session.";
+ }
+ 
++void session_manual::attach_handshake_protocols(channel::ptr channel,
++        result_handler handle_started)
++{
++    auto self = shared_from_this();
++    attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
++        if (!ec) {
++            auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
++            auto pt_address = attach<protocol_address>(channel)->do_subscribe();
++            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_)->do_subscribe();
++            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_)->do_subscribe();
++            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
++            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
++            channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
++                pt_ping->start();
++                pt_address->start();
++                pt_block_in->start();
++                pt_block_out->start();
++                pt_tx_in->start();
++                pt_tx_out->start();
++            });
++        }
++        else
++        {
++            channel->invoke_protocol_start_handler(error::channel_stopped);
++        }
++        handle_started(ec);
++        if(stopped())
++            channel->invoke_protocol_start_handler(error::channel_stopped);
++    });
++
++}
++
+ void session_manual::attach_protocols(channel::ptr channel)
+ {
+-    attach<protocol_ping>(channel)->start([](const code&){});
+-    attach<protocol_address>(channel)->start();
+-    attach<protocol_block_in>(channel, blockchain_)->start();
+-    attach<protocol_block_out>(channel, blockchain_)->start();
+-    attach<protocol_transaction_in>(channel, blockchain_, pool_)->start();
+-    attach<protocol_transaction_out>(channel, blockchain_, pool_)->start();
++    channel->invoke_protocol_start_handler(error::success);
+ }
+ 
+ } // namespace node
+diff --git a/src/lib/node/sessions/session_outbound.cpp b/src/lib/node/sessions/session_outbound.cpp
+index 8781da9..079f8cf 100644
+--- a/src/lib/node/sessions/session_outbound.cpp
++++ b/src/lib/node/sessions/session_outbound.cpp
+@@ -58,7 +58,7 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
+             auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
+             auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
+             channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
+-                pt_ping->start([](const code& ec){});
++                pt_ping->start();
+                 pt_address->start();
+                 pt_block_in->start();
+                 pt_block_out->start();
+@@ -66,13 +66,14 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
+                 pt_tx_out->start();
+             });
+         }
+-        else
+-        {
+-            channel->invoke_protocol_start_handler(error::channel_stopped);
+-        }
++
++        if (stopped() || ec)
++        {
++            channel->invoke_protocol_start_handler(error::channel_stopped);
++            channel->stop(error::channel_stopped);
++        }
++
+         handle_started(ec);
+-        if(stopped())
+-            channel->invoke_protocol_start_handler(error::channel_stopped);
+     });
+ 
+ }

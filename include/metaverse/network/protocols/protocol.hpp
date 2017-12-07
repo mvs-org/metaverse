@@ -112,6 +112,8 @@ protected:
     /// complete before any other thread could read the peer version.
     virtual void set_peer_version(message::version::ptr value);
 
+    uint32_t peer_start_height();
+
     /// Get the threadpool.
     virtual threadpool& pool();
 
@@ -119,6 +121,8 @@ protected:
     virtual void stop(const code& ec);
 
     virtual bool misbehaving(int32_t howmuch);
+
+    bool channel_stopped() { return channel_->stopped(); }
 
 private:
     threadpool& pool_;

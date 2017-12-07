@@ -58,7 +58,7 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
             auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
             auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
             channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
-                pt_ping->start([](const code& ec){});
+                pt_ping->start();
                 pt_address->start();
                 pt_block_in->start();
                 pt_block_out->start();
@@ -66,13 +66,14 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
                 pt_tx_out->start();
             });
         }
-        else
-        {
-        	channel->invoke_protocol_start_handler(error::channel_stopped);
-        }
+
+        if (stopped() || ec)
+		{
+			channel->invoke_protocol_start_handler(error::channel_stopped);
+			channel->stop(error::channel_stopped);
+		}
+
         handle_started(ec);
-        if(stopped())
-        	channel->invoke_protocol_start_handler(error::channel_stopped);
     });
 
 }

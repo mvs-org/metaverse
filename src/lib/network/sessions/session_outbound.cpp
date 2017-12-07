@@ -67,7 +67,10 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
 
     const auto connect = create_connector();
     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
+    {
+    	log::debug(LOG_NETWORK) << "new connection";
         new_connection(connect);
+    }
 
     // This is the end of the start sequence.
     handler(error::success);
@@ -84,18 +87,21 @@ void session_outbound::new_connection(connector::ptr connect)
             << "Suspended outbound connection.";
         return;
     }
-
+    static int i{0};
+    int b = i++;
     this->connect(connect, BIND3(handle_connect, _1, _2, connect));
 }
 
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
+	static std::atomic<uint32_t> times;
 	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
 	auto self = shared_from_this();
-	timer->start([this, connect, timer, self](const code& ec){
+	auto t = times.load();
+	times++;
+	timer->start([this, connect, timer, self, t](const code& ec){
 		if (stopped())
 		{
-			log::trace(LOG_NETWORK) << "delay new connect, session stopped" ;
 			return;
 		}
 		auto pThis = shared_from_this();
@@ -111,18 +117,13 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::trace(LOG_NETWORK)
+        log::debug(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
-        if(ec.value() == error::not_satisfied)
-		{
-        	log::trace(LOG_NETWORK) << "session outbound handle connect, not satisfied";
-			return;
-		}
         delay_new_connect(connect);
         return;
     }
 
-    log::trace(LOG_NETWORK)
+    log::debug(LOG_NETWORK)
         << "Connected to outbound channel [" << channel->authority() << "]";
 
     register_channel(channel, 
@@ -139,6 +140,8 @@ void session_outbound::handle_channel_start(const code& ec,
         log::trace(LOG_NETWORK)
             << "Outbound channel failed to start ["
             << channel->authority() << "] " << ec.message();
+        channel->invoke_protocol_start_handler(error::channel_stopped);
+        channel->stop(ec);
         return;
     }
 
@@ -147,16 +150,14 @@ void session_outbound::handle_channel_start(const code& ec,
 
 void session_outbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start([](const code&){});
-    attach<protocol_address>(channel)->start();
+    attach<protocol_ping>(channel)->do_subscribe()->start();
+    attach<protocol_address>(channel)->do_subscribe()->start();
 }
 
 void session_outbound::handle_channel_stop(const code& ec,
     connector::ptr connect, channel::ptr channel)
 {
-    log::trace(LOG_NETWORK)
-        << "Outbound channel stopped [" << channel->authority() << "] "
-        << ec.message();
+    channel->invoke_protocol_start_handler(error::channel_stopped);
 
     if(! stopped() && ec.value() != error::service_stopped)
     {
