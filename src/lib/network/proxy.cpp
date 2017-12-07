@@ -371,6 +371,7 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
                     std::bind(&proxy::handle_send,
                     		shared_from_this(), _1, buffer, handler));
         };
+        const auto socket = socket_->get_socket();
         outbound_size = outbound_queue_.size();
         bool is_empty{outbound_queue_.empty()};
         bool in_sending{!has_sent_.load()};
