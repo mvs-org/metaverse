@@ -299,7 +299,7 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
         return;
     }
 
-    headers_batch_size_.store(message->inventories.size());
+    headers_batch_size_ += message->inventories.size();
 
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
@@ -326,6 +326,8 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 
     hash_list hashes;
     message->to_hashes(hashes, inventory::type_id::block);
+
+    headers_batch_size_ -= hashes.size();
 
     // The peer cannot locate a block that it told us it had.
     // This only results from reorganization assuming peer is proper.
@@ -354,6 +356,13 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
             << ec.message();
         stop(ec);
         return false;
+    }
+
+    --headers_batch_size_;
+
+    if(!headers_batch_size_.load())
+    {
+        send_get_blocks(null_hash);
     }
 
     // Reset the timer because we just received a block from this peer.
@@ -437,13 +446,6 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
-    --headers_batch_size_;
-
-    if(!headers_batch_size_.load())
-    {
-        send_get_blocks(null_hash);
-    }
-
     // TODO: use p2p_node instead.
     // Update the top of the chain.
     current_chain_top_.store(incoming.back()->header.hash());
@@ -451,7 +453,6 @@ bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     blockchain_.fetch_block_height(last_hash, [&last_hash](const code&ec, uint64_t height){
         log::trace(LOG_NODE) << encode_hash(last_hash) << ",latest block," << height;
     });
-
 
     // Report the blocks that originated from this peer.
     // If originating peer is dropped there will be no report here.
