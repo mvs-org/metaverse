@@ -70,7 +70,12 @@ void validate_transaction::start(validate_handler handler)
 
     if (ec)
     {
-        handle_validate_(ec, tx_, {});
+    	if (ec == error::input_not_found)
+    	{
+    		handle_validate_(ec, tx_, {current_input_});
+    		return;
+    	}
+    	handle_validate_(ec, tx_, {});
         return;
     }
 

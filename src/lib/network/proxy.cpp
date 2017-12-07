@@ -99,7 +99,6 @@ proxy::proxy(threadpool& pool, socket::ptr socket, uint32_t protocol_magic,
     peer_protocol_version_(message::version::level::maximum),
     message_subscriber_(pool),
     stop_subscriber_(std::make_shared<stop_subscriber>(pool, NAME)),
-    processing_{false},
     has_sent_{true},
     misbehaving_{0}
 {
@@ -227,8 +226,8 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
         return;
     }
 
-    read_payload(head);
     handle_activity();
+    read_payload(head);
 }
 
 void proxy::read_payload(const heading& head)
@@ -260,7 +259,7 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
     // TODO: verify client quick disconnect.
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Payload read failure [" << authority() << "] "
             << code(error::boost_to_error_code(ec)).message();
         stop(ec);
@@ -285,60 +284,22 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
     // TODO: we aren't getting a stream benefit if we read the full payload
     // before parsing the message. Should just make this a message parse.
     ///////////////////////////////////////////////////////////////////////////
-    auto request = std::bind(&proxy::handle_request,
-            this->shared_from_this(), payload_buffer_, peer_protocol_version_.load(), head, payload_size);
-    {
-        scoped_lock lock{mutex_};
-        pending_requests_.push(std::move(request));
-    }
-    dispatch();
+
+    handle_request(payload_buffer_, peer_protocol_version_.load(), head, payload_size);
 
     handle_activity();
     read_heading();
 }
 
-void proxy::dispatch()
-{
-    scoped_lock lock{mutex_};
-    if(! processing_.load())
-    {
-        if(! pending_requests_.empty())
-        {
-            auto req = std::move(pending_requests_.front() );
-            processing_.store(true);
-            dispatch_.unordered(req);
-            pending_requests_.pop();
-            return;
-        }
-    }
-}
-
 void proxy::handle_request(data_chunk payload_buffer, uint32_t peer_protocol_version, heading head, size_t payload_size)
 {
     bool succeed = false;
-    struct clean_up{
-        ~clean_up(){
-            processing_.store(false);
-            if(succeed_)
-            {
-                proxy_->dispatch();
-                return;
-            }
-            proxy_->clear_request();
-        }
-        std::atomic_bool& processing_;
-        bool& succeed_;
-        proxy * proxy_;
-    } clean_up_{processing_, succeed, this};
 
     // Notify subscribers of the new message.
     payload_source source(payload_buffer);
     payload_stream istream(source);
     const auto version = peer_protocol_version;
 
-    if (head.command == "mempool") {
-        log::trace(LOG_NETWORK) << "mempool";
-    }
     const auto code = message_subscriber_.load(head.type(), version, istream);
 
     const auto consumed = istream.peek() == std::istream::traits_type::eof();
@@ -379,33 +340,36 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
         return;
     }
 
-    //thin log network
-    if (command != "getheaders" && command != "headers"){
-        log::trace(LOG_NETWORK)
-            << "Sending " << command << " to [" << authority() << "] ("
-            << buffer.size() << " bytes)";
+    if (command == "headers") {
+    	log::trace(LOG_NETWORK) << "";
     }
+
+    //thin log network
+	log::trace(LOG_NETWORK)
+		<< "Sending " << command << " to [" << authority() << "] ("
+		<< buffer.size() << " bytes)";
 
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////
     // The socket is locked until async_write returns.
+#define QUEUE_REQUEST
 #ifdef QUEUE_REQUEST
     bool is_ok_to_send{false};
     uint32_t outbound_size{0};
     request_callback h{nullptr};
     {
-        const auto socket = socket_->get_socket();
-        auto& native_socket = socket->get();
         auto pThis = shared_from_this();
-        auto f = [this, pThis, &native_socket, buffer, handler](){
+        auto f = [this, pThis, buffer, handler](){
             if (stopped())
             {
                 handler(error::channel_stopped);
                 return;
             }
+            const auto socket = socket_->get_socket();
+			auto& native_socket = socket->get();
             async_write(native_socket, buffer,
                     std::bind(&proxy::handle_send,
-                        pThis, _1, buffer, handler));
+                    		shared_from_this(), _1, buffer, handler));
         };
         outbound_size = outbound_queue_.size();
         bool is_empty{outbound_queue_.empty()};
@@ -461,6 +425,8 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     handler(error);
 #ifdef QUEUE_REQUEST
     if(error){
+    	const auto socket = socket_->get_socket();
+    	std::queue<request_callback>{}.swap(outbound_queue_);
         return;
     }
 
@@ -503,6 +469,10 @@ void proxy::stop(const code& ec)
 
     // Give channel opportunity to terminate timers.
     handle_stopping();
+    {
+		const auto socket = socket_->get_socket();
+		std::queue<request_callback>{}.swap(outbound_queue_);
+    }
 
     // The socket_ is internally guarded against concurrent use.
     socket_->close();

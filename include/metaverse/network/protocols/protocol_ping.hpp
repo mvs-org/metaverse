@@ -43,8 +43,6 @@ class BCT_API protocol_ping
 {
 public:
     typedef std::shared_ptr<protocol_ping> ptr;
-    using result_handler = std::function<void(const code&)>;
-    using ready_handler = std::function<void()>;
 
     /**
      * Construct a ping protocol instance.
@@ -58,7 +56,7 @@ public:
     /**
      * Start the protocol.
      */
-    virtual void start(result_handler handler);
+    virtual void start();
 
     void handle_or_not(uint64_t nonce);
 
@@ -70,8 +68,6 @@ private:
         uint64_t nonce);
 
     const settings& settings_;
-    result_handler result_handler_;
-    shared_mutex mutex_;
 };
 
 } // namespace network

@@ -144,6 +144,8 @@ protected:
 
     void remove(const message::network_address& address, result_handler handler);
 
+    void store(const message::network_address& address);
+
     /// Socket creators.
     virtual acceptor::ptr create_acceptor();
     virtual connector::ptr create_connector();

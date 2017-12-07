@@ -39,7 +39,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 static constexpr auto perpetual_timer = true;
-static const auto get_blocks_interval = asio::seconds(10);
+static const auto get_blocks_interval = asio::seconds(100);
 
 protocol_block_in::protocol_block_in(p2p& network, channel::ptr channel,
     block_chain& blockchain)
@@ -66,6 +66,7 @@ protocol_block_in::ptr protocol_block_in::do_subscribe()
 
     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
     SUBSCRIBE2(block_message, handle_receive_block, _1, _2);
+    protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
     return std::dynamic_pointer_cast<protocol_block_in>(protocol::shared_from_this());
 }
 
@@ -75,32 +76,25 @@ protocol_block_in::ptr protocol_block_in::do_subscribe()
 void protocol_block_in::start()
 {
     // Use perpetual protocol timer to prevent stall (our heartbeat).
-#if 1
-    protocol_timer::start(get_blocks_interval, BIND1(get_block_inventory, _1));
-#else
-    auto pthis = enable_shared_from_base();
-    protocol_events::start([pthis](const code& ec){
-        if(ec){
-            log::trace(LOG_NODE) << "protocol block in handle stop," << ec.message();
-         }
-    });
-#endif
-
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     if (headers_from_peer_)
     {
         // Allow peer to send headers vs. inventory block anncements.
-        SEND2(send_headers(), handle_send, _1, send_headers::command);
+//        SEND2(send_headers(), handle_send, _1, send_headers::command);
     }
 
     // Subscribe to block acceptance notifications (for gap fill redundancy).
     blockchain_.subscribe_reorganize(
         BIND4(handle_reorganized, _1, _2, _3, _4));
+    if (channel_stopped()) {
+		blockchain_.fired();
+	}
 
     // Send initial get_[blocks|headers] message by simulating first heartbeat.
 //    set_event(error::success);
-    send_get_blocks(null_hash);
+//    send_get_blocks(null_hash);
+    get_block_inventory(error::success);
 }
 
 // Send get_[headers|blocks] sequence.
@@ -123,6 +117,16 @@ void protocol_block_in::get_block_inventory(const code& ec)
         stop(ec);
         return;
     }
+
+    auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
+	size_t top;
+	auto is_got = blockchain.get_last_height(top);
+	int64_t block_interval = 20000;
+	auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
+	if (!is_got || res > 0)
+	{
+		return ;
+	}
 
     static uint32_t num = 0;
     // This is also sent after each reorg.
