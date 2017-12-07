@@ -84,10 +84,10 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
 			return error::service_stopped;
 		}
 
-		if (fetch_times % 5 == 4)
-			buffer = &buffer_;
-		else
+		if (fetch_times % 5 == 4 && !inactive_.empty())
 			buffer = &inactive_;
+		else
+			buffer = &buffer_;
 	}
 
 	for(auto entry: *buffer)

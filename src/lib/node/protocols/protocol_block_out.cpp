@@ -341,8 +341,8 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
         log::trace(LOG_NODE)
             << "Block requested by [" << authority() << "] not found." << encode_hash(hash);
 
-//        const not_found reply{ { inventory::type_id::block, hash } };
-//        SEND2(reply, handle_send, _1, reply.command);
+        const not_found reply{ { inventory::type_id::block, hash } };
+        SEND2(reply, handle_send, _1, reply.command);
         return;
     }
 
@@ -371,8 +371,8 @@ void protocol_block_out::send_merkle_block(const code& ec,
         log::trace(LOG_NODE)
             << "Merkle block requested by [" << authority() << "] not found.";
 
-//        const not_found reply{ { inventory::type_id::filtered_block, hash } };
-//        SEND2(reply, handle_send, _1, reply.command);
+        const not_found reply{ { inventory::type_id::filtered_block, hash } };
+        SEND2(reply, handle_send, _1, reply.command);
         return;
     }
 
