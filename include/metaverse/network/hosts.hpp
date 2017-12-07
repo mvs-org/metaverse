@@ -40,6 +40,14 @@ namespace network {
 /// The store can be loaded and saved from/to the specified file path.
 /// The file is a line-oriented set of config::authority serializations.
 /// Duplicate addresses and those with zero-valued ports are disacarded.
+
+struct address_compare{
+	bool operator()(const libbitcoin::message::network_address& lhs, const libbitcoin::message::network_address& rhs)
+	{
+		return lhs.ip < rhs.ip ? true : (lhs.ip > rhs.ip ? false : lhs.port < rhs.port);
+	}
+};
+
 class BCT_API hosts
   : public enable_shared_from_base<hosts>
 {
@@ -69,7 +77,7 @@ public:
     address::list copy();
 private:
 //    typedef boost::circular_buffer<address> list;
-    using list = std::vector<address>;
+    using list = std::set<address, address_compare >;
     typedef list::iterator iterator;
 
     iterator find(const address& host);
@@ -78,6 +86,7 @@ private:
 
     // These are protected by a mutex.
     list buffer_;
+    list inactive_;
     std::atomic<bool> stopped_;
     mutable upgrade_mutex mutex_;
 

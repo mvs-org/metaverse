@@ -80,7 +80,7 @@ private:
         connect_handler handler, resolve_handler);
     void handle_timer(const code& ec, socket::ptr socket,
         connect_handler handler);
-    void handle_connect(const boost_code& ec, asio::iterator iter, socket::ptr socket, deadline::ptr timer, connect_handler handler);
+    void handle_connect(const boost_code& ec, socket::ptr socket, deadline::ptr timer, connect_handler handler);
 
     std::atomic<bool> stopped_;
     threadpool& pool_;
