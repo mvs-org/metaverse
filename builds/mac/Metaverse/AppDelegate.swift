@@ -156,6 +156,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 			metaverse.arguments = self.commandLine
 			metaverse.launch()
 			self.metaversePid = metaverse.processIdentifier
+
+            sleep(3)
+            self.openUI()
 		} else {
 			self.metaversePid = processes[metaverseProcess!].kp_proc.p_pid
 		}
