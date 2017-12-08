@@ -161,6 +161,7 @@ void session_inbound::handle_channel_start(const code& ec,
         log::trace(LOG_NETWORK)
             << "Inbound channel failed to start [" << channel->authority()
             << "] " << ec.message();
+		channel->stop(ec);
         return;
     }
 
@@ -169,7 +170,7 @@ void session_inbound::handle_channel_start(const code& ec,
 
 void session_inbound::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->do_subscribe()->start([](const code&){});
+    attach<protocol_ping>(channel)->do_subscribe()->start();
     attach<protocol_address>(channel)->do_subscribe()->start();
 }
 

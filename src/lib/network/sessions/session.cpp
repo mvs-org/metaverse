@@ -105,6 +105,11 @@ void session::remove(const message::network_address& address, result_handler han
 	network_.remove(address, handler);
 }
 
+void session::store(const message::network_address& address)
+{
+	network_.store(address, [](const code&){});
+}
+
 // Socket creators.
 // ----------------------------------------------------------------------------
 // Must not change context in the stop handlers (must use bind).
