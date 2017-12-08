@@ -241,6 +241,30 @@ private:
 	uint16_t					      deposit_cycle_{7}; // 7 days
 };
 
+class BCX_API depositing_etp_transaction : public base_transaction_constructor
+{
+public:
+	depositing_etp_transaction(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type, 
+        std::vector<std::string>&& from_vec, std::vector<receiver_record>&& receiver_list, uint16_t deposit, std::string&& mychange, 
+        std::string&& message, uint64_t fee):
+		base_transaction_constructor(blockchain, type, std::move(from_vec), std::move(receiver_list), std::string(""),
+            std::move(mychange), std::move(message), fee), 
+		deposit_{deposit}
+		{};
+
+	~depositing_etp_transaction(){};
+		
+	static const std::vector<uint16_t> vec_cycle;
+			
+	uint32_t get_reward_lock_height();
+	// modify lock script
+	void populate_tx_outputs() override ;
+
+private:
+	uint16_t					      deposit_{7}; // 7 days
+};
+
+
 class BCX_API sending_etp : public base_transfer_helper
 {
 public:
