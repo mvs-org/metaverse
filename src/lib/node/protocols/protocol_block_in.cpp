@@ -119,7 +119,7 @@ void protocol_block_in::get_block_inventory(const code& ec)
     }
 
     auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-	size_t top;
+	uint64_t top;
 	auto is_got = blockchain.get_last_height(top);
 	int64_t block_interval = 20000;
 	auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
