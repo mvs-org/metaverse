@@ -23,13 +23,16 @@
 #include <metaverse/server/server_node.hpp>
 
 namespace mgbubble {
-    constexpr auto EV_VERSION    = "version";
-    constexpr auto EV_SUBSCRIBE  = "subscribe";
-    constexpr auto EV_SUBSCRIBED = "subscribed";
-    constexpr auto EV_PUBLISH    = "publish";
-    constexpr auto EV_REQUEST    = "request";
-    constexpr auto EV_RESPONSE   = "response";
-    constexpr auto EV_ERROR      = "error";
+    constexpr auto EV_VERSION     = "version";
+    constexpr auto EV_SUBSCRIBE   = "subscribe";
+    constexpr auto EV_UNSUBSCRIBE = "unsubscribe";
+    constexpr auto EV_SUBSCRIBED  = "subscribed";
+    constexpr auto EV_UNSUBSCRIBED = "unsubscribed";
+    constexpr auto EV_PUBLISH     = "publish";
+    constexpr auto EV_REQUEST     = "request";
+    constexpr auto EV_RESPONSE    = "response";
+    constexpr auto EV_ERROR       = "error";
+    constexpr auto EV_INFO        = "info";
 
     constexpr auto CH_BLOCK       = "block";
     constexpr auto CH_TRANSACTION = "tx";
@@ -137,35 +140,142 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     if (stopped() || tx.outputs.empty())
         return;
 
+    std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers;
+    {
+        std::lock_guard<std::mutex> guard(subscribers_lock_);
+        if (subscribers_.size() == 0)
+            return;
+        for (auto& con : subscribers_)
+        {
+            if (!con.first.expired())
+            {
+                subscribers.insert(con);
+            }
+        }
+        if (subscribers.size() != subscribers_.size())
+            subscribers_ = subscribers;
+    }
+
+    /* ---------- may has subscribers ---------- */
+
+    std::vector<size_t> tx_addrs;
+    for (const auto& input : tx.inputs)
+    {
+        const auto address = payment_address::extract(input.script);
+        if (address)
+            tx_addrs.push_back(std::hash<payment_address>()(address));
+    }
+
+    for (const auto& output : tx.outputs)
+    {
+        const auto address = payment_address::extract(output.script);
+        if (address)
+            tx_addrs.push_back(std::hash<payment_address>()(address));
+    }
+
+    std::vector<std::weak_ptr<mg_connection>> notify_cons;
+    for (auto& sub : subscribers)
+    {
+        auto& sub_addrs = sub.second;
+        bool bnotify = std::any_of(sub_addrs.begin(), sub_addrs.end(), [&tx_addrs](size_t addr_hash) {
+            return tx_addrs.end() != std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash);
+        });
+
+        if (bnotify)
+            notify_cons.push_back(sub.first);
+    }
+    if (notify_cons.size() == 0)
+        return;
+
+    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
+
     std::stringstream ss;
     ptree root;
     root.put("event", EV_PUBLISH);
     root.put("channel", CH_TRANSACTION);
     root.add_child("result", explorer::config::prop_list(tx, height, true));
     write_json(ss, root);
-    
-    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
-    
-    spawn_to_mongoose([height](uint64_t id) {
-        log::info(NAME) << " ******** on message: [" << height << " " << id << "]  ******** ";
-    });
+
+    auto rep = std::make_shared<std::string>(std::move(ss.str()));
+
+    for (auto& con : notify_cons)
+    {
+        auto shared_con = con.lock();
+        if (!shared_con)
+            continue;
+
+        spawn_to_mongoose([this, shared_con, height, rep](uint64_t id) {
+            int active_connections = 0;
+            auto* mgr = &this->mg_mgr();
+            auto* notify_nc = shared_con.get();
+            for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
+                if (!is_websocket(*nc) || is_listen_socket(*nc) || is_notify_socket(*nc))
+                    continue;
+                ++active_connections;
+                if (notify_nc == nc)
+                    send_frame(*nc, *rep);
+            }
+            if (active_connections != map_connections_.size())
+                refresh_connections();
+        });
+    }
 }
 
-void WsPushServ::send_bad_request(struct mg_connection& nc)
+void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message)
 {
     std::stringstream ss;
     ptree root;
+    ptree result;
+    result.put("code", 1000001);
+    result.put("message", message ? message : "bad request");
     root.put("event", EV_ERROR);
-    root.put("msg", "bad request");
+    root.put_child("result", result);
     write_json(ss, root);
     auto&& tmp = ss.str();
     send_frame(nc, tmp.c_str(), tmp.size());
 }
 
+void WsPushServ::send_response(struct mg_connection& nc, const std::string& event, const std::string& channel)
+{
+    std::stringstream ss;
+    ptree root;
+    root.put("event", event);
+    root.put("channel", channel);
+    write_json(ss, root);
+    auto&& tmp = ss.str();
+    send_frame(nc, tmp.c_str(), tmp.size());
+}
+
+void WsPushServ::refresh_connections()
+{
+    auto* mgr = &mg_mgr();
+    std::unordered_map<void*, std::shared_ptr<mg_connection>> swap;
+    for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
+        if (!is_websocket(*nc) || is_listen_socket(*nc) || is_notify_socket(*nc))
+            continue;
+        std::shared_ptr<struct mg_connection> con(nc, [](struct mg_connection* ptr) { (void)(ptr); });
+        swap.emplace(&nc, con);
+    }
+    map_connections_.swap(swap);
+}
+
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
+    std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection* ptr) { (void)(ptr); });
+    map_connections_.emplace(&nc, con);
+
     std::string version("{\"event\": \"version\", " "\"result\": \"" MVS_VERSION "\"}");
     send_frame(nc, version);
+
+    std::stringstream ss;
+    ptree root;
+    ptree connections;
+    connections.put("connections", map_connections_.size());
+    root.put("event", EV_INFO);
+    root.put_child("result", connections);
+    write_json(ss, root);
+    auto&& tmp = ss.str();
+    send_frame(nc, tmp);
 }
 
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
@@ -177,20 +287,66 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         read_json(iss, parser);
         auto event = parser.get<std::string>("event");
         auto channel = parser.get<std::string>("channel");
+        if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
+            auto tmp = parser.get<std::string>("address");
+            auto pay_addr = payment_address(tmp);
+            if (!pay_addr) {
+                send_bad_response(nc, "invalid address.");
+            }
+            else {
+                size_t hash_addr = std::hash<payment_address>()(pay_addr);
+                auto it = map_connections_.find(&nc);
+                if (it != map_connections_.end()) {
+                    std::lock_guard<std::mutex> guard(subscribers_lock_);
+                    std::weak_ptr<struct mg_connection> week_con(it->second);
+                    auto sub_it = subscribers_.find(week_con);
+                    if (sub_it != subscribers_.end()) {
+                        auto& sub_list = sub_it->second;
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
+                            sub_list.push_back(hash_addr);
+                            send_response(nc, EV_SUBSCRIBED, channel);
+                        }
+                        else {
+                            send_bad_response(nc, "address already subscribed.");
+                        }
+                    }
+                    else {
+                        subscribers_.insert({ week_con,{ hash_addr } });
+                        send_response(nc, EV_SUBSCRIBED, channel);
+                    }
+                }
+                else {
+                    send_bad_response(nc, "connection lost.");
+                }
+            }
+        }
+        else if ((event == EV_UNSUBSCRIBE) && (channel == CH_TRANSACTION)) {
+            auto it = map_connections_.find(&nc);
+            if (it != map_connections_.end()) {
+                std::lock_guard<std::mutex> guard(subscribers_lock_);
+                std::weak_ptr<struct mg_connection> week_con(it->second);
+                subscribers_.erase(week_con);
+                send_response(nc, EV_UNSUBSCRIBED, channel);
+            }
+            else {
+                send_bad_response(nc, "no subscription.");
+            }
+        }
+        else {
+            send_bad_response(nc, "request not support.");
+        }
     }
     catch (std::exception& e) {
-        log::info("TEST") << "on on_ws_frame_handler: " << e.what();
+        log::info(NAME) << "on on_ws_frame_handler: " << e.what();
+        send_bad_response(nc);
     }
-    send_bad_request(nc);
-    spawn_to_mongoose([](size_t id) {
-        log::info("TEST") << "on on_ws_frame_handler: " << id;
-    });
 }
 
 void WsPushServ::on_close_handler(struct mg_connection& nc)
 {
     if (is_websocket(nc))
     {
+        map_connections_.erase(&nc);
     }
 }
 
