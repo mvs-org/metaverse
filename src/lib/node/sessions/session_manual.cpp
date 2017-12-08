@@ -44,14 +44,41 @@ session_manual::session_manual(p2p& network, block_chain& blockchain,
         << "Starting manual session.";
 }
 
+void session_manual::attach_handshake_protocols(channel::ptr channel,
+        result_handler handle_started)
+{
+	auto self = shared_from_this();
+    attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
+        if (!ec) {
+            auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
+            auto pt_address = attach<protocol_address>(channel)->do_subscribe();
+            auto pt_block_in = attach<protocol_block_in>(channel, blockchain_)->do_subscribe();
+            auto pt_block_out = attach<protocol_block_out>(channel, blockchain_)->do_subscribe();
+            auto pt_tx_in = attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe();
+            auto pt_tx_out = attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe();
+            channel->set_protocol_start_handler([pt_ping, pt_address, pt_block_in, pt_block_out, pt_tx_in, pt_tx_out]() {
+                pt_ping->start();
+                pt_address->start();
+                pt_block_in->start();
+                pt_block_out->start();
+                pt_tx_in->start();
+                pt_tx_out->start();
+            });
+        }
+        else
+        {
+        	channel->invoke_protocol_start_handler(error::channel_stopped);
+        }
+        handle_started(ec);
+        if(stopped())
+        	channel->invoke_protocol_start_handler(error::channel_stopped);
+    });
+
+}
+
 void session_manual::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->do_subscribe()->start([](const code&){});
-    attach<protocol_address>(channel)->do_subscribe()->start();
-    attach<protocol_block_in>(channel, blockchain_)->do_subscribe()->start();
-    attach<protocol_block_out>(channel, blockchain_)->do_subscribe()->start();
-    attach<protocol_transaction_in>(channel, blockchain_, pool_)->do_subscribe()->start();
-    attach<protocol_transaction_out>(channel, blockchain_, pool_)->do_subscribe()->start();
+	channel->invoke_protocol_start_handler(error::success);
 }
 
 } // namespace node

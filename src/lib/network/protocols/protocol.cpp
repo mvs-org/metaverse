@@ -61,6 +61,11 @@ void protocol::set_peer_version(message::version::ptr value)
     channel_->set_version(value);
 }
 
+uint32_t protocol::peer_start_height()
+{
+	return channel_->peer_start_height();
+}
+
 threadpool& protocol::pool()
 {
     return pool_;

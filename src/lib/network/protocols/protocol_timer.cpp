@@ -72,18 +72,19 @@ void protocol_timer::reset_timer()
         return;
 
     timer_->start(BIND1(handle_timer, _1));
+    if (stopped())
+    {
+    	timer_->stop();
+		return;
+    }
 }
 
 void protocol_timer::handle_timer(const code& ec)
 {
     if (stopped())
+    {
         return;
-
-#if 0 //huge log genareted here
-    log::trace(LOG_NETWORK)
-        << "Fired protocol_" << name() << " timer on [" << authority() << "] "
-        << ec.message();
-#endif
+    }
 
     // The handler completes before the timer is reset.
     set_event(error::channel_timeout);

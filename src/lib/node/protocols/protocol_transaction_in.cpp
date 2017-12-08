@@ -60,6 +60,7 @@ protocol_transaction_in::ptr protocol_transaction_in::do_subscribe()
 {
     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
     SUBSCRIBE2(transaction_message, handle_receive_transaction, _1, _2);
+    protocol_events::start(BIND1(handle_stop, _1));
     return std::dynamic_pointer_cast<protocol_transaction_in>(protocol::shared_from_this());
 }
 
@@ -68,7 +69,6 @@ protocol_transaction_in::ptr protocol_transaction_in::do_subscribe()
 
 void protocol_transaction_in::start()
 {
-    protocol_events::start(BIND1(handle_stop, _1));
 
     // TODO: move memory_pool to a derived class protocol_transaction_in_70002.
     // Prior to this level the mempool message is not available.
@@ -81,6 +81,9 @@ void protocol_transaction_in::start()
         // Refresh transaction pool on blockchain reorganization.
         blockchain_.subscribe_reorganize(
             BIND4(handle_reorganized, _1, _2, _3, _4));
+        if (channel_stopped()) {
+			blockchain_.fired();
+		}
     }
 
 }
