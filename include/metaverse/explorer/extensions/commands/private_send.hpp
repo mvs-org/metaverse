@@ -1370,6 +1370,328 @@ public:
 
 };
 
+/************************ createrawtx *************************/
+
+class createrawtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "createrawtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "createrawtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata();
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        //load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        //load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+		(
+			"type,t",
+			value<uint16_t>(&option_.type)->required(),
+			"Transaction type. 0 -- transfer etp, 3 -- transfer asset, 6 -- just only send message"
+		)
+		(
+			"senders,s",
+			value<std::vector<std::string>>(&option_.senders)->required(),
+			"Send from addresses"
+		)
+        (
+            "receivers,r",
+            value<std::vector<std::string>>(&option_.receivers)->required(),
+            "Send to [address:amount]. amount is asset number if sybol option specified"
+        )
+        (
+            "symbol,n",
+            value<std::string>(&option_.symbol)->default_value(""),
+            "asset name, not specify this option for etp tx"
+        )
+        (
+            "mychange,m",
+            value<std::string>(&option_.mychange_address),
+            "Mychange to this address, includes etp and asset change"
+        )
+        (
+            "message,i",
+            value<std::string>(&option_.message),
+            "Message/Information attached to this transaction"
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&option_.fee)->default_value(10000),
+            "The fee of tx. default_value 0.0001 etp"
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        argument()
+        {
+        }
+    } argument_;
+
+    struct option
+    {
+        uint16_t type;
+		std::vector<std::string> senders;
+		std::vector<std::string> receivers;
+		std::string symbol;
+        std::string mychange_address;
+        std::string message;
+		uint64_t fee;
+		
+    } option_;
+
+};
+
+
+/************************ decoderawtx *************************/
+
+class decoderawtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "decoderawtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "decoderawtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("TRANSACTION", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+        (
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to sign."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        explorer::config::transaction transaction;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+
+/************************ signrawtx *************************/
+
+class signrawtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "signrawtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "signrawtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("TRANSACTION", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            "Account name."
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            "Account password/authorization."
+	    )
+        (
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to sign."
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        explorer::config::transaction transaction;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
+/************************ sendrawtx *************************/
+
+class sendrawtx: public command_extension
+{
+public:
+    static const char* symbol(){ return "sendrawtx";}
+    const char* name() override { return symbol();} 
+    const char* category() override { return "EXTENSION"; }
+    const char* description() override { return "sendrawtx "; }
+
+    arguments_metadata& load_arguments() override
+    {
+        return get_argument_metadata()
+            .add("TRANSACTION", 1);
+    }
+
+    void load_fallbacks (std::istream& input, 
+        po::variables_map& variables) override
+    {
+        const auto raw = requires_raw_input();
+        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
+    }
+
+    options_metadata& load_options() override
+    {
+        using namespace po;
+        options_description& options = get_option_metadata();
+        options.add_options()
+		(
+            BX_HELP_VARIABLE ",h",
+            value<bool>()->zero_tokens(),
+            "Get a description and instructions for this command."
+        )
+        (
+            BX_CONFIG_VARIABLE ",c",
+            value<boost::filesystem::path>(),
+            "The path to the configuration settings file."
+        )
+        (
+            "TRANSACTION",
+            value<explorer::config::transaction>(&argument_.transaction)->required(),
+            "The input Base16 transaction to broadcast."
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(1000000000),
+            "The max tx fee. default_value 10 etp"
+        );
+
+        return options;
+    }
+
+    void set_defaults_from_config (po::variables_map& variables) override
+    {
+    }
+
+    console_result invoke (std::ostream& output,
+        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+    struct argument
+    {
+        explorer::config::transaction transaction;
+        uint64_t                      fee;
+    } argument_;
+
+    struct option
+    {
+    } option_;
+
+};
+
 }
 } 
 }

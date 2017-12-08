@@ -93,6 +93,8 @@ public:
     /// Save the p2p protocol version object of the peer.
     virtual void set_version(message::version::ptr value);
 
+    uint32_t peer_start_height() { return peer_version_message_.load() ? peer_version_message_.load()->start_height : 0; }
+
     /// Read messages from this socket.
     virtual void start(result_handler handler);
 
@@ -101,18 +103,12 @@ public:
 
     void dispatch();
 
-    void clear_request() {
-        scoped_lock lock{mutex_};
-        std::queue<request_callback>{}.swap(pending_requests_);
-        processing_.store(false);
-    }
-
     static bool blacklisted(const config::authority&);
 
     virtual bool misbehaving(int32_t howmuch);
 
-protected:
     virtual bool stopped() const;
+protected:
     virtual void handle_activity() = 0;
     virtual void handle_stopping() = 0;
 
@@ -156,9 +152,6 @@ private:
     bc::atomic<message::version::ptr> peer_version_message_;
     message_subscriber message_subscriber_;
     stop_subscriber::ptr stop_subscriber_;
-    std::queue<request_callback> pending_requests_;
-    std::atomic_bool processing_;
-    unique_mutex mutex_;
     std::queue<request_callback> outbound_queue_;
     std::atomic_bool has_sent_;
 

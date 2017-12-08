@@ -265,6 +265,9 @@ namespace error {
             case boost_error::destination_address_required:
                 return error::resolve_failed;
 
+#ifdef _MSC_VER
+            case asio_error::connection_refused:
+#endif
             case boost_error::broken_pipe:
             case boost_error::host_unreachable:
             case boost_error::network_down:

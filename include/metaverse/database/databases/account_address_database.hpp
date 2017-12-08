@@ -84,6 +84,8 @@ public:
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 
+    void safe_store(const short_hash& key, const account_address& address);
+
     /// Synchonise with disk.
     void sync();
 
