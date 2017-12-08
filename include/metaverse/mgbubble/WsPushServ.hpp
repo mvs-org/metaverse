@@ -17,7 +17,12 @@
 #ifndef MVSD_WS_PUSH_SERV_HPP
 #define MVSD_WS_PUSH_SERV_HPP
 
+#include <string>
+#include <vector>
 #include <atomic>
+#include <mutex>
+#include <memory>
+#include <unordered_map>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/mgbubble/MgServer.hpp>
 
@@ -83,7 +88,10 @@ protected:
     void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
 
 protected:
-    void send_bad_request(struct mg_connection& nc);
+    void send_bad_response(struct mg_connection& nc, const char* message = nullptr);
+    void send_response(struct mg_connection& nc, const std::string& event, const std::string& channel);
+
+    void refresh_connections();
 
 protected:
     void run() override;
@@ -97,6 +105,9 @@ protected:
 
 private:
     libbitcoin::server::server_node& node_;
+    std::unordered_map<void*, std::shared_ptr<mg_connection>> map_connections_;
+    std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers_;
+    std::mutex subscribers_lock_;
 };
 }
 
