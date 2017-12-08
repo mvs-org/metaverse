@@ -15,6 +15,6 @@
 #define MVS_VERSION "0.7.2"
 #define MVS_MAJOR_VERSION 0
 #define MVS_MINOR_VERSION 7
-#define MVS_PATCH_VERSION 1
+#define MVS_PATCH_VERSION 2
 
 #endif
