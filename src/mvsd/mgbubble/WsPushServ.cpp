@@ -177,7 +177,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     for (auto& sub : subscribers)
     {
         auto& sub_addrs = sub.second;
-        bool bnotify = std::any_of(sub_addrs.begin(), sub_addrs.end(), [&tx_addrs](size_t addr_hash) {
+        bool bnotify = sub_addrs.size() == 0 ? true : std::any_of(sub_addrs.begin(), sub_addrs.end(), [&tx_addrs](size_t addr_hash) {
             return tx_addrs.end() != std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash);
         });
 
@@ -288,13 +288,13 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         auto event = parser.get<std::string>("event");
         auto channel = parser.get<std::string>("channel");
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
-            auto tmp = parser.get<std::string>("address");
-            auto pay_addr = payment_address(tmp);
-            if (!pay_addr) {
+            auto short_addr = parser.get<std::string>("address");
+            auto pay_addr = payment_address(short_addr);
+            if (!short_addr.empty() && !pay_addr) {
                 send_bad_response(nc, "invalid address.");
             }
             else {
-                size_t hash_addr = std::hash<payment_address>()(pay_addr);
+                size_t hash_addr = short_addr.empty() ? 0 : std::hash<payment_address>()(pay_addr);
                 auto it = map_connections_.find(&nc);
                 if (it != map_connections_.end()) {
                     std::lock_guard<std::mutex> guard(subscribers_lock_);
@@ -302,16 +302,25 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                     auto sub_it = subscribers_.find(week_con);
                     if (sub_it != subscribers_.end()) {
                         auto& sub_list = sub_it->second;
-                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
-                            sub_list.push_back(hash_addr);
+                        if (hash_addr == 0) {
+                            sub_list.clear();
                             send_response(nc, EV_SUBSCRIBED, channel);
                         }
                         else {
-                            send_bad_response(nc, "address already subscribed.");
+                            if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
+                                sub_list.push_back(hash_addr);
+                                send_response(nc, EV_SUBSCRIBED, channel);
+                            }
+                            else {
+                                send_bad_response(nc, "address already subscribed.");
+                            }
                         }
                     }
                     else {
-                        subscribers_.insert({ week_con,{ hash_addr } });
+                        if (hash_addr == 0)
+                            subscribers_.insert({ week_con, {} });
+                        else
+                            subscribers_.insert({ week_con, { hash_addr } });
                         send_response(nc, EV_SUBSCRIBED, channel);
                     }
                 }
