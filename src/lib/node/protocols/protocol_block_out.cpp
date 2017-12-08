@@ -182,7 +182,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     if (need_to_locate)
     {
     	auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
-		size_t top;
+		uint64_t top;
 		auto is_got = blockchain.get_last_height(top);
 		int64_t block_interval = 2000;
 		auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
@@ -257,7 +257,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     // that case we would not respond but our peer's other peer should.
     const auto threshold = last_locator_top_.load();
     auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-	size_t top;
+	uint64_t top;
 	auto is_got = blockchain.get_last_height(top);
 	int64_t block_interval = 2000;
 	auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
@@ -429,7 +429,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
         if (!announcement.elements.empty())
         {
         	auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-			size_t top;
+			uint64_t top;
 			auto is_got = blockchain.get_last_height(top);
 			int64_t block_interval = 20000;
 			auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
@@ -452,7 +452,7 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
     if (!announcement.inventories.empty())
     {
     	auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-		size_t top;
+		uint64_t top;
 		auto is_got = blockchain.get_last_height(top);
 		int64_t block_interval = 20000;
 		auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
