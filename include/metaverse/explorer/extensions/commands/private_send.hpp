@@ -1378,7 +1378,7 @@ public:
     static const char* symbol(){ return "createrawtx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "createrawtx "; }
+    const char* description() override { return "createrawtx"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -1411,7 +1411,7 @@ public:
 		(
 			"type,t",
 			value<uint16_t>(&option_.type)->required(),
-			"Transaction type. 0 -- transfer etp, 3 -- transfer asset, 6 -- just only send message"
+			"Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset, 6 -- just only send message"
 		)
 		(
 			"senders,s",
@@ -1427,6 +1427,11 @@ public:
             "symbol,n",
             value<std::string>(&option_.symbol)->default_value(""),
             "asset name, not specify this option for etp tx"
+        )
+        (
+            "deposit,d",
+            value<uint16_t>(&option_.deposit)->default_value(7),
+            "Deposits support [7, 30, 90, 182, 365] days. defaluts to 7 days"
         )
         (
             "mychange,m",
@@ -1469,6 +1474,7 @@ public:
 		std::string symbol;
         std::string mychange_address;
         std::string message;
+        uint16_t deposit;
 		uint64_t fee;
 		
     } option_;
