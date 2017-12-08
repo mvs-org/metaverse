@@ -173,16 +173,10 @@ void session_block_sync::handle_channel_start(const code& ec,
 void session_block_sync::attach_protocols(channel::ptr channel,
     connector::ptr connect, reservation::ptr row, result_handler handler)
 {
-    attach<protocol_ping>(channel)->start([channel, row, connect, handler, this](const code& ec){
-    	if(ec)
-		{
-    		handle_complete(ec, channel, connect, row, handler);
-			return;
-		}
-    	attach<protocol_address>(channel)->start();
-		attach<protocol_block_sync>(channel, row)->start(
-			BIND5(handle_complete, _1, channel, connect, row, handler));
-    });
+    attach<protocol_ping>(channel)->start();
+    attach<protocol_address>(channel)->start();
+	attach<protocol_block_sync>(channel, row)->start(
+		BIND5(handle_complete, _1, channel, connect, row, handler));
 }
 
 void session_block_sync::handle_complete(const code& ec, channel::ptr channel,

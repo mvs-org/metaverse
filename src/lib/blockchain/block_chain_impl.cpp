@@ -1961,6 +1961,45 @@ bool block_chain_impl::get_history(const wallet::payment_address& address,
 	
 }
 
+bool block_chain_impl::get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val) 
+{
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    etp_val = 0;
+    
+    for (auto& each : tx.inputs) {
+                
+        if (get_transaction(each.previous_output.hash, tx_temp, tx_height)) {
+            auto output = tx_temp.outputs.at(each.previous_output.index);
+            etp_val += output.value;
+        } else {
+            log::debug("get_tx_inputs_etp_value=")<<each.to_string(true);
+            return false;
+        }
+    
+    }
+    
+    return true;
+    
+}
+
+void block_chain_impl::safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses)
+{
+    if (stopped())
+        return;
+
+    for(auto& address:addresses) {
+        const auto hash = get_short_hash(address->get_name());
+        database_.account_addresses.safe_store(hash, *address);
+    }
+
+    const auto hash = get_hash(acc.get_name());
+    database_.accounts.store(hash, acc);
+    database_.account_addresses.sync();
+    database_.accounts.sync();
+
+}
+
 
 } // namespace blockchain
 } // namespace libbitcoin

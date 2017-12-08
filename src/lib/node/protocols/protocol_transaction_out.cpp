@@ -56,6 +56,7 @@ protocol_transaction_out::ptr protocol_transaction_out::do_subscribe()
     SUBSCRIBE2(memory_pool, handle_receive_memory_pool, _1, _2);
     SUBSCRIBE2(fee_filter, handle_receive_fee_filter, _1, _2);
     SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+    protocol_events::start(BIND1(handle_stop, _1));
     return std::dynamic_pointer_cast<protocol_transaction_out>(protocol::shared_from_this());
 }
 
@@ -66,13 +67,15 @@ protocol_transaction_out::ptr protocol_transaction_out::do_subscribe()
 
 void protocol_transaction_out::start()
 {
-    protocol_events::start(BIND1(handle_stop, _1));
     // TODO: move relay to a derived class protocol_transaction_out_70001.
     // Prior to this level transaction relay is not configurable.
     if (relay_to_peer_)
     {
         // Subscribe to transaction pool notifications and relay txs.
         pool_.subscribe_transaction(BIND3(handle_floated, _1, _2, _3));
+        if (channel_stopped()) {
+			pool_.fired();
+		}
     }
 
     // TODO: move fee filter to a derived class protocol_transaction_out_70013.
@@ -136,7 +139,6 @@ bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
         for(auto& t:txs) {
             hashes.push_back(t->hash());
         }
-        log::debug(LOG_NODE) << "memory pool size," << txs.size();
         send<protocol_transaction_out>(inventory{hashes, inventory::type_id::transaction}, &protocol_transaction_out::handle_send, _1, inventory::command);
     });
     return false;
@@ -197,8 +199,8 @@ void protocol_transaction_out::send_transaction(const code& ec,
         log::trace(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";
 
-        const not_found reply{ { inventory::type_id::transaction, hash } };
-        SEND2(reply, handle_send, _1, reply.command);
+//        const not_found reply{ { inventory::type_id::transaction, hash } };
+//        SEND2(reply, handle_send, _1, reply.command);
         return;
     }
 
@@ -228,9 +230,7 @@ bool protocol_transaction_out::handle_floated(const code& ec,
         return false;
 
     if (ec == (code)error::mock)
-    {
         return true;
-    }
 
     if (ec)
     {

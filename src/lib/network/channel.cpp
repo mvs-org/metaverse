@@ -103,7 +103,7 @@ void channel::set_nonce(uint64_t value)
 
 void channel::set_protocol_start_handler(std::function<void()> handler)
 {
-    protocol_start_handler_ = handler;
+    protocol_start_handler_ = std::move(handler);
 }
 
 void channel::invoke_protocol_start_handler(const code& ec)
@@ -151,12 +151,16 @@ void channel::start_expiration()
     expiration_->start(
         std::bind(&channel::handle_expiration,
             shared_from_base<channel>(), _1));
+    if (stopped())
+    	expiration_->stop();
 }
 
 void channel::handle_expiration(const code& ec)
 {
     if (stopped())
+    {
         return;
+    }
 
     log::debug(LOG_NETWORK)
         << "Channel lifetime expired [" << authority() << "]";
@@ -172,12 +176,16 @@ void channel::start_inactivity()
     inactivity_->start(
         std::bind(&channel::handle_inactivity,
             shared_from_base<channel>(), _1));
+    if (stopped())
+    	inactivity_->stop();
 }
 
 void channel::handle_inactivity(const code& ec)
 {
     if (stopped())
+    {
         return;
+    }
 
     log::debug(LOG_NETWORK)
         << "Channel inactivity timeout [" << authority() << "]";
