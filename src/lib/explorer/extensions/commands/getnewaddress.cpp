@@ -53,9 +53,6 @@ console_result getnewaddress::invoke (std::ostream& output,
     if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
     if (!option_.count) { throw address_amount_exception("invalid address number parameter"); }
     
-    const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
-    std::stringstream sout("");
-    std::istringstream sin(mnemonic);
     std::vector<std::string> words;
     words.reserve(24);
 
@@ -119,13 +116,10 @@ console_result getnewaddress::invoke (std::ostream& output,
         // Serialize to the original compression state.
         auto ep =  ec_public(point, true);
 
-        //addr->set_pub_key(sout.str());
-
         payment_address pa(ep, payment_version);
 
         addr->set_address(pa.encoded());
         addr->set_status(1); // 1 -- enable address
-        //output<<sout.str();
 
         acc->increase_hd_index();
         addr->set_hd_index(acc->get_hd_index());

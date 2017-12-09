@@ -19,11 +19,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
-#include <json/minijson_writer.hpp>
-#include <metaverse/explorer.hpp>
+#include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/bitcoin/unicode/unicode.hpp>
 
 BC_USE_MVS_MAIN
 
@@ -44,63 +42,21 @@ void my_impl(const http_message* hm)
 
 int bc::main(int argc, char* argv[])
 {
-
-    if (argc == 1 || std::memcmp(argv[1], "-h", 2) == 0 ||
-                    std::memcmp(argv[1], "--help", 6) == 0)
-    {
-        bc::explorer::display_usage(bc::cout);
-        return console_result::okay;
-    }
-
-    // original commands
-    std::string cmd{argv[1]};
-    auto cmd_ptr = bc::explorer::find_extension(cmd);
-
-    auto is_online_cmd = [](const char* cmd)
-    {
-        return std::memcmp(cmd, "fetch-", 6) == 0;
-    };
-        
-    try 
-    {
-        std::stringstream sout;
-        if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
-        {
-            auto ret = bc::explorer::dispatch_command(argc - 1,
-                const_cast<const char**>(argv + 1), bc::cin, sout, sout);
-            if (ret != console_result::okay)
-            {
-                throw explorer::command_params_exception(sout.str());
-            }
-                 
-            explorer::relay_exception(sout);
-            bc::cout << sout.str() << std::endl;
-            return console_result::okay;
-        }
-    } 
-    catch (const bc::explorer::explorer_exception& e)
-    {
-        bc::cout << e << std::endl;
-        return console_result::failure;
-    }
-
-    // extension commands
+    // all commands
     HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
-    std::ostringstream sout{""};
-    minijson::object_writer writer(sout);
-    writer.write("method", argv[1]);
+
+    Json::Value jsonvar;
+    jsonvar["method"] = argv[1];
+    jsonvar["params"] = Json::arrayValue;
 
     if (argc > 2)
     {
-        minijson::array_writer awriter = writer.nested_array("params");
-        for (int i = 2 ; i < argc; i++)
+        for (int i = 2; i < argc; i++)
         {
-            awriter.write(argv[i]);
+            jsonvar["params"].append(argv[i]);
         }
-        awriter.close();
     }
 
-    writer.close();
-    req.post(sout.str());
+    req.post(jsonvar.toStyledString());
     return 0;
 }
