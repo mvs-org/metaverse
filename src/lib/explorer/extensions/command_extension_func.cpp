@@ -26,8 +26,6 @@
 #include <array>     
 #include <metaverse/explorer/command.hpp>                
 #include <metaverse/explorer/extensions/command_extension.hpp>   
-#include <metaverse/explorer/extensions/commands/private_send.hpp>  // for cmd move
-#include <metaverse/explorer/extensions/commands/private_query.hpp>  // for cmd move
 #include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
@@ -75,7 +73,6 @@
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
 #include <metaverse/explorer/extensions/commands/setminingaccount.hpp>
 #include <metaverse/explorer/extensions/commands/changepasswd.hpp>
-#include <metaverse/explorer/extensions/commands/private_query.hpp>
 #include <metaverse/explorer/extensions/commands/getmemorypool.hpp>
 #include <metaverse/explorer/extensions/commands/createmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/createrawtx.hpp>
