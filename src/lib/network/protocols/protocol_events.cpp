@@ -55,6 +55,8 @@ void protocol_events::start(event_handler handler)
 {
     handler_.store(handler);
     SUBSCRIBE_STOP1(handle_stopped, _1);
+    if (channel_stopped())
+    	set_event(error::channel_stopped);
 }
 
 // Stop.

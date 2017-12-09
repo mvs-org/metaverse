@@ -116,16 +116,10 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
         const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
         
         // Retry logic.
-        if (settings_.manual_attempt_limit == 0) {
-            timer->start(std::bind([shared_this, hostname, port, handler]() {
-                shared_this->start_connect(hostname, port, handler, 0);
-            }));
-        }
-        else if (retries > 0) {
-            timer->start(std::bind([shared_this, hostname, port, handler, retries]() {
-                shared_this->start_connect(hostname, port, handler, retries);
-            }));
-        }
+        if (settings_.manual_attempt_limit == 0)
+        	delay_new_connection(hostname, port, handler, 0);
+        else if (retries > 0)
+        	delay_new_connection(hostname, port, handler, retries - 1);
         else
             handler(ec, nullptr);
 
@@ -148,7 +142,7 @@ void session_manual::handle_channel_start(const code& ec,
     // Treat a start failure just like a stop, but preserve the start handler.
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Manual channel failed to start [" << channel->authority()
             << "] " << ec.message();
 
@@ -159,6 +153,7 @@ void session_manual::handle_channel_start(const code& ec,
             return;
         }
 
+//        connect(hostname, port, handler);
         return;
     }
 
@@ -171,8 +166,26 @@ void session_manual::handle_channel_start(const code& ec,
 
 void session_manual::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start([](const code&){});
-    attach<protocol_address>(channel)->start();
+    attach<protocol_ping>(channel)->do_subscribe()->start();
+    attach<protocol_address>(channel)->do_subscribe()->start();
+}
+
+void session_manual::delay_new_connection(const std::string& hostname, uint16_t port
+		, channel_handler handler, uint32_t retries)
+{
+	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
+	auto self = shared_from_this();
+	timer->start([this, timer, self, hostname, port, handler, retries](const code& ec){
+		if (stopped())
+		{
+			return;
+		}
+		auto pThis = shared_from_this();
+		auto action = [this, pThis, hostname, port, handler, retries](){
+			start_connect(hostname, port, handler, retries);
+		};
+		pool_.service().post(action);
+	});
 }
 
 // After a stop we don't use the caller's start handler, but keep connecting.
@@ -185,11 +198,8 @@ void session_manual::handle_channel_stop(const code& ec,
     if (stopped() || (ec.value() == error::service_stopped))
         return;
 
-    auto shared_this = shared_from_base<session_manual>();
-    const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
-    timer->start(std::bind([shared_this, hostname, port]() {
-        shared_this->connect(hostname, port);
-    }));   
+    delay_new_connection(hostname, port, [](code, channel::ptr){}, 0);
+
 }
 
 } // namespace network

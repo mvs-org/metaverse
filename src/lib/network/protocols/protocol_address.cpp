@@ -47,6 +47,8 @@ protocol_address::ptr protocol_address::do_subscribe()
 {
     SUBSCRIBE2(address, handle_receive_address, _1, _2);
     SUBSCRIBE2(get_address, handle_receive_get_address, _1, _2);
+    // Must have a handler to capture a shared self pointer in stop subscriber.
+	protocol_events::start(BIND1(handle_stop, _1));
     return std::dynamic_pointer_cast<protocol_address>(protocol::shared_from_this());
 }
 
@@ -57,8 +59,6 @@ void protocol_address::start()
 {
     const auto& settings = network_.network_settings();
 
-    // Must have a handler to capture a shared self pointer in stop subscriber.
-    protocol_events::start(BIND1(handle_stop, _1));
     if (settings.self.port() != 0)
     {
         self_ = address({ { settings.self.to_network_address() } });
@@ -107,7 +107,8 @@ bool protocol_address::handle_receive_address(const code& ec,
         log::trace(LOG_NETWORK)
             << "Failure receiving address message from ["
             << authority() << "] " << ec.message();
-        stop(ec);
+      	stop(ec);
+
         return false;
     }
     remove_useless_address(message);
@@ -145,9 +146,10 @@ bool protocol_address::handle_receive_get_address(const code& ec,
         log::trace(LOG_NETWORK)
             << "Failure receiving get_address message from ["
             << authority() << "] " << ec.message();
-        stop(ec);
+       	stop(ec);
         return false;
     }
+
 
     // TODO: allowing repeated queries can allow a channel to map our history.
     // TODO: pull active hosts from host cache (currently just resending self).
