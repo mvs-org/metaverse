@@ -35,8 +35,6 @@ namespace explorer {
 
 using namespace bc::config;
 
-#define BX_HOME_PAGE_URL "http://mvs.live"
-
 void display_command_names(std::ostream& stream)
 {
     const auto func = [&stream](std::shared_ptr<command> explorer_command)
@@ -87,10 +85,6 @@ void display_usage(std::ostream& stream)
         << std::endl;
 
     display_command_names(stream);
-
-    stream
-        << std::endl << BX_COMMANDS_HOME_PAGE << " "
-        << BX_HOME_PAGE_URL << std::endl;
 }
 
 } // namespace explorer

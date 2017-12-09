@@ -327,7 +327,12 @@ options_metadata parser::load_settings()
 	(
 		"server.mongoose_listen",
 		value<std::string>(&configured.server.mongoose_listen),
-		"the listening port for mongoose, defaults to 127.0.0.1:8820."
+		"The Json-RPC listening port, defaults to 127.0.0.1:8820."
+	)
+	(
+		"server.administrator_required",
+		value<bool>(&configured.server.administrator_required),
+		"Whether wallet needs administrator to execute non-account commands(shutdown/getinfo...), defaults to false."
 	)
     (
         "server.query_workers",
