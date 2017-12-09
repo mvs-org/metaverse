@@ -58,6 +58,13 @@ console_result createrawtx::invoke (std::ostream& output,
     }
 
     auto type = static_cast<utxo_attach_type>(option_.type);
+    
+    if(type == utxo_attach_type::deposit) {
+        if(!option_.symbol.empty())
+            throw argument_legality_exception{std::string("not deposit asset ") + option_.symbol};
+        if(option_.receivers.size() != 1)
+            throw argument_legality_exception{std::string("only support deposit on one address!")};
+    }
     // receiver
     receiver_record record;
     std::vector<receiver_record> receivers;
@@ -86,6 +93,13 @@ console_result createrawtx::invoke (std::ostream& output,
     if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
         auto send_helper = base_transaction_constructor(blockchain, type, 
                 std::move(option_.senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
+                std::move(option_.message), option_.fee);
+
+        send_helper.exec();
+        tx_ = send_helper.get_transaction();
+    } else if(type == utxo_attach_type::deposit) {
+        auto send_helper = depositing_etp_transaction(blockchain, type, 
+                std::move(option_.senders), std::move(receivers), option_.deposit, std::move(option_.mychange_address), 
                 std::move(option_.message), option_.fee);
 
         send_helper.exec();
