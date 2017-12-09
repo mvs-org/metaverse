@@ -76,10 +76,6 @@ void session_batch::converge(const code& ec, channel::ptr channel,
     {
         // If the last connection attempt is an error, normalize the code.
         auto result = ec ? error::operation_failed : error::success;
-        if (ec == (code)error::not_satisfied)
-        {
-        	result = error::not_satisfied;
-        }
         handler(result, channel);
     }
 }
@@ -124,7 +120,7 @@ void session_batch::start_connect(const code& ec, const authority& host,
     if (ec)
     {
         log::warning(LOG_NETWORK)
-            << "Failure fetching new address: ";// << ec.message();
+            << "Failure fetching new address: " << ec.message();
         handler(ec, nullptr);
         return;
     }
@@ -132,8 +128,6 @@ void session_batch::start_connect(const code& ec, const authority& host,
     // This creates a tight loop in the case of a small address pool.
     if (blacklisted(host))
     {
-//        log::warning(LOG_NETWORK)
-//            << "Fetched blacklisted address [" << host << "] ";
         handler(error::address_blocked, nullptr);
         return;
     }
@@ -158,26 +152,15 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
         log::trace(LOG_NETWORK)
             << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
-#if 0
-        if(count)
-        {
-        	connect->connect(host, BIND7(handle_connect, _1, _2, host, connect,
-        			counter, --count, handler));
-        	return;
-        }
-        else{
-        	remove(host.to_network_address(), [&host](const code& ec){
-        		if(ec)
-				{
-        			log::debug(LOG_NETWORK) << "remove host " << host << " failed," << ec.message() ;
-				}
-        		log::debug(LOG_NETWORK) << "remove host failed," << ec.message() ;
-        	});
-        }
-#endif
-        handler(ec, nullptr);
+        if (ec == error::channel_timeout) // if connect is not aviliable, change it into inactive state
+        	remove(host.to_network_address(), [](const code&){});
+		else
+			store(host.to_network_address());
+        handler(ec, channel);
         return;
     }
+
+    store(host.to_network_address());
 
     log::trace(LOG_NETWORK)
         << "Connected to [" << channel->authority() << "]";

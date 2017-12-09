@@ -33,6 +33,7 @@ namespace network {
 
 #define NAME "hosts"
 
+
 hosts::hosts(threadpool& pool, const settings& settings)
   : stopped_(true),
     dispatch_(pool, NAME),
@@ -40,7 +41,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
     disabled_(settings.host_pool_capacity == 0),
 	pool_{pool}
 {
-	buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
+//	buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
 }
 
 // private
@@ -50,8 +51,8 @@ hosts::iterator hosts::find(const address& host)
     {
         return entry.port == host.port && entry.ip == host.ip;
     };
-
-    return std::find_if(buffer_.begin(), buffer_.end(), found);
+    return buffer_.find(host);
+//    return std::find_if(buffer_.begin(), buffer_.end(), found);
 }
 
 size_t hosts::count() const
@@ -64,45 +65,54 @@ size_t hosts::count() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
+static std::atomic<uint64_t> fetch_times{0};
+
+static std::vector<config::authority> hosts_{config::authority("198.199.84.199:5252")};
+
 code hosts::fetch(address& out, const config::authority::list& excluded_list)
 {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-//    shared_lock lock(mutex_);
-	mutex_.lock_upgrade();
+	shared_lock lock(mutex_);
+	fetch_times++;
+	config::authority::list addresses;
+	list* buffer=nullptr;
+	{
 
-    if (stopped_)
-    {
-    	mutex_.unlock_upgrade();
-        return error::service_stopped;
-    }
+		if (stopped_)
+		{
+			return error::service_stopped;
+		}
 
-    mutex_.unlock_upgrade_and_lock();
-    if (buffer_.empty())
-    {
-    	mutex_.unlock();
-        return error::not_found;
-    }
+		if (fetch_times % 5 == 4 && !inactive_.empty())
+			buffer = &inactive_;
+		else
+			buffer = &buffer_;
+	}
 
-    // Randomly select an address from the buffer.
-
-    config::authority::list addresses;
-
-    for(auto entry: buffer_)
-    {
+	for(auto entry: *buffer)
+	{
 		auto iter = std::find(excluded_list.begin(), excluded_list.end(), config::authority(entry) );
 		if(iter == excluded_list.end())
 		{
 			addresses.push_back(config::authority(entry));
 		}
-    }
-    mutex_.unlock();
+	}
 
-    if(addresses.empty()){
-    	return error::not_satisfied;
-    }
-    const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
-    out = addresses[index].to_network_address();
+	if (addresses.empty()) {
+		if (inactive_.empty()) {
+			return error::not_found;
+		}
+		const auto index = static_cast<size_t>(pseudo_random() % inactive_.size());
+		out = addresses[index].to_network_address();
+		return error::success;
+	}
+
+	const auto index = static_cast<size_t>(pseudo_random() % addresses.size());
+	out = addresses[index].to_network_address();
+
+//	const auto index = static_cast<size_t>(pseudo_random() % hosts_.size());
+//	out = hosts_[index].to_network_address();
     return error::success;
     ///////////////////////////////////////////////////////////////////////////
 }
@@ -113,10 +123,9 @@ hosts::address::list hosts::copy()
 
 	shared_lock lock{mutex_};
 	copy.reserve(buffer_.size());
-	std::find_if(buffer_.begin(), buffer_.end(), [&copy](const address& addr){
-		copy.push_back(addr);
-		return false;
-	});
+	for (auto& h:buffer_) {
+		copy.push_back(h);
+	}
 	return copy;
 }
 
@@ -140,8 +149,11 @@ void hosts::handle_timer(const code& ec)
 
 	if (!file_error)
 	{
-		log::debug(LOG_NETWORK) << "sync hosts to file(" << file_path_.string() << "), " << buffer_.size() << " hosts found";
+		log::debug(LOG_NETWORK) << "sync hosts to file(" << file_path_.string() << "), active hosts size is "
+				<< buffer_.size() << " hosts found, inactive hosts size is " << inactive_.size();
 		for (const auto& entry: buffer_)
+			file << config::authority(entry) << std::endl;
+		for (const auto& entry: inactive_)
 			file << config::authority(entry) << std::endl;
 	}
 	else
@@ -192,7 +204,7 @@ code hosts::start()
             	auto network_address = host.to_network_address();
             	if(network_address.is_routable())
 				{
-					buffer_.push_back(network_address);
+					buffer_.insert(network_address);
 				}
 				else
 				{
@@ -286,10 +298,15 @@ code hosts::remove(const address& host)
         return error::success;
     }
 
-    mutex_.unlock_upgrade();
+    mutex_.unlock_upgrade_and_lock();
+    auto iter = inactive_.find(host);
+	if (iter == inactive_.end()) {
+		inactive_.insert(host);
+	}
+	mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-    return error::not_found;
+    return error::success;
 }
 
 code hosts::store(const address& host)
@@ -315,7 +332,11 @@ code hosts::store(const address& host)
     {
         mutex_.unlock_upgrade_and_lock();
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        buffer_.push_back(host);
+        buffer_.insert(host);
+        auto iter = inactive_.find(host);
+        if (iter != inactive_.end()){
+        	inactive_.erase(iter);
+        }
 
         mutex_.unlock();
         //---------------------------------------------------------------------

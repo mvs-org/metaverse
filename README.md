@@ -18,7 +18,7 @@ Metaverse(MVS) is a decentralised system based on the blockchain technology, thr
 # MVS Project
 MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
 
-Further Read: [Developers Document](https://github.com/mvs-org/dev-docs)
+Further Read: [Wiki Documents](https://github.com/mvs-org/metaverse/wiki)
 
 # build MVS
 ## toolchain requirements:
@@ -38,7 +38,7 @@ make test
 make doc
 ```
 
-# Libraries Dependencies
+# Library Dependencies
 ## boost 1.56+
 ```bash
 sudo yum/apt-get/brew install libboost-all-dev
@@ -53,13 +53,14 @@ Please upgrade to 1.64, or modify parser.hpp manually at first.
 See boost issue details: <https://github.com/boostorg/property_tree/pull/26>
 
 ## ZeroMQ 4.2.1+
-Install GNU toochain(automake/autoconf/libtool) at fisrt:
+Install GNU toochain(automake/autoconf/libtool) at first:
 ```bash
 yum/apt-get/brew install automake/autoconf/libtool
 ```
 Module server/explorer required.
 ```bash
 wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
+tar -xzvf zeromq-4.2.1.tar.gz
 cd zeromq-4.2.1
 ./autogen.sh
 ./configure

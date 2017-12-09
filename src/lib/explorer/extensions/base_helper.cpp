@@ -1411,6 +1411,61 @@ void depositing_etp::populate_tx_outputs() {
     }
 }
 
+const std::vector<uint16_t> depositing_etp_transaction::vec_cycle{7, 30, 90, 182, 365};
+
+uint32_t depositing_etp_transaction::get_reward_lock_height() {
+    int index = 0;
+    auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_);
+    if (it != vec_cycle.end()) { // found cycle
+        index = std::distance(vec_cycle.begin(), it);
+    }
+
+    return (uint32_t)bc::consensus::lock_heights[index];
+}
+// modify lock script
+void depositing_etp_transaction::populate_tx_outputs() {
+    chain::operation::stack payment_ops;
+    
+    for (auto& iter: receiver_list_) {
+        if (tx_item_idx_ >= (tx_limit + 10)) {
+                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
+        tx_item_idx_++;
+        
+        // filter zero etp and asset
+        if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
+            continue;
+        if( !iter.amount && !iter.asset_amount 
+            && ((iter.type == utxo_attach_type::asset_transfer) || (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
+            continue;
+        
+        // complicated script and asset should be implemented in subclass
+        // generate script          
+        const wallet::payment_address payment(iter.target);
+        if (!payment)
+            throw toaddress_invalid_exception{"invalid target address"};
+        
+        if((payment.version() == 0x7f) // test net addr
+            || (payment.version() == 0x32)) { // main net addr
+            auto hash = payment.hash();
+            if((utxo_attach_type::deposit == iter.type)) {
+                payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
+            } else {
+                payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+            }
+        } else {
+            throw toaddress_invalid_exception{std::string("not supported version target address ") + iter.target};
+        }  
+        auto payment_script = chain::script{ payment_ops };
+        
+        // generate asset info
+        auto output_att = populate_output_attachment(iter);
+        
+        // fill output
+        tx_.outputs.push_back({ iter.amount, payment_script, output_att });
+    }
+}
+
         
 void sending_etp::populate_change() {
     if(unspent_etp_ - payment_etp_) {
