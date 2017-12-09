@@ -19,6 +19,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+
+#include <boost/property_tree/ptree.hpp>    
+#include <boost/property_tree/ini_parser.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
+
 #include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
 #include <metaverse/bitcoin/unicode/unicode.hpp>
@@ -42,8 +47,23 @@ void my_impl(const http_message* hm)
 
 int bc::main(int argc, char* argv[])
 {
-    // all commands
-    HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
+    auto work_path = bc::default_data_path();
+    auto&& config_file = work_path / "mvs.conf";
+    std::string url{"127.0.0.1:8820/rpc"}; 
+
+    if(boost::filesystem::exists(config_file)) {
+
+        boost::property_tree::ptree proot;  
+        boost::property_tree::ini_parser::read_ini(config_file.string(), proot);    
+        auto&& uri = proot.get<std::string>("server.mongoose_listen", "");  
+
+        if (!uri.empty()) {
+            url = uri + "/rpc";
+        }
+    } 
+
+    // HTTP request call commands
+    HttpReq req(url, 3000, reply_handler(my_impl));
 
     Json::Value jsonvar;
     jsonvar["method"] = argv[1];
