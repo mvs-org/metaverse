@@ -25,14 +25,14 @@
 #include <metaverse/explorer/prop_tree.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <metaverse/explorer/extensions/account/account_info.hpp>
+#include <metaverse/explorer/extensions/account_info.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
 namespace pt = boost::property_tree;
-
+#if 0
 /************************ importaccount *************************/
 console_result importaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -398,7 +398,7 @@ console_result deletemultisig::invoke (std::ostream& output,
     
     return console_result::okay;
 }
-
+#endif
 
 } // libbitcoin
 } // explorer

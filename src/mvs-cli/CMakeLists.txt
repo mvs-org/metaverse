@@ -10,13 +10,11 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 IF(ENABLE_SHARED_LIBS)
-    TARGET_LINK_LIBRARIES(mvs-cli ${mongoose_LIBRARY} ${bitcoin_LIBRARY} ${network_LIBRARY}
-        ${protocol_LIBRARY} ${client_LIBRARY} ${explorer_LIBRARY}
-        ${database_LIBRARY})
+    TARGET_LINK_LIBRARIES(mvs-cli ${mongoose_LIBRARY} ${jsoncpp_LIBRARY} 
+        ${explorer_LIBRARY})
 ELSE()
-    TARGET_LINK_LIBRARIES(mvs-cli ${mongoose_LIBRARY} ${bitcoin_LIBRARY} ${network_LIBRARY}
-        ${protocol_LIBRARY} ${client_LIBRARY} ${explorer_LIBRARY}
-        ${database_LIBRARY})
+    TARGET_LINK_LIBRARIES(mvs-cli ${mongoose_LIBRARY} ${jsoncpp_LIBRARY}
+        ${explorer_LIBRARY})
 ENDIF()
 
 INSTALL(TARGETS mvs-cli DESTINATION bin)
