@@ -12,7 +12,7 @@ ADD_LIBRARY(explorer_static STATIC ${explorer_SOURCES})
 SET_TARGET_PROPERTIES(explorer_static PROPERTIES OUTPUT_NAME mvs_explorer)
 TARGET_LINK_LIBRARIES(explorer_static zmq_static ${Boost_LIBRARIES}
     ${bitcoin_LIBRARY} ${network_LIBRARY} ${protocol_LIBRARY} ${client_LIBRARY}
-    ${blockchain_LIBRARY})
+    ${blockchain_LIBRARY} ${jsoncpp_LIBRARY})
 INSTALL(TARGETS explorer_static DESTINATION lib)
 
 IF(ENABLE_SHARED_LIBS)
@@ -21,6 +21,6 @@ IF(ENABLE_SHARED_LIBS)
   SET_TARGET_PROPERTIES(explorer_shared PROPERTIES OUTPUT_NAME mvs_explorer)
   TARGET_LINK_LIBRARIES(explorer_shared ${ZeroMQ_LIBRARIES} ${Boost_LIBRARIES} 
     ${bitcoin_LIBRARY} ${network_LIBRARY} ${protocol_LIBRARY} ${client_LIBRARY} 
-    ${blockchain_LIBRARY})
+    ${blockchain_LIBRARY} ${jsoncpp_LIBRARY})
   INSTALL(TARGETS explorer_shared DESTINATION lib)
 ENDIF()
