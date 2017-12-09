@@ -32,6 +32,7 @@ settings::settings()
     subscription_expiration_minutes(10),
     subscription_limit(100000000),
     mongoose_listen("127.0.0.1:8820"),
+    administrator_required(false),
     log_level("DEBUG"),
     secure_only(false),
     query_service_enabled(true),
