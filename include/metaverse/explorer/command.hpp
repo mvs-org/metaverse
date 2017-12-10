@@ -57,11 +57,10 @@
 namespace libbitcoin {
 namespace explorer {
 
-#define BX_PROGRAM_NAME "mvs"
 #define BX_HELP_VARIABLE "help"
 #define BX_CONFIG_VARIABLE "config"
 #define LOG_COMMAND "commands"
-BC_DECLARE_CONFIG_DEFAULT_PATH("conf" / BX_PROGRAM_NAME ".conf")
+BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 
 /**
  * Base class for definition of each Bitcoin Explorer command.

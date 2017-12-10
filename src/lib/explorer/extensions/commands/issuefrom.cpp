@@ -18,16 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
 
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -40,7 +31,6 @@ namespace commands {
 
 namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 console_result issuefrom::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)

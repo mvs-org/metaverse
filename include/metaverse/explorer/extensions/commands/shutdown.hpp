@@ -18,10 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
 
-#include <metaverse/bitcoin.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
