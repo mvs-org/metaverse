@@ -20,7 +20,7 @@
 
 
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/start.hpp>
+#include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -32,9 +32,9 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 
-/************************ start *************************/
+/************************ startmining *************************/
 
-console_result start::invoke (std::ostream& output,
+console_result startmining::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     std::istringstream sin;

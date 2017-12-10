@@ -31,8 +31,8 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 #include <metaverse/explorer/extensions/commands/shutdown.hpp>
-#include <metaverse/explorer/extensions/commands/stop.hpp>
-#include <metaverse/explorer/extensions/commands/start.hpp>
+#include <metaverse/explorer/extensions/commands/stopmining.hpp>
+#include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
 #include <metaverse/explorer/extensions/commands/ping.hpp>
@@ -94,27 +94,37 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
 {
     using namespace std;
     using namespace commands;
+
+    // account
+    func(make_shared<getnewaccount>());
+    func(make_shared<getnewaddress>());
+    func(make_shared<getaccount>());
+    func(make_shared<deleteaccount>());
+    func(make_shared<listaddresses>());
+    func(make_shared<dumpkeyfile>());
+    func(make_shared<importkeyfile>());
+    func(make_shared<importaccount>());
+    func(make_shared<changepasswd>());
+
+    // wallet
+    func(make_shared<getblock>());
+    func(make_shared<getbestblockhash>());
+    func(make_shared<getbestblockheader>());
     func(make_shared<shutdown>());
-    func(make_shared<stop>());
-    func(make_shared<start>());
+    func(make_shared<startmining>());
+    func(make_shared<stopmining>());
+    func(make_shared<setminingaccount>());
+    func(make_shared<getmininginfo>());
     func(make_shared<getinfo>());
     func(make_shared<getpeerinfo>());
     func(make_shared<ping>());
     func(make_shared<addnode>());
-    func(make_shared<getmininginfo>());
-    func(make_shared<getbestblockhash>());
-    func(make_shared<getbestblockheader>());
     func(make_shared<gettransaction>());
-    func(make_shared<dumpkeyfile>());
-    func(make_shared<importkeyfile>());
-    func(make_shared<importaccount>());
-    func(make_shared<getnewaccount>());
-    func(make_shared<getaccount>());
-    func(make_shared<deleteaccount>());
-    func(make_shared<listaddresses>());
-    func(make_shared<getnewaddress>());
-    func(make_shared<getpublickey>());
-    func(make_shared<getblock>());
+    func(make_shared<getwork>());
+    func(make_shared<submitwork>());
+    func(make_shared<getmemorypool>());
+
+    // etp
     func(make_shared<validateaddress>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
@@ -123,6 +133,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<send>());
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
+
+    // asset
     func(make_shared<listassets>());
     func(make_shared<getasset>());
     func(make_shared<getaccountasset>());
@@ -132,29 +144,29 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
-    func(make_shared<getwork>());
-    func(make_shared<submitwork>());
-    func(make_shared<setminingaccount>());
-    func(make_shared<changepasswd>());
+
+    // multi-sig
+    func(make_shared<getpublickey>());
     func(make_shared<getnewmultisig>());
     func(make_shared<listmultisig>());
     func(make_shared<deletemultisig>());
     func(make_shared<signmultisigtx>());
+
+    // raw
     func(make_shared<createrawtx>());
     func(make_shared<decoderawtx>());
     func(make_shared<signrawtx>());
     func(make_shared<sendrawtx>());
-    func(make_shared<getmemorypool>());
 }
 
 shared_ptr<command> find_extension(const string& symbol)
 {
     using namespace std;
     using namespace commands;
-    if (symbol == stop::symbol())
-        return make_shared<stop>();
-    if (symbol == start::symbol())
-        return make_shared<start>();
+    if (symbol == stopmining::symbol() || symbol == "stop")
+        return make_shared<stopmining>();
+    if (symbol == startmining::symbol() || symbol == "start")
+        return make_shared<startmining>();
     if (symbol == getinfo::symbol())
         return make_shared<getinfo>();
     if (symbol == getpeerinfo::symbol())
