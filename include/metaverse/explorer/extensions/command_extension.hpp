@@ -30,6 +30,10 @@
 #include <metaverse/explorer/config/metaverse_output.hpp>
 #include <metaverse/server/server_node.hpp>
 
+// Json constructor/paser TODO ==> jsoncpp
+#include <boost/property_tree/ptree.hpp>                                        
+#include <boost/property_tree/json_parser.hpp>
+
 namespace libbitcoin {
 namespace explorer {
 namespace commands {

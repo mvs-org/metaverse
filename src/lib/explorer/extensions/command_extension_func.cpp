@@ -19,20 +19,18 @@
  */
 
 
-#include <metaverse/explorer/command.hpp>
 #include <functional>
 #include <memory>    
 #include <string>    
 #include <array>     
+
 #include <metaverse/explorer/command.hpp>                
+#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>   
 #include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
-#include <metaverse/explorer/dispatch.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <metaverse/explorer/extensions/commands/stopall.hpp>
+#include <metaverse/explorer/extensions/commands/shutdown.hpp>
 #include <metaverse/explorer/extensions/commands/stop.hpp>
 #include <metaverse/explorer/extensions/commands/start.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
@@ -96,7 +94,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
 {
     using namespace std;
     using namespace commands;
-    func(make_shared<stopall>());
+    func(make_shared<shutdown>());
     func(make_shared<stop>());
     func(make_shared<start>());
     func(make_shared<getinfo>());
@@ -255,8 +253,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<issuefrom>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
-    if (symbol == stopall::symbol())
-        return make_shared<stopall>();
+    if (symbol == shutdown::symbol())
+        return make_shared<shutdown>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
     return nullptr;

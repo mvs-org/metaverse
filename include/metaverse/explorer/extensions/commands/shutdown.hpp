@@ -22,29 +22,20 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
+/************************ shutdown *************************/
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ stopall *************************/
-
-class stopall: public command_extension
+class shutdown: public command_extension
 {
 public:
-    static const char* symbol(){ return "stopall";}
+    static const char* symbol(){ return "shutdown";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
     const char* description() override { return "stop mvsd."; }
