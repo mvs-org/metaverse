@@ -43,8 +43,8 @@
 #include <metaverse/explorer/extensions/commands/getbestblockhash.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/gettransaction.hpp>
-#include <metaverse/explorer/extensions/commands/exportaccountasfile.hpp>
-#include <metaverse/explorer/extensions/commands/importaccountfromfile.hpp>
+#include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
+#include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/commands/getaccount.hpp>
@@ -107,8 +107,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getbestblockhash>());
     func(make_shared<getbestblockheader>());
     func(make_shared<gettransaction>());
-    func(make_shared<exportaccountasfile>());
-    func(make_shared<importaccountfromfile>());
+    func(make_shared<dumpkeyfile>());
+    func(make_shared<importkeyfile>());
     func(make_shared<importaccount>());
     func(make_shared<getnewaccount>());
     func(make_shared<getaccount>());
@@ -169,10 +169,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getmininginfo>();
     if (symbol == gettransaction::symbol())
         return make_shared<gettransaction>();
-    if (symbol == exportaccountasfile::symbol())
-        return make_shared<exportaccountasfile>();
-    if (symbol == importaccountfromfile::symbol())
-        return make_shared<importaccountfromfile>();
+    if (symbol == dumpkeyfile::symbol() || symbol == "exportaccountasfile")
+        return make_shared<dumpkeyfile>();
+    if (symbol == importkeyfile::symbol() || symbol == "importaccountfromfile")
+        return make_shared<importkeyfile>();
     if (symbol == importaccount::symbol())
         return make_shared<importaccount>();
     if (symbol == getnewaccount::symbol())

@@ -22,12 +22,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -36,36 +31,28 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
 
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
-/************************ exportaccountasfile *************************/
+/************************ importkeyfile *************************/
 
-class exportaccountasfile: public command_extension
+class importkeyfile: public command_extension
 {
 public:
-    static const char* symbol(){ return "exportaccountasfile";}
+    static const char* symbol(){ return "importkeyfile";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "exportaccountasfile "; }
+    const char* description() override { return "importkeyfile "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("LASTWORD", 1)
-            .add("DESTINATION", 1);
+            .add("FILE", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.last_word, "LASTWORD", variables, input, raw);
-        load_input(argument_.dst, "DESTINATION", variables, input, raw);
+        load_input(option_.file, "FILE", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -83,27 +70,11 @@ public:
             value<boost::filesystem::path>(),
             "The path to the configuration settings file."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            "Account name."
-	    )
         (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
-	    )
-        (
-            "LASTWORD",
-            value<std::string>(&argument_.last_word)->required(),
-            "The last word of your master private-key phrase."
-        )
-        (
-            "DESTINATION",
-            value<boost::filesystem::path>(&argument_.dst)->default_value(default_data_path()),
-            "account info storage file path"
-        )
-        ;
+            "FILE",
+            value<boost::filesystem::path>(&option_.file)->required(),
+            "account info file path"
+        );
 
         return options;
     }
@@ -117,14 +88,17 @@ public:
 
     struct argument
     {
-        argument():last_word(""), dst("")  
-        {};
-        std::string last_word;
-        boost::filesystem::path dst;
     } argument_;
 
     struct option
     {
+        option()
+          : file(""), depasswd("")
+        {
+        }
+
+        boost::filesystem::path file;
+        std::string depasswd;
     } option_;
 
 };

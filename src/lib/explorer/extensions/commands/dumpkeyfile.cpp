@@ -18,19 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
 
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/exportaccountasfile.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/account_info.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -43,7 +32,7 @@ namespace fs = boost::filesystem;
 
 /************************ exportaccountasfile *************************/
 
-console_result exportaccountasfile::invoke (std::ostream& output,
+console_result dumpkeyfile::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -93,7 +82,7 @@ console_result exportaccountasfile::invoke (std::ostream& output,
     file_output.close();
 
     pt::ptree root;
-    root.put("result", "success");    
+    root.put("result", argument_.dst.string());    
     pt::write_json(output, root);
 
     return console_result::okay;
