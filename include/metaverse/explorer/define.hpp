@@ -48,7 +48,7 @@
 /**
  * The name of this program.
  */
-#define BX_PROGRAM_NAME "mvs"
+#define BX_PROGRAM_NAME "mvs-cli"
 
 /**
  * Delimiter for use in word splitting serialized input and output points.
@@ -70,6 +70,11 @@
  * should be read from STDIN or written to STDOUT.
  */
 #define BX_STDIO_PATH_SENTINEL "-"
+
+/**
+ * Show in uncompleted commands.
+ */
+#define IN_DEVELOPING "The command is in develeping, replace it with original command."
 
 /**
  * Space-saving namespaces.

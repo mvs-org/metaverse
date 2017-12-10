@@ -1,13 +1,3 @@
-/*
- * getmemorypool.cpp
- *
- *  Created on: Jul 3, 2017
- *      Author: jiang
- */
-
-
-
-
 /**
  * Copyright (c) 2016-2017 mvs developers
  *
@@ -28,16 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-#include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getmemorypool.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>

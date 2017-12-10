@@ -31,6 +31,7 @@
 #include <metaverse/server/server_node.hpp>
 
 // Json constructor/paser TODO ==> jsoncpp
+#include <metaverse/explorer/prop_tree.hpp>
 #include <boost/property_tree/ptree.hpp>                                        
 #include <boost/property_tree/json_parser.hpp>
 
