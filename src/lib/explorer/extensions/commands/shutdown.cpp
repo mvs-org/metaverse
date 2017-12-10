@@ -22,7 +22,7 @@
 
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/extensions/commands/stopall.hpp>
+#include <metaverse/explorer/extensions/commands/shutdown.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -30,8 +30,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-/************************ stopall *************************/
-console_result stopall::invoke (std::ostream& output,
+/************************ shutdown *************************/
+console_result shutdown::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
