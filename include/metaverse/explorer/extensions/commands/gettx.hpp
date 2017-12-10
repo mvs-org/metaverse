@@ -29,29 +29,27 @@ namespace explorer {
 namespace commands {
 
 
-/************************ getbusinessbytime *************************/
+/************************ gettx *************************/
 
-class getbusinessbytime: public command_extension
+class gettx: public command_extension
 {
 public:
-    static const char* symbol(){ return "getbusinessbytime";}
+    static const char* symbol(){ return "gettx";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getbusinessbytime "; }
+    const char* description() override { return "gettx "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("HASH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.hash, "HASH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,32 +62,11 @@ public:
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-        (
 	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
-	    )
-        (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
-	    )
-		(
-			"type,t",
-			value<uint32_t>(&option_.type)->required(),
-			"The business type."
-		)
-		(
-			"start,s",
-			value<uint32_t>(&option_.start)->required(),
-			"The start timestamp."
-		)
-		(
-			"end,e",
-			value<uint32_t>(&option_.end)->required(),
-			"The end timestamp."
-		);
+            "HASH",
+            value<bc::config::hash256>(&argument_.hash)->required(),
+            "The Base16 transaction hash of the transaction to get. If not specified the transaction hash is read from STDIN."
+        );
 
         return options;
     }
@@ -97,24 +74,17 @@ public:
     void set_defaults_from_config (po::variables_map& variables) override
     {
     }
-		
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+
+	console_result invoke (std::ostream& output,
+			std::ostream& cerr, libbitcoin::server::server_node& node) override;
 
     struct argument
     {
+        bc::config::hash256 hash;
     } argument_;
 
     struct option
     {
-        option()
-          : type()
-        {
-        }
-
-        uint32_t type;
-		uint32_t start;
-		uint32_t end;
     } option_;
 
 };
