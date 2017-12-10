@@ -60,11 +60,6 @@ public:
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-        (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
 		(
 			"type,t",
 			value<uint16_t>(&option_.type)->required(),

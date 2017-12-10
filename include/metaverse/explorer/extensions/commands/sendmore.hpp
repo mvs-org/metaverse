@@ -65,20 +65,15 @@ public:
             value<bool>()->zero_tokens(),
             "Send to more target. "
         )
-        (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "Get a description and instructions for this command."
-        )
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "Account name."
+            BX_ACCOUNT_NAME
 	    )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
+            BX_ACCOUNT_AUTH
 	    )
         (
             "receivers,r",

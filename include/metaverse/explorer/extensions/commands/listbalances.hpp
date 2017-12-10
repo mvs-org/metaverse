@@ -65,11 +65,6 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
-        (
             "nozero,n",
             value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
             "List non-zero upsent records."
@@ -77,12 +72,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "Account name."
+            BX_ACCOUNT_NAME
 	    )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
+            BX_ACCOUNT_AUTH
 	    );
 
         return options;

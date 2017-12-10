@@ -63,11 +63,6 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
-        (
             "FILE",
             value<boost::filesystem::path>(&option_.file)->required(),
             "account info file path"

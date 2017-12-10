@@ -60,11 +60,6 @@ public:
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-        (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
 		(
 			"WORD",
 			value<std::vector<std::string>>(&argument_.words)->required(),
@@ -78,12 +73,12 @@ public:
 		(
 			"accoutname,n",
 			value<std::string>(&auth_.name)->required(),
-			"Account name."
+			BX_ACCOUNT_NAME
 		)
 		(
 			"password,p",
 			value<std::string>(&option_.passwd)->required(),
-			"Account password."
+			BX_ACCOUNT_AUTH
 		)
 		(
 			"hd_index,i",

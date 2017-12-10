@@ -77,6 +77,13 @@
 #define IN_DEVELOPING "The command is in develeping, replace it with original command."
 
 /**
+ * Show Account messages.
+ */
+#define BX_ACCOUNT_NAME "Account name required."
+#define BX_ACCOUNT_AUTH "Account password(authorization) required."
+
+
+/**
  * Space-saving namespaces.
  */
 namespace ph = std::placeholders;
