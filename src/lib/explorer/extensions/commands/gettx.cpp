@@ -20,7 +20,7 @@
 
 
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/gettransaction.hpp>
+#include <metaverse/explorer/extensions/commands/gettx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -32,9 +32,9 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 
-/************************ gettransaction *************************/
+/************************ gettx *************************/
 /// extent fetch-tx command , add tx height in tx content
-console_result gettransaction::invoke (std::ostream& output,
+console_result gettx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     bc::chain::transaction tx;

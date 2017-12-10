@@ -40,7 +40,7 @@
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockhash.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
-#include <metaverse/explorer/extensions/commands/gettransaction.hpp>
+#include <metaverse/explorer/extensions/commands/gettx.hpp>
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
@@ -119,7 +119,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getpeerinfo>());
     func(make_shared<ping>());
     func(make_shared<addnode>());
-    func(make_shared<gettransaction>());
+    func(make_shared<gettx>());
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
@@ -177,8 +177,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<addnode>();
     if (symbol == getmininginfo::symbol())
         return make_shared<getmininginfo>();
-    if (symbol == gettransaction::symbol())
-        return make_shared<gettransaction>();
+    if (symbol == gettx::symbol() || symbol == "gettransaction")
+        return make_shared<gettx>();
     if (symbol == dumpkeyfile::symbol() || symbol == "exportaccountasfile")
         return make_shared<dumpkeyfile>();
     if (symbol == importkeyfile::symbol() || symbol == "importaccountfromfile")
