@@ -20,7 +20,7 @@
 
 
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/stop.hpp>
+#include <metaverse/explorer/extensions/commands/stopmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 
@@ -31,9 +31,9 @@ namespace commands {
 namespace pt = boost::property_tree;
 
 
-/************************ stop *************************/
+/************************ stopmining *************************/
 
-console_result stop::invoke (std::ostream& output,
+console_result stopmining::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& miner = node.miner();

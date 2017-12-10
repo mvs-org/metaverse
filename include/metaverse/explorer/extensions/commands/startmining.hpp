@@ -29,15 +29,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ stop *************************/
+/************************ startmining *************************/
 
-class stop: public command_extension
+class startmining: public command_extension
 {
 public:
-    static const char* symbol(){ return "stop";}
+    static const char* symbol(){ return "startmining";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "stop solo mining."; }
+    const char* description() override { return "start CPU solo mining. You have to setminingaccount firstly."; }
 
     arguments_metadata& load_arguments() override
     {
