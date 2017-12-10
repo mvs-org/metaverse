@@ -81,12 +81,12 @@ public:
         )
 	    (
             "ADMINNAME",
-            value<std::string>(&auth_.name)->required(),
+            value<std::string>(&auth_.name),
             "admin name."
 	    )
         (
             "ADMINAUTH",
-            value<std::string>(&auth_.auth)->required(),
+            value<std::string>(&auth_.auth),
             "admin password/authorization."
 	    );
 

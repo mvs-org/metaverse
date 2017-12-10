@@ -18,28 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
+#include <jsoncpp/json/json.h>
 
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/client.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/stopall.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
-#define IN_DEVELOPING "this command is in deliberation, or replace it with original command."
 
 /************************ stopall *************************/
 console_result stopall::invoke (std::ostream& output,
@@ -47,14 +36,20 @@ console_result stopall::invoke (std::ostream& output,
 {
     auto& blockchain = node.chain_impl();
 
-    if(!blockchain.is_admin_account(auth_.name))
-        throw account_authority_exception{"not admin account!"};
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    // administrator_required option is true
+    if (node.server_settings().administrator_required) {
+        if(!blockchain.is_admin_account(auth_.name))
+            throw account_authority_exception{"account empty or not administrator!"};
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    }
 
-    output << "mvs server stoped.";
 #ifndef _WIN32
-    killpg(getpid(),SIGTERM);
+    output << "sending SIGTERM to mvsd.";
+    killpg(getpgrp(),SIGTERM);
+#else
+    output << "not support for Windows";
 #endif
+
     return console_result::okay;
 }
 
