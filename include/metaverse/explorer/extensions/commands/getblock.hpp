@@ -42,8 +42,8 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-        		.add("hash", 1)
-        		.add("json", 1);
+                .add("hash", 1)
+                .add("json", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -58,27 +58,22 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
+                "hash",
+                value<bc::config::hash256>(&argument_.hash)->required(),
+                "block hash."
         )
-		(
-				"hash",
-				value<bc::config::hash256>(&argument_.hash)->required(),
-				"block hash."
-		)
-		(
-				"json",
-				value<bool>(&argument_.json),
-				"use json format or not, default is false"
-		)
-		;
+        (
+                "json",
+                value<bool>(&argument_.json)->default_value(true),
+                "Json format or Raw format, default is true."
+        )
+        ;
 
         return options;
     }
@@ -92,8 +87,8 @@ public:
 
     struct argument
     {
-    	bc::config::hash256 hash;
-    	bool json;
+        bc::config::hash256 hash;
+        bool json;
     } argument_;
 
     struct option
@@ -101,8 +96,6 @@ public:
     } option_;
 
 };
-
-
 
 
 } // namespace commands

@@ -63,11 +63,6 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
-        (
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
             "The input Base16 transaction to broadcast."

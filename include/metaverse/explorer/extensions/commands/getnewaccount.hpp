@@ -65,11 +65,6 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
-        (
             "language,l",
             value<std::string>(&option_.language)->default_value("en"),
             "Options are 'en', 'es', 'ja', 'zh_Hans', 'zh_Hant' and 'any', defaults to 'en'."
@@ -77,12 +72,12 @@ public:
 	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "Account name."
+            BX_ACCOUNT_NAME
 	    )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
+            BX_ACCOUNT_AUTH
 	    );
 
         return options;
