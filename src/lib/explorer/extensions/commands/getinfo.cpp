@@ -23,7 +23,6 @@
 #include <metaverse/explorer/version.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 

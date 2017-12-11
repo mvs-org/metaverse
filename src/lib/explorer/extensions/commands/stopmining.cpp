@@ -19,7 +19,8 @@
  */
 
 
-#include <metaverse/explorer/dispatch.hpp>
+#include <jsoncpp/json/json.h>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/stopmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -36,6 +37,8 @@ namespace pt = boost::property_tree;
 console_result stopmining::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    administrator_required_checker(node, auth_.name, auth_.auth);
+
     auto& miner = node.miner();
     auto ret = miner.stop();
     if (ret) {

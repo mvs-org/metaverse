@@ -66,12 +66,12 @@ public:
         )
 	    (
             "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
+            value<std::string>(&auth_.name),
             BX_ACCOUNT_NAME
 	    )
         (
             "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
+            value<std::string>(&auth_.auth),
             BX_ACCOUNT_AUTH
 	    );
 

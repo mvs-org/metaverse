@@ -28,11 +28,8 @@
 #include <metaverse/explorer/commands/seed.hpp>
 #include <metaverse/explorer/commands/ec-to-address.hpp>
 #include <metaverse/explorer/commands/ec-to-public.hpp>
-#include <metaverse/explorer/commands/fetch-balance.hpp>
 #include <metaverse/explorer/commands/fetch-header.hpp>
-#include <metaverse/explorer/commands/fetch-height.hpp>
 #include <metaverse/explorer/commands/fetch-history.hpp>
-#include <metaverse/explorer/commands/fetch-public-key.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>
 #include <metaverse/explorer/commands/fetch-tx.hpp>
 #include <metaverse/explorer/commands/fetch-tx-index.hpp>
