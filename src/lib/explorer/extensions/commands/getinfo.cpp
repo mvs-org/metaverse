@@ -47,6 +47,7 @@ console_result getinfo::invoke (std::ostream& output,
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
     jv["connections-count"] = get_connections_count(node); 
     jv["network-assets-count"] = blockchain.get_issued_assets()->size(); 
+    jv["wallet-account-count"] = blockchain.get_accounts()->size();
 
     uint64_t height;
     uint64_t rate;

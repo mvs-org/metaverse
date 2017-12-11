@@ -23,6 +23,7 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -36,10 +37,14 @@ namespace pt = boost::property_tree;
 console_result getmemorypool::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+    auto json = option_.json;
+
     using transaction_ptr = message::transaction_message::ptr ;
     auto& blockchain = node.chain_impl();
     std::promise<code> p;
-    blockchain.pool().fetch([&output, &p](const code& ec, const std::vector<transaction_ptr>& txs){
+    blockchain.pool().fetch([&output, &p, &json](const code& ec, const std::vector<transaction_ptr>& txs){
         if (ec)
         {
             p.set_value(ec);
@@ -50,7 +55,12 @@ console_result getmemorypool::invoke (std::ostream& output,
         for (auto tp:txs) {
             txs1.push_back(*tp);
         }
-        pt::write_json(output, config::prop_tree(txs1, true));
+
+        if(json) {
+        	pt::write_json(output, config::prop_tree(txs1, true));
+        } else {
+        	pt::write_json(output, config::prop_tree(txs1, false));
+        }
         p.set_value(ec);
     });
 

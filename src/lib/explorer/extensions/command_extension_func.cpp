@@ -35,7 +35,7 @@
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
-#include <metaverse/explorer/extensions/commands/ping.hpp>
+#include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockhash.hpp>
@@ -60,6 +60,7 @@
 #include <metaverse/explorer/extensions/commands/sendfrom.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
+#include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
 #include <metaverse/explorer/extensions/commands/deleteasset.hpp>
@@ -117,7 +118,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getmininginfo>());
     func(make_shared<getinfo>());
     func(make_shared<getpeerinfo>());
-    func(make_shared<ping>());
+    func(make_shared<getaddressetp>());
     func(make_shared<addnode>());
     func(make_shared<gettx>());
     func(make_shared<getwork>());
@@ -137,6 +138,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     // asset
     func(make_shared<listassets>());
     func(make_shared<getasset>());
+    func(make_shared<getaddressasset>());
     func(make_shared<getaccountasset>());
     func(make_shared<createasset>());
     func(make_shared<deleteasset>());
@@ -171,8 +173,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getinfo>();
     if (symbol == getpeerinfo::symbol())
         return make_shared<getpeerinfo>();
-    if (symbol == ping::symbol())
-        return make_shared<ping>();
+    if (symbol == getaddressetp::symbol())
+        return make_shared<getaddressetp>();
     if (symbol == addnode::symbol())
         return make_shared<addnode>();
     if (symbol == getmininginfo::symbol())
@@ -269,6 +271,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<shutdown>();
     if (symbol == getmemorypool::symbol())
         return make_shared<getmemorypool>();
+    if (symbol == getaddressasset::symbol())
+        return make_shared<getaddressasset>();
     return nullptr;
 }
 

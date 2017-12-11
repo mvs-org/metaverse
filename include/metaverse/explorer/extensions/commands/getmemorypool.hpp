@@ -32,12 +32,17 @@ public:
 
     arguments_metadata& load_arguments() override
     {
-        return get_argument_metadata();
+        return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
+        const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -49,7 +54,23 @@ public:
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
-        );
+        )
+        (
+            "json,j",
+            value<bool>(&option_.json)->default_value(true),
+            "Json format or Raw format, default is Json(true)."
+        )
+	    (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name),
+            BX_ACCOUNT_NAME
+	    )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth),
+            BX_ACCOUNT_AUTH
+	    );
+
 
         return options;
     }
@@ -67,11 +88,10 @@ public:
 
     struct option
     {
+        bool json;
     } option_;
 
 };
-
-
 
 
 } // namespace commands

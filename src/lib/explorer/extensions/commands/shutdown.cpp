@@ -22,6 +22,7 @@
 #include <metaverse/explorer/extensions/commands/shutdown.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -33,12 +34,7 @@ console_result shutdown::invoke (std::ostream& output,
 {
     auto& blockchain = node.chain_impl();
 
-    // administrator_required option is true
-    if (node.server_settings().administrator_required) {
-        if(!blockchain.is_admin_account(auth_.name))
-            throw account_authority_exception{"account empty or not administrator!"};
-        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    }
+    administrator_required_checker(node, auth_.name, auth_.auth);
 
 #ifndef _WIN32
     output << "sending SIGTERM to mvsd.";
