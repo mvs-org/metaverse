@@ -34,6 +34,7 @@
 #include <metaverse/explorer/extensions/commands/stopmining.hpp>
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
+#include <metaverse/explorer/extensions/commands/getheight.hpp>
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
@@ -108,6 +109,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<changepasswd>());
 
     // wallet
+    func(make_shared<getheight>());
     func(make_shared<getblock>());
     func(make_shared<getbestblockhash>());
     func(make_shared<getbestblockheader>());
@@ -171,9 +173,11 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<startmining>();
     if (symbol == getinfo::symbol())
         return make_shared<getinfo>();
+    if (symbol == getheight::symbol() || symbol == "fetch-height")
+        return make_shared<getheight>();
     if (symbol == getpeerinfo::symbol())
         return make_shared<getpeerinfo>();
-    if (symbol == getaddressetp::symbol())
+    if (symbol == getaddressetp::symbol() || symbol == "fetch-balance")
         return make_shared<getaddressetp>();
     if (symbol == addnode::symbol())
         return make_shared<addnode>();

@@ -45,11 +45,8 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
     func(make_shared<seed>());
     func(make_shared<ec_to_address>());
     func(make_shared<ec_to_public>());
-    func(make_shared<fetch_balance>());
     func(make_shared<fetch_header>());
-    func(make_shared<fetch_height>());
     func(make_shared<fetch_history>());
-    func(make_shared<fetch_public_key>());
     func(make_shared<fetch_stealth>());
     func(make_shared<fetch_tx>());
     func(make_shared<fetch_tx_index>());
@@ -92,16 +89,10 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<ec_to_address>();
     if (symbol == ec_to_public::symbol())
         return make_shared<ec_to_public>();
-    if (symbol == fetch_balance::symbol())
-        return make_shared<fetch_balance>();
     if (symbol == fetch_header::symbol())
         return make_shared<fetch_header>();
-    if (symbol == fetch_height::symbol())
-        return make_shared<fetch_height>();
     if (symbol == fetch_history::symbol())
         return make_shared<fetch_history>();
-    if (symbol == fetch_public_key::symbol())
-        return make_shared<fetch_public_key>();
     if (symbol == fetch_stealth::symbol())
         return make_shared<fetch_stealth>();
     if (symbol == fetch_tx::symbol())
@@ -166,10 +157,6 @@ std::string formerly(const string& former)
         return ec_to_address::symbol();
     if (former == ec_to_public::formerly())
         return ec_to_public::symbol();
-    if (former == fetch_height::formerly())
-        return fetch_height::symbol();
-    if (former == fetch_public_key::formerly())
-        return fetch_public_key::symbol();
     if (former == fetch_tx::formerly())
         return fetch_tx::symbol();
     if (former == fetch_tx_index::formerly())
