@@ -2,3 +2,4 @@
 
 #include <metaverse/mgbubble/Mongoose.hpp>
 #include <metaverse/mgbubble/RestServ.hpp>
+#include <metaverse/mgbubble/WsPushServ.hpp>
