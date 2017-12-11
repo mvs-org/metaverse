@@ -42,15 +42,14 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-                .add("hash", 1)
-                .add("json", 1);
+                .add("HASH_OR_HEIGH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.auth, "hash", variables, input, raw);
+        load_input(argument_.hash_or_height, "HASH_OR_HEIGH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,14 +63,14 @@ public:
             "Get a description and instructions for this command."
         )
         (
-                "hash",
-                value<bc::config::hash256>(&argument_.hash)->required(),
-                "block hash."
+            "HASH_OR_HEIGH",
+            value<std::string>(&argument_.hash_or_height)->required(),
+            "block hash or block height"
         )
         (
-                "json",
-                value<bool>(&argument_.json)->default_value(true),
-                "Json format or Raw format, default is true."
+            "json,j",
+            value<bool>(&option_.json)->default_value(true),
+            "Json format or Raw format, default is Json(true)."
         )
         ;
 
@@ -87,12 +86,12 @@ public:
 
     struct argument
     {
-        bc::config::hash256 hash;
-        bool json;
+        std::string hash_or_height;
     } argument_;
 
     struct option
     {
+        bool json;
     } option_;
 
 };

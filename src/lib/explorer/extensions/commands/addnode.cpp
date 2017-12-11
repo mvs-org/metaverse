@@ -36,6 +36,7 @@ namespace pt = boost::property_tree;
 console_result addnode::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    output<< IN_DEVELOPING;
     return console_result::okay;
 }
 
