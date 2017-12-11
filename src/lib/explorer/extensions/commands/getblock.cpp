@@ -37,30 +37,69 @@ namespace pt = boost::property_tree;
 console_result getblock::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    auto json = argument_.json;
-    std::promise<code> p;
-    auto& blockchain = node.chain_impl();
-    blockchain.fetch_block(argument_.hash, [&p, &output, json](const code& ec, chain::block::ptr block){
-            if(ec){
-                    p.set_value(ec);
-                    return;
-            }
+    auto json = option_.json;
 
-            if(json) {
-                    pt::write_json(output, config::prop_tree(*block));
-            }
-            else
-            {
-                    auto chunck = block->to_data();
-                    output << encode_base16(chunck);
-            }
-            p.set_value(error::success);
-    });
+    // uint64_t max length
+    if (argument_.hash_or_height.size() < 18){
 
-    auto result = p.get_future().get();
-    if(result){
-            throw block_height_get_exception{result.message()};
+        // fetch_block via height
+        auto block_height = std::stoull(argument_.hash_or_height);
+
+        std::promise<code> p;
+        auto& blockchain = node.chain_impl();
+        blockchain.fetch_block(block_height, [&p, &output, json](const code& ec, chain::block::ptr block){
+                if(ec){
+                        p.set_value(ec);
+                        return;
+                }
+
+                if(json) {
+                        pt::write_json(output, config::prop_tree(*block));
+                }
+                else
+                {
+                        auto chunck = block->to_data();
+                        output << encode_base16(chunck);
+                }
+                p.set_value(error::success);
+        });
+
+        auto result = p.get_future().get();
+        if(result){
+                throw block_height_get_exception{result.message()};
+        }
+
+    } else {
+
+        // fetch_block via hash
+        bc::config::hash256 block_hash(argument_.hash_or_height);
+
+        std::promise<code> p;
+        auto& blockchain = node.chain_impl();
+        blockchain.fetch_block(block_hash, [&p, &output, json](const code& ec, chain::block::ptr block){
+                if(ec){
+                        p.set_value(ec);
+                        return;
+                }
+
+                if(json) {
+                        pt::write_json(output, config::prop_tree(*block));
+                }
+                else
+                {
+                        auto chunck = block->to_data();
+                        output << encode_base16(chunck);
+                }
+                p.set_value(error::success);
+        });
+
+        auto result = p.get_future().get();
+        if(result){
+                throw block_height_get_exception{result.message()};
+        }
+
     }
+
     return console_result::okay;
 }
 
