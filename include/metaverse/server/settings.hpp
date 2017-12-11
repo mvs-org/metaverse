@@ -45,6 +45,7 @@ public:
     uint32_t subscription_expiration_minutes;
     uint32_t subscription_limit;
     std::string mongoose_listen;
+    std::string websocket_listen;
     std::string log_level;
     bool administrator_required;
     bool secure_only;
@@ -53,6 +54,7 @@ public:
     bool heartbeat_service_enabled;
     bool block_service_enabled;
     bool transaction_service_enabled;
+    bool websocket_service_enabled;
 
     config::endpoint public_query_endpoint;
     config::endpoint public_heartbeat_endpoint;

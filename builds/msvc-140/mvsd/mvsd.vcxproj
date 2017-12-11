@@ -168,8 +168,10 @@
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Instances.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\Mongoose.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\RestServ.cpp" />
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\WsPushServ.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream_buf.cpp" />
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\MgServer.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\server\address_key.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\server\configuration.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\server\interface\address.cpp" />
