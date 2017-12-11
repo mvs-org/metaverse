@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/commands/getpeerinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -37,6 +38,9 @@ namespace pt = boost::property_tree;
 console_result getpeerinfo::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+
     pt::ptree root;
     pt::ptree array;
     for(auto authority : node.connections_ptr()->authority_list()) {
