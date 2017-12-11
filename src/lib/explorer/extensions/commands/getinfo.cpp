@@ -19,26 +19,50 @@
  */
 
 
-#include <metaverse/explorer/dispatch.hpp>
+#include <jsoncpp/json/json.h>
+#include <metaverse/explorer/version.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
 
 /************************ getinfo *************************/
 
 console_result getinfo::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+	auto& blockchain = node.chain_impl();
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+
+    Json::Value jv; 
+    jv["protocol-version"] = node.network_settings().protocol;
+    jv["wallet-version"] = MVS_EXPLORER_VERSION;
+    jv["database-version"] = MVS_DATABASE_VERSION;
+    jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
+    jv["connections-count"] = get_connections_count(node); 
+    jv["network-assets-count"] = blockchain.get_issued_assets()->size(); 
+
+    uint64_t height;
+    uint64_t rate;
+    std::string difficulty;
+    bool is_solo_mining;
+    node.miner().get_state(height, rate, difficulty, is_solo_mining);
+
+    jv["height"] = height; 
+    jv["difficulty"] = difficulty; 
+    jv["is-mining"] = is_solo_mining; 
+    jv["rate"] = rate; 
+
+    output << jv.toStyledString();
+
     return console_result::okay;
 }
-
 
 
 } // namespace commands

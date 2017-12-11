@@ -19,7 +19,7 @@
  */
 
 
-#include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -36,6 +36,9 @@ namespace pt = boost::property_tree;
 console_result getwork::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+
     std::string seed_hash;
     std::string header_hash;
     std::string boundary;
@@ -61,7 +64,7 @@ console_result getwork::invoke (std::ostream& output,
 
         return console_result::okay;
     } else {
-        output<<"no address setting.";
+        output<<"Use command <setminingaccount> to set mining address.";
         return console_result::failure;
     }
 }

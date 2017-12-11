@@ -19,7 +19,7 @@
  */
 
 
-#include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -36,20 +36,19 @@ namespace pt = boost::property_tree;
 console_result getmininginfo::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    administrator_required_checker(node, auth_.name, auth_.auth);
+
     pt::ptree aroot;
     pt::ptree info;
     
-    auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
-
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     uint64_t height, rate;
     std::string difficulty;
     bool is_mining;
     
     miner.get_state(height, rate, difficulty, is_mining);
-    info.put("status", is_mining);
+    info.put("is-mining", is_mining);
     info.put("height", height);
     info.put("rate", rate);
     info.put("difficulty", difficulty);
