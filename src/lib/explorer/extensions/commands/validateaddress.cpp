@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <metaverse/explorer/dispatch.hpp>
+#include <jsoncpp/json/json.h>
 #include <metaverse/explorer/extensions/commands/validateaddress.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -29,19 +28,35 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
-
 /************************ validateaddress *************************/
 
 console_result validateaddress::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+    std::string version_info;
+	std::string message{"valid address "};
+    bool is_valid{true};
+
     auto& blockchain = node.chain_impl();
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address!"};
-    
-    output<<"valid address "<<argument_.address;
+
+    if (!blockchain.chain_settings().use_testnet_rules && argument_.address.version() == 0x32) {
+        version_info = "p2kh(main-net)";
+    } else if (blockchain.chain_settings().use_testnet_rules && argument_.address.version() ==  0x7f ) {
+        version_info = "p2kh(test-net)";
+    } else if (argument_.address.version() ==  0x05 ) {
+        version_info = "p2sh(multi-signature)";
+    } else {
+        message = "invalid address!";
+        is_valid = false;
+    }
+
+    Json::Value jv;
+    jv["address-type"] = version_info;
+    jv["test-net"] = blockchain.chain_settings().use_testnet_rules;
+    jv["is-valid"] = is_valid;
+    jv["message"] = message;
+
+    output<<jv.toStyledString();
     return console_result::okay;
 }
 
