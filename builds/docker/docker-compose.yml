@@ -1,0 +1,9 @@
+version: "2"
+
+services:
+  eos:
+    image: metaverse
+    ports:
+    - "8820:8820"
+    volumes:
+      - ~/.metaverse:~/.metaverse

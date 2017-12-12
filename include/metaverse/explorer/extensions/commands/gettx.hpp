@@ -42,7 +42,8 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("HASH", 1);
+            .add("HASH", 1)
+            .add("json", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -50,6 +51,7 @@ public:
     {
         const auto raw = requires_raw_input();
         load_input(argument_.hash, "HASH", variables, input, raw);
+        load_input(argument_.hash, "json", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -61,6 +63,11 @@ public:
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
+        )
+        (
+            "json",
+            value<bool>(&option_.json)->default_value(true),
+            "Json/Raw format, default is '--json=true'."
         )
 	    (
             "HASH",
@@ -85,6 +92,7 @@ public:
 
     struct option
     {
+        bool json;
     } option_;
 
 };

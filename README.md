@@ -1,5 +1,10 @@
-![logo](https://github.com/mvs-org/metaverse/raw/master/doc/image/logo.png)
-Integration/staging tree
+<p align="center">
+  <a href="https://www.myetpwallet.com/">
+    <img src="https://mvs.org/images/metaverselogo.png" alt="">
+  </a>
+</p>
+
+Metaverse Core Integration/staging Tree
 =========================
 
 # Introduction
@@ -12,8 +17,8 @@ Metaverse(MVS) is a decentralised system based on the blockchain technology, thr
 **Metaverse Features**:
 - Digital Assets Register/Transfer/Order
 - Digital Assets Exchange
-- Digital Identities
-- Oralces And Data-feed
+- Digital Identity
+- Oralces and Data-feed
 
 # MVS Project
 MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
@@ -24,6 +29,7 @@ Further Read: [Wiki Documents](https://github.com/mvs-org/metaverse/wiki)
 ## toolchain requirements:
 - C++ compiler support C++14 (g++ 5/LLVM 8.0.0/MSVC14)
 - CMake 2.8+
+- git
 
 ```bash
 git clone https://github.com/mvs-org/metaverse.git
@@ -41,7 +47,7 @@ make doc
 # Library Dependencies
 ## boost 1.56+
 ```bash
-sudo yum/apt-get/brew install libboost-all-dev
+sudo yum/brew/apt-get install libboost-all-dev
 ```
 If build boost manually, please download boost from <http://www.boost.org/>.
 
@@ -55,7 +61,7 @@ See boost issue details: <https://github.com/boostorg/property_tree/pull/26>
 ## ZeroMQ 4.2.1+
 Install GNU toochain(automake/autoconf/libtool) at first:
 ```bash
-yum/apt-get/brew install automake/autoconf/libtool
+yum/brew/apt-get install automake autoconf libtool
 ```
 Module server/explorer required.
 ```bash
