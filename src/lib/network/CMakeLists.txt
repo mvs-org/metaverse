@@ -1,6 +1,8 @@
 FILE(GLOB_RECURSE network_SOURCES "*.cpp")
 
 ADD_DEFINITIONS(-DBCT_STATIC=1)
+# gcc-6 boost/multiprecision/cpp_int.hpp:181
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
 ADD_LIBRARY(network_static STATIC ${network_SOURCES})
 SET_TARGET_PROPERTIES(network_static PROPERTIES OUTPUT_NAME mvs_network)

@@ -105,7 +105,7 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
 		}
 		const auto index = static_cast<size_t>(pseudo_random() % inactive_.size());
 
-		auto i = 0;
+		size_t i = 0;
 		for (const auto& entry : inactive_)
 		{
 			if (i == index) {
