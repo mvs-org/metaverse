@@ -104,7 +104,17 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
 			return error::not_found;
 		}
 		const auto index = static_cast<size_t>(pseudo_random() % inactive_.size());
-		out = addresses[index].to_network_address();
+
+		auto i = 0;
+		for (const auto& entry : inactive_)
+		{
+			if (i == index) {
+				out = entry;
+				break;
+			}
+			i++;
+		}
+
 		return error::success;
 	}
 
