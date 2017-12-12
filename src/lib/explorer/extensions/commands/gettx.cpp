@@ -44,7 +44,11 @@ console_result gettx::invoke (std::ostream& output,
     if(!exist)
         throw tx_notfound_exception{"transaction does not exist!"};
     
-    pt::write_json(output, config::prop_list(tx, tx_height, true));
+    if (option_.json) {
+        pt::write_json(output, config::prop_list(tx, tx_height, true));
+    } else {
+        output << bc::explorer::config::transaction{tx};
+    }
 
     return console_result::okay;
 }
