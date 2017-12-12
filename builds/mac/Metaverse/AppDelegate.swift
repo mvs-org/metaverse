@@ -65,6 +65,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 		metaverse.arguments = ["http:127.0.0.1:8820"]
 		metaverse.launch()
 	}
+    
+    func checkConn() -> String {
+        let outPipe = Pipe()
+        let errPipe = Pipe()
+        let mvs = Process()
+        mvs.standardOutput = outPipe
+        mvs.standardError = errPipe
+        mvs.launchPath = "/usr/sbin/lsof"
+        mvs.arguments = ["-i:8820"]
+        mvs.launch()
+        let outData = outPipe.fileHandleForReading.availableData
+        let outputString = String(data: outData, encoding: String.Encoding.utf8) ?? ""
+        return outputString
+    }
 	
 	func autostartEnabled() -> Bool {
 		return itemReferencesInLoginItems().existingReference != nil
@@ -157,7 +171,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 			metaverse.launch()
 			self.metaversePid = metaverse.processIdentifier
 
-            sleep(3)
+            var flag = false
+            while (!flag) {
+                if (self.checkConn() != "") {
+                    flag = true
+                }
+            }
             self.openUI()
 		} else {
 			self.metaversePid = processes[metaverseProcess!].kp_proc.p_pid
