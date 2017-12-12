@@ -212,10 +212,12 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccountasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbalance.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockhash.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockheader.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getheight.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmemorypool.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmininginfo.cpp" />
@@ -255,6 +257,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\generated.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\prop_tree.cpp" />

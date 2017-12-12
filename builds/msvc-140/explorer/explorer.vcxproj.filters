@@ -777,5 +777,14 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp">
       <Filter>Source Files\extensions</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getheight.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp">
+      <Filter>Source Files\extensions</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
