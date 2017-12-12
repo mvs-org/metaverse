@@ -6,6 +6,7 @@
 
 Metaverse Core Integration/staging Tree
 =========================
+[![Build Status](https://travis-ci.org/mvs-org/metaverse.svg?branch=develop)](https://travis-ci.org/mvs-org/metaverse)
 
 # Introduction
 Metaverse(MVS) is a decentralised system based on the blockchain technology, through which, a network of smart properties, digital identities and value intermediators are established.
