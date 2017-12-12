@@ -31,7 +31,7 @@ Further Read: [Documents](http://docs.mvs.org)
 | Compilier | Minimum Version |  
 | ---------| ---------------- | 
 | gcc/g++ |   5.0.0           |  
-| LLVM    |   8.0.0           |  
+| clang++ |   8.0.0 (5.0)     |  
 | Visual Studio |   2015      |  
 
 C++ compiler support C++14 (g++ 5/LLVM 8.0.0/MSVC14).
