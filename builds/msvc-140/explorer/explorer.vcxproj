@@ -148,11 +148,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-balance.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-header.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-height.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-public-key.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx-index.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx.cpp" />
@@ -160,18 +157,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-address.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-public.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-new.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-private.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-ec.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-public.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-sign.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-validate.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-decode.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-encode.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-new.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-to-seed.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\seed.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-encode.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-public.cpp" />
@@ -208,7 +196,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\config\wrapper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\dispatch.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\display.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_helper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_info.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\base_helper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\addnode.cpp" />
@@ -249,7 +236,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listbalances.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\ping.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
@@ -319,7 +305,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;BC_STATIC;BCC_STATIC;BCX_STATIC;BCB_STATIC;BCT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -334,7 +320,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;BC_STATIC;BCC_STATIC;BCX_STATIC;BCB_STATIC;BCT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
