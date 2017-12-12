@@ -25,7 +25,6 @@
 #include <memory>
 #include <string>
 #include <metaverse/explorer/command.hpp>
-#include <metaverse/explorer/commands/seed.hpp>
 #include <metaverse/explorer/commands/ec-to-address.hpp>
 #include <metaverse/explorer/commands/ec-to-public.hpp>
 #include <metaverse/explorer/commands/fetch-header.hpp>
@@ -34,18 +33,10 @@
 #include <metaverse/explorer/commands/fetch-tx.hpp>
 #include <metaverse/explorer/commands/fetch-tx-index.hpp>
 #include <metaverse/explorer/commands/fetch-utxo.hpp>
-#include <metaverse/explorer/commands/hd-new.hpp>
-#include <metaverse/explorer/commands/hd-private.hpp>
-#include <metaverse/explorer/commands/hd-to-ec.hpp>
-#include <metaverse/explorer/commands/hd-to-public.hpp>
 #include <metaverse/explorer/commands/help.hpp>
 #include <metaverse/explorer/commands/input-set.hpp>
 #include <metaverse/explorer/commands/input-sign.hpp>
 #include <metaverse/explorer/commands/input-validate.hpp>
-#include <metaverse/explorer/commands/mnemonic-decode.hpp>
-#include <metaverse/explorer/commands/mnemonic-encode.hpp>
-#include <metaverse/explorer/commands/mnemonic-new.hpp>
-#include <metaverse/explorer/commands/mnemonic-to-seed.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>
 #include <metaverse/explorer/commands/settings.hpp>
 #include <metaverse/explorer/commands/stealth-decode.hpp>

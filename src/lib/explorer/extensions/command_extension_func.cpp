@@ -27,7 +27,6 @@
 #include <metaverse/explorer/command.hpp>                
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>   
-#include <metaverse/explorer/extensions/account_helper.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 
 #include <metaverse/explorer/extensions/commands/shutdown.hpp>
