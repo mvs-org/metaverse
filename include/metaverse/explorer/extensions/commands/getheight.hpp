@@ -35,7 +35,7 @@ public:
     static const char* symbol(){ return "getheight";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "Get last height and show network last height."; }
+    const char* description() override { return "Get last height."; }
 
     arguments_metadata& load_arguments() override
     {
