@@ -41,13 +41,17 @@ console_result getaddressetp::invoke (std::ostream& output,
     std::string type{"all"};
     sync_fetchbalance(addr, type, blockchain, addr_balance, 0);
 
+    Json::Value jroot;
     Json::Value jv;
+    jv["address"] = addr.encoded();
     jv["confirmed"] = addr_balance.confirmed_balance;
     jv["received"]  = addr_balance.total_received;
     jv["unspent"]   = addr_balance.unspent_balance;
     jv["frozen"]    = addr_balance.frozen_balance;
+
+    jroot["balance"] = jv;
     
-    output << jv.toStyledString();
+    output << jroot.toStyledString();
 
     return console_result::okay;
 }
