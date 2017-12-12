@@ -42,9 +42,9 @@ Using `c++ -v` to check c++ version.
 - [Upgrade guide for OSX](https://github.com/libbitcoin/libbitcoin#macintosh)
 - [Upgrade guide for windows](https://github.com/libbitcoin/libbitcoin#windows)
 
-MVS Core node are **static linked** (including libstdc++). 
+Dependencies of MVS are **static linked** (including libstdc++). 
 Thus, there is no extra dependency after compilation.
-Recommands Ubuntu 16.04/CentOS 7.2/Visual Studio 2015 to test/debug MVS.
+Recommands Ubuntu 16.04/CentOS 7.2/Visual Studio 2015 to develop/debug/build MVS.
 
 ## Toolchain requirements
 - cmake 3.0+
@@ -73,6 +73,11 @@ $ make doc
 *Needs to configure Library Dependencies firstly.*
 
 # Library Dependencies
+
+Installing by bash script (sudo required).
+```bash
+$ ./install_dependencies.sh
+```
 
 ## boost 1.56+
 ```bash
