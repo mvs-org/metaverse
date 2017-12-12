@@ -462,19 +462,10 @@
     <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-balance.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-header.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-height.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-public-key.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp">
@@ -507,9 +498,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\watch-address.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-public.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
@@ -517,21 +505,6 @@
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-validate.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-decode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-encode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-new.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\mnemonic-to-seed.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\seed.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp">
@@ -562,15 +535,6 @@
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-public.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-new.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-private.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\hd-to-ec.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\config\hashtype.cpp">
@@ -750,9 +714,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\ping.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
@@ -800,9 +761,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_helper.cpp">
-      <Filter>Source Files\extensions</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_info.cpp">
       <Filter>Source Files\extensions</Filter>
