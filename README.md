@@ -15,39 +15,67 @@ Metaverse(MVS) is a decentralised system based on the blockchain technology, thr
 ![dev-path](https://github.com/mvs-org/metaverse/raw/master/doc/image/dev-path.jpg)
 
 **Metaverse Features**:
-- Digital Assets Register/Transfer/Order
-- Digital Assets Exchange
-- Digital Identity
-- Oralces and Data-feed
+- [Digital Assets Register/Transfering](http://docs.mvs.org/whitepaper/index.html)
+- [Digital Identity](http://docs.mvs.org/whitepaper/digital-identity.html)
+- Decentralized Exchange
+- Oralces and Offchain Data-feed
 
 # MVS Project
 MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
 
-Further Read: [Wiki Documents](https://github.com/mvs-org/metaverse/wiki)
+Further Read: [Documents](http://docs.mvs.org)
 
 # build MVS
-## toolchain requirements:
-- C++ compiler support C++14 (g++ 5/LLVM 8.0.0/MSVC14)
-- CMake 2.8+
+
+## Compiler requirements
+| Compilier | Minimum Version |  
+| ---------| ---------------- | 
+| gcc/g++ |   5.0.0           |  
+| LLVM    |   8.0.0           |  
+| Visual Studio |   2015      |  
+
+C++ compiler support C++14 (g++ 5/LLVM 8.0.0/MSVC14).
+Using `c++ -v` to check c++ version.
+- [Simple guide to upgrade GCC](http://docs.mvs.org/helpdoc/upgrade-gcc.html).
+- [Upgrade guide for Debian/ubuntuu](https://github.com/libbitcoin/libbitcoin#debianubuntu)
+- [Upgrade guide for OSX](https://github.com/libbitcoin/libbitcoin#macintosh)
+- [Upgrade guide for windows](https://github.com/libbitcoin/libbitcoin#windows)
+
+MVS Core node are **static linked** (including libstdc++). 
+Thus, there is no extra dependency after compilation.
+Recommands Ubuntu 16.04/CentOS 7.2/Visual Studio 2015 to test/debug MVS.
+
+## Toolchain requirements
+- cmake 3.0+
 - git
+- automake (speck256k1/ZeroMQ required)
 
 ```bash
-git clone https://github.com/mvs-org/metaverse.git
-cd metaverse && mkdir build && cd build
-cmake ..
-make -j4
-make install
+$ yum/brew/apt-get install git cmake
+$ yum/brew/apt-get install autoconf automake libtool pkg-config
 ```
+
+## Build MVS
+```bash
+$ git clone https://github.com/mvs-org/metaverse.git
+$ cd metaverse && mkdir build && cd build
+$ cmake ..
+$ make -j4
+$ make install
+```
+
 optional:
+```bash
+$ make test
+$ make doc
 ```
-make test
-make doc
-```
+*Needs to configure Library Dependencies firstly.*
 
 # Library Dependencies
+
 ## boost 1.56+
 ```bash
-sudo yum/brew/apt-get install libboost-all-dev
+$ sudo yum/brew/apt-get install libboost-all-dev
 ```
 If build boost manually, please download boost from <http://www.boost.org/>.
 
@@ -59,28 +87,26 @@ Please upgrade to 1.64, or modify parser.hpp manually at first.
 See boost issue details: <https://github.com/boostorg/property_tree/pull/26>
 
 ## ZeroMQ 4.2.1+
-Install GNU toochain(automake/autoconf/libtool) at first:
+Modules server/explorer required.
+
 ```bash
-yum/brew/apt-get install automake autoconf libtool
-```
-Module server/explorer required.
-```bash
-wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
-tar -xzvf zeromq-4.2.1.tar.gz
-cd zeromq-4.2.1
-./autogen.sh
-./configure
-make -j4
-sudo make install && sudo ldconfig
+$ wget https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
+$ tar -xzvf zeromq-4.2.1.tar.gz
+$ cd zeromq-4.2.1
+$ ./autogen.sh
+$ ./configure
+$ make -j4
+$ sudo make install && sudo ldconfig
 ```
 
 ## secp256k1 
-Module blockchain/database required.
+Modules blockchain/database required.
+
 ```bash
-git clone https://github.com/mvs-live/secp256k1
-cd secp256k1
-./autogen.sh
-./configure --enable-module-recovery
-make -j4
-sudo make install && sudo ldconfig
+$ git clone https://github.com/mvs-live/secp256k1
+$ cd secp256k1
+$ ./autogen.sh
+$ ./configure --enable-module-recovery
+$ make -j4
+$ sudo make install && sudo ldconfig
 ```
