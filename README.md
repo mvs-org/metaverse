@@ -78,14 +78,15 @@ $ make doc
 ```bash
 $ sudo yum/brew/apt-get install libboost-all-dev
 ```
-If build boost manually, please download boost from <http://www.boost.org/>.
+If build boost manually, please download tar ball [HERE](http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2).
 
-If build with boost 1.59~1.63, get compiling error on json_parser 'placeholders::_1' caused by boost bug:
+If build with boost 1.59~1.63, will get compiling error on json_parser 'placeholders::_1' caused by boost bug:`/usr/local/include/boost/property_tree/json_parser/detail/parser.hpp:217:52: error: ‘_1’ was not declared in this scope`.
+
+Please upgrade to 1.64, or modify `parser.hpp` manually at first. Using:
 ```
-/usr/local/include/boost/property_tree/json_parser/detail/parser.hpp:217:52: error: ‘_1’ was not declared in this scope
+sed -i -e '/#include <boost\/bind.hpp>/a #include <boost\/bind\/placeholders.hpp>' -e 's/boost::ref(callbacks), _1)/boost::ref(callbacks), boost::placeholders::_1)/g' parser.hpp
 ```
-Please upgrade to 1.64, or modify parser.hpp manually at first.
-See boost issue details: <https://github.com/boostorg/property_tree/pull/26>
+See boost [bug issue details](https://github.com/boostorg/property_tree/pull/26).
 
 ## ZeroMQ 4.2.1+
 Modules server/explorer required.

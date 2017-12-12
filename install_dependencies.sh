@@ -38,8 +38,8 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2"
-BOOST_ARCHIVE="boost_1_57_0.tar.bz2"
+BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
+BOOST_ARCHIVE="boost_1_58_0.tar.bz2"
 
 
 # Define utility functions.
@@ -329,14 +329,15 @@ BOOST_OPTIONS=(
 "--with-chrono" \
 "--with-date_time" \
 "--with-filesystem" \
-"--with-iostreams" \
-"--with-locale" \
-"--with-log" \
 "--with-program_options" \
 "--with-regex" \
 "--with-system" \
 "--with-thread" \
 "--with-test")
+
+#"--with-log" \
+#"--with-iostreams" \
+#"--with-locale" \
 
 # Define secp256k1 options.
 #------------------------------------------------------------------------------
@@ -624,7 +625,7 @@ build_from_tarball_boost()
         "--prefix=$PREFIX" \
         "--with-icu=$ICU_PREFIX"
 
-    ./b2 install \
+    sudo ./b2 install \
         "variant=release" \
         "threading=multi" \
         "$BOOST_TOOLSET" \
@@ -724,6 +725,7 @@ build_from_travis()
 build_all()
 {
     build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "yes" "${ZMQ_OPTIONS[@]}" "$@"
+    build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "yes" "${BOOST_OPTIONS[@]}"
     build_from_github libbitcoin secp256k1 version4 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
 }
 
