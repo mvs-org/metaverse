@@ -119,7 +119,7 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
         if (settings_.manual_attempt_limit == 0)
         	delay_new_connection(hostname, port, handler, 0);
         else if (retries > 0)
-        	delay_new_connection(hostname, port, handler, retries - 1);
+            delay_new_connection(hostname, port, handler, retries);
         else
             handler(ec, nullptr);
 
@@ -153,7 +153,6 @@ void session_manual::handle_channel_start(const code& ec,
             return;
         }
 
-//        connect(hostname, port, handler);
         return;
     }
 
@@ -198,7 +197,7 @@ void session_manual::handle_channel_stop(const code& ec,
     if (stopped() || (ec.value() == error::service_stopped))
         return;
 
-    delay_new_connection(hostname, port, [](code, channel::ptr){}, 0);
+    delay_new_connection(hostname, port, [](code, channel::ptr){}, settings_.manual_attempt_limit);
 
 }
 
