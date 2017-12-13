@@ -656,13 +656,14 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
         auto s_nonce = "0x" + nonce;
         uint64_t n_nonce;
 #ifdef MAC_OSX
-        if(sscanf(s_nonce.c_str(), "%llx", &n_nonce) != 1) {
+        size_t sz = 0;
+        n_nonce = std::stoull(s_nonce, &sz, 16);
 #else
         if(sscanf(s_nonce.c_str(), "%lx", &n_nonce) != 1) {
-#endif
 		    log::error(LOG_HEADER) << "nonce change error\n";
             return false;
         }
+#endif
 		uint64_t nonce_t = n_nonce ^0x6675636b6d657461;
 		new_block_->header.nonce = (u64) nonce_t;
 		new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
