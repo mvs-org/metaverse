@@ -22,7 +22,7 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 ENDIF()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing ")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing -fpermissive")
 
 ADD_DEFINITIONS(-DBCK_STATIC=1)
 ADD_LIBRARY(consensus_static STATIC ${consensus_SOURCES})
