@@ -68,7 +68,11 @@ SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/etc")
 SET(CMAKE_INSTALL_PREFIX "/usr/local/")
 
 # --------------- Libraries Dependencies ---------------------
-SET(Boost_USE_STATIC_LIBS   ON)
+IF(ENABLE_SHARED_LIBS)
+    SET(Boost_USE_STATIC_LIBS   OFF)
+ELSE()
+    SET(Boost_USE_STATIC_LIBS   ON)
+ENDIF()
 FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system
 program_options regex thread)
 #set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
