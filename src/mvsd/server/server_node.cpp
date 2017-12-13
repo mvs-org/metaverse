@@ -60,7 +60,7 @@ server_node::server_node(const configuration& configuration)
     secure_notification_worker_(authenticator_, *this, true),
     public_notification_worker_(authenticator_, *this, false),
     miner_(*this),
-    rest_server_(new mgbubble::RestServ(webpage_path_.string().data(), *this)),
+    rest_server_(new mgbubble::HttpServ(webpage_path_.string().data(), *this, configuration.server.mongoose_listen)),
     push_server_(new mgbubble::WsPushServ(*this, configuration.server.websocket_listen))
 {
 }
@@ -77,42 +77,6 @@ server_node::~server_node()
 const settings& server_node::server_settings() const
 {
     return configuration_.server;
-}
-
-void server_node::run_mongoose()
-{
-    std::shared_ptr<mg_connection> listen_sock;
-    try
-    {
-        // bind
-        auto& conn = rest_server_->bind(configuration_.server.mongoose_listen.c_str());
-        listen_sock.reset(&conn, [](mg_connection*) {});
-
-        // init for websocket and seesion control
-        mg_set_protocol_http_websocket(&conn);
-        mg_set_timer(&conn, mg_time() + mgbubble::RestServ::session_check_interval);
-
-#if 0   // not use session control
-        mg_register_http_endpoint(&conn, "/login.html", &mgbubble::RestServ::login_handler);
-        mg_register_http_endpoint(&conn, "/logout", &mgbubble::RestServ::logout_handler);
-#endif
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("can not listen on " + configuration_.server.mongoose_listen);
-    }
-    log::info(LOG_SERVER) << "http server listen on (" << configuration_.server.mongoose_listen << ")";
-
-    // for open ui
-    if (configuration_.ui)
-        open_ui();
-    // run
-    for (;!stopped();)
-        rest_server_->poll(1000);
-
-    // cancel timer, otherwise check_sessions will be called after RestServ deconstractor
-    if(listen_sock)
-        mg_set_timer(listen_sock.get(), 0);
 }
 
 // Run sequence.
@@ -143,18 +107,21 @@ void server_node::handle_running(const code& ec, result_handler handler)
     if (ec)
     {
         handler(ec);
-    return;
+        return;
     }
 
-    if (!start_services() || !push_server_->start())
+    if (!start_services())
     {
         handler(error::operation_failed);
         return;
     }
 
-    auto rest_server = rest_server_;
-    std::thread httpserver([rest_server, this]() { run_mongoose(); });
-    httpserver.detach();
+    if(!rest_server_->start() || !push_server_->start())
+    {
+        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
+        handler(error::operation_failed);
+        return;
+    }
 
     // This is the end of the derived run sequence.
     handler(error::success);
