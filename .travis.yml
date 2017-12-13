@@ -22,7 +22,7 @@ matrix:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=clang-5.0
         - CMAKE_CXX_COMPILER=clang++-5.0
-        - ENABLE_SHARED_LIBS=ON
+        - ENABLE_SHARED_LIBS=OFF
 
     - os: linux
       compiler: clang
@@ -41,7 +41,7 @@ matrix:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=clang-5.0
         - CMAKE_CXX_COMPILER=clang++-5.0
-        - ENABLE_SHARED_LIBS=ON
+        - ENABLE_SHARED_LIBS=OFF
 
     - os: linux
       compiler: g++
@@ -57,7 +57,7 @@ matrix:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=gcc-6
         - CMAKE_CXX_COMPILER=g++-6
-        - ENABLE_SHARED_LIBS=ON
+        - ENABLE_SHARED_LIBS=OFF
 
     - os: linux
       compiler: g++
@@ -73,7 +73,7 @@ matrix:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=gcc-6
         - CMAKE_CXX_COMPILER=g++-6
-        - ENABLE_SHARED_LIBS=ON
+        - ENABLE_SHARED_LIBS=OFF
 
     - os: osx
       osx_image: xcode8.3
