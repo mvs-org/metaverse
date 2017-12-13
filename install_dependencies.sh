@@ -726,9 +726,10 @@ boost_json_parser_fix()
 {
     BOOST_ROOT="/usr/local/include"
     JSON_PARSER_FILE=$BOOST_ROOT/boost/property_tree/json_parser/detail/parser.hpp
-    if [ $BOOST_OSX_FIX ] && [ -f $JSON_PARSER_FILE ] ;then
-        sed -i '' -e '/#include <boost\/bind.hpp>/a #include <boost\/bind\/placeholders.hpp>' -e 's/boost::ref(callbacks), _1)/boost::ref(callbacks), boost::placeholders::_1)/g' $JSON_PARSER_FILE
-    fi
+    cat $BOOST_ROOT/boost/version.hpp
+#    if [ $BOOST_OSX_FIX ] && [ -f $JSON_PARSER_FILE ] ;then
+#        sed -i '' -e '/#include <boost\/bind.hpp>/a #include <boost\/bind\/placeholders.hpp>' -e 's/boost::ref(callbacks), _1)/boost::ref(callbacks), boost::placeholders::_1)/g' $JSON_PARSER_FILE
+#    fi
 }
 
 
