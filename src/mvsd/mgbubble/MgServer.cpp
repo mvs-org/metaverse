@@ -104,12 +104,10 @@ bool MgServer::send_frame(struct mg_connection& nc, const char* msg, size_t len,
 }
 
 void MgServer::run() {
-    bc::log::info(NAME) << "MgServer Started.";
     while (running_)
     {
         mg_mgr_poll(&mgr_, 1000);
     }
-    bc::log::info(NAME) << "MgServer Stopped.";
 }
 
 void MgServer::on_http_req_handler(struct mg_connection& nc, http_message& msg)
@@ -120,7 +118,7 @@ void MgServer::on_http_req_handler(struct mg_connection& nc, http_message& msg)
 // demo
 void MgServer::on_ws_handshake_req_handler(struct mg_connection& nc, http_message& msg)
 {
-    if (memcmp(msg.uri.p, "/ws", 3) != 0 || (msg.uri.len > 3 && msg.uri.p[3] != '/')) {
+    if ((mg_ncasecmp(msg.uri.p, "/ws", 3) != 0) && (mg_ncasecmp(msg.uri.p, "/ws/", 4) != 0)) {
         nc.flags |= MG_F_SEND_AND_CLOSE;
     }
 }
@@ -187,7 +185,7 @@ void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     }
     case MG_EV_HTTP_REQUEST: {
         struct http_message *msg = (struct http_message *)ev_data;
-        self->on_ws_handshake_req_handler(*nc, *msg);
+        self->on_http_req_handler(*nc, *msg);
         break;
     }
     case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST: {
