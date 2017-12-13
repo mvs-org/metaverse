@@ -172,8 +172,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<startmining>();
     if (symbol == getinfo::symbol())
         return make_shared<getinfo>();
-    if (symbol == getheight::symbol() || symbol == "fetch-height")
+    if (symbol == getheight::symbol())
         return make_shared<getheight>();
+    if (symbol == "fetch-height")
+        return make_shared<getheight>(symbol);
     if (symbol == getpeerinfo::symbol())
         return make_shared<getpeerinfo>();
     if (symbol == getaddressetp::symbol() || symbol == "fetch-balance")

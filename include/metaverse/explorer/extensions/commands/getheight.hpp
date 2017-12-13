@@ -32,6 +32,9 @@ namespace commands {
 class getheight: public command_extension
 {
 public:
+    getheight() noexcept {};
+    getheight(const std::string& other){ if (other == "fetch-height") option_.is_fetch_height = true; }
+
     static const char* symbol(){ return "getheight";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -89,6 +92,7 @@ public:
 
     struct option
     {
+        bool is_fetch_height{false};
     } option_;
 
 };
