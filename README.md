@@ -31,11 +31,11 @@ Further Read: [Documents](http://docs.mvs.org)
 ## Compiler requirements
 | Compilier | Minimum Version |  
 | ---------| ---------------- | 
-| gcc/g++ |   5.0.0           |  
-| clang++ |   8.0.0 (5.0)     |  
-| Visual Studio |   2015      |  
+| gcc/g++ |   5.0             |  
+| clang++ |   3.4 (8.0.0)     |  
+| MSVC    |   19.0 (VS2015)   |  
 
-C++ compiler support C++14 (g++ 5/LLVM 8.0.0/MSVC14).
+C++ compiler support [C++14](http://en.cppreference.com/w/cpp/compiler_support). 
 Using `c++ -v` to check c++ version.
 - [Simple guide to upgrade GCC](http://docs.mvs.org/helpdoc/upgrade-gcc.html).
 - [Upgrade guide for Debian/ubuntuu](https://github.com/libbitcoin/libbitcoin#debianubuntu)

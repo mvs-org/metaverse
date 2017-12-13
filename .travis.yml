@@ -17,7 +17,7 @@ matrix:
             - clang-5.0
             - cmake
             - cmake-data
-            - g++-6
+            - g++-5
       env:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=clang-5.0
@@ -36,7 +36,7 @@ matrix:
             - clang-5.0
             - cmake
             - cmake-data
-            - g++-6
+            - g++-5
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=clang-5.0
@@ -52,11 +52,11 @@ matrix:
           packages:
             - cmake
             - cmake-data
-            - g++-6
+            - g++-5
       env:
         - CMAKE_BUILD_TYPE=DEBUG
-        - CMAKE_C_COMPILER=gcc-6
-        - CMAKE_CXX_COMPILER=g++-6
+        - CMAKE_C_COMPILER=gcc-5
+        - CMAKE_CXX_COMPILER=g++-5
         - ENABLE_SHARED_LIBS=OFF
 
     - os: linux
@@ -68,11 +68,11 @@ matrix:
           packages:
             - cmake
             - cmake-data
-            - g++-6
+            - g++-5
       env:
         - CMAKE_BUILD_TYPE=RELEASE
-        - CMAKE_C_COMPILER=gcc-6
-        - CMAKE_CXX_COMPILER=g++-6
+        - CMAKE_C_COMPILER=gcc-5
+        - CMAKE_CXX_COMPILER=g++-5
         - ENABLE_SHARED_LIBS=OFF
 
     - os: osx
@@ -97,6 +97,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
        export CC=clang;
        export CXX=clang++;
+       export BOOST_OSX_FIX=true;
       ./install_dependencies.sh;
     else
        export CC=gcc;

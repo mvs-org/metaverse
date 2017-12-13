@@ -720,6 +720,18 @@ build_from_travis()
 }
 
 
+# The boost json parser fix: v0.7.3 should be removed
+#==============================================================================
+boost_json_parser_fix()
+{
+    BOOST_ROOT="/usr/local/include"
+    JSON_PARSER_FILE=$BOOST_ROOT/boost/property_tree/json_parser/detail/parser.hpp
+    if [ $BOOST_OSX_FIX ] && [ -f $JSON_PARSER_FILE ] ;then
+        sed -i -e '/#include <boost\/bind.hpp>/a #include <boost\/bind\/placeholders.hpp>' -e 's/boost::ref(callbacks), _1)/boost::ref(callbacks), boost::placeholders::_1)/g' $JSON_PARSER_FILE
+    fi
+}
+
+
 # The master build function.
 #==============================================================================
 build_all()
@@ -727,6 +739,8 @@ build_all()
     build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "yes" "${ZMQ_OPTIONS[@]}" "$@"
     build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "yes" "${BOOST_OPTIONS[@]}"
     build_from_github libbitcoin secp256k1 version4 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
+
+    boost_json_parser_fix
 }
 
 
