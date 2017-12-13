@@ -94,12 +94,9 @@ void session_outbound::new_connection(connector::ptr connect)
 
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
-	static std::atomic<uint32_t> times;
 	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
 	auto self = shared_from_this();
-	auto t = times.load();
-	times++;
-	timer->start([this, connect, timer, self, t](const code& ec){
+	timer->start([this, connect, timer, self](const code& ec){
 		if (stopped())
 		{
 			return;
