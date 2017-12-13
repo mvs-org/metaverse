@@ -35,10 +35,13 @@ console_result getheight::invoke (std::ostream& output,
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    Json::Value jv; 
-    jv["height"] = get_last_height(node);
-
-    output << jv.toStyledString();
+    if (option_.is_fetch_height) {
+        output << get_last_height(node);
+    } else {
+        Json::Value jv; 
+        jv["height"] = get_last_height(node);
+        output << jv.toStyledString();
+    }
 
     return console_result::okay;
 }
