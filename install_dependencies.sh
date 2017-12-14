@@ -340,10 +340,14 @@ BOOST_OPTIONS=(
 #"--with-locale" \
 
 # Define secp256k1 options.
+if [ $IS_TRAVIS_LINUX ];then
+    with_secp256k1_gmp="--with-bignum=no"
+fi
 #------------------------------------------------------------------------------
 SECP256K1_OPTIONS=(
 "--disable-tests" \
-"--enable-module-recovery")
+"--enable-module-recovery" \
+"${with_secp256k1_gmp}")
 
 # Define bitcoin options.
 #------------------------------------------------------------------------------
@@ -727,7 +731,7 @@ boost_json_parser_fix()
     BOOST_ROOT="/usr/local/include"
     JSON_PARSER_FILE=$BOOST_ROOT/boost/property_tree/json_parser/detail/parser.hpp
     cat $BOOST_ROOT/boost/version.hpp
-#    if [ $BOOST_OSX_FIX ] && [ -f $JSON_PARSER_FILE ] ;then
+#    if [ $IS_TRAVIS_OSX ] && [ -f $JSON_PARSER_FILE ] ;then
 #        sed -i '' -e '/#include <boost\/bind.hpp>/a #include <boost\/bind\/placeholders.hpp>' -e 's/boost::ref(callbacks), _1)/boost::ref(callbacks), boost::placeholders::_1)/g' $JSON_PARSER_FILE
 #    fi
 }
