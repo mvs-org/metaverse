@@ -101,9 +101,10 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
        export CC=clang;
        export CXX=clang++;
-       export BOOST_OSX_FIX=true;
+       export IS_TRAVIS_OSX=true;
       ./install_dependencies.sh;
     else
+       export IS_TRAVIS_LINUX=true;
        export CC=gcc;
        export CXX=g++;
       ./install_dependencies.sh;
