@@ -18,6 +18,7 @@ matrix:
             - cmake
             - cmake-data
             - g++-5
+            - libgmp-dev
       env:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=clang-5.0
@@ -37,6 +38,7 @@ matrix:
             - cmake
             - cmake-data
             - g++-5
+            - libgmp-dev
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=clang-5.0
@@ -53,6 +55,7 @@ matrix:
             - cmake
             - cmake-data
             - g++-5
+            - libgmp-dev
       env:
         - CMAKE_BUILD_TYPE=DEBUG
         - CMAKE_C_COMPILER=gcc-5
@@ -69,6 +72,7 @@ matrix:
             - cmake
             - cmake-data
             - g++-5
+            - libgmp-dev
       env:
         - CMAKE_BUILD_TYPE=RELEASE
         - CMAKE_C_COMPILER=gcc-5
