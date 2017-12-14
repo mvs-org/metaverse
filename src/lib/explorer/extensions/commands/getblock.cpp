@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getblock *************************/
 
@@ -54,7 +52,7 @@ console_result getblock::invoke (std::ostream& output,
                 }
 
                 if(json) {
-                        pt::write_json(output, config::prop_tree(*block));
+                        pt::write_json(output, config::json_helper().prop_tree(*block));
                 }
                 else
                 {
@@ -83,7 +81,7 @@ console_result getblock::invoke (std::ostream& output,
                 }
 
                 if(json) {
-                        pt::write_json(output, config::prop_tree(*block));
+                        pt::write_json(output, config::json_helper().prop_tree(*block));
                 }
                 else
                 {

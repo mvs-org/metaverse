@@ -26,7 +26,7 @@
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/config/algorithm.hpp>
 
 
@@ -60,7 +60,7 @@ console_result fetch_utxo::invoke(std::ostream& output, std::ostream& error)
 
     auto on_done = [&state, json](const bc::chain::points_info& selected_utxos)
     {
-        state.output(prop_tree(selected_utxos, json));
+        state.output(json_helper().prop_tree(selected_utxos, json));
     };
 
     auto on_error = [&state](const code& error)

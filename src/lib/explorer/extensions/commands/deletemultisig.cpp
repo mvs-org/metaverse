@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result deletemultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -52,7 +50,7 @@ console_result deletemultisig::invoke (std::ostream& output,
     // flush to db
     blockchain.store_account(acc);
 
-    pt::ptree root, pubkeys;
+    Json::Value root, pubkeys;
 
     root.put("index", acc_multisig.get_index());
     root.put("m", acc_multisig.get_m());
@@ -61,7 +59,7 @@ console_result deletemultisig::invoke (std::ostream& output,
     root.put("description", acc_multisig.get_description());
 
     for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-        pt::ptree pubkey;
+        Json::Value pubkey;
         pubkey.put("", each);
         pubkeys.push_back(std::make_pair("", pubkey));
     }

@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 /************************ createasset *************************/
 static std::vector<std::string> forbidden_str {
         "hujintao",
@@ -156,8 +154,8 @@ console_result createasset::invoke (std::ostream& output,
 
     //output<<option_.symbol<<" created at local, you can issue it.";
     
-    pt::ptree aroot;
-    pt::ptree asset_data;
+    Json::Value aroot;
+    Json::Value asset_data;
     asset_data.put("symbol", acc->get_symbol());
     asset_data.put("maximum-supply", acc->get_maximum_supply());
     asset_data.put("decimal_number", acc->get_decimal_number());

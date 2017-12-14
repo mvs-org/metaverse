@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ gettx *************************/
 /// extent fetch-tx command , add tx height in tx content
@@ -45,7 +43,7 @@ console_result gettx::invoke (std::ostream& output,
         throw tx_notfound_exception{"transaction does not exist!"};
     
     if (option_.json) {
-        pt::write_json(output, config::prop_list(tx, tx_height, true));
+        pt::write_json(output, config::json_helper().prop_list(tx, tx_height, true));
     } else {
         output << bc::explorer::config::transaction{tx};
     }

@@ -29,16 +29,14 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getaddressasset *************************/
 
 console_result getaddressasset::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    pt::ptree aroot;
-    pt::ptree assets;
+    Json::Value aroot;
+    Json::Value assets;
     std::string symbol;
 
     auto& blockchain = node.chain_impl();
@@ -91,7 +89,7 @@ console_result getaddressasset::invoke (std::ostream& output,
     } 
     
     for (auto& elem: asset_vec) {
-        pt::ptree asset_data;
+        Json::Value asset_data;
         asset_data.put("symbol", elem.get_symbol());
         symbol = elem.get_symbol();
         asset_data.put("quantity", elem.get_maximum_supply());

@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getaccount *************************/
 
@@ -50,7 +48,7 @@ console_result getaccount::invoke (std::ostream& output,
         throw argument_dismatch_exception{"last word not matching."};
     }
 
-    pt::ptree root;
+    Json::Value root;
     root.put("name", acc->get_name());
     root.put("mnemonic-key", mnemonic);
     root.put("address-count", acc->get_hd_index());

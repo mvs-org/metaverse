@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result createrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -101,7 +99,7 @@ console_result createrawtx::invoke (std::ostream& output,
     }
     
 
-    pt::ptree aroot;
+    Json::Value aroot;
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
     aroot.put("hex", tx_buf.str());

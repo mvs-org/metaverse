@@ -62,9 +62,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\prop_tree.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -433,13 +430,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp">
       <Filter>Header Files\extensions\commands</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\json_helper.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\include\metaverse\explorer\impl\prop_tree.ipp">
+    <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
       <Filter>Header Files\impl</Filter>
     </None>
-    <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
+    <None Include="..\..\..\include\metaverse\explorer\impl\json_helper.ipp">
       <Filter>Header Files\impl</Filter>
     </None>
   </ItemGroup>
@@ -457,9 +456,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\prop_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp">
@@ -791,6 +787,8 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\xfetchutxo.cpp">
       <Filter>Source Files\extensions\commands</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

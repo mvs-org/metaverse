@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 console_result issue::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -76,7 +74,7 @@ console_result issue::invoke (std::ostream& output,
 
     // json output
     auto tx = issue_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
+    pt::write_json(output, config::json_helper().prop_tree(tx, true));
 
     // change asset status
     #if 0

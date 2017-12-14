@@ -26,8 +26,6 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
 
 /************************ importkeyfile *************************/
@@ -61,7 +59,7 @@ console_result importkeyfile::invoke (std::ostream& output,
     // store account info to db
     all_info.store(name, option_.depasswd);
         
-    pt::ptree root;
+    Json::Value root;
     root.put("name", name);
     //root.put("mnemonic-key", mnemonic);
     root.put("address-count", acc.get_hd_index());

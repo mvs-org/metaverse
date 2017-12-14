@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result importaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -65,19 +63,19 @@ console_result importaccount::invoke (std::ostream& output,
     blockchain.store_account(acc);
 
     // generate all account address
-    pt::ptree root;
+    Json::Value root;
     root.put("name", auth_.name);
     root.put("mnemonic", mnemonic);
     root.put("hd_index", option_.hd_index);
     
     uint32_t idx = 0;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};
-    pt::ptree addresses;
+    Json::Value addresses;
     std::istringstream sin("");
     std::stringstream sout("");
     
     for( idx = 0; idx < option_.hd_index; idx++ ) {
-        pt::ptree addr;
+        Json::Value addr;
         sin.str("");
         sout.str("");
         if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {

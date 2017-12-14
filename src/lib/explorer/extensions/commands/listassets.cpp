@@ -30,16 +30,14 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ listassets *************************/
 
 console_result listassets::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-	pt::ptree aroot;
-	pt::ptree assets;
+	Json::Value aroot;
+	Json::Value assets;
 	
 	std::string symbol;
 	auto& blockchain = node.chain_impl();
@@ -53,7 +51,7 @@ console_result listassets::invoke (std::ostream& output,
 
 		// add blockchain assets
 		for (auto& elem: *sh_vec) {
-			pt::ptree asset_data;
+			Json::Value asset_data;
 			
 			asset_data.put("symbol", elem.get_symbol());
 			asset_data.put("maximum_supply", elem.get_maximum_supply());
@@ -83,7 +81,7 @@ console_result listassets::invoke (std::ostream& output,
 		}
 		
 		for (auto& elem: *sh_vec) {
-			pt::ptree asset_data;
+			Json::Value asset_data;
 			asset_data.put("symbol", elem.get_symbol());
 			symbol = elem.get_symbol();
 			asset_data.put("quantity", elem.get_maximum_supply());
@@ -110,7 +108,7 @@ console_result listassets::invoke (std::ostream& output,
 			if (pos != sh_vec->end()){ // asset already issued in blockchain
 				continue;
 			} 
-			pt::ptree asset_data;
+			Json::Value asset_data;
 			asset_data.put("symbol", elem.detail.get_symbol());
 			symbol = elem.detail.get_symbol();
 			asset_data.put("quantity", elem.detail.get_maximum_supply());

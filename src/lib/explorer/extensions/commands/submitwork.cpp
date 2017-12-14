@@ -28,8 +28,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ submitwork *************************/
 
@@ -38,7 +36,7 @@ console_result submitwork::invoke (std::ostream& output,
 {
     auto& miner = node.miner();
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
-    pt::ptree root;
+    Json::Value root;
 
     root.put("id", 1);
     root.put("jsonrpc", "1.0");

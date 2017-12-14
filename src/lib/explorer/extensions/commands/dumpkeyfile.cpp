@@ -26,8 +26,6 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
 
 /************************ exportaccountasfile *************************/
@@ -81,7 +79,7 @@ console_result dumpkeyfile::invoke (std::ostream& output,
     file_output << std::flush;      
     file_output.close();
 
-    pt::ptree root;
+    Json::Value root;
     root.put("result", argument_.dst.string());    
     pt::write_json(output, root);
 

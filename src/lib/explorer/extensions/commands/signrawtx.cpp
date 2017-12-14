@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 // copy from src/lib/consensus/clone/script/script.h
 static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
 {
@@ -128,13 +126,13 @@ console_result signrawtx::invoke (std::ostream& output,
 
     // get raw tx
     std::ostringstream buffer;
-    pt::write_json(buffer, config::prop_tree(tx_, true));
+    pt::write_json(buffer, config::json_helper().prop_tree(tx_, true));
     log::trace("signrawtx=") << buffer.str();
 
     if(blockchain.validate_transaction(tx_))
             throw tx_validate_exception{std::string("validate transaction failure")};
 
-    pt::ptree aroot;
+    Json::Value aroot;
     aroot.put("hash", encode_hash(tx_.hash()));
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);

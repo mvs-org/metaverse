@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result signmultisigtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -38,7 +36,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // get not signed tx
     //output << "###### raw tx ######" << std::endl;
-    //pt::write_json(output, config::prop_tree(argument_.transaction, true));
+    //pt::write_json(output, config::json_helper().prop_tree(argument_.transaction, true));
     tx_type tx_ = argument_.transaction;
 
     // get all address of this account
@@ -156,7 +154,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
         log::trace("wdy new script=") << ss.to_string(false);
     }
         
-    //pt::write_json(output, config::prop_tree(tx_, true));
+    //pt::write_json(output, config::json_helper().prop_tree(tx_, true));
     //output << "raw tx content" << std::endl << config::transaction(tx_);
     output << config::transaction(tx_);
 

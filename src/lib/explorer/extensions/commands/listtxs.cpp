@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 class BC_API tx_block_info
 {
@@ -87,8 +85,8 @@ console_result listtxs::invoke (std::ostream& output,
             throw asset_symbol_notfound_exception{argument_.symbol + std::string(" not exist!")};
     }
 
-    pt::ptree aroot;
-    pt::ptree balances;
+    Json::Value aroot;
+    Json::Value balances;
     
     auto sort_by_height = [](const tx_block_info &lhs, const tx_block_info &rhs)->bool { 
         return const_cast<tx_block_info&>(lhs).get_height() > const_cast<tx_block_info&>(rhs).get_height(); 
@@ -162,16 +160,16 @@ console_result listtxs::invoke (std::ostream& output,
         if(!blockchain.get_transaction(each.get_hash(), tx, tx_height))
             continue;
         
-        pt::ptree tx_item;
+        Json::Value tx_item;
         tx_item.put("hash", encode_hash(each.get_hash()));
         tx_item.put("height", each.get_height());
         tx_item.put("timestamp", each.get_timestamp());
         tx_item.put("direction", "send");
 
         // set inputs content
-        pt::ptree input_addrs;
+        Json::Value input_addrs;
         for(auto& input : tx.inputs) {
-            pt::ptree input_addr;
+            Json::Value input_addr;
             std::string addr="";
             
             auto script_address = payment_address::extract(input.script);
@@ -190,9 +188,9 @@ console_result listtxs::invoke (std::ostream& output,
         tx_item.push_back(std::make_pair("inputs", input_addrs));
         
         // set outputs content
-        pt::ptree pt_outputs;
+        Json::Value pt_outputs;
         for(auto& op : tx.outputs) {
-            pt::ptree pt_output;
+            Json::Value pt_output;
             std::string addr="";
             
             auto address = payment_address::extract(op.script);
@@ -209,10 +207,10 @@ console_result listtxs::invoke (std::ostream& output,
                 lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
             pt_output.put("locked_height_range", lock_height);
             pt_output.put("etp-value", op.value);
-            //pt_output.add_child("attachment", prop_list(op.attach_data));
+            //pt_output.add_child("attachment", json_helper().prop_list(op.attach_data));
             ////////////////////////////////////////////////////////////
             auto attach_data = op.attach_data;
-            pt::ptree tree;
+            Json::Value tree;
             if(attach_data.get_type() == ETP_TYPE) {
                 tree.put("type", "etp");
             } else if(attach_data.get_type() == ASSET_TYPE) {

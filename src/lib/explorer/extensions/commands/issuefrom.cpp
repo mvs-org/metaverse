@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 console_result issuefrom::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -83,7 +81,7 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.store_account_asset(detail);
     #endif
 
-    pt::write_json(output, config::prop_tree(tx, true));
+    pt::write_json(output, config::json_helper().prop_tree(tx, true));
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

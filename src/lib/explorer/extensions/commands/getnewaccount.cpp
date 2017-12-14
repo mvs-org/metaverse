@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 /************************ getnewaccount *************************/
 
 console_result getnewaccount::invoke (std::ostream& output,
@@ -49,7 +47,7 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw account_existed_exception{"account already exist"};
     }
 
-    pt::ptree root;
+    Json::Value root;
 
     auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);

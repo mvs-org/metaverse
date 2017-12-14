@@ -18,18 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <metaverse/explorer/dispatch.hpp>
-
-#ifdef _WIN32
-#include <boost/bind/placeholders.hpp>
-using namespace boost::placeholders;
-#endif
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <boost/algorithm/string.hpp>
+#include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
@@ -133,8 +124,6 @@ void send_tx(const std::string& tx_set, std::string& send_ret)
 // ---------------------------------------------------------------------------
 bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 {
-    using namespace boost::property_tree;
-
     uint64_t remaining = total_payment_amount_;
     uint32_t from_list_index = 1;
     console_result retcode;
@@ -159,18 +148,19 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
         if (dispatch_command(5, cmds, sin, sout, sout, node) != console_result::okay) {
             throw utxo_fetch_exception(sout.str());
         }
-         
-         
+
         relay_exception(sout);
 
         sin.str(sout.str());
 
         // parse json
-        ptree pt; 
-        read_json(sin, pt);
+        Json::Reader reader;
+        Json::Value pt;
+        if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+            return false;
 
-        change = pt.get<std::string>("change");
-        auto points = pt.get_child("points");
+        change = pt["change"].asString();
+        auto points = pt["points"];
 
         // not found
         if (points.size() == 0 && change == "0"){
@@ -184,12 +174,12 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 
         // found, then push_back
         tx_items tx;
-        for (auto& i: points){
+        for (auto& it: points){
             tx.txhash.clear();
             tx.output.index.clear();
 
-            tx.txhash = i.second.get<std::string>("hash");
-            tx.output.index  = i.second.get<std::string>("index");
+            tx.txhash = it["hash"].asString();
+            tx.output.index  = it["index"].asString();
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
@@ -202,8 +192,6 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 // ---------------------------------------------------------------------------
 bool utxo_helper::fetch_tx() 
 {
-    using namespace boost::property_tree;
-
     const char* cmds[]{"fetch-tx"};
 
     std::stringstream sout;
@@ -218,29 +206,28 @@ bool utxo_helper::fetch_tx()
                 throw tx_fetch_exception(sout.str());
             }
 
-             
-             
             relay_exception(sout);
             sin.str(sout.str());
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
         }
-
     }
 
     return true;
@@ -557,8 +544,6 @@ bool send_impl(utxo_helper& utxo, bc::server::server_node& node, std::ostream& o
 // ---------------------------------------------------------------------------
 bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
 {
-    using namespace boost::property_tree;
-    
     std::string&& amount = std::to_string(total_payment_amount_);
     bool found = false;
     // 1. find one address whose all utxo balance is bigger than total_payment_amount_
@@ -583,11 +568,13 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
         sin.str(sout.str());
 
         // parse json
-        ptree pt; 
-        read_json(sin, pt);
+        Json::Reader reader;
+        Json::Value pt;
+        if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+            return false;
 
-        change = pt.get<std::string>("change");
-        auto points = pt.get_child("points");
+        change = pt["change"];
+        auto points = pt["points"];
 
         // not found, try next address 
         if (points.size() == 0 && change == "0"){
@@ -597,12 +584,12 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         // found, then push_back
         tx_items tx;
-        for (auto& i: points){
+        for (auto& it : points){
             tx.txhash.clear();
             tx.output.index.clear();
 
-            tx.txhash = i.second.get<std::string>("hash");
-            tx.output.index  = i.second.get<std::string>("index");
+            tx.txhash = it["hash"].asString();
+            tx.output.index = it["index"].asString();
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
@@ -642,11 +629,13 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
         sin.str(sout.str());
 
         // parse json
-        ptree pt; 
-        read_json(sin, pt);
+        Json::Reader reader;
+        Json::Value pt;
+        if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+            return false;
 
-        change = pt.get<std::string>("change");
-        auto points = pt.get_child("points");
+        change = pt["change"];
+        auto points = pt["points"];
 
         // not found, try next address 
         if (points.size() == 0 && change == "0"){
@@ -656,12 +645,12 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 
         // found, then push_back
         tx_items tx;
-        for (auto& i: points){
+        for (auto& it : points){
             tx.txhash.clear();
             tx.output.index.clear();
 
-            tx.txhash = i.second.get<std::string>("hash");
-            tx.output.index  = i.second.get<std::string>("index");
+            tx.txhash = it["hash"].asString();
+            tx.output.index = it["index"].asString();
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
@@ -682,8 +671,6 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
 // ---------------------------------------------------------------------------
 bool utxo_attach_issue_helper::fetch_tx() 
 {
-    using namespace boost::property_tree;
-
     const char* cmds[]{"fetch-tx"};
 
     std::stringstream sout;
@@ -702,19 +689,21 @@ bool utxo_attach_issue_helper::fetch_tx()
 
             sin.str(sout.str());
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
@@ -953,8 +942,6 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::server::server_node& node, st
 bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
-    using namespace boost::property_tree;
-
     std::string&& amount = std::to_string(payment_amount);
     std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", prv_key);
     std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey);
@@ -973,11 +960,13 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
     sin.str(sout.str());
 
     // parse json
-    ptree pt; 
-    read_json(sin, pt);
+    Json::Reader reader;
+    Json::Value pt;
+    if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+        return false;
 
-    std::string change = pt.get<std::string>("change");
-    auto points = pt.get_child("points");
+    std::string change = pt["change");
+    auto points = pt["points");
 
     // not found, return  
     if (points.size() == 0 && change == "0"){
@@ -1033,8 +1022,6 @@ bool utxo_attach_send_helper::fetch_utxo(bc::server::server_node& node)
 // ---------------------------------------------------------------------------
 bool utxo_attach_send_helper::fetch_tx() 
 {
-    using namespace boost::property_tree;
-
     const char* cmds[]{"fetch-tx"};
 
     std::stringstream sout;
@@ -1055,11 +1042,13 @@ bool utxo_attach_send_helper::fetch_tx()
 
             sin.str(sout.str());
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction");
+            auto outputs = transaction["outputs");
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
@@ -1088,19 +1077,21 @@ bool utxo_attach_send_helper::fetch_tx()
              
             relay_exception(sout);
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
@@ -1471,7 +1462,6 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::server::server_node& node, std
 
 bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
 {
-    using namespace boost::property_tree;
     std::string change;
     std::string&& amount = std::to_string(total_payment_amount_);
 
@@ -1495,11 +1485,13 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
         sin.str(sout.str());
 
         // parse json
-        ptree pt; 
-        read_json(sin, pt);
+        Json::Reader reader;
+        Json::Value pt;
+        if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+            return false;
 
-        change = pt.get<std::string>("change");
-        auto points = pt.get_child("points");
+        change = pt["change"].asString();
+        auto points = pt["points"];
 
         // not found, try next address 
         if (points.size() == 0 && change == "0"){
@@ -1509,12 +1501,12 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
 
         // found, then push_back
         tx_items tx;
-        for (auto& i: points){
+        for (auto& it : points){
             tx.txhash.clear();
             tx.output.index.clear();
 
-            tx.txhash = i.second.get<std::string>("hash");
-            tx.output.index  = i.second.get<std::string>("index");
+            tx.txhash = it["hash"].asString();
+            tx.output.index = it["index"].asString();
 
             keys_inputs_[fromeach.first].push_back(tx);
         }
@@ -1533,8 +1525,6 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
 // ---------------------------------------------------------------------------
 bool utxo_attach_issuefrom_helper::fetch_tx() 
 {
-    using namespace boost::property_tree;
-
     const char* cmds[]{"fetch-tx"};
 
     std::stringstream sout;
@@ -1555,19 +1545,21 @@ bool utxo_attach_issuefrom_helper::fetch_tx()
 
             sin.str(sout.str());
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
@@ -1785,8 +1777,6 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::server::server_node& node
 bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     std::string& prv_key, uint64_t payment_amount, uint64_t& utxo_change)
 {
-    using namespace boost::property_tree;
-
     std::string&& amount = std::to_string(payment_amount);
     std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", prv_key);
     std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
@@ -1806,11 +1796,13 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     sin.str(sout.str());
 
     // parse json
-    ptree pt; 
-    read_json(sin, pt);
+    Json::Reader reader;
+    Json::Value pt;
+    if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
+        return false;
 
-    std::string change = pt.get<std::string>("change");
-    auto points = pt.get_child("points");
+    std::string change = pt["change"];
+    auto points = pt["points"];
 
     // not found, return  
     if (points.size() == 0 && change == "0"){
@@ -1819,21 +1811,12 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     // found, then push_back
     tx_items tx;
-    for (auto& i: points){
+    for (auto& it : points){
         tx.txhash.clear();
         tx.output.index.clear();
 
-        tx.txhash = i.second.get<std::string>("hash");
-        tx.output.index  = i.second.get<std::string>("index");
-        #if 0
-        bool exist = false;
-        for(auto& item: keys_inputs_[prv_key]) {
-            if((item.txhash == tx.txhash) && (item.output.index == tx.output.index))
-                exist = true;
-        }
-        
-        if(!exist)
-        #endif
+        tx.txhash = it["hash"].asString();
+        tx.output.index  = it["index"].asString();
         keys_inputs_[prv_key].push_back(tx);
     }
     utxo_change = std::stoull(change);
@@ -1877,8 +1860,6 @@ bool utxo_attach_sendfrom_helper::fetch_utxo()
 // ---------------------------------------------------------------------------
 bool utxo_attach_sendfrom_helper::fetch_tx() 
 {
-    using namespace boost::property_tree;
-
     const char* cmds[]{"fetch-tx"};
 
     std::stringstream sout;
@@ -1899,19 +1880,21 @@ bool utxo_attach_sendfrom_helper::fetch_tx()
 
             sin.str(sout.str());
 
-            ptree pt;
-            read_json(sin, pt);
+            Json::Reader reader;
+            Json::Value pt;
+            if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
+                return false;
 
-            auto transaction = pt.get_child("transaction");
-            auto outputs = transaction.get_child("outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
