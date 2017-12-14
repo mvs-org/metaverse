@@ -204,7 +204,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
         if (!shared_con)
             continue;
 
-        spawn_to_mongoose([this, shared_con, height, rep](uint64_t id) {
+        spawn_to_mongoose([this, shared_con, rep](uint64_t id) {
             size_t active_connections = 0;
             auto* mgr = &this->mg_mgr();
             auto* notify_nc = shared_con.get();
