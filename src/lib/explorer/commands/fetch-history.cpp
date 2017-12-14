@@ -63,7 +63,7 @@ console_result fetch_history::invoke(std::ostream& output, std::ostream& error)
     // This enables json-style array formatting.
     const auto json = encoding == encoding_engine::json;
 
-    auto on_done = [&state, &address, json](const history::list& rows)
+    auto on_done = [&state, json](const history::list& rows)
     {
         state.output(prop_tree(rows, json));
     };
