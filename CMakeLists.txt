@@ -49,7 +49,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     ADD_DEFINITIONS(-DMAC_OSX=1)
     SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
-    SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function -Wno-unused-lambda-capture")
+    SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function")
 ENDIF()
 
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
