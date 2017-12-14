@@ -379,7 +379,7 @@ void block_chain_impl::fetch_serial(perform_read_functor perform_read)
         return (!database_.is_write_locked(handle) && perform_read(handle));
     };
 
-    const auto do_read = [this, try_read]()
+    const auto do_read = [try_read]()
     {
         // Sleep while waiting for write to complete.
         while (!try_read())
