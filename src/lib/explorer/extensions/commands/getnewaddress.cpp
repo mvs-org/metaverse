@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getnewaddress *************************/
 
@@ -69,8 +67,8 @@ console_result getnewaddress::invoke (std::ostream& output,
 
 
     uint32_t idx = 0;
-    pt::ptree aroot;
-    pt::ptree addresses;
+    Json::Value aroot;
+    Json::Value addresses;
 
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
@@ -117,7 +115,7 @@ console_result getnewaddress::invoke (std::ostream& output,
         account_addresses.push_back(addr);
 
         // write to output json
-        pt::ptree address;
+        Json::Value address;
         address.put("", addr->get_address());
         addresses.push_back(std::make_pair("", address));
         if(option_.count == 1)

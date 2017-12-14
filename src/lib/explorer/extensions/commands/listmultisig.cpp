@@ -29,20 +29,18 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result listmultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    pt::ptree root, nodes;
+    Json::Value root, nodes;
 
     auto multisig_vec = acc->get_multisig_vec();
         
     for(auto& acc_multisig : multisig_vec) {
-        pt::ptree node, pubkeys;
+        Json::Value node, pubkeys;
         node.put("index", acc_multisig.get_index());
         //node.put("hd_index", acc_multisig.get_hd_index());
         node.put("m", acc_multisig.get_m());
@@ -50,7 +48,7 @@ console_result listmultisig::invoke (std::ostream& output,
         node.put("self-publickey", acc_multisig.get_pubkey());
         node.put("description", acc_multisig.get_description());
         for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-            pt::ptree pubkey;
+            Json::Value pubkey;
             pubkey.put("", each);
             pubkeys.push_back(std::make_pair("", pubkey));
         }

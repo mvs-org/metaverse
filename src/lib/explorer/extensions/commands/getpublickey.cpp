@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result getpublickey::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -72,7 +70,7 @@ console_result getpublickey::invoke (std::ostream& output,
 
     if(!found) throw account_address_get_exception{sout.str()};
     
-    pt::ptree root;
+    Json::Value root;
     root.put("public-key", sout.str());
     root.put("address", argument_.address);
     pt::write_json(output, root);

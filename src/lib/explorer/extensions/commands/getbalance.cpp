@@ -30,8 +30,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getbalance *************************/
 
@@ -41,7 +39,7 @@ console_result getbalance::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    pt::ptree aroot;
+    Json::Value aroot;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};

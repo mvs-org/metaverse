@@ -28,8 +28,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getmininginfo *************************/
 
@@ -38,8 +36,8 @@ console_result getmininginfo::invoke (std::ostream& output,
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    pt::ptree aroot;
-    pt::ptree info;
+    Json::Value aroot;
+    Json::Value info;
     
     auto& miner = node.miner();
 

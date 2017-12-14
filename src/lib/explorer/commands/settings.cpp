@@ -23,7 +23,7 @@
 #include <iostream>
 #include <map>
 #include <metaverse/network.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -97,7 +97,7 @@ console_result commands::settings::invoke(std::ostream& output,
     list["server.client_private_key"] = 
         serialize(get_server_client_private_key_setting());
 
-    write_stream(output, prop_tree(list), encoding);
+    write_stream(output, json_helper().prop_tree(list), encoding);
     return console_result::okay;
 }
 

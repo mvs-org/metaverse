@@ -18,10 +18,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <boost/property_tree/ptree.hpp>    
-#include <boost/property_tree/ini_parser.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
-
+#include <boost/program_options.hpp> 
 #include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
 #include <metaverse/bitcoin/unicode/unicode.hpp>
@@ -36,6 +34,7 @@ BC_USE_MVS_MAIN
  * @return      The numeric result to return via console exit.
  */
 using namespace mgbubble::cli;
+namespace po = boost::program_options;
 
 void my_impl(const http_message* hm)
 {
@@ -50,13 +49,20 @@ int bc::main(int argc, char* argv[])
     std::string url{"127.0.0.1:8820/rpc"}; 
 
     if(boost::filesystem::exists(config_file)) {
+        std::string tmp;
+        po::options_description desc("");
+        desc.add_options()
+            ("server.mongoose_listen", po::value<std::string>(&tmp)->default_value("127.0.0.1:8820"));
 
-        boost::property_tree::ptree proot;  
-        boost::property_tree::ini_parser::read_ini(config_file.string(), proot);    
-        auto&& uri = proot.get<std::string>("server.mongoose_listen", "");  
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
 
-        if (!uri.empty()) {
-            url = uri + "/rpc";
+        if (vm.count("server.mongoose_listen"))
+        {
+            if (!tmp.empty()) {
+                url = tmp + "/rpc";
+            }
         }
     } 
 

@@ -28,7 +28,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/config/encoding.hpp>
 #include <metaverse/explorer/config/header.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -58,7 +58,7 @@ console_result fetch_header::invoke(std::ostream& output, std::ostream& error)
 
     auto on_done = [&state](const chain::header& header)
     {
-        state.output(prop_tree(header));
+        state.output(json_helper().prop_tree(header));
     };
 
     auto on_error = [&state](const code& error)

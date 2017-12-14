@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getbestblockhash *************************/
 
@@ -56,7 +54,7 @@ console_result getbestblockhash::invoke (std::ostream& output,
      
     relay_exception(sout);
 
-    pt::ptree header;
+    Json::Value header;
     sin.str(sout.str());
     pt::read_json(sin, header);
 

@@ -29,13 +29,11 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result decoderawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     tx_type tx_ = argument_.transaction;    
-    pt::write_json(output, config::prop_tree(tx_, true));
+    pt::write_json(output, config::json_helper().prop_tree(tx_, true));
     
     return console_result::okay;
 }

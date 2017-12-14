@@ -139,12 +139,12 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\exception.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\generated.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\prop_tree.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\json_helper.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\include\metaverse\explorer\impl\prop_tree.ipp" />
+    <None Include="..\..\..\include\metaverse\explorer\impl\json_helper.ipp" />
     <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp" />
   </ItemGroup>
   <ItemGroup>
@@ -262,7 +262,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\generated.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\prop_tree.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

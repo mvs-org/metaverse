@@ -28,15 +28,13 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result sendrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // get raw tx
     std::ostringstream buffer;
-    pt::write_json(buffer, config::prop_tree(argument_.transaction, true));
+    pt::write_json(buffer, config::json_helper().prop_tree(argument_.transaction, true));
     log::trace("sendrawtx=") << buffer.str();
     tx_type tx_ = argument_.transaction;
 
@@ -51,7 +49,7 @@ console_result sendrawtx::invoke (std::ostream& output,
     if(blockchain.broadcast_transaction(tx_)) 
         throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
-    pt::ptree aroot;
+    Json::Value aroot;
     aroot.put("hash", encode_hash(tx_.hash()));
     pt::write_json(output, aroot);
     

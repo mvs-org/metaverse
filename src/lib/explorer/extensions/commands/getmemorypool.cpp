@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getbalance *************************/
 
@@ -57,9 +55,9 @@ console_result getmemorypool::invoke (std::ostream& output,
         }
 
         if(json) {
-        	pt::write_json(output, config::prop_tree(txs1, true));
+        	pt::write_json(output, config::json_helper().prop_tree(txs1, true));
         } else {
-        	pt::write_json(output, config::prop_tree(txs1, false));
+        	pt::write_json(output, config::json_helper().prop_tree(txs1, false));
         }
         p.set_value(ec);
     });

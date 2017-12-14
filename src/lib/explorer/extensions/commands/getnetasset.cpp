@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getasset *************************/
 
@@ -65,13 +63,13 @@ console_result getasset::invoke (std::ostream& output,
     std::for_each(sh_local_vec->begin(), sh_local_vec->end(), lc_action);
 #endif
     
-    pt::ptree aroot;
-    pt::ptree assets;
+    Json::Value aroot;
+    Json::Value assets;
     // add blockchain assets
     for (auto& elem: *sh_vec) {
         if( elem.get_symbol().compare(argument_.symbol) != 0 )// not request asset symbol
             continue;
-        pt::ptree asset_data;
+        Json::Value asset_data;
         asset_data.put("symbol", elem.get_symbol());
         asset_data.put("maximum_supply", elem.get_maximum_supply());
         asset_data.put("decimal_number", elem.get_decimal_number());
@@ -90,7 +88,7 @@ console_result getasset::invoke (std::ostream& output,
     for (auto& elem: *sh_local_vec) {
         if( elem.get_symbol().compare(argument_.symbol) != 0 )// not request asset symbol
             continue;
-        pt::ptree asset_data;
+        Json::Value asset_data;
         asset_data.put("symbol", elem.get_symbol());
         asset_data.put("maximum_supply", elem.get_maximum_supply());
         asset_data.put("decimal_number", elem.get_decimal_number());
