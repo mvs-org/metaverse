@@ -45,8 +45,8 @@ console_result getinfo::invoke (std::ostream& output,
     jv["database-version"] = MVS_DATABASE_VERSION;
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
     jv["connections-count"] = get_connections_count(node); 
-    jv["network-assets-count"] = blockchain.get_issued_assets()->size(); 
-    jv["wallet-account-count"] = blockchain.get_accounts()->size();
+    jv["network-assets-count"] = static_cast<uint64_t>(blockchain.get_issued_assets()->size()); 
+    jv["wallet-account-count"] = static_cast<uint64_t>(blockchain.get_accounts()->size());
 
     uint64_t height;
     uint64_t rate;

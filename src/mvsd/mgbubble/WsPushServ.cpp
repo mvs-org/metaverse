@@ -31,7 +31,7 @@ namespace mgbubble {
     constexpr auto EV_PUBLISH     = "publish";
     constexpr auto EV_REQUEST     = "request";
     constexpr auto EV_RESPONSE    = "response";
-    constexpr auto EV_ERROR       = "error";
+    constexpr auto EV_MG_ERROR       = "error";
     constexpr auto EV_INFO        = "info";
 
     constexpr auto CH_BLOCK       = "block";
@@ -196,7 +196,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root.add_child("result", explorer::config::prop_list(tx, height, true));
     write_json(ss, root);
 
-    auto rep = std::make_shared<std::string>(std::move(ss.str()));
+    auto rep = std::make_shared<std::string>(ss.str());
 
     for (auto& con : notify_cons)
     {
@@ -205,7 +205,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
             continue;
 
         spawn_to_mongoose([this, shared_con, height, rep](uint64_t id) {
-            int active_connections = 0;
+            size_t active_connections = 0;
             auto* mgr = &this->mg_mgr();
             auto* notify_nc = shared_con.get();
             for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
@@ -228,7 +228,7 @@ void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message
     ptree result;
     result.put("code", 1000001);
     result.put("message", message ? message : "bad request");
-    root.put("event", EV_ERROR);
+    root.put("event", EV_MG_ERROR);
     root.put_child("result", result);
     write_json(ss, root);
     auto&& tmp = ss.str();
