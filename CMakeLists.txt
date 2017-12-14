@@ -34,18 +34,22 @@ endif()
 SET(COMMON_FLAGS "-fstrict-aliasing -fvisibility=hidden")
 SET(COMMON_ARGS "${COMMON_FLAGS} ${COMMON_WARN}")
 
+IF (APPLE)
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+ELSE()
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
+ENDIF()
+
 # GXX/Clang settings
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 ${COMMON_ARGS}")
     #libbitcoin has too many ignored-qualifiers, and TODOs
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${COMMON_ARGS} -pthread -fno-enforce-eh-specs -fnothrow-opt -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-but-set-parameter")
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     ADD_DEFINITIONS(-DMAC_OSX=1)
     SET(CMAKE_C_FLAGS "-std=c11 ${COMMON_ARGS}")
     SET(CMAKE_CXX_FLAGS "-std=c++11 ${COMMON_ARGS} -Wno-reorder -Wno-ignored-qualifiers -Wno-inconsistent-missing-override -Wno-missing-braces -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-sometimes-uninitialized -Wno-macro-redefined -Wno-uninitialized -Wno-unused-private-field -Wno-unused-function -Wno-unused-lambda-capture")
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 ENDIF()
 
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
