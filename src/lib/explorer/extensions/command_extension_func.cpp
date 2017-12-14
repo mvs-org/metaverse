@@ -85,6 +85,7 @@
 #include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/xfetchutxo.hpp>
 
 
 namespace libbitcoin {
@@ -278,6 +279,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getmemorypool>();
     if (symbol == getaddressasset::symbol())
         return make_shared<getaddressasset>();
+    if (symbol == xfetchutxo::symbol())
+        return make_shared<xfetchutxo>();
     return nullptr;
 }
 
