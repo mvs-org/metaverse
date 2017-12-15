@@ -45,8 +45,7 @@ console_result listaddresses::invoke (std::ostream& output,
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
     for (auto& it: *vaddr){
-        Json::Value address(it.get_address());
-        addresses.append(address);
+        addresses.append(it.get_address());
     }
 
     aroot["addresses"] = addresses;

@@ -115,19 +115,17 @@ console_result getnewaddress::invoke (std::ostream& output,
         account_addresses.push_back(addr);
 
         // write to output json
-        Json::Value address;
-        address.put("", addr->get_address());
-        addresses.push_back(std::make_pair("", address));
+        addresses.append(addr->get_address());
         if(option_.count == 1)
             output<<addr->get_address();
     }
 
     blockchain.safe_store_account(*acc, account_addresses);
 
-    aroot.add_child("addresses", addresses);
+    aroot["addresses"] = addresses;
 
     if(option_.count != 1)
-        pt::write_json(output, aroot);
+        output << aroot.toStyledString();
     
     return console_result::okay;
 }

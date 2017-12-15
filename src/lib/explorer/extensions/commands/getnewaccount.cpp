@@ -58,7 +58,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     auto&& words_list = get_mnemonic_new(opt_language , seed);
     auto&& words = bc::join(words_list);
 
-    root.put("mnemonic", words);
+    root["mnemonic"] = words;
     acc->set_mnemonic(words, auth_.auth);
     
     // flush to db
@@ -76,9 +76,9 @@ console_result getnewaccount::invoke (std::ostream& output,
      
     relay_exception(sout);
 
-    root.put("default-address", sout.str());
+    root["default-address"] = sout.str();
     
-    pt::write_json(output, root);
+    output << root.toStyledString();
     return console_result::okay;
 }
 

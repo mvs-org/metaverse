@@ -89,10 +89,11 @@ console_result deleteasset::invoke (std::ostream& output,
     }
 
     Json::Value result;
-    result.put("symbol", option_.symbol);
-    result.put("operate", "delete");
-    result.put("result", "success");
-    pt::write_json(output, result);
+    result["symbol"] = option_.symbol;
+    result["operate"] = "delete";
+    result["result"] = "success";
+    
+    output << result.toStyledString();
 
     return console_result::okay;
 }

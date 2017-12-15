@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -161,10 +161,10 @@ console_result listtxs::invoke (std::ostream& output,
             continue;
         
         Json::Value tx_item;
-        tx_item.put("hash", encode_hash(each.get_hash()));
-        tx_item.put("height", each.get_height());
-        tx_item.put("timestamp", each.get_timestamp());
-        tx_item.put("direction", "send");
+        tx_item["hash"] = encode_hash(each.get_hash());
+        tx_item["height"] = +each.get_height();
+        tx_item["timestamp"] = +each.get_timestamp();
+        tx_item["direction"] = "send";
 
         // set inputs content
         Json::Value input_addrs;
@@ -176,16 +176,16 @@ console_result listtxs::invoke (std::ostream& output,
             if (script_address)
                 addr = script_address.encoded();
 
-            input_addr.put("address", addr);
-            input_addr.put("script", script(input.script).to_string(1));
-            input_addrs.push_back(std::make_pair("", input_addr));
+            input_addr["address"] = addr;
+            input_addr["script"] = script(input.script).to_string(1);
+            input_addrs.append(input_addr);
 
             // add input address
             if(!addr.empty()) {
                 vec_ip_addr.push_back(addr);
             }
         }
-        tx_item.push_back(std::make_pair("inputs", input_addrs));
+        tx_item["inputs"] = input_addrs;
         
         // set outputs content
         Json::Value pt_outputs;
@@ -197,62 +197,61 @@ console_result listtxs::invoke (std::ostream& output,
             if (address)
                 addr = address.encoded();
             if(blockchain.get_account_address(auth_.name, addr))
-                pt_output.put("own", true);
+                pt_output["own"] = true;
             else
-                pt_output.put("own", false);
-            pt_output.put("address", addr);
-            pt_output.put("script", script(op.script).to_string(1));
+                pt_output["own"] = false;
+            pt_output["address"] = addr;
+            pt_output["script"] = script(op.script).to_string(1);
             uint64_t lock_height = 0;
             if(chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
                 lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
-            pt_output.put("locked_height_range", lock_height);
-            pt_output.put("etp-value", op.value);
-            //pt_output.add_child("attachment", json_helper().prop_list(op.attach_data));
-            ////////////////////////////////////////////////////////////
+            pt_output["locked_height_range"] = +lock_height;
+            pt_output["etp-value"] = +op.value;
+
             auto attach_data = op.attach_data;
             Json::Value tree;
             if(attach_data.get_type() == ETP_TYPE) {
-                tree.put("type", "etp");
+                tree["type"] = "etp";
             } else if(attach_data.get_type() == ASSET_TYPE) {
                 auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
                 if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
-                    tree.put("type", "asset-issue");
+                    tree["type"] = "asset-issue";
                     auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
-                    tree.put("symbol", detail_info.get_symbol());
-                    //tree.put("quantity", detail_info.get_maximum_supply());
-                    tree.put("maximum_supply", detail_info.get_maximum_supply());
-                    tree.put("decimal_number", detail_info.get_decimal_number());
-                    tree.put("issuer", detail_info.get_issuer());
-                    tree.put("address", detail_info.get_address());
-                    tree.put("description", detail_info.get_description());
+                    tree["symbol"] = detail_info.get_symbol();
+                    //tree["quantity"] = detail_info.get_maximum_supply();
+                    tree["maximum_supply"] = +detail_info.get_maximum_supply();
+                    tree["decimal_number"] = +detail_info.get_decimal_number();
+                    tree["issuer"] = detail_info.get_issuer();
+                    tree["address"] = detail_info.get_address();
+                    tree["description"] = detail_info.get_description();
                 }
                 if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-                    tree.put("type", "asset-transfer");
+                    tree["type"] = "asset-transfer";
                     auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-                    tree.put("symbol", trans_info.get_address());
-                    tree.put("quantity", trans_info.get_quantity());
+                    tree["symbol"] = trans_info.get_address();
+                    tree["quantity"] = trans_info.get_quantity();
                     auto symbol = trans_info.get_address();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
                     if(issued_asset)
-                        tree.put("decimal_number", issued_asset->get_decimal_number());
+                        tree["decimal_number"] = +issued_asset->get_decimal_number();
                 }
             } else if(attach_data.get_type() == MESSAGE_TYPE) {
-                tree.put("type", "message");
+                tree["type"] = "message";
                 auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
-                tree.put("content", msg_info.get_content());
+                tree["content"] = msg_info.get_content();
             } else {
-                tree.put("type", "unknown business");
+                tree["type"] = "unknown business";
             }
-            pt_output.add_child("attachment", tree);
+            pt_output["attachment"] = tree;
             ////////////////////////////////////////////////////////////
             
-            pt_outputs.push_back(std::make_pair("", pt_output));
+            pt_outputs.append(pt_output);
             
             // add output address
             if(!addr.empty())
                 vec_op_addr.push_back(addr);
         }
-        tx_item.push_back(std::make_pair("outputs", pt_outputs));
+        tx_item["outputs"] = pt_outputs;
         
         // set tx direction
         // 1. receive check
@@ -261,7 +260,7 @@ console_result listtxs::invoke (std::ostream& output,
                 });
         
         if (pos == vec_ip_addr.end()){
-            tx_item.put("direction", "receive");
+            tx_item["direction"] = "receive";
         }
         // 2. transfer check
     #if 0
@@ -281,19 +280,19 @@ console_result listtxs::invoke (std::ostream& output,
         }
         
         if (is_ip_intern && is_ip_intern){
-            tx_item.put("direction", "transfer");
+            tx_item["direction"] = "transfer";
         }
     #endif
         // 3. all address clear
         vec_ip_addr.clear();
         vec_op_addr.clear();
-        balances.push_back(std::make_pair("", tx_item));
+        balances.append(tx_item);
     }
-    aroot.put("total_page", total_page);
-    aroot.put("current_page", argument_.index);
-    aroot.put("transaction_count", tx_count);
-    aroot.add_child("transactions", balances);
-    pt::write_json(output, aroot);
+    aroot["total_page"] = +total_page;
+    aroot["current_page"] = +argument_.index;
+    aroot["transaction_count"] = +tx_count;
+    aroot["transactions"] = balances;
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

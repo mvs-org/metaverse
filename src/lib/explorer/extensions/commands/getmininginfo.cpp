@@ -46,12 +46,12 @@ console_result getmininginfo::invoke (std::ostream& output,
     bool is_mining;
     
     miner.get_state(height, rate, difficulty, is_mining);
-    info.put("is-mining", is_mining);
-    info.put("height", height);
-    info.put("rate", rate);
-    info.put("difficulty", difficulty);
-    aroot.push_back(std::make_pair("mining-info", info));
-    pt::write_json(output, aroot);
+    info["is-mining"] = is_mining;
+    info["height"] = +height;
+    info["rate"] = +rate;
+    info["difficulty"] = difficulty;
+    aroot["mining-info"] = info;
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

@@ -67,12 +67,12 @@ console_result getbalance::invoke (std::ostream& output,
         total_frozen += addr_balance.frozen_balance;
     }
     
-    aroot.put("total-confirmed", total_confirmed);
-    aroot.put("total-received", total_received);
-    aroot.put("total-unspent", total_unspent);
-    aroot.put("total-available", total_unspent - total_frozen);
-    aroot.put("total-frozen", total_frozen);
-    pt::write_json(output, aroot);
+    aroot["total-confirmed"] = +total_confirmed;
+    aroot["total-received"] = +total_received;
+    aroot["total-unspent"] = +total_unspent;
+    aroot["total-available"] = +(total_unspent - total_frozen);
+    aroot["total-frozen"] = +total_frozen;
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

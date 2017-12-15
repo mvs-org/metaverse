@@ -80,8 +80,8 @@ console_result dumpkeyfile::invoke (std::ostream& output,
     file_output.close();
 
     Json::Value root;
-    root.put("result", argument_.dst.string());    
-    pt::write_json(output, root);
+    root["result"] = argument_.dst.string();
+    output << root.toStyledString();
 
     return console_result::okay;
 }

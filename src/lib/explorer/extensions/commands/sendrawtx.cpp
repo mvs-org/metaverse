@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -34,7 +34,7 @@ console_result sendrawtx::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     // get raw tx
     std::ostringstream buffer;
-    pt::write_json(buffer, config::json_helper().prop_tree(argument_.transaction, true));
+    buffer << config::json_helper().prop_tree(argument_.transaction, true).toStyledString();
     log::trace("sendrawtx=") << buffer.str();
     tx_type tx_ = argument_.transaction;
 
@@ -50,8 +50,8 @@ console_result sendrawtx::invoke (std::ostream& output,
         throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
     Json::Value aroot;
-    aroot.put("hash", encode_hash(tx_.hash()));
-    pt::write_json(output, aroot);
+    aroot["hash"] = encode_hash(tx_.hash());
+    output << aroot.toStyledString();
     
     return console_result::okay;
 }

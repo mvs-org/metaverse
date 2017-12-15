@@ -90,23 +90,23 @@ console_result getaddressasset::invoke (std::ostream& output,
     
     for (auto& elem: asset_vec) {
         Json::Value asset_data;
-        asset_data.put("symbol", elem.get_symbol());
+        asset_data["symbol"] = elem.get_symbol();
         symbol = elem.get_symbol();
-        asset_data.put("quantity", elem.get_maximum_supply());
+        asset_data["quantity"] = +elem.get_maximum_supply();
         auto issued_asset = blockchain.get_issued_asset(symbol);
         if(issued_asset)
-            asset_data.put("decimal_number", issued_asset->get_decimal_number());
-        //asset_data.put("asset_type", elem.detail.get_asset_type());
-        //asset_data.put("issuer", elem.detail.get_issuer());
-        //asset_data.put("address", elem.detail.get_address());
-        //asset_data.put("description", elem.detail.get_description());
-        asset_data.put("address", elem.get_address());
-        asset_data.put("status", "unspent");
-        assets.push_back(std::make_pair("", asset_data));
-    }
-    
-    aroot.add_child("assets", assets);
-    pt::write_json(output, aroot);
+            asset_data["decimal_number"] = +issued_asset->get_decimal_number();
+        //asset_data["asset_type"] = elem.detail.get_asset_type();
+        //asset_data["issuer"] = elem.detail.get_issuer();
+        //asset_data["address"] = elem.detail.get_address();
+        //asset_data["description"] = elem.detail.get_description();
+        asset_data["address"] = elem.get_address();
+        asset_data["status"] = "unspent";
+        assets.append(asset_data);
+    }    
+    aroot["assets"] = assets;
+
+    output << aroot.toStyledString();
     return console_result::okay;
 }
 

@@ -53,17 +53,14 @@ console_result listassets::invoke (std::ostream& output,
 		for (auto& elem: *sh_vec) {
 			Json::Value asset_data;
 			
-			asset_data.put("symbol", elem.get_symbol());
-			asset_data.put("maximum_supply", elem.get_maximum_supply());
-			asset_data.put("decimal_number", elem.get_decimal_number());
-			asset_data.put("issuer", elem.get_issuer());
-			asset_data.put("address", elem.get_address());
-			asset_data.put("description", elem.get_description());
-			asset_data.put("status", "issued");
-			//uint64_t height;
-			//if(blockchain.get_asset_height(elem.get_symbol(), height))
-				//asset_data.put("height", height);
-			assets.push_back(std::make_pair("", asset_data));
+			asset_data["symbol"] = elem.get_symbol();
+			asset_data["maximum_supply"] = +elem.get_maximum_supply();
+			asset_data["decimal_number"] = +elem.get_decimal_number();
+			asset_data["issuer"] = elem.get_issuer();
+			asset_data["address"] = elem.get_address();
+			asset_data["description"] = elem.get_description();
+			asset_data["status"] = "issued";
+			assets.append(asset_data);
 		}
 		
 	} else { // list asset owned by account
@@ -82,15 +79,15 @@ console_result listassets::invoke (std::ostream& output,
 		
 		for (auto& elem: *sh_vec) {
 			Json::Value asset_data;
-			asset_data.put("symbol", elem.get_symbol());
+			asset_data["symbol"] = elem.get_symbol();
 			symbol = elem.get_symbol();
-			asset_data.put("quantity", elem.get_maximum_supply());
-			//asset_data.put("address", elem.get_address());
+			asset_data["quantity"] = +elem.get_maximum_supply();
+			//asset_data["address"] = +elem.get_address());
 			auto issued_asset = blockchain.get_issued_asset(symbol);
 			if(issued_asset)
-				asset_data.put("decimal_number", issued_asset->get_decimal_number());
-			asset_data.put("status", "unspent");
-			assets.push_back(std::make_pair("", asset_data));
+				asset_data["decimal_number"] = +issued_asset->get_decimal_number();
+			asset_data["status"] = +"unspent";
+			assets.append(asset_data);
 		}
 		// 2. get asset in local database
 		// shoudl filter all issued asset which be stored in local account asset database
@@ -109,18 +106,18 @@ console_result listassets::invoke (std::ostream& output,
 				continue;
 			} 
 			Json::Value asset_data;
-			asset_data.put("symbol", elem.detail.get_symbol());
+			asset_data["symbol"] = elem.detail.get_symbol();
 			symbol = elem.detail.get_symbol();
-			asset_data.put("quantity", elem.detail.get_maximum_supply());
-			asset_data.put("decimal_number", elem.detail.get_decimal_number());
-			//asset_data.put("address", "");
-			asset_data.put("status", "unissued");
-			assets.push_back(std::make_pair("", asset_data));
+			asset_data["quantity"] = +elem.detail.get_maximum_supply();
+			asset_data["decimal_number"] = +elem.detail.get_decimal_number();
+			//asset_data["address"] = "";
+			asset_data["status"] = +"unissued";
+			assets.append(asset_data);
 		}
 	}
 	
-	aroot.add_child("assets", assets);
-	pt::write_json(output, aroot);
+	aroot["assets"] = assets;
+	output << aroot.toStyledString();
 	return console_result::okay;
 }
 

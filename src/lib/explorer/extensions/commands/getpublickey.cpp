@@ -71,9 +71,9 @@ console_result getpublickey::invoke (std::ostream& output,
     if(!found) throw account_address_get_exception{sout.str()};
     
     Json::Value root;
-    root.put("public-key", sout.str());
-    root.put("address", argument_.address);
-    pt::write_json(output, root);
+    root["public-key"] = sout.str();
+    root["address"] = argument_.address;
+    output << root.toStyledString();
     
     return console_result::okay;
 }

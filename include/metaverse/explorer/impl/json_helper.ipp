@@ -38,8 +38,7 @@ Json::Value json_helper::prop_tree_list(const std::string& name, const Values& v
 
     Json::Value list;
     for (const auto& value: values)
-        //list.add_child(denormalized_name, prop_list(value));
-        list.push_back(std::make_pair(denormalized_name, prop_list(value)));
+        list.append(Json::Value()[denormalized_name] = prop_list(value));
 
     return list;
 }
@@ -52,8 +51,7 @@ Json::Value json_helper::prop_tree_list_of_lists(const std::string& name,
 
     Json::Value list;
     for (const auto& value: values)
-        //list.add_child(denormalized_name, prop_list(value, json));
-        list.push_back(std::make_pair(denormalized_name, prop_list(value, json)));
+        list.append(Json::Value()[denormalized_name] = prop_list(value, json));
 
     return list;
 }
@@ -65,12 +63,9 @@ Json::Value json_helper::prop_value_list(const std::string& name, const Values& 
     const auto denormalized_name = json ? "" : name;
 
     Json::Value list;
-    Json::Value element;
     for (const auto& value: values)
     {
-        element.put_value(value);
-        //list.add_child(denormalized_name, element);
-        list.push_back(std::make_pair(denormalized_name, element));
+        list.append(Json::Value()[denormalized_name] = +value);
     }
 
     return list;

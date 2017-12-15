@@ -60,11 +60,11 @@ console_result importkeyfile::invoke (std::ostream& output,
     all_info.store(name, option_.depasswd);
         
     Json::Value root;
-    root.put("name", name);
-    //root.put("mnemonic-key", mnemonic);
-    root.put("address-count", acc.get_hd_index());
-    root.put("unissued-asset-count", all_info.get_account_asset().size());
-    pt::write_json(output, root);
+    root["name"] = name;
+    //root["mnemonic-key"] = mnemonic;
+    root["address-count"] = +acc.get_hd_index();
+    root["unissued-asset-count"] = +all_info.get_account_asset().size();
+    output << root.toStyledString();
 
     return console_result::okay;
 }
