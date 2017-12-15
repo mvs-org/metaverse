@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/listmultisig.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -41,26 +41,24 @@ console_result listmultisig::invoke (std::ostream& output,
         
     for(auto& acc_multisig : multisig_vec) {
         Json::Value node, pubkeys;
-        node.put("index", acc_multisig.get_index());
-        //node.put("hd_index", acc_multisig.get_hd_index());
-        node.put("m", acc_multisig.get_m());
-        node.put("n", acc_multisig.get_n());
-        node.put("self-publickey", acc_multisig.get_pubkey());
-        node.put("description", acc_multisig.get_description());
+        node["index"] = +acc_multisig.get_index();
+        //node["hd_index"] = +acc_multisig.get_hd_index();
+        node["m"] = +acc_multisig.get_m();
+        node["n"] = +acc_multisig.get_n();
+        node["self-publickey"] = acc_multisig.get_pubkey();
+        node["description"] = acc_multisig.get_description();
         for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-            Json::Value pubkey;
-            pubkey.put("", each);
-            pubkeys.push_back(std::make_pair("", pubkey));
+            pubkeys.append(each);
         }
-        node.add_child("public-keys", pubkeys);
-        node.put("multisig-script", acc_multisig.get_multisig_script());
-        node.put("address", acc_multisig.get_address());
+        node["public-keys"] = pubkeys;
+        node["multisig-script"] = acc_multisig.get_multisig_script();
+        node["address"] = acc_multisig.get_address();
 
-        nodes.push_back(std::make_pair("", node));
+        nodes.append(node);
     }
     
-    root.add_child("multisig", nodes);    
-    pt::write_json(output, root);
+    root["multisig"] = nodes;    
+    output << root.toStyledString();
     
     return console_result::okay;
 }

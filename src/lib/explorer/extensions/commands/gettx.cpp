@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -43,7 +43,7 @@ console_result gettx::invoke (std::ostream& output,
         throw tx_notfound_exception{"transaction does not exist!"};
     
     if (option_.json) {
-        pt::write_json(output, config::json_helper().prop_list(tx, tx_height, true));
+        output << config::json_helper().prop_list(tx, tx_height, true).toStyledString();
     } else {
         output << bc::explorer::config::transaction{tx};
     }

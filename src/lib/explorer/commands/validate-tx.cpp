@@ -57,7 +57,7 @@ console_result validate_tx::invoke(std::ostream& output,
     {
         if (indexes.empty())
         {
-            state.output(BX_VALIDATE_TX_VALID);
+            state.output(std::string(BX_VALIDATE_TX_VALID));
             return;
         }
 

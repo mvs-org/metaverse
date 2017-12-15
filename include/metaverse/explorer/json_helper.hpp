@@ -47,14 +47,27 @@ class output;
 class transaction;
 class wrapper;
 
+/**
+* A tuple to represent settings and serialized values.
+*/
+typedef std::map<std::string, std::string> settings_list;
+
+/**
+* Create a string of value elements.
+* @param      <Value>  The element type.
+* @returns              A string of the element.
+*/
+template <typename Value>
+std::string operator+(const Value& value)
+{
+    std::ostringstream ss;
+    ss << value;
+    return ss.str();
+}
+
 struct json_helper {
 
 explicit json_helper(int ver = 0) :version_(ver) {}
-
-/**
- * A tuple to represent settings and serialized values.
- */
-typedef std::map<std::string, std::string> settings_list;
 
 /**
  * Create a property tree array of property tree elements.
@@ -113,7 +126,7 @@ BCX_API Json::Value prop_tree(const header& header);
  * @param[in]  headers  The set of headers.
  * @return              A property tree.
  */
-BCX_API Json::Value prop_tree(const std::vector<header>& headers);
+BCX_API Json::Value prop_tree(const std::vector<header>& headers, bool json);
 
 /**
 * Generate a property list for a history row.

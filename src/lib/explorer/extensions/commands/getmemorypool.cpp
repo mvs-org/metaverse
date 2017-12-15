@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/getmemorypool.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -55,9 +56,9 @@ console_result getmemorypool::invoke (std::ostream& output,
         }
 
         if(json) {
-        	pt::write_json(output, config::json_helper().prop_tree(txs1, true));
+            output << config::json_helper().prop_tree(txs1, true).toStyledString();
         } else {
-        	pt::write_json(output, config::json_helper().prop_tree(txs1, false));
+            output << config::json_helper().prop_tree(txs1, false).toStyledString();
         }
         p.set_value(ec);
     });

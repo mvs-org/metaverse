@@ -53,28 +53,28 @@ console_result listbalances::invoke (std::ostream& output,
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-        address_balance.put("address", i.get_address());
-        address_balance.put("confirmed", addr_balance.confirmed_balance);
-        address_balance.put("received", addr_balance.total_received);
-        address_balance.put("unspent", addr_balance.unspent_balance);
-        address_balance.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
-        address_balance.put("frozen", addr_balance.frozen_balance);
+        address_balance["address"] = i.get_address();
+        address_balance["confirmed"] = +(addr_balance.confirmed_balance);
+        address_balance["received"] = +addr_balance.total_received;
+        address_balance["unspent"] = +addr_balance.unspent_balance;
+        address_balance["available"] = +addr_balance.unspent_balance - addr_balance.frozen_balance;
+        address_balance["frozen"] = +addr_balance.frozen_balance;
          
         Json::Value null_balances;
         // non_zero display options
         if (option_.non_zero){
             if (addr_balance.unspent_balance){
-                null_balances.add_child("balance", address_balance);
-                all_balances.push_back(std::make_pair("", null_balances));
+                null_balances["balance"] = address_balance;
+                all_balances.append(null_balances);
             }
         } else {
-            null_balances.add_child("balance", address_balance);
-            all_balances.push_back(std::make_pair("", null_balances));
+            null_balances["balance"] = address_balance;
+            all_balances.append(null_balances);
         }
     }
     
-    aroot.add_child("balances", all_balances);
-    pt::write_json(output, aroot);
+    aroot["balances"] = all_balances;
+    output << aroot.toStyledString();
     return console_result::okay;
 
 }

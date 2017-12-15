@@ -102,9 +102,9 @@ console_result createrawtx::invoke (std::ostream& output,
     Json::Value aroot;
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    aroot.put("hex", tx_buf.str());
-    
-    pt::write_json(output, aroot);
+    aroot["hex"] = tx_buf.str();
+
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

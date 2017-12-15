@@ -52,20 +52,18 @@ console_result deletemultisig::invoke (std::ostream& output,
 
     Json::Value root, pubkeys;
 
-    root.put("index", acc_multisig.get_index());
-    root.put("m", acc_multisig.get_m());
-    root.put("n", acc_multisig.get_n());
-    root.put("self-publickey", acc_multisig.get_pubkey());
-    root.put("description", acc_multisig.get_description());
+    root["index"] = +acc_multisig.get_index();
+    root["m"] = +acc_multisig.get_m();
+    root["n"] = +acc_multisig.get_n();
+    root["self-publickey"] = acc_multisig.get_pubkey();
+    root["description"] = acc_multisig.get_description();
 
     for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-        Json::Value pubkey;
-        pubkey.put("", each);
-        pubkeys.push_back(std::make_pair("", pubkey));
+        pubkeys.append(each);
     }
-    root.add_child("public-keys", pubkeys);
-    root.put("multisig-script", acc_multisig.get_multisig_script());
-    root.put("address", acc_multisig.get_address());
+    root["public-keys"] = pubkeys;
+    root["multisig-script"] = acc_multisig.get_multisig_script();
+    root["address"] = acc_multisig.get_address();
     
     // delete account address
     auto vaddr = blockchain.get_account_addresses(auth_.name);
@@ -86,7 +84,7 @@ console_result deletemultisig::invoke (std::ostream& output,
         blockchain.store_account_address(addr);
     }
     
-    pt::write_json(output, root);
+    output << root.toStyledString();
     
     return console_result::okay;
 }

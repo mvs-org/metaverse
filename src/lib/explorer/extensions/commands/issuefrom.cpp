@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -81,7 +81,7 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.store_account_asset(detail);
     #endif
 
-    pt::write_json(output, config::json_helper().prop_tree(tx, true));
+    output << config::json_helper().prop_tree(tx, true).toStyledString();
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

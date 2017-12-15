@@ -49,16 +49,16 @@ console_result getwork::invoke (std::ostream& output,
     if (ret) {
         Json::Value aroot;
 
-        aroot.put("id", 1);
-        aroot.put("jsonrpc", "1.0");
+        aroot["id"] = "1";
+        aroot["jsonrpc"] = "1.0";
         
         Json::Value result;
-        result.push_back(std::make_pair("", Json::Value().put("", header_hash)));
-        result.push_back(std::make_pair("", Json::Value().put("", seed_hash)));
-        result.push_back(std::make_pair("", Json::Value().put("", boundary)));
+        result.append(header_hash);
+        result.append(seed_hash);
+        result.append(boundary);
 
-        aroot.add_child("result", result);
-        pt::write_json(output, aroot);
+        aroot["result"] = result;
+        output << aroot.toStyledString();
 
         return console_result::okay;
     } else {

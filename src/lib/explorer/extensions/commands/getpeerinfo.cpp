@@ -45,10 +45,10 @@ console_result getpeerinfo::invoke (std::ostream& output,
         // invalid authority
         if (authority.to_hostname() == "[::]" && authority.port() == 0)
             continue;
-        array.push_back(std::make_pair("", Json::Value(authority.to_string())));
+        array.append(authority.to_string());
     }
-    root.push_back(std::make_pair("peers", array));
-    pt::write_json(output, root);
+    root["peers"] = array;
+    output << root.toStyledString();
 
     return console_result::okay;
 }

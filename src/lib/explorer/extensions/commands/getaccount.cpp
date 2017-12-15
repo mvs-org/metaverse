@@ -49,11 +49,11 @@ console_result getaccount::invoke (std::ostream& output,
     }
 
     Json::Value root;
-    root.put("name", acc->get_name());
-    root.put("mnemonic-key", mnemonic);
-    root.put("address-count", acc->get_hd_index());
-    root.put("user-status", acc->get_user_status());
-    pt::write_json(output, root);
+    root["name"] = acc->get_name();
+    root["mnemonic-key"] = mnemonic;
+    root["address-count"] = +acc->get_hd_index();
+    root["user-status"] = +acc->get_user_status();
+    output << root.toStyledString();
 
     return console_result::okay;
 }

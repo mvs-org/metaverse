@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -67,7 +67,7 @@ console_result deposit::invoke (std::ostream& output,
 
     // json output
     auto tx = deposit_helper.get_transaction();
-    pt::write_json(output, config::json_helper().prop_tree(tx, true));
+    output << config::json_helper().prop_tree(tx, true).toStyledString();
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

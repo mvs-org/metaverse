@@ -23,6 +23,7 @@
 #include <iostream>
 #include <map>
 #include <metaverse/network.hpp>
+#include <metaverse/explorer/commands/settings.hpp>
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
@@ -31,7 +32,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
-using namespace pt;
 
 console_result commands::settings::invoke(std::ostream& output,
     std::ostream& error)

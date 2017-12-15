@@ -64,9 +64,9 @@ console_result importaccount::invoke (std::ostream& output,
 
     // generate all account address
     Json::Value root;
-    root.put("name", auth_.name);
-    root.put("mnemonic", mnemonic);
-    root.put("hd_index", option_.hd_index);
+    root["name"] = auth_.name;
+    root["mnemonic"] = mnemonic;
+    root["hd_index"] = +option_.hd_index;
     
     uint32_t idx = 0;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};
@@ -75,7 +75,6 @@ console_result importaccount::invoke (std::ostream& output,
     std::stringstream sout("");
     
     for( idx = 0; idx < option_.hd_index; idx++ ) {
-        Json::Value addr;
         sin.str("");
         sout.str("");
         if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
@@ -83,12 +82,12 @@ console_result importaccount::invoke (std::ostream& output,
         }
          
         relay_exception(sout);
-        addr.put("", sout.str());
-        addresses.push_back(std::make_pair("", addr));
+
+        addresses.append(sout.str());
     }
 
-    root.add_child("addresses", addresses);
-    pt::write_json(output, root);
+    root["addresses"] = addresses;
+    output << root.toStyledString();
     
     return console_result::okay;
 }

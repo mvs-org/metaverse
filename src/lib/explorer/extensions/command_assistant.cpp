@@ -573,7 +573,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
         if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
             return false;
 
-        change = pt["change"];
+        change = pt["change"].asString();
         auto points = pt["points"];
 
         // not found, try next address 
@@ -634,7 +634,7 @@ bool utxo_attach_issue_helper::fetch_utxo(std::string& change, bc::server::serve
         if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
             return false;
 
-        change = pt["change"];
+        change = pt["change"].asString();
         auto points = pt["points"];
 
         // not found, try next address 
@@ -965,8 +965,8 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
     if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
         return false;
 
-    std::string change = pt["change");
-    auto points = pt["points");
+    std::string change = pt["change"].asString();
+    auto points = pt["points"];
 
     // not found, return  
     if (points.size() == 0 && change == "0"){
@@ -975,12 +975,12 @@ bool utxo_attach_send_helper::fetch_utxo_impl(bc::server::server_node& node,
 
     // found, then push_back
     tx_items tx;
-    for (auto& i: points){
+    for (auto& it : points){
         tx.txhash.clear();
         tx.output.index.clear();
 
-        tx.txhash = i.second.get<std::string>("hash");
-        tx.output.index  = i.second.get<std::string>("index");
+        tx.txhash = it["hash"].asString();
+        tx.output.index  = it["index"].asString();
 
         bool exist = false;
         for(auto& item: keys_inputs_[prv_key]) {
@@ -1047,16 +1047,16 @@ bool utxo_attach_send_helper::fetch_tx()
             if (!reader.parse(sin, pt) || !pt.isObject() || !pt["transaction"].isObject() || !pt["transaction"]["outputs"].isArray())
                 return false;
 
-            auto transaction = pt["transaction");
-            auto outputs = transaction["outputs");
+            auto transaction = pt["transaction"];
+            auto outputs = transaction["outputs"];
 
             // fill tx_items outputs
             auto target_pos = std::stoi(iter.output.index);
             int pos = 0;
-            for (auto& i: outputs){
+            for (auto& it : outputs){
                 if (target_pos == pos++){
-                    iter.output.script = i.second.get<std::string>("script");
-                    iter.output.value = i.second.get<uint64_t>("value");
+                    iter.output.script = it["script"].asString();
+                    iter.output.value = it["value"].asUInt64();
                     break;
                 }
             }
@@ -1801,7 +1801,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
     if (!reader.parse(sin, pt) || !pt.isObject() || !pt["change"].isString() || !pt["points"].isArray())
         return false;
 
-    std::string change = pt["change"];
+    std::string change = pt["change"].asString();
     auto points = pt["points"];
 
     // not found, return  

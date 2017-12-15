@@ -38,16 +38,16 @@ console_result submitwork::invoke (std::ostream& output,
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
     Json::Value root;
 
-    root.put("id", 1);
-    root.put("jsonrpc", "1.0");
+    root["id"] = "1";
+    root["jsonrpc"] = "1.0";
 
     if (ret) {
-        root.put("result", true);
-        pt::write_json(output, root);
+        root["result"] = true;
+        output << root.toStyledString();
         return console_result::okay;
     } else {
-        root.put("result", false);
-        pt::write_json(output, root);
+        root["result"] = false;
+        output << root.toStyledString();
         return console_result::failure;
     }
 }
