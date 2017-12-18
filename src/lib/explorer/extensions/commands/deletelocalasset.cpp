@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 /************************ deleteasset *************************/
 
 console_result deleteasset::invoke (std::ostream& output,

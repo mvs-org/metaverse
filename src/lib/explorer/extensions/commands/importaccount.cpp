@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,6 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using namespace bc::explorer::config;
 
 console_result importaccount::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
@@ -66,7 +67,7 @@ console_result importaccount::invoke (std::ostream& output,
     Json::Value root;
     root["name"] = auth_.name;
     root["mnemonic"] = mnemonic;
-    root["hd_index"] = +option_.hd_index;
+    root["hd_index"] += option_.hd_index;
     
     uint32_t idx = 0;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};

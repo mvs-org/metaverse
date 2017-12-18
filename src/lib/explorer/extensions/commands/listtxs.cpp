@@ -28,7 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 class BC_API tx_block_info
 {
@@ -162,8 +162,8 @@ console_result listtxs::invoke (std::ostream& output,
         
         Json::Value tx_item;
         tx_item["hash"] = encode_hash(each.get_hash());
-        tx_item["height"] = +each.get_height();
-        tx_item["timestamp"] = +each.get_timestamp();
+        tx_item["height"] += each.get_height();
+        tx_item["timestamp"] += each.get_timestamp();
         tx_item["direction"] = "send";
 
         // set inputs content
@@ -177,7 +177,7 @@ console_result listtxs::invoke (std::ostream& output,
                 addr = script_address.encoded();
 
             input_addr["address"] = addr;
-            input_addr["script"] = script(input.script).to_string(1);
+            input_addr["script"] = input.script.to_string(1);
             input_addrs.append(input_addr);
 
             // add input address
@@ -201,12 +201,12 @@ console_result listtxs::invoke (std::ostream& output,
             else
                 pt_output["own"] = false;
             pt_output["address"] = addr;
-            pt_output["script"] = script(op.script).to_string(1);
+            pt_output["script"] = op.script.to_string(1);
             uint64_t lock_height = 0;
             if(chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
                 lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
-            pt_output["locked_height_range"] = +lock_height;
-            pt_output["etp-value"] = +op.value;
+            pt_output["locked_height_range"] += lock_height;
+            pt_output["etp-value"] += op.value;
 
             auto attach_data = op.attach_data;
             Json::Value tree;
@@ -219,8 +219,8 @@ console_result listtxs::invoke (std::ostream& output,
                     auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
                     tree["symbol"] = detail_info.get_symbol();
                     //tree["quantity"] = detail_info.get_maximum_supply();
-                    tree["maximum_supply"] = +detail_info.get_maximum_supply();
-                    tree["decimal_number"] = +detail_info.get_decimal_number();
+                    tree["maximum_supply"] += detail_info.get_maximum_supply();
+                    tree["decimal_number"] += detail_info.get_decimal_number();
                     tree["issuer"] = detail_info.get_issuer();
                     tree["address"] = detail_info.get_address();
                     tree["description"] = detail_info.get_description();
@@ -233,7 +233,7 @@ console_result listtxs::invoke (std::ostream& output,
                     auto symbol = trans_info.get_address();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
                     if(issued_asset)
-                        tree["decimal_number"] = +issued_asset->get_decimal_number();
+                        tree["decimal_number"] += issued_asset->get_decimal_number();
                 }
             } else if(attach_data.get_type() == MESSAGE_TYPE) {
                 tree["type"] = "message";
@@ -288,9 +288,9 @@ console_result listtxs::invoke (std::ostream& output,
         vec_op_addr.clear();
         balances.append(tx_item);
     }
-    aroot["total_page"] = +total_page;
-    aroot["current_page"] = +argument_.index;
-    aroot["transaction_count"] = +tx_count;
+    aroot["total_page"] += total_page;
+    aroot["current_page"] += argument_.index;
+    aroot["transaction_count"] += tx_count;
     aroot["transactions"] = balances;
     output << aroot.toStyledString();
 

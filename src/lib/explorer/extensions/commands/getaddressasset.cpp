@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -28,7 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ getaddressasset *************************/
 
@@ -92,10 +92,10 @@ console_result getaddressasset::invoke (std::ostream& output,
         Json::Value asset_data;
         asset_data["symbol"] = elem.get_symbol();
         symbol = elem.get_symbol();
-        asset_data["quantity"] = +elem.get_maximum_supply();
+        asset_data["quantity"] += elem.get_maximum_supply();
         auto issued_asset = blockchain.get_issued_asset(symbol);
         if(issued_asset)
-            asset_data["decimal_number"] = +issued_asset->get_decimal_number();
+            asset_data["decimal_number"] += issued_asset->get_decimal_number();
         //asset_data["asset_type"] = elem.detail.get_asset_type();
         //asset_data["issuer"] = elem.detail.get_issuer();
         //asset_data["address"] = elem.detail.get_address();

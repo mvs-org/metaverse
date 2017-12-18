@@ -35,8 +35,6 @@
 
 #include <jsoncpp/json/json.h>
 
-/* NOTE: don't declare 'using namespace foo' in headers. */
-
 namespace libbitcoin {
 namespace explorer {
 namespace config {
@@ -52,18 +50,16 @@ class wrapper;
 */
 typedef std::map<std::string, std::string> settings_list;
 
+template <typename Value>
+Json::Value& operator+=(Json::Value& a, const Value& b);
+
 /**
 * Create a string of value elements.
 * @param      <Value>  The element type.
-* @returns              A string of the element.
+* @returns             A string of the element.
 */
 template <typename Value>
-std::string operator+(const Value& value)
-{
-    std::ostringstream ss;
-    ss << value;
-    return ss.str();
-}
+std::string operator+(const Value& value);
 
 struct json_helper {
 

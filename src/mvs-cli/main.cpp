@@ -55,7 +55,7 @@ int bc::main(int argc, char* argv[])
             ("server.mongoose_listen", po::value<std::string>(&tmp)->default_value("127.0.0.1:8820"));
 
         po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::store(po::parse_command_line(0, argv, desc), vm);
         po::notify(vm);
 
         if (vm.count("server.mongoose_listen"))

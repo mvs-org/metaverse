@@ -26,6 +26,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using namespace bc::explorer::config;
 
 // ---------------------------------------------------------------------------
 std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, bool use_testnet_rules)

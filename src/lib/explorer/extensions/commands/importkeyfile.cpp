@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/account_info.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -27,6 +27,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 namespace fs = boost::filesystem;
+using namespace bc::explorer::config;
 
 /************************ importkeyfile *************************/
 
@@ -62,8 +63,8 @@ console_result importkeyfile::invoke (std::ostream& output,
     Json::Value root;
     root["name"] = name;
     //root["mnemonic-key"] = mnemonic;
-    root["address-count"] = +acc.get_hd_index();
-    root["unissued-asset-count"] = +all_info.get_account_asset().size();
+    root["address-count"] += acc.get_hd_index();
+    root["unissued-asset-count"] += all_info.get_account_asset().size();
     output << root.toStyledString();
 
     return console_result::okay;

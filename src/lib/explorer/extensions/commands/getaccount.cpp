@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -28,7 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ getaccount *************************/
 
@@ -51,8 +51,8 @@ console_result getaccount::invoke (std::ostream& output,
     Json::Value root;
     root["name"] = acc->get_name();
     root["mnemonic-key"] = mnemonic;
-    root["address-count"] = +acc->get_hd_index();
-    root["user-status"] = +acc->get_user_status();
+    root["address-count"] += acc->get_hd_index();
+    root["user-status"] += acc->get_user_status();
     output << root.toStyledString();
 
     return console_result::okay;

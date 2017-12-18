@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -27,7 +27,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
 
@@ -47,8 +47,8 @@ console_result getmininginfo::invoke (std::ostream& output,
     
     miner.get_state(height, rate, difficulty, is_mining);
     info["is-mining"] = is_mining;
-    info["height"] = +height;
-    info["rate"] = +rate;
+    info["height"] += height;
+    info["rate"] += rate;
     info["difficulty"] = difficulty;
     aroot["mining-info"] = info;
     output << aroot.toStyledString();

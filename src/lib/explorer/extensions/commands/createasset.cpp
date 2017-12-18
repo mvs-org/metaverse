@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 /************************ createasset *************************/
 static std::vector<std::string> forbidden_str {
         "hujintao",
@@ -157,12 +157,12 @@ console_result createasset::invoke (std::ostream& output,
     Json::Value aroot;
     Json::Value asset_data;
     asset_data["symbol"] = acc->get_symbol();
-    asset_data["maximum-supply"] = +acc->get_maximum_supply();
-    asset_data["decimal_number"] = +acc->get_decimal_number();
+    asset_data["maximum-supply"] += acc->get_maximum_supply();
+    asset_data["decimal_number"] += acc->get_decimal_number();
     asset_data["issuer"] = acc->get_issuer();
     asset_data["address"] = acc->get_address();
     asset_data["description"] = acc->get_description();
-    //asset_data["status"] = +"issued";
+    //asset_data["status"] = "issued";
     Json::Value asset;
     asset["asset"] = asset_data;
     aroot.append(asset);

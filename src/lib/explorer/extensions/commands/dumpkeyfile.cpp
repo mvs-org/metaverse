@@ -27,7 +27,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 namespace fs = boost::filesystem;
-
+using namespace bc::explorer::config;
 /************************ exportaccountasfile *************************/
 
 console_result dumpkeyfile::invoke (std::ostream& output,
