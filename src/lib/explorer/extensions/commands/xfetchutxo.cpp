@@ -105,8 +105,8 @@ console_result xfetchutxo::invoke (std::ostream& output,
         chain::points_info selected_utxos;
         wallet::select_outputs::select(selected_utxos, unspent, amount);
             
-        pt::ptree tree = config::prop_tree(selected_utxos, true); // json format
-        pt::write_json(output, tree);
+        Json::Value tree = config::json_helper().prop_tree(selected_utxos, true); // json format
+        output << tree.toStyledString();
         
     };
 
