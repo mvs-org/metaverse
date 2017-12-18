@@ -3,7 +3,7 @@ FILE(GLOB_RECURSE explorer_SOURCES "*.cpp")
 ADD_DEFINITIONS(-DBCX_STATIC=1)
 
 #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-strict-aliasing")
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 ADD_LIBRARY(zmq_static STATIC IMPORTED)                                         
 SET_TARGET_PROPERTIES(zmq_static PROPERTIES IMPORTED_LOCATION ${ZeroMQ_ROOT_DIR}/lib/libzmq.a)
