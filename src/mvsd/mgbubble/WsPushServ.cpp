@@ -194,7 +194,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root["channel"] = CH_TRANSACTION;
     root["result"] = explorer::config::json_helper().prop_list(tx, height, true);
 
-    auto rep = std::make_shared<std::string>(std::move(root.toStyledString()));
+    auto rep = std::make_shared<std::string>(root.toStyledString());
 
     for (auto& con : notify_cons)
     {
@@ -266,7 +266,7 @@ void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
     std::stringstream ss;
     Json::Value root;
     Json::Value connections;
-    connections["connections"] = map_connections_.size();
+    connections["connections"] = static_cast<uint64_t>(map_connections_.size());
     root["event"] = EV_INFO;
     root["result"] = connections;
 
