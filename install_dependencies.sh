@@ -339,8 +339,8 @@ BOOST_OPTIONS=(
 #"--with-iostreams" \
 #"--with-locale" \
 
-# Define secp256k1 options.
-if [ $IS_TRAVIS_LINUX ];then
+# Define secp256k1 options. fix me.
+if [ $IS_TRAVIS_LINUX ] || [ $IS_TRAVIS_OSX ];then
     with_secp256k1_gmp="--with-bignum=no"
 fi
 #------------------------------------------------------------------------------
