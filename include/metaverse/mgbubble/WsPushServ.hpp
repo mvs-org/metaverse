@@ -74,6 +74,8 @@ public:
         : node_(node), MgServer(srv_addr)
     {}
 
+    ~WsPushServ() noexcept { stop(); };
+
     bool start() override;
 
     void spawn_to_mongoose(const std::function<void(uint64_t)>&& handler);
