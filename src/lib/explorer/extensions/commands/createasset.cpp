@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,9 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 /************************ createasset *************************/
 static std::vector<std::string> forbidden_str {
         "hujintao",
@@ -156,18 +154,20 @@ console_result createasset::invoke (std::ostream& output,
 
     //output<<option_.symbol<<" created at local, you can issue it.";
     
-    pt::ptree aroot;
-    pt::ptree asset_data;
-    asset_data.put("symbol", acc->get_symbol());
-    asset_data.put("maximum-supply", acc->get_maximum_supply());
-    asset_data.put("decimal_number", acc->get_decimal_number());
-    asset_data.put("issuer", acc->get_issuer());
-    asset_data.put("address", acc->get_address());
-    asset_data.put("description", acc->get_description());
-    //asset_data.put("status", "issued");
-    aroot.push_back(std::make_pair("asset", asset_data));
-        
-    pt::write_json(output, aroot);
+    Json::Value aroot;
+    Json::Value asset_data;
+    asset_data["symbol"] = acc->get_symbol();
+    asset_data["maximum-supply"] += acc->get_maximum_supply();
+    asset_data["decimal_number"] += acc->get_decimal_number();
+    asset_data["issuer"] = acc->get_issuer();
+    asset_data["address"] = acc->get_address();
+    asset_data["description"] = acc->get_description();
+    //asset_data["status"] = "issued";
+    Json::Value asset;
+    asset["asset"] = asset_data;
+    aroot.append(asset);
+
+    output << aroot.toStyledString();
     
     return console_result::okay;
 }

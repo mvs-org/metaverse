@@ -29,8 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
+using namespace bc::explorer::config;
 
 /************************ getnewaccount *************************/
 
@@ -49,7 +48,7 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw account_existed_exception{"account already exist"};
     }
 
-    pt::ptree root;
+    Json::Value root;
 
     auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);
@@ -60,7 +59,7 @@ console_result getnewaccount::invoke (std::ostream& output,
     auto&& words_list = get_mnemonic_new(opt_language , seed);
     auto&& words = bc::join(words_list);
 
-    root.put("mnemonic", words);
+    root["mnemonic"] = words;
     acc->set_mnemonic(words, auth_.auth);
     
     // flush to db
@@ -78,9 +77,9 @@ console_result getnewaccount::invoke (std::ostream& output,
      
     relay_exception(sout);
 
-    root.put("default-address", sout.str());
+    root["default-address"] = sout.str();
     
-    pt::write_json(output, root);
+    output << root.toStyledString();
     return console_result::okay;
 }
 

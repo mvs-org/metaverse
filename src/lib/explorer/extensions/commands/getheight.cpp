@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <jsoncpp/json/json.h>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/getheight.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -27,7 +26,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 /************************ getheight *************************/
 
 console_result getheight::invoke (std::ostream& output,

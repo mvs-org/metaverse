@@ -26,7 +26,7 @@
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 
 
 namespace libbitcoin {
@@ -65,7 +65,7 @@ console_result fetch_history::invoke(std::ostream& output, std::ostream& error)
 
     auto on_done = [&state, json](const history::list& rows)
     {
-        state.output(prop_tree(rows, json));
+        state.output(json_helper().prop_tree(rows, json));
     };
 
     auto on_error = [&state](const code& error)

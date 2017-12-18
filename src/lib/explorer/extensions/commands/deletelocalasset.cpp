@@ -29,9 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 /************************ deleteasset *************************/
 
 console_result deleteasset::invoke (std::ostream& output,
@@ -90,11 +88,12 @@ console_result deleteasset::invoke (std::ostream& output,
         throw asset_notfound_exception{"asset " + option_.symbol + " is not existed or is not belong to " + auth_.name + "."};
     }
 
-    pt::ptree result;
-    result.put("symbol", option_.symbol);
-    result.put("operate", "delete");
-    result.put("result", "success");
-    pt::write_json(output, result);
+    Json::Value result;
+    result["symbol"] = option_.symbol;
+    result["operate"] = "delete";
+    result["result"] = "success";
+    
+    output << result.toStyledString();
 
     return console_result::okay;
 }

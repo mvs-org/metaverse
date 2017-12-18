@@ -27,7 +27,7 @@
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/config/transaction.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -59,7 +59,7 @@ console_result fetch_tx::invoke(std::ostream& output, std::ostream& error)
 
     auto on_done = [&state, json](const tx_type& tx)
     {
-        state.output(prop_tree(tx, json));
+        state.output(json_helper().prop_tree(tx, json));
     };
 
     auto on_error = [&state, &client, hash, json](const code& error)
@@ -70,7 +70,7 @@ console_result fetch_tx::invoke(std::ostream& output, std::ostream& error)
             client.transaction_pool_fetch_transaction([&state](const code& error){
                 state.succeeded(error);
             }, [&state, json](const tx_type& tx){
-                state.output(prop_tree(tx, json));
+                state.output(json_helper().prop_tree(tx, json));
             }, hash);
             return;
         }

@@ -27,7 +27,7 @@
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -57,7 +57,7 @@ console_result fetch_tx_index::invoke(std::ostream& output, std::ostream& error)
 
     auto on_done = [&state, &hash](size_t height, size_t index)
     {
-        state.output(prop_tree(hash, height, index));
+        state.output(json_helper().prop_tree(hash, height, index));
     };
 
     auto on_error = [&state](const code& error)

@@ -26,7 +26,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <jsoncpp/json/json.h>
 #include <metaverse/client.hpp>
 
 // We use the generic helper definitions in libbitcoin to define BCX_API 
@@ -88,7 +88,6 @@
  */
 namespace ph = std::placeholders;
 namespace po = boost::program_options;
-namespace pt = boost::property_tree;
 
 /**
  * Space-saving, clarifying and/or differentiating external type equivalents.

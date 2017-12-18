@@ -656,6 +656,16 @@ public:
         setting_.server.client_private_key = value;
     }
 
+    virtual void set_api_version(int ver)
+    {
+        setting_.server.api_version = ver;
+    }
+
+    virtual int get_api_version()
+    {
+        return setting_.server.api_version;
+    }
+
 protected:
 
     /**
@@ -749,7 +759,8 @@ private:
                 connect_retries(),
                 connect_timeout_seconds(),
                 server_public_key(),
-                client_private_key()
+                client_private_key(),
+                api_version()
             {
             }
 
@@ -758,6 +769,7 @@ private:
             uint16_t connect_timeout_seconds;
             bc::config::sodium server_public_key;
             bc::config::sodium client_private_key;
+            int api_version;
         } server;
 
         setting()

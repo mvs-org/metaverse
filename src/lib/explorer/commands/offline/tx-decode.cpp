@@ -23,7 +23,7 @@
 #include <iostream>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -41,7 +41,7 @@ console_result tx_decode::invoke(std::ostream& output, std::ostream& error)
     // This enables json-style array formatting.
     const auto json = encoding == encoding_engine::json;
 
-    write_stream(output, prop_tree(transaction, json), encoding);
+    write_stream(output, json_helper().prop_tree(transaction, json), encoding);
 
     return console_result::okay;
 }

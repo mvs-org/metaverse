@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/decoderawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,13 +29,11 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result decoderawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     tx_type tx_ = argument_.transaction;    
-    pt::write_json(output, config::prop_tree(tx_, true));
+    output << config::json_helper().prop_tree(tx_, true).toStyledString();
     
     return console_result::okay;
 }

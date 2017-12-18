@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
@@ -28,8 +28,6 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
 
 
 console_result sendasset::invoke (std::ostream& output,
@@ -61,7 +59,7 @@ console_result sendasset::invoke (std::ostream& output,
 
     // json output
     auto tx = send_helper.get_transaction();
-    pt::write_json(output, config::prop_tree(tx, true));
+    output << config::json_helper().prop_tree(tx, true).toStyledString();
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

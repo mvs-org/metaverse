@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,17 +29,15 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getaccountasset *************************/
 
 console_result getaccountasset::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
-    pt::ptree aroot;
-    pt::ptree assets;
+    Json::Value aroot;
+    Json::Value assets;
     
     std::string symbol;
     auto& blockchain = node.chain_impl();
@@ -62,20 +60,20 @@ console_result getaccountasset::invoke (std::ostream& output,
         sync_fetch_asset_balance_record (addr, blockchain, sh_vec);
     }
 
-    pt::ptree asset_data;
+    Json::Value asset_data;
     for (auto& elem: *sh_vec) {
         if(!argument_.symbol.empty() && argument_.symbol !=  elem.get_symbol())
             continue;
-        asset_data.put("symbol", elem.get_symbol());
-        asset_data.put("address", elem.get_address());
+        asset_data["symbol"] = elem.get_symbol();
+        asset_data["address"] = elem.get_address();
         symbol = elem.get_symbol();
-        asset_data.put("quantity", elem.get_maximum_supply());
-        //asset_data.put("address", elem.get_address());
+        asset_data["quantity"] += elem.get_maximum_supply();
+        //asset_data["address"] = elem.get_address();
         auto issued_asset = blockchain.get_issued_asset(symbol);
         if(issued_asset)
-            asset_data.put("decimal_number", issued_asset->get_decimal_number());
-        asset_data.put("status", "unspent");
-        assets.push_back(std::make_pair("", asset_data));
+            asset_data["decimal_number"] += issued_asset->get_decimal_number();
+        asset_data["status"] = "unspent";
+        assets.append(asset_data);
     }
     // 2. get asset in local database
     // shoudl filter all issued asset which be stored in local account asset database
@@ -87,8 +85,8 @@ console_result getaccountasset::invoke (std::ostream& output,
         
         auto symbol = elem.detail.get_symbol();         
         auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const asset_detail& elem){
-                return symbol == elem.get_symbol();
-                });
+            return symbol == elem.get_symbol();
+        });
         
         if (pos != sh_vec->end()){ // asset already issued in blockchain
             continue;
@@ -96,19 +94,20 @@ console_result getaccountasset::invoke (std::ostream& output,
         // symbol filter
         if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
             continue;
-        pt::ptree asset_data;
-        asset_data.put("symbol", elem.detail.get_symbol());
-        asset_data.put("address", "");
+        Json::Value asset_data;
+        asset_data["symbol"] = elem.detail.get_symbol();
+        asset_data["address"] = "";
         symbol = elem.detail.get_symbol();
-        asset_data.put("quantity", elem.detail.get_maximum_supply());
-        asset_data.put("decimal_number", elem.detail.get_decimal_number());
-        //asset_data.put("address", "");
-        asset_data.put("status", "unissued");
-        assets.push_back(std::make_pair("", asset_data));
+        asset_data["quantity"] += elem.detail.get_maximum_supply();
+        asset_data["decimal_number"] += elem.detail.get_decimal_number();
+        //asset_data["address"] = "";
+        asset_data["status"] = "unissued";
+        assets.append(asset_data);
     }
     
-    aroot.add_child("assets", assets);
-    pt::write_json(output, aroot);
+    aroot["assets"] = assets;
+    output << aroot.toStyledString();
+    
     return console_result::okay;
 }
 

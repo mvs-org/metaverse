@@ -28,9 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getbestblockhash *************************/
 
@@ -52,16 +50,20 @@ console_result getbestblockhash::invoke (std::ostream& output,
     if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
         throw block_hash_get_exception(sout.str());
     }
-     
-     
+
     relay_exception(sout);
 
-    pt::ptree header;
-    sin.str(sout.str());
-    pt::read_json(sin, header);
+    Json::Reader reader;
+    Json::Value header;
 
-    auto&& blockhash = header.get<std::string>("result.hash");
-    output<<blockhash;
+    if(!reader.parse(sout, header) 
+        || !header.isObject() 
+        || !header["result"].isObject() 
+        || !header["result"]["hash"].isString())
+        return console_result::failure;
+
+    auto&& blockhash = header["result"]["hash"].asString();
+    output << blockhash;
 
     return console_result::okay;
 }
