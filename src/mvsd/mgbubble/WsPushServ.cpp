@@ -17,8 +17,7 @@
 
 #include <thread>
 #include <sstream>
-#include <boost/property_tree/json_parser.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/mgbubble/WsPushServ.hpp>
 #include <metaverse/server/server_node.hpp>
 
@@ -31,7 +30,7 @@ namespace mgbubble {
     constexpr auto EV_PUBLISH     = "publish";
     constexpr auto EV_REQUEST     = "request";
     constexpr auto EV_RESPONSE    = "response";
-    constexpr auto EV_MG_ERROR       = "error";
+    constexpr auto EV_MG_ERROR    = "error";
     constexpr auto EV_INFO        = "info";
 
     constexpr auto CH_BLOCK       = "block";
@@ -39,7 +38,6 @@ namespace mgbubble {
 }
 namespace mgbubble {
 using namespace bc;
-using namespace pt;
 using namespace libbitcoin;
 
 void WsPushServ::run() {
@@ -191,14 +189,12 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
 
     log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
 
-    std::stringstream ss;
-    ptree root;
-    root.put("event", EV_PUBLISH);
-    root.put("channel", CH_TRANSACTION);
-    root.add_child("result", explorer::config::prop_list(tx, height, true));
-    write_json(ss, root);
+    Json::Value root;
+    root["event"] = EV_PUBLISH;
+    root["channel"] = CH_TRANSACTION;
+    root["result"] = explorer::config::json_helper().prop_list(tx, height, true);
 
-    auto rep = std::make_shared<std::string>(ss.str());
+    auto rep = std::make_shared<std::string>(std::move(root.toStyledString()));
 
     for (auto& con : notify_cons)
     {
@@ -225,26 +221,24 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
 
 void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message)
 {
-    std::stringstream ss;
-    ptree root;
-    ptree result;
-    result.put("code", 1000001);
-    result.put("message", message ? message : "bad request");
-    root.put("event", EV_MG_ERROR);
-    root.put_child("result", result);
-    write_json(ss, root);
-    auto&& tmp = ss.str();
+    Json::Value root;
+    Json::Value result;
+    result["code"] = 1000001;
+    result["message"] = message ? message : "bad request";
+    root["event"]  = EV_MG_ERROR;
+    root["result"] = result;
+    
+    auto&& tmp = root.toStyledString();
     send_frame(nc, tmp.c_str(), tmp.size());
 }
 
 void WsPushServ::send_response(struct mg_connection& nc, const std::string& event, const std::string& channel)
 {
-    std::stringstream ss;
-    ptree root;
-    root.put("event", event);
-    root.put("channel", channel);
-    write_json(ss, root);
-    auto&& tmp = ss.str();
+    Json::Value root;
+    root["event"] = event;
+    root["channel"] = channel;
+
+    auto&& tmp = root.toStyledString();
     send_frame(nc, tmp.c_str(), tmp.size());
 }
 
@@ -270,27 +264,36 @@ void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
     send_frame(nc, version);
 
     std::stringstream ss;
-    ptree root;
-    ptree connections;
-    connections.put("connections", map_connections_.size());
-    root.put("event", EV_INFO);
-    root.put_child("result", connections);
-    write_json(ss, root);
-    auto&& tmp = ss.str();
+    Json::Value root;
+    Json::Value connections;
+    connections["connections"] = map_connections_.size();
+    root["event"] = EV_INFO;
+    root["result"] = connections;
+
+    auto&& tmp = root.toStyledString();
     send_frame(nc, tmp);
 }
 
 void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message& msg)
 {
-    std::istringstream iss;
-    iss.str(std::string((const char*)msg.data, msg.size));
-    ptree parser;
+    Json::Reader reader;
+    Json::Value root;
     try {
-        read_json(iss, parser);
-        auto event = parser.get<std::string>("event");
-        auto channel = parser.get<std::string>("channel");
+        const char* begin = (const char*)msg.data;
+        const char* end = begin + msg.size;
+        if (!reader.parse(begin, end, root) || !root.isObject() 
+            || !root["event"].isString() || !root["channel"].isString() || !root["address"].isString()) {
+            stringstream ss;
+            ss << "parse request error, "
+                << reader.getFormattedErrorMessages();
+            throw std::runtime_error(ss.str());
+            return;
+        }
+
+        auto event = root["event"].asString();
+        auto channel = root["channel"].asString();
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
-            auto short_addr = parser.get<std::string>("address");
+            auto short_addr = root["address"].asString();
             auto pay_addr = payment_address(short_addr);
             if (!short_addr.empty() && !pay_addr) {
                 send_bad_response(nc, "invalid address.");

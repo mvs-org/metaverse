@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getblock.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,81 +29,78 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 
 /************************ getblock *************************/
 
-console_result getblock::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getblock::invoke(std::ostream& output,
+    std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto json = option_.json;
 
     // uint64_t max length
-    if (argument_.hash_or_height.size() < 18){
+    if (argument_.hash_or_height.size() < 18) {
 
         // fetch_block via height
         auto block_height = std::stoull(argument_.hash_or_height);
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_height, [&p, &output, json](const code& ec, chain::block::ptr block){
-                if(ec){
-                        p.set_value(ec);
-                        return;
-                }
+        blockchain.fetch_block(block_height, [&p, &output, json](const code& ec, chain::block::ptr block) {
+            if (ec) {
+                p.set_value(ec);
+                return;
+            }
 
-                if(json) {
-                        pt::write_json(output, config::prop_tree(*block));
-                }
-                else
-                {
-                        auto chunck = block->to_data();
-                        output << encode_base16(chunck);
-                }
-                p.set_value(error::success);
+            if (json) {
+                output << config::json_helper().prop_tree(*block).toStyledString();
+            }
+            else
+            {
+                auto chunck = block->to_data();
+                output << encode_base16(chunck);
+            }
+            p.set_value(error::success);
         });
 
         auto result = p.get_future().get();
-        if(result){
-                throw block_height_get_exception{result.message()};
+        if (result) {
+            throw block_height_get_exception{ result.message() };
         }
 
-    } else {
+    }
+    else {
 
         // fetch_block via hash
         bc::config::hash256 block_hash(argument_.hash_or_height);
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_hash, [&p, &output, json](const code& ec, chain::block::ptr block){
-                if(ec){
-                        p.set_value(ec);
-                        return;
-                }
+        blockchain.fetch_block(block_hash, [&p, &output, json](const code& ec, chain::block::ptr block) {
+            if (ec) {
+                p.set_value(ec);
+                return;
+            }
 
-                if(json) {
-                        pt::write_json(output, config::prop_tree(*block));
-                }
-                else
-                {
-                        auto chunck = block->to_data();
-                        output << encode_base16(chunck);
-                }
-                p.set_value(error::success);
+            if (json) {
+                output << config::json_helper().prop_tree(*block).toStyledString();
+            }
+            else
+            {
+                auto chunck = block->to_data();
+                output << encode_base16(chunck);
+            }
+            p.set_value(error::success);
         });
 
         auto result = p.get_future().get();
-        if(result){
-                throw block_height_get_exception{result.message()};
+        if (result) {
+            throw block_height_get_exception{ result.message() };
         }
 
     }
 
     return console_result::okay;
 }
-
-
 
 } // namespace commands
 } // namespace explorer

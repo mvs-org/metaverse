@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,9 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getbalance *************************/
 
@@ -41,7 +39,7 @@ console_result getbalance::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    pt::ptree aroot;
+    Json::Value aroot;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
@@ -69,12 +67,12 @@ console_result getbalance::invoke (std::ostream& output,
         total_frozen += addr_balance.frozen_balance;
     }
     
-    aroot.put("total-confirmed", total_confirmed);
-    aroot.put("total-received", total_received);
-    aroot.put("total-unspent", total_unspent);
-    aroot.put("total-available", total_unspent - total_frozen);
-    aroot.put("total-frozen", total_frozen);
-    pt::write_json(output, aroot);
+    aroot["total-confirmed"] += total_confirmed;
+    aroot["total-received"] += total_received;
+    aroot["total-unspent"] += total_unspent;
+    aroot["total-available"] += (total_unspent - total_frozen);
+    aroot["total-frozen"] += total_frozen;
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

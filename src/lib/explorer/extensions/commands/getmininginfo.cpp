@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -27,9 +27,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
 
@@ -38,8 +36,8 @@ console_result getmininginfo::invoke (std::ostream& output,
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    pt::ptree aroot;
-    pt::ptree info;
+    Json::Value aroot;
+    Json::Value info;
     
     auto& miner = node.miner();
 
@@ -48,12 +46,12 @@ console_result getmininginfo::invoke (std::ostream& output,
     bool is_mining;
     
     miner.get_state(height, rate, difficulty, is_mining);
-    info.put("is-mining", is_mining);
-    info.put("height", height);
-    info.put("rate", rate);
-    info.put("difficulty", difficulty);
-    aroot.push_back(std::make_pair("mining-info", info));
-    pt::write_json(output, aroot);
+    info["is-mining"] = is_mining;
+    info["height"] += height;
+    info["rate"] += rate;
+    info["difficulty"] = difficulty;
+    aroot["mining-info"] = info;
+    output << aroot.toStyledString();
 
     return console_result::okay;
 }

@@ -29,9 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getpeerinfo *************************/
 
@@ -41,16 +39,16 @@ console_result getpeerinfo::invoke (std::ostream& output,
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    pt::ptree root;
-    pt::ptree array;
+    Json::Value root;
+    Json::Value array;
     for(auto authority : node.connections_ptr()->authority_list()) {
         // invalid authority
         if (authority.to_hostname() == "[::]" && authority.port() == 0)
             continue;
-        array.push_back(std::make_pair("", pt::ptree(authority.to_string())));
+        array.append(authority.to_string());
     }
-    root.push_back(std::make_pair("peers", array));
-    pt::write_json(output, root);
+    root["peers"] = array;
+    output << root.toStyledString();
 
     return console_result::okay;
 }

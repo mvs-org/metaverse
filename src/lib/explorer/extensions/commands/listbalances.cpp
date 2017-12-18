@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -30,8 +30,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ listbalances *************************/
 
@@ -41,9 +40,9 @@ console_result listbalances::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    pt::ptree aroot;
-    pt::ptree all_balances;
-    pt::ptree address_balances;
+    Json::Value aroot;
+    Json::Value all_balances;
+    Json::Value address_balances;
     
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
@@ -51,32 +50,32 @@ console_result listbalances::invoke (std::ostream& output,
     std::string type("all");
     
     for (auto& i: *vaddr){
-        pt::ptree address_balance;
+        Json::Value address_balance;
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-        address_balance.put("address", i.get_address());
-        address_balance.put("confirmed", addr_balance.confirmed_balance);
-        address_balance.put("received", addr_balance.total_received);
-        address_balance.put("unspent", addr_balance.unspent_balance);
-        address_balance.put("available", addr_balance.unspent_balance - addr_balance.frozen_balance);
-        address_balance.put("frozen", addr_balance.frozen_balance);
+        address_balance["address"] = i.get_address();
+        address_balance["confirmed"] += addr_balance.confirmed_balance;
+        address_balance["received"] += addr_balance.total_received;
+        address_balance["unspent"] += addr_balance.unspent_balance;
+        address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
+        address_balance["frozen"] += addr_balance.frozen_balance;
          
-        pt::ptree null_balances;
+        Json::Value null_balances;
         // non_zero display options
         if (option_.non_zero){
             if (addr_balance.unspent_balance){
-                null_balances.add_child("balance", address_balance);
-                all_balances.push_back(std::make_pair("", null_balances));
+                null_balances["balance"] = address_balance;
+                all_balances.append(null_balances);
             }
         } else {
-            null_balances.add_child("balance", address_balance);
-            all_balances.push_back(std::make_pair("", null_balances));
+            null_balances["balance"] = address_balance;
+            all_balances.append(null_balances);
         }
     }
     
-    aroot.add_child("balances", all_balances);
-    pt::write_json(output, aroot);
+    aroot["balances"] = all_balances;
+    output << aroot.toStyledString();
     return console_result::okay;
 
 }

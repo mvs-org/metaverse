@@ -231,7 +231,7 @@ void MgServer::ev_notify_handler(struct mg_connection *nc, int ev, void *ev_data
         if (nc->flags & MG_F_USER_2)
         {
             assert(nc->recv_mbuf.len >= sizeof(struct mg_event));
-            assert(*((size_t*)(ev_data)) >= sizeof(struct mg_event));
+            assert(static_cast<size_t>(*((int*)(ev_data))) >= sizeof(struct mg_event));
             size_t len = 0;
             size_t maxlen = nc->recv_mbuf.len / sizeof(struct mg_event) * sizeof(struct mg_event);
             for (; len < maxlen; len += sizeof(struct mg_event)) {

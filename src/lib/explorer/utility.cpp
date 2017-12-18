@@ -36,10 +36,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/info_parser.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <metaverse/client.hpp>
 #include <metaverse/explorer/command.hpp>
 #include <metaverse/explorer/define.hpp>
@@ -158,24 +154,16 @@ data_chunk wrap(const wallet::wrapped_data& data)
     return bytes;
 }
 
-// We aren't yet using a reader, although it is possible using ptree.
-std::ostream& write_stream(std::ostream& output, const pt::ptree& tree,
+std::ostream& write_stream(std::ostream& output, const Json::Value& tree,
     encoding_engine engine)
 {
     switch (engine)
     {
         case encoding_engine::json:
-            pt::write_json(output, tree);
-            break;
-        case encoding_engine::xml:
-            pt::write_xml(output, tree);
-
-            // property tree XML serialization doesn't terminate the string.
-            output << std::endl;
-
+            output << tree.toStyledString();
             break;
         default:
-            pt::write_info(output, tree);
+            output << tree.toStyledString();
             break;
     }
 

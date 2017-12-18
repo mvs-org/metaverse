@@ -27,9 +27,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
-
+using namespace bc::explorer::config;
 
 /************************ getwork *************************/
 
@@ -49,18 +47,18 @@ console_result getwork::invoke (std::ostream& output,
     auto ret = miner.get_work(seed_hash, header_hash, boundary);
 
     if (ret) {
-        pt::ptree aroot;
+        Json::Value aroot;
 
-        aroot.put("id", 1);
-        aroot.put("jsonrpc", "1.0");
+        aroot["id"] = "1";
+        aroot["jsonrpc"] = "1.0";
         
-        pt::ptree result;
-        result.push_back(std::make_pair("", pt::ptree().put("", header_hash)));
-        result.push_back(std::make_pair("", pt::ptree().put("", seed_hash)));
-        result.push_back(std::make_pair("", pt::ptree().put("", boundary)));
+        Json::Value result;
+        result.append(header_hash);
+        result.append(seed_hash);
+        result.append(boundary);
 
-        aroot.add_child("result", result);
-        pt::write_json(output, aroot);
+        aroot["result"] = result;
+        output << aroot.toStyledString();
 
         return console_result::okay;
     } else {

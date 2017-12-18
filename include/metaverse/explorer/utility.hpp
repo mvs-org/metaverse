@@ -34,7 +34,6 @@
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/lexical_cast.hpp>
@@ -244,7 +243,7 @@ BCX_API data_chunk wrap(const wallet::wrapped_data& data);
  * @param[in]  engine  The stream writing engine type to use, defaults to info.
  * @return             The output stream (for convenience).
  */
-BCX_API std::ostream& write_stream(std::ostream& output, const pt::ptree& tree,
+BCX_API std::ostream& write_stream(std::ostream& output, const Json::Value& tree,
     encoding_engine engine=encoding_engine::info);
 
 } // namespace explorer

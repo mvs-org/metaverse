@@ -5,9 +5,6 @@
  *      Author: jiang
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
-
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -28,25 +25,7 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 
 void relay_exception(std::stringstream& ss)
 {    
-    // parse json
-    using namespace boost::property_tree;
-    try 
-    {
-        ptree pt;
-        read_json(ss, pt);
-        uint32_t code = pt.get<uint32_t>("code");
-        std::string msg = pt.get<std::string>("message");
-        if (code) 
-            return;
-        throw explorer_exception{code, msg};
-    }
-    catch (const explorer_exception& e)
-    {
-        throw e;
-    }
-    catch (const std::exception& e)
-    {
-    }
+    return;
 }
 
 } //namespace explorer

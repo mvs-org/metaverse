@@ -30,7 +30,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/config/encoding.hpp>
 #include <metaverse/explorer/config/transaction.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 
@@ -95,7 +95,7 @@ console_result watch_address::invoke(std::ostream& output, std::ostream& error)
     auto on_update = [&output, &state, json](const payment_address& address,
         size_t, const hash_digest& block_hash, const tx_type& tx)
     {
-        state.output(prop_tree(tx, block_hash, address, json));
+        state.output(json_helper().prop_tree(tx, block_hash, address, json));
         output << std::flush;
     };
 

@@ -29,8 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-namespace pt = boost::property_tree;
-
 console_result changepasswd::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {

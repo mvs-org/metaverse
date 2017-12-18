@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -28,8 +28,6 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
-namespace pt = boost::property_tree;
 
 // copy from src/lib/consensus/clone/script/script.h
 static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
@@ -128,19 +126,19 @@ console_result signrawtx::invoke (std::ostream& output,
 
     // get raw tx
     std::ostringstream buffer;
-    pt::write_json(buffer, config::prop_tree(tx_, true));
+    buffer << config::json_helper().prop_tree(tx_, true).toStyledString();
     log::trace("signrawtx=") << buffer.str();
 
     if(blockchain.validate_transaction(tx_))
             throw tx_validate_exception{std::string("validate transaction failure")};
 
-    pt::ptree aroot;
-    aroot.put("hash", encode_hash(tx_.hash()));
+    Json::Value aroot;
+    aroot["hash"] = encode_hash(tx_.hash());
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    aroot.put("hex", tx_buf.str());
+    aroot["hex"] = tx_buf.str();
     
-    pt::write_json(output, aroot);
+    output << aroot.toStyledString();
     
     return console_result::okay;
 }
