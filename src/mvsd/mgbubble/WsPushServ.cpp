@@ -56,6 +56,8 @@ void WsPushServ::run() {
             this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     base::run();
+
+    log::info(NAME) << "Websocket Service Stopped.";
 }
 
 bool WsPushServ::start()

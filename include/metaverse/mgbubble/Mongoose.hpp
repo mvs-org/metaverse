@@ -30,8 +30,6 @@
 
 namespace mgbubble {
 
-#define SESSION_COOKIE_NAME "2iBXdhW9rQxbnDdNQk9KdjiytM9X"
-
 inline string_view operator+(const mg_str& str) noexcept
 {
     return {str.p, str.len};
@@ -51,27 +49,7 @@ public:
             return vargv_[0]; 
         throw std::logic_error{"no command found"};
     }
-//    bool is_miner_command() const {
-//        auto cmd = get_command();
-//         if (cmd == "getwork" ||
-//             cmd == "submitwork" ||
-//             cmd == "start" ||
-//             cmd == "stop"  ||
-//             cmd == "setminingaccount" ||
-//             cmd == "getmininginfo" ||
-//             cmd == "fetchheaderext"){
-//            return true;
-//        }
-//        return false;
-//    }
-//
-//    bool is_network_command() const {
-//        auto cmd = get_command();
-//        if (cmd == "getpeerinfo") {
-//            return true;
-//        }
-//        return false;
-//    }
+
     void add_arg(std::string&& outside);
 
     static const int max_paramters{32};
@@ -83,7 +61,6 @@ protected:
 
     std::vector<std::string> vargv_;
 };
-
 
 class HttpMessage : public ToCommandArg{
 public:
@@ -140,189 +117,35 @@ private:
     websocket_message* impl_;
 };
 
-struct Session{
-        Session() = default;
-        Session(uint64_t a1, double a2, double a3, 
-                std::string&& a4, std::string a5):
-            id(a1), created(a2), last_used(a3), user(a4), pass(a5){}
-        ~Session() = default;
-
-        uint64_t        id;
-        double          created;
-        double          last_used;
-        std::string     user;
-        std::string     pass;
-};
-
-template <typename DerivedT>
-class Mgr {
+class MgEvent : public std::enable_shared_from_this<MgEvent> {
 public:
-    // Copy.
-    Mgr(const Mgr&) = delete;
-    Mgr& operator=(const Mgr&) = delete;
+    explicit MgEvent(const std::function<void(uint64_t)>&& handler)
+        :callback_(std::move(handler))
+    {}
 
-    // Move.
-    Mgr(Mgr&&) = delete;
-    Mgr& operator=(Mgr&&) = delete;
-
-    mg_connection& bind(const char* addr)
+    MgEvent* hook()
     {
-#if MG_ENABLE_MUTITHREADS
-      auto* conn = mg_bind(&mgr_, addr, handler_mt);
-#else
-      auto* conn = mg_bind(&mgr_, addr, handler);
-#endif
-      if (!conn)
-        throw Error{"mg_bind() failed"};
-      conn->user_data = this;
-      return *conn;
-    }
-    time_t poll(int milli) { return mg_mgr_poll(&mgr_, milli); }
-
-    // session control
-    static void login_handler(mg_connection* conn, int ev, void* data){
-       http_message* hm = static_cast<http_message*>(data);
-       auto* self = static_cast<DerivedT*>(conn->user_data);
-
-       if (mg_vcmp(&hm->method, "POST") != 0) {
-           mg_serve_http(conn, hm, self->get_httpoptions());
-       }else{
-              if ( self->user_auth(*conn, hm) ){
-                  std::ostringstream shead;
-                  auto ret = self->push_session(hm);
-                  shead<<"Set-Cookie: " SESSION_COOKIE_NAME "="<<ret->id<<"; path=/";
-                  mg_http_send_redirect(conn, 302, mg_mk_str("/"), mg_mk_str(shead.str().c_str()));
-              }
-       }
-       conn->flags |= MG_F_SEND_AND_CLOSE;
+        self_ = this->shared_from_this();
+        return this;
     }
 
-    static void logout_handler(mg_connection* conn, int ev, void* data){
-       http_message* hm = static_cast<http_message*>(data);
-       auto* self = static_cast<DerivedT*>(conn->user_data);
-
-       std::ostringstream shead;
-       shead<<"Set-Cookie: " SESSION_COOKIE_NAME "=";
-       mg_http_send_redirect(conn, 302, mg_mk_str("/login.html"), mg_mk_str(shead.str().c_str()));
-       self->remove_from_session_list(hm);
-
-       conn->flags |= MG_F_SEND_AND_CLOSE;
+    void unhook()
+    {
+        self_.reset();
     }
 
-    constexpr static const double session_check_interval = 5.0;
-    static const int thread_num_ = 2;
-
-protected:
-    Mgr() noexcept { 
-            mg_mgr_init(&mgr_, this);
-#if MG_ENABLE_MUTITHREADS
-            start();
-#endif
+    virtual void operator()(uint64_t id)
+    {
+        callback_(id);
+        self_.reset();
     }
-    ~Mgr() noexcept { mg_mgr_free(&mgr_); }
 
 private:
+    std::shared_ptr<MgEvent> self_;
 
-#if MG_ENABLE_MUTITHREADS
-    void start(){
-        for (int i=0; i < thread_num_; i++) {
-            std::thread th([this, i]{
-                mg_mgr& mg = child_mgrs_[i];
-                mg_mgr_init(&mg, this);
-
-                mg_socketpair(mg.mthread_ctl, SOCK_STREAM);
-
-                Queue<mg_connection*> &queue = queue_connections[i];
-
-                while(1) {
-                    while(1){
-                        mg_connection* conn = NULL;    
-                        if(queue.pop(conn) == false){
-                            break;
-                        }
-                        conn->handler = handler;
-                        mg_add_conn(&mg, conn);
-                    }
-
-                    mg_mgr_poll(&mg, 100);
-                }
-            });
-            th.detach();
-        }
-    }
-
-    static void handler_mt(mg_connection* conn, int event, void* data)
-    {
-        if(event == MG_EV_ACCEPT) {
-            if(conn) {
-                mg_remove_conn(conn);
-                int index = conn->sock % thread_num_;
-                queue_connections[index].push(conn);
-                MG_SEND_FUNC(child_mgrs_[index].mthread_ctl[1], "a", 1, 0);
-            }
-        }
-    }
-#endif
-
-    static void handler(mg_connection* conn, int event, void* data)
-    {
-       http_message* hm = static_cast<http_message*>(data);
-       websocket_message* ws = static_cast<websocket_message*>(data);
-       auto* self = static_cast<DerivedT*>(conn->user_data);
-
-       switch (event) {
-       case MG_EV_CLOSE:{
-            if (conn->flags & MG_F_IS_WEBSOCKET) {
-                //self->websocketBroadcast(*conn, "left", 4);
-            }else{
-                conn->user_data = nullptr;
-            }
-            break;
-        }
-       case MG_EV_HTTP_REQUEST:{
-
-            // rpc call
-            if (mg_ncasecmp((&hm->uri)->p, "/rpc", 4u) == 0){
-                self->httpRpcRequest(*conn, hm);
-                break;
-            }else{
-                self->httpStatic(*conn, hm);
-                conn->flags |= MG_F_SEND_AND_CLOSE;
-                break;
-            }
-        }
-        case MG_EV_WEBSOCKET_HANDSHAKE_DONE:{
-            self->websocketSend(conn, "connected", 9);
-            break;
-        }
-        case MG_EV_WEBSOCKET_FRAME:{
-            self->websocketSend(*conn, ws);
-            break;
-        }
-        case MG_EV_SSI_CALL:{
-        }
-        case MG_EV_TIMER:{
-            self->check_sessions();
-            mg_set_timer(conn, mg_time() + session_check_interval);
-            break;
-        }
-       }// switch
-    }// handler
-
-    mg_mgr mgr_;
-#if MG_ENABLE_MUTITHREADS
-    static Queue<mg_connection*> queue_connections[thread_num_];
-    static mg_mgr child_mgrs_[thread_num_];
-#endif
+    // called on mongoose thread
+    std::function<void(uint64_t id)> callback_;
 };
-
-#if MG_ENABLE_MUTITHREADS
-template<typename DerivedT >
-Queue<mg_connection*> Mgr<DerivedT>::queue_connections[thread_num_];
-
-template<typename DerivedT >
-mg_mgr Mgr<DerivedT>::child_mgrs_[thread_num_];
-#endif
 
 } // http
 

@@ -101,7 +101,7 @@
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Exception.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\exception\Instances.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\Mongoose.cpp" />
-    <ClCompile Include="..\..\..\src\mvsd\mgbubble\RestServ.cpp" />
+    <ClCompile Include="..\..\..\src\mvsd\mgbubble\HttpServ.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\WsPushServ.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream.cpp" />
     <ClCompile Include="..\..\..\src\mvsd\mgbubble\utility\Stream_buf.cpp" />
