@@ -132,6 +132,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\stopmining.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\submitwork.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_assistant.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension_func.hpp" />
@@ -254,6 +255,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\stopmining.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\submitwork.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\xfetchutxo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp" />

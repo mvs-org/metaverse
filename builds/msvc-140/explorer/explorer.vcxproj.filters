@@ -431,6 +431,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-address.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\prop_tree.ipp">
@@ -785,6 +788,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp">
       <Filter>Source Files\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\xfetchutxo.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
