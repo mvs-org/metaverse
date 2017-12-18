@@ -139,7 +139,7 @@ protected:
 private:
     struct mg_mgr mgr_;
     struct mg_connection *nc_;
-    struct mg_serve_http_opts s_http_server_opts_ { 0 };
+    struct mg_serve_http_opts s_http_server_opts_ = { 0 };
 
     sock_t notify_sock_[2]; // 0 is used out of thread, 1 is used in mongoose event loop
     struct mg_connection *nc_notify_;

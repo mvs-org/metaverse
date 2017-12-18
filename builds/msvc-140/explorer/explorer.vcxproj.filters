@@ -430,6 +430,7 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp">
       <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\json_helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -787,6 +788,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\xfetchutxo.cpp">
       <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

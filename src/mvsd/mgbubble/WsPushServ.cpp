@@ -30,7 +30,7 @@ namespace mgbubble {
     constexpr auto EV_PUBLISH     = "publish";
     constexpr auto EV_REQUEST     = "request";
     constexpr auto EV_RESPONSE    = "response";
-    constexpr auto EV_MG_ERROR       = "error";
+    constexpr auto EV_MG_ERROR    = "error";
     constexpr auto EV_INFO        = "info";
 
     constexpr auto CH_BLOCK       = "block";
@@ -225,7 +225,7 @@ void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message
     Json::Value result;
     result["code"] = 1000001;
     result["message"] = message ? message : "bad request";
-    root["event"] = EV_ERROR;
+    root["event"]  = EV_MG_ERROR;
     root["result"] = result;
     
     auto&& tmp = root.toStyledString();
