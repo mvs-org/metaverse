@@ -27,6 +27,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using namespace bc::explorer::config;
 
 console_result sendrawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)

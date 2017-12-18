@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/deletemultisig.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -28,7 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 console_result deletemultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -52,9 +52,9 @@ console_result deletemultisig::invoke (std::ostream& output,
 
     Json::Value root, pubkeys;
 
-    root["index"] = +acc_multisig.get_index();
-    root["m"] = +acc_multisig.get_m();
-    root["n"] = +acc_multisig.get_n();
+    root["index"] += acc_multisig.get_index();
+    root["m"] += acc_multisig.get_m();
+    root["n"] += acc_multisig.get_n();
     root["self-publickey"] = acc_multisig.get_pubkey();
     root["description"] = acc_multisig.get_description();
 

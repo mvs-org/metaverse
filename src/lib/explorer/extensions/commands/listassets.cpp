@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ listassets *************************/
 
@@ -54,8 +54,8 @@ console_result listassets::invoke (std::ostream& output,
 			Json::Value asset_data;
 			
 			asset_data["symbol"] = elem.get_symbol();
-			asset_data["maximum_supply"] = +elem.get_maximum_supply();
-			asset_data["decimal_number"] = +elem.get_decimal_number();
+			asset_data["maximum_supply"] += elem.get_maximum_supply();
+			asset_data["decimal_number"] += elem.get_decimal_number();
 			asset_data["issuer"] = elem.get_issuer();
 			asset_data["address"] = elem.get_address();
 			asset_data["description"] = elem.get_description();
@@ -81,12 +81,12 @@ console_result listassets::invoke (std::ostream& output,
 			Json::Value asset_data;
 			asset_data["symbol"] = elem.get_symbol();
 			symbol = elem.get_symbol();
-			asset_data["quantity"] = +elem.get_maximum_supply();
-			//asset_data["address"] = +elem.get_address());
+			asset_data["quantity"] += elem.get_maximum_supply();
+			//asset_data["address"] += elem.get_address());
 			auto issued_asset = blockchain.get_issued_asset(symbol);
 			if(issued_asset)
-				asset_data["decimal_number"] = +issued_asset->get_decimal_number();
-			asset_data["status"] = +"unspent";
+				asset_data["decimal_number"] += issued_asset->get_decimal_number();
+			asset_data["status"] = "unspent";
 			assets.append(asset_data);
 		}
 		// 2. get asset in local database
@@ -108,10 +108,10 @@ console_result listassets::invoke (std::ostream& output,
 			Json::Value asset_data;
 			asset_data["symbol"] = elem.detail.get_symbol();
 			symbol = elem.detail.get_symbol();
-			asset_data["quantity"] = +elem.detail.get_maximum_supply();
-			asset_data["decimal_number"] = +elem.detail.get_decimal_number();
+			asset_data["quantity"] += elem.detail.get_maximum_supply();
+			asset_data["decimal_number"] += elem.detail.get_decimal_number();
 			//asset_data["address"] = "";
-			asset_data["status"] = +"unissued";
+			asset_data["status"] = "unissued";
 			assets.append(asset_data);
 		}
 	}

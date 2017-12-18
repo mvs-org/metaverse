@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ getbalance *************************/
 
@@ -67,11 +67,11 @@ console_result getbalance::invoke (std::ostream& output,
         total_frozen += addr_balance.frozen_balance;
     }
     
-    aroot["total-confirmed"] = +total_confirmed;
-    aroot["total-received"] = +total_received;
-    aroot["total-unspent"] = +total_unspent;
-    aroot["total-available"] = +(total_unspent - total_frozen);
-    aroot["total-frozen"] = +total_frozen;
+    aroot["total-confirmed"] += total_confirmed;
+    aroot["total-received"] += total_received;
+    aroot["total-unspent"] += total_unspent;
+    aroot["total-available"] += (total_unspent - total_frozen);
+    aroot["total-frozen"] += total_frozen;
     output << aroot.toStyledString();
 
     return console_result::okay;

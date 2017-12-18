@@ -18,8 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <jsoncpp/json/json.h>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/version.hpp>
 #include <metaverse/explorer/extensions/commands/getinfo.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,6 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using namespace bc::explorer::config;
 
 /************************ getinfo *************************/
 
@@ -40,7 +40,7 @@ console_result getinfo::invoke (std::ostream& output,
     administrator_required_checker(node, auth_.name, auth_.auth);
 
     Json::Value jv; 
-    jv["protocol-version"] = +node.network_settings().protocol;
+    jv["protocol-version"] += node.network_settings().protocol;
     jv["wallet-version"] = MVS_EXPLORER_VERSION;
     jv["database-version"] = MVS_DATABASE_VERSION;
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;

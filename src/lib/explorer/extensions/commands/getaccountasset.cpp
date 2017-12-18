@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::explorer::config;
 
 /************************ getaccountasset *************************/
 
@@ -67,11 +67,11 @@ console_result getaccountasset::invoke (std::ostream& output,
         asset_data["symbol"] = elem.get_symbol();
         asset_data["address"] = elem.get_address();
         symbol = elem.get_symbol();
-        asset_data["quantity"] = +elem.get_maximum_supply();
+        asset_data["quantity"] += elem.get_maximum_supply();
         //asset_data["address"] = elem.get_address();
         auto issued_asset = blockchain.get_issued_asset(symbol);
         if(issued_asset)
-            asset_data["decimal_number"] = +issued_asset->get_decimal_number();
+            asset_data["decimal_number"] += issued_asset->get_decimal_number();
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }
@@ -98,8 +98,8 @@ console_result getaccountasset::invoke (std::ostream& output,
         asset_data["symbol"] = elem.detail.get_symbol();
         asset_data["address"] = "";
         symbol = elem.detail.get_symbol();
-        asset_data["quantity"] = +elem.detail.get_maximum_supply();
-        asset_data["decimal_number"] = +elem.detail.get_decimal_number();
+        asset_data["quantity"] += elem.detail.get_maximum_supply();
+        asset_data["decimal_number"] += elem.detail.get_decimal_number();
         //asset_data["address"] = "";
         asset_data["status"] = "unissued";
         assets.append(asset_data);

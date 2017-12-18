@@ -65,7 +65,7 @@ Json::Value json_helper::prop_value_list(const std::string& name, const Values& 
     Json::Value list;
     for (const auto& value: values)
     {
-        list.append(Json::Value()[denormalized_name] = +value);
+        list.append(Json::Value()[denormalized_name] += value);
     }
 
     return list;

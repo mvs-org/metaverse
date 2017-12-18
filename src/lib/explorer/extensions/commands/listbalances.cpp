@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -30,6 +30,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+using namespace bc::explorer::config;
 
 /************************ listbalances *************************/
 
@@ -54,11 +55,11 @@ console_result listbalances::invoke (std::ostream& output,
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
         address_balance["address"] = i.get_address();
-        address_balance["confirmed"] = +(addr_balance.confirmed_balance);
-        address_balance["received"] = +addr_balance.total_received;
-        address_balance["unspent"] = +addr_balance.unspent_balance;
-        address_balance["available"] = +addr_balance.unspent_balance - addr_balance.frozen_balance;
-        address_balance["frozen"] = +addr_balance.frozen_balance;
+        address_balance["confirmed"] += addr_balance.confirmed_balance;
+        address_balance["received"] += addr_balance.total_received;
+        address_balance["unspent"] += addr_balance.unspent_balance;
+        address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
+        address_balance["frozen"] += addr_balance.frozen_balance;
          
         Json::Value null_balances;
         // non_zero display options

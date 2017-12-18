@@ -38,7 +38,6 @@ namespace mgbubble {
 }
 namespace mgbubble {
 using namespace bc;
-using namespace pt;
 using namespace libbitcoin;
 
 void WsPushServ::run() {
@@ -225,7 +224,7 @@ void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message
     Json::Value root;
     Json::Value result;
     result["code"] = 1000001;
-    result["message"] = message ? message : "bad request");
+    result["message"] = message ? message : "bad request";
     root["event"] = EV_ERROR;
     root["result"] = result;
     

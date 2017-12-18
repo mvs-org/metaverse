@@ -29,6 +29,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using namespace bc::explorer::config;
 
 /************************ getnewaccount *************************/
 

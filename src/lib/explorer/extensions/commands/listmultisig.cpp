@@ -29,6 +29,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+using namespace bc::explorer::config;
+
 console_result listmultisig::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
@@ -41,10 +43,10 @@ console_result listmultisig::invoke (std::ostream& output,
         
     for(auto& acc_multisig : multisig_vec) {
         Json::Value node, pubkeys;
-        node["index"] = +acc_multisig.get_index();
-        //node["hd_index"] = +acc_multisig.get_hd_index();
-        node["m"] = +acc_multisig.get_m();
-        node["n"] = +acc_multisig.get_n();
+        node["index"] += acc_multisig.get_index();
+        //node["hd_index"] += acc_multisig.get_hd_index();
+        node["m"] += acc_multisig.get_m();
+        node["n"] += acc_multisig.get_n();
         node["self-publickey"] = acc_multisig.get_pubkey();
         node["description"] = acc_multisig.get_description();
         for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
