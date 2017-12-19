@@ -63,7 +63,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
-#include <metaverse/explorer/extensions/commands/deleteasset.hpp>
+#include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
@@ -143,7 +143,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getaddressasset>());
     func(make_shared<getaccountasset>());
     func(make_shared<createasset>());
-    func(make_shared<deleteasset>());
+    func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
@@ -197,7 +197,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getnewaccount>();
     if (symbol == getaccount::symbol())
         return make_shared<getaccount>();
-    if (symbol == deleteaccount::symbol())
+    if (symbol == deleteaccount::symbol() || symbol == "deleteasset")
         return make_shared<deleteaccount>();
     if (symbol == listaddresses::symbol())
         return make_shared<listaddresses>();
@@ -235,8 +235,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaccountasset>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
-    if (symbol == deleteasset::symbol())
-        return make_shared<deleteasset>();
+    if (symbol == deletelocalasset::symbol())
+        return make_shared<deletelocalasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
     if (symbol == issuefrom::symbol())

@@ -20,7 +20,7 @@
 
 
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/deleteasset.hpp>
+#include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,9 +30,9 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
-/************************ deleteasset *************************/
+/************************ deletelocalasset *************************/
 
-console_result deleteasset::invoke (std::ostream& output,
+console_result deletelocalasset::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
