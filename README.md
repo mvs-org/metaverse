@@ -7,6 +7,7 @@
 Metaverse Core Integration/staging Tree
 =========================
 [![Build Status](https://travis-ci.org/mvs-org/metaverse.svg?branch=develop)](https://travis-ci.org/mvs-org/metaverse)
+[![AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-brightgreen.svg)](./LICENSE)
 
 # Introduction
 Metaverse(MVS) is a decentralised system based on the blockchain technology, through which, a network of smart properties, digital identities and value intermediators are established.
@@ -26,7 +27,7 @@ MVS is implemented based on [libbitcoin project](https://github.com/libbitcoin).
 
 Further Read: [Documents](http://docs.mvs.org)
 
-# build MVS
+# Build MVS
 
 ## Compiler requirements
 | Compilier | Minimum Version |  
@@ -44,7 +45,7 @@ Using `c++ -v` to check c++ version.
 
 Dependencies of MVS are **static linked** (including libstdc++). 
 Thus, there is no extra dependency after compilation.
-Recommands Ubuntu 16.04/CentOS 7.2/Visual Studio 2015 to develop/debug/build MVS.
+Recommends Ubuntu 16.04/CentOS 7.2/Visual Studio 2015 to develop/debug/build MVS.
 
 ## Toolchain requirements
 - cmake 3.0+
@@ -111,3 +112,5 @@ $ ./configure --enable-module-recovery
 $ make -j4
 $ sudo make install && sudo ldconfig
 ```
+
+# [Run in docker](https://github.com/mvs-org/metaverse/tree/develop/builds/docker)

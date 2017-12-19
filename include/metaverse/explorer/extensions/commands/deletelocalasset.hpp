@@ -29,15 +29,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ deleteasset *************************/
+/************************ deletelocalasset *************************/
 
-class deleteasset: public command_extension
+class deletelocalasset: public command_extension
 {
 public:
-    static const char* symbol(){ return "deleteunissuedasset";}
+    static const char* symbol(){ return "deletelocalasset";}
     const char* name() override { return symbol();}
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "deleteunissuedasset"; }
+    const char* description() override { return "deletelocalasset"; }
 
     arguments_metadata& load_arguments() override
     {
