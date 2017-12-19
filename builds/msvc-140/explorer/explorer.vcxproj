@@ -84,7 +84,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createrawtx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\decoderawtx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteaccount.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteasset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp" />

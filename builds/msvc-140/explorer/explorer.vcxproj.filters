@@ -110,9 +110,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteaccount.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteasset.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -433,6 +430,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\json_helper.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
