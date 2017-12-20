@@ -46,11 +46,12 @@ console_result getwork::invoke (std::ostream& output,
 
     auto ret = miner.get_work(seed_hash, header_hash, boundary);
 
-    if (ret) {
-        Json::Value aroot;
+    Json::Value aroot;
 
-        aroot["id"] = "1";
-        aroot["jsonrpc"] = "1.0";
+    aroot["id"] = "1";
+    aroot["jsonrpc"] = "1.0";
+
+    if (ret) {
         
         Json::Value result;
         result.append(header_hash);
@@ -62,9 +63,12 @@ console_result getwork::invoke (std::ostream& output,
 
         return console_result::okay;
     } else {
-        output<<"Use command <setminingaccount> to set mining address.";
+        aroot["result"] = "Use command <setminingaccount> to set mining address.";
+        output << aroot.toStyledString();
+
         return console_result::failure;
     }
+
 }
 
 

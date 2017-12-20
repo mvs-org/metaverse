@@ -18,11 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/commands/deleteaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
@@ -53,7 +51,12 @@ console_result deleteaccount::invoke (std::ostream& output,
     blockchain.delete_account_asset(acc->get_name());
     // delete account
     blockchain.delete_account(acc->get_name());
-    output<<"delete successfully!";
+
+    Json::Value jv;
+    jv["name"] = acc->get_name();
+    jv["status"]= "removed successfully";
+
+    output<<jv.toStyledJson();
 
     return console_result::okay;
 }

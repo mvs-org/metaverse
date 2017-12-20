@@ -42,11 +42,11 @@ console_result submitwork::invoke (std::ostream& output,
     root["jsonrpc"] = "1.0";
 
     if (ret) {
-        root["result"] = true;
+        root["result"] = "true"; // boost json parser output as string, for compatible.
         output << root.toStyledString();
         return console_result::okay;
     } else {
-        root["result"] = false;
+        root["result"] = "false";
         output << root.toStyledString();
         return console_result::failure;
     }
