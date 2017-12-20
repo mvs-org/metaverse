@@ -64,27 +64,13 @@ BCX_API console_result dispatch_command(int argc, const char* argv[],
  * @param[in]  input   The input stream (e.g. STDIO).
  * @param[in]  output  The output stream (e.g. STDOUT).
  * @param[in]  error   The error stream (e.g. STDERR).
- * @param[in]  blockchain block_chain instance.
- * @return            The appropriate console return code { -1, 0, 1 }.
- */
-//BCX_API console_result dispatch_command(int argc, const char* argv[],
-//    std::istream& input, std::ostream& output, std::ostream& error,
-//    libbitcoin::blockchain::block_chain& blockchain);
-
-/**
- * Invoke the command identified by the specified arguments.
- * The first argument in the array is the command symbolic name.
- * @param[in]  argc   The number of elements in the argv parameter.
- * @param[in]  argv   Array of command line arguments excluding the process.
- * @param[in]  input   The input stream (e.g. STDIO).
- * @param[in]  output  The output stream (e.g. STDOUT).
- * @param[in]  error   The error stream (e.g. STDERR).
  * @param[in]  node server_node instance.
+ * @param[in]  command version, defaults to v1.
  * @return            The appropriate console return code { -1, 0, 1 }.
  */
 BCX_API console_result dispatch_command(int argc, const char* argv[],
     std::istream& input, std::ostream& output, std::ostream& error,
-    libbitcoin::server::server_node& node);
+    libbitcoin::server::server_node& node, uint8_t api_version = 1);
 
 } // namespace explorer
 } // namespace libbitcoin

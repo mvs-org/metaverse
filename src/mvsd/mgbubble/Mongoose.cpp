@@ -21,7 +21,7 @@
 
 namespace mgbubble {
 
-void HttpMessage::data_to_arg() {
+void HttpMessage::data_to_arg(uint8_t rpc_version) {
 
     auto vargv_to_argv = [this]() {
         // convert to char** argv
@@ -35,41 +35,87 @@ void HttpMessage::data_to_arg() {
         argc_ = i;
     };
     
-    /* *******************************************
+    Json::Reader reader;
+    Json::Value root;
+    const char* begin = body().data();
+    const char* end = body().data() + body().size();
+    reader.parse(begin, end, root);
+    if (!reader.parse(begin, end, root) || !root.isObject()) {
+        stringstream ss;
+        ss << "parse request error, "
+            << reader.getFormattedErrorMessages();
+        throw std::runtime_error(ss.str());
+        return ;
+    }
+
+    if (root["method"].isString()) {
+        vargv_.emplace_back(root["method"].asString());
+    }
+
+    if (!root["params"].isArray()) {
+        throw std::logic_error{"illegal params"};
+        return ;
+    }
+
+    if (rpc_version == 1) {
+    /* ***************** /rpc **********************
      * application/json
-     * {"method":"xxx", "params":""}
+     * {"method":"xxx", "params":["p1","p2"]}
      * ******************************************/
-    if (uri() == "/rpc" || uri() == "/rpc/")
-    {
-        Json::Reader reader;
-        Json::Value root;
-        const char* begin = body().data();
-        const char* end = body().data() + body().size();
-        reader.parse(begin, end, root);
-        if (!reader.parse(begin, end, root) || !root.isObject()) {
-            stringstream ss;
-            ss << "parse request error, "
-                << reader.getFormattedErrorMessages();
-            throw std::runtime_error(ss.str());
-            return ;
+        for (auto& param : root["params"]) {
+            if (param.isString())
+                vargv_.emplace_back(param.asString());
         }
+    } else {
+    /* ***************** /rpc/v2 **********************
+     * application/json
+     * {
+     *  "method":"xxx", 
+     *  "params":[
+     *      {
+     *          k1:v1,  ==> Command Option
+     *          k2:v2
+     *      },
+     *      "p1",  ==> Command Argument
+     *      "p2"
+     *      ]
+     *  }
+     * ******************************************/
 
-        if (root["method"].isString())
-            vargv_.emplace_back(root["method"].asString());
-
-        if (root["params"].isArray() && (root["params"].size() > 0))
-        {
-            for (auto& param : root["params"]) {
-                if (param.isString())
-                    vargv_.emplace_back(param.asString());
+        // find out positon of options
+        int option_index = 0;
+        for (auto& param : root["params"]) {
+            if (param.isObject()) {
+                break;
+            } else {
+                option_index++;
             }
         }
 
-        vargv_to_argv();
+        // then push options
+        auto& parmas_options = root["params"][option_index];
+        if (parmas_options.isObject()) {
+            for (auto& key : parmas_options.getMemberNames()) {
+                // --option
+                vargv_.emplace_back("--" + key);
+                // value
+                vargv_.emplace_back(parmas_options[key].asString());
+            }
+        }
+
+        // push arguments at last
+        for (auto& param : root["params"]) {
+            if (!param.isObject()){
+                vargv_.emplace_back(param.asString());
+            }
+        }
+        
     }
+
+    vargv_to_argv();
 }
 
-void WebsocketMessage::data_to_arg() {
+void WebsocketMessage::data_to_arg(uint8_t api_version) {
     Tokeniser<' '> args;
     args.reset(+*impl_);
 
