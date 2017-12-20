@@ -56,7 +56,7 @@ console_result deleteaccount::invoke (std::ostream& output,
     jv["name"] = acc->get_name();
     jv["status"]= "removed successfully";
 
-    output<<jv.toStyledJson();
+    output<<jv.toStyledString();
 
     return console_result::okay;
 }
