@@ -656,12 +656,12 @@ public:
         setting_.server.client_private_key = value;
     }
 
-    virtual void set_api_version(const api_type& ver)
+    virtual void set_api_version(uint8_t ver)
     {
         setting_.server.api_version = ver;
     }
 
-    virtual api_type get_api_version()
+    virtual uint8_t get_api_version()
     {
         return setting_.server.api_version;
     }
@@ -760,7 +760,7 @@ private:
                 connect_timeout_seconds(),
                 server_public_key(),
                 client_private_key(),
-                api_version(api_type::jsonrpc_v2)// defaults to v2, else v1
+                api_version(0)// defaults to v1, else v2. init as 0.
             {
             }
 
@@ -769,7 +769,7 @@ private:
             uint16_t connect_timeout_seconds;
             bc::config::sodium server_public_key;
             bc::config::sodium client_private_key;
-            api_type api_version; 
+            uint8_t api_version; 
         } server;
 
         setting()

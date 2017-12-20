@@ -55,7 +55,7 @@ public:
     static const int max_paramters{32};
 protected:
 
-    virtual void data_to_arg() = 0;
+    virtual void data_to_arg(uint8_t api_version) = 0;
     const char* argv_[max_paramters]{{nullptr}};
     int argc_{0};
 
@@ -88,7 +88,7 @@ public:
     }
     auto body() const noexcept { return +impl_->body; }
 
-    void data_to_arg() override;
+    void data_to_arg(uint8_t rpc_version) override;
     
 private:
 
@@ -112,7 +112,7 @@ public:
     auto data() const noexcept { return reinterpret_cast<char*>(impl_->data); }
     auto size() const noexcept { return impl_->size; }
    
-    void data_to_arg() override;
+    void data_to_arg(uint8_t api_version = 1) override;
 private:
     websocket_message* impl_;
 };

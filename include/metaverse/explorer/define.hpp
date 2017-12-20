@@ -117,11 +117,4 @@ enum class encoding_engine
     xml
 };
 
-enum class api_type : uint8_t
-{
-    command_line,
-    jsonrpc_v1,
-    jsonrpc_v2
-};
-
 #endif

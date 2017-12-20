@@ -54,7 +54,7 @@ void HttpServ::reset(HttpMessage& data) noexcept
     uri_.reset(uri);
 }
 
-void HttpServ::rpc_request(mg_connection& nc, HttpMessage data)
+void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_version)
 {
     reset(data);
 
@@ -62,13 +62,13 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data)
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
     try {
-        data.data_to_arg();
+        data.data_to_arg(rpc_version);
 
         std::stringstream sout;
         std::istringstream sin;
 
         console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-            sin, sout, sout, node_);
+            sin, sout, sout, node_, rpc_version);
         if (retcode != console_result::okay) {
             throw explorer::command_params_exception(sout.str());
         }
@@ -141,10 +141,12 @@ void HttpServ::run() {
 
 void HttpServ::on_http_req_handler(struct mg_connection& nc, http_message& msg)
 {
-    if ((mg_ncasecmp(msg.uri.p, "/rpc", 4) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/", 5) == 0)) {
-        rpc_request(nc, HttpMessage(&msg));
+    if ((mg_ncasecmp(msg.uri.p, "/rpc/v2", 7) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/v2/", 8) == 0)) {
+        rpc_request(nc, HttpMessage(&msg), 2); // v2 rpc
     }
-    else {
+    else if ((mg_ncasecmp(msg.uri.p, "/rpc", 4) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/", 5) == 0)) {
+        rpc_request(nc, HttpMessage(&msg), 1); //v1 rpc
+    } else {
         std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection* ptr) { (void)(ptr); });
         serve_http_static(nc, msg);
     }

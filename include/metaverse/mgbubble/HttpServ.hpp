@@ -39,7 +39,7 @@ public:
     HttpServ(HttpServ&&) = delete;
     HttpServ& operator=(HttpServ&&) = delete;
 
-    void rpc_request(mg_connection& nc, HttpMessage data);
+    void rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_version = 1);
     void ws_request(mg_connection& nc, WebsocketMessage ws);
 
 public:
