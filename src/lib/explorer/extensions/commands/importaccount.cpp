@@ -67,7 +67,11 @@ console_result importaccount::invoke (std::ostream& output,
     Json::Value root;
     root["name"] = auth_.name;
     root["mnemonic"] = mnemonic;
-    root["hd_index"] += option_.hd_index;
+    if (get_api_version()) {
+        root["hd_index"] += option_.hd_index;
+    } else {
+        root["hd_index"] = option_.hd_index;
+    }
     
     uint32_t idx = 0;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};

@@ -157,8 +157,13 @@ console_result createasset::invoke (std::ostream& output,
     Json::Value aroot;
     Json::Value asset_data;
     asset_data["symbol"] = acc->get_symbol();
-    asset_data["maximum-supply"] += acc->get_maximum_supply();
-    asset_data["decimal_number"] += acc->get_decimal_number();
+    if (get_api_version() == 1) {
+        asset_data["maximum-supply"] += acc->get_maximum_supply();
+        asset_data["decimal_number"] += acc->get_decimal_number();
+    } else {
+        asset_data["maximum-supply"] = acc->get_maximum_supply();
+        asset_data["decimal_number"] = acc->get_decimal_number();
+    }
     asset_data["issuer"] = acc->get_issuer();
     asset_data["address"] = acc->get_address();
     asset_data["description"] = acc->get_description();

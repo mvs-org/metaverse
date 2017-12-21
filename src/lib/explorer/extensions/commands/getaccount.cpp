@@ -51,8 +51,13 @@ console_result getaccount::invoke (std::ostream& output,
     Json::Value root;
     root["name"] = acc->get_name();
     root["mnemonic-key"] = mnemonic;
-    root["address-count"] += acc->get_hd_index();
-    root["user-status"] += acc->get_user_status();
+    if (get_api_version() == 1) {
+        root["address-count"] += acc->get_hd_index();
+        root["user-status"] += acc->get_user_status();
+    } else {
+        root["address-count"] = acc->get_hd_index();
+        root["user-status"] = acc->get_user_status();
+    }
     output << root.toStyledString();
 
     return console_result::okay;

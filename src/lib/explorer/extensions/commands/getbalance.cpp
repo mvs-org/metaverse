@@ -56,22 +56,26 @@ console_result getbalance::invoke (std::ostream& output,
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
-        //auto addr = i.get_address();
-        //auto ec = sync_fetchbalance(*this, addr, type, blockchain, addr_balance);
-        //if(ec)
-            //throw std::logic_error{ec.message()};
 
-        total_confirmed += addr_balance.confirmed_balance;
-        total_received += addr_balance.total_received;
-        total_unspent += addr_balance.unspent_balance;
-        total_frozen += addr_balance.frozen_balance;
+        total_confirmed = addr_balance.confirmed_balance;
+        total_received = addr_balance.total_received;
+        total_unspent = addr_balance.unspent_balance;
+        total_frozen = addr_balance.frozen_balance;
     }
     
-    aroot["total-confirmed"] += total_confirmed;
-    aroot["total-received"] += total_received;
-    aroot["total-unspent"] += total_unspent;
-    aroot["total-available"] += (total_unspent - total_frozen);
-    aroot["total-frozen"] += total_frozen;
+    if (get_api_version() == 1){
+        aroot["total-confirmed"] += total_confirmed;
+        aroot["total-received"] += total_received;
+        aroot["total-unspent"] += total_unspent;
+        aroot["total-available"] += (total_unspent - total_frozen);
+        aroot["total-frozen"] += total_frozen;
+    } else {
+        aroot["total-confirmed"] = total_confirmed;
+        aroot["total-received"] = total_received;
+        aroot["total-unspent"] = total_unspent;
+        aroot["total-available"] = (total_unspent - total_frozen);
+        aroot["total-frozen"] = total_frozen;
+    }
     output << aroot.toStyledString();
 
     return console_result::okay;

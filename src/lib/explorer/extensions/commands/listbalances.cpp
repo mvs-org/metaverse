@@ -55,11 +55,20 @@ console_result listbalances::invoke (std::ostream& output,
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
         address_balance["address"] = i.get_address();
-        address_balance["confirmed"] += addr_balance.confirmed_balance;
-        address_balance["received"] += addr_balance.total_received;
-        address_balance["unspent"] += addr_balance.unspent_balance;
-        address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
-        address_balance["frozen"] += addr_balance.frozen_balance;
+
+        if (get_api_version() == 1) {
+            address_balance["confirmed"] += addr_balance.confirmed_balance;
+            address_balance["received"] += addr_balance.total_received;
+            address_balance["unspent"] += addr_balance.unspent_balance;
+            address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
+            address_balance["frozen"] += addr_balance.frozen_balance;
+        } else {
+            address_balance["confirmed"] = addr_balance.confirmed_balance;
+            address_balance["received"] = addr_balance.total_received;
+            address_balance["unspent"] = addr_balance.unspent_balance;
+            address_balance["available"] = (addr_balance.unspent_balance - addr_balance.frozen_balance);
+            address_balance["frozen"] = addr_balance.frozen_balance;
+        }
          
         Json::Value null_balances;
         // non_zero display options
