@@ -70,16 +70,19 @@ console_result listbalances::invoke (std::ostream& output,
             address_balance["frozen"] = addr_balance.frozen_balance;
         }
          
-        Json::Value null_balances;
-        // non_zero display options
-        if (option_.non_zero){
-            if (addr_balance.unspent_balance){
-                null_balances["balance"] = address_balance;
-                all_balances.append(null_balances);
+        Json::Value target_balance;
+        // non-zero lesser
+        if (option_.lesser){
+            if (addr_balance.unspent_balance <= option_.lesser &&
+                addr_balance.unspent_balance >= option_.greater){
+                target_balance["balance"] = address_balance;
+                all_balances.append(target_balance);
             }
         } else {
-            null_balances["balance"] = address_balance;
-            all_balances.append(null_balances);
+            if (addr_balance.unspent_balance >= option_.greater){
+            target_balance["balance"] = address_balance;
+            all_balances.append(target_balance);
+            }
         }
     }
     

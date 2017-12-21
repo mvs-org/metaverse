@@ -89,7 +89,9 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
                     // --option
                     vargv_.emplace_back("--" + key);
                     // value
-                    vargv_.emplace_back(param[key].asString());
+                    if (!param[key].isNull()) {
+                        vargv_.emplace_back(param[key].asString());
+                    }
                 }
                 break;
             }

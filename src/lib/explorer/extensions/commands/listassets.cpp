@@ -46,8 +46,8 @@ console_result listassets::invoke (std::ostream& output,
     if(auth_.name.empty()) { // no account -- list whole assets in blockchain
         sh_vec = blockchain.get_issued_assets();
         
-        if ( 0 == sh_vec->size()) // no asset found
-            throw asset_notfound_exception{"no asset found ?"};
+        if (sh_vec->size() == 0) // no asset found
+            throw asset_notfound_exception{"No asset found, please waiting for block synchronizing finish."};
 
         // add blockchain assets
         for (auto& elem: *sh_vec) {
@@ -56,7 +56,7 @@ console_result listassets::invoke (std::ostream& output,
             asset_data["symbol"] = elem.get_symbol();
             if (get_api_version() == 1) {
                 asset_data["maximum_supply"] += elem.get_maximum_supply();
-                asset_data["decimal_number"] += elem.get_decimal_number();
+                asset_data["decimal_number"] = std::to_string(elem.get_decimal_number());
             } else {
                 asset_data["maximum_supply"] = elem.get_maximum_supply();
                 asset_data["decimal_number"] = elem.get_decimal_number();
@@ -93,7 +93,7 @@ console_result listassets::invoke (std::ostream& output,
             }
             auto issued_asset = blockchain.get_issued_asset(symbol);
             if(issued_asset && get_api_version() == 1) {
-                asset_data["decimal_number"] += issued_asset->get_decimal_number();
+                asset_data["decimal_number"] = std::to_string(issued_asset->get_decimal_number());
             }
             if(issued_asset && get_api_version() == 2) {
                 asset_data["decimal_number"] = issued_asset->get_decimal_number();
@@ -122,7 +122,7 @@ console_result listassets::invoke (std::ostream& output,
             symbol = elem.detail.get_symbol();
             if (get_api_version() == 1) {
                 asset_data["quantity"] += elem.detail.get_maximum_supply();
-                asset_data["decimal_number"] += elem.detail.get_decimal_number();
+                asset_data["decimal_number"] = std::to_string(elem.detail.get_decimal_number());
             } else {
                 asset_data["quantity"] = elem.detail.get_maximum_supply();
                 asset_data["decimal_number"] = elem.detail.get_decimal_number();

@@ -37,13 +37,11 @@ public:
     static const char* symbol(){ return "getasset";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getasset "; }
+    const char* description() override { return "Show existed assets details from MVS blockchain."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
             .add("SYMBOL", 1);
     }
 
@@ -51,8 +49,6 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
     }
 
@@ -61,26 +57,16 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
-	    )
         (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
-	    )
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"Asset symbol."
-		);
+            "SYMBOL",
+            value<std::string>(&argument_.symbol),
+            "Asset symbol. If not specified, will show whole network asset symbols."
+        );
 
         return options;
     }
@@ -94,12 +80,12 @@ public:
 
     struct argument
     {
-    	argument():
-			symbol()
-		{
-		}
+        argument():
+            symbol()
+        {
+        }
 
-		std::string symbol;
+        std::string symbol;
     } argument_;
 
     struct option

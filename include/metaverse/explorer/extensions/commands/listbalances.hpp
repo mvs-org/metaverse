@@ -37,7 +37,7 @@ public:
     static const char* symbol(){ return "listbalances";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "List all balance details of each address of this account."; }
+    const char* description() override { return "List balance details of each address of this account. defaults show non-zero unspent address."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -67,7 +67,17 @@ public:
         (
             "nozero,n",
             value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
-            "List non-zero upsent records."
+            "Obsolescent option. replace with option <greater> <lesser>."
+        )
+        (
+            "greater,g",
+            value<uint64_t>(&option_.greater)->default_value(1),
+            "Greater than ETP bits. defaults to 1 (non-zero balance)."
+        )
+        (
+            "lesser,l",
+            value<uint64_t>(&option_.lesser)->default_value(0),
+            "Lesser than ETP bits."
         )
 	    (
             "ACCOUNTNAME",
@@ -97,6 +107,8 @@ public:
     struct option
     {
         bool non_zero;
+        uint64_t greater;
+        uint64_t lesser;
     } option_;
 
 };
