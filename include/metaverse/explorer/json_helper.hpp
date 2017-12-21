@@ -398,7 +398,14 @@ BCX_API Json::Value prop_tree(const settings_list& settings);
  */
 BCX_API Json::Value prop_tree(const wallet::bitcoin_uri& uri);
 
-BCX_API Json::Value prop_tree(const block& block);
+/**
+ * Create a property tree for a parsed bitcoin uri.
+ * @param[in]  block The parsed block.
+ * @param[in]  json  json output.
+ * @param[in]  tx_json   json output for tx within this block.
+ * @returns          A new property tree containing the settings.
+ */
+BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
 
 private:
     int version_{ 0 };

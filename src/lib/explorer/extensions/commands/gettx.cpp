@@ -45,7 +45,8 @@ console_result gettx::invoke (std::ostream& output,
     if (option_.json) {
         output << config::json_helper().prop_list(tx, tx_height, true).toStyledString();
     } else {
-        output << bc::explorer::config::transaction{tx};
+        config::transaction config_tx{tx};
+        output << config::json_helper().prop_tree(config_tx, false).toStyledString();
     }
 
     return console_result::okay;

@@ -372,12 +372,18 @@ Json::Value json_helper::prop_list(const transaction& transaction, bool json)
     const tx_type& tx = transaction;
 
     Json::Value tree;
-    tree["hash"] += hash256(tx.hash());
-    tree["inputs"] = prop_tree_list("input", tx.inputs, json);
-    tree["lock_time"] += tx.locktime;
-    //tree["outputs"] = prop_tree_list("output", tx.outputs, json); // old code used template func
-    tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
-    tree["version"] += tx.version;
+    if (json) {
+        tree["hash"] += hash256(tx.hash());
+        tree["inputs"] = prop_tree_list("input", tx.inputs, json);
+        tree["lock_time"] += tx.locktime;
+        tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
+        tree["version"] += tx.version;
+        return tree;
+    }else {
+        std::ostringstream sout;
+        sout << base16(tx.to_data());
+        tree["raw"] = sout.str();
+    }
     return tree;
 }
 Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_height, bool json)
@@ -557,14 +563,22 @@ Json::Value json_helper::prop_tree(const bitcoin_uri& uri)
 //block
 
 
-Json::Value json_helper::prop_tree(const block& block)
+Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
 {
 	Json::Value tree;
-	tree["header"] = prop_tree(block.header);
-	std::vector<transaction> txs;
-	txs.resize(block.transactions.size());
-	std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
-	tree["txs"] = prop_tree(txs, true);
+
+    if (json) {
+	    tree["header"] = prop_tree(block.header);
+	    std::vector<transaction> txs;
+	    txs.resize(block.transactions.size());
+	    std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
+	    tree["txs"] = prop_tree(txs, tx_json);
+    } else {
+        std::ostringstream sout;
+        sout << encode_base16(block.to_data());
+        tree["raw"] = sout.str();
+    }
+
 	return tree;
 }
 
