@@ -85,27 +85,27 @@ public:
 		(
 			"FROMADDRESS",
 			value<std::string>(&argument_.from)->required(),
-			"from address"
+			"From address"
 		)
 		(
 			"TOADDRESS",
 			value<std::string>(&argument_.to)->required(),
-			"target address"
+			"Target address"
 		)
 		(
 			"SYMBOL",
 			value<std::string>(&argument_.symbol)->required(),
-			"asset symbol"
+			"Asset symbol"
 		)
 		(
 			"AMOUNT",
 			value<uint64_t>(&argument_.amount)->required(),
-			"The asset amount shares"
+			"Asset integer bits. see asset <decimal_number>."
 		)
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"The fee of tx. default_value 0.0001 etp"
+			"Transaction fee. defaults to 10000 ETP bits"
 		);
 
         return options;

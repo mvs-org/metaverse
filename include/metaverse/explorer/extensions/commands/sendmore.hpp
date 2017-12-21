@@ -76,9 +76,9 @@ public:
             BX_ACCOUNT_AUTH
 	    )
         (
-            "receivers,r",
+            "receiver,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [address:amount]."
+            "Send to [address:etp_bits]."
 	    )
         (
             "mychange,m",
@@ -88,7 +88,7 @@ public:
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
-            "The fee of tx. default_value 0.0001 etp"
+            "Transaction fee. defaults to 10000 ETP bits"
 	    );
 
 
