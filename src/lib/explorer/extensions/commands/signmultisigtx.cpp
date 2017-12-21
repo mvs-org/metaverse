@@ -36,7 +36,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // get not signed tx
     //output << "###### raw tx ######" << std::endl;
-    //output << config::json_helper().prop_tree(argument_.transaction, true)).toStyledString();
+    //output << config::json_helper(get_api_version()).prop_tree(argument_.transaction, true)).toStyledString();
     tx_type tx_ = argument_.transaction;
 
     // get all address of this account
@@ -154,7 +154,7 @@ console_result signmultisigtx::invoke (std::ostream& output,
         log::trace("wdy new script=") << ss.to_string(false);
     }
         
-    //output << config::json_helper().prop_tree(tx_, true).toStyledString();
+    //output << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
     //output << "raw tx content" << std::endl << config::transaction(tx_);
     output << config::transaction(tx_);
 

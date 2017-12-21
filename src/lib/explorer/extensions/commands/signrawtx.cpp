@@ -126,7 +126,7 @@ console_result signrawtx::invoke (std::ostream& output,
 
     // get raw tx
     std::ostringstream buffer;
-    buffer << config::json_helper().prop_tree(tx_, true).toStyledString();
+    buffer << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
     log::trace("signrawtx=") << buffer.str();
 
     if(blockchain.validate_transaction(tx_))

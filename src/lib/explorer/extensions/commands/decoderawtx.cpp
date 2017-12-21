@@ -33,7 +33,7 @@ console_result decoderawtx::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     tx_type tx_ = argument_.transaction;    
-    output << config::json_helper().prop_tree(tx_, true).toStyledString();
+    output << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
     
     return console_result::okay;
 }

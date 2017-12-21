@@ -50,7 +50,7 @@ console_result xfetchutxo::invoke (std::ostream& output,
         return console_result::failure;
     }
 
-    auto on_done = [&amount, &type, &output, &blockchain](const history::list& rows)
+    auto on_done = [&amount, &type, &output, &blockchain, this](const history::list& rows)
     {
         uint64_t height = 0;
         blockchain.get_last_height(height);
@@ -105,7 +105,7 @@ console_result xfetchutxo::invoke (std::ostream& output,
         chain::points_info selected_utxos;
         wallet::select_outputs::select(selected_utxos, unspent, amount);
             
-        Json::Value tree = config::json_helper().prop_tree(selected_utxos, true); // json format
+        Json::Value tree = config::json_helper(get_api_version()).prop_tree(selected_utxos, true); // json format
         output << tree.toStyledString();
         
     };

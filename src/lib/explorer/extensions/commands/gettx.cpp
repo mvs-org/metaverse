@@ -43,10 +43,10 @@ console_result gettx::invoke (std::ostream& output,
         throw tx_notfound_exception{"transaction does not exist!"};
     
     if (option_.json) {
-        output << config::json_helper().prop_list(tx, tx_height, true).toStyledString();
+        output << config::json_helper(get_api_version()).prop_list(tx, tx_height, true).toStyledString();
     } else {
         config::transaction config_tx{tx};
-        output << config::json_helper().prop_tree(config_tx, false).toStyledString();
+        output << config::json_helper(get_api_version()).prop_tree(config_tx, false).toStyledString();
     }
 
     return console_result::okay;

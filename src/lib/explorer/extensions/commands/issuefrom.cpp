@@ -81,7 +81,7 @@ console_result issuefrom::invoke (std::ostream& output,
     blockchain.store_account_asset(detail);
     #endif
 
-    output << config::json_helper().prop_tree(tx, true).toStyledString();
+    output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

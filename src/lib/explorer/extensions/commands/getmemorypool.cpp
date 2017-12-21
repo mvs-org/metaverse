@@ -43,7 +43,7 @@ console_result getmemorypool::invoke (std::ostream& output,
     using transaction_ptr = message::transaction_message::ptr ;
     auto& blockchain = node.chain_impl();
     std::promise<code> p;
-    blockchain.pool().fetch([&output, &p, &json](const code& ec, const std::vector<transaction_ptr>& txs){
+    blockchain.pool().fetch([&output, &p, &json, this](const code& ec, const std::vector<transaction_ptr>& txs){
         if (ec)
         {
             p.set_value(ec);
@@ -56,9 +56,9 @@ console_result getmemorypool::invoke (std::ostream& output,
         }
 
         if(json) {
-            output << config::json_helper().prop_tree(txs1, true).toStyledString();
+            output << config::json_helper(get_api_version()).prop_tree(txs1, true).toStyledString();
         } else {
-            output << config::json_helper().prop_tree(txs1, false).toStyledString();
+            output << config::json_helper(get_api_version()).prop_tree(txs1, false).toStyledString();
         }
         p.set_value(ec);
     });

@@ -35,7 +35,7 @@ console_result sendrawtx::invoke (std::ostream& output,
     auto& blockchain = node.chain_impl();
     // get raw tx
     std::ostringstream buffer;
-    buffer << config::json_helper().prop_tree(argument_.transaction, true).toStyledString();
+    buffer << config::json_helper(get_api_version()).prop_tree(argument_.transaction, true).toStyledString();
     log::trace("sendrawtx=") << buffer.str();
     tx_type tx_ = argument_.transaction;
 

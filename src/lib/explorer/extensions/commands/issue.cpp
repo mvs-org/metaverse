@@ -74,7 +74,7 @@ console_result issue::invoke (std::ostream& output,
 
     // json output
     auto tx = issue_helper.get_transaction();
-    output << config::json_helper().prop_tree(tx, true).toStyledString();
+    output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
 
     // change asset status
     #if 0
