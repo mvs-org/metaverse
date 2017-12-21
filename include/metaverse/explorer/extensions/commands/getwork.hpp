@@ -42,16 +42,16 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ADMINNAME", 1)
+            .add("ADMINAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input, 
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(auth_.name, "ADMINNAME", variables, input, raw);
+        load_input(auth_.auth, "ADMINAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -65,14 +65,14 @@ public:
             "Get a description and instructions for this command."
         )
 	    (
-            "ACCOUNTNAME",
+            "ADMINNAME",
             value<std::string>(&auth_.name),
-            BX_ACCOUNT_NAME
+            BX_ADMIN_NAME
 	    )
         (
-            "ACCOUNTAUTH",
+            "ADMINAUTH",
             value<std::string>(&auth_.auth),
-            BX_ACCOUNT_AUTH
+            BX_ADMIN_AUTH
 	    );
 
 
