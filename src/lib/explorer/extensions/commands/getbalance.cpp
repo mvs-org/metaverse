@@ -57,10 +57,10 @@ console_result getbalance::invoke (std::ostream& output,
         auto waddr = wallet::payment_address(i.get_address());
         sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
 
-        total_confirmed = addr_balance.confirmed_balance;
-        total_received = addr_balance.total_received;
-        total_unspent = addr_balance.unspent_balance;
-        total_frozen = addr_balance.frozen_balance;
+        total_confirmed += addr_balance.confirmed_balance;
+        total_received += addr_balance.total_received;
+        total_unspent += addr_balance.unspent_balance;
+        total_frozen += addr_balance.frozen_balance;
     }
     
     if (get_api_version() == 1){
