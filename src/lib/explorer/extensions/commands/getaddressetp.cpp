@@ -44,10 +44,18 @@ console_result getaddressetp::invoke (std::ostream& output,
     Json::Value jroot;
     Json::Value jv;
     jv["address"] = addr.encoded();
-    jv["confirmed"] = addr_balance.confirmed_balance;
-    jv["received"]  = addr_balance.total_received;
-    jv["unspent"]   = addr_balance.unspent_balance;
-    jv["frozen"]    = addr_balance.frozen_balance;
+    if (get_api_version() == 2) {
+        jv["confirmed"] = addr_balance.confirmed_balance;
+        jv["received"]  = addr_balance.total_received;
+        jv["unspent"]   = addr_balance.unspent_balance;
+        jv["frozen"]    = addr_balance.frozen_balance;
+    } else {
+        // compatible for version 1: as string value
+        jv["confirmed"] = std::to_string(addr_balance.confirmed_balance);
+        jv["received"]  = std::to_string(addr_balance.total_received);
+        jv["unspent"]   = std::to_string(addr_balance.unspent_balance);
+        jv["frozen"]    = std::to_string(addr_balance.frozen_balance);
+    }
 
     jroot["balance"] = jv;
     

@@ -40,11 +40,11 @@ console_result getinfo::invoke (std::ostream& output,
     administrator_required_checker(node, auth_.name, auth_.auth);
 
     Json::Value jv; 
-    jv["protocol-version"] += node.network_settings().protocol;
+    jv["protocol-version"] = node.network_settings().protocol;
     jv["wallet-version"] = MVS_EXPLORER_VERSION;
     jv["database-version"] = MVS_DATABASE_VERSION;
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
-    jv["connections-count"] = get_connections_count(node); 
+    jv["peers"] = get_connections_count(node); 
     jv["network-assets-count"] = static_cast<uint64_t>(blockchain.get_issued_assets()->size()); 
     jv["wallet-account-count"] = static_cast<uint64_t>(blockchain.get_accounts()->size());
 
@@ -57,7 +57,7 @@ console_result getinfo::invoke (std::ostream& output,
     jv["height"] = height; 
     jv["difficulty"] = difficulty; 
     jv["is-mining"] = is_solo_mining; 
-    jv["rate"] = rate; 
+    jv["hash-rate"] = rate; 
 
     output << jv.toStyledString();
 

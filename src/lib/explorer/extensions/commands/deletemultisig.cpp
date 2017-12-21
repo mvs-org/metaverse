@@ -52,9 +52,15 @@ console_result deletemultisig::invoke (std::ostream& output,
 
     Json::Value root, pubkeys;
 
-    root["index"] += acc_multisig.get_index();
-    root["m"] += acc_multisig.get_m();
-    root["n"] += acc_multisig.get_n();
+    if (get_api_version() == 1) {
+        root["index"] += acc_multisig.get_index();
+        root["m"] += acc_multisig.get_m();
+        root["n"] += acc_multisig.get_n();
+    } else {
+        root["index"] = acc_multisig.get_index();
+        root["m"] = acc_multisig.get_m();
+        root["n"] = acc_multisig.get_n();
+    }
     root["self-publickey"] = acc_multisig.get_pubkey();
     root["description"] = acc_multisig.get_description();
 

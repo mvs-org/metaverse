@@ -62,9 +62,14 @@ console_result importkeyfile::invoke (std::ostream& output,
         
     Json::Value root;
     root["name"] = name;
-    //root["mnemonic-key"] = mnemonic;
-    root["address-count"] += acc.get_hd_index();
-    root["unissued-asset-count"] += all_info.get_account_asset().size();
+
+    if (get_api_version() == 1) {
+        root["address-count"] += acc.get_hd_index();
+        root["unissued-asset-count"] += all_info.get_account_asset().size();
+    } else {
+        root["address-count"] = acc.get_hd_index();
+        root["unissued-asset-count"] = all_info.get_account_asset().size();
+    }
     output << root.toStyledString();
 
     return console_result::okay;

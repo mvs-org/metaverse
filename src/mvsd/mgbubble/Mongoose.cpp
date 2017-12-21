@@ -63,7 +63,7 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
      * {"method":"xxx", "params":["p1","p2"]}
      * ******************************************/
         for (auto& param : root["params"]) {
-            if (param.isString())
+            if (!param.isObject())
                 vargv_.emplace_back(param.asString());
         }
     } else {
@@ -82,24 +82,16 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
      *  }
      * ******************************************/
 
-        // find out positon of options
-        int option_index = 0;
+        // push options
         for (auto& param : root["params"]) {
             if (param.isObject()) {
+                for (auto& key : param.getMemberNames()) {
+                    // --option
+                    vargv_.emplace_back("--" + key);
+                    // value
+                    vargv_.emplace_back(param[key].asString());
+                }
                 break;
-            } else {
-                option_index++;
-            }
-        }
-
-        // then push options
-        auto& parmas_options = root["params"][option_index];
-        if (parmas_options.isObject()) {
-            for (auto& key : parmas_options.getMemberNames()) {
-                // --option
-                vargv_.emplace_back("--" + key);
-                // value
-                vargv_.emplace_back(parmas_options[key].asString());
             }
         }
 

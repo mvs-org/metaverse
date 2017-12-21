@@ -67,11 +67,19 @@ console_result getaccountasset::invoke (std::ostream& output,
         asset_data["symbol"] = elem.get_symbol();
         asset_data["address"] = elem.get_address();
         symbol = elem.get_symbol();
-        asset_data["quantity"] += elem.get_maximum_supply();
+        if (get_api_version() == 1) {
+            asset_data["quantity"] += elem.get_maximum_supply();
+        } else {
+            asset_data["quantity"] = elem.get_maximum_supply();
+        }
         //asset_data["address"] = elem.get_address();
         auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset)
+        if(issued_asset && get_api_version() == 1) {
             asset_data["decimal_number"] += issued_asset->get_decimal_number();
+        }
+        if(issued_asset && get_api_version() == 2) {
+            asset_data["decimal_number"] = issued_asset->get_decimal_number();
+        }
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }

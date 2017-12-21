@@ -40,7 +40,6 @@ console_result getaddressasset::invoke (std::ostream& output,
     std::string symbol;
 
     auto& blockchain = node.chain_impl();
-    //blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.address)) 
         throw address_invalid_exception{"invalid address!"};
     
@@ -92,10 +91,18 @@ console_result getaddressasset::invoke (std::ostream& output,
         Json::Value asset_data;
         asset_data["symbol"] = elem.get_symbol();
         symbol = elem.get_symbol();
-        asset_data["quantity"] += elem.get_maximum_supply();
+        if (get_api_version() == 1) {
+            asset_data["quantity"] += elem.get_maximum_supply();
+        } else {
+            asset_data["quantity"] = elem.get_maximum_supply();
+        }
         auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset)
+        if(issued_asset && get_api_version() == 1) {
             asset_data["decimal_number"] += issued_asset->get_decimal_number();
+        }
+        if(issued_asset && get_api_version() == 2) {
+            asset_data["decimal_number"] = issued_asset->get_decimal_number();
+        }
         //asset_data["asset_type"] = elem.detail.get_asset_type();
         //asset_data["issuer"] = elem.detail.get_issuer();
         //asset_data["address"] = elem.detail.get_address();
