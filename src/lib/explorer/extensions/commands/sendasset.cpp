@@ -59,7 +59,7 @@ console_result sendasset::invoke (std::ostream& output,
 
     // json output
     auto tx = send_helper.get_transaction();
-    output << config::json_helper().prop_tree(tx, true).toStyledString();
+    output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
     log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;

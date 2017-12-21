@@ -64,16 +64,26 @@ Json::Value json_helper::prop_list(const header& header)
     const chain::header& block_header = header;
 
     Json::Value tree;
-    tree["bits"] += block_header.bits;
+
     tree["hash"] += hash256(block_header.hash());
     tree["merkle_tree_hash"] += hash256(block_header.merkle);
-    tree["nonce"] += block_header.nonce;
     tree["previous_block_hash"] += hash256(block_header.previous_block_hash);
-    tree["time_stamp"] += block_header.timestamp;
-    tree["version"] += block_header.version;
+    tree["bits"] += block_header.bits;
     tree["mixhash"] += block_header.mixhash;
-    tree["number"] += block_header.number;
-    tree["transaction_count"] += block_header.transaction_count;
+    tree["nonce"] += block_header.nonce;
+
+    if (version_ == 1) {
+        tree["time_stamp"] += block_header.timestamp;
+        tree["version"] += block_header.version;
+        tree["number"] += block_header.number;
+        tree["transaction_count"] += block_header.transaction_count;
+    } else {
+        tree["time_stamp"] = block_header.timestamp;
+        tree["version"] = block_header.version;
+        tree["number"] = block_header.number;
+        tree["transaction_count"] = block_header.transaction_count;
+    }
+
     return tree;
 }
 Json::Value json_helper::prop_tree(const header& header)
@@ -104,7 +114,11 @@ Json::Value json_helper::prop_list(const chain::history& row)
         if (row.output_height != 0)
             tree["received.height"] += row.output_height;
 
-        tree["received.index"] += row.output.index;
+        if (version_ == 1) {
+            tree["received.index"] += row.output.index;
+        } else {
+            tree["received.index"] = row.output.index;
+        }
     }
 
     // missing input implies unspent
@@ -116,10 +130,18 @@ Json::Value json_helper::prop_list(const chain::history& row)
         if (row.spend_height != 0)
             tree["spent.height"] += row.spend_height;
 
-        tree["spent.index"] += row.spend.index;
+        if (version_ == 1) {
+            tree["spent.index"] += row.spend.index;
+        } else {
+            tree["spent.index"] = row.spend.index;
+        }
     }
 
-    tree["value"] += row.value;
+    if (version_ == 1) {
+        tree["value"] += row.value;
+    } else {
+        tree["value"] = row.value;
+    }
     return tree;
 }
 Json::Value json_helper::prop_tree(const chain::history& row)
@@ -159,9 +181,15 @@ Json::Value json_helper::prop_list(const chain::history::list& rows,
     }
 
     tree["address"] += balance_address;
-    tree["confirmed"] += confirmed_balance;
-    tree["received"] += total_received;
-    tree["unspent"] += unspent_balance;
+    if (version_ == 1) {
+        tree["confirmed"] += confirmed_balance;
+        tree["received"] += total_received;
+        tree["unspent"] += unspent_balance;
+    } else {
+        tree["confirmed"] = confirmed_balance;
+        tree["received"] = total_received;
+        tree["unspent"] = unspent_balance;
+    }
     return tree;
 }
 Json::Value json_helper::prop_tree(const chain::history::list& rows,
@@ -182,9 +210,14 @@ Json::Value json_helper::prop_list(const tx_input_type& tx_input)
         tree["address"] += script_address;
 
     tree["previous_output.hash"] += hash256(tx_input.previous_output.hash);
-    tree["previous_output.index"] += tx_input.previous_output.index;
+    if (version_ == 1 ) {
+        tree["previous_output.index"] += tx_input.previous_output.index;
+        tree["sequence"] += tx_input.sequence;
+    } else {
+        tree["previous_output.index"] = tx_input.previous_output.index;
+        tree["sequence"] = tx_input.sequence;
+    }
     tree["script"] += script(tx_input.script).to_string();
-    tree["sequence"] += tx_input.sequence;
     return tree;
 }
 Json::Value json_helper::prop_tree(const tx_input_type& tx_input)
@@ -233,7 +266,6 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
     uint64_t lock_height = 0;
     if(chain::operation::is_pay_key_hash_with_lock_height_pattern(tx_output.script.operations))
         lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(tx_output.script.operations);
-    tree["locked_height_range"] += lock_height;
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
@@ -249,7 +281,14 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
         }
     }
 
-    tree["value"] += tx_output.value;
+    if (version_ == 1) {
+        tree["value"] += tx_output.value;
+        tree["locked_height_range"] += lock_height;
+    } else {
+        tree["value"] = tx_output.value;
+        tree["locked_height_range"] = lock_height;
+    }
+
     tree["attachment"] = prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data));
     return tree;
 }
@@ -257,7 +296,7 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
 Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t index)
 {
     Json::Value tree;
-	tree["index"] += index;
+
     const auto address = payment_address::extract(tx_output.script);
     if (address)
         tree["address"] += address;
@@ -266,7 +305,7 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
     uint64_t lock_height = 0;
     if(chain::operation::is_pay_key_hash_with_lock_height_pattern(tx_output.script.operations))
         lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(tx_output.script.operations);
-    tree["locked_height_range"] += lock_height;
+
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
@@ -282,7 +321,16 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
         }
     }
 
-    tree["value"] += tx_output.value;
+    if (version_ == 1) { 
+        tree["locked_height_range"] += lock_height;
+        tree["value"] += tx_output.value;
+        tree["index"] += index;
+    } else {
+        tree["locked_height_range"] = lock_height;
+        tree["value"] = tx_output.value;
+        tree["index"] = index;
+    }
+
     tree["attachment"] = prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data));
     return tree;
 }
@@ -290,35 +338,49 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
 Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
-	
-	if(attach_data.get_type() == ETP_TYPE) {
-		tree["type"] = "etp";
-	} else if(attach_data.get_type() == ASSET_TYPE) {
-		auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
-		if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
-			tree["type"] = "asset-issue";
-			auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
-			tree["symbol"] = detail_info.get_symbol();
-			tree["quantity"] += detail_info.get_maximum_supply();
-			//tree["asset_type"] = detail_info.get_asset_type();
-			tree["decimal_number"] += detail_info.get_decimal_number();
-			tree["issuer"] = detail_info.get_issuer();
-			tree["address"] = detail_info.get_address();
-			tree["description"] = detail_info.get_description();
-		}
-		if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-			tree["type"] = "asset-transfer";
-			auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-			tree["symbol"] = trans_info.get_address();
-			tree["quantity"] += trans_info.get_quantity();
-		}
-	} else if(attach_data.get_type() == MESSAGE_TYPE) {
-		tree["type"] = "message";
-		auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
-		tree["content"] = msg_info.get_content();
-	} else {
-		tree["type"] = "unknown business";
-	}
+    
+    if(attach_data.get_type() == ETP_TYPE) {
+        tree["type"] = "etp";
+
+    } else if(attach_data.get_type() == ASSET_TYPE) {
+
+        auto&& asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
+        if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            tree["type"] = "asset-issue";
+            auto&& detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
+            tree["symbol"] = detail_info.get_symbol();
+
+            if (version_ == 1) {
+                tree["quantity"] += detail_info.get_maximum_supply();
+                tree["decimal_number"] = std::to_string(detail_info.get_decimal_number());
+            } else {
+                tree["quantity"] = detail_info.get_maximum_supply();
+                tree["decimal_number"] = detail_info.get_decimal_number();
+            }
+            tree["issuer"] = detail_info.get_issuer();
+            tree["address"] = detail_info.get_address();
+            tree["description"] = detail_info.get_description();
+        }
+        if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+            tree["type"] = "asset-transfer";
+            auto&& trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
+            tree["symbol"] = trans_info.get_address();
+
+            if (version_ == 1) {
+                tree["quantity"] += trans_info.get_quantity();
+            } else {
+                tree["quantity"] = trans_info.get_quantity();
+            }
+        }
+
+    } else if(attach_data.get_type() == MESSAGE_TYPE) {
+        tree["type"] = "message";
+        auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
+        tree["content"] = msg_info.get_content();
+
+    } else {
+        tree["type"] = "unknown business";
+    }
     return tree;
 }
 Json::Value json_helper::prop_tree(const tx_output_type& tx_output)
@@ -331,10 +393,10 @@ Json::Value json_helper::prop_tree(const tx_output_type::list& tx_outputs, bool 
 {
 
     Json::Value list;
-	uint32_t index = 0;
+    uint32_t index = 0;
     for (const auto& value: tx_outputs){
         list.append(prop_list(value, index));
-		index++;
+        index++;
     }
 
     return list;
@@ -345,7 +407,11 @@ Json::Value json_helper::prop_list(const chain::point& point)
 {
     Json::Value tree;
     tree["hash"] += hash256(point.hash);
-    tree["index"] += point.index;
+    if (version_ == 1) {
+        tree["index"] += point.index;
+    } else {
+        tree["index"] = point.index;
+    }
     return tree;
 }
 
@@ -392,7 +458,7 @@ Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_h
 
     Json::Value tree;
     tree["hash"] += hash256(tx.hash());
-	tree["height"] += tx_height;
+    tree["height"] += tx_height;
     tree["inputs"] = prop_tree_list("input", tx.inputs, json);
     tree["lock_time"] += tx.locktime;
     //tree["outputs"] = prop_tree_list("output", tx.outputs, json);
@@ -508,8 +574,13 @@ Json::Value json_helper::prop_list(const hash_digest& hash, size_t height, size_
 {
     Json::Value tree;
     tree["hash"] += hash256(hash);
-    tree["height"] += height;
-    tree["index"] += index;
+    if (version_ == 1) {
+        tree["height"] += height;
+        tree["index"] += index;
+    } else {
+        tree["height"] = static_cast<uint64_t>(height);
+        tree["index"] = static_cast<uint32_t>(index);
+    }
     return tree;
 }
 Json::Value json_helper::prop_tree(const hash_digest& hash, size_t height, size_t index)
@@ -565,21 +636,21 @@ Json::Value json_helper::prop_tree(const bitcoin_uri& uri)
 
 Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
 {
-	Json::Value tree;
+    Json::Value tree;
 
     if (json) {
-	    tree["header"] = prop_tree(block.header);
-	    std::vector<transaction> txs;
-	    txs.resize(block.transactions.size());
-	    std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
-	    tree["txs"] = prop_tree(txs, tx_json);
+        tree["header"] = prop_tree(block.header);
+        std::vector<transaction> txs;
+        txs.resize(block.transactions.size());
+        std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
+        tree["txs"] = prop_tree(txs, tx_json);
     } else {
         std::ostringstream sout;
         sout << encode_base16(block.to_data());
         tree["raw"] = sout.str();
     }
 
-	return tree;
+    return tree;
 }
 
 } // namespace config

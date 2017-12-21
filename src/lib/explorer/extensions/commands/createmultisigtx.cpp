@@ -62,7 +62,7 @@ console_result createmultisigtx::invoke (std::ostream& output,
 
     // json output
     auto tx = send_helper.get_transaction();
-    //output << config::json_helper().prop_tree(tx, true).toStyledString();
+    //output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
     //output << "raw tx content" << std::endl << config::transaction(tx);
     output << config::transaction(tx);
     return console_result::okay;

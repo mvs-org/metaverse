@@ -63,7 +63,7 @@ std::string operator+(const Value& value);
 
 struct json_helper {
 
-explicit json_helper(int ver = 0) :version_(ver) {}
+explicit json_helper(int ver = 1) :version_(ver) {}
 
 /**
  * Create a property tree array of property tree elements.
@@ -408,7 +408,7 @@ BCX_API Json::Value prop_tree(const wallet::bitcoin_uri& uri);
 BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
 
 private:
-    int version_{ 0 };
+    uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;
 };
 
 } // namespace config
