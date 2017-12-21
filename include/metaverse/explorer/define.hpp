@@ -82,6 +82,11 @@
 #define BX_ACCOUNT_NAME "Account name required."
 #define BX_ACCOUNT_AUTH "Account password(authorization) required."
 
+/**
+ * Show Account messages.
+ */
+#define BX_ADMIN_NAME "Administrator required.(administrator_required is true)"
+#define BX_ADMIN_AUTH "Administrator password required."
 
 /**
  * Space-saving namespaces.
