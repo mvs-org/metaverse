@@ -36,6 +36,7 @@ console_result getblock::invoke(std::ostream& output,
     std::ostream& cerr, libbitcoin::server::server_node& node)
 {
     auto json = option_.json;
+    auto tx_json = option_.tx_json;
 
     // uint64_t max length
     if (argument_.hash_or_height.size() < 18) {
@@ -45,19 +46,18 @@ console_result getblock::invoke(std::ostream& output,
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_height, [&p, &output, json](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_height, [&p, &output, json, tx_json](const code& ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                output << config::json_helper().prop_tree(*block).toStyledString();
+                output << config::json_helper().prop_tree(*block, json, tx_json).toStyledString();
             }
             else
             {
-                auto chunck = block->to_data();
-                output << encode_base16(chunck);
+                output << config::json_helper().prop_tree(*block, false, false).toStyledString();
             }
             p.set_value(error::success);
         });
@@ -75,19 +75,18 @@ console_result getblock::invoke(std::ostream& output,
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_hash, [&p, &output, json](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_hash, [&p, &output, json, tx_json](const code& ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                output << config::json_helper().prop_tree(*block).toStyledString();
+                output << config::json_helper().prop_tree(*block, json, tx_json).toStyledString();
             }
             else
             {
-                auto chunck = block->to_data();
-                output << encode_base16(chunck);
+                output << config::json_helper().prop_tree(*block, false, false).toStyledString();
             }
             p.set_value(error::success);
         });

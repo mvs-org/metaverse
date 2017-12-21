@@ -43,7 +43,8 @@ public:
     {
         return get_argument_metadata()
                 .add("HASH_OR_HEIGH", 1)
-                .add("json", 1);
+                .add("json", 1)
+                .add("tx_json", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -52,6 +53,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(argument_.hash_or_height, "HASH_OR_HEIGH", variables, input, raw);
         load_input(argument_.hash_or_height, "json", variables, input, raw);
+        load_input(argument_.hash_or_height, "tx_json", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -74,6 +76,11 @@ public:
             value<bool>(&option_.json)->default_value(true),
             "Json/Raw format, default is '--json=true'."
         )
+        (
+            "tx_json",
+            value<bool>(&option_.tx_json)->default_value(true),
+            "Json/Raw format for txs, default is '--tx_json=true'."
+        )
         ;
 
         return options;
@@ -94,6 +101,7 @@ public:
     struct option
     {
         bool json;
+        bool tx_json;
     } option_;
 
 };
