@@ -88,17 +88,17 @@ public:
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
-            "How many you will spend"
+            "ETP integer bits."
         )
 		(
 			"MESSAGE",
 			value<std::string>(&argument_.message)->required(),
-			"message attached to the transaction"
+			"Message attached to the transaction"
 		)
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
-            "The fee of tx. default_value 0.0001 etp"
+            "Transaction fee. defaults to 10000 ETP bits"
 	    );
 
         return options;
