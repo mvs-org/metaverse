@@ -1675,20 +1675,20 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 
 bool block_chain_impl::is_stealth_address(const std::string& address)
 {	
-	auto&& addr = bc::wallet::stealth_address(address);
+	wallet::stealth_address addr{address};
 	return (addr && (addr.version() == wallet::stealth_address::mainnet_p2kh));
 }
 
 bool block_chain_impl::is_payment_address(const std::string& address)
 {	
-	auto&& addr = bc::wallet::payment_address(address);
+	wallet::payment_address addr{address};
 	return (addr && (addr.version() == wallet::payment_address::mainnet_p2kh));
 }
 
 // stupid name for this function. should be is_p2sh_address.
 bool block_chain_impl::is_script_address(const std::string& address)
 {	
-	auto&& addr = bc::wallet::payment_address(address);
+	wallet::payment_address addr{address};
 	return (addr && (addr.version() == wallet::payment_address::mainnet_p2sh));
 }
 

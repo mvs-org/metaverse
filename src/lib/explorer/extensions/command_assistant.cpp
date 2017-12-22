@@ -29,28 +29,27 @@ namespace commands {
 using namespace bc::explorer::config;
 
 // ---------------------------------------------------------------------------
-std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, bool use_testnet_rules)
+std::string ec_to_xxx_impl(const std::string& cmd, const std::string& fromkey)
 {
-    std::stringstream sout("");
-    std::istringstream sin(fromkey);
+    if (cmd == "ec-to-public") {
 
-    const char* cmds[]{commands, "-v", "127"};
-     
-    if (use_testnet_rules){
-        if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-            throw encode_exception(sout.str());
-        }
-         
-        relay_exception(sout);
-    } else {
-        if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-            throw encode_exception(sout.str());
-        }
-         
-        relay_exception(sout);
+        explorer::config::ec_private secret{fromkey};
+        ec_compressed point;
+        bc::secret_to_public(point, secret);
+        wallet::ec_public ec_pubkey(point, true); // compressed for MVS always
+
+        return ec_pubkey.encoded();
     }
 
-    return sout.str();
+    if (cmd == "ec-to-address") {
+
+        wallet::ec_public point{fromkey};
+        wallet::payment_address pay_addr(point, wallet::payment_address::mainnet_p2kh);
+
+        return pay_addr.encoded();
+    }
+
+    return "";
 }
 
 uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
@@ -131,7 +130,7 @@ bool utxo_helper::fetch_utxo(std::string& change, bc::server::server_node& node)
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
-        std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, is_testnet_rules);
+        std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey);
 
         std::string amount = std::to_string(fromeach.second);
 
@@ -1470,7 +1469,7 @@ bool utxo_attach_issuefrom_helper::fetch_utxo(bc::server::server_node& node)
     for (auto& fromeach : from_list_){
 
         std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", fromeach.first);
-        std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
+        std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey);
 
         const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str(), "-t", "etp"};
         std::stringstream sout("");
@@ -1780,7 +1779,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo_impl(bc::server::server_node& node,
 {
     std::string&& amount = std::to_string(payment_amount);
     std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", prv_key);
-    std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
+    std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey);
 
     const char* cmds[]{"xfetchutxo", amount.c_str(), fromaddress.c_str()};
 
@@ -1852,7 +1851,7 @@ bool utxo_attach_sendfrom_helper::fetch_utxo()
     
     // fill reback change and asset amount
     std::string&& frompubkey = ec_to_xxx_impl("ec-to-public", asset_ls_.begin()->key);
-    std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey, use_testnet_);
+    std::string&& fromaddress = ec_to_xxx_impl("ec-to-address", frompubkey);
     set_mychange(fromaddress, etp_num - total_payment_amount_, asset_amount - amount_);
     
     return true; 

@@ -44,7 +44,7 @@ class BCX_API utxo_attach_send_helper;
 class BCX_API utxo_attach_issuefrom_helper;
 class BCX_API utxo_attach_sendfrom_helper;
 // to genarate address
-std::string ec_to_xxx_impl(const char* commands, const std::string& fromkey, bool use_testnet_rules = false);
+std::string ec_to_xxx_impl(const std::string& cmd, const std::string& fromkey);
 
 // public send
 void get_tx_decode(const std::string& tx_set, std::string& tx_decode);
