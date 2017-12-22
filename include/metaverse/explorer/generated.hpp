@@ -31,7 +31,6 @@
 #include <metaverse/explorer/commands/fetch-history.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>
 #include <metaverse/explorer/commands/fetch-tx.hpp>
-#include <metaverse/explorer/commands/fetch-tx-index.hpp>
 #include <metaverse/explorer/commands/fetch-utxo.hpp>
 #include <metaverse/explorer/commands/help.hpp>
 #include <metaverse/explorer/commands/input-set.hpp>
