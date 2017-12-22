@@ -46,7 +46,20 @@ console_result getnewaddress::invoke (std::ostream& output,
     words.reserve(24);
 
     //split mnemonic to words
-    boost::split(words, mnemonic, boost::is_any_of(" "));
+    string::size_type pos1, pos2;
+    std::string c{" "};
+    pos2 = mnemonic.find(c);
+    pos1 = 0;
+    while(string::npos != pos2)
+    {
+        words.push_back(mnemonic.substr(pos1, pos2-pos1));
+
+        pos1 = pos2 + c.size();
+        pos2 = mnemonic.find(c, pos1);
+    }
+    if(pos1 != mnemonic.length())
+        words.push_back(mnemonic.substr(pos1));
+    //end split
 
     if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
         return console_result::failure;

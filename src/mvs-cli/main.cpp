@@ -46,7 +46,7 @@ int bc::main(int argc, char* argv[])
 {
     auto work_path = bc::default_data_path();
     auto&& config_file = work_path / "mvs.conf";
-    std::string url{"127.0.0.1:8820/rpc"}; 
+    std::string url{"127.0.0.1:8820/rpc/v2"}; 
 
     if(boost::filesystem::exists(config_file)) {
         std::string tmp;
@@ -61,7 +61,7 @@ int bc::main(int argc, char* argv[])
         if (vm.count("server.mongoose_listen"))
         {
             if (!tmp.empty()) {
-                url = tmp + "/rpc";
+                url = tmp + "/rpc/v2";
             }
         }
     } 
