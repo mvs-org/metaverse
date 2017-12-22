@@ -50,7 +50,6 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
     func(make_shared<help>());
     func(make_shared<input_set>());
     func(make_shared<input_sign>());
-    func(make_shared<input_validate>());
     func(make_shared<send_tx>());
     func(make_shared<settings>());
     func(make_shared<stealth_decode>());
@@ -86,8 +85,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<input_set>();
     if (symbol == input_sign::symbol())
         return make_shared<input_sign>();
-    if (symbol == input_validate::symbol())
-        return make_shared<input_validate>();
     if (symbol == send_tx::symbol())
         return make_shared<send_tx>();
     if (symbol == settings::symbol())
@@ -122,8 +119,6 @@ std::string formerly(const string& former)
         return input_set::symbol();
     if (former == input_sign::formerly())
         return input_sign::symbol();
-    if (former == input_validate::formerly())
-        return input_validate::symbol();
     if (former == send_tx::formerly())
         return send_tx::symbol();
     if (former == stealth_decode::formerly())
