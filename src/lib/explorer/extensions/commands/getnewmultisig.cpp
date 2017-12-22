@@ -81,25 +81,22 @@ console_result getnewmultisig::invoke(std::ostream& output,
     if (!pvaddr)
         throw address_list_nullptr_exception{ "nullptr for address list" };
 
-    const char* cmds[2]{ "ec-to-public", nullptr };
-    std::stringstream sout("");
-    std::istringstream sin;
     std::string prv_key;
     auto found = false;
     for (auto& each : *pvaddr) {
+
         prv_key = each.get_prv_key(auth_.auth);
-        cmds[1] = prv_key.c_str();
-        if (console_result::okay == dispatch_command(2, cmds, sin, sout, sout)) {
-            log::trace("pubkey") << sout.str();
-            if (sout.str() == pubkey) {
-                found = true;
-                break;
-            }
-            sout.str("");
+        auto&& target_pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+        if (target_pub_key == pubkey) {
+            found = true;
+            break;
         }
+
     }
-    if (!found)
+
+    if (!found) {
         throw pubkey_dismatch_exception{ pubkey + " not belongs to this account" };
+    }
 
     addr->set_prv_key(prv_key, auth_.auth);
 

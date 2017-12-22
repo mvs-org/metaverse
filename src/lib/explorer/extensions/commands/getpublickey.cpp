@@ -53,26 +53,28 @@ console_result getpublickey::invoke (std::ostream& output,
         argument_.address = pvaddr->at(index).get_address();
     }
 
-    const char* cmds[2]{"ec-to-public", nullptr};
-    std::ostringstream sout("account not have the address!");
-    std::istringstream sin; 
-    std::string prv_key;
     // get public key
+    std::string prv_key;
+    std::string pub_key;
     auto found = false;
     for (auto& each : *pvaddr){
+
         if(each.get_address() == argument_.address) {
+
             prv_key = each.get_prv_key(auth_.auth);
-            cmds[1] = prv_key.c_str();
-            if(console_result::okay == dispatch_command(2, cmds, sin, sout, sout))
-                found = true;
+            pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+
+            found = true;
             break;
         }
     }
 
-    if(!found) throw account_address_get_exception{sout.str()};
+    if(!found) {
+        throw account_address_get_exception{pub_key};
+    }
     
     Json::Value root;
-    root["public-key"] = sout.str();
+    root["public-key"] = pub_key;
     root["address"] = argument_.address;
     output << root.toStyledString();
     
