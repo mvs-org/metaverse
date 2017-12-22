@@ -33,7 +33,6 @@
 #include <metaverse/explorer/commands/help.hpp>
 #include <metaverse/explorer/commands/input-set.hpp>
 #include <metaverse/explorer/commands/input-sign.hpp>
-#include <metaverse/explorer/commands/input-validate.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>
 #include <metaverse/explorer/commands/settings.hpp>
 #include <metaverse/explorer/commands/stealth-decode.hpp>
