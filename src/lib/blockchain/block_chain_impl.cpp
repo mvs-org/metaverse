@@ -1668,8 +1668,8 @@ void block_chain_impl::uppercase_symbol(std::string& symbol)
 
 bool block_chain_impl::is_valid_address(const std::string& address)
 {	
-    return  is_payment_address(address) &&
-            is_script_address(address) &&
+    return  is_payment_address(address) ||
+            is_script_address(address) ||
             is_stealth_address(address);
 }
 
