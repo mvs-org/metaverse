@@ -48,7 +48,6 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
     func(make_shared<fetch_history>());
     func(make_shared<fetch_stealth>());
     func(make_shared<fetch_tx>());
-    func(make_shared<fetch_tx_index>());
     func(make_shared<fetch_utxo>());
     func(make_shared<help>());
     func(make_shared<input_set>());
@@ -86,8 +85,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<fetch_stealth>();
     if (symbol == fetch_tx::symbol())
         return make_shared<fetch_tx>();
-    if (symbol == fetch_tx_index::symbol())
-        return make_shared<fetch_tx_index>();
     if (symbol == fetch_utxo::symbol())
         return make_shared<fetch_utxo>();
     if (symbol == help::symbol())
@@ -132,8 +129,6 @@ std::string formerly(const string& former)
         return ec_to_public::symbol();
     if (former == fetch_tx::formerly())
         return fetch_tx::symbol();
-    if (former == fetch_tx_index::formerly())
-        return fetch_tx_index::symbol();
     if (former == fetch_utxo::formerly())
         return fetch_utxo::symbol();
     if (former == input_set::formerly())

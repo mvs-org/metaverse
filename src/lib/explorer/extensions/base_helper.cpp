@@ -895,15 +895,17 @@ void base_transfer_helper::populate_tx_outputs(){
         const wallet::payment_address payment(iter.target);
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        } else if(payment.version() == 0x5) { // pay to script addr
-            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); // common payment script
-        } else {
-            throw toaddress_unrecognized_exception{"unrecognized target address."};
+
+        auto&& hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) 
+        {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); 
+        } 
+        else if (payment.version() == wallet::payment_address::mainnet_p2sh) 
+        { 
+            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); 
         }
+
         auto payment_script = chain::script{ payment_ops };
         
         // generate asset info
@@ -1272,19 +1274,22 @@ void base_transaction_constructor::populate_tx_outputs(){
         const wallet::payment_address payment(iter.target);
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        } else if(payment.version() == 0x5) { // pay to script addr
-            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); // common payment script
+
+        auto&& hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); 
+
+        } else if(payment.version() == wallet::payment_address::mainnet_p2sh) { 
+            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); 
+
         } else {
             throw toaddress_unrecognized_exception{std::string("unrecognized target address.") + payment.encoded()};
         }
-        auto payment_script = chain::script{ payment_ops };
+
+        auto&& payment_script = chain::script{ payment_ops };
         
         // generate asset info
-        auto output_att = populate_output_attachment(iter);
+        auto&& output_att = populate_output_attachment(iter);
         
         // fill output
         tx_.outputs.push_back({ iter.amount, payment_script, output_att });
@@ -1407,9 +1412,8 @@ void depositing_etp_transaction::populate_tx_outputs() {
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
         
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            auto hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            auto&& hash = payment.hash();
             if((utxo_attach_type::deposit == iter.type)) {
                 payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
             } else {
