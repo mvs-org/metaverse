@@ -107,7 +107,7 @@ before_install:
        export IS_TRAVIS_LINUX=true;
        export CC=gcc;
        export CXX=g++;
-      ./install_dependencies.sh;
+      ./install_dependencies.sh --build-boost;
     fi
 
 before_script:
