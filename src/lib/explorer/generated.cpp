@@ -60,7 +60,6 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
     func(make_shared<stealth_shared>());
     func(make_shared<tx_decode>());
     func(make_shared<tx_encode>());
-    func(make_shared<tx_sign>());
     func(make_shared<validate_tx>());
 
     os <<"\r\n== extension commands ==\r\n";
@@ -107,8 +106,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<tx_decode>();
     if (symbol == tx_encode::symbol())
         return make_shared<tx_encode>();
-    if (symbol == tx_sign::symbol())
-        return make_shared<tx_sign>();
     if (symbol == validate_tx::symbol())
         return make_shared<validate_tx>();
 
@@ -135,8 +132,6 @@ std::string formerly(const string& former)
         return stealth_public::symbol();
     if (former == stealth_secret::formerly())
         return stealth_secret::symbol();
-    if (former == tx_sign::formerly())
-        return tx_sign::symbol();
     if (former == validate_tx::formerly())
         return validate_tx::symbol();
 

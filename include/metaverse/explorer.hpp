@@ -44,7 +44,6 @@
 #include <metaverse/explorer/commands/stealth-shared.hpp>
 #include <metaverse/explorer/commands/tx-decode.hpp>
 #include <metaverse/explorer/commands/tx-encode.hpp>
-#include <metaverse/explorer/commands/tx-sign.hpp>
 #include <metaverse/explorer/commands/validate-tx.hpp>
 #include <metaverse/explorer/config/address.hpp>
 #include <metaverse/explorer/config/algorithm.hpp>
