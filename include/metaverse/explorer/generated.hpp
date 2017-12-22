@@ -25,8 +25,6 @@
 #include <memory>
 #include <string>
 #include <metaverse/explorer/command.hpp>
-#include <metaverse/explorer/commands/ec-to-address.hpp>
-#include <metaverse/explorer/commands/ec-to-public.hpp>
 #include <metaverse/explorer/commands/fetch-header.hpp>
 #include <metaverse/explorer/commands/fetch-history.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>

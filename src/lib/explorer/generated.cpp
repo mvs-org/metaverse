@@ -42,8 +42,6 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
     os <<"== original commands ==\r\n";
 
-    func(make_shared<ec_to_address>());
-    func(make_shared<ec_to_public>());
     func(make_shared<fetch_header>());
     func(make_shared<fetch_history>());
     func(make_shared<fetch_stealth>());
@@ -73,10 +71,6 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
 shared_ptr<command> find(const string& symbol)
 {
-    if (symbol == ec_to_address::symbol())
-        return make_shared<ec_to_address>();
-    if (symbol == ec_to_public::symbol())
-        return make_shared<ec_to_public>();
     if (symbol == fetch_header::symbol())
         return make_shared<fetch_header>();
     if (symbol == fetch_history::symbol())
@@ -123,10 +117,6 @@ shared_ptr<command> find(const string& symbol)
 
 std::string formerly(const string& former)
 {
-    if (former == ec_to_address::formerly())
-        return ec_to_address::symbol();
-    if (former == ec_to_public::formerly())
-        return ec_to_public::symbol();
     if (former == fetch_tx::formerly())
         return fetch_tx::symbol();
     if (former == fetch_utxo::formerly())
