@@ -20,6 +20,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -77,18 +78,9 @@ uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
 
 void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
 {
-    explorer::config::transaction transaction{tx_set};
-    std::stringstream sout("");
-    std::istringstream sin(tx_set);
-
-    const char* cmds[]{"tx-decode"};
-    if (dispatch_command(1, cmds, sin, sout, sout) != console_result::okay) {
-        throw tx_decode_get_exception(sout.str());
-    }
-     
-     
-    relay_exception(sout);
-    tx_decode = sout.str();
+    config::transaction transaction{tx_set};
+    auto&& jv = config::json_helper().prop_tree(transaction, true);
+    tx_decode = jv.toStyledString();
 }
 
 void validate_tx(const std::string& tx_set)
@@ -774,7 +766,7 @@ void utxo_attach_issue_helper::get_input_sign(std::string& tx_encode)
             relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
+            log::trace(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
     }
 }
@@ -932,7 +924,6 @@ bool send_impl(utxo_attach_issue_helper& utxo, bc::server::server_node& node, st
     std::string send_ret;
     send_tx(tx_set, send_ret);
 
-    //output<<"{\"sent-result\":\"" << send_ret <<"\",";
     output<< tx_decode ;
 
     return true;
@@ -1191,7 +1182,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
                 continue;
             bank_cmds[i] = ((tx_encode_index + fromeach.first + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.first.c_str(), iter.output.script.c_str()};
-            log::debug(LOG_COMMAND)<<"etp input-sign="<<tx_encode_index<<" "<<fromeach.first<<" "<<iter.output.script;
+            log::trace(LOG_COMMAND)<<"etp input-sign="<<tx_encode_index<<" "<<fromeach.first<<" "<<iter.output.script;
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
@@ -1200,7 +1191,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
+            log::trace(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
     }
     
@@ -1217,7 +1208,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
                 continue;
             bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.key.c_str(), iter.output.script.c_str()};
-            log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach.key<<" "<<iter.output.script;
+            log::trace(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach.key<<" "<<iter.output.script;
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
@@ -1226,7 +1217,7 @@ void utxo_attach_send_helper::get_input_sign(std::string& tx_encode)
             relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
+            log::trace(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
     }
 }
@@ -1253,7 +1244,7 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             sout.str("");
 
             std::string&& tx_encode_index = std::to_string(i++);
-            log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
+            log::trace(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
@@ -1280,7 +1271,7 @@ void utxo_attach_send_helper::get_input_set(const std::string& tx_encode, std::s
             sout.str("");
 
             std::string&& tx_encode_index = std::to_string(i++);
-            log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
+            log::trace(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
             if (dispatch_command(4, cmds, sin, sout, sout) != console_result::okay) {
@@ -1455,7 +1446,6 @@ bool send_impl(utxo_attach_send_helper& utxo, bc::server::server_node& node, std
     std::string send_ret;
     send_tx(tx_set, send_ret);
 
-    //output<<"{\"sent-result\":\"" << send_ret <<"\",";
     output<< tx_decode ;
 
     return true;
@@ -1647,7 +1637,7 @@ void utxo_attach_issuefrom_helper::get_input_sign(std::string& tx_encode)
             relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
+            log::trace(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
     }
 }
@@ -1768,7 +1758,6 @@ bool send_impl(utxo_attach_issuefrom_helper& utxo, bc::server::server_node& node
     std::string send_ret;
     send_tx(tx_set, send_ret);
 
-    //output<<"{\"sent-result\":\"" << send_ret <<"\",";
     output<< tx_decode ;
 
     return true;
@@ -1986,7 +1975,7 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
                 //continue;
             //bank_cmds[i] = ((tx_encode_index + fromeach.key + iter.output.script).c_str());
             const char* cmds[]{"input-sign", "-i", tx_encode_index.c_str(), fromeach.c_str(), iter.output.script.c_str()};
-            log::debug(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach<<" "<<iter.output.script;
+            log::trace(LOG_COMMAND)<<"asset input-sign="<<tx_encode_index<<" "<<fromeach<<" "<<iter.output.script;
             if (dispatch_command(5, cmds, sin, sout, sout) != console_result::okay) {
                 throw logic_error(sout.str());
             }
@@ -1995,7 +1984,7 @@ void utxo_attach_sendfrom_helper::get_input_sign(std::string& tx_encode)
             relay_exception(sout);
 
             iter.output.as_input_sign = sout.str();
-            log::debug(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
+            log::trace(LOG_COMMAND)<<"input-sign sout:"<<iter.output.as_input_sign;
         }
     }
 }
@@ -2023,7 +2012,7 @@ void utxo_attach_sendfrom_helper::get_input_set(const std::string& tx_encode, st
             sout.str("");
 
             std::string&& tx_encode_index = std::to_string(i++);
-            log::debug(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
+            log::trace(LOG_COMMAND)<<"get_input_set:"<<tx_encode_index<<" "<<input_script;
             const char* cmds[]{"input-set", "-i", tx_encode_index.c_str(), input_script.c_str()};
 
 
@@ -2140,7 +2129,6 @@ bool send_impl(utxo_attach_sendfrom_helper& utxo, bc::server::server_node& node,
     std::string send_ret;
     send_tx(tx_set, send_ret);
 
-    //output<<"{\"sent-result\":\"" << send_ret <<"\",";
     output<< tx_decode ;
 
     return true;
