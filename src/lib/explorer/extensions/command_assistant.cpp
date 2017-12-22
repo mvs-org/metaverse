@@ -77,6 +77,7 @@ uint64_t get_total_payment_amount(const std::vector<std::string>& receiver_list,
 
 void get_tx_decode(const std::string& tx_set, std::string& tx_decode)
 {
+    explorer::config::transaction transaction{tx_set};
     std::stringstream sout("");
     std::istringstream sin(tx_set);
 
