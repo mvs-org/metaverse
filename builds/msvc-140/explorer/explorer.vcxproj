@@ -13,15 +13,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-address.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-public.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-balance.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-header.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-height.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-public-key.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx-index.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-utxo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-new.hpp" />
@@ -31,7 +28,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-set.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-sign.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-validate.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-decode.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-encode.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-new.hpp" />
@@ -47,9 +43,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-shared.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-decode.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-encode.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-sign.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-address.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\address.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\algorithm.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\btc.hpp" />
@@ -115,7 +109,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listbalances.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\ping.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
@@ -152,15 +145,11 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-header.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx-index.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-utxo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-address.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-public.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-sign.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-validate.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-encode.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-public.cpp" />
@@ -168,12 +157,10 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-shared.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-decode.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-encode.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-sign.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline_commands_impl.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\send-tx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\settings.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\validate-tx.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\watch-address.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\address.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\algorithm.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\btc.cpp" />
@@ -214,6 +201,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccountasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbalance.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockhash.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockheader.cpp" />
@@ -222,7 +210,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmemorypool.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmininginfo.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnetasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewmultisig.cpp" />
