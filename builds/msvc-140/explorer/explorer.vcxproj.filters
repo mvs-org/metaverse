@@ -200,9 +200,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\ping.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -314,12 +311,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\wrapper.hpp">
       <Filter>Header Files\config</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-address.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\ec-to-public.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-balance.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
@@ -339,9 +330,6 @@
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx-index.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-utxo.hpp">
@@ -366,9 +354,6 @@
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-sign.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-validate.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-decode.hpp">
@@ -416,13 +401,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-encode.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-sign.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\watch-address.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp">
@@ -474,9 +453,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx-index.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-utxo.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
@@ -495,16 +471,10 @@
     <ClCompile Include="..\..\..\src\lib\explorer\commands\validate-tx.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\watch-address.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-sign.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-validate.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp">
@@ -526,15 +496,6 @@
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-encode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-sign.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-address.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\ec-to-public.cpp">
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\config\hashtype.cpp">
@@ -663,9 +624,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmininginfo.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnetasset.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaccount.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
@@ -791,6 +749,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getasset.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
