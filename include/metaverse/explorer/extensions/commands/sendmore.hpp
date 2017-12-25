@@ -76,7 +76,7 @@ public:
             BX_ACCOUNT_AUTH
 	    )
         (
-            "receiver,r",
+            "receivers,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
             "Send to [address:etp_bits]."
 	    )
