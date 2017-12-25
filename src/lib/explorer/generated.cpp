@@ -42,24 +42,16 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
     os <<"== original commands ==\r\n";
 
-    func(make_shared<fetch_header>());
-    func(make_shared<fetch_history>());
-    func(make_shared<fetch_stealth>());
-    func(make_shared<fetch_tx>());
-    func(make_shared<fetch_utxo>());
     func(make_shared<help>());
-    func(make_shared<input_set>());
-    func(make_shared<input_sign>());
-    func(make_shared<send_tx>());
     func(make_shared<settings>());
+    func(make_shared<send_tx>());
+    func(make_shared<tx_decode>());
+    func(make_shared<validate_tx>());
     func(make_shared<stealth_decode>());
     func(make_shared<stealth_encode>());
     func(make_shared<stealth_public>());
     func(make_shared<stealth_secret>());
     func(make_shared<stealth_shared>());
-    func(make_shared<tx_decode>());
-    func(make_shared<tx_encode>());
-    func(make_shared<validate_tx>());
 
     os <<"\r\n== extension commands ==\r\n";
 
@@ -69,22 +61,8 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
 shared_ptr<command> find(const string& symbol)
 {
-    if (symbol == fetch_header::symbol())
-        return make_shared<fetch_header>();
-    if (symbol == fetch_history::symbol())
-        return make_shared<fetch_history>();
-    if (symbol == fetch_stealth::symbol())
-        return make_shared<fetch_stealth>();
-    if (symbol == fetch_tx::symbol())
-        return make_shared<fetch_tx>();
-    if (symbol == fetch_utxo::symbol())
-        return make_shared<fetch_utxo>();
     if (symbol == help::symbol())
         return make_shared<help>();
-    if (symbol == input_set::symbol())
-        return make_shared<input_set>();
-    if (symbol == input_sign::symbol())
-        return make_shared<input_sign>();
     if (symbol == send_tx::symbol())
         return make_shared<send_tx>();
     if (symbol == settings::symbol())
@@ -101,8 +79,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<stealth_shared>();
     if (symbol == tx_decode::symbol())
         return make_shared<tx_decode>();
-    if (symbol == tx_encode::symbol())
-        return make_shared<tx_encode>();
     if (symbol == validate_tx::symbol())
         return make_shared<validate_tx>();
 
@@ -111,14 +87,6 @@ shared_ptr<command> find(const string& symbol)
 
 std::string formerly(const string& former)
 {
-    if (former == fetch_tx::formerly())
-        return fetch_tx::symbol();
-    if (former == fetch_utxo::formerly())
-        return fetch_utxo::symbol();
-    if (former == input_set::formerly())
-        return input_set::symbol();
-    if (former == input_sign::formerly())
-        return input_sign::symbol();
     if (former == send_tx::formerly())
         return send_tx::symbol();
     if (former == stealth_decode::formerly())

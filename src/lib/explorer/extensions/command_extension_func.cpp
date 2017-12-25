@@ -85,7 +85,6 @@
 #include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
-#include <metaverse/explorer/extensions/commands/xfetchutxo.hpp>
 
 
 namespace libbitcoin {
@@ -185,7 +184,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<addnode>();
     if (symbol == getmininginfo::symbol())
         return make_shared<getmininginfo>();
-    if (symbol == gettx::symbol() || symbol == "gettransaction")
+    if (symbol == gettx::symbol() || symbol == "gettransaction" || "fetch-tx")
         return make_shared<gettx>();
     if (symbol == dumpkeyfile::symbol() || symbol == "exportaccountasfile")
         return make_shared<dumpkeyfile>();
@@ -197,7 +196,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getnewaccount>();
     if (symbol == getaccount::symbol())
         return make_shared<getaccount>();
-    if (symbol == deleteaccount::symbol() || symbol == "deleteasset")
+    if (symbol == deleteaccount::symbol())
         return make_shared<deleteaccount>();
     if (symbol == listaddresses::symbol())
         return make_shared<listaddresses>();
@@ -235,7 +234,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaccountasset>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
-    if (symbol == deletelocalasset::symbol())
+    if (symbol == deletelocalasset::symbol() || symbol == "deleteasset" )
         return make_shared<deletelocalasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
@@ -279,8 +278,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getmemorypool>();
     if (symbol == getaddressasset::symbol())
         return make_shared<getaddressasset>();
-    if (symbol == xfetchutxo::symbol())
-        return make_shared<xfetchutxo>();
     return nullptr;
 }
 
