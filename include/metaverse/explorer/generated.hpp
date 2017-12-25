@@ -25,14 +25,8 @@
 #include <memory>
 #include <string>
 #include <metaverse/explorer/command.hpp>
-#include <metaverse/explorer/commands/fetch-header.hpp>
-#include <metaverse/explorer/commands/fetch-history.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>
-#include <metaverse/explorer/commands/fetch-tx.hpp>
-#include <metaverse/explorer/commands/fetch-utxo.hpp>
 #include <metaverse/explorer/commands/help.hpp>
-#include <metaverse/explorer/commands/input-set.hpp>
-#include <metaverse/explorer/commands/input-sign.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>
 #include <metaverse/explorer/commands/settings.hpp>
 #include <metaverse/explorer/commands/stealth-decode.hpp>
@@ -41,7 +35,6 @@
 #include <metaverse/explorer/commands/stealth-secret.hpp>
 #include <metaverse/explorer/commands/stealth-shared.hpp>
 #include <metaverse/explorer/commands/tx-decode.hpp>
-#include <metaverse/explorer/commands/tx-encode.hpp>
 #include <metaverse/explorer/commands/validate-tx.hpp>
 #include <metaverse/explorer/define.hpp>
 
