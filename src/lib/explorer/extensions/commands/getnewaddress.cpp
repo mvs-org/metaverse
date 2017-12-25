@@ -115,7 +115,8 @@ console_result getnewaddress::invoke (std::ostream& output,
 
         // write to output json
         addresses.append(addr->get_address());
-        if(option_.count == 1)
+
+        if(get_api_version() == 1 && option_.count == 1)
             output<<addr->get_address();
     }
 
@@ -123,7 +124,7 @@ console_result getnewaddress::invoke (std::ostream& output,
 
     aroot["addresses"] = addresses;
 
-    if(option_.count != 1)
+    if(get_api_version() == 2 || option_.count != 1)
         output << aroot.toStyledString();
     
     return console_result::okay;
