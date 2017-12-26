@@ -64,19 +64,32 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         data.data_to_arg(rpc_version);
 
         Json::Value jv_output;
+        std::ostringstream sout;
                 
-        console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-            jv_output, node_, rpc_version);
+        auto retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
+            sout, jv_output, node_, rpc_version);
 
-        if (retcode != console_result::okay) {
-            throw explorer::command_params_exception(jv_output.asString());
+        if (retcode == console_result::failure) { // only orignal command
+            throw explorer::command_params_exception{sout.str()};
         }
 
-        if (rpc_version == 1) {
-            out_ << jv_output.asString();
+        if (retcode == console_result::cmd_output) { // only help
+            out_ << sout.str();
         }
-        else if (rpc_version == 2) {
-            out_ << jv_output.toStyledString();
+
+        if (retcode == console_result::okay) {
+            if (rpc_version == 1) {
+                out_ << jv_output.asString();
+            }
+            else if (rpc_version == 2) {
+                Json::Value jv_root;
+                jv_root["jsonrpc"] = "2.0";
+                jv_root["id"] = data.jsonrpc_id();
+                jv_root["result"] = jv_output;
+
+                out_ << jv_root.toStyledString();
+            }
+        }
 #if 0
             auto&& tmp = jv_output.asString();
             auto is_string_type = (tmp[0] != '{') && (tmp[0] != '[');
@@ -88,7 +101,6 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
                 out_ << R"(")";
             out_ << R"(})";
 #endif
-        }
     }
     catch (const libbitcoin::explorer::explorer_exception& e) {
         if (rpc_version == 1) {

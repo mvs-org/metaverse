@@ -130,13 +130,19 @@ console_result dispatch_command(int argc, const char* argv[],
     return command->invoke(out, err);
 }
 
+console_result dispatch_command(int argc, const char* argv[],
+    Json::Value& jv_output, 
+    libbitcoin::server::server_node& node, uint8_t api_version)
+{
+    std::ostringstream ss;
+    return dispatch_command(argc, argv, ss, jv_output, node, api_version);
+}
 
 console_result dispatch_command(int argc, const char* argv[],
-    Json::Value& jv_output,
+    std::ostream& cmd_output, Json::Value& jv_output, 
     libbitcoin::server::server_node& node, uint8_t api_version)
 {
     std::istringstream input;
-    std::ostringstream output;
     std::ostringstream error;
 
     const std::string target(argv[0]);
@@ -146,8 +152,7 @@ console_result dispatch_command(int argc, const char* argv[],
     {
         const std::string superseding(formerly(target));
         display_invalid_command(error, target, superseding);
-        jv_output = error.str();
-        return console_result::failure;
+        throw invalid_command_exception{error.str()};
     }
 
     auto& in = get_command_input(*command, input);
@@ -159,18 +164,14 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (!metadata.parse(error_message, in, argc, argv))
     {
-        error.str("");
-        display_invalid_parameter(error, error_message);
+        display_invalid_parameter(cmd_output, error_message);
         throw command_params_exception{error_message};
-        return console_result::failure;
     }
 
     if (metadata.help())
     {
-        output.str("");
-        command->write_help(output);
-        jv_output = output.str();
-        return console_result::okay;
+        command->write_help(cmd_output);
+        return console_result::cmd_output;
     }
 
     command->set_api_version(api_version);
@@ -188,11 +189,8 @@ console_result dispatch_command(int argc, const char* argv[],
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
     }else{
         command->set_api_version(1);
-        output.str("");
-        auto ret = command->invoke(output, output);
-        jv_output = output.str();
-
-        return ret;
+        command->invoke(cmd_output, cmd_output);
+        return console_result::cmd_output;
     }
 }
 
