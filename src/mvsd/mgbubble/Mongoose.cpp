@@ -46,10 +46,6 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
         throw std::runtime_error(ss.str());
         return ;
     }
-
-    if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
-        throw std::runtime_error{ "only support jsonrpc 2.0" };
-    }
     
     if (root["method"].isString()) {
         vargv_.emplace_back(root["method"].asString());
@@ -84,6 +80,10 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
      *      ]
      *  }
      * ******************************************/
+
+        if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
+            throw std::runtime_error{ "only support jsonrpc 2.0" };
+        }
 
         // push options
         for (auto& param : root["params"]) {

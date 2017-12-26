@@ -79,7 +79,11 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
 
         if (retcode == console_result::okay) {
             if (rpc_version == 1) {
-                out_ << jv_output.asString();
+                if (jv_output.isObject()) {
+                    out_ << jv_output.toStyledString();
+                } else {
+                    out_ << jv_output.asString();
+                }
             }
             else if (rpc_version == 2) {
                 Json::Value jv_root;
