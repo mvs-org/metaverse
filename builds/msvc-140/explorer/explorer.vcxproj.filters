@@ -33,43 +33,112 @@
     <Filter Include="Source Files\extensions">
       <UniqueIdentifier>{bfcadd5e-38de-42ca-afad-ce26d7beeebe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\commands\offline">
-      <UniqueIdentifier>{2091f5cf-b2b2-46ec-b3b2-0c91b06b7290}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\extensions\commands">
       <UniqueIdentifier>{865ba9df-555a-43f5-83a8-629d84f97374}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\commands\offline">
+      <UniqueIdentifier>{8319fc71-200b-4148-8a2f-8fbacb84b2f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\define.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\offline_commands_impl.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\dispatch.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\display.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\settings.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\generated.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-decode.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-encode.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-public.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-secret.hpp">
+      <Filter>Header Files\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account_helper.hpp">
-      <Filter>Header Files\extensions</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-shared.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-decode.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp">
+      <Filter>Header Files\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\address.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\algorithm.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\btc.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\byte.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\cert_key.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\ec_private.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\encoding.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\endorsement.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hashtype.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hd_key.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\header.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\input.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\point.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\raw.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\script.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\signature.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\transaction.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\config\wrapper.hpp">
+      <Filter>Header Files\config</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account_info.hpp">
       <Filter>Header Files\extensions</Filter>
@@ -87,6 +156,9 @@
       <Filter>Header Files\extensions</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\exception.hpp">
+      <Filter>Header Files\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\node_method_wrapper.hpp">
       <Filter>Header Files\extensions</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\addnode.hpp">
@@ -110,6 +182,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deleteaccount.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -128,6 +203,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaddressasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaddressetp.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -141,6 +219,9 @@
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblock.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getheight.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getinfo.hpp">
@@ -248,170 +329,35 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\address.hpp">
-      <Filter>Header Files\config</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\algorithm.hpp">
-      <Filter>Header Files\config</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\btc.hpp">
-      <Filter>Header Files\config</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\define.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\byte.hpp">
-      <Filter>Header Files\config</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\dispatch.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\cert_key.hpp">
-      <Filter>Header Files\config</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\display.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\ec_private.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\encoding.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\endorsement.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hashtype.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\hd_key.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\header.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\input.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\point.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\raw.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\script.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\signature.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\transaction.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\wrapper.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-balance.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-header.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-height.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-public-key.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-tx.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-utxo.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-new.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-private.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-ec.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\hd-to-public.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-set.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\input-sign.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-decode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-encode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-new.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\mnemonic-to-seed.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\offline_commands_impl.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\seed.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\send-tx.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\settings.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-decode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-encode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-public.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-secret.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\stealth-shared.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-decode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\tx-encode.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\validate-tx.hpp">
-      <Filter>Header Files\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\xfetchutxo.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\generated.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\json_helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\utility.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -423,80 +369,29 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\address.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\dispatch.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\algorithm.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\display.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\btc.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\generated.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\byte.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\cert_key.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\ec_private.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-header.cpp">
-      <Filter>Source Files\commands</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\encoding.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-tx.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-utxo.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline_commands_impl.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\send-tx.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\settings.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\validate-tx.cpp">
-      <Filter>Source Files\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-set.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\input-sign.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-encode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-public.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-secret.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-shared.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-decode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-encode.cpp">
-      <Filter>Source Files\commands\offline</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\config\endorsement.cpp">
+      <Filter>Source Files\config</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\config\hashtype.cpp">
       <Filter>Source Files\config</Filter>
@@ -537,29 +432,23 @@
     <ClCompile Include="..\..\..\src\lib\explorer\config\wrapper.cpp">
       <Filter>Source Files\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\address.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_info.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\algorithm.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\base_helper.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\btc.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\byte.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\cert_key.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\ec_private.cpp">
-      <Filter>Source Files\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\encoding.cpp">
-      <Filter>Source Files\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\endorsement.cpp">
-      <Filter>Source Files\config</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp">
+      <Filter>Source Files\extensions</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\addnode.cpp">
       <Filter>Source Files\extensions\commands</Filter>
@@ -603,6 +492,12 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressasset.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getasset.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbalance.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
@@ -613,6 +508,9 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblock.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getheight.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp">
@@ -720,38 +618,62 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_info.cpp">
-      <Filter>Source Files\extensions</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\base_helper.cpp">
-      <Filter>Source Files\extensions</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\dispatch.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp">
-      <Filter>Source Files\extensions</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\display.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp">
-      <Filter>Source Files\extensions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\exception.cpp">
-      <Filter>Source Files\extensions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getheight.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\node_method_wrapper.cpp">
-      <Filter>Source Files\extensions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\xfetchutxo.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\generated.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getasset.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
+    <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline_commands_impl.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\send-tx.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\settings.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\validate-tx.cpp">
+      <Filter>Source Files\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-encode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-public.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-secret.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-shared.cpp">
+      <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-decode.cpp">
+      <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
