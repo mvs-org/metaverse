@@ -62,7 +62,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     //end split
 
     if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
-        return console_result::failure;
+        throw mnemonicwords_amount_exception{"invliad size of backup words."};
     }
 
     uint32_t idx = 0;

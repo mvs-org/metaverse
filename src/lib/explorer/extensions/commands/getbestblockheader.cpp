@@ -77,7 +77,11 @@ console_result getbestblockheader::invoke (std::ostream& output,
             }
         } else {
             Json::Value jv;
-            jv ["block-header"] = jheader["result"];
+            if (option_.is_getbestblockhash) {
+                jv ["hash"] = jheader["result"]["hash"];
+            } else {
+                jv ["header"] = jheader["result"];
+            }
 	        state.output(jv.toStyledString());
         }
     };
