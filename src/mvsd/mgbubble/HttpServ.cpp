@@ -63,22 +63,22 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
     try {
         data.data_to_arg(rpc_version);
 
-        std::stringstream sout;
-        std::istringstream sin;
+        Json::Value jv_output;
                 
         console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-            sin, sout, sout, node_, rpc_version);
+            jv_output, node_, rpc_version);
+
         if (retcode != console_result::okay) {
-            throw explorer::command_params_exception(sout.str());
+            throw explorer::command_params_exception(jv_output.asString());
         }
 
-        explorer::relay_exception(sout);
-        
         if (rpc_version == 1) {
-            out_ << sout.str();
+            out_ << jv_output.asString();
         }
         else if (rpc_version == 2) {
-            auto&& tmp = sout.str();
+            out_ << jv_output.toStyledString();
+#if 0
+            auto&& tmp = jv_output.asString();
             auto is_string_type = (tmp[0] != '{') && (tmp[0] != '[');
             out_ << R"({"jsonrpc":"2.0","id":)" << data.jsonrpc_id() << R"(,"result":)";
             if (is_string_type)
@@ -87,6 +87,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             if (is_string_type)
                 out_ << R"(")";
             out_ << R"(})";
+#endif
         }
     }
     catch (const libbitcoin::explorer::explorer_exception& e) {
@@ -123,16 +124,21 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
 
 void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
 {
-    std::stringstream sout;
-    std::istringstream sin;
+    Json::Value jv_output;
+
     try{
         ws.data_to_arg();
 
-        console_result retcode = explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), sin, sout, sout, node_);
+        console_result retcode = explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), jv_output, node_);
         if (retcode != console_result::okay) {
-            throw explorer::command_params_exception(sout.str());
+            throw explorer::command_params_exception(jv_output.asString());
         }
-        explorer::relay_exception(sout);
+
+    } catch (const std::exception& e) {
+            jv_output["error"]["code"] = 1000;
+            jv_output["error"]["message"] = e.what();
+    }
+#if 0
     } catch(libbitcoin::explorer::explorer_exception ex) {
         sout << ex;
     } catch(std::exception& e) {
@@ -143,8 +149,9 @@ void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
         libbitcoin::explorer::explorer_exception ex(1001,"fatal error");
         sout << ex;
     }
+#endif
 
-    send_frame(nc, sout.str());
+    send_frame(nc, jv_output.toStyledString());
 }
 
 bool HttpServ::start()

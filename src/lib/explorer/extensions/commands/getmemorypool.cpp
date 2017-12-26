@@ -33,8 +33,8 @@ namespace commands {
 
 /************************ getbalance *************************/
 
-console_result getmemorypool::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getmemorypool::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
 
     administrator_required_checker(node, auth_.name, auth_.auth);
@@ -43,7 +43,7 @@ console_result getmemorypool::invoke (std::ostream& output,
     using transaction_ptr = message::transaction_message::ptr ;
     auto& blockchain = node.chain_impl();
     std::promise<code> p;
-    blockchain.pool().fetch([&output, &p, &json, this](const code& ec, const std::vector<transaction_ptr>& txs){
+    blockchain.pool().fetch([&jv_output, &p, &json, this](const code& ec, const std::vector<transaction_ptr>& txs){
         if (ec)
         {
             p.set_value(ec);
@@ -56,9 +56,9 @@ console_result getmemorypool::invoke (std::ostream& output,
         }
 
         if(json) {
-            output << config::json_helper(get_api_version()).prop_tree(txs1, true).toStyledString();
+             jv_output =  config::json_helper(get_api_version()).prop_tree(txs1, true);
         } else {
-            output << config::json_helper(get_api_version()).prop_tree(txs1, false).toStyledString();
+             jv_output =  config::json_helper(get_api_version()).prop_tree(txs1, false);
         }
         p.set_value(ec);
     });

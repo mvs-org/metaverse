@@ -30,8 +30,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result sendwithmsgfrom::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result sendwithmsgfrom::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -52,8 +52,7 @@ console_result sendwithmsgfrom::invoke (std::ostream& output,
 
     // json output
     auto tx = send_helper.get_transaction();
-    output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
-    log::debug("command")<<"transaction="<<output.rdbuf();
+     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

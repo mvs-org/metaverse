@@ -33,10 +33,10 @@ using namespace bc::explorer::config;
 
 /************************ getaccountasset *************************/
 
-console_result getaccountasset::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getaccountasset::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value assets;
     
     std::string symbol;
@@ -114,7 +114,6 @@ console_result getaccountasset::invoke (std::ostream& output,
     }
     
     aroot["assets"] = assets;
-    output << aroot.toStyledString();
     
     return console_result::okay;
 }

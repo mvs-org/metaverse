@@ -113,8 +113,8 @@ void validate(boost::any& v,
     v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
 
-console_result createasset::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result createasset::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -154,7 +154,7 @@ console_result createasset::invoke (std::ostream& output,
 
     //output<<option_.symbol<<" created at local, you can issue it.";
     
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value asset_data;
     asset_data["symbol"] = acc->get_symbol();
     if (get_api_version() == 1) {
@@ -172,7 +172,6 @@ console_result createasset::invoke (std::ostream& output,
     asset["asset"] = asset_data;
     aroot.append(asset);
 
-    output << aroot.toStyledString();
     
     return console_result::okay;
 }

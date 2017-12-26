@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ setminingaccount *************************/
 
-console_result setminingaccount::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result setminingaccount::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
@@ -54,9 +54,8 @@ console_result setminingaccount::invoke (std::ostream& output,
 
     auto ret = miner.set_miner_payment_address(argument_.payment_address);
     if (ret) {
-        Json::Value jv;
+        auto& jv = jv_output;
         jv["message"] = "Address [" + argument_.payment_address.encoded() + "] setted.";
-        output<<jv.toStyledString();
     } else {
         throw unknown_error_exception{"set mining account solo mining got error"};
     }

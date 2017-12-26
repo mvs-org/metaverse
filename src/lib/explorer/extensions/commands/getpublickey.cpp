@@ -30,8 +30,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result getpublickey::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getpublickey::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -73,10 +73,9 @@ console_result getpublickey::invoke (std::ostream& output,
         throw account_address_get_exception{pub_key};
     }
     
-    Json::Value root;
+    auto& root = jv_output;
     root["public-key"] = pub_key;
     root["address"] = argument_.address;
-    output << root.toStyledString();
     
     return console_result::okay;
 }

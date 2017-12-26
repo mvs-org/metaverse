@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ getnewaddress *************************/
 
-console_result getnewaddress::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getnewaddress::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -66,7 +66,7 @@ console_result getnewaddress::invoke (std::ostream& output,
     }
 
     uint32_t idx = 0;
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value addresses;
 
     std::vector<std::shared_ptr<account_address>> account_addresses;
@@ -117,15 +117,13 @@ console_result getnewaddress::invoke (std::ostream& output,
         addresses.append(addr->get_address());
 
         if(get_api_version() == 1 && option_.count == 1)
-            output<<addr->get_address();
+            jv_output = addr->get_address();
     }
 
     blockchain.safe_store_account(*acc, account_addresses);
 
-    aroot["addresses"] = addresses;
-
     if(get_api_version() == 2 || option_.count != 1)
-        output << aroot.toStyledString();
+        aroot["addresses"] = addresses;
     
     return console_result::okay;
 }

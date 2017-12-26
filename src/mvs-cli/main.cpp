@@ -70,6 +70,9 @@ int bc::main(int argc, char* argv[])
     HttpReq req(url, 3000, reply_handler(my_impl));
 
     Json::Value jsonvar;
+    Json::Value jsonopt;
+    jsonvar["jsonrpc"] = "2.0";
+    jsonvar["id"] = 0xff;
     jsonvar["method"] = argv[1];
     jsonvar["params"] = Json::arrayValue;
 

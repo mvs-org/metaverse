@@ -30,8 +30,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result getnewmultisig::invoke(std::ostream& output,
-    std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getnewmultisig::invoke(Json::Value& jv_output,
+     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
@@ -140,7 +140,6 @@ console_result getnewmultisig::invoke(std::ostream& output,
     root["multisig-script"] = multisig_script;
     root["address"] = acc_multisig.get_address();
 
-    output << root.toStyledString();
 
     return console_result::okay;
 }

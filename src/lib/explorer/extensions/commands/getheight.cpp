@@ -29,17 +29,16 @@ namespace commands {
 using namespace bc::explorer::config;
 /************************ getheight *************************/
 
-console_result getheight::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getheight::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
     if (option_.is_fetch_height) {
-        output << get_last_height(node);
+        jv_output = get_last_height(node);
     } else {
-        Json::Value jv; 
+        auto& jv = jv_output; 
         jv["height"] = get_last_height(node);
-        output << jv.toStyledString();
     }
 
     return console_result::okay;

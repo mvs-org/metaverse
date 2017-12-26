@@ -29,8 +29,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
-console_result deletemultisig::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result deletemultisig::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
@@ -90,7 +90,6 @@ console_result deletemultisig::invoke (std::ostream& output,
         blockchain.store_account_address(addr);
     }
     
-    output << root.toStyledString();
     
     return console_result::okay;
 }

@@ -33,13 +33,13 @@ using namespace bc::explorer::config;
 
 /************************ getbalance *************************/
 
-console_result getbalance::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getbalance::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
@@ -76,7 +76,6 @@ console_result getbalance::invoke (std::ostream& output,
         aroot["total-available"] = (total_unspent - total_frozen);
         aroot["total-frozen"] = total_frozen;
     }
-    output << aroot.toStyledString();
 
     return console_result::okay;
 }

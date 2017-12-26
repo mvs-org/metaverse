@@ -30,8 +30,8 @@ using namespace bc::explorer::config;
 
 /************************ getasset *************************/
 
-console_result getasset::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getasset::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(argument_.symbol);
@@ -42,7 +42,7 @@ console_result getasset::invoke (std::ostream& output,
     // 1. first search asset in blockchain
     auto sh_vec = blockchain.get_issued_assets();
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value assets;
     for (auto& elem: *sh_vec) {
         Json::Value asset_data;
@@ -72,7 +72,6 @@ console_result getasset::invoke (std::ostream& output,
     }
     
     aroot["assets"] = assets;
-    output << aroot.toStyledString();
 
     return console_result::okay;
 }

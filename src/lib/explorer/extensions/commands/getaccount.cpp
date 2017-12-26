@@ -32,8 +32,8 @@ using namespace bc::explorer::config;
 
 /************************ getaccount *************************/
 
-console_result getaccount::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getaccount::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -48,7 +48,7 @@ console_result getaccount::invoke (std::ostream& output,
         throw argument_dismatch_exception{"last word not matching."};
     }
 
-    Json::Value root;
+    auto& root = jv_output;
     root["name"] = acc->get_name();
     root["mnemonic-key"] = mnemonic;
     if (get_api_version() == 1) {
@@ -58,7 +58,6 @@ console_result getaccount::invoke (std::ostream& output,
         root["address-count"] = acc->get_hd_index();
         root["user-status"] = acc->get_user_status();
     }
-    output << root.toStyledString();
 
     return console_result::okay;
 }

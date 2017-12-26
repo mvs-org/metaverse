@@ -31,8 +31,8 @@ namespace explorer {
 namespace commands {
 
 
-console_result issue::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result issue::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 
@@ -74,7 +74,7 @@ console_result issue::invoke (std::ostream& output,
 
     // json output
     auto tx = issue_helper.get_transaction();
-    output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
+     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     // change asset status
     #if 0
@@ -82,7 +82,6 @@ console_result issue::invoke (std::ostream& output,
     auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
     blockchain.store_account_asset(detail);
     #endif
-    log::debug("command")<<"transaction="<<output.rdbuf();
 
     return console_result::okay;
 }

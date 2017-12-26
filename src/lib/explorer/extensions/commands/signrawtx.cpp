@@ -53,8 +53,8 @@ static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
     return result;
 }
 
-console_result signrawtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result signrawtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -125,20 +125,15 @@ console_result signrawtx::invoke (std::ostream& output,
     }
 
     // get raw tx
-    std::ostringstream buffer;
-    buffer << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
-    log::trace("signrawtx=") << buffer.str();
-
     if(blockchain.validate_transaction(tx_))
             throw tx_validate_exception{std::string("validate transaction failure")};
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     aroot["hash"] = encode_hash(tx_.hash());
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
     aroot["hex"] = tx_buf.str();
     
-    output << aroot.toStyledString();
     
     return console_result::okay;
 }

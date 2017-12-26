@@ -31,8 +31,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result importaccount::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result importaccount::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     
     // parameter account name check
@@ -64,7 +64,7 @@ console_result importaccount::invoke (std::ostream& output,
     blockchain.store_account(acc);
 
     // generate all account address
-    Json::Value root;
+    auto& root = jv_output;
     root["name"] = auth_.name;
     root["mnemonic"] = mnemonic;
     if (get_api_version()) {
@@ -74,25 +74,20 @@ console_result importaccount::invoke (std::ostream& output,
     }
     
     uint32_t idx = 0;
-    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str()};
+    auto&& str_idx = std::to_string(option_.hd_index);
+    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-i", str_idx.c_str()};
     Json::Value addresses;
-    std::istringstream sin("");
     std::stringstream sout("");
     
     for( idx = 0; idx < option_.hd_index; idx++ ) {
-        sin.str("");
         sout.str("");
-        if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+        if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
             throw address_generate_exception(sout.str());
         }
          
-        relay_exception(sout);
-
-        addresses.append(sout.str());
     }
 
-    root["addresses"] = addresses;
-    output << root.toStyledString();
+    root.append(addresses);
     
     return console_result::okay;
 }

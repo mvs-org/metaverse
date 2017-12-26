@@ -32,14 +32,14 @@ using namespace bc::explorer::config;
 
 /************************ getinfo *************************/
 
-console_result getinfo::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getinfo::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
 	auto& blockchain = node.chain_impl();
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    Json::Value jv; 
+    auto& jv = jv_output; 
     jv["protocol-version"] = node.network_settings().protocol;
     jv["wallet-version"] = MVS_EXPLORER_VERSION;
     jv["database-version"] = MVS_DATABASE_VERSION;
@@ -59,7 +59,6 @@ console_result getinfo::invoke (std::ostream& output,
     jv["is-mining"] = is_solo_mining; 
     jv["hash-rate"] = rate; 
 
-    output << jv.toStyledString();
 
     return console_result::okay;
 }

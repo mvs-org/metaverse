@@ -94,8 +94,8 @@ public:
     {
     }
 
-    console_result invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node) override;
+    console_result invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node) override;
 
     struct argument
     {

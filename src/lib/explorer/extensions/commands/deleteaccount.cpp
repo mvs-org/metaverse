@@ -30,8 +30,8 @@ namespace commands {
 
 /************************ deleteaccount *************************/
 
-console_result deleteaccount::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result deleteaccount::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -52,11 +52,10 @@ console_result deleteaccount::invoke (std::ostream& output,
     // delete account
     blockchain.delete_account(acc->get_name());
 
-    Json::Value jv;
+    auto& jv = jv_output;
     jv["name"] = acc->get_name();
     jv["status"]= "removed successfully";
 
-    output<<jv.toStyledString();
 
     return console_result::okay;
 }

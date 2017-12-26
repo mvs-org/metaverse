@@ -30,8 +30,8 @@ namespace fs = boost::filesystem;
 using namespace bc::explorer::config;
 /************************ exportaccountasfile *************************/
 
-console_result dumpkeyfile::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result dumpkeyfile::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -75,13 +75,11 @@ console_result dumpkeyfile::invoke (std::ostream& output,
 
     // store encrypted data to file
     bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
-    file_output << all_info;
-    file_output << std::flush;      
+    file_output << all_info << std::flush;
     file_output.close();
 
-    Json::Value root;
+    auto& root = jv_output;
     root["result"] = argument_.dst.string();
-    output << root.toStyledString();
 
     return console_result::okay;
 }

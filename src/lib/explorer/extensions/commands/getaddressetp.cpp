@@ -31,8 +31,8 @@ using namespace bc::explorer::config;
 
 /************************ getaddressetp *************************/
 
-console_result getaddressetp::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getaddressetp::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto& addr = argument_.address;
@@ -42,7 +42,7 @@ console_result getaddressetp::invoke (std::ostream& output,
     sync_fetchbalance(addr, type, blockchain, addr_balance, 0);
 
     Json::Value jroot;
-    Json::Value jv;
+    auto& jv = jv_output;
     jv["address"] = addr.encoded();
     if (get_api_version() == 2) {
         jv["confirmed"] = addr_balance.confirmed_balance;
@@ -59,7 +59,7 @@ console_result getaddressetp::invoke (std::ostream& output,
 
     jroot["balance"] = jv;
     
-    output << jroot.toStyledString();
+    jv_output = jroot;
 
     return console_result::okay;
 }

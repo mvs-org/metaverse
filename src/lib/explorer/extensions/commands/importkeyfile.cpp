@@ -31,8 +31,8 @@ using namespace bc::explorer::config;
 
 /************************ importkeyfile *************************/
 
-console_result importkeyfile::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result importkeyfile::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {    
     auto& blockchain = node.chain_impl();
     
@@ -60,7 +60,7 @@ console_result importkeyfile::invoke (std::ostream& output,
     // store account info to db
     all_info.store(name, option_.depasswd);
         
-    Json::Value root;
+    auto& root = jv_output;
     root["name"] = name;
 
     if (get_api_version() == 1) {
@@ -70,7 +70,6 @@ console_result importkeyfile::invoke (std::ostream& output,
         root["address-count"] = acc.get_hd_index();
         root["unissued-asset-count"] = static_cast<uint64_t>(all_info.get_account_asset().size());
     }
-    output << root.toStyledString();
 
     return console_result::okay;
 }

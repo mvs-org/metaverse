@@ -31,6 +31,7 @@
 #include <metaverse/explorer/display.hpp>
 #include <metaverse/explorer/generated.hpp>
 #include <metaverse/explorer/parser.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin.hpp>
 
 using namespace boost::filesystem;
@@ -131,9 +132,13 @@ console_result dispatch_command(int argc, const char* argv[],
 
 
 console_result dispatch_command(int argc, const char* argv[],
-    std::istream& input, std::ostream& output, std::ostream& error,
+    Json::Value& jv_output,
     libbitcoin::server::server_node& node, uint8_t api_version)
 {
+    std::istringstream input;
+    std::ostringstream output;
+    std::ostringstream error;
+
     const std::string target(argv[0]);
     const auto command = find(target);
 
@@ -141,25 +146,30 @@ console_result dispatch_command(int argc, const char* argv[],
     {
         const std::string superseding(formerly(target));
         display_invalid_command(error, target, superseding);
+        jv_output = error.str();
         return console_result::failure;
     }
 
     auto& in = get_command_input(*command, input);
-    auto& err = get_command_error(*command, error);
-    auto& out = get_command_output(*command, output);
+    //auto& err = get_command_error(*command, error);
+    //auto& out = get_command_output(*command, output);
 
     parser metadata(*command);
     std::string error_message;
 
     if (!metadata.parse(error_message, in, argc, argv))
     {
+        error.str("");
         display_invalid_parameter(error, error_message);
+        throw command_params_exception{error_message};
         return console_result::failure;
     }
 
     if (metadata.help())
     {
+        output.str("");
         command->write_help(output);
+        jv_output = output.str();
         return console_result::okay;
     }
 
@@ -169,13 +179,20 @@ console_result dispatch_command(int argc, const char* argv[],
     {
         uint64_t height{0};
         node.chain_impl().get_last_height(height);
+
         if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
+            error.str("");
             error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-            return console_result::failure;
+            throw block_sync_required_exception{error.str()};
         }
-        return static_cast<commands::command_extension*>(command.get())->invoke(out, err, node);
+        return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
     }else{
-        return command->invoke(out, err);
+        command->set_api_version(1);
+        output.str("");
+        auto ret = command->invoke(output, output);
+        jv_output = output.str();
+
+        return ret;
     }
 }
 

@@ -31,12 +31,12 @@ using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
 
-console_result getmininginfo::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getmininginfo::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value info;
     
     auto& miner = node.miner();
@@ -51,7 +51,6 @@ console_result getmininginfo::invoke (std::ostream& output,
     info["rate"] += rate;
     info["difficulty"] = difficulty;
     aroot["mining-info"] = info;
-    output << aroot.toStyledString();
 
     return console_result::okay;
 }

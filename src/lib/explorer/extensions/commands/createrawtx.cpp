@@ -30,8 +30,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result createrawtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result createrawtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(option_.symbol);
@@ -99,12 +99,11 @@ console_result createrawtx::invoke (std::ostream& output,
     }
     
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
     aroot["hex"] = tx_buf.str();
 
-    output << aroot.toStyledString();
 
     return console_result::okay;
 }

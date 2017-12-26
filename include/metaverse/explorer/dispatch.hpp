@@ -69,7 +69,7 @@ BCX_API console_result dispatch_command(int argc, const char* argv[],
  * @return            The appropriate console return code { -1, 0, 1 }.
  */
 BCX_API console_result dispatch_command(int argc, const char* argv[],
-    std::istream& input, std::ostream& output, std::ostream& error,
+        Json::Value& jv_output, 
     libbitcoin::server::server_node& node, uint8_t api_version = 1);
 
 } // namespace explorer
