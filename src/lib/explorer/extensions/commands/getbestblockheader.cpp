@@ -58,7 +58,7 @@ console_result getbestblockheader::invoke (Json::Value& jv_output,
     std::ostringstream output;
     callback_state state(output, output, json_format);
 
-    auto on_done = [&state, this, height, &jv_output](const chain::header& header)
+    auto on_done = [&state, this, &jv_output](const chain::header& header)
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
