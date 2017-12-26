@@ -57,7 +57,6 @@ void HttpServ::reset(HttpMessage& data) noexcept
 void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_version)
 {
     reset(data);
-
     StreamBuf buf{ nc.send_mbuf };
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
@@ -66,7 +65,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
 
         std::stringstream sout;
         std::istringstream sin;
-
+                
         console_result retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
             sin, sout, sout, node_, rpc_version);
         if (retcode != console_result::okay) {
@@ -74,17 +73,51 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         }
 
         explorer::relay_exception(sout);
-
-        out_ << sout.str();
+        
+        if (rpc_version == 1) {
+            out_ << sout.str();
+        }
+        else if (rpc_version == 2) {
+            auto&& tmp = sout.str();
+            auto is_string_type = (tmp[0] != '{') && (tmp[0] != '[');
+            out_ << R"({"jsonrpc":"2.0","id":)" << data.jsonrpc_id() << R"(,"result":)";
+            if (is_string_type)
+                out_ << R"(")";
+            out_ << tmp;
+            if (is_string_type)
+                out_ << R"(")";
+            out_ << R"(})";
+        }
     }
     catch (const libbitcoin::explorer::explorer_exception& e) {
-        out_ << e;
+        if (rpc_version == 1) {
+            out_ << e;
+        }
+        else if (rpc_version == 2) {
+            Json::Value root;
+            root["jsonrpc"] = "2.0";
+            root["id"] = data.jsonrpc_id();
+            root["error"]["code"] = e.code();
+            root["error"]["message"] = e.what();
+           
+            out_ << root.toStyledString();
+        }
     }
     catch (const std::exception& e) {
-        libbitcoin::explorer::explorer_exception ex(1000, e.what());
-        out_ << ex;
-    }
+        if (rpc_version == 1) {
+            libbitcoin::explorer::explorer_exception ex(1000, e.what());
+            out_ << ex;
+        }
+        else if (rpc_version == 2) {
+            Json::Value root;
+            root["jsonrpc"] = "2.0";
+            root["id"] = data.jsonrpc_id();
+            root["error"]["code"] = 1000;
+            root["error"]["message"] = e.what();
 
+            out_ << root.toStyledString();
+        }
+    }
     out_.setContentLength();
 }
 
@@ -130,7 +163,7 @@ void HttpServ::spawn_to_mongoose(const std::function<void(uint64_t)>&& handler)
 }
 
 void HttpServ::run() {
-    log::info(LOG_HTTP) << "Http Service listen on " << node_.server_settings().websocket_listen;
+    log::info(LOG_HTTP) << "Http Service listen on " << node_.server_settings().mongoose_listen;
 
     node_.subscribe_stop([this](const libbitcoin::code& ec) { stop(); });
 

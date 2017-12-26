@@ -39,7 +39,6 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
     Json::Value root;
     const char* begin = body().data();
     const char* end = body().data() + body().size();
-    reader.parse(begin, end, root);
     if (!reader.parse(begin, end, root) || !root.isObject()) {
         stringstream ss;
         ss << "parse request error, "
@@ -48,6 +47,10 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
         return ;
     }
 
+    if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
+        throw std::runtime_error{ "only support jsonrpc 2.0" };
+    }
+    
     if (root["method"].isString()) {
         vargv_.emplace_back(root["method"].asString());
     }
@@ -104,6 +107,9 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
             }
         }
         
+        if (root["id"].isInt64()) {
+            jsonrpc_id_ = root["id"].asInt64();
+        }
     }
 
     vargv_to_argv();

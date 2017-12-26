@@ -5,6 +5,7 @@
  *      Author: jiang
  */
 
+#include <jsoncpp/json/json.h>
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -25,7 +26,24 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 
 void relay_exception(std::stringstream& ss)
 {    
-    return;
+    try
+    {
+        Json::Reader reader;
+        Json::Value root;
+        if (reader.parse(ss, root) && root["code"].isUInt() && root["message"].isString()) {
+            auto code = root["code"].asUInt();
+            auto msg = root["message"].asString();
+            if (code)
+                throw explorer_exception{ code, msg };
+        }
+    }
+    catch (const explorer_exception& e)
+    {
+        throw e;
+    }
+    catch (const std::exception& e)
+    {
+    }
 }
 
 } //namespace explorer

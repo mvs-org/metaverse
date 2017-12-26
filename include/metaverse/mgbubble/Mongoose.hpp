@@ -64,7 +64,7 @@ protected:
 
 class HttpMessage : public ToCommandArg{
 public:
-    HttpMessage(http_message* impl) noexcept : impl_{impl} {}
+    HttpMessage(http_message* impl) noexcept : impl_{impl}, jsonrpc_id_(-1){}
     ~HttpMessage() noexcept = default;
     
     // Copy.
@@ -88,10 +88,12 @@ public:
     }
     auto body() const noexcept { return +impl_->body; }
 
+    const int64_t jsonrpc_id() const noexcept { return jsonrpc_id_; }
+
     void data_to_arg(uint8_t rpc_version) override;
     
 private:
-
+    int64_t jsonrpc_id_;
     http_message* impl_;
 };
 
