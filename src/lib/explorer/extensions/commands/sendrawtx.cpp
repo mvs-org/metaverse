@@ -29,14 +29,11 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result sendrawtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result sendrawtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // get raw tx
-    std::ostringstream buffer;
-    buffer << config::json_helper(get_api_version()).prop_tree(argument_.transaction, true).toStyledString();
-    log::trace("sendrawtx=") << buffer.str();
     tx_type tx_ = argument_.transaction;
 
     // max transfer fee check
@@ -50,9 +47,8 @@ console_result sendrawtx::invoke (std::ostream& output,
     if(blockchain.broadcast_transaction(tx_)) 
         throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     aroot["hash"] = encode_hash(tx_.hash());
-    output << aroot.toStyledString();
     
     return console_result::okay;
 }

@@ -29,14 +29,14 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result signmultisigtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result signmultisigtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // get not signed tx
-    //output << "###### raw tx ######" << std::endl;
-    //output << config::json_helper(get_api_version()).prop_tree(argument_.transaction, true)).toStyledString();
+    // jv_output =  "###### raw tx ######" << std::endl;
+    // jv_output =  config::json_helper(get_api_version()).prop_tree(argument_.transaction, true));
     tx_type tx_ = argument_.transaction;
 
     // get all address of this account
@@ -154,9 +154,10 @@ console_result signmultisigtx::invoke (std::ostream& output,
         log::trace("wdy new script=") << ss.to_string(false);
     }
         
-    //output << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
-    //output << "raw tx content" << std::endl << config::transaction(tx_);
-    output << config::transaction(tx_);
+    // jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
+    // jv_output =  "raw tx content" << std::endl << config::transaction(tx_);
+    auto&& config_tx = config::transaction(tx_);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, true);
 
     if(argument_.send_flag){        
         if(blockchain.validate_transaction(tx_))

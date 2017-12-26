@@ -30,8 +30,8 @@ namespace commands {
 
 /************************ validateaddress *************************/
 
-console_result validateaddress::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result validateaddress::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     std::string version_info;
 	std::string message{"valid address "};
@@ -50,13 +50,12 @@ console_result validateaddress::invoke (std::ostream& output,
         is_valid = false;
     }
 
-    Json::Value jv;
+    auto& jv = jv_output;
     jv["address-type"] = version_info;
     jv["test-net"] = blockchain.chain_settings().use_testnet_rules;
     jv["is-valid"] = is_valid;
     jv["message"] = message;
 
-    output<<jv.toStyledString();
     return console_result::okay;
 }
 

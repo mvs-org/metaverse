@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ gettx *************************/
 /// extent fetch-tx command , add tx height in tx content
-console_result gettx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result gettx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     bc::chain::transaction tx;
     uint64_t tx_height = 0;
@@ -43,10 +43,10 @@ console_result gettx::invoke (std::ostream& output,
         throw tx_notfound_exception{"transaction does not exist!"};
     
     if (option_.json) {
-        output << config::json_helper(get_api_version()).prop_list(tx, tx_height, true).toStyledString();
+         jv_output =  config::json_helper(get_api_version()).prop_list(tx, tx_height, true);
     } else {
         config::transaction config_tx{tx};
-        output << config::json_helper(get_api_version()).prop_tree(config_tx, false).toStyledString();
+         jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, false);
     }
 
     return console_result::okay;

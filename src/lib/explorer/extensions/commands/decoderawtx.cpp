@@ -29,11 +29,11 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result decoderawtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result decoderawtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     tx_type tx_ = argument_.transaction;    
-    output << config::json_helper(get_api_version()).prop_tree(tx_, true).toStyledString();
+     jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
     
     return console_result::okay;
 }

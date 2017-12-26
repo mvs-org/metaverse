@@ -63,8 +63,8 @@ private:
 
 /************************ listtxs *************************/
 
-console_result listtxs::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result listtxs::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl(); 
@@ -85,7 +85,7 @@ console_result listtxs::invoke (std::ostream& output,
             throw asset_symbol_notfound_exception{argument_.symbol + std::string(" not exist!")};
     }
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value balances;
     
     auto sort_by_height = [](const tx_block_info &lhs, const tx_block_info &rhs)->bool { 
@@ -318,7 +318,6 @@ console_result listtxs::invoke (std::ostream& output,
         aroot["transaction_count"] = tx_count;
     }
     aroot["transactions"] = balances;
-    output << aroot.toStyledString();
 
     return console_result::okay;
 }

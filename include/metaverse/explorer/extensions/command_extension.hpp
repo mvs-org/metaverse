@@ -165,8 +165,8 @@ private:
 
 class command_extension:public command{
 public:
-    virtual console_result invoke(std::ostream& output,
-        std::ostream& error, libbitcoin::server::server_node& node)
+    virtual console_result invoke(Json::Value& jv_output,
+        libbitcoin::server::server_node& node)
     {
         return console_result::failure;
     }

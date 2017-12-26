@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ stopmining *************************/
 
-console_result stopmining::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result stopmining::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
@@ -41,11 +41,10 @@ console_result stopmining::invoke (std::ostream& output,
     auto ret = miner.stop();
 
     if (ret) {
-        Json::Value jv;
-        jv["message"] = "mining stoping signal sent.";
-        output<<jv.toStyledString();
+        auto& jv = jv_output;
+        jv["message"] = "signal STOP sent.";
     } else {
-        throw unknown_error_exception{"mining stoped got error."};
+        throw unknown_error_exception{"mining stop got error."};
     }
 
     return console_result::okay;

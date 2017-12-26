@@ -33,8 +33,8 @@ using namespace bc::explorer::config;
 
 /************************ getnewaccount *************************/
 
-console_result getnewaccount::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getnewaccount::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
 
 #ifdef NDEBUG
@@ -48,7 +48,7 @@ console_result getnewaccount::invoke (std::ostream& output,
         throw account_existed_exception{"account already exist"};
     }
 
-    Json::Value root;
+    auto& root = jv_output;
 
     auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);
@@ -67,19 +67,16 @@ console_result getnewaccount::invoke (std::ostream& output,
 
     // get 1 new sub-address by default
     std::stringstream sout("");
-    std::istringstream sin;
+    Json::Value jv_temp;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
-    sin.str("");
-    sout.str("");
-    if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+
+    if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
      
-    relay_exception(sout);
 
-    root["default-address"] = sout.str();
+    root["default-address"] = jv_temp["addresses"][0].asString();
     
-    output << root.toStyledString();
     return console_result::okay;
 }
 

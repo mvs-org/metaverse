@@ -29,18 +29,18 @@ namespace explorer {
 namespace commands {
 
 /************************ shutdown *************************/
-console_result shutdown::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result shutdown::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
 #ifndef _WIN32
-    output << "sending SIGTERM to mvsd.";
+    jv_output["message"] = "sending SIGTERM to mvsd.";
     killpg(getpgrp(),SIGTERM);
 #else
-    output << "not support for Windows";
+    jv_output["message"] = "not support for Windows";
 #endif
 
     return console_result::okay;

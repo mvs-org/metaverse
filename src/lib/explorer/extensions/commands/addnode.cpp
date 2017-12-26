@@ -31,10 +31,10 @@ namespace commands {
 
 /************************ addnode *************************/
 
-console_result addnode::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result addnode::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
-    output<< IN_DEVELOPING;
+    jv_output["message"] = IN_DEVELOPING;
     return console_result::okay;
 }
 

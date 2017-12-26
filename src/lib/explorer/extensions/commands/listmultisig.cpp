@@ -31,8 +31,8 @@ namespace commands {
 
 using namespace bc::explorer::config;
 
-console_result listmultisig::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result listmultisig::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
@@ -60,7 +60,6 @@ console_result listmultisig::invoke (std::ostream& output,
     }
     
     root["multisig"] = nodes;    
-    output << root.toStyledString();
     
     return console_result::okay;
 }

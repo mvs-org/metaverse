@@ -37,8 +37,8 @@ using namespace bc::explorer::config;
 
 /************************ getbestblockheader *************************/
 
-console_result getbestblockheader::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getbestblockheader::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
 
     uint64_t height = 0;
@@ -55,9 +55,10 @@ console_result getbestblockheader::invoke (std::ostream& output,
         throw connection_exception{"Could not connect to mvsd port 9921."};
     }
     encoding json_format{"json"};
-    callback_state state(cerr, output, json_format);
+    std::ostringstream output;
+    callback_state state(output, output, json_format);
 
-    auto on_done = [&state, this, height](const chain::header& header)
+    auto on_done = [&state, this, height, &jv_output](const chain::header& header)
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
@@ -71,18 +72,17 @@ console_result getbestblockheader::invoke (std::ostream& output,
         if (get_api_version() == 1) {
             if (option_.is_getbestblockhash) {
     	        auto&& blockhash = jheader["result"]["hash"].asString();
-	            state.output(blockhash);
+                jv_output = blockhash;
             } else {
-	            state.output(jheader);
+                jv_output = jheader;
             }
         } else {
-            Json::Value jv;
+            auto& jv = jv_output;
             if (option_.is_getbestblockhash) {
                 jv ["hash"] = jheader["result"]["hash"];
             } else {
                 jv ["header"] = jheader["result"];
             }
-	        state.output(jv.toStyledString());
         }
     };
 

@@ -29,8 +29,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result changepasswd::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result changepasswd::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);

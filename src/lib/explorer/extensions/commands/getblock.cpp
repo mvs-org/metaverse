@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ getblock *************************/
 
-console_result getblock::invoke(std::ostream& output,
-    std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getblock::invoke(Json::Value& jv_output,
+     libbitcoin::server::server_node& node)
 {
     auto json = option_.json;
     auto tx_json = option_.tx_json;
@@ -46,18 +46,18 @@ console_result getblock::invoke(std::ostream& output,
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_height, [&p, &output, json, tx_json, this](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_height, [&p, &jv_output, json, tx_json, this](const code& ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                output << config::json_helper(get_api_version()).prop_tree(*block, json, tx_json).toStyledString();
+                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
             }
             else
             {
-                output << config::json_helper(get_api_version()).prop_tree(*block, false, false).toStyledString();
+                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
             }
             p.set_value(error::success);
         });
@@ -75,18 +75,18 @@ console_result getblock::invoke(std::ostream& output,
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_hash, [&p, &output, json, tx_json, this](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_hash, [&p, &jv_output, json, tx_json, this](const code& ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                output << config::json_helper(get_api_version()).prop_tree(*block, json, tx_json).toStyledString();
+                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
             }
             else
             {
-                output << config::json_helper(get_api_version()).prop_tree(*block, false, false).toStyledString();
+                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
             }
             p.set_value(error::success);
         });

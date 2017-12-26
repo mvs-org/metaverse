@@ -31,8 +31,8 @@ namespace commands {
 
 /************************ startmining *************************/
 
-console_result startmining::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result startmining::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     std::istringstream sin;
     std::stringstream sout;
@@ -44,21 +44,19 @@ console_result startmining::invoke (std::ostream& output,
 
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
+    Json::Value jv_temp;
 
-    if (dispatch_command(3, cmds2, sin, sout, sout, node) != console_result::okay) {
+    if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
-     
-    relay_exception(sout);
 
-    auto&& str_addr = sout.str();
+    auto&& str_addr = jv_temp["addresses"][0].asString();
+     
     bc::wallet::payment_address addr(str_addr);
 
     // start
     if (miner.start(addr)){
-        Json::Value jv;
-        jv["message"] = "solo mining started at " + str_addr;
-        output<<jv.toStyledString();
+        jv_output["message"] = "solo mining started at " + str_addr;
     } else {
         throw unknown_error_exception{"solo mining startup got error"};
     }

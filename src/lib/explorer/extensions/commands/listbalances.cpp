@@ -34,13 +34,13 @@ using namespace bc::explorer::config;
 
 /************************ listbalances *************************/
 
-console_result listbalances::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result listbalances::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
     Json::Value all_balances;
     Json::Value address_balances;
     
@@ -87,7 +87,6 @@ console_result listbalances::invoke (std::ostream& output,
     }
     
     aroot["balances"] = all_balances;
-    output << aroot.toStyledString();
     return console_result::okay;
 
 }

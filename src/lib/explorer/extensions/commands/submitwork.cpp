@@ -31,12 +31,12 @@ using namespace bc::explorer::config;
 
 /************************ submitwork *************************/
 
-console_result submitwork::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result submitwork::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& miner = node.miner();
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
-    Json::Value root;
+    auto& root = jv_output;
 
     if (get_api_version() == 1) {
         root["id"] = "1";
@@ -50,7 +50,6 @@ console_result submitwork::invoke (std::ostream& output,
         } else {
             root["result"] = true; 
         }
-        output << root.toStyledString();
 
     } else {
 
@@ -60,7 +59,6 @@ console_result submitwork::invoke (std::ostream& output,
             root["result"] = false; 
         }
 
-        output << root.toStyledString();
     }
 
     return console_result::okay;

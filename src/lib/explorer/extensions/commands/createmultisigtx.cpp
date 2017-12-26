@@ -33,8 +33,8 @@ namespace commands {
 
 using namespace bc::explorer::config;
 
-console_result createmultisigtx::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result createmultisigtx::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -61,10 +61,11 @@ console_result createmultisigtx::invoke (std::ostream& output,
     send_helper.exec();
 
     // json output
-    auto tx = send_helper.get_transaction();
-    //output << config::json_helper(get_api_version()).prop_tree(tx, true).toStyledString();
-    //output << "raw tx content" << std::endl << config::transaction(tx);
-    output << config::transaction(tx);
+    auto&& tx = send_helper.get_transaction();
+    auto&& config_tx =  config::transaction(tx);
+
+    jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, true);
+
     return console_result::okay;
 }
 

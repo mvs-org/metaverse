@@ -31,8 +31,8 @@ using namespace bc::explorer::config;
 
 /************************ getwork *************************/
 
-console_result getwork::invoke (std::ostream& output,
-        std::ostream& cerr, libbitcoin::server::server_node& node)
+console_result getwork::invoke (Json::Value& jv_output,
+         libbitcoin::server::server_node& node)
 {
 
     administrator_required_checker(node, auth_.name, auth_.auth);
@@ -46,7 +46,7 @@ console_result getwork::invoke (std::ostream& output,
 
     auto ret = miner.get_work(seed_hash, header_hash, boundary);
 
-    Json::Value aroot;
+    auto& aroot = jv_output;
 
     if (get_api_version() == 1) {
         aroot["jsonrpc"] = "1.0";
@@ -60,7 +60,6 @@ console_result getwork::invoke (std::ostream& output,
         result.append(boundary);
 
         aroot["result"] = result;
-        output << aroot.toStyledString();
 
     } else {
         throw setting_required_exception{"Use command <setminingaccount> to set mining address."};
