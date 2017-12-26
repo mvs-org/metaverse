@@ -23,7 +23,7 @@
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/stopmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -39,13 +39,16 @@ console_result stopmining::invoke (std::ostream& output,
 
     auto& miner = node.miner();
     auto ret = miner.stop();
+
     if (ret) {
-        output<<"mining stoped.";
-        return console_result::okay;
+        Json::Value jv;
+        jv["message"] = "mining stoping signal sent.";
+        output<<jv.toStyledString();
     } else {
-        output<<"mining stoped got error.";
-        return console_result::failure;
+        throw unknown_error_exception{"mining stoped got error."};
     }
+
+    return console_result::okay;
 }
 
 

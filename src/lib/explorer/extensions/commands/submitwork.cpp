@@ -38,18 +38,32 @@ console_result submitwork::invoke (std::ostream& output,
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
     Json::Value root;
 
-    root["id"] = "1";
-    root["jsonrpc"] = "1.0";
+    if (get_api_version() == 1) {
+        root["id"] = "1";
+        root["jsonrpc"] = "1.0";
+    }
 
     if (ret) {
-        root["result"] = "true"; // boost json parser output as string, for compatible.
+
+        if (get_api_version() == 1) {
+            root["result"] = "true"; // boost json parser output as string, for compatible.
+        } else {
+            root["result"] = true; 
+        }
         output << root.toStyledString();
-        return console_result::okay;
+
     } else {
-        root["result"] = "false";
+
+        if (get_api_version() == 1) {
+            root["result"] = "true"; // boost json parser output as string, for compatible.
+        } else {
+            root["result"] = false; 
+        }
+
         output << root.toStyledString();
-        return console_result::failure;
     }
+
+    return console_result::okay;
 }
 
 
