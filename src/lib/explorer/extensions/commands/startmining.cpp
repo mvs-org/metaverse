@@ -22,7 +22,6 @@
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
@@ -57,12 +56,15 @@ console_result startmining::invoke (std::ostream& output,
 
     // start
     if (miner.start(addr)){
-        output<<"solo mining started at "<<str_addr<<".";
-        return console_result::okay;
+        Json::Value jv;
+        jv["message"] = "solo mining started at " + str_addr;
+        output<<jv.toStyledString();
     } else {
-        output<<"solo mining startup got error.";
-        return console_result::failure;
+        throw unknown_error_exception{"solo mining startup got error"};
     }
+
+
+    return console_result::okay;
 }
 
 

@@ -52,12 +52,14 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 void relay_exception(std::stringstream&);
 
 
+DEFINE_EXPLORER_EXCEPTION(unknown_error_exception, 1000);
 DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);
 DEFINE_EXPLORER_EXCEPTION(session_expired_exception, 1012);
 DEFINE_EXPLORER_EXCEPTION(command_params_exception, 1021);
 DEFINE_EXPLORER_EXCEPTION(command_platform_compat_exception, 1022);
 DEFINE_EXPLORER_EXCEPTION(ui_invoke_explorer_exception, 1023);
+DEFINE_EXPLORER_EXCEPTION(setting_required_exception, 1024);
 
 
 

@@ -34,6 +34,8 @@ namespace commands {
 class getbestblockheader: public command_extension
 {
 public:
+    getbestblockheader() noexcept {};
+    getbestblockheader(const std::string& other){ if (other == "getbestblockhash") option_.is_getbestblockhash = true; }
     static const char* symbol(){ return "getbestblockheader";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
@@ -76,6 +78,7 @@ public:
 
     struct option
     {
+        bool is_getbestblockhash{false};
     } option_;
 
 };

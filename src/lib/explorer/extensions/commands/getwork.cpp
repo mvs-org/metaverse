@@ -22,7 +22,7 @@
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -48,8 +48,9 @@ console_result getwork::invoke (std::ostream& output,
 
     Json::Value aroot;
 
-    aroot["id"] = "1";
-    aroot["jsonrpc"] = "1.0";
+    if (get_api_version() == 1) {
+        aroot["jsonrpc"] = "1.0";
+    }
 
     if (ret) {
         
@@ -61,14 +62,11 @@ console_result getwork::invoke (std::ostream& output,
         aroot["result"] = result;
         output << aroot.toStyledString();
 
-        return console_result::okay;
     } else {
-        aroot["result"] = "Use command <setminingaccount> to set mining address.";
-        output << aroot.toStyledString();
-
-        return console_result::failure;
+        throw setting_required_exception{"Use command <setminingaccount> to set mining address."};
     }
 
+    return console_result::okay;
 }
 
 
