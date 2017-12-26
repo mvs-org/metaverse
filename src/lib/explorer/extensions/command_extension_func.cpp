@@ -38,7 +38,6 @@
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/commands/getmininginfo.hpp>
-#include <metaverse/explorer/extensions/commands/getbestblockhash.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
@@ -110,7 +109,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     // wallet
     func(make_shared<getheight>());
     func(make_shared<getblock>());
-    func(make_shared<getbestblockhash>());
     func(make_shared<getbestblockheader>());
     func(make_shared<shutdown>());
     func(make_shared<startmining>());
@@ -212,8 +210,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<listbalances>();
     if (symbol == getbalance::symbol())
         return make_shared<getbalance>();
-    if (symbol == getbestblockhash::symbol())
-        return make_shared<getbestblockhash>();
+    if (symbol == "getbestblockhash")
+        return make_shared<getbestblockheader>(symbol);
     if (symbol == getbestblockheader::symbol())
         return make_shared<getbestblockheader>();
     if (symbol == listtxs::symbol())

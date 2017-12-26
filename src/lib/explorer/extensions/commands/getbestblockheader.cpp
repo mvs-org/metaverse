@@ -19,42 +19,81 @@
  */
 
 
-#include <metaverse/explorer/dispatch.hpp>
+#include <jsoncpp/json/json.h>                                                 
+#include <metaverse/client.hpp>                                                 
+#include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/json_helper.hpp>
+#include <metaverse/explorer/display.hpp>
+#include <metaverse/explorer/utility.hpp>
+#include <metaverse/explorer/define.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
-
+using namespace bc::client;
+using namespace bc::explorer::config;
 
 /************************ getbestblockheader *************************/
 
 console_result getbestblockheader::invoke (std::ostream& output,
         std::ostream& cerr, libbitcoin::server::server_node& node)
 {
+
     uint64_t height = 0;
     auto& blockchain = node.chain_impl();
     if(!blockchain.get_last_height(height))
-        throw block_height_get_exception{"query last height failure."};
+        throw block_last_height_get_exception{"query last height failure."};
 
-    auto&& height_str = std::to_string(height);
-    const char* cmds[]{"fetch-header", "-t", height_str.c_str()};
+    const auto connection = get_connection(*this);
 
-    std::stringstream sout("");
-    std::istringstream sin("");
+    obelisk_client client(connection);
 
-    if (dispatch_command(3, cmds, sin, sout, sout) != console_result::okay) {
-        throw block_header_get_exception(sout.str());
+    if (!client.connect(connection))
+    {
+        throw connection_exception{"Could not connect to mvsd port 9921."};
     }
-     
-    relay_exception(sout);
+    encoding json_format{"json"};
+    callback_state state(cerr, output, json_format);
 
-    output<<sout.str();
+    auto on_done = [&state, this, height](const chain::header& header)
+    {
+        auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
-    return console_result::okay;
+    	if( !jheader.isObject() 
+    	    || !jheader["result"].isObject() 
+    	    || !jheader["result"]["hash"].isString()) {
+
+        	throw block_hash_get_exception{"getbestblockhash got parser exception."};
+	    }
+
+        if (get_api_version() == 1) {
+            if (option_.is_getbestblockhash) {
+    	        auto&& blockhash = jheader["result"]["hash"].asString();
+	            state.output(blockhash);
+            } else {
+	            state.output(jheader);
+            }
+        } else {
+            Json::Value jv;
+            jv ["block-header"] = jheader["result"];
+	        state.output(jv.toStyledString());
+        }
+    };
+
+    auto on_error = [&state](const code& error)
+    {
+        state.succeeded(error);
+    };
+
+    // Height is ignored if both are specified.
+    // Use the null_hash as sentinel to determine whether to use height or hash.
+    client.blockchain_fetch_block_header(on_error, on_done, height);
+
+    client.wait();
+
+    return state.get_result();
 }
 
 

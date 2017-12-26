@@ -54,12 +54,14 @@ console_result setminingaccount::invoke (std::ostream& output,
 
     auto ret = miner.set_miner_payment_address(argument_.payment_address);
     if (ret) {
-        output<<"setting address ["<<argument_.payment_address.encoded()<<"] successfully.";
-        return console_result::okay;
+        Json::Value jv;
+        jv["message"] = "Address [" + argument_.payment_address.encoded() + "] setted.";
+        output<<jv.toStyledString();
     } else {
-        output<<"got error.";
-        return console_result::failure;
+        throw unknown_error_exception{"set mining account solo mining got error"};
     }
+
+    return console_result::okay;
 }
 
 
