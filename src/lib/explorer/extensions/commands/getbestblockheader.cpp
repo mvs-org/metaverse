@@ -58,7 +58,7 @@ console_result getbestblockheader::invoke (Json::Value& jv_output,
     std::ostringstream output;
     callback_state state(output, output, json_format);
 
-    auto on_done = [&state, this, &jv_output](const chain::header& header)
+    auto on_done = [this, &jv_output](const chain::header& header)
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
@@ -69,19 +69,14 @@ console_result getbestblockheader::invoke (Json::Value& jv_output,
         	throw block_hash_get_exception{"getbestblockhash got parser exception."};
 	    }
 
-        if (get_api_version() == 1) {
-            if (option_.is_getbestblockhash) {
-    	        auto&& blockhash = jheader["result"]["hash"].asString();
-                jv_output = blockhash;
-            } else {
-                jv_output = jheader;
-            }
+        if (option_.is_getbestblockhash) {
+    	    auto&& blockhash = jheader["result"]["hash"].asString();
+            jv_output = blockhash;
         } else {
-            auto& jv = jv_output;
-            if (option_.is_getbestblockhash) {
-                jv ["hash"] = jheader["result"]["hash"];
+            if (get_api_version() == 1) {
+                jv_output = jheader;
             } else {
-                jv ["header"] = jheader["result"];
+                jv_output = jheader["result"];
             }
         }
     };
