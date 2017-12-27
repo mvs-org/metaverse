@@ -105,35 +105,37 @@ Json::Value json_helper::prop_list(const chain::history& row)
 {
     Json::Value tree;
 
+    tree["received"] = Json::objectValue;
     // missing output implies output cut off by server's history threshold
     if (row.output.hash != null_hash)
     {
-        tree["received.hash"] += hash256(row.output.hash);
+        tree["received"]["hash"] += hash256(row.output.hash);
 
         // zeroized received.height implies output unconfirmed (in mempool)
         if (row.output_height != 0)
-            tree["received.height"] += row.output_height;
+            tree["received"]["height"] += row.output_height;
 
         if (version_ == 1) {
-            tree["received.index"] += row.output.index;
+            tree["received"]["index"] += row.output.index;
         } else {
-            tree["received.index"] = row.output.index;
+            tree["received"]["index"] = row.output.index;
         }
     }
 
+    tree["spent"] = Json::objectValue;
     // missing input implies unspent
     if (row.spend.hash != null_hash)
     {
-        tree["spent.hash"] += hash256(row.spend.hash);
+        tree["spent"]["hash"] += hash256(row.spend.hash);
 
         // zeroized input.height implies spend unconfirmed (in mempool)
         if (row.spend_height != 0)
-            tree["spent.height"] += row.spend_height;
+            tree["spent"]["height"] += row.spend_height;
 
         if (version_ == 1) {
-            tree["spent.index"] += row.spend.index;
+            tree["spent"]["index"] += row.spend.index;
         } else {
-            tree["spent.index"] = row.spend.index;
+            tree["spent"]["index"] = row.spend.index;
         }
     }
 
@@ -209,12 +211,13 @@ Json::Value json_helper::prop_list(const tx_input_type& tx_input)
     if (script_address)
         tree["address"] += script_address;
 
-    tree["previous_output.hash"] += hash256(tx_input.previous_output.hash);
+    tree["previous_output"] = Json::objectValue;
+    tree["previous_output"]["hash"] += hash256(tx_input.previous_output.hash);
     if (version_ == 1 ) {
-        tree["previous_output.index"] += tx_input.previous_output.index;
+        tree["previous_output"]["index"] += tx_input.previous_output.index;
         tree["sequence"] += tx_input.sequence;
     } else {
-        tree["previous_output.index"] = tx_input.previous_output.index;
+        tree["previous_output"]["index"] = tx_input.previous_output.index;
         tree["sequence"] = tx_input.sequence;
     }
     tree["script"] += script(tx_input.script).to_string();
@@ -271,13 +274,14 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
 
     if (!address)
     {
+        tree["stealth"] = Json::objectValue;
         uint32_t stealth_prefix;
         ec_compressed ephemeral_key;
         if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
             extract_ephemeral_key(ephemeral_key, tx_output.script))
         {
-            tree["stealth.prefix"] += stealth_prefix;
-            tree["stealth.ephemeral_public_key"] += ec_public(ephemeral_key);
+            tree["stealth"]["prefix"] += stealth_prefix;
+            tree["stealth"]["ephemeral_public_key"] += ec_public(ephemeral_key);
         }
     }
 
@@ -313,11 +317,12 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
     {
         uint32_t stealth_prefix;
         ec_compressed ephemeral_key;
+        tree["stealth"] = Json::objectValue;
         if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
             extract_ephemeral_key(ephemeral_key, tx_output.script))
         {
-            tree["stealth.prefix"] += stealth_prefix;
-            tree["stealth.ephemeral_public_key"] += ec_public(ephemeral_key);
+            tree["stealth"]["prefix"] += stealth_prefix;
+            tree["stealth"]["ephemeral_public_key"] += ec_public(ephemeral_key);
         }
     }
 

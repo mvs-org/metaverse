@@ -61,7 +61,7 @@ console_result changepasswd::invoke (Json::Value& jv_output,
         blockchain.store_account_address(addr);
     }
 
-    jv_output = auth_.name + "deleted";
+    jv_output = auth_.name + " deleted";
 
     return console_result::okay;
 }
