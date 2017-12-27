@@ -42,6 +42,16 @@ namespace libbitcoin {
 namespace explorer {
 namespace config {
 
+std::ostream& operator<<(std::ostream& out, char c) {
+    out << std::to_string(c);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, unsigned char c) {
+    out << std::to_string(c);
+    return out;
+}
+
 template <typename Value>
 Json::Value& operator+=(Json::Value& a, const Value& b)
 {
