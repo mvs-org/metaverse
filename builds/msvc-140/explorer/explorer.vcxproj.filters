@@ -212,9 +212,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getbalance.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getbestblockheader.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblock.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -356,6 +353,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblockheader.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
@@ -496,9 +496,6 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbalance.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockheader.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblock.cpp">
@@ -668,6 +665,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\tx-decode.cpp">
       <Filter>Source Files\commands\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblockheader.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
