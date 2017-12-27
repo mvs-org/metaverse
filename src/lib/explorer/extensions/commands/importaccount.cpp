@@ -67,7 +67,7 @@ console_result importaccount::invoke (Json::Value& jv_output,
     auto& root = jv_output;
     root["name"] = auth_.name;
     root["mnemonic"] = mnemonic;
-    if (get_api_version()) {
+    if (get_api_version() == 1) {
         root["hd_index"] += option_.hd_index;
     } else {
         root["hd_index"] = option_.hd_index;
@@ -75,19 +75,14 @@ console_result importaccount::invoke (Json::Value& jv_output,
     
     uint32_t idx = 0;
     auto&& str_idx = std::to_string(option_.hd_index);
-    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-i", str_idx.c_str()};
+    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-n", str_idx.c_str()};
     Json::Value addresses;
-    std::stringstream sout("");
     
-    for( idx = 0; idx < option_.hd_index; idx++ ) {
-        sout.str("");
-        if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
-            throw address_generate_exception(sout.str());
-        }
-         
+    if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
+        throw address_generate_exception{"getnewaddress got exception."};
     }
 
-    root.append(addresses);
+    root["addresses"] = addresses["addresses"];
     
     return console_result::okay;
 }
