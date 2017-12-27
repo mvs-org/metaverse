@@ -30,6 +30,16 @@ public:                                                           \
     }                                                             \
 }
 
+#define DEFINE_STD_JSONRPC_EXCEPTION(class_name, code, message)   \
+class class_name : public explorer_exception                      \
+{                                                                 \
+public:                                                           \
+    class_name() :                                                \
+    explorer_exception(code, message)                             \
+    {                                                             \
+    }                                                             \
+}
+
 namespace libbitcoin {
 namespace explorer {
 
@@ -177,6 +187,12 @@ DEFINE_EXPLORER_EXCEPTION(mnemonicwords_to_seed_exception, 9204);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_dismatch_exception, 9205);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_empty_exception, 9206);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_existed_exception, 9207);
+
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_parse_error, -32700, "jsonrpc parse error");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_invalid_request, -32600, "jsonrpc invalid request");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_method_not_found, -32601, "jsonrpc method not found");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_invalid_params, -32602, "jsonrpc invalid params");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_internal_error, -32603, "jsonrpc internal error");
 
 } //namespace explorer
 } //namespace libbitcoin

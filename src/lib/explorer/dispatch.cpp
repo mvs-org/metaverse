@@ -134,16 +134,8 @@ console_result dispatch_command(int argc, const char* argv[],
     Json::Value& jv_output, 
     libbitcoin::server::server_node& node, uint8_t api_version)
 {
-    std::ostringstream ss;
-    return dispatch_command(argc, argv, ss, jv_output, node, api_version);
-}
-
-console_result dispatch_command(int argc, const char* argv[],
-    std::ostream& cmd_output, Json::Value& jv_output, 
-    libbitcoin::server::server_node& node, uint8_t api_version)
-{
     std::istringstream input;
-    std::ostringstream error;
+    std::ostringstream output;
 
     const std::string target(argv[0]);
     const auto command = find(target);
@@ -151,27 +143,26 @@ console_result dispatch_command(int argc, const char* argv[],
     if (!command)
     {
         const std::string superseding(formerly(target));
-        display_invalid_command(error, target, superseding);
-        throw invalid_command_exception{error.str()};
+        display_invalid_command(output, target, superseding);
+        throw invalid_command_exception{ output.str() };
     }
 
     auto& in = get_command_input(*command, input);
-    //auto& err = get_command_error(*command, error);
-    //auto& out = get_command_output(*command, output);
 
     parser metadata(*command);
     std::string error_message;
 
     if (!metadata.parse(error_message, in, argc, argv))
     {
-        display_invalid_parameter(cmd_output, error_message);
-        throw command_params_exception{error_message};
+        display_invalid_parameter(output, error_message);
+        throw command_params_exception{ output.str() };
     }
 
     if (metadata.help())
     {
-        command->write_help(cmd_output);
-        return console_result::cmd_output;
+        command->write_help(output);
+        jv_output = output.str();
+        return console_result::okay;
     }
 
     command->set_api_version(api_version);
@@ -182,15 +173,16 @@ console_result dispatch_command(int argc, const char* argv[],
         node.chain_impl().get_last_height(height);
 
         if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
-            error.str("");
-            error << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-            throw block_sync_required_exception{error.str()};
+            output.str("");
+            output << target << " is unavailable when the block height is less than " << command->minimum_block_height();
+            throw block_sync_required_exception{ output.str() };
         }
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
     }else{
         command->set_api_version(1);
-        command->invoke(cmd_output, cmd_output);
-        return console_result::cmd_output;
+        command->invoke(output, output);
+        jv_output = output.str();
+        return console_result::okay;
     }
 }
 

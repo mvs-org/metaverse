@@ -20,7 +20,7 @@ explorer_exception::explorer_exception(uint32_t code, const std::string& message
 std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 {
     boost::format fmt{"{\"code\":%d, \"error\":\"%s\", \"result\":null}"};
-    out << (fmt % ex.code() % ex.message());
+    out << (fmt % (int32_t)ex.code() % ex.message());
     return out;
 }
 
