@@ -399,6 +399,10 @@ Json::Value json_helper::prop_tree(const tx_output_type::list& tx_outputs, bool 
         index++;
     }
 
+    if (version_ == 1 && list.isNull()) { //compatible for v1
+        list = "";
+    } 
+
     return list;
 }
 // points

@@ -86,7 +86,11 @@ console_result listbalances::invoke (Json::Value& jv_output,
         }
     }
     
-    aroot["balances"] = all_balances;
+    if (get_api_version() == 1 && all_balances.isNull()) { //compatible for v1        
+    	aroot["balances"] = "";
+    } else {                                                                    
+    	aroot["balances"] = all_balances;
+    }
     return console_result::okay;
 
 }
