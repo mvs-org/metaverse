@@ -112,8 +112,12 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
         asset_data["status"] = "unissued";
         assets.append(asset_data);
     }
-    
-    aroot["assets"] = assets;
+
+    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
+        aroot["assets"] = "";
+    } else {
+        aroot["assets"] = assets;
+    }
     
     return console_result::okay;
 }

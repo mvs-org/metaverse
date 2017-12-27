@@ -190,8 +190,13 @@ console_result listtxs::invoke (Json::Value& jv_output,
                 vec_ip_addr.push_back(addr);
             }
         }
-        tx_item["inputs"] = input_addrs;
-        
+
+        if (get_api_version() == 1 && input_addrs.isNull()) { // compatible for v1
+            tx_item["inputs"] = "";
+        } else {
+            tx_item["inputs"] = input_addrs;
+        }
+
         // set outputs content
         Json::Value pt_outputs;
         for(auto& op : tx.outputs) {
@@ -270,7 +275,12 @@ console_result listtxs::invoke (Json::Value& jv_output,
             if(!addr.empty())
                 vec_op_addr.push_back(addr);
         }
-        tx_item["outputs"] = pt_outputs;
+
+        if (get_api_version() == 1 && pt_outputs.isNull()) { // compatible for v1
+            tx_item["outputs"] = "";
+        } else {
+            tx_item["outputs"] = pt_outputs;
+        }
         
         // set tx direction
         // 1. receive check
@@ -317,7 +327,12 @@ console_result listtxs::invoke (Json::Value& jv_output,
         aroot["current_page"] = argument_.index;
         aroot["transaction_count"] = tx_count;
     }
-    aroot["transactions"] = balances;
+
+    if (get_api_version() == 1 && balances.isNull()) { // compatible for v1
+        aroot["transactions"] = "";
+    } else {
+        aroot["transactions"] = balances;
+    }
 
     return console_result::okay;
 }

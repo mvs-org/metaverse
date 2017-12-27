@@ -59,7 +59,11 @@ console_result getwork::invoke (Json::Value& jv_output,
         result.append(seed_hash);
         result.append(boundary);
 
-        aroot["result"] = result;
+        if (get_api_version() == 1) {
+            aroot["result"] = result;
+        } else {
+            aroot = result;
+        }
 
     } else {
         throw setting_required_exception{"Use command <setminingaccount> to set mining address."};

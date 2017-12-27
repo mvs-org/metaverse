@@ -50,26 +50,30 @@ console_result deletemultisig::invoke (Json::Value& jv_output,
     // flush to db
     blockchain.store_account(acc);
 
-    Json::Value root, pubkeys;
+    Json::Value pubkeys;
 
     if (get_api_version() == 1) {
-        root["index"] += acc_multisig.get_index();
-        root["m"] += acc_multisig.get_m();
-        root["n"] += acc_multisig.get_n();
+        jv_output["index"] += acc_multisig.get_index();
+        jv_output["m"] += acc_multisig.get_m();
+        jv_output["n"] += acc_multisig.get_n();
     } else {
-        root["index"] = acc_multisig.get_index();
-        root["m"] = acc_multisig.get_m();
-        root["n"] = acc_multisig.get_n();
+        jv_output["index"] = acc_multisig.get_index();
+        jv_output["m"] = acc_multisig.get_m();
+        jv_output["n"] = acc_multisig.get_n();
     }
-    root["self-publickey"] = acc_multisig.get_pubkey();
-    root["description"] = acc_multisig.get_description();
+    jv_output["self-publickey"] = acc_multisig.get_pubkey();
+    jv_output["description"] = acc_multisig.get_description();
 
     for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
         pubkeys.append(each);
     }
-    root["public-keys"] = pubkeys;
-    root["multisig-script"] = acc_multisig.get_multisig_script();
-    root["address"] = acc_multisig.get_address();
+    if (get_api_version() == 1 && pubkeys.isNull()) { //compatible for v1
+        jv_output["public-keys"] = "";
+    } else {
+        jv_output["public-keys"] = pubkeys;
+    }
+    jv_output["multisig-script"] = acc_multisig.get_multisig_script();
+    jv_output["address"] = acc_multisig.get_address();
     
     // delete account address
     auto vaddr = blockchain.get_account_addresses(auth_.name);
