@@ -219,12 +219,14 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     }
 }
 
-void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message)
+void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message, int code, Json::Value data)
 {
     Json::Value root;
     Json::Value result;
-    result["code"] = 1000001;
+    result["code"] = code;
     result["message"] = message ? message : "bad request";
+    if (!data.isNull())
+        result["data"] = data;
     root["event"]  = EV_MG_ERROR;
     root["result"] = result;
     
@@ -278,6 +280,10 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
 {
     Json::Reader reader;
     Json::Value root;
+    if (node_.is_blockchain_sync()) {
+        send_bad_response(nc, "under blockchain synchronizing", 1000002);
+        return;
+    }
     try {
         const char* begin = (const char*)msg.data;
         const char* end = begin + msg.size;
