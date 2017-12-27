@@ -39,7 +39,26 @@ namespace po = boost::program_options;
 void my_impl(const http_message* hm)
 {
     auto&& reply = std::string(hm->body.p, hm->body.len);
-    bc::cout << reply << std::endl;
+    Json::Reader reader;
+    Json::Value root;
+    if (reader.parse(reply, root) && root.isObject()) {
+        if (root["code"].isInt() && root["code"].asInt() != 0) {
+            bc::cout << "error    code:" << root["code"].asInt() << "\n";
+            bc::cout << "error message:" << root["message"].asString() << "\n";
+        }
+        else if (root["result"].isString()) {
+            bc::cout << root["result"].asString();
+        }
+        else if(root["result"].isArray() || root["result"].isObject()) {
+            bc::cout << root["result"].toStyledString();
+        }
+        else {
+            bc::cout << reply << std::endl;
+        }
+    }
+    else {
+        bc::cout << reply << std::endl;
+    }
 }
 
 int bc::main(int argc, char* argv[])
@@ -73,7 +92,7 @@ int bc::main(int argc, char* argv[])
     Json::Value jsonopt;
     jsonvar["jsonrpc"] = "2.0";
     jsonvar["id"] = 1;
-    jsonvar["method"] = argv[1];
+    jsonvar["method"] = (argc > 1) ? argv[1] : "help";
     jsonvar["params"] = Json::arrayValue;
 
     if (argc > 2)

@@ -69,10 +69,6 @@ BCX_API console_result dispatch_command(int argc, const char* argv[],
     Json::Value& jv_output, 
     bc::server::server_node& node, uint8_t api_version = 1);
 
-BCX_API console_result dispatch_command(int argc, const char* argv[],
-        std::ostream& cmd_output, Json::Value& jv_output, 
-    bc::server::server_node& node, uint8_t api_version = 1);
-
 } // namespace explorer
 } // namespace libbitcoin
 

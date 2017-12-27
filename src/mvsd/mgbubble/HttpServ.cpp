@@ -64,26 +64,23 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         data.data_to_arg(rpc_version);
 
         Json::Value jv_output;
-        std::ostringstream sout;
                 
         auto retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-            sout, jv_output, node_, rpc_version);
+            jv_output, node_, rpc_version);
 
         if (retcode == console_result::failure) { // only orignal command
-            throw explorer::command_params_exception{sout.str()};
-        }
-
-        if (retcode == console_result::cmd_output) { // only help
-            out_ << sout.str();
+            if (rpc_version == 1 && !jv_output.isObject() && !jv_output.isArray()) {
+                throw explorer::command_params_exception{ jv_output.asString() };
+            }
+            throw explorer::command_params_exception{ jv_output.toStyledString() };
         }
 
         if (retcode == console_result::okay) {
             if (rpc_version == 1) {
-                if (jv_output.isObject()) {
+                if (jv_output.isObject() || jv_output.isArray())
                     out_ << jv_output.toStyledString();
-                } else {
+                else
                     out_ << jv_output.asString();
-                }
             }
             else if (rpc_version == 2) {
                 Json::Value jv_root;
@@ -94,17 +91,6 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
                 out_ << jv_root.toStyledString();
             }
         }
-#if 0
-            auto&& tmp = jv_output.asString();
-            auto is_string_type = (tmp[0] != '{') && (tmp[0] != '[');
-            out_ << R"({"jsonrpc":"2.0","id":)" << data.jsonrpc_id() << R"(,"result":)";
-            if (is_string_type)
-                out_ << R"(")";
-            out_ << tmp;
-            if (is_string_type)
-                out_ << R"(")";
-            out_ << R"(})";
-#endif
     }
     catch (const libbitcoin::explorer::explorer_exception& e) {
         if (rpc_version == 1) {
@@ -114,7 +100,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             Json::Value root;
             root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
-            root["error"]["code"] = e.code();
+            root["error"]["code"] = (int32_t)e.code();
             root["error"]["message"] = e.what();
            
             out_ << root.toStyledString();
@@ -151,23 +137,14 @@ void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
         }
 
     } catch (const std::exception& e) {
-            jv_output["error"]["code"] = 1000;
-            jv_output["error"]["message"] = e.what();
+        jv_output["error"]["code"] = 1000;
+        jv_output["error"]["message"] = e.what();
     }
-#if 0
-    } catch(libbitcoin::explorer::explorer_exception ex) {
-        sout << ex;
-    } catch(std::exception& e) {
-        libbitcoin::explorer::explorer_exception ex(1000, e.what());
-        sout << ex;
-    } catch(...) {
-        log::error(LOG_HTTP)<<sout.rdbuf();
-        libbitcoin::explorer::explorer_exception ex(1001,"fatal error");
-        sout << ex;
-    }
-#endif
 
-    send_frame(nc, jv_output.toStyledString());
+    if (jv_output.isObject() || jv_output.isArray())
+        send_frame(nc, jv_output.toStyledString());
+    else
+        send_frame(nc, jv_output.asString());
 }
 
 bool HttpServ::start()

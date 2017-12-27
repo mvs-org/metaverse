@@ -18,6 +18,7 @@
 #include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/Mongoose.hpp>
 #include <metaverse/mgbubble/utility/Tokeniser.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace mgbubble {
 
@@ -40,50 +41,51 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
     const char* begin = body().data();
     const char* end = body().data() + body().size();
     if (!reader.parse(begin, end, root) || !root.isObject()) {
-        stringstream ss;
-        ss << "parse request error, "
-            << reader.getFormattedErrorMessages();
-        throw std::runtime_error(ss.str());
-        return ;
+        throw libbitcoin::explorer::jsonrpc_parse_error();
     }
-    
+
     if (root["method"].isString()) {
         vargv_.emplace_back(root["method"].asString());
     }
 
-    if (!root["params"].isArray()) {
-        throw std::logic_error{"illegal params"};
-        return ;
+    if (root.isMember("params") && !root["params"].isArray()) {
+        throw libbitcoin::explorer::jsonrpc_invalid_params();
     }
 
     if (rpc_version == 1) {
-    /* ***************** /rpc **********************
-     * application/json
-     * {"method":"xxx", "params":["p1","p2"]}
-     * ******************************************/
+        /* ***************** /rpc **********************
+         * application/json
+         * {"method":"xxx", "params":["p1","p2"]}
+         * ******************************************/
         for (auto& param : root["params"]) {
             if (!param.isObject())
                 vargv_.emplace_back(param.asString());
         }
     } else {
-    /* ***************** /rpc/v2 **********************
-     * application/json
-     * {
-     *  "method":"xxx", 
-     *  "params":[
-     *      {
-     *          k1:v1,  ==> Command Option
-     *          k2:v2
-     *      },
-     *      "p1",  ==> Command Argument
-     *      "p2"
-     *      ]
-     *  }
-     * ******************************************/
+        /* ***************** /rpc/v2 **********************
+         * application/json
+         * {
+         *  "method":"xxx", 
+         *  "params":[
+         *      {
+         *          k1:v1,  ==> Command Option
+         *          k2:v2
+         *      },
+         *      "p1",  ==> Command Argument
+         *      "p2"
+         *      ]
+         *  }
+         * ******************************************/
 
         if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
-            throw std::runtime_error{ "only support jsonrpc 2.0" };
+            throw libbitcoin::explorer::jsonrpc_invalid_request();
         }
+        
+		if (!root["id"].isInt64() || (root["id"].asInt64() < 0)) {
+            throw libbitcoin::explorer::jsonrpc_invalid_request();
+        }
+		
+        jsonrpc_id_ = root["id"].asInt64();
 
         // push options
         for (auto& param : root["params"]) {
@@ -105,10 +107,6 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
             if (!param.isObject()){
                 vargv_.emplace_back(param.asString());
             }
-        }
-        
-        if (root["id"].isInt64()) {
-            jsonrpc_id_ = root["id"].asInt64();
         }
     }
 
