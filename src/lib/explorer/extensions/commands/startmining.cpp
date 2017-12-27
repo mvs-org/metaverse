@@ -34,20 +34,16 @@ namespace commands {
 console_result startmining::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    std::istringstream sin;
-    std::stringstream sout;
     
     // get new address 
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
-    sin.str("");
-    sout.str("");
 
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
     Json::Value jv_temp;
 
     if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
-        throw address_generate_exception(sout.str());
+        throw address_generate_exception(jv_temp.asString());
     }
 
     auto&& str_addr = jv_temp["addresses"][0].asString();
@@ -56,7 +52,7 @@ console_result startmining::invoke (Json::Value& jv_output,
 
     // start
     if (miner.start(addr)){
-        jv_output["message"] = "solo mining started at " + str_addr;
+        jv_output = "solo mining started at " + str_addr;
     } else {
         throw unknown_error_exception{"solo mining startup got error"};
     }

@@ -109,7 +109,7 @@ public:
     struct option
     {
         option()
-          : language(), passwd(""), hd_index(0)
+          : language(), passwd(""), hd_index(1)
         {
         }
 
