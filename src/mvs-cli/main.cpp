@@ -42,12 +42,11 @@ void my_impl(const http_message* hm)
     Json::Reader reader;
     Json::Value root;
     if (reader.parse(reply, root) && root.isObject()) {
-        if (root["code"].isInt() && root["code"].asInt() != 0) {
-            bc::cout << "error    code:" << root["code"].asInt() << "\n";
-            bc::cout << "error message:" << root["message"].asString() << "\n";
+        if (root["error"]["code"].isInt() && root["error"]["code"].asInt() != 0) {
+            bc::cout << root["error"].toStyledString();
         }
         else if (root["result"].isString()) {
-            bc::cout << root["result"].asString();
+            bc::cout << root["result"].asString() <<std::endl;
         }
         else if(root["result"].isArray() || root["result"].isObject()) {
             bc::cout << root["result"].toStyledString();
