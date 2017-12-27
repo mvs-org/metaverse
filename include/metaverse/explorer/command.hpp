@@ -96,6 +96,17 @@ public:
     }
 
     /**
+     * The localizable command category type.
+     * @param   Example: cgty_extension | cgty_online
+     * @return  Example: true | false
+     */
+
+    virtual bool category(int bs)
+    {
+        return false;
+    }
+
+    /**
      * The localizable command description.
      * @return  Example: "Get transactions by hash."
      */

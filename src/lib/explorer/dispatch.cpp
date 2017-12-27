@@ -167,17 +167,14 @@ console_result dispatch_command(int argc, const char* argv[],
 
     command->set_api_version(api_version);
 
-    if (std::memcmp(command->category(), "EXTENSION", 9) == 0)
+    if (command->category(cgty_extension))
     {
-        uint64_t height{0};
-        node.chain_impl().get_last_height(height);
-
-        if (!node.chain_impl().chain_settings().use_testnet_rules && !command->is_block_height_fullfilled(height)) {
-            output.str("");
-            output << target << " is unavailable when the block height is less than " << command->minimum_block_height();
-            throw block_sync_required_exception{ output.str() };
-        }
+        // fixme. is_blockchain_sync has some problem.
+        //if (command->category(cgty_online) && node.is_blockchain_sync()) {
+        //    throw block_sync_required_exception{"This command is unavailable because wallet height is less than 800000."};
+        //}
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
+
     }else{
         command->set_api_version(1);
         command->invoke(output, output);
