@@ -36,6 +36,7 @@ public:
     static const char* symbol(){ return "issue";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
+    bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "issue "; }
 
     arguments_metadata& load_arguments() override

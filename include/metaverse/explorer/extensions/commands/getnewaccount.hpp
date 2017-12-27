@@ -37,6 +37,7 @@ public:
     static const char* symbol(){ return "getnewaccount";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
+    bool category(int bs) override { return (cgty_extension & bs ) == bs; }
     const char* description() override { return "Generate a new account from this wallet."; }
 
     arguments_metadata& load_arguments() override
