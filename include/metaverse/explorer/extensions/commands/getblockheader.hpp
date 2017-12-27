@@ -23,23 +23,25 @@
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/config/hashtype.hpp>
+#include <metaverse/explorer/config/header.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
 
-/************************ getbestblockheader *************************/
+/************************ getblockheader *************************/
 
-class getbestblockheader: public command_extension
+class getblockheader: public command_extension
 {
 public:
-    getbestblockheader() noexcept {};
-    getbestblockheader(const std::string& other){ if (other == "getbestblockhash") option_.is_getbestblockhash = true; }
-    static const char* symbol(){ return "getbestblockheader";}
+    getblockheader() noexcept {};
+    getblockheader(const std::string& other){ if (other == "getbestblockhash") option_.is_getbestblockhash = true; }
+    static const char* symbol(){ return "getblockheader";}
     const char* name() override { return symbol();} 
     const char* category() override { return "EXTENSION"; }
-    const char* description() override { return "getbestblockheader "; }
+    const char* description() override { return "getblockheader, alias as fetch-header/getbestblockhash/getbestblockheader."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -60,6 +62,16 @@ public:
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
+        )
+        (
+            "hash,s",
+            value<bc::config::hash256>(&option_.hash),
+            "The Base16 block hash."
+        )
+        (
+            "height,t",
+            value<uint32_t>(&option_.height),
+            "The block height."
         );
 
         return options;
@@ -78,7 +90,14 @@ public:
 
     struct option
     {
+        option():
+            hash(),
+            height(std::numeric_limits<uint32_t>::max())
+        {}
+
         bool is_getbestblockhash{false};
+	    bc::config::hash256 hash;
+        uint32_t height;
     } option_;
 
 };
