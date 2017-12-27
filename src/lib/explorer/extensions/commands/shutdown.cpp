@@ -37,10 +37,10 @@ console_result shutdown::invoke (Json::Value& jv_output,
     administrator_required_checker(node, auth_.name, auth_.auth);
 
 #ifndef _WIN32
-    jv_output["message"] = "sending SIGTERM to mvsd.";
+    jv_output = "sending SIGTERM to mvsd.";
     killpg(getpgrp(),SIGTERM);
 #else
-    jv_output["message"] = "not support for Windows";
+    jv_output = "not support for Windows";
 #endif
 
     return console_result::okay;

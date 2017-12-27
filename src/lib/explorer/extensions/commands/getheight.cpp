@@ -34,12 +34,7 @@ console_result getheight::invoke (Json::Value& jv_output,
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    if (option_.is_fetch_height) {
-        jv_output = get_last_height(node);
-    } else {
-        auto& jv = jv_output; 
-        jv["height"] = get_last_height(node);
-    }
+    jv_output = get_last_height(node);
 
     return console_result::okay;
 }

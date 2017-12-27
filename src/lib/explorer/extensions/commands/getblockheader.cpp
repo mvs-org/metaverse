@@ -22,7 +22,7 @@
 #include <jsoncpp/json/json.h>                                                 
 #include <metaverse/client.hpp>                                                 
 #include <metaverse/explorer/callback_state.hpp>
-#include <metaverse/explorer/extensions/commands/getbestblockheader.hpp>
+#include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/display.hpp>
@@ -35,9 +35,9 @@ namespace commands {
 using namespace bc::client;
 using namespace bc::explorer::config;
 
-/************************ getbestblockheader *************************/
+/************************ getblockheader *************************/
 
-console_result getbestblockheader::invoke (Json::Value& jv_output,
+console_result getblockheader::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
 
@@ -45,6 +45,10 @@ console_result getbestblockheader::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     if(!blockchain.get_last_height(height))
         throw block_last_height_get_exception{"query last height failure."};
+
+    if (option_.height != std::numeric_limits<uint32_t>::max()) {
+        height = option_.height;
+    }
 
     const auto connection = get_connection(*this);
 
@@ -88,7 +92,11 @@ console_result getbestblockheader::invoke (Json::Value& jv_output,
 
     // Height is ignored if both are specified.
     // Use the null_hash as sentinel to determine whether to use height or hash.
-    client.blockchain_fetch_block_header(on_error, on_done, height);
+    const hash_digest& hash = option_.hash;
+    if (hash == null_hash)
+        client.blockchain_fetch_block_header(on_error, on_done, height);
+    else
+        client.blockchain_fetch_block_header(on_error, on_done, hash);
 
     client.wait();
 
