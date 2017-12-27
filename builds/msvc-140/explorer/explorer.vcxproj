@@ -68,8 +68,8 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaddressetp.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getbalance.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getbestblockheader.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblock.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblockheader.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getheight.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getinfo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmemorypool.hpp" />
@@ -177,8 +177,8 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressetp.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbalance.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getbestblockheader.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblock.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblockheader.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getheight.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmemorypool.cpp" />
