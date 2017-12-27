@@ -90,7 +90,7 @@ protected:
     void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
 
 protected:
-    void send_bad_response(struct mg_connection& nc, const char* message = nullptr);
+    void send_bad_response(struct mg_connection& nc, const char* message = nullptr, int code = 1000001, Json::Value data = Json::nullValue);
     void send_response(struct mg_connection& nc, const std::string& event, const std::string& channel);
 
     void refresh_connections();

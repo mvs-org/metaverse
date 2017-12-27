@@ -90,6 +90,13 @@ void server_node::run(result_handler handler)
         return;
     }
 
+    if (!rest_server_->start() || !push_server_->start())
+    {
+        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
+        handler(error::operation_failed);
+        return;
+    }
+
     // The handler is invoked on a new thread.
     p2p_node::run(
         std::bind(&server_node::handle_running,
@@ -116,12 +123,7 @@ void server_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
-    if(!rest_server_->start() || !push_server_->start())
-    {
-        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
-        handler(error::operation_failed);
-        return;
-    }
+    under_header_sync_.store(true, std::memory_order_relaxed);
 
     // This is the end of the derived run sequence.
     handler(error::success);
