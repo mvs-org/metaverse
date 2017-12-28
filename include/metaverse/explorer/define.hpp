@@ -126,16 +126,16 @@ enum class encoding_engine
  * Suppported command category.
  */
 enum : int {
-    cgty_extension = 1 << 0,
-    cgty_online = 1 << 1,
-    cgty_admin_required = 1 << 2,
-    cgty_account_required = 1 << 3,
+    ctgy_extension = 1 << 0,
+    ctgy_online = 1 << 1,
+    ctgy_admin_required = 1 << 2,
+    ctgy_account_required = 1 << 3,
 
-    ex_online = cgty_extension | cgty_online,
-    ex_admin = cgty_extension | cgty_admin_required,
-    ex_account = cgty_extension | cgty_account_required,
-    ex_on_admin = cgty_extension | cgty_online | cgty_admin_required,
-    ex_on_account = cgty_extension | cgty_online | cgty_account_required
+    ex_online = ctgy_extension | ctgy_online,
+    ex_admin = ctgy_extension | ctgy_admin_required,
+    ex_account = ctgy_extension | ctgy_account_required,
+    ex_on_admin = ctgy_extension | ctgy_online | ctgy_admin_required,
+    ex_on_account = ctgy_extension | ctgy_online | ctgy_account_required
 };
 
 #endif

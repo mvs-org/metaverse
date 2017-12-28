@@ -36,7 +36,6 @@ class getwork: public command_extension
 public:
     static const char* symbol(){ return "getwork";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "getwork to get mining info"; }
 

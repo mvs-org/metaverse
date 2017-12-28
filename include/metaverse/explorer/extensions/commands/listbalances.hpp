@@ -36,7 +36,6 @@ class listbalances: public command_extension
 public:
     static const char* symbol(){ return "listbalances";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "List balance details of each address of this account. defaults show non-zero unspent address."; }
 

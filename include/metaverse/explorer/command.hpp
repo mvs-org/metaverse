@@ -49,9 +49,6 @@
 #include <metaverse/explorer/config/wrapper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
-#include <metaverse/blockchain/block_chain_impl.hpp> // for blockchain
-#include <metaverse/consensus/miner.hpp> // for miner
-
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 
 namespace libbitcoin {

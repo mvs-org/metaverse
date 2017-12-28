@@ -34,7 +34,6 @@ class deposit : public command_extension
 public:
     static const char* symbol(){ return "deposit";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "Deposit some etp, then get reward for frozen some etp."; }
 

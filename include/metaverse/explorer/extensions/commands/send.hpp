@@ -34,7 +34,6 @@ class send: public send_command
 public:
     static const char* symbol(){ return "send";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "send etp to a targert address, mychange goes to another existed address of this account."; }
 
