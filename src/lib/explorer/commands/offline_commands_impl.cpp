@@ -98,8 +98,7 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     const auto seed = bw::decode_mnemonic(words);
 #endif
 
-    const data_chunk& dc_seed = bc::config::base16(seed);
-    return dc_seed;
+    return bc::config::base16(seed);
 }
 
 //hd-new
