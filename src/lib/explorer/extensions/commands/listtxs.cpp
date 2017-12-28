@@ -151,7 +151,6 @@ console_result listtxs::invoke (Json::Value& jv_output,
 
     // fetch tx according its hash
     std::vector<std::string> vec_ip_addr; // input addr
-    std::vector<std::string> vec_op_addr; // output addr
     chain::transaction tx;
     uint64_t tx_height;
     //hash_digest trans_hash;
@@ -175,20 +174,24 @@ console_result listtxs::invoke (Json::Value& jv_output,
         Json::Value input_addrs;
         for(auto& input : tx.inputs) {
             Json::Value input_addr;
-            std::string addr="";
             
-            auto script_address = payment_address::extract(input.script);
-            if (script_address)
-                addr = script_address.encoded();
+            auto&& script_address = payment_address::extract(input.script);
+            if (script_address) {
+                auto&& temp_addr = script_address.encoded();
+                input_addr["address"] = temp_addr;
+                // add input address
+                vec_ip_addr.push_back(temp_addr);
+            } else {
+                // empty input address : coin base tx;
+                if (get_api_version() == 1) 
+                    input_addr["address"] = "";
+                else
+                    input_addr["address"] = Json::nullValue;
+            }
 
-            input_addr["address"] = addr;
             input_addr["script"] = input.script.to_string(1);
             input_addrs.append(input_addr);
 
-            // add input address
-            if(!addr.empty()) {
-                vec_ip_addr.push_back(addr);
-            }
         }
 
         if (get_api_version() == 1 && input_addrs.isNull()) { // compatible for v1
@@ -199,20 +202,29 @@ console_result listtxs::invoke (Json::Value& jv_output,
 
         // set outputs content
         Json::Value pt_outputs;
+        uint64_t lock_height = 0;
         for(auto& op : tx.outputs) {
             Json::Value pt_output;
-            std::string addr="";
             
-            auto address = payment_address::extract(op.script);
-            if (address)
-                addr = address.encoded();
-            if(blockchain.get_account_address(auth_.name, addr))
-                pt_output["own"] = true;
-            else
-                pt_output["own"] = false;
-            pt_output["address"] = addr;
+            auto&& address = payment_address::extract(op.script);
+            if (address) {
+                auto&& temp_addr = address.encoded();
+                auto ret = blockchain.get_account_address(auth_.name, temp_addr);
+                if(get_api_version() == 1)
+                    pt_output["own"] = ret ? "true" : "false";
+                else
+                    pt_output["own"] = ret ? true : false;
+
+            } else {
+                // empty output address ? unbelievable.
+                if(get_api_version() == 1)
+                    pt_output["address"] = "";
+                else
+                    pt_output["address"] = Json::nullValue;
+            }
+
             pt_output["script"] = op.script.to_string(1);
-            uint64_t lock_height = 0;
+            lock_height = 0;
             if(chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
                 lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
 
@@ -271,9 +283,6 @@ console_result listtxs::invoke (Json::Value& jv_output,
             
             pt_outputs.append(pt_output);
             
-            // add output address
-            if(!addr.empty())
-                vec_op_addr.push_back(addr);
         }
 
         if (get_api_version() == 1 && pt_outputs.isNull()) { // compatible for v1
@@ -314,7 +323,6 @@ console_result listtxs::invoke (Json::Value& jv_output,
     #endif
         // 3. all address clear
         vec_ip_addr.clear();
-        vec_op_addr.clear();
         balances.append(tx_item);
     }
 
