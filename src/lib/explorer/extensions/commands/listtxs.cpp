@@ -209,6 +209,7 @@ console_result listtxs::invoke (Json::Value& jv_output,
             auto&& address = payment_address::extract(op.script);
             if (address) {
                 auto&& temp_addr = address.encoded();
+                pt_output["address"] = temp_addr;
                 auto ret = blockchain.get_account_address(auth_.name, temp_addr);
                 if(get_api_version() == 1)
                     pt_output["own"] = ret ? "true" : "false";
@@ -258,12 +259,20 @@ console_result listtxs::invoke (Json::Value& jv_output,
                     tree["description"] = detail_info.get_description();
                 }
                 if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+
                     tree["type"] = "asset-transfer";
                     auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
                     tree["symbol"] = trans_info.get_address();
-                    tree["quantity"] = trans_info.get_quantity();
+
+                    if (get_api_version() == 1) {
+                        tree["quantity"] += trans_info.get_quantity();
+                    } else {
+                        tree["quantity"] = trans_info.get_quantity();
+                    }
+
                     auto symbol = trans_info.get_address();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
+
                     if(issued_asset && get_api_version() == 1) {
                         tree["decimal_number"] += issued_asset->get_decimal_number();
                     }
@@ -300,27 +309,6 @@ console_result listtxs::invoke (Json::Value& jv_output,
         if (pos == vec_ip_addr.end()){
             tx_item["direction"] = "receive";
         }
-        // 2. transfer check
-    #if 0
-        auto is_ip_intern = true;
-        auto is_op_intern = true;
-
-        if(vec_ip_addr.empty())
-            is_ip_intern = false;
-        for(auto& each : vec_ip_addr) {
-            if(!blockchain.get_account_address(auth_.name, each))
-                is_ip_intern = false;
-        }
-        
-        for(auto& each : vec_op_addr) {
-            if(!blockchain.get_account_address(auth_.name, each))
-                is_op_intern = false;
-        }
-        
-        if (is_ip_intern && is_ip_intern){
-            tx_item["direction"] = "transfer";
-        }
-    #endif
         // 3. all address clear
         vec_ip_addr.clear();
         balances.append(tx_item);
