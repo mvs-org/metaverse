@@ -22,6 +22,7 @@
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/command.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace explorer {

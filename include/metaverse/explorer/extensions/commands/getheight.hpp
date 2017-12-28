@@ -37,8 +37,7 @@ public:
 
     static const char* symbol(){ return "getheight";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    bool category(int bs) override { return (cgty_extension & bs ) == bs; }
+    bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "Get last height. Alias as fetch-height."; }
 
     arguments_metadata& load_arguments() override

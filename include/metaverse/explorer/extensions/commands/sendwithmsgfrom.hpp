@@ -34,7 +34,6 @@ class sendwithmsgfrom: public send_command
 public:
     static const char* symbol(){ return "sendwithmsgfrom";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "sendwithmsgfrom "; }
 

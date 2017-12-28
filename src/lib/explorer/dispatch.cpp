@@ -167,19 +167,26 @@ console_result dispatch_command(int argc, const char* argv[],
 
     command->set_api_version(api_version);
 
-    if (command->category(cgty_extension))
+    if (command->category(ctgy_extension))
     {
+
         // fixme. is_blockchain_sync has some problem.
-        //if (command->category(cgty_online) && node.is_blockchain_sync()) {
-        //    throw block_sync_required_exception{"This command is unavailable because wallet height is less than 800000."};
-        //}
+        // if (command->category(ctgy_online) && node.is_blockchain_sync()) {
+        if (command->category(ctgy_online) &&
+            !node.chain_impl().chain_settings().use_testnet_rules) {
+       	    uint64_t height{0};
+            node.chain_impl().get_last_height(height);
+            if (!command->is_block_height_fullfilled(height))
+                throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
+        }                                                                       
+
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
 
     }else{
-        command->set_api_version(1);
-        command->invoke(output, output);
+        command->set_api_version(1); // only compatible for v1
+        auto retcode = command->invoke(output, output);
         jv_output = output.str();
-        return console_result::okay;
+        return retcode;
     }
 }
 

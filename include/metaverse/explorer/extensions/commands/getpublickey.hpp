@@ -34,8 +34,7 @@ class getpublickey: public command_extension
 public:
     static const char* symbol(){ return "getpublickey";}
     const char* name() override { return symbol();} 
-    const char* category() override { return "EXTENSION"; }
-    bool category(int bs) override { return (cgty_extension & bs ) == bs; }
+    bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "getpublickey "; }
 
     arguments_metadata& load_arguments() override
