@@ -105,7 +105,7 @@ public:
     /// Get miner.
     virtual consensus::miner& miner();
 
-    bool is_blockchain_sync() const { return under_header_sync_.load(std::memory_order_relaxed); }
+    bool is_blockchain_sync() const { return under_blockchain_sync_.load(std::memory_order_relaxed); }
 
 private:
     void handle_running(const code& ec, result_handler handler);
@@ -120,7 +120,7 @@ private:
     
     bool open_ui();
 
-    std::atomic<bool> under_header_sync_;
+    std::atomic<bool> under_blockchain_sync_;
 
     const configuration& configuration_;
     static boost::filesystem::path webpage_path_;
