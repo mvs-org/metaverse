@@ -44,14 +44,28 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     if (*results.rbegin() != argument_.last_word){
         throw argument_legality_exception{"last word not matching."};
     }
-    
-    fs::file_status status = fs::status(argument_.dst); 
-    if(fs::is_directory(status)) // not process filesystem exception here
-        argument_.dst /= auth_.name;
-    
-    fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
-    if(!fs::exists(status2))
-        throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
+
+    std::string keyfile_name = "mvs-" + auth_.name + ".keystore";
+
+    if (argument_.dst.empty()) {
+        // default path. provides download.
+        if(!boost::filesystem::exists(webpage_path())) {
+            fs::create_directory(webpage_path());
+        }
+
+        argument_.dst = webpage_path() / "keys";
+        fs::create_directory(argument_.dst);
+        argument_.dst /= keyfile_name;
+
+    } else {
+        fs::file_status status = fs::status(argument_.dst); 
+        if(fs::is_directory(status)) // not process filesystem exception here
+            argument_.dst /= keyfile_name;
+        
+        fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
+        if(!fs::exists(status2))
+            throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
+    }
         
     acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
 
