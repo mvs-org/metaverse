@@ -84,8 +84,8 @@ public:
         )
         (
             "DESTINATION",
-            value<boost::filesystem::path>(&argument_.dst)->default_value(default_data_path()),
-            "account info storage file path"
+            value<boost::filesystem::path>(&argument_.dst)->default_value(""),
+            "The keyfile storage path to."
         )
         ;
 
@@ -101,8 +101,6 @@ public:
 
     struct argument
     {
-        argument():last_word(""), dst("")  
-        {};
         std::string last_word;
         boost::filesystem::path dst;
     } argument_;
