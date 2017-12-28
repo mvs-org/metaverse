@@ -100,7 +100,6 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             Json::Value root;
             root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
-            root["error"] = Json::objectValue;
             root["error"]["code"] = (int32_t)e.code();
             root["error"]["message"] = e.what();
            
@@ -116,7 +115,6 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             Json::Value root;
             root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
-            root["error"] = Json::objectValue;
             root["error"]["code"] = 1000;
             root["error"]["message"] = e.what();
 
@@ -139,7 +137,7 @@ void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
         }
 
     } catch (const std::exception& e) {
-        jv_output["error"] = Json::objectValue;
+        jv_output = Json::objectValue;
         jv_output["error"]["code"] = 1000;
         jv_output["error"]["message"] = e.what();
     }
