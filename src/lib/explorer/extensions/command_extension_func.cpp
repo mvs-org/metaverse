@@ -256,6 +256,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<listmultisig>();
     if (symbol == deletemultisig::symbol())
         return make_shared<deletemultisig>();
+    if (symbol == createmultisigtx::symbol())
+        return make_shared<createmultisigtx>();
     if (symbol == signmultisigtx::symbol())
         return make_shared<signmultisigtx>();
     if (symbol == createrawtx::symbol())
