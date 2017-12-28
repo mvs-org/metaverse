@@ -47,6 +47,7 @@ using namespace bc::protocol;
 
 server_node::server_node(const configuration& configuration)
   : p2p_node(configuration),
+    under_blockchain_sync_(true),
     configuration_(configuration),
     authenticator_(*this),
     secure_query_service_(authenticator_, *this, true),
@@ -123,7 +124,7 @@ void server_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
-    under_header_sync_.store(true, std::memory_order_relaxed);
+    under_blockchain_sync_.store(false, std::memory_order_relaxed);
 
     // This is the end of the derived run sequence.
     handler(error::success);
