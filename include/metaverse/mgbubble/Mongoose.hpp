@@ -56,7 +56,7 @@ public:
 protected:
 
     virtual void data_to_arg(uint8_t api_version) = 0;
-    const char* argv_[max_paramters]{{nullptr}};
+    const char* argv_[max_paramters]{nullptr};
     int argc_{0};
 
     std::vector<std::string> vargv_;
