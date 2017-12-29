@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <metaverse/explorer/commands/offline_commands_impl.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -36,57 +38,17 @@ std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& 
     ss << std::to_string(n) << " checkmultisig";
     return ss.str();
 }
-void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::string& seed, uint32_t hd_index){
-    const char* cmds[]{"mnemonic-to-seed", "hd-new", "hd-to-ec", "ec-to-public", "ec-to-address"};
-    
-    //data_chunk data(seed.begin(), seed.end());
-    //std::stringstream sout(encode_hash(bitcoin_hash(data)));
-    std::stringstream sout(seed);
-    std::istringstream sin("");
+void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::string& seed, uint32_t hd_index)
+{
+    // TO TEST . CHENHAO
+    bc::config::base16 base16_seed{seed};
 
+    const auto& dc_seed = base16_seed;
+    auto&& hd_pri_key = get_hd_new(dc_seed);
+    auto&& hd_pub_key = hd_pri_key.derive_public(hd_index);
 
-    auto exec_with = [&](int i){
-        sin.str(sout.str());
-        sout.str("");
-        return dispatch_command(1, cmds + i, sin, sout, sout);
-    };
-            
-    if (exec_with(1) != console_result::okay) { // hd-new
-        throw hd_new_exception(sout.str());
-    }
-     
-     
-    relay_exception(sout);
-
-    auto&& argv_index = std::to_string(hd_index);
-    const char* hd_private_gen[3] = {"hd-private", "-i", argv_index.c_str()};
-    sin.str(sout.str());
-    sout.str("");
-    if (dispatch_command(3, hd_private_gen, sin, sout, sout) != console_result::okay) { // hd-private
-        throw hd_private_new_exception(sout.str());
-    } 
-     
-    relay_exception(sout);
-    
-    if (exec_with(2) != console_result::okay) { // hd-to-ec
-        throw hd_to_ec_exception(sout.str());
-    }
-     
-    relay_exception(sout);
-
-    prikey = sout.str();
-    //acc->set_multisig_prikey(multisig_prikey);
-    //root.put("multisig-prikey", sout.str());
-    //addr->set_prv_key(sout.str(), auth_.auth);
-    // not store public key now
-    if (exec_with(3) != console_result::okay) { // ec-to-public
-        throw ec_to_public_exception(sout.str());
-    }
-     
-    relay_exception(sout);
-
-    //addr->set_pub_key(sout.str());
-    pubkey = sout.str();
+    prikey = hd_pri_key.encoded();
+    pubkey = hd_pub_key.encoded();
 }
 
 history::list expand_history(history_compact::list& compact)
@@ -933,15 +895,17 @@ void base_transfer_helper::populate_tx_outputs(){
         const wallet::payment_address payment(iter.target);
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        } else if(payment.version() == 0x5) { // pay to script addr
-            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); // common payment script
-        } else {
-            throw toaddress_unrecognized_exception{"unrecognized target address."};
+
+        auto&& hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) 
+        {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); 
+        } 
+        else if (payment.version() == wallet::payment_address::mainnet_p2sh) 
+        { 
+            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); 
         }
+
         auto payment_script = chain::script{ payment_ops };
         
         // generate asset info
@@ -1310,19 +1274,22 @@ void base_transaction_constructor::populate_tx_outputs(){
         const wallet::payment_address payment(iter.target);
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        } else if(payment.version() == 0x5) { // pay to script addr
-            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); // common payment script
+
+        auto&& hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); 
+
+        } else if(payment.version() == wallet::payment_address::mainnet_p2sh) { 
+            payment_ops = chain::operation::to_pay_script_hash_pattern(hash); 
+
         } else {
             throw toaddress_unrecognized_exception{std::string("unrecognized target address.") + payment.encoded()};
         }
-        auto payment_script = chain::script{ payment_ops };
+
+        auto&& payment_script = chain::script{ payment_ops };
         
         // generate asset info
-        auto output_att = populate_output_attachment(iter);
+        auto&& output_att = populate_output_attachment(iter);
         
         // fill output
         tx_.outputs.push_back({ iter.amount, payment_script, output_att });
@@ -1445,9 +1412,8 @@ void depositing_etp_transaction::populate_tx_outputs() {
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
         
-        if((payment.version() == 0x7f) // test net addr
-            || (payment.version() == 0x32)) { // main net addr
-            auto hash = payment.hash();
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            auto&& hash = payment.hash();
             if((utxo_attach_type::deposit == iter.type)) {
                 payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
             } else {

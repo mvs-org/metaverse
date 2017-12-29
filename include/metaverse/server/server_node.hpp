@@ -22,6 +22,7 @@
 #define MVS_SERVER_SERVER_NODE_HPP
 
 #include <cstdint>
+#include <atomic>
 #include <memory>
 #include <metaverse/node.hpp>
 #include <metaverse/protocol.hpp>
@@ -41,7 +42,8 @@
 #include <boost/shared_ptr.hpp>
 
 namespace mgbubble{
-    class RestServ;
+    class HttpServ;
+    class WsPushServ;
 }
 namespace libbitcoin {
 namespace server {
@@ -103,6 +105,8 @@ public:
     /// Get miner.
     virtual consensus::miner& miner();
 
+    bool is_blockchain_sync() const { return under_blockchain_sync_.load(std::memory_order_relaxed); }
+
 private:
     void handle_running(const code& ec, result_handler handler);
 
@@ -116,12 +120,14 @@ private:
     
     bool open_ui();
 
+    std::atomic<bool> under_blockchain_sync_;
+
     const configuration& configuration_;
     static boost::filesystem::path webpage_path_;
-    // modify.chenhao
-    void run_mongoose();
+
     consensus::miner miner_;
-    boost::shared_ptr<mgbubble::RestServ> rest_server_;
+    boost::shared_ptr<mgbubble::HttpServ> rest_server_;
+    boost::shared_ptr<mgbubble::WsPushServ> push_server_;
     // These are thread safe.
     authenticator authenticator_;
     query_service secure_query_service_;

@@ -25,13 +25,10 @@
 #include <cstdint>
 #include <string>
 #include <boost/format.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <metaverse/explorer/config/encoding.hpp>
 #include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
-
-using namespace pt;
 
 namespace libbitcoin {
 namespace explorer {
@@ -50,7 +47,7 @@ callback_state::callback_state(std::ostream& error, std::ostream& output)
 }
 
 // std::endl adds "/n" and flushes the stream.
-void callback_state::error(const ptree& tree)
+void callback_state::error(const Json::Value& tree)
 {
     write_stream(error_, tree, engine_);
 }
@@ -67,7 +64,7 @@ void callback_state::error(const std::string& message)
     error(format(message));
 }
 
-void callback_state::output(const pt::ptree& tree)
+void callback_state::output(const Json::Value& tree)
 {
     write_stream(output_, tree, engine_);
 }

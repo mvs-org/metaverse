@@ -74,7 +74,13 @@ const boost::filesystem::path& default_data_path()
 boost::filesystem::path webpage_path()
 {
 #ifdef _MSC_VER
-    return "./mvs-htmls";
+#ifdef UNICODE
+    wchar_t tmp[MAX_PATH * 2] = { 0 };
+#else
+    char tmp[MAX_PATH * 2] = { 0 };
+#endif
+    GetModuleFileName(NULL, tmp, MAX_PATH * 2);
+    return boost::filesystem::path(tmp).parent_path() / "mvs-htmls";
 #else
     return default_data_path() / "mvs-htmls";
 #endif

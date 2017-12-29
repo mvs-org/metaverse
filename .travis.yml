@@ -1,0 +1,124 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+matrix:
+  include:
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-5.0
+            - cmake
+            - cmake-data
+            - g++-5
+            - libgmp-dev
+      env:
+        - CMAKE_BUILD_TYPE=DEBUG
+        - CMAKE_C_COMPILER=clang-5.0
+        - CMAKE_CXX_COMPILER=clang++-5.0
+        - ENABLE_SHARED_LIBS=OFF
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-5.0
+            - cmake
+            - cmake-data
+            - g++-5
+            - libgmp-dev
+      env:
+        - CMAKE_BUILD_TYPE=RELEASE
+        - CMAKE_C_COMPILER=clang-5.0
+        - CMAKE_CXX_COMPILER=clang++-5.0
+        - ENABLE_SHARED_LIBS=OFF
+
+    - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - cmake-data
+            - g++-5
+            - libgmp-dev
+      env:
+        - CMAKE_BUILD_TYPE=DEBUG
+        - CMAKE_C_COMPILER=gcc-5
+        - CMAKE_CXX_COMPILER=g++-5
+        - ENABLE_SHARED_LIBS=OFF
+
+    - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - cmake-data
+            - g++-5
+            - libgmp-dev
+      env:
+        - CMAKE_BUILD_TYPE=RELEASE
+        - CMAKE_C_COMPILER=gcc-5
+        - CMAKE_CXX_COMPILER=g++-5
+        - ENABLE_SHARED_LIBS=OFF
+
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang++
+      env:
+        - CMAKE_BUILD_TYPE=DEBUG
+        - CMAKE_C_COMPILER=clang
+        - CMAKE_CXX_COMPILER=clang++
+        - ENABLE_SHARED_LIBS=OFF
+
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang++
+      env:
+        - CMAKE_BUILD_TYPE=RELEASE
+        - CMAKE_C_COMPILER=clang
+        - CMAKE_CXX_COMPILER=clang++
+        - ENABLE_SHARED_LIBS=OFF
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+       export CC=clang;
+       export CXX=clang++;
+       export IS_TRAVIS_OSX=true;
+      ./install_dependencies.sh;
+    else
+       export IS_TRAVIS_LINUX=true;
+       export CC=gcc;
+       export CXX=g++;
+      ./install_dependencies.sh --build-boost;
+    fi
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DENABLE_SHARED_LIBS=${ENABLE_SHARED_LIBS}
+          ..
+
+script:
+  - make -j2
+

@@ -30,6 +30,16 @@ public:                                                           \
     }                                                             \
 }
 
+#define DEFINE_STD_JSONRPC_EXCEPTION(class_name, code, message)   \
+class class_name : public explorer_exception                      \
+{                                                                 \
+public:                                                           \
+    class_name() :                                                \
+    explorer_exception(code, message)                             \
+    {                                                             \
+    }                                                             \
+}
+
 namespace libbitcoin {
 namespace explorer {
 
@@ -52,12 +62,17 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex);
 void relay_exception(std::stringstream&);
 
 
+DEFINE_EXPLORER_EXCEPTION(unknown_error_exception, 500);
 DEFINE_EXPLORER_EXCEPTION(fatal_exception, 1001);
 DEFINE_EXPLORER_EXCEPTION(connection_exception, 1011);
 DEFINE_EXPLORER_EXCEPTION(session_expired_exception, 1012);
+
+DEFINE_EXPLORER_EXCEPTION(invalid_command_exception, 1020);
 DEFINE_EXPLORER_EXCEPTION(command_params_exception, 1021);
 DEFINE_EXPLORER_EXCEPTION(command_platform_compat_exception, 1022);
 DEFINE_EXPLORER_EXCEPTION(ui_invoke_explorer_exception, 1023);
+DEFINE_EXPLORER_EXCEPTION(setting_required_exception, 1024);
+DEFINE_EXPLORER_EXCEPTION(block_sync_required_exception, 1025);
 
 
 
@@ -172,6 +187,12 @@ DEFINE_EXPLORER_EXCEPTION(mnemonicwords_to_seed_exception, 9204);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_dismatch_exception, 9205);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_empty_exception, 9206);
 DEFINE_EXPLORER_EXCEPTION(mnemonicwords_existed_exception, 9207);
+
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_parse_error, -32700, "jsonrpc parse error");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_invalid_request, -32600, "jsonrpc invalid request");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_method_not_found, -32601, "jsonrpc method not found");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_invalid_params, -32602, "jsonrpc invalid params");
+DEFINE_STD_JSONRPC_EXCEPTION(jsonrpc_internal_error, -32603, "jsonrpc internal error");
 
 } //namespace explorer
 } //namespace libbitcoin

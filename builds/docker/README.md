@@ -5,7 +5,7 @@ Simple and fast setup of Metaverse on Docker is also available.
 ## Install Dependencies
  - [Docker](https://docs.docker.com)
 
-## Build eos image
+## Build metaverse image
 
 ```bash
 git clone https://github.com/mvs-org/metaverse.git

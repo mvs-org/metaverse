@@ -54,7 +54,7 @@ public:
 
     ~traffic(){
         auto now = std::chrono::system_clock::now();
-        std::cout << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load()  << std::endl;
+        log::trace(LOG_NETWORK) << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load();
     }
 private:
     static boost::detail::spinlock spinlock_;
