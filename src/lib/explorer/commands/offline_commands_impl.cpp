@@ -27,7 +27,7 @@ namespace explorer {
 namespace commands {
 
 //seed
-data_chunk get_seed(uint16_t bit_length = 256u)
+data_chunk get_seed(uint16_t bit_length)
 {
     // These are soft requirements for security and rationality.
     // We use bit vs. byte length input as the more familiar convention.
@@ -60,8 +60,8 @@ bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_c
 
 //mnemonic-to-seed
 data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language, 
-    const std::string& passphrase, 
-    const bw::word_list& words)
+    const bw::word_list& words,
+    std::string passphrase)
 {
     const auto word_count = words.size();
 
@@ -98,12 +98,11 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     const auto seed = bw::decode_mnemonic(words);
 #endif
 
-    const data_chunk& dc_seed = bc::config::base16(seed);
-    return dc_seed;
+    return bc::config::base16(seed);
 }
 
 //hd-new
-bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version = hd_default_secret_version)
+bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version)
 {
     if (seed.size() < minimum_seed_size)
     {

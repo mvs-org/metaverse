@@ -18,12 +18,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
-#include <json/minijson_writer.hpp>
-#include <metaverse/explorer.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
+#include <boost/program_options.hpp> 
+#include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
-#include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/bitcoin/unicode/unicode.hpp>
 
 BC_USE_MVS_MAIN
 
@@ -35,72 +34,74 @@ BC_USE_MVS_MAIN
  * @return      The numeric result to return via console exit.
  */
 using namespace mgbubble::cli;
+namespace po = boost::program_options;
 
 void my_impl(const http_message* hm)
 {
     auto&& reply = std::string(hm->body.p, hm->body.len);
-    bc::cout << reply << std::endl;
+    Json::Reader reader;
+    Json::Value root;
+    if (reader.parse(reply, root) && root.isObject()) {
+        if (root["error"]["code"].isInt() && root["error"]["code"].asInt() != 0) {
+            bc::cout << root["error"].toStyledString();
+        }
+        else if (root["result"].isString()) {
+            bc::cout << root["result"].asString() <<std::endl;
+        }
+        else if(root["result"].isArray() || root["result"].isObject()) {
+            bc::cout << root["result"].toStyledString();
+        }
+        else {
+            bc::cout << reply << std::endl;
+        }
+    }
+    else {
+        bc::cout << reply << std::endl;
+    }
 }
 
 int bc::main(int argc, char* argv[])
 {
+    auto work_path = bc::default_data_path();
+    auto&& config_file = work_path / "mvs.conf";
+    std::string url{"127.0.0.1:8820/rpc/v2"}; 
 
-    if (argc == 1 || std::memcmp(argv[1], "-h", 2) == 0 ||
-                    std::memcmp(argv[1], "--help", 6) == 0)
-    {
-        bc::explorer::display_usage(bc::cout);
-        return console_result::okay;
-    }
+    if(boost::filesystem::exists(config_file)) {
+        std::string tmp;
+        po::options_description desc("");
+        desc.add_options()
+            ("server.mongoose_listen", po::value<std::string>(&tmp)->default_value("127.0.0.1:8820"));
 
-    // original commands
-    std::string cmd{argv[1]};
-    auto cmd_ptr = bc::explorer::find_extension(cmd);
+        po::variables_map vm;
+        po::store(po::parse_command_line(0, argv, desc), vm);
+        po::notify(vm);
 
-    auto is_online_cmd = [](const char* cmd)
-    {
-        return std::memcmp(cmd, "fetch-", 6) == 0;
-    };
-        
-    try 
-    {
-        std::stringstream sout;
-        if (!cmd_ptr && !is_online_cmd(cmd.c_str()))
+        if (vm.count("server.mongoose_listen"))
         {
-            auto ret = bc::explorer::dispatch_command(argc - 1,
-                const_cast<const char**>(argv + 1), bc::cin, sout, sout);
-            if (ret != console_result::okay)
-            {
-                throw explorer::command_params_exception(sout.str());
+            if (!tmp.empty()) {
+                url = tmp + "/rpc/v2";
             }
-                 
-            explorer::relay_exception(sout);
-            bc::cout << sout.str() << std::endl;
-            return console_result::okay;
         }
     } 
-    catch (const bc::explorer::explorer_exception& e)
-    {
-        bc::cout << e << std::endl;
-        return console_result::failure;
-    }
 
-    // extension commands
-    HttpReq req("127.0.0.1:8820/rpc", 3000, reply_handler(my_impl));
-    std::ostringstream sout{""};
-    minijson::object_writer writer(sout);
-    writer.write("method", argv[1]);
+    // HTTP request call commands
+    HttpReq req(url, 3000, reply_handler(my_impl));
+
+    Json::Value jsonvar;
+    Json::Value jsonopt;
+    jsonvar["jsonrpc"] = "2.0";
+    jsonvar["id"] = 1;
+    jsonvar["method"] = (argc > 1) ? argv[1] : "help";
+    jsonvar["params"] = Json::arrayValue;
 
     if (argc > 2)
     {
-        minijson::array_writer awriter = writer.nested_array("params");
-        for (int i = 2 ; i < argc; i++)
+        for (int i = 2; i < argc; i++)
         {
-            awriter.write(argv[i]);
+            jsonvar["params"].append(argv[i]);
         }
-        awriter.close();
     }
 
-    writer.close();
-    req.post(sout.str());
+    req.post(jsonvar.toStyledString());
     return 0;
 }

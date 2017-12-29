@@ -627,7 +627,7 @@ bool transaction_pool::is_spent_in_pool(const transaction& tx) const
 
 bool transaction_pool::is_spent_in_pool(const output_point& outpoint) const
 {
-    const auto found = [this, &outpoint](const entry& entry)
+    const auto found = [&outpoint](const entry& entry)
     {
         return is_spent_by_tx(outpoint, entry.tx);
     };

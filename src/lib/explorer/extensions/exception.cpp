@@ -5,9 +5,7 @@
  *      Author: jiang
  */
 
-#include <boost/property_tree/ptree.hpp>      
-#include <boost/property_tree/json_parser.hpp>
-
+#include <jsoncpp/json/json.h>
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
@@ -22,23 +20,22 @@ explorer_exception::explorer_exception(uint32_t code, const std::string& message
 std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 {
     boost::format fmt{"{\"code\":%d, \"error\":\"%s\", \"result\":null}"};
-    out << (fmt % ex.code() % ex.message());
+    out << (fmt % (int32_t)ex.code() % ex.message());
     return out;
 }
 
 void relay_exception(std::stringstream& ss)
 {    
-    // parse json
-    using namespace boost::property_tree;
-    try 
+    try
     {
-        ptree pt;
-        read_json(ss, pt);
-        uint32_t code = pt.get<uint32_t>("code");
-        std::string msg = pt.get<std::string>("message");
-        if (code) 
-            return;
-        throw explorer_exception{code, msg};
+        Json::Reader reader;
+        Json::Value root;
+        if (reader.parse(ss, root) && root["code"].isUInt() && root["message"].isString()) {
+            auto code = root["code"].asUInt();
+            auto msg = root["message"].asString();
+            if (code)
+                throw explorer_exception{ code, msg };
+        }
     }
     catch (const explorer_exception& e)
     {

@@ -26,7 +26,7 @@
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/display.hpp>
-#include <metaverse/explorer/prop_tree.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 
 
 namespace libbitcoin {
@@ -64,10 +64,10 @@ console_result fetch_stealth::invoke(std::ostream& output, std::ostream& error)
     // This enables json-style array formatting.
     const auto json = encoding == encoding_engine::json;
 
-    auto on_done = [&state, &filter, json](const stealth::list& list)
+    auto on_done = [&state, json](const stealth::list& list)
     {
         // Write out the transaction hashes of *potential* matches.
-        state.output(prop_tree(list, json));
+        state.output(json_helper().prop_tree(list, json));
     };
 
     auto on_error = [&state](const std::error_code& error)

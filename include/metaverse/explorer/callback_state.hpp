@@ -25,7 +25,6 @@
 #include <cstdint>
 #include <string>
 #include <boost/format.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/config/encoding.hpp>
 
@@ -65,7 +64,7 @@ public:
      * returning in order to prevent interleaving on the shared stream.
      * @param[in]  tree  The property tree to write to output.
      */
-    BCX_API virtual void error(const pt::ptree& tree);
+    BCX_API virtual void error(const Json::Value& tree);
 
     /**
      * Write a line to the error stream. The stream must be flushed before 
@@ -86,7 +85,7 @@ public:
      * returning in order to prevent interleaving on the shared stream.
      * @param[in]  tree  The property tree to write to output.
      */
-    BCX_API virtual void output(const pt::ptree& tree);
+    BCX_API virtual void output(const Json::Value& tree);
 
     /**
      * Write a line to the output stream. The stream must be flushed before 

@@ -86,7 +86,7 @@ void executor::do_settings()
 void executor::do_version()
 {
     output_ << format(BS_VERSION_MESSAGE) %
-        MVS_SERVER_VERSION %
+        MVS_VERSION %
         MVS_SERVER_VERSION %
         MVS_PROTOCOL_VERSION %
         MVS_NODE_VERSION %

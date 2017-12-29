@@ -49,19 +49,15 @@
 #include <metaverse/explorer/config/wrapper.hpp>
 #include <metaverse/explorer/utility.hpp>
 
-#include <metaverse/blockchain/block_chain_impl.hpp> // for blockchain
-#include <metaverse/consensus/miner.hpp> // for miner
-
 /********* GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY **********/
 
 namespace libbitcoin {
 namespace explorer {
 
-#define BX_PROGRAM_NAME "mvs"
 #define BX_HELP_VARIABLE "help"
 #define BX_CONFIG_VARIABLE "config"
 #define LOG_COMMAND "commands"
-BC_DECLARE_CONFIG_DEFAULT_PATH("conf" / BX_PROGRAM_NAME ".conf")
+BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 
 /**
  * Base class for definition of each Bitcoin Explorer command.
@@ -94,6 +90,17 @@ public:
     virtual const char* category()
     {
         return "not-implemented";
+    }
+
+    /**
+     * The localizable command category type.
+     * @param   Example: cgty_extension | cgty_online
+     * @return  Example: true | false
+     */
+
+    virtual bool category(int bs)
+    {
+        return false;
     }
 
     /**
@@ -657,6 +664,16 @@ public:
         setting_.server.client_private_key = value;
     }
 
+    virtual void set_api_version(uint8_t ver)
+    {
+        setting_.server.api_version = ver;
+    }
+
+    virtual uint8_t get_api_version()
+    {
+        return setting_.server.api_version;
+    }
+
 protected:
 
     /**
@@ -750,7 +767,8 @@ private:
                 connect_retries(),
                 connect_timeout_seconds(),
                 server_public_key(),
-                client_private_key()
+                client_private_key(),
+                api_version(0)// defaults to v1, else v2. init as 0.
             {
             }
 
@@ -759,6 +777,7 @@ private:
             uint16_t connect_timeout_seconds;
             bc::config::sodium server_public_key;
             bc::config::sodium client_private_key;
+            uint8_t api_version; 
         } server;
 
         setting()

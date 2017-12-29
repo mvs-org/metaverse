@@ -143,8 +143,9 @@ uint64_t account_multisig::serialized_size() const
 {
 	uint64_t size = 4 + 4 + 1 + 1 + (pubkey_.size() + 9) + 1; // hd_index,index,m,n,pubkey,pubkey number
 	
-    for(auto& each : cosigner_pubkeys_)
+    for(auto& each : cosigner_pubkeys_) {
     	size += (each.size() + 9);
+    }
 	size += (description_.size() + 9); 
 	size += (address_.size() + 9); 
 	return size;

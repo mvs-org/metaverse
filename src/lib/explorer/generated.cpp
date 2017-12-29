@@ -42,41 +42,16 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
     os <<"== original commands ==\r\n";
 
-    func(make_shared<seed>());
-    func(make_shared<ec_to_address>());
-    func(make_shared<ec_to_public>());
-    func(make_shared<fetch_balance>());
-    func(make_shared<fetch_header>());
-    func(make_shared<fetch_height>());
-    func(make_shared<fetch_history>());
-    func(make_shared<fetch_public_key>());
-    func(make_shared<fetch_stealth>());
-    func(make_shared<fetch_tx>());
-    func(make_shared<fetch_tx_index>());
-    func(make_shared<fetch_utxo>());
-    func(make_shared<hd_new>());
-    func(make_shared<hd_private>());
-    func(make_shared<hd_to_ec>());
-    func(make_shared<hd_to_public>());
     func(make_shared<help>());
-    func(make_shared<input_set>());
-    func(make_shared<input_sign>());
-    func(make_shared<input_validate>());
-    func(make_shared<mnemonic_decode>());
-    func(make_shared<mnemonic_encode>());
-    func(make_shared<mnemonic_new>());
-    func(make_shared<mnemonic_to_seed>());
-    func(make_shared<send_tx>());
     func(make_shared<settings>());
+    func(make_shared<send_tx>());
+    func(make_shared<tx_decode>());
+    func(make_shared<validate_tx>());
     func(make_shared<stealth_decode>());
     func(make_shared<stealth_encode>());
     func(make_shared<stealth_public>());
     func(make_shared<stealth_secret>());
     func(make_shared<stealth_shared>());
-    func(make_shared<tx_decode>());
-    func(make_shared<tx_encode>());
-    func(make_shared<tx_sign>());
-    func(make_shared<validate_tx>());
 
     os <<"\r\n== extension commands ==\r\n";
 
@@ -86,54 +61,8 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
 shared_ptr<command> find(const string& symbol)
 {
-    if (symbol == seed::symbol())
-        return make_shared<seed>();
-    if (symbol == ec_to_address::symbol())
-        return make_shared<ec_to_address>();
-    if (symbol == ec_to_public::symbol())
-        return make_shared<ec_to_public>();
-    if (symbol == fetch_balance::symbol())
-        return make_shared<fetch_balance>();
-    if (symbol == fetch_header::symbol())
-        return make_shared<fetch_header>();
-    if (symbol == fetch_height::symbol())
-        return make_shared<fetch_height>();
-    if (symbol == fetch_history::symbol())
-        return make_shared<fetch_history>();
-    if (symbol == fetch_public_key::symbol())
-        return make_shared<fetch_public_key>();
-    if (symbol == fetch_stealth::symbol())
-        return make_shared<fetch_stealth>();
-    if (symbol == fetch_tx::symbol())
-        return make_shared<fetch_tx>();
-    if (symbol == fetch_tx_index::symbol())
-        return make_shared<fetch_tx_index>();
-    if (symbol == fetch_utxo::symbol())
-        return make_shared<fetch_utxo>();
-    if (symbol == hd_new::symbol())
-        return make_shared<hd_new>();
-    if (symbol == hd_private::symbol())
-        return make_shared<hd_private>();
-    if (symbol == hd_to_ec::symbol())
-        return make_shared<hd_to_ec>();
-    if (symbol == hd_to_public::symbol())
-        return make_shared<hd_to_public>();
     if (symbol == help::symbol())
         return make_shared<help>();
-    if (symbol == input_set::symbol())
-        return make_shared<input_set>();
-    if (symbol == input_sign::symbol())
-        return make_shared<input_sign>();
-    if (symbol == input_validate::symbol())
-        return make_shared<input_validate>();
-    if (symbol == mnemonic_decode::symbol())
-        return make_shared<mnemonic_decode>();
-    if (symbol == mnemonic_encode::symbol())
-        return make_shared<mnemonic_encode>();
-    if (symbol == mnemonic_new::symbol())
-        return make_shared<mnemonic_new>();
-    if (symbol == mnemonic_to_seed::symbol())
-        return make_shared<mnemonic_to_seed>();
     if (symbol == send_tx::symbol())
         return make_shared<send_tx>();
     if (symbol == settings::symbol())
@@ -150,10 +79,6 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<stealth_shared>();
     if (symbol == tx_decode::symbol())
         return make_shared<tx_decode>();
-    if (symbol == tx_encode::symbol())
-        return make_shared<tx_encode>();
-    if (symbol == tx_sign::symbol())
-        return make_shared<tx_sign>();
     if (symbol == validate_tx::symbol())
         return make_shared<validate_tx>();
 
@@ -162,30 +87,6 @@ shared_ptr<command> find(const string& symbol)
 
 std::string formerly(const string& former)
 {
-    if (former == ec_to_address::formerly())
-        return ec_to_address::symbol();
-    if (former == ec_to_public::formerly())
-        return ec_to_public::symbol();
-    if (former == fetch_height::formerly())
-        return fetch_height::symbol();
-    if (former == fetch_public_key::formerly())
-        return fetch_public_key::symbol();
-    if (former == fetch_tx::formerly())
-        return fetch_tx::symbol();
-    if (former == fetch_tx_index::formerly())
-        return fetch_tx_index::symbol();
-    if (former == fetch_utxo::formerly())
-        return fetch_utxo::symbol();
-    if (former == hd_new::formerly())
-        return hd_new::symbol();
-    if (former == input_set::formerly())
-        return input_set::symbol();
-    if (former == input_sign::formerly())
-        return input_sign::symbol();
-    if (former == input_validate::formerly())
-        return input_validate::symbol();
-    if (former == mnemonic_encode::formerly())
-        return mnemonic_encode::symbol();
     if (former == send_tx::formerly())
         return send_tx::symbol();
     if (former == stealth_decode::formerly())
@@ -194,8 +95,6 @@ std::string formerly(const string& former)
         return stealth_public::symbol();
     if (former == stealth_secret::formerly())
         return stealth_secret::symbol();
-    if (former == tx_sign::formerly())
-        return tx_sign::symbol();
     if (former == validate_tx::formerly())
         return validate_tx::symbol();
 

@@ -15,13 +15,14 @@
  * 02110-1301, USA.
  */
 #include <cctype>
-#include <json/minijson_reader.hpp>
+#include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/Mongoose.hpp>
 #include <metaverse/mgbubble/utility/Tokeniser.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace mgbubble {
 
-void HttpMessage::data_to_arg() {
+void HttpMessage::data_to_arg(uint8_t rpc_version) {
 
     auto vargv_to_argv = [this]() {
         // convert to char** argv
@@ -34,96 +35,85 @@ void HttpMessage::data_to_arg() {
         }
         argc_ = i;
     };
-
-    auto convert = [this](string_view method, string_view pramas){
-
-        if (!method.empty()){
-            this->vargv_.push_back({method.data(), method.size()});
-        }
-
-        if (!pramas.empty()){
-            Tokeniser<' '> args;
-            args.reset(pramas);
-
-            // store args from ws message
-            do {
-                //skip spaces
-                if (args.top().front() == ' '){
-                    args.pop();
-                    continue;
-                } else if (std::iscntrl(args.top().front())){
-                    break;
-                } else {
-                    this->vargv_.push_back({args.top().data(), args.top().size()});
-                    args.pop();
-                }
-            }while(!args.empty());
-        }
     
-    };
+    Json::Reader reader;
+    Json::Value root;
+    const char* begin = body().data();
+    const char* end = body().data() + body().size();
+    if (!reader.parse(begin, end, root) || !root.isObject()) {
+        throw libbitcoin::explorer::jsonrpc_parse_error();
+    }
 
-    /* *******************************************
-     * application/json
-     * {"method":"xxx", "params":""}
-     * ******************************************/
-    if (uri() == "/rpc" || uri() == "/rpc/")
-    {
+    if (root["method"].isString()) {
+        vargv_.emplace_back(root["method"].asString());
+    }
 
-#if 0
-        pt::ptree root;
-        std::istringstream sin;
-        sin.str({body().data(), body().size()});
-        pt::read_json(sin, root);
-        auto&& method = root.get<std::string>("method");
-        if (method.size()){
-            vargv_.push_back(method);
+    if (root.isMember("params") && !root["params"].isArray()) {
+        throw libbitcoin::explorer::jsonrpc_invalid_params();
+    }
+
+    if (rpc_version == 1) {
+        /* ***************** /rpc **********************
+         * application/json
+         * {"method":"xxx", "params":["p1","p2"]}
+         * ******************************************/
+        for (auto& param : root["params"]) {
+            if (!param.isObject())
+                vargv_.emplace_back(param.asString());
         }
+    } else {
+        /* ***************** /rpc/v2 **********************
+         * application/json
+         * {
+         *  "method":"xxx", 
+         *  "params":[
+         *      {
+         *          k1:v1,  ==> Command Option
+         *          k2:v2
+         *      },
+         *      "p1",  ==> Command Argument
+         *      "p2"
+         *      ]
+         *  }
+         * ******************************************/
 
-        for (auto& each : root.get_child("params.")) {
-            vargv_.push_back(each.second.data());
+        if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
+            throw libbitcoin::explorer::jsonrpc_invalid_request();
         }
-#else
-        minijson::const_buffer_context ctx(body().data(), body().size());
-        minijson::parse_object(ctx, 
-            [&, this](const char* key, minijson::value value){
-            minijson::dispatch (key)
-            <<"method">> [&,this]{ 
-                   std::string&& method = value.as_string();
-                   if (method.size()){
-                       vargv_.insert(vargv_.begin(), method);
+        
+		if (!root["id"].isInt64() || (root["id"].asInt64() < 0)) {
+            throw libbitcoin::explorer::jsonrpc_invalid_request();
+        }
+		
+        jsonrpc_id_ = root["id"].asInt64();
+
+        // push options
+        for (auto& param : root["params"]) {
+            if (param.isObject()) {
+                for (auto& key : param.getMemberNames()) {
+                    // --option
+                    vargv_.emplace_back("--" + key);
+                    // value
+                    if (!param[key].isNull()) {
+                        vargv_.emplace_back(param[key].asString());
                     }
                 }
-            <<"params">> [&, this]{ 
-                minijson::parse_array(ctx, [&](minijson::value v) {
-                   std::string&& params = v.as_string();
-                   if (params.size())
-                       vargv_.push_back(params);
-                });
-             }
-            <<minijson::any>> [&]{ minijson::ignore(ctx); };
-        });
-#endif
+                break;
+            }
+        }
 
-        vargv_to_argv();
+        // push arguments at last
+        for (auto& param : root["params"]) {
+            if (!param.isObject()){
+                vargv_.emplace_back(param.asString());
+            }
+        }
     }
 
-    /* *******************************************
-     * application/x-www-form-urlencoded
-     * method=xxx&params=xxx
-     * ******************************************/
-    if (uri().substr(0,4) == "/api")
-    {
-        std::array<char, 4096> params{0x00};
-        auto len = mg_get_http_var(&impl_->body, "params", params.data(), params.max_size());
-
-        convert({nullptr, 0u}, 
-                {params.data(), static_cast<string_view::size_type>(len)});
-        vargv_to_argv();
-    }
-
+    vargv_to_argv();
 }
 
-void WebsocketMessage::data_to_arg() {
+void WebsocketMessage::data_to_arg(uint8_t api_version) {
     Tokeniser<' '> args;
     args.reset(+*impl_);
 

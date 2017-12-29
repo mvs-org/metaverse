@@ -96,7 +96,10 @@
             boost::filesystem::path::imbue(std::locale()); \
             \
             auto variables = to_utf8(_wenviron); \
-            environ = reinterpret_cast<char**>(variables.data()); \
+            auto tmp_args = reinterpret_cast<char**>(variables.data()); \
+            /* https://msdn.microsoft.comen-us//magazinestxk41x1.aspx */ \
+            while (*tmp_args != nullptr) \
+                _putenv(*tmp_args++); \
             \
             auto arguments = to_utf8(argc, argv); \
             auto args = reinterpret_cast<char**>(arguments.data()); \

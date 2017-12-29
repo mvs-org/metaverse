@@ -26,7 +26,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <jsoncpp/json/json.h>
 #include <metaverse/client.hpp>
 
 // We use the generic helper definitions in libbitcoin to define BCX_API 
@@ -48,7 +48,7 @@
 /**
  * The name of this program.
  */
-#define BX_PROGRAM_NAME "mvs"
+#define BX_PROGRAM_NAME "mvs-cli"
 
 /**
  * Delimiter for use in word splitting serialized input and output points.
@@ -72,11 +72,27 @@
 #define BX_STDIO_PATH_SENTINEL "-"
 
 /**
+ * Show in uncompleted commands.
+ */
+#define IN_DEVELOPING "The command is in develeping, replace it with original command."
+
+/**
+ * Show Account messages.
+ */
+#define BX_ACCOUNT_NAME "Account name required."
+#define BX_ACCOUNT_AUTH "Account password(authorization) required."
+
+/**
+ * Show Account messages.
+ */
+#define BX_ADMIN_NAME "Administrator required.(administrator_required is true)"
+#define BX_ADMIN_AUTH "Administrator password required."
+
+/**
  * Space-saving namespaces.
  */
 namespace ph = std::placeholders;
 namespace po = boost::program_options;
-namespace pt = boost::property_tree;
 
 /**
  * Space-saving, clarifying and/or differentiating external type equivalents.
@@ -104,6 +120,22 @@ enum class encoding_engine
     info,
     json,
     xml
+};
+
+/**
+ * Suppported command category.
+ */
+enum : int {
+    ctgy_extension = 1 << 0,
+    ctgy_online = 1 << 1,
+    ctgy_admin_required = 1 << 2,
+    ctgy_account_required = 1 << 3,
+
+    ex_online = ctgy_extension | ctgy_online,
+    ex_admin = ctgy_extension | ctgy_admin_required,
+    ex_account = ctgy_extension | ctgy_account_required,
+    ex_on_admin = ctgy_extension | ctgy_online | ctgy_admin_required,
+    ex_on_account = ctgy_extension | ctgy_online | ctgy_account_required
 };
 
 #endif

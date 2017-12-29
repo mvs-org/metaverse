@@ -165,8 +165,8 @@ private:
 
 class command_extension:public command{
 public:
-    virtual console_result invoke(std::ostream& output,
-        std::ostream& error, libbitcoin::server::server_node& node)
+    virtual console_result invoke(Json::Value& jv_output,
+        libbitcoin::server::server_node& node)
     {
         return console_result::failure;
     }
@@ -182,14 +182,14 @@ protected:
 class send_command: public command_extension{
 public:
 	virtual bool is_block_height_fullfilled(uint64_t height) override{
-		if (height >= 200000) {
-			return true;
-		}
-		return false;
-	}
+        if (height >= minimum_block_height()) {
+            return true;
+        }
+        return false;
+    }
 
 	virtual uint64_t minimum_block_height() override{
-		return 200000;
+	    return 610000;
 	}
 };
 

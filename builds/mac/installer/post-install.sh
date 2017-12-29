@@ -42,5 +42,5 @@ sleep 5
 
 su $USER -c "open /Applications/Metaverse.app"
 sleep 20
-su $USER -c "open http://127.0.0.1:8820/"
+#su $USER -c "open http://127.0.0.1:8820/"
 exit 0

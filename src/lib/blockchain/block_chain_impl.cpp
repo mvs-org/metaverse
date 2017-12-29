@@ -379,7 +379,7 @@ void block_chain_impl::fetch_serial(perform_read_functor perform_read)
         return (!database_.is_write_locked(handle) && perform_read(handle));
     };
 
-    const auto do_read = [this, try_read]()
+    const auto do_read = [try_read]()
     {
         // Sleep while waiting for write to complete.
         while (!try_read())
@@ -1665,21 +1665,31 @@ void block_chain_impl::uppercase_symbol(std::string& symbol)
         i = std::toupper(i);
     }
 }
+
 bool block_chain_impl::is_valid_address(const std::string& address)
 {	
-	//using namespace bc::wallet;
-	auto addr = bc::wallet::payment_address(address);
-	if(addr && (addr.version() == 0x05)) // for multisig address
-		return true;
-	return	(addr && ((chain_settings().use_testnet_rules && (addr.version() == 0x7f)) // test net addr
-						|| (!chain_settings().use_testnet_rules && (addr.version() == 0x32))));
+    return  is_payment_address(address) ||
+            is_script_address(address) ||
+            is_stealth_address(address);
 }
 
+bool block_chain_impl::is_stealth_address(const std::string& address)
+{	
+	wallet::stealth_address addr{address};
+	return (addr && (addr.version() == wallet::stealth_address::mainnet_p2kh));
+}
+
+bool block_chain_impl::is_payment_address(const std::string& address)
+{	
+	wallet::payment_address addr{address};
+	return (addr && (addr.version() == wallet::payment_address::mainnet_p2kh));
+}
+
+// stupid name for this function. should be is_p2sh_address.
 bool block_chain_impl::is_script_address(const std::string& address)
 {	
-	//using namespace bc::wallet;
-	auto addr = bc::wallet::payment_address(address);
-	return (addr && (addr.version() == 0x05));
+	wallet::payment_address addr{address};
+	return (addr && (addr.version() == wallet::payment_address::mainnet_p2sh));
 }
 
 organizer& block_chain_impl::get_organizer()
