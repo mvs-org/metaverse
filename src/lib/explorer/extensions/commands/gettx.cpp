@@ -43,7 +43,12 @@ console_result gettx::invoke (Json::Value& jv_output,
         throw tx_notfound_exception{"transaction does not exist!"};
     
     if (option_.json) {
-         jv_output =  config::json_helper(get_api_version()).prop_list(tx, tx_height, true);
+        if (get_api_version() == 1 && option_.is_fetch_tx) { // compatible for v1 fetch-tx
+            jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+        } else {
+            jv_output =  config::json_helper(get_api_version()).prop_list(tx, tx_height, true);
+        }
+
     } else {
         config::transaction config_tx{tx};
          jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, false);

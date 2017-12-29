@@ -182,8 +182,10 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<addnode>();
     if (symbol == getmininginfo::symbol())
         return make_shared<getmininginfo>();
-    if (symbol == gettx::symbol() || symbol == "gettransaction" || symbol == "fetch-tx")
+    if (symbol == gettx::symbol() || symbol == "gettransaction")
         return make_shared<gettx>();
+    if (symbol == "fetch-tx")
+        return make_shared<gettx>(symbol);
     if (symbol == dumpkeyfile::symbol() || symbol == "exportaccountasfile")
         return make_shared<dumpkeyfile>();
     if (symbol == importkeyfile::symbol() || symbol == "importaccountfromfile")

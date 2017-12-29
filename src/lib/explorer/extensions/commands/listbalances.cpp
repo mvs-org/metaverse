@@ -71,6 +71,10 @@ console_result listbalances::invoke (Json::Value& jv_output,
         }
          
         Json::Value target_balance;
+
+        if (!option_.greater && option_.non_zero) {
+            option_.greater = 1;
+        }
         // non-zero lesser
         if (option_.lesser){
             if (addr_balance.unspent_balance <= option_.lesser &&

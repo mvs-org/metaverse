@@ -34,10 +34,13 @@ namespace commands {
 class gettx: public command_extension
 {
 public:
+    gettx() noexcept {};
+    gettx(const std::string& other){ if (other == "fetch-tx") option_.is_fetch_tx= true; }
+
     static const char* symbol(){ return "gettx";}
     const char* name() override { return symbol();} 
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "gettx "; }
+    const char* description() override { return "gettx alias as fetch-tx/gettransaction"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -93,6 +96,7 @@ public:
     struct option
     {
         bool json;
+        bool is_fetch_tx{false};
     } option_;
 
 };
