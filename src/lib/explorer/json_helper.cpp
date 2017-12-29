@@ -477,10 +477,13 @@ Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_h
 
     Json::Value tree;
     tree["hash"] += hash256(tx.hash());
-    tree["height"] += tx_height;
+    if (version_ == 1) {
+        tree["height"] += tx_height;
+    } else {
+        tree["height"] = tx_height;
+    }
     tree["inputs"] = prop_tree_list("input", tx.inputs, json);
     tree["lock_time"] += tx.locktime;
-    //tree["outputs"] = prop_tree_list("output", tx.outputs, json);
     tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
     tree["version"] += tx.version;
     return tree;

@@ -66,16 +66,16 @@ public:
         )
         (
             "nozero,n",
-            value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
-            "Obsolescent option. replace with option <greater> <lesser>."
+            value<bool>(&option_.non_zero)->zero_tokens()->default_value(true),
+            "Defaults to true."
         )
         (
-            "greater,g",
-            value<uint64_t>(&option_.greater)->default_value(1),
-            "Greater than ETP bits. defaults to 1 (non-zero balance)."
+            "greater_equal,g",
+            value<uint64_t>(&option_.greater)->default_value(0),
+            "Greater than ETP bits."
         )
         (
-            "lesser,l",
+            "lesser_equal,l",
             value<uint64_t>(&option_.lesser)->default_value(0),
             "Lesser than ETP bits."
         )
