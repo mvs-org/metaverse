@@ -41,8 +41,7 @@ console_result getaddressetp::invoke (Json::Value& jv_output,
     std::string type{"all"};
     sync_fetchbalance(addr, type, blockchain, addr_balance, 0);
 
-    Json::Value jroot;
-    auto& jv = jv_output;
+    Json::Value jv;
     jv["address"] = addr.encoded();
     if (get_api_version() == 2) {
         jv["confirmed"] = addr_balance.confirmed_balance;
@@ -57,10 +56,8 @@ console_result getaddressetp::invoke (Json::Value& jv_output,
         jv["frozen"]    = std::to_string(addr_balance.frozen_balance);
     }
 
-    jroot["balance"] = jv;
+    jv_output["balance"] = jv;
     
-    jv_output = jroot;
-
     return console_result::okay;
 }
 

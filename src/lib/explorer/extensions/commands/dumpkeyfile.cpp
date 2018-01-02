@@ -93,7 +93,11 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     file_output.close();
 
     auto& root = jv_output;
-    root["result"] = argument_.dst.string();
+    if(get_api_version() == 1)
+        root["result"] = argument_.dst.string();
+    else
+        root = argument_.dst.string();
+
 
     return console_result::okay;
 }
