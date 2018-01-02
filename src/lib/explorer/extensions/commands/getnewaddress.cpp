@@ -40,7 +40,7 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
     if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
-    if (!option_.count) { throw address_amount_exception("invalid address number parameter"); }
+    if (!option_.count || (option_.count & 0xfff00000)) { throw address_amount_exception("invalid address number parameter"); }
     
     std::vector<std::string> words;
     words.reserve(24);
