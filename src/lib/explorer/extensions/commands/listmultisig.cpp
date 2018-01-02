@@ -37,7 +37,8 @@ console_result listmultisig::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     // parameter account name check
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    Json::Value root, nodes;
+    Json::Value nodes;
+    auto& root = jv_output;
 
     auto multisig_vec = acc->get_multisig_vec();
         

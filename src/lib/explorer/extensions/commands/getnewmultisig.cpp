@@ -119,7 +119,8 @@ console_result getnewmultisig::invoke(Json::Value& jv_output,
     blockchain.store_account(acc);
     blockchain.store_account_address(addr);
 
-    Json::Value root, pubkeys;
+    Json::Value pubkeys;
+    auto& root = jv_output;
 
     if (get_api_version() == 1) {
         root["index"] += acc_multisig.get_index();
