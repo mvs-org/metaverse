@@ -62,6 +62,7 @@ void my_impl(const http_message* hm)
 
 int bc::main(int argc, char* argv[])
 {
+    bc::set_utf8_stdout();
     auto work_path = bc::default_data_path();
     auto&& config_file = work_path / "mvs.conf";
     std::string url{"127.0.0.1:8820/rpc/v2"}; 
