@@ -167,10 +167,7 @@ console_result createasset::invoke (Json::Value& jv_output,
     asset_data["issuer"] = acc->get_issuer();
     asset_data["address"] = acc->get_address();
     asset_data["description"] = acc->get_description();
-    //asset_data["status"] = "issued";
-    Json::Value asset;
-    asset["asset"] = asset_data;
-    aroot.append(asset);
+    aroot["asset"] = asset_data;
 
     
     return console_result::okay;

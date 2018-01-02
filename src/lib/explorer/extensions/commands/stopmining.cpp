@@ -41,8 +41,7 @@ console_result stopmining::invoke (Json::Value& jv_output,
     auto ret = miner.stop();
 
     if (ret) {
-        auto& jv = jv_output;
-        jv["message"] = "signal STOP sent.";
+        jv_output = "signal STOP sent.";
     } else {
         throw unknown_error_exception{"mining stop got error."};
     }
