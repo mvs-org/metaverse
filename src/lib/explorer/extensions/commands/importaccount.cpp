@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/algorithm/string.hpp>
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
@@ -45,6 +46,11 @@ console_result importaccount::invoke (Json::Value& jv_output,
 	    option_.passwd.length() > 128 || option_.passwd.length() < 6)
 	    throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
+
+    if (argument_.words.size() == 1)
+    {
+        boost::split(argument_.words, argument_.words[0], boost::is_any_of(" "));
+    }
 
     // are vliad mnemonic words.
     auto&& seed = get_mnemonic_to_seed(option_.language, argument_.words);
