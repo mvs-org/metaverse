@@ -54,8 +54,7 @@ console_result setminingaccount::invoke (Json::Value& jv_output,
 
     auto ret = miner.set_miner_payment_address(argument_.payment_address);
     if (ret) {
-        auto& jv = jv_output;
-        jv["message"] = "Address [" + argument_.payment_address.encoded() + "] setted.";
+        jv_output = "Address [" + argument_.payment_address.encoded() + "] setted.";
     } else {
         throw unknown_error_exception{"set mining account solo mining got error"};
     }
