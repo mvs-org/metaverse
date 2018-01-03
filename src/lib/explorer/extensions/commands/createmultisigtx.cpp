@@ -62,9 +62,9 @@ console_result createmultisigtx::invoke (Json::Value& jv_output,
 
     // json output
     auto&& tx = send_helper.get_transaction();
-    auto&& config_tx =  config::transaction(tx);
-
-    jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, true);
+    std::ostringstream config_tx;
+    config_tx << config::transaction(tx);
+    jv_output = config_tx.str();
 
     return console_result::okay;
 }
