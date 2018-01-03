@@ -156,8 +156,9 @@ console_result signmultisigtx::invoke (Json::Value& jv_output,
         
     // jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
     // jv_output =  "raw tx content" << std::endl << config::transaction(tx_);
-    auto&& config_tx = config::transaction(tx_);
-    jv_output =  config::json_helper(get_api_version()).prop_tree(config_tx, true);
+    std::ostringstream config_tx;
+    config_tx << config::transaction(tx_);
+    jv_output = config_tx.str();
 
     if(argument_.send_flag){        
         if(blockchain.validate_transaction(tx_))
