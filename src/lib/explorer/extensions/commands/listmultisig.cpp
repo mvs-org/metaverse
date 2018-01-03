@@ -60,7 +60,12 @@ console_result listmultisig::invoke (Json::Value& jv_output,
         nodes.append(node);
     }
     
-    root["multisig"] = nodes;    
+    if (get_api_version() == 1 && nodes.isNull()) { // compatible for v1
+        root["multisig"] = "";
+    }
+    else {
+        root["multisig"] = nodes;
+    }
     
     return console_result::okay;
 }
