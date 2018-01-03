@@ -148,6 +148,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
 
     // multi-sig
     func(make_shared<getpublickey>());
+    func(make_shared<createmultisigtx>());
     func(make_shared<getnewmultisig>());
     func(make_shared<listmultisig>());
     func(make_shared<deletemultisig>());
