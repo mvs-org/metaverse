@@ -1,6 +1,6 @@
  /**
 * Copyright (c) 2015-2017 Parity Technologies (UK) Ltd.
-* Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+* Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
 *
 * This file is part of metaverse-mvstray.
 *
