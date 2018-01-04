@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################################
 #  Copyright (c) 2014-2015 libbitcoin-explorer developers (see COPYING).
-#  Copyright (c) 2016-2017 MVS Core Developers
+#  Copyright (c) 2016-2018 MVS Core Developers
 #
 ###############################################################################
 

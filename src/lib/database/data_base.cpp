@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
  *
  * This file is part of metaverse.
  *
@@ -69,8 +69,9 @@ bool data_base::initialize(const path& prefix, const chain::block& genesis)
 
     data_base instance(paths, 0, 0);
 
-    if (!instance.create())
+    if (!instance.create()) {
         return false;
+    }
 	auto metadata_path = prefix / db_metadata::file_name;
 	auto metadata = db_metadata(db_metadata::current_version);
 	data_base::write_metadata(metadata_path, metadata);
