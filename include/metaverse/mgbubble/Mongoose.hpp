@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 metaverse core developers (see MVS-AUTHORS).
+ * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS).
  * Copyright (C) 2013, 2016 Swirly Cloud Limited.
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the
@@ -56,7 +56,7 @@ public:
 protected:
 
     virtual void data_to_arg(uint8_t api_version) = 0;
-    const char* argv_[max_paramters]{{nullptr}};
+    const char* argv_[max_paramters]{nullptr};
     int argc_{0};
 
     std::vector<std::string> vargv_;
