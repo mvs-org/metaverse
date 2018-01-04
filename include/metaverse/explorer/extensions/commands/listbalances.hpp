@@ -66,8 +66,8 @@ public:
         )
         (
             "nozero,n",
-            value<bool>(&option_.non_zero)->zero_tokens()->default_value(true),
-            "Defaults to true."
+            value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
+            "Defaults to false."
         )
         (
             "greater_equal,g",
