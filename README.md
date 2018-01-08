@@ -68,8 +68,8 @@ $ make install
 
 optional:
 ```bash
-$ make test
-$ make doc
+$ make test (should install boost_unit_test_framework)
+$ make doc  (should install doxygen and graphviz)
 ```
 *Needs to configure Library Dependencies firstly.*
 
