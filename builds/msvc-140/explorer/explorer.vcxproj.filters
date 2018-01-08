@@ -356,6 +356,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblockheader.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondissue.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
@@ -667,6 +670,9 @@
       <Filter>Source Files\commands\offline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblockheader.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondissue.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>

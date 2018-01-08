@@ -59,6 +59,7 @@
 #include <metaverse/explorer/extensions/commands/sendfrom.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
+#include <metaverse/explorer/extensions/commands/secondissue.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
