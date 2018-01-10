@@ -63,7 +63,7 @@ public:
         )
         (
             "PAYMENT_ADDRESS",
-            value<bc::wallet::payment_address>(&argument_.address),
+            value<std::string>(&argument_.address),
             "Valid payment address. If not specified the address is read from STDIN."
         );
 
@@ -79,7 +79,7 @@ public:
 
     struct argument
     {
-        bc::wallet::payment_address address;
+        std::string address;
     } argument_;
 
     struct option
