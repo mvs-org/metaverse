@@ -26,7 +26,7 @@
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <metaverse/bitcoin/utility/assert.hpp>
 #include <metaverse/bitcoin/utility/data.hpp>
-#include "../math/external/lax_der_parsing.h"
+#include "external/lax_der_parsing.h"
 #include "secp256k1_initializer.hpp"
 
 namespace libbitcoin {

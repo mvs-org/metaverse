@@ -26,14 +26,14 @@
 #include <errno.h>
 #include <new>
 #include <stdexcept>
-#include "../math/external/crypto_scrypt.h"
-#include "../math/external/hmac_sha256.h"
-#include "../math/external/hmac_sha512.h"
-#include "../math/external/pkcs5_pbkdf2.h"
-#include "../math/external/ripemd160.h"
-#include "../math/external/sha1.h"
-#include "../math/external/sha256.h"
-#include "../math/external/sha512.h"
+#include "external/crypto_scrypt.h"
+#include "external/hmac_sha256.h"
+#include "external/hmac_sha512.h"
+#include "external/pkcs5_pbkdf2.h"
+#include "external/ripemd160.h"
+#include "external/sha1.h"
+#include "external/sha256.h"
+#include "external/sha512.h"
 
 namespace libbitcoin {
 
