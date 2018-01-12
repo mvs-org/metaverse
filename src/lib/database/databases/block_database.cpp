@@ -200,7 +200,7 @@ void block_database::sync()
 // This is necessary for parallel import, as gaps are created.
 void block_database::zeroize(array_index first, array_index count)
 {
-    for (array_index index = first; index < (first + count); ++index)
+    for (auto index = first; index < (first + count); ++index)
     {
         const auto memory = index_manager_.get(index);
         auto serial = make_serializer(REMAP_ADDRESS(memory));
