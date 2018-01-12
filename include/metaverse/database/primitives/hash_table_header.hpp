@@ -47,6 +47,14 @@ public:
 
     hash_table_header(memory_map& file, IndexType buckets);
 
+    // Copy.
+    hash_table_header(const hash_table_header&) = delete;
+    hash_table_header& operator=(const hash_table_header&) = delete;
+
+    // Move.
+    hash_table_header(hash_table_header&&) = delete;
+    hash_table_header& operator=(hash_table_header&&) = delete;
+
     /// Allocate the hash table and populate with empty values.
     bool create();
 
