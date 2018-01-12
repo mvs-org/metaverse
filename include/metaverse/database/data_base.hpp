@@ -50,8 +50,6 @@
 #include <metaverse/database/databases/blockchain_asset_database.hpp>
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
-//#include <metaverse/bitcoin/wallet/payment_address.hpp>
-#define  LOG_DATABASE  "database"  // for log_debug output
 
 using namespace libbitcoin::wallet;                                         
 using namespace libbitcoin::chain;   

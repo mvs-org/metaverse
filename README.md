@@ -68,8 +68,8 @@ $ make install
 
 optional:
 ```bash
-$ make test
-$ make doc
+$ make test (should install boost_unit_test_framework)
+$ make doc  (should install doxygen and graphviz)
 ```
 *Needs to configure Library Dependencies firstly.*
 
@@ -111,6 +111,23 @@ $ ./autogen.sh
 $ ./configure --enable-module-recovery
 $ make -j4
 $ sudo make install && sudo ldconfig
+```
+
+# Run MVS
+After MVS is built successfully, there are two executable files in the _bin_ directory:
+
+ - **mvsd** - server program  
+   Runs a full metaverse node in the global peer-to-peer network.
+
+ - **mvs-cli** - client program  
+   Sent your request to the server, the server will process it and return response to your client.
+
+Go to _bin_ diretory, and run the program.
+More information please reference to [Command line usage](https://docs.mvs.org/docs/command-line.html) and [Configuration file](https://docs.mvs.org/docs/config-file.html).
+```bash
+$ cd bin
+$ ./mvsd
+$ ./mvs-cli $command $params $options
 ```
 
 # [Run in docker](https://github.com/mvs-org/metaverse/tree/develop/builds/docker)

@@ -34,18 +34,20 @@ console_result validateaddress::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     std::string version_info;
-	std::string message{"valid address "};
+    std::string message{"valid address"};
     bool is_valid{true};
 
     auto& blockchain = node.chain_impl();
+    wallet::payment_address payment_address(argument_.address);
 
-    if (!blockchain.chain_settings().use_testnet_rules && argument_.address.version() == 0x32) {
+    if (!blockchain.chain_settings().use_testnet_rules && payment_address.version() == 0x32) {
         version_info = "p2kh(main-net)";
-    } else if (blockchain.chain_settings().use_testnet_rules && argument_.address.version() ==  0x7f ) {
+    } else if (blockchain.chain_settings().use_testnet_rules && payment_address.version() ==  0x7f ) {
         version_info = "p2kh(test-net)";
-    } else if (argument_.address.version() ==  0x05 ) {
+    } else if (payment_address.version() ==  0x05 ) {
         version_info = "p2sh(multi-signature)";
     } else {
+        version_info = "none";
         message = "invalid address!";
         is_valid = false;
     }
