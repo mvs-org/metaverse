@@ -45,7 +45,6 @@ class hash_table_header
 public:
     static const ValueType empty;
 
-    hash_table_header(memory_map& file);
     hash_table_header(memory_map& file, IndexType buckets);
 
     /// Allocate the hash table and populate with empty values.

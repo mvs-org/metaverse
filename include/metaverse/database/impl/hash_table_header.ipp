@@ -29,9 +29,6 @@
 namespace libbitcoin {
 namespace database {
 
-// If the bucket count is zero we trust what is read from the file.
-static BC_CONSTEXPR size_t trust_file_bucket_count = 0;
-
 // This VC++ workaround is OK because ValueType must be unsigned. 
 //static constexpr ValueType empty = std::numeric_limits<ValueType>::max();
 template <typename IndexType, typename ValueType>
@@ -39,18 +36,10 @@ const ValueType hash_table_header<IndexType, ValueType>::empty =
     (ValueType)bc::max_uint64;
 
 template <typename IndexType, typename ValueType>
-hash_table_header<IndexType, ValueType>::hash_table_header(memory_map& file)
-  : hash_table_header(file, trust_file_bucket_count)
-{
-}
-
-template <typename IndexType, typename ValueType>
 hash_table_header<IndexType, ValueType>::hash_table_header(memory_map& file,
     IndexType buckets)
   : file_(file), buckets_(buckets)
 {
-    ////static_assert(empty == (ValueType)0xffffffffffffffff,
-    ////    "Unexpected value for empty sentinel.");
     BITCOIN_ASSERT_MSG(empty == (ValueType)0xffffffffffffffff,
         "Unexpected value for empty sentinel.");
 
