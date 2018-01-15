@@ -26,7 +26,6 @@
 #include <vector>
 #include <metaverse/node.hpp>
 #include <metaverse/server/define.hpp>
-#include <metaverse/server/parser.hpp>
 #include <metaverse/server/settings.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
 
