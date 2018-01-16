@@ -71,7 +71,7 @@ public:
 			"The language identifier of the dictionary of the mnemonic. Options are 'en', 'es', 'ja', 'zh_Hans', 'zh_Hant' and 'any', defaults to 'any'."
 		)
 		(
-			"accoutname,n",
+			"accountname,n",
 			value<std::string>(&auth_.name)->required(),
 			BX_ACCOUNT_NAME
 		)
