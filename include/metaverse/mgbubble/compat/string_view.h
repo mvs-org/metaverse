@@ -28,7 +28,12 @@
 #else
 
 #include <experimental/string_view>
-#define string_view std::experimental::string_view 
+namespace mgbubble{
+
+using std::experimental::basic_string_view;
+using std::experimental::string_view;
+
+} // namespace mgbubble
 
 #endif
 
