@@ -80,8 +80,12 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
         if (root["jsonrpc"].asString() != "2.0") {
             throw libbitcoin::explorer::jsonrpc_invalid_request();
         }
-        
-        jsonrpc_id_ = root["id"].asInt64();
+
+        if (root["id"].isString()) {
+            jsonrpc_id_ = std::stol(root["id"].asString());
+        } else {
+            jsonrpc_id_ = root["id"].asInt64();
+        }
 
         // push options
         for (auto& param : root["params"]) {
