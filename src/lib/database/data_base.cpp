@@ -366,7 +366,7 @@ void data_base::uninitialize_lock(const path& lock)
 }
 
 data_base::data_base(const settings& settings)
-  : data_base(default_data_path() / settings.directory, settings.history_start_height,
+  : data_base(settings.directory, settings.history_start_height,
         settings.stealth_start_height)
 {
 }
