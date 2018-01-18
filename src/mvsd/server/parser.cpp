@@ -103,8 +103,8 @@ options_metadata parser::load_options()
     (
         BS_DATADIR_VARIABLE ",D",
         value<path>(&configured.data_dir)->
-            default_value(""),
-        "Specify database path."
+            default_value(default_data_path()),
+        "Specify mvsd workspace path."
     )
     (
         BS_UI_VARIABLE ",u",
