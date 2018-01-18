@@ -109,9 +109,8 @@ bool executor::do_initchain()
     
     boost::system::error_code ec;
 
-    auto home_path = default_data_path();
     const auto& directory = metadata_.configured.database.directory;
-    auto data_path = home_path / directory;
+    const auto& data_path = directory;
 
     if (create_directories(data_path, ec))
     {
@@ -132,24 +131,16 @@ bool executor::do_initchain()
 		set_admin();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
-    } else {
-    	if(data_base::is_lower_database(data_path)) {
-            throw std::runtime_error{"lower blockchain db not compatible with mvsd. please download the newest mvsd with blockdata!"};
-    	} else if(data_base::is_higher_database(data_path)) {
-            throw std::runtime_error{"higher blockchain db not compatible with mvsd. please download the newest mvsd with blockdata!"};
-		} else {
-			// version equal nothing to do 
-		}
-	}
+    }
 
     if (ec.value() == directory_exists)
     {
         return false;
     }
+
     auto error_info = format(BS_INITCHAIN_NEW) % data_path % ec.message();
     throw std::runtime_error{error_info.str()};
-//    log::error(LOG_SERVER) << format(BS_INITCHAIN_NEW) % data_path % ec.message();
-//    return false;
+    return false;
 }
 
 // Menu selection.
@@ -327,9 +318,8 @@ void executor::initialize_output()
 bool executor::verify_directory()
 {
     boost::system::error_code ec;
-    auto home_path = default_data_path();
     const auto& directory = metadata_.configured.database.directory;
-    auto data_path = home_path / directory;
+    auto data_path = directory;
 
     if (exists(data_path, ec))
         return true;
