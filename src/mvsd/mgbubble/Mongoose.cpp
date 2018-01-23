@@ -77,15 +77,15 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
          *  }
          * ******************************************/
 
-        if (!root["jsonrpc"].isString() || root["jsonrpc"].asString() != "2.0") {
+        if (root["jsonrpc"].asString() != "2.0") {
             throw libbitcoin::explorer::jsonrpc_invalid_request();
         }
-        
-		if (!root["id"].isInt64() || (root["id"].asInt64() < 0)) {
-            throw libbitcoin::explorer::jsonrpc_invalid_request();
+
+        if (root["id"].isString()) {
+            jsonrpc_id_ = std::stol(root["id"].asString());
+        } else {
+            jsonrpc_id_ = root["id"].asInt64();
         }
-		
-        jsonrpc_id_ = root["id"].asInt64();
 
         // push options
         for (auto& param : root["params"]) {

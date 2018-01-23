@@ -102,8 +102,8 @@ options_metadata parser::load_options()
     (
         BS_DATADIR_VARIABLE ",D",
         value<path>(&configured.data_dir)->
-            default_value(""),
-        "Specify database path."
+            default_value(default_data_path()),
+        "Specify mvsd workspace path."
     )
     (
         BS_UI_VARIABLE ",u",
@@ -478,11 +478,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
                 {
                     error << format_invalid_parameter("datadir path is invalid.") << std::endl;
                     return false;
-                } else {
-                    path& p = const_cast<path&>(default_data_path());
-                    p = data_dir;
-                }
-            }
+                }            }
             // Returns true if the settings were loaded from a file.
             file = load_configuration_variables(variables, BS_CONFIG_VARIABLE);
         }

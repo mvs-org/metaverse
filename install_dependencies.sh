@@ -23,7 +23,8 @@ ZLIB_ARCHIVE="v1.2.9.tar.gz"
 
 # ZeroMQ archive.
 #------------------------------------------------------------------------------
-ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz"
+#ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz"
+ZMQ_URL="https://sources.voidlinux.eu/zeromq-4.2.1/zeromq-4.2.1.tar.gz"
 ZMQ_ARCHIVE="zeromq-4.2.1.tar.gz"
 
 # PNG archive.

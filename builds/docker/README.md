@@ -1,44 +1,37 @@
-# Run in docker
+# Build/Run in docker
 
-Simple and fast setup of Metaverse on Docker is also available. 
-
-## Install Dependencies
- - [Docker](https://docs.docker.com)
+## Preparation
+Install [Docker](https://docs.docker.com/).
+```
+wget qO https://get.docker.com/ | sh
+```
 
 ## Build metaverse image
-
-```bash
-git clone https://github.com/mvs-org/metaverse.git
-cd metaverse/builds
-docker build -t metaverse -f docker/Dockerfile .
 ```
-## Look docker
+git clone https://github.com/mvs-org/metaverse.git
+cd metaverse
+docker build -t metaverse -f Dockerfile .
+```
+
 Where is your built image? It’s in your machine’s local Docker image registry:
 ```bash
 docker images
 ```
-## Start docker
 
+## Run && Test
+
+### Start docker container
 ```bash
 docker run -p 8820:8820 metaverse
 ```
-## Test
 
+### Test
 ```bash
-curl http://127.0.0.1:8820
+curl -X POST --data '{"jsonrpc":"2.0","method":"getinfo","params":[],"id":25}' http://127.0.0.1:8820/rpc/v2
 ```
 
-## Execute mvs-cli commands
- - [docker exec](https://docs.docker.com/engine/reference/commandline/exec/)
-
-
-You can run the `mvs-cli` commands via `docker exec` command. Example:
+### Execute mvs-cli commands
+Run `mvs-cli` commands via `docker exec` command. Example:
 ```bash
-docker exec metaverse mvs-cli getbestblockhash
-```
-
-## Access Shell of Running Docker Container
-
-```bash
-sudo docker exec -i -t metaverse /bin/bash
+docker exec metaverse mvs-cli getinfo
 ```
