@@ -42,6 +42,8 @@
 namespace libbitcoin {
 namespace network {
 
+#define USE_UPNP "use_upnp"
+
 /// Top level public networking interface, partly thread safe.
 class BCT_API p2p
   : public enable_shared_from_base<p2p>
@@ -210,6 +212,12 @@ protected:
     virtual session_inbound::ptr attach_inbound_session();
     virtual session_outbound::ptr attach_outbound_session();
 
+#ifdef USE_UPNP
+	static void thread_map_port(uint16_t map_port, bool fDiscover);
+	virtual void map_port(bool fUseUPnP);
+#endif
+
+
 private:
     void handle_manual_started(const code& ec, result_handler handler);
     void handle_inbound_started(const code& ec, result_handler handler);
@@ -232,6 +240,7 @@ private:
     connections::ptr connections_;
     stop_subscriber::ptr stop_subscriber_;
     channel_subscriber::ptr channel_subscriber_;
+
 };
 
 } // namespace network

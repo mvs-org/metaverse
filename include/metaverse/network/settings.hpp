@@ -59,6 +59,7 @@ public:
     config::authority self;
     config::authority::list blacklists;
     config::endpoint::list peers;
+	bool upnp_map_port;
     config::endpoint::list seeds;
 
     /// Helpers.

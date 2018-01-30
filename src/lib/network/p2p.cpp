@@ -39,6 +39,13 @@
 #include <metaverse/network/sessions/session_outbound.hpp>
 #include <metaverse/network/sessions/session_seed.hpp>
 #include <metaverse/network/settings.hpp>
+#ifdef USE_UPNP
+#include <miniupnpc/miniupnpc.h>
+#include <miniupnpc/miniwget.h>
+#include <miniupnpc/upnpcommands.h>
+#include <miniupnpc/upnperrors.h>
+#include "tinyformat.h"
+#endif
 
 namespace libbitcoin {
 namespace network {
@@ -90,6 +97,9 @@ void p2p::start(result_handler handler)
     manual->start(
         std::bind(&p2p::handle_manual_started,
             this, _1, handler));
+
+	//start upnp map port
+	map_port(settings_.upnp_map_port);
 }
 
 void p2p::handle_manual_started(const code& ec, result_handler handler)
@@ -264,6 +274,9 @@ bool p2p::stop()
 
     // Stop accepting channels and stop those that exist (self-clearing).
     connections_->stop(error::service_stopped);
+	
+	//shutdown upnp
+	map_port(false);
 
     // Signal threadpool to stop accepting work now that subscribers are clear.
     threadpool_.shutdown();
@@ -440,5 +453,122 @@ connections::ptr p2p::connections_ptr()
 {
 	return connections_;
 }
+
+#ifdef USE_UPNP
+
+void p2p::thread_map_port(uint16_t map_port,bool fDiscover)
+{
+	std::string port = strprintf("%u", map_port);
+	const char * multicastif = nullptr;
+	const char * minissdpdpath = nullptr;
+	struct UPNPDev * devlist = nullptr;
+	char lanaddr[64];
+
+#ifndef UPNPDISCOVER_SUCCESS
+	/* miniupnpc 1.5 */
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
+#elif MINIUPNPC_API_VERSION < 14
+	/* miniupnpc 1.6 */
+	int error = 0;
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+#else
+	/* miniupnpc 1.9.20150730 */
+	int error = 0;
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+	
+#endif
+
+	struct UPNPUrls urls;
+	struct IGDdatas data;
+	int r;
+
+	r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	if (r == 1)
+	{
+		if (fDiscover) {
+			char externalIPAddress[40];
+			r = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
+			if (r != UPNPCOMMAND_SUCCESS)
+				log::info("UPnP")<<"GetExternalIPAddress() returned "<<r;
+			/*else
+			{
+				if (externalIPAddress[0])
+				{
+					CNetAddr resolved;
+					if (LookupHost(externalIPAddress, resolved, false)) {
+						log::info("UPnP") << "ExternalIPAddress = "<<resolved.ToString().c_str();
+						AddLocal(resolved, LOCAL_UPNP);
+					}
+				}
+				else
+					log::info("UPnP") << "GetExternalIPAddress failed.";
+			}*/
+		}
+
+		std::string strDesc = "ETP v0.7.4";
+
+		try {
+			while (true) {
+#ifndef UPNPDISCOVER_SUCCESS
+				/* miniupnpc 1.5 */
+				r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+					port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0);
+#else
+				/* miniupnpc 1.6 */
+				r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+					port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0, "0");
+#endif
+
+				if (r != UPNPCOMMAND_SUCCESS)
+					log::info("UPnP") << "AddPortMapping(" << port << ", " << port << ", " << lanaddr << ") failed with code " << r << " (" << strupnperror(r) << ")";
+				else
+					log::info("UPnP") << "Port Mapping successful.";
+
+				Sleep(20 * 60 * 1000); // Refresh every 20 minutes
+			}
+		}
+		catch (const boost::thread_interrupted&)
+		{
+			r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+			log::info("UPnP") << "UPNP_DeletePortMapping() returned: "<< r;
+			freeUPNPDevlist(devlist); devlist = nullptr;
+			FreeUPNPUrls(&urls);
+			throw;
+		}
+	}
+	else {
+		log::info("UPnP") << "No valid UPnP IGDs found";
+		freeUPNPDevlist(devlist); devlist = nullptr;
+		if (r != 0)
+			FreeUPNPUrls(&urls);
+	}
+}
+
+void p2p::map_port(bool fUseUPnP)
+{
+	static std::unique_ptr<boost::thread> upnp_thread;
+
+	if (fUseUPnP)
+	{
+		if (upnp_thread) {
+			upnp_thread->interrupt();
+			upnp_thread->join();
+		}
+		upnp_thread.reset(new boost::thread(boost::bind(p2p::thread_map_port, settings_.inbound_port,true)));
+	}
+	else if (upnp_thread) {
+		upnp_thread->interrupt();
+		upnp_thread->join();
+		upnp_thread.reset();
+	}
+}
+
+#else
+void p2p::map_port(bool)
+{
+	// Intentionally left blank.
+}
+#endif
+
 } // namespace network
 } // namespace libbitcoin

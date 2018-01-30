@@ -43,6 +43,7 @@ settings::settings()
     channel_germination_seconds(30),
     host_pool_capacity(1000),
     relay_transactions(true),
+	upnp_map_port(true),
     hosts_file("hosts.cache"),
     debug_file("debug.log"),
     error_file("error.log"),

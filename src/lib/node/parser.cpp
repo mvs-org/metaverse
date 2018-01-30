@@ -244,6 +244,11 @@ options_metadata parser::load_settings()
         value<config::endpoint::list>(&configured.network.peers),
         "Persistent host:port channels, multiple entries allowed."
     )
+	(
+		"network.upnp_map_port",
+		value<bool>(&configured.network.upnp_map_port),
+		"Persistent host:port channels, multiple entries allowed."
+	)
     (
         "network.seed",
         value<config::endpoint::list>(&configured.network.seeds),
