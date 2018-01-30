@@ -24,7 +24,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/network/channel.hpp>
@@ -525,7 +524,7 @@ void p2p::thread_map_port(uint16_t map_port,bool fDiscover)
 				else
 					log::info("UPnP") << "Port Mapping successful.";
 
-				std::this_thread::sleep_for(std::chrono::milliseconds(20 * 60 * 1000)); // Refresh every 20 minutes
+				boost::this_thread::sleep(boost::posix_time::milliseconds(20 * 60 * 1000));
 			}
 		}
 		catch (const boost::thread_interrupted&)
