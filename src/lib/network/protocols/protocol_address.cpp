@@ -65,6 +65,14 @@ void protocol_address::start()
         SEND2(self_, handle_send, _1, self_.command);
     }
 
+#ifdef USE_UPNP
+	if (settings.self != network_.get_out_address()) {
+		address self = address({ { network_.get_out_address().to_network_address() } });
+		SEND2(self, handle_send, _1, self.command);
+	}
+#endif
+	
+
     // If we can't store addresses we don't ask for or handle them.
     if (settings.host_pool_capacity == 0)
         return;

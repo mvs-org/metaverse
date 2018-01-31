@@ -456,7 +456,7 @@ connections::ptr p2p::connections_ptr()
 
 #ifdef USE_UPNP
 
-void p2p::thread_map_port(uint16_t map_port,bool fDiscover)
+void p2p::thread_map_port(uint16_t map_port)
 {
 	std::string port = strprintf("%u", map_port);
 	const char * multicastif = nullptr;
@@ -485,27 +485,8 @@ void p2p::thread_map_port(uint16_t map_port,bool fDiscover)
 	r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
 	if (r == 1)
 	{
-		if (fDiscover) {
-			char externalIPAddress[40];
-			r = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
-			if (r != UPNPCOMMAND_SUCCESS)
-				log::info("UPnP")<<"GetExternalIPAddress() returned "<<r;
-			/*else
-			{
-				if (externalIPAddress[0])
-				{
-					CNetAddr resolved;
-					if (LookupHost(externalIPAddress, resolved, false)) {
-						log::info("UPnP") << "ExternalIPAddress = "<<resolved.ToString().c_str();
-						AddLocal(resolved, LOCAL_UPNP);
-					}
-				}
-				else
-					log::info("UPnP") << "GetExternalIPAddress failed.";
-			}*/
-		}
-
-		std::string strDesc = "ETP v0.7.4";
+		std::string strDesc = strprintf("ETP v%s", MVS_VERSION);
+		
 
 		try {
 			while (true) {
@@ -544,6 +525,48 @@ void p2p::thread_map_port(uint16_t map_port,bool fDiscover)
 	}
 }
 
+config::authority p2p::get_out_address() {
+	const char * multicastif = nullptr;
+	const char * minissdpdpath = nullptr;
+	struct UPNPDev * devlist = nullptr;
+	char lanaddr[64];
+
+#ifndef UPNPDISCOVER_SUCCESS
+	/* miniupnpc 1.5 */
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
+#elif MINIUPNPC_API_VERSION < 14
+	/* miniupnpc 1.6 */
+	int error = 0;
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+#else
+	/* miniupnpc 1.9.20150730 */
+	int error = 0;
+	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+
+#endif
+
+	struct UPNPUrls urls;
+	struct IGDdatas data;
+	int r;
+
+	r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	if (r == 1)
+	{
+		char externalIPAddress[40];
+		r = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
+		if (r != UPNPCOMMAND_SUCCESS)
+			log::info("UPnP") << "GetExternalIPAddress() returned " << r;
+		else
+		{
+			std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
+			config::authority outaddress(outaddressstr);
+			
+			return  outaddress;
+		}
+	}
+	return nullptr;
+}
+
 void p2p::map_port(bool fUseUPnP)
 {
 	static std::unique_ptr<boost::thread> upnp_thread;
@@ -554,7 +577,7 @@ void p2p::map_port(bool fUseUPnP)
 			upnp_thread->interrupt();
 			upnp_thread->join();
 		}
-		upnp_thread.reset(new boost::thread(boost::bind(p2p::thread_map_port, settings_.inbound_port,true)));
+		upnp_thread.reset(new boost::thread(boost::bind(p2p::thread_map_port, settings_.inbound_port)));
 	}
 	else if (upnp_thread) {
 		upnp_thread->interrupt();
