@@ -81,12 +81,12 @@ void protocol_address::start()
 		network_address nt_address = network_.get_out_address().to_network_address();
 		if (settings.hosts_file == "hosts.cache") {
 			address self = address({ { nt_address } });
-			log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
+			log::info("UPnP") << "send by host judge addresss " << network_.get_out_address().to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
 		else if (nt_address.is_routable()) {
 			address self = address({ { nt_address } });
-			log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
+			log::info("UPnP") << "send by routable addresss " << network_.get_out_address().to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
 	}
