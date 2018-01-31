@@ -23,8 +23,8 @@
 
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/database/memory/memory.hpp>
-#include "../impl/remainder.ipp"
-#include "../impl/slab_row.ipp"
+#include "remainder.ipp"
+#include "slab_row.ipp"
 
 namespace libbitcoin {
 namespace database {

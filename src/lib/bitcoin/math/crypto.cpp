@@ -24,7 +24,7 @@
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <metaverse/bitcoin/utility/assert.hpp>
 #include <metaverse/bitcoin/utility/data.hpp>
-#include "../math/external/aes256.h"
+#include "external/aes256.h"
 
 namespace libbitcoin {
 

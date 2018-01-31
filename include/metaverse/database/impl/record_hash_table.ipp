@@ -24,8 +24,8 @@
 #include <string>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/database/memory/memory.hpp>
-#include "../impl/record_row.ipp"
-#include "../impl/remainder.ipp"
+#include "record_row.ipp"
+#include "remainder.ipp"
 
 namespace libbitcoin {
 namespace database {
