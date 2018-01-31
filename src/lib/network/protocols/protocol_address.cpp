@@ -68,6 +68,7 @@ void protocol_address::start()
 #ifdef USE_UPNP
 	if (settings.self != network_.get_out_address()) {
 		address self = address({ { network_.get_out_address().to_network_address() } });
+		log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
 		SEND2(self, handle_send, _1, self.command);
 	}
 #endif
