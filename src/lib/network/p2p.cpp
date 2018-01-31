@@ -567,11 +567,11 @@ config::authority p2p::get_out_address() {
 	return settings_.self;
 }
 
-void p2p::map_port(bool fUseUPnP)
+void p2p::map_port(bool use_upnp)
 {
 	static std::unique_ptr<boost::thread> upnp_thread;
 
-	if (fUseUPnP)
+	if (use_upnp)
 	{
 		if (upnp_thread) {
 			upnp_thread->interrupt();

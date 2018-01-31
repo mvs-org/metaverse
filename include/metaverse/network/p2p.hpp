@@ -196,7 +196,7 @@ public:
     virtual connections::ptr connections_ptr();
 
 	//upnp functions
-	virtual void map_port(bool fUseUPnP);
+	virtual void map_port(bool use_upnp);
 #ifdef USE_UPNP
 	static void thread_map_port(uint16_t map_port);
 	config::authority get_out_address();
