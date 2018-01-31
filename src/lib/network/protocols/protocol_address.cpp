@@ -69,7 +69,7 @@ void protocol_address::start()
 			SEND2(self_, handle_send, _1, self_.command);
 		}
 		//only outer address can be broadcast
-		else if (nt_address.is_routable()) {
+		else if (nt_address.is_private_network()) {
 			self_ = address({ { nt_address } });
 			SEND2(self_, handle_send, _1, self_.command);
 		}
@@ -84,9 +84,9 @@ void protocol_address::start()
 			log::info("UPnP") << "send by host judge addresss " << network_.get_out_address().to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
-		else if (nt_address.is_routable()) {
+		else if (nt_address.is_private_network()) {
 			address self = address({ { nt_address } });
-			log::info("UPnP") << "send by routable addresss " << network_.get_out_address().to_string();
+			log::info("UPnP") << "send by judge not private addresss " << network_.get_out_address().to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
 	}
