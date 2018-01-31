@@ -564,7 +564,7 @@ config::authority p2p::get_out_address() {
 			return  outaddress;
 		}
 	}
-	return nullptr;
+	return settings_.self;
 }
 
 void p2p::map_port(bool fUseUPnP)
