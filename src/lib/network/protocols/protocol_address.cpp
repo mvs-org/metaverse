@@ -61,15 +61,34 @@ void protocol_address::start()
 
     if (settings.self.port() != 0)
     {
-        self_ = address({ { settings.self.to_network_address() } });
-        SEND2(self_, handle_send, _1, self_.command);
+		network_address nt_address=settings.self.to_network_address();
+
+		//for testnet don't filter local ip
+		if (settings.hosts_file == "hosts-test.cache") {
+			self_ = address({ { nt_address } });
+			SEND2(self_, handle_send, _1, self_.command);
+		}
+		//only outer address can be broadcast
+		else if (nt_address.is_routable()) {
+			self_ = address({ { nt_address } });
+			SEND2(self_, handle_send, _1, self_.command);
+		}
+        
     }
 
 #ifdef USE_UPNP
 	if (settings.self != network_.get_out_address()) {
-		address self = address({ { network_.get_out_address().to_network_address() } });
-		log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
-		SEND2(self, handle_send, _1, self.command);
+		network_address nt_address = network_.get_out_address().to_network_address();
+		if (settings.hosts_file == "hosts.cache") {
+			address self = address({ { nt_address } });
+			log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
+			SEND2(self, handle_send, _1, self.command);
+		}
+		else if (nt_address.is_routable()) {
+			address self = address({ { nt_address } });
+			log::info("UPnP") << "send addresss " << network_.get_out_address().to_string();
+			SEND2(self, handle_send, _1, self.command);
+		}
 	}
 #endif
 	
