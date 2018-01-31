@@ -115,7 +115,7 @@ options_metadata parser::load_options()
 	(
 		"upnp,U",
 		value<bool>(&configured.network.upnp_map_port)->
-		default_value(true)->zero_tokens(),
+		default_value(false)->zero_tokens(),
 		"Use upnp for port mapping and broadcast extern address, defaults to true."
 		)
 	;
