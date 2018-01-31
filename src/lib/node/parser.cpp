@@ -298,6 +298,12 @@ options_metadata parser::load_settings()
         value<config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
+	(
+		"upnp,U",
+		value<bool>(&configured.network.upnp_map_port)->
+		default_value(false)->zero_tokens(),
+		"Use upnp for port mapping and broadcast extern address, defaults to true."
+	)
 
     /* [node] */
     (
