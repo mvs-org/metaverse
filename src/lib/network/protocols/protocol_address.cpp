@@ -79,7 +79,7 @@ void protocol_address::start()
 #ifdef USE_UPNP
 	if (settings.self != network_.get_out_address()) {
 		network_address nt_address = network_.get_out_address().to_network_address();
-		if (settings.hosts_file == "hosts.cache") {
+		if (settings.hosts_file == "hosts-test.cache") {
 			address self = address({ { nt_address } });
 			log::info("UPnP") << "send by host judge addresss " << network_.get_out_address().to_string();
 			SEND2(self, handle_send, _1, self.command);

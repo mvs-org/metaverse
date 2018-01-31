@@ -112,6 +112,12 @@ options_metadata parser::load_options()
         default_value(false),
         "Open wallet UI."
     )
+	(
+		"upnp,U",
+		value<bool>(&configured.network.upnp_map_port)->
+		default_value(true)->zero_tokens(),
+		"Use upnp for port mapping and broadcast extern address, defaults to true."
+		)
 	;
 
     return description;
