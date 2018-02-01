@@ -77,6 +77,16 @@ IF(ENABLE_SHARED_LIBS)
 ELSE()
     SET(Boost_USE_STATIC_LIBS   ON)
 ENDIF()
+
+# use UPNP
+FIND_PACKAGE(miniupnpc REQUIRED)
+INCLUDE_DIRECTORIES("${miniupnpc_INCLUDE_DIRS}")
+IF(ENABLE_SHARED_LIBS)
+    SET(miniupnpc_LIBRARY miniupnpc_shared)
+ELSE()
+    SET(miniupnpc_LIBRARY miniupnpc_static)
+ENDIF()
+
 FIND_PACKAGE(Boost 1.56 REQUIRED COMPONENTS date_time filesystem system
 program_options regex thread)
 #set(Boost_LIBRARIES ${Boost_LIBRARIES} icui18n icuuc icudata pthread dl)
