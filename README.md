@@ -113,6 +113,17 @@ $ make -j4
 $ sudo make install && sudo ldconfig
 ```
 
+## miniupnpc
+Modules blockchain/network required.
+
+```bash
+$ wget http://miniupnp.tuxfamily.org/files/miniupnpc-2.0.tar.gz
+$ tar -xzvf miniupnpc-2.0.tar.gz
+$ cd miniupnpc-2.0
+$ make -j4
+$ sudo INSTALLPREFIX=/usr/local make install && sudo ldconfig
+```
+
 # Run MVS
 After MVS is built successfully, there are two executable files in the _bin_ directory:
 
