@@ -193,13 +193,13 @@ public:
     address::list address_list();
 
     /// Get connection pool.
-    virtual connections::ptr connections_ptr();
+    virtual connections::ptr connections_ptr();	
 
-	//upnp functions
-	virtual void map_port(bool use_upnp);
+    //upnp functions
+    virtual void map_port(bool use_upnp);
 #ifdef USE_UPNP
-	static void thread_map_port(uint16_t map_port);
-	config::authority get_out_address();
+    static void thread_map_port(uint16_t map_port);
+    config::authority get_out_address();
 #endif
 
 protected:
