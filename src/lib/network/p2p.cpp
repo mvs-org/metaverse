@@ -98,8 +98,8 @@ void p2p::start(result_handler handler)
         std::bind(&p2p::handle_manual_started,
             this, _1, handler));
 
-	//start upnp map port
-	map_port(settings_.upnp_map_port);
+    //start upnp map port
+    map_port(settings_.upnp_map_port);
 }
 
 void p2p::handle_manual_started(const code& ec, result_handler handler)

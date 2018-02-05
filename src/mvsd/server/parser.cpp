@@ -112,12 +112,12 @@ options_metadata parser::load_options()
         default_value(false),
         "Open wallet UI."
     )
-	(
-		"upnp,U",
-		value<bool>(&configured.network.upnp_map_port)->
-		default_value(false)->zero_tokens(),
-		"Use upnp for port mapping and broadcast extern address, defaults to true."
-		)
+    (
+        "upnp,U",
+        value<bool>(&configured.network.upnp_map_port)->
+        default_value(true)->zero_tokens(),
+        "Add a upnp map port in your router which has a extern address to allow connections to your local address."
+    )
 	;
 
     return description;
@@ -262,13 +262,18 @@ options_metadata parser::load_settings()
         value<config::endpoint::list>(&configured.network.peers),
         "Persistent host:port channels, multiple entries allowed."
     )
-	(
-		"network.upnp_map_port",
-		value<bool>(&configured.network.upnp_map_port),
-		"Persistent host:port channels, multiple entries allowed."
-		)
     (
-        "network.seed",
+        "network.upnp_map_port",
+        value<bool>(&configured.network.upnp_map_port),
+        "Add a upnp map port in your router which has a extern address to allow connections to your local address."
+    )
+    (
+        "network.be_found",
+        value<bool>(&configured.network.be_found),
+        "If broadcast your upnp extern address on the network to allow others find you and connect you."
+    )
+    (
+		"network.seed",
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )

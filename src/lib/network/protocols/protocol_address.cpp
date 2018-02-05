@@ -77,7 +77,7 @@ void protocol_address::start()
     }
 
 #ifdef USE_UPNP
-	if (settings.upnp_map_port && settings.self != network_.get_out_address()) {
+	if (settings.upnp_map_port && settings.be_found && settings.self != network_.get_out_address()) {
 		network_address nt_address = network_.get_out_address().to_network_address();
 		if (settings.hosts_file == "hosts-test.cache") {
 			address self = address({ { nt_address } });

@@ -52,6 +52,4 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/thread.hpp>
 
-#define USE_UPNP "use_upnp"
-
 #endif
