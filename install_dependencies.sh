@@ -227,6 +227,7 @@ for OPTION in "$@"; do
         (--build-png)      BUILD_PNG="yes";;
         (--build-qrencode) BUILD_QRENCODE="yes";;
         (--build-boost)    BUILD_BOOST="yes";;
+        (--build-upnpc)    BUILD_UPNPC="yes";;
         (--build-dir=*)    BUILD_DIR="${OPTION#*=}";;
 
         # Standard build options.
@@ -306,6 +307,7 @@ display_message "BUILD_ZLIB            : $BUILD_ZLIB"
 display_message "BUILD_PNG             : $BUILD_PNG"
 display_message "BUILD_QRENCODE        : $BUILD_QRENCODE"
 display_message "BUILD_BOOST           : $BUILD_BOOST"
+display_message "BUILD_UPNPC           : $BUILD_UPNPC"
 display_message "PREFIX                : $PREFIX"
 display_message "BUILD_DIR             : $BUILD_DIR"
 display_message "DISABLE_SHARED        : $DISABLE_SHARED"
@@ -741,7 +743,7 @@ build_from_travis()
 #==============================================================================
 build_all()
 {
-    build_from_tarball $UPNPC_URL $UPNPC_ARCHIVE gzip . $PARALLEL "yes" "${UPNPC_OPTIONS[@]}" "$@"
+    build_from_tarball $UPNPC_URL $UPNPC_ARCHIVE gzip . $PARALLEL "$BUILD_UPNPC" "${UPNPC_OPTIONS[@]}" "$@"
     build_from_tarball $ZMQ_URL $ZMQ_ARCHIVE gzip . $PARALLEL "yes" "${ZMQ_OPTIONS[@]}" "$@"
     build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
     build_from_github mvs-org secp256k1 master $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"

@@ -65,6 +65,7 @@ $ cmake ..
 $ make -j4
 $ make install
 ```
+If you do not need UPnP support, you can use `"cmake -DUSE_UPNP=OFF .."` to disable it.
 
 optional:
 ```bash
@@ -78,6 +79,12 @@ $ make doc  (should install doxygen and graphviz)
 Installing by bash script (sudo required).
 ```bash
 $ sudo ./install_dependencies.sh
+```
+By default, `./install_dependencies.sh` will install `ZeroMQ` `secp256k1`.  
+You can install more by specify arguments, for example:
+```bash
+# --build-upnpc is needed is you want UPnP supporting.
+$ sudo ./install_dependencies.sh --build-boost --build-upnpc
 ```
 
 ## boost 1.56+
@@ -114,7 +121,7 @@ $ sudo make install && sudo ldconfig
 ```
 
 ## miniupnpc
-Modules blockchain/network required.
+Modules blockchain/network with UPnP function required.
 
 ```bash
 $ wget http://miniupnp.tuxfamily.org/files/miniupnpc-2.0.tar.gz
