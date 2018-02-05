@@ -193,7 +193,7 @@ public:
     address::list address_list();
 
     /// Get connection pool.
-    virtual connections::ptr connections_ptr();	
+    virtual connections::ptr connections_ptr();
 
     //upnp functions
     virtual void map_port(bool use_upnp);
