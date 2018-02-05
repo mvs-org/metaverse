@@ -114,7 +114,7 @@ options_metadata parser::load_options()
     )
     (
         "upnp,U",
-        value<bool>(&configured.network.upnp_map_port)->
+        value<bool>(&configured.upnp_map_port)->
         default_value(true)->zero_tokens(),
         "Add a upnp map port in your router which has a extern address to allow connections to your local address."
     )
