@@ -267,15 +267,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	case WM_TIMER:
-		int wmId = LOWORD(wParam);
-		if (wmId == WM_TIMER_OPEN) {
-			OpenUI();
-			KillTimer(hWnd, WM_TIMER_OPEN);
-		}
-		else if(!MetaverseIsRunning()){
-			DestroyWindow(hWnd);
-		}
-			
+	{
+	int wmId = LOWORD(wParam);
+	if (wmId == WM_TIMER_OPEN) {
+		OpenUI();
+		KillTimer(hWnd, WM_TIMER_OPEN);
+	}
+	else if (!MetaverseIsRunning()) {
+		DestroyWindow(hWnd);
+	}
+	}	
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
