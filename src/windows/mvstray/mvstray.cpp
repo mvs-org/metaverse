@@ -40,6 +40,7 @@
 #define IDM_OPEN 101
 #define IDM_AUTOSTART 102
 #define	WM_USER_SHELLICON WM_USER + 1
+#define WM_TIMER_OPEN 107
 
 HANDLE metaverseHandle = INVALID_HANDLE_VALUE;
 DWORD metaverseProcId = 0;
@@ -58,6 +59,7 @@ void OpenUI();
 bool MetaverseIsRunning();
 bool AutostartEnabled();
 void EnableAutostart(bool enable);
+bool bUIOpened = false;
 
 bool GetMetaverseExePath(TCHAR* dest, size_t destSize)
 {
@@ -88,6 +90,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	CreateMutex(0, FALSE, _T("Local\\MetaverseTray"));
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		// open the UI
+		bUIOpened = true;
 		OpenUI();
 		return 0;
 	}
@@ -197,6 +200,10 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 	Shell_NotifyIcon(NIM_ADD, &nidApp);
 
 	SetTimer(hWnd, 0, 1000, nullptr);
+	if (!bUIOpened) {
+		SetTimer(hWnd, WM_TIMER_OPEN, 1000, nullptr);
+	}
+	
 	return true;
 
 }
@@ -260,8 +267,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	case WM_TIMER:
-		if (!MetaverseIsRunning())
+		int wmId = LOWORD(wParam);
+		if (wmId == WM_TIMER_OPEN) {
+			OpenUI();
+			KillTimer(hWnd, WM_TIMER_OPEN);
+		}
+		else if(!MetaverseIsRunning()){
 			DestroyWindow(hWnd);
+		}
+			
+		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
