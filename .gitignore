@@ -54,3 +54,13 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
+
+# Cscope files
+cscope.*
+
+# Backup files
+*~
+*.bak
+*.orig
+*.rej
+*.swp
