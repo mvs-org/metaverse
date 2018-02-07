@@ -61,7 +61,8 @@ p2p::p2p(const settings& settings)
     hosts_(std::make_shared<hosts>(threadpool_, settings_)),
     connections_(std::make_shared<connections>()),
     stop_subscriber_(std::make_shared<stop_subscriber>(threadpool_, NAME "_stop_sub")),
-    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub"))
+    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub")),
+	out_address_use_count_(0)
 {
 }
 
@@ -530,7 +531,14 @@ void p2p::thread_map_port(uint16_t map_port)
 	}
 }
 
-config::authority p2p::get_out_address() {
+config::authority::ptr p2p::get_out_address() {
+
+	//every 8 times,get a new one
+	if (out_address_use_count_!= 0 && out_address_use_count_ <= 8) {
+		out_address_use_count_++;
+		return upnp_out.load();
+	}
+
 	const char * multicastif = nullptr;
 	const char * minissdpdpath = nullptr;
 	struct UPNPDev * devlist = nullptr;
@@ -570,12 +578,12 @@ config::authority p2p::get_out_address() {
 		else
 		{
 			std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
-			config::authority outaddress(outaddressstr);
-			
-			return outaddress;
+			upnp_out.store(std::make_shared<config::authority>(outaddressstr));
+			out_address_use_count_ = 1;
+			return upnp_out.load();
 		}
 	}
-	return settings_.self;
+	return std::make_shared<config::authority>(settings_.self);
 }
 
 void p2p::map_port(bool use_upnp)

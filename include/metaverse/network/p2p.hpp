@@ -199,7 +199,7 @@ public:
     virtual void map_port(bool use_upnp);
 #ifdef USE_UPNP
     static void thread_map_port(uint16_t map_port);
-    config::authority get_out_address();
+    config::authority::ptr get_out_address();
 #endif
 
 protected:
@@ -230,6 +230,12 @@ private:
 
     const settings& settings_;
 
+#ifdef USE_UPNP
+	std::atomic<size_t> out_address_use_count_;
+	bc::atomic<config::authority::ptr> upnp_out;
+#endif
+
+
     // These are thread safe.
     std::atomic<bool> stopped_;
     std::atomic<size_t> height_;
@@ -241,7 +247,6 @@ private:
     channel_subscriber::ptr channel_subscriber_;
 
 };
-
 } // namespace network
 } // namespace libbitcoin
 
