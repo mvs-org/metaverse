@@ -77,16 +77,18 @@ void protocol_address::start()
     }
 
 #ifdef USE_UPNP
-	if (settings.upnp_map_port && settings.be_found && settings.self != network_.get_out_address()) {
-		network_address nt_address = network_.get_out_address().to_network_address();
+	config::authority out_address = network_.get_out_address();
+
+	if (settings.upnp_map_port && settings.be_found && settings.self != out_address) {
+		network_address nt_address = out_address.to_network_address();
 		if (settings.hosts_file == "hosts-test.cache") {
 			address self = address({ { nt_address } });
-			log::info("UPnP") << "send by host judge addresss " << network_.get_out_address().to_string();
+			log::info("UPnP") << "send addresss " << out_address.to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
 		else if (!nt_address.is_private_network()) {
 			address self = address({ { nt_address } });
-			log::info("UPnP") << "send by judge not private addresss " << network_.get_out_address().to_string();
+			log::info("UPnP") << "send addresss " << out_address.to_string();
 			SEND2(self, handle_send, _1, self.command);
 		}
 	}

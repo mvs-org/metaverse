@@ -481,8 +481,13 @@ void p2p::thread_map_port(uint16_t map_port)
 	struct UPNPUrls urls;
 	struct IGDdatas data;
 	int r;
-
-	r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	try {
+		r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	}
+	catch (...) {
+		r = 0;
+		log::info("UPnP") << "Get UPnP IGDs exception";
+	}
 	if (r == 1)
 	{
         std::string strDesc = strprintf("ETP v%s", MVS_VERSION);
@@ -549,7 +554,13 @@ config::authority p2p::get_out_address() {
 	struct IGDdatas data;
 	int r;
 
-	r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	try {
+		r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	}
+	catch (...) {
+		r = 0;
+		log::info("UPnP") << "Get UPnP IGDs exception";
+	}
 	if (r == 1)
 	{
 		char externalIPAddress[40];
@@ -561,7 +572,7 @@ config::authority p2p::get_out_address() {
 			std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
 			config::authority outaddress(outaddressstr);
 			
-			return    outaddress;
+			return outaddress;
 		}
 	}
 	return settings_.self;
