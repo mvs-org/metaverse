@@ -39,7 +39,7 @@
 #define IDM_EXIT 100
 #define IDM_OPEN 101
 #define IDM_AUTOSTART 102
-#define	WM_USER_SHELLICON WM_USER + 1
+#define    WM_USER_SHELLICON WM_USER + 1
 #define WM_TIMER_OPEN 107
 
 HANDLE metaverseHandle = INVALID_HANDLE_VALUE;
@@ -63,248 +63,248 @@ bool bUIOpened = false;
 
 bool GetMetaverseExePath(TCHAR* dest, size_t destSize)
 {
-	if (!dest || MAX_PATH > destSize)
-		return false;
-	GetModuleFileName(NULL, dest, (DWORD)destSize);
-	if (!PathRemoveFileSpec(dest))
-		return false;
-	return PathAppend(dest, _T("mvsd.exe")) == TRUE;
+    if (!dest || MAX_PATH > destSize)
+        return false;
+    GetModuleFileName(NULL, dest, (DWORD)destSize);
+    if (!PathRemoveFileSpec(dest))
+        return false;
+    return PathAppend(dest, _T("mvsd.exe")) == TRUE;
 }
 
 bool GetTrayExePath(TCHAR* dest, size_t destSize)
 {
-	if (!dest || MAX_PATH > destSize)
-		return false;
-	GetModuleFileName(NULL, dest, (DWORD)destSize);
-	return true;
+    if (!dest || MAX_PATH > destSize)
+        return false;
+    GetModuleFileName(NULL, dest, (DWORD)destSize);
+    return true;
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPWSTR    lpCmdLine,
-	_In_ int       nCmdShow)
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
-	CreateMutex(0, FALSE, _T("Local\\MetaverseTray"));
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
-		// open the UI
-		bUIOpened = true;
-		OpenUI();
-		return 0;
-	}
+    CreateMutex(0, FALSE, _T("Local\\MetaverseTray"));
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        // open the UI
+        bUIOpened = true;
+        OpenUI();
+        return 0;
+    }
 
-	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadStringW(hInstance, IDC_MVSTRAY, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
+    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_MVSTRAY, szWindowClass, MAX_LOADSTRING);
+    MyRegisterClass(hInstance);
 
-	if (!InitInstance(hInstance, nCmdShow, lpCmdLine))
-		return FALSE;
+    if (!InitInstance(hInstance, nCmdShow, lpCmdLine))
+        return FALSE;
 
-	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MVSTRAY));
-	MSG msg;
-	// Main message loop:
-	while (GetMessage(&msg, nullptr, 0, 0))
-	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MVSTRAY));
+    MSG msg;
+    // Main message loop:
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
 
-	return (int)msg.wParam;
+    return (int)msg.wParam;
 }
 
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-	WNDCLASSEXW wcex;
+    WNDCLASSEXW wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MVSTRAY));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_MVSTRAY);
-	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MVSTRAY));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_MVSTRAY);
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-	return RegisterClassExW(&wcex);
+    return RegisterClassExW(&wcex);
 }
 
 
 bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 {
-	// Check if already running
-	PROCESSENTRY32 entry;
-	entry.dwSize = sizeof(PROCESSENTRY32);
+    // Check if already running
+    PROCESSENTRY32 entry;
+    entry.dwSize = sizeof(PROCESSENTRY32);
 
-	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-	if (Process32First(snapshot, &entry) == TRUE)
-	{
-		while (Process32Next(snapshot, &entry) == TRUE)
-		{
-			if (lstrcmp(entry.szExeFile, cMetaverseExe) == 0)
-			{
-				metaverseHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
-				metaverseProcId = entry.th32ProcessID;
-				break;
-			}
-		}
-	}
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+    if (Process32First(snapshot, &entry) == TRUE)
+    {
+        while (Process32Next(snapshot, &entry) == TRUE)
+        {
+            if (lstrcmp(entry.szExeFile, cMetaverseExe) == 0)
+            {
+                metaverseHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
+                metaverseProcId = entry.th32ProcessID;
+                break;
+            }
+        }
+    }
 
-	CloseHandle(snapshot);
+    CloseHandle(snapshot);
 
-	if (metaverseHandle == INVALID_HANDLE_VALUE)
-	{
-		// Launch Metaverse
-		TCHAR path[MAX_PATH] = { 0 };
-		if (!GetMetaverseExePath(path, MAX_PATH))
-			return false;
+    if (metaverseHandle == INVALID_HANDLE_VALUE)
+    {
+        // Launch Metaverse
+        TCHAR path[MAX_PATH] = { 0 };
+        if (!GetMetaverseExePath(path, MAX_PATH))
+            return false;
 
-		PROCESS_INFORMATION procInfo = { 0 };
-		STARTUPINFO startupInfo = { sizeof(STARTUPINFO) };
+        PROCESS_INFORMATION procInfo = { 0 };
+        STARTUPINFO startupInfo = { sizeof(STARTUPINFO) };
 
-		LPWSTR cmd = new WCHAR[lstrlen(cmdLine) + lstrlen(path) + 2];
-		lstrcpy(cmd, path);
-		lstrcat(cmd, _T(" "));
-		lstrcat(cmd, cmdLine);
-		if (!CreateProcess(nullptr, cmd, nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &procInfo))
-			return false;
-		delete[] cmd;
-		metaverseHandle = procInfo.hProcess;
-		metaverseProcId = procInfo.dwProcessId;
-	}
+        LPWSTR cmd = new WCHAR[lstrlen(cmdLine) + lstrlen(path) + 2];
+        lstrcpy(cmd, path);
+        lstrcat(cmd, _T(" "));
+        lstrcat(cmd, cmdLine);
+        if (!CreateProcess(nullptr, cmd, nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &procInfo))
+            return false;
+        delete[] cmd;
+        metaverseHandle = procInfo.hProcess;
+        metaverseProcId = procInfo.dwProcessId;
+    }
 
-	HWND hWnd = CreateWindowW(szWindowClass, szTitle, 0,
-		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, 0,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-	if (!hWnd)
-		return false;
+    if (!hWnd)
+        return false;
 
-	HICON hMainIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_MVSTRAY));
+    HICON hMainIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_MVSTRAY));
 
-	nidApp.cbSize = sizeof(NOTIFYICONDATA); // sizeof the struct in bytes 
-	nidApp.hWnd = (HWND)hWnd;              //handle of the window which will process this app. messages 
-	nidApp.uID = IDI_MVSTRAY;           //ID of the icon that will appear in the system tray 
-	nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP; //ORing of all the flags 
-	nidApp.hIcon = hMainIcon; // handle of the Icon to be displayed, obtained from LoadIcon 
-	nidApp.uCallbackMessage = WM_USER_SHELLICON;
-	LoadString(hInstance, IDS_CONTROL_METAVERSE, nidApp.szTip, MAX_LOADSTRING);
-	Shell_NotifyIcon(NIM_ADD, &nidApp);
+    nidApp.cbSize = sizeof(NOTIFYICONDATA); // sizeof the struct in bytes 
+    nidApp.hWnd = (HWND)hWnd;              //handle of the window which will process this app. messages 
+    nidApp.uID = IDI_MVSTRAY;           //ID of the icon that will appear in the system tray 
+    nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP; //ORing of all the flags 
+    nidApp.hIcon = hMainIcon; // handle of the Icon to be displayed, obtained from LoadIcon 
+    nidApp.uCallbackMessage = WM_USER_SHELLICON;
+    LoadString(hInstance, IDS_CONTROL_METAVERSE, nidApp.szTip, MAX_LOADSTRING);
+    Shell_NotifyIcon(NIM_ADD, &nidApp);
 
-	SetTimer(hWnd, 0, 1000, nullptr);
-	if (!bUIOpened) {
-		SetTimer(hWnd, WM_TIMER_OPEN, 1000, nullptr);
-	}
-	
-	return true;
+    SetTimer(hWnd, 0, 1000, nullptr);
+    if (!bUIOpened) {
+        SetTimer(hWnd, WM_TIMER_OPEN, 1000, nullptr);
+    }
+    
+    return true;
 
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
-	{
-	case WM_USER_SHELLICON:
-		// systray msg callback 
-		POINT lpClickPoint;
-		switch (LOWORD(lParam))
-		{
-		case WM_LBUTTONDOWN:
-			OpenUI();
-			break;
-		case WM_RBUTTONDOWN:
-			UINT uFlag = MF_BYPOSITION | MF_STRING;
-			GetCursorPos(&lpClickPoint);
-			HMENU hPopMenu = CreatePopupMenu();
-			InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_OPEN, _T("Open"));
-			InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR | MF_BYPOSITION, 0, nullptr);
-			InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_AUTOSTART, _T("Start at Login"));
-			InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR | MF_BYPOSITION, 0, nullptr);
-			InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_EXIT, _T("Exit"));
-			bool autoStart = AutostartEnabled();
-			CheckMenuItem(hPopMenu, IDM_AUTOSTART, autoStart ? MF_CHECKED : autoStart);
+    switch (message)
+    {
+    case WM_USER_SHELLICON:
+        // systray msg callback 
+        POINT lpClickPoint;
+        switch (LOWORD(lParam))
+        {
+        case WM_LBUTTONDOWN:
+            OpenUI();
+            break;
+        case WM_RBUTTONDOWN:
+            UINT uFlag = MF_BYPOSITION | MF_STRING;
+            GetCursorPos(&lpClickPoint);
+            HMENU hPopMenu = CreatePopupMenu();
+            InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_OPEN, _T("Open"));
+            InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR | MF_BYPOSITION, 0, nullptr);
+            InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_AUTOSTART, _T("Start at Login"));
+            InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR | MF_BYPOSITION, 0, nullptr);
+            InsertMenu(hPopMenu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, IDM_EXIT, _T("Exit"));
+            bool autoStart = AutostartEnabled();
+            CheckMenuItem(hPopMenu, IDM_AUTOSTART, autoStart ? MF_CHECKED : autoStart);
 
-			SetForegroundWindow(hWnd);
-			TrackPopupMenu(hPopMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, lpClickPoint.x, lpClickPoint.y, 0, hWnd, NULL);
-			return TRUE;
+            SetForegroundWindow(hWnd);
+            TrackPopupMenu(hPopMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, lpClickPoint.x, lpClickPoint.y, 0, hWnd, NULL);
+            return TRUE;
 
-		}
-		break;
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		case IDM_OPEN:
-			OpenUI();
-			break;
-		case IDM_AUTOSTART:
-			{
-				bool autoStart = AutostartEnabled();
-				EnableAutostart(!autoStart);
-			}
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-	}
-	break;
-	case WM_DESTROY:
-		Shell_NotifyIcon(NIM_DELETE, &nidApp);
-		KillMetaverse();
-		PostQuitMessage(0);
-		break;
-	case WM_TIMER:
-	{
-	int wmId = LOWORD(wParam);
-	if (wmId == WM_TIMER_OPEN) {
-		OpenUI();
-		KillTimer(hWnd, WM_TIMER_OPEN);
-	}
-	else if (!MetaverseIsRunning()) {
-		DestroyWindow(hWnd);
-	}
-	}	
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
+        }
+        break;
+    case WM_COMMAND:
+    {
+        int wmId = LOWORD(wParam);
+        // Parse the menu selections:
+        switch (wmId)
+        {
+        case IDM_EXIT:
+            DestroyWindow(hWnd);
+            break;
+        case IDM_OPEN:
+            OpenUI();
+            break;
+        case IDM_AUTOSTART:
+            {
+                bool autoStart = AutostartEnabled();
+                EnableAutostart(!autoStart);
+            }
+            break;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
+        }
+    }
+    break;
+    case WM_DESTROY:
+        Shell_NotifyIcon(NIM_DELETE, &nidApp);
+        KillMetaverse();
+        PostQuitMessage(0);
+        break;
+    case WM_TIMER:
+    {
+    int wmId = LOWORD(wParam);
+    if (wmId == WM_TIMER_OPEN) {
+        OpenUI();
+        KillTimer(hWnd, WM_TIMER_OPEN);
+    }
+    else if (!MetaverseIsRunning()) {
+        DestroyWindow(hWnd);
+    }
+    }    
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
 }
 
 void KillMetaverse()
 {
-	DWORD procId = metaverseProcId;
-	//This does not require the console window to be visible.
-	if (AttachConsole(procId))
-	{
-		// Disable Ctrl-C handling for our program
-		SetConsoleCtrlHandler(nullptr, true);
-		GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-		FreeConsole();
+    DWORD procId = metaverseProcId;
+    //This does not require the console window to be visible.
+    if (AttachConsole(procId))
+    {
+        // Disable Ctrl-C handling for our program
+        SetConsoleCtrlHandler(nullptr, true);
+        GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+        FreeConsole();
 
-		//Re-enable Ctrl-C handling or any subsequently started
-		//programs will inherit the disabled state.
-		SetConsoleCtrlHandler(nullptr, false);
-	}
-	WaitForSingleObject(metaverseHandle, INFINITE);
+        //Re-enable Ctrl-C handling or any subsequently started
+        //programs will inherit the disabled state.
+        SetConsoleCtrlHandler(nullptr, false);
+    }
+    WaitForSingleObject(metaverseHandle, INFINITE);
 }
 
 bool MetaverseIsRunning()
 {
-	return WaitForSingleObject(metaverseHandle, 0) == WAIT_TIMEOUT;
+    return WaitForSingleObject(metaverseHandle, 0) == WAIT_TIMEOUT;
 }
 
 void OpenUI()
@@ -316,39 +316,39 @@ void OpenUI()
 }
 
 bool AutostartEnabled() {
-	HKEY hKey;
-	LONG lRes = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_READ, &hKey);
-	if (lRes != ERROR_SUCCESS)
-		return false;
+    HKEY hKey;
+    LONG lRes = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_READ, &hKey);
+    if (lRes != ERROR_SUCCESS)
+        return false;
 
-	WCHAR szBuffer[512];
-	DWORD dwBufferSize = sizeof(szBuffer);
-	ULONG nError;
-	nError = RegQueryValueExW(hKey, L"Metaverse", 0, nullptr, (LPBYTE)szBuffer, &dwBufferSize);
-	if (ERROR_SUCCESS != nError)
-		return false;
-	return true;
+    WCHAR szBuffer[512];
+    DWORD dwBufferSize = sizeof(szBuffer);
+    ULONG nError;
+    nError = RegQueryValueExW(hKey, L"Metaverse", 0, nullptr, (LPBYTE)szBuffer, &dwBufferSize);
+    if (ERROR_SUCCESS != nError)
+        return false;
+    return true;
 }
 
 void EnableAutostart(bool enable) {
-	HKEY hKey;
-	LONG lRes = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_WRITE, &hKey);
-	if (lRes != ERROR_SUCCESS)
-		return;
+    HKEY hKey;
+    LONG lRes = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_WRITE, &hKey);
+    if (lRes != ERROR_SUCCESS)
+        return;
 
-	if (enable) 
-	{
-		LPWSTR args = new WCHAR[lstrlen(commandLineFiltered) + MAX_PATH + 2];
-		if (GetTrayExePath(args, MAX_PATH))
-		{
-			lstrcat(args, L" ");
-			lstrcat(args, commandLineFiltered);
-			RegSetValueEx(hKey, L"Metaverse", 0, REG_SZ, (LPBYTE)args, MAX_PATH);
-		}
-		delete[] args;
-	}
-	else
-	{
-		RegDeleteValue(hKey, L"Metaverse");
-	}
+    if (enable) 
+    {
+        LPWSTR args = new WCHAR[lstrlen(commandLineFiltered) + MAX_PATH + 2];
+        if (GetTrayExePath(args, MAX_PATH))
+        {
+            lstrcat(args, L" ");
+            lstrcat(args, commandLineFiltered);
+            RegSetValueEx(hKey, L"Metaverse", 0, REG_SZ, (LPBYTE)args, MAX_PATH);
+        }
+        delete[] args;
+    }
+    else
+    {
+        RegDeleteValue(hKey, L"Metaverse");
+    }
 }

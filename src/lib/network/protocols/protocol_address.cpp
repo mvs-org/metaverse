@@ -48,7 +48,7 @@ protocol_address::ptr protocol_address::do_subscribe()
     SUBSCRIBE2(address, handle_receive_address, _1, _2);
     SUBSCRIBE2(get_address, handle_receive_get_address, _1, _2);
     // Must have a handler to capture a shared self pointer in stop subscriber.
-	protocol_events::start(BIND1(handle_stop, _1));
+    protocol_events::start(BIND1(handle_stop, _1));
     return std::dynamic_pointer_cast<protocol_address>(protocol::shared_from_this());
 }
 
@@ -61,42 +61,42 @@ void protocol_address::start()
 
     if (settings.self.port() != 0)
     {
-		network_address nt_address=settings.self.to_network_address();
+        network_address nt_address=settings.self.to_network_address();
 
-		//for testnet don't filter local ip
-		if (settings.hosts_file == "hosts-test.cache") {
-			self_ = address({ { nt_address } });
-			SEND2(self_, handle_send, _1, self_.command);
-		}
-		//only outer address can be broadcast
-		else if (!nt_address.is_private_network()) {
-			self_ = address({ { nt_address } });
-			SEND2(self_, handle_send, _1, self_.command);
-		}
+        //for testnet don't filter local ip
+        if (settings.hosts_file == "hosts-test.cache") {
+            self_ = address({ { nt_address } });
+            SEND2(self_, handle_send, _1, self_.command);
+        }
+        //only outer address can be broadcast
+        else if (!nt_address.is_private_network()) {
+            self_ = address({ { nt_address } });
+            SEND2(self_, handle_send, _1, self_.command);
+        }
         
     }
 
 #ifdef USE_UPNP
-	if (settings.upnp_map_port && settings.be_found) {
-		config::authority out_address = *network_.get_out_address();
+    if (settings.upnp_map_port && settings.be_found) {
+        config::authority out_address = *network_.get_out_address();
 
-		if (settings.self != out_address) {
-			network_address nt_address = out_address.to_network_address();
-			if (settings.hosts_file == "hosts-test.cache") {
-				address self = address({ { nt_address } });
-				log::info("UPnP") << "send addresss " << out_address.to_string();
-				SEND2(self, handle_send, _1, self.command);
-			}
-			else if (!nt_address.is_private_network()) {
-				address self = address({ { nt_address } });
-				log::info("UPnP") << "send addresss " << out_address.to_string();
-				SEND2(self, handle_send, _1, self.command);
-			}
-		}
-	}
+        if (settings.self != out_address) {
+            network_address nt_address = out_address.to_network_address();
+            if (settings.hosts_file == "hosts-test.cache") {
+                address self = address({ { nt_address } });
+                log::info("UPnP") << "send addresss " << out_address.to_string();
+                SEND2(self, handle_send, _1, self.command);
+            }
+            else if (!nt_address.is_private_network()) {
+                address self = address({ { nt_address } });
+                log::info("UPnP") << "send addresss " << out_address.to_string();
+                SEND2(self, handle_send, _1, self.command);
+            }
+        }
+    }
 
 #endif
-	
+    
 
     // If we can't store addresses we don't ask for or handle them.
     if (settings.host_pool_capacity == 0)
@@ -140,7 +140,7 @@ bool protocol_address::handle_receive_address(const code& ec,
         log::trace(LOG_NETWORK)
             << "Failure receiving address message from ["
             << authority() << "] " << ec.message();
-      	stop(ec);
+          stop(ec);
 
         return false;
     }
@@ -179,7 +179,7 @@ bool protocol_address::handle_receive_get_address(const code& ec,
         log::trace(LOG_NETWORK)
             << "Failure receiving get_address message from ["
             << authority() << "] " << ec.message();
-       	stop(ec);
+           stop(ec);
         return false;
     }
 

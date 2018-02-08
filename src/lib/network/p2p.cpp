@@ -279,9 +279,9 @@ bool p2p::stop()
 
     // Stop accepting channels and stop those that exist (self-clearing).
     connections_->stop(error::service_stopped);
-	
-	//shutdown upnp
-	map_port(false);
+    
+    //shutdown upnp
+    map_port(false);
 
     // Signal threadpool to stop accepting work now that subscribers are clear.
     threadpool_.shutdown();
@@ -451,177 +451,177 @@ void p2p::address_count(count_handler handler)
 
 p2p::address::list p2p::address_list()
 {
-	return hosts_->copy();
+    return hosts_->copy();
 }
 
 connections::ptr p2p::connections_ptr()
 {
-	return connections_;
+    return connections_;
 }
 
 #ifdef USE_UPNP
 
 void p2p::thread_map_port(uint16_t map_port)
 {
-	std::string port = strprintf("%u", map_port);
-	const char * multicastif = nullptr;
-	const char * minissdpdpath = nullptr;
-	struct UPNPDev * devlist = nullptr;
-	char lanaddr[64];
+    std::string port = strprintf("%u", map_port);
+    const char * multicastif = nullptr;
+    const char * minissdpdpath = nullptr;
+    struct UPNPDev * devlist = nullptr;
+    char lanaddr[64];
 
 #ifndef UPNPDISCOVER_SUCCESS
-	/* miniupnpc 1.5 */
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
+    /* miniupnpc 1.5 */
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
 #elif MINIUPNPC_API_VERSION < 14
-	/* miniupnpc 1.6 */
-	int error = 0;
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+    /* miniupnpc 1.6 */
+    int error = 0;
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
 #else
-	/* miniupnpc 1.9.20150730 */
-	int error = 0;
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
-	
+    /* miniupnpc 1.9.20150730 */
+    int error = 0;
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+    
 #endif
 
-	struct UPNPUrls urls;
-	struct IGDdatas data;
-	int r;
-	try {
-		r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
-	}
-	catch (...) {
-		r = 0;
-		log::info("UPnP") << "Get UPnP IGDs exception";
-	}
-	if (r == 1)
-	{
+    struct UPNPUrls urls;
+    struct IGDdatas data;
+    int r;
+    try {
+        r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+    }
+    catch (...) {
+        r = 0;
+        log::info("UPnP") << "Get UPnP IGDs exception";
+    }
+    if (r == 1)
+    {
         std::string strDesc = strprintf("ETP v%s", MVS_VERSION);
-		
+        
 
-		try {
-			while (true) {
+        try {
+            while (true) {
 #ifndef UPNPDISCOVER_SUCCESS
-				/* miniupnpc 1.5 */
-				r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-					port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0);
+                /* miniupnpc 1.5 */
+                r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+                    port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0);
 #else
-				/* miniupnpc 1.6 */
-				r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-					port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0, "0");
+                /* miniupnpc 1.6 */
+                r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+                    port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0, "0");
 #endif
 
-				if (r != UPNPCOMMAND_SUCCESS)
-					log::info("UPnP") << "AddPortMapping(" << port << ", " << port << ", " << lanaddr << ") failed with code " << r << " (" << strupnperror(r) << ")";
-				else
-					log::info("UPnP") << "Port Mapping successful.";
+                if (r != UPNPCOMMAND_SUCCESS)
+                    log::info("UPnP") << "AddPortMapping(" << port << ", " << port << ", " << lanaddr << ") failed with code " << r << " (" << strupnperror(r) << ")";
+                else
+                    log::info("UPnP") << "Port Mapping successful.";
 
-				boost::this_thread::sleep(boost::posix_time::milliseconds(20 * 60 * 1000));
-			}
-		}
-		catch (const boost::thread_interrupted&)
-		{
-			r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
-			log::info("UPnP") << "UPNP_DeletePortMapping() returned: "<< r;
-			freeUPNPDevlist(devlist); devlist = nullptr;
-			FreeUPNPUrls(&urls);
-			throw;
-		}
-	}
-	else {
-		log::info("UPnP") << "No valid UPnP IGDs found";
-		freeUPNPDevlist(devlist); devlist = nullptr;
-		if (r != 0)
-			FreeUPNPUrls(&urls);
-	}
+                boost::this_thread::sleep(boost::posix_time::milliseconds(20 * 60 * 1000));
+            }
+        }
+        catch (const boost::thread_interrupted&)
+        {
+            r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+            log::info("UPnP") << "UPNP_DeletePortMapping() returned: "<< r;
+            freeUPNPDevlist(devlist); devlist = nullptr;
+            FreeUPNPUrls(&urls);
+            throw;
+        }
+    }
+    else {
+        log::info("UPnP") << "No valid UPnP IGDs found";
+        freeUPNPDevlist(devlist); devlist = nullptr;
+        if (r != 0)
+            FreeUPNPUrls(&urls);
+    }
 }
 
 config::authority::ptr p2p::get_out_address() {
 
-	//every 8 times,get a new one
-	if (out_address_use_count_!= 0 && out_address_use_count_ <= 8) {
-		out_address_use_count_++;
-		return upnp_out.load();
-	}
+    //every 8 times,get a new one
+    if (out_address_use_count_!= 0 && out_address_use_count_ <= 8) {
+        out_address_use_count_++;
+        return upnp_out.load();
+    }
 
-	const char * multicastif = nullptr;
-	const char * minissdpdpath = nullptr;
-	struct UPNPDev * devlist = nullptr;
-	char lanaddr[64];
+    const char * multicastif = nullptr;
+    const char * minissdpdpath = nullptr;
+    struct UPNPDev * devlist = nullptr;
+    char lanaddr[64];
 
 #ifndef UPNPDISCOVER_SUCCESS
-	/* miniupnpc 1.5 */
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
+    /* miniupnpc 1.5 */
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
 #elif MINIUPNPC_API_VERSION < 14
-	/* miniupnpc 1.6 */
-	int error = 0;
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+    /* miniupnpc 1.6 */
+    int error = 0;
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
 #else
-	/* miniupnpc 1.9.20150730 */
-	int error = 0;
-	devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+    /* miniupnpc 1.9.20150730 */
+    int error = 0;
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
 
 #endif
 
-	struct UPNPUrls urls;
-	struct IGDdatas data;
-	int r;
+    struct UPNPUrls urls;
+    struct IGDdatas data;
+    int r;
 
-	try {
-		r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
-	}
-	catch (...) {
-		r = 0;
-		log::info("UPnP") << "Get UPnP IGDs exception";
-	}
-	if (r == 1)
-	{
-		char externalIPAddress[40];
-		r = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
-		if (r != UPNPCOMMAND_SUCCESS)
-			log::info("UPnP") << "GetExternalIPAddress() returned " << r;
-		else
-		{
-			std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
-			upnp_out.store(std::make_shared<config::authority>(outaddressstr));
-			out_address_use_count_ = 1;
-			freeUPNPDevlist(devlist); devlist = nullptr;
-			if (r != 0)
-				FreeUPNPUrls(&urls);
-			return upnp_out.load();
-		}
-	}
+    try {
+        r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+    }
+    catch (...) {
+        r = 0;
+        log::info("UPnP") << "Get UPnP IGDs exception";
+    }
+    if (r == 1)
+    {
+        char externalIPAddress[40];
+        r = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
+        if (r != UPNPCOMMAND_SUCCESS)
+            log::info("UPnP") << "GetExternalIPAddress() returned " << r;
+        else
+        {
+            std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
+            upnp_out.store(std::make_shared<config::authority>(outaddressstr));
+            out_address_use_count_ = 1;
+            freeUPNPDevlist(devlist); devlist = nullptr;
+            if (r != 0)
+                FreeUPNPUrls(&urls);
+            return upnp_out.load();
+        }
+    }
 
-	//log::info("UPnP") << "No valid UPnP IGDs found";
-	freeUPNPDevlist(devlist); devlist = nullptr;
-	if (r != 0)
-		FreeUPNPUrls(&urls);
-	
-	return std::make_shared<config::authority>(settings_.self);
+    //log::info("UPnP") << "No valid UPnP IGDs found";
+    freeUPNPDevlist(devlist); devlist = nullptr;
+    if (r != 0)
+        FreeUPNPUrls(&urls);
+    
+    return std::make_shared<config::authority>(settings_.self);
 }
 
 void p2p::map_port(bool use_upnp)
 {
-	static std::unique_ptr<boost::thread> upnp_thread;
+    static std::unique_ptr<boost::thread> upnp_thread;
 
-	if (use_upnp)
-	{
-		if (upnp_thread) {
-			upnp_thread->interrupt();
-			upnp_thread->join();
-		}
-		upnp_thread.reset(new boost::thread(boost::bind(p2p::thread_map_port, settings_.inbound_port)));
-	}
-	else if (upnp_thread) {
-		upnp_thread->interrupt();
-		upnp_thread->join();
-		upnp_thread.reset();
-	}
+    if (use_upnp)
+    {
+        if (upnp_thread) {
+            upnp_thread->interrupt();
+            upnp_thread->join();
+        }
+        upnp_thread.reset(new boost::thread(boost::bind(p2p::thread_map_port, settings_.inbound_port)));
+    }
+    else if (upnp_thread) {
+        upnp_thread->interrupt();
+        upnp_thread->join();
+        upnp_thread.reset();
+    }
 }
 
 #else
 void p2p::map_port(bool)
 {
-	// Intentionally left blank.
+    // Intentionally left blank.
 }
 #endif
 
