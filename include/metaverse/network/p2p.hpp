@@ -230,12 +230,6 @@ private:
 
     const settings& settings_;
 
-#ifdef USE_UPNP
-	std::atomic<size_t> out_address_use_count_;
-	bc::atomic<config::authority::ptr> upnp_out;
-#endif
-
-
     // These are thread safe.
     std::atomic<bool> stopped_;
     std::atomic<size_t> height_;

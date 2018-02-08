@@ -54,6 +54,11 @@ namespace network {
 
 using namespace std::placeholders;
 
+#ifdef USE_UPNP
+static std::atomic<size_t> out_address_use_count_ = 0;
+bc::atomic<config::authority::ptr> upnp_out;
+#endif
+
 p2p::p2p(const settings& settings)
     : settings_(settings),
     stopped_(true),
@@ -61,8 +66,7 @@ p2p::p2p(const settings& settings)
     hosts_(std::make_shared<hosts>(threadpool_, settings_)),
     connections_(std::make_shared<connections>()),
     stop_subscriber_(std::make_shared<stop_subscriber>(threadpool_, NAME "_stop_sub")),
-    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub")),
-	out_address_use_count_(0)
+    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub"))
 {
 }
 
