@@ -55,7 +55,7 @@ namespace network {
 using namespace std::placeholders;
 
 #ifdef USE_UPNP
-static std::atomic<size_t> out_address_use_count_ = 0;
+static std::atomic<size_t> out_address_use_count_ = { 0 };
 bc::atomic<config::authority::ptr> upnp_out;
 #endif
 
@@ -584,9 +584,18 @@ config::authority::ptr p2p::get_out_address() {
 			std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
 			upnp_out.store(std::make_shared<config::authority>(outaddressstr));
 			out_address_use_count_ = 1;
+			freeUPNPDevlist(devlist); devlist = nullptr;
+			if (r != 0)
+				FreeUPNPUrls(&urls);
 			return upnp_out.load();
 		}
 	}
+
+	//log::info("UPnP") << "No valid UPnP IGDs found";
+	freeUPNPDevlist(devlist); devlist = nullptr;
+	if (r != 0)
+		FreeUPNPUrls(&urls);
+	
 	return std::make_shared<config::authority>(settings_.self);
 }
 
