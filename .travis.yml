@@ -24,6 +24,7 @@ matrix:
         - CMAKE_C_COMPILER=clang-5.0
         - CMAKE_CXX_COMPILER=clang++-5.0
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
     - os: linux
       compiler: clang
@@ -44,6 +45,7 @@ matrix:
         - CMAKE_C_COMPILER=clang-5.0
         - CMAKE_CXX_COMPILER=clang++-5.0
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
     - os: linux
       compiler: g++
@@ -61,6 +63,7 @@ matrix:
         - CMAKE_C_COMPILER=gcc-5
         - CMAKE_CXX_COMPILER=g++-5
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
     - os: linux
       compiler: g++
@@ -78,6 +81,7 @@ matrix:
         - CMAKE_C_COMPILER=gcc-5
         - CMAKE_CXX_COMPILER=g++-5
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
     - os: osx
       osx_image: xcode8.3
@@ -87,6 +91,7 @@ matrix:
         - CMAKE_C_COMPILER=clang
         - CMAKE_CXX_COMPILER=clang++
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
     - os: osx
       osx_image: xcode8.3
@@ -96,19 +101,24 @@ matrix:
         - CMAKE_C_COMPILER=clang
         - CMAKE_CXX_COMPILER=clang++
         - ENABLE_SHARED_LIBS=OFF
+        - USE_UPNP=ON
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+  - BUILD_PACKAGES="";
+    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
        export CC=clang;
        export CXX=clang++;
        export IS_TRAVIS_OSX=true;
-      ./install_dependencies.sh;
     else
        export IS_TRAVIS_LINUX=true;
        export CC=gcc;
        export CXX=g++;
-      ./install_dependencies.sh --build-boost;
-    fi
+       BUILD_PACKAGES="$BUILD_PACKAGES --build-boost";
+    fi;
+    if [ "$USE_UPNP" = "ON" ]; then
+       BUILD_PACKAGES="$BUILD_PACKAGES --build-upnpc";
+    fi;
+    ./install_dependencies.sh $BUILD_PACKAGES;
 
 before_script:
   - mkdir build
@@ -117,6 +127,7 @@ before_script:
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DENABLE_SHARED_LIBS=${ENABLE_SHARED_LIBS}
+          -DUSE_UPNP=${USE_UPNP}
           ..
 
 script:

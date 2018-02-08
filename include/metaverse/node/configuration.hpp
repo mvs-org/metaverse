@@ -61,6 +61,7 @@ public:
     bool daemon;
     bool use_testnet_rules;
     bool ui;
+    bool upnp_map_port;
 
     /// Options and environment vars.
     boost::filesystem::path file;

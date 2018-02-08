@@ -195,6 +195,13 @@ public:
     /// Get connection pool.
     virtual connections::ptr connections_ptr();
 
+    //upnp functions
+    virtual void map_port(bool use_upnp);
+#ifdef USE_UPNP
+    static void thread_map_port(uint16_t map_port);
+    config::authority::ptr get_out_address();
+#endif
+
 protected:
 
     /// Attach a session to the network, caller must start the session.
@@ -232,8 +239,8 @@ private:
     connections::ptr connections_;
     stop_subscriber::ptr stop_subscriber_;
     channel_subscriber::ptr channel_subscriber_;
-};
 
+};
 } // namespace network
 } // namespace libbitcoin
 

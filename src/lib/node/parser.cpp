@@ -245,6 +245,16 @@ options_metadata parser::load_settings()
         "Persistent host:port channels, multiple entries allowed."
     )
     (
+        "network.upnp_map_port",
+        value<bool>(&configured.network.upnp_map_port),
+        "Persistent host:port channels, multiple entries allowed."
+	)
+    (
+        "network.be_found",
+        value<bool>(&configured.network.be_found),
+        "If broadcast your upnp extern address on the network to allow others find you and connect you."
+    )
+    (
         "network.seed",
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
