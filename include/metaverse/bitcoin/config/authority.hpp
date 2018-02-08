@@ -45,7 +45,7 @@ public:
      * boost::program_options default_value.
      */
     typedef std::vector<authority> list;
-	typedef std::shared_ptr<authority> ptr;
+    typedef std::shared_ptr<authority> ptr;
 
     /**
      * Default constructor.
