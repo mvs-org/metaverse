@@ -6,7 +6,7 @@
 
 Metaverse Core Integration/staging Tree
 =========================
-[![Build Status](https://travis-ci.org/mvs-org/metaverse.svg?branch=develop)](https://travis-ci.org/mvs-org/metaverse)
+[![Build Status](https://travis-ci.org/mvs-org/metaverse.svg?branch=master)](https://travis-ci.org/mvs-org/metaverse)
 [![AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-brightgreen.svg)](./LICENSE)
 
 # Introduction
