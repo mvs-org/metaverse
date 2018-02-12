@@ -317,7 +317,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             auto output = tx_temp.outputs.at(row.output.index);
-            if((output.is_asset_transfer() || output.is_asset_issue())) {
+            if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue())) {
                 auto pos = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), [&](const asset_detail& elem){
                         return ((output.get_asset_symbol() == elem.get_symbol()) 
                             && (addr == elem.get_address()));
