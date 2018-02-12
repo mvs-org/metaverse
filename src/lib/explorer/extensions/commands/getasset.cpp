@@ -44,11 +44,16 @@ console_result getasset::invoke (Json::Value& jv_output,
 
     auto& aroot = jv_output;
     Json::Value assets;
+    std::set<std::string> symbols;
     for (auto& elem: *sh_vec) {
         Json::Value asset_data;
 
         if (argument_.symbol.empty()) {
-            assets.append(elem.get_symbol());
+            // get rid of duplicate symbols
+            if (!symbols.count(elem.get_symbol())) {
+                symbols.insert(elem.get_symbol());
+                assets.append(elem.get_symbol());
+            }
         } else {
             // find out target from blockchain 
             if (elem.get_symbol().compare(argument_.symbol) == 0) {
@@ -69,7 +74,6 @@ console_result getasset::invoke (Json::Value& jv_output,
                 asset_data["description"] = elem.get_description();
                 asset_data["status"] = "issued";
                 assets.append(asset_data);
-                break;
             }
         }
 
