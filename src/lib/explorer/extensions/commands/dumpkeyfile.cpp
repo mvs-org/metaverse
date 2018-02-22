@@ -58,6 +58,15 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
         argument_.dst /= keyfile_name;
 
     } else {
+        string dstpath = argument_.dst.string();
+        if (dstpath.length() > 0 && dstpath[0] == '~') {
+            char* home_dir = getenv("HOME");
+            if (home_dir && strlen(home_dir) != 0) {
+                dstpath.replace(0, 1, home_dir);
+                argument_.dst = fs::path(dstpath);
+            }
+        }
+
         fs::file_status status = fs::status(argument_.dst); 
         if(fs::is_directory(status)) // not process filesystem exception here
             argument_.dst /= keyfile_name;
