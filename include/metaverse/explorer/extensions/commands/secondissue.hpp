@@ -68,11 +68,6 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
-        )
-        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             "Account name."
