@@ -26,6 +26,7 @@
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/utility.hpp>
 #include <metaverse/explorer/version.hpp>
+#include <metaverse/explorer/commands/fetch-history.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>
 #include <metaverse/explorer/commands/help.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>

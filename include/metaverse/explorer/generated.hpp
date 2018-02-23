@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <metaverse/explorer/command.hpp>
+#include <metaverse/explorer/commands/fetch-history.hpp>
 #include <metaverse/explorer/commands/fetch-stealth.hpp>
 #include <metaverse/explorer/commands/help.hpp>
 #include <metaverse/explorer/commands/send-tx.hpp>
