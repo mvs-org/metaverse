@@ -88,12 +88,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     CreateMutex(0, FALSE, _T("Local\\MetaverseTray"));
-    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+    /*if (GetLastError() == ERROR_ALREADY_EXISTS) {
         // open the UI
         bUIOpened = true;
         OpenUI();
         return 0;
-    }
+    }*/
 
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MVSTRAY, szWindowClass, MAX_LOADSTRING);
