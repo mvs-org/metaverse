@@ -63,6 +63,11 @@ public:
             "Get a description and instructions for this command."
         )
         (
+            "password,p",
+            value<std::string>(&option_.depasswd)->required(),
+            "provide the password to decrypt the keyfile"
+        )
+        (
             "FILE",
             value<boost::filesystem::path>(&option_.file)->required(),
             "account info file path"
