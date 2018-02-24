@@ -48,15 +48,15 @@ console_result submitwork::invoke (Json::Value& jv_output,
         if (get_api_version() == 1) {
             root["result"] = "true"; // boost json parser output as string, for compatible.
         } else {
-            root["result"] = true; 
+            root = true;
         }
 
     } else {
 
         if (get_api_version() == 1) {
-            root["result"] = "true"; // boost json parser output as string, for compatible.
+            root["result"] = "false"; // boost json parser output as string, for compatible.
         } else {
-            root["result"] = false; 
+            root = false;
         }
 
     }
