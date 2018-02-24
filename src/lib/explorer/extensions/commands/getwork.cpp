@@ -48,10 +48,6 @@ console_result getwork::invoke (Json::Value& jv_output,
 
     auto& aroot = jv_output;
 
-    if (get_api_version() == 1) {
-        aroot["jsonrpc"] = "1.0";
-    }
-
     if (ret) {
         
         Json::Value result;
