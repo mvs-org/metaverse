@@ -704,11 +704,24 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
 			block_header = block->header;	
 			return true;
 		}
-	} else if(para[0] >= '0' && para[0] <= '9'){
-		block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
-		if(block_chain.get_header(block_header, atoi(para.c_str())))
-			return true;
-	}
+    } else if (!para.empty()) {
+        block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+        uint64_t height{0};
+        if (para == "latest") {
+            if (!block_chain.get_last_height(height)) {
+                return false;
+            }
+        } else if (para == "earliest") {
+            height = 0;
+        } else if (para[0] >= '0' && para[0] <= '9'){
+            height = atol(para.c_str());
+        } else {
+            return false;
+        }
+
+        if (block_chain.get_header(block_header, height))
+            return true;
+    }
 
 	return false;
 }
