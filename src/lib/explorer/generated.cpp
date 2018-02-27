@@ -44,6 +44,7 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
     func(make_shared<help>());
     func(make_shared<settings>());
+    func(make_shared<fetch_history>());
     func(make_shared<send_tx>());
     func(make_shared<tx_decode>());
     func(make_shared<validate_tx>());
@@ -67,6 +68,8 @@ shared_ptr<command> find(const string& symbol)
         return make_shared<send_tx>();
     if (symbol == settings::symbol())
         return make_shared<settings>();
+    if (symbol == fetch_history::symbol())
+        return make_shared<fetch_history>();
     if (symbol == stealth_decode::symbol())
         return make_shared<stealth_decode>();
     if (symbol == stealth_encode::symbol())

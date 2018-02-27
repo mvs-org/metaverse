@@ -626,7 +626,7 @@ miner::block_ptr miner::get_block(bool is_force_create_block)
 		if(pay_address_) {
 			new_block_ = create_new_block(pay_address_);
 		} else {
-			log::error(LOG_HEADER) << "get_work not set pay address";
+			log::error(LOG_HEADER) << "get_block not set pay address";
 		}
 	} else {
 		if(get_height() >= new_block_->header.number){
@@ -652,6 +652,9 @@ bool miner::get_work(std::string& seed_hash, std::string& header_hash, std::stri
 bool miner::put_result(const std::string& nonce, const std::string& mix_hash, const std::string& header_hash)
 {
 	bool ret = false;
+    if (!get_block()) {
+        return ret;
+    }
 	if(header_hash == "0x"+ to_string(HeaderAux::hashHead(new_block_->header))){
         auto s_nonce = "0x" + nonce;
         uint64_t n_nonce;
@@ -701,11 +704,24 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
 			block_header = block->header;	
 			return true;
 		}
-	} else if(para[0] >= '0' && para[0] <= '9'){
-		block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
-		if(block_chain.get_header(block_header, atoi(para.c_str())))
-			return true;
-	}
+    } else if (!para.empty()) {
+        block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+        uint64_t height{0};
+        if (para == "latest") {
+            if (!block_chain.get_last_height(height)) {
+                return false;
+            }
+        } else if (para == "earliest") {
+            height = 0;
+        } else if (para[0] >= '0' && para[0] <= '9'){
+            height = atol(para.c_str());
+        } else {
+            return false;
+        }
+
+        if (block_chain.get_header(block_header, height))
+            return true;
+    }
 
 	return false;
 }

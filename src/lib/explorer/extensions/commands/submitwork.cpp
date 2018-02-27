@@ -38,25 +38,20 @@ console_result submitwork::invoke (Json::Value& jv_output,
     auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
     auto& root = jv_output;
 
-    if (get_api_version() == 1) {
-        root["id"] = "1";
-        root["jsonrpc"] = "1.0";
-    }
-
     if (ret) {
 
         if (get_api_version() == 1) {
             root["result"] = "true"; // boost json parser output as string, for compatible.
         } else {
-            root["result"] = true; 
+            root = true;
         }
 
     } else {
 
         if (get_api_version() == 1) {
-            root["result"] = "true"; // boost json parser output as string, for compatible.
+            root["result"] = "false"; // boost json parser output as string, for compatible.
         } else {
-            root["result"] = false; 
+            root = false;
         }
 
     }
