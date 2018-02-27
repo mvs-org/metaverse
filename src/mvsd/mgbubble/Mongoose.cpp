@@ -91,11 +91,25 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
         for (auto& param : root["params"]) {
             if (param.isObject()) {
                 for (auto& key : param.getMemberNames()) {
-                    // --option
-                    vargv_.emplace_back("--" + key);
-                    // value
-                    if (!param[key].isNull()) {
-                        vargv_.emplace_back(param[key].asString());
+                    if (!param[key].empty()) {
+
+                        if (!param[key].isArray()) {
+                            // --option
+                            vargv_.emplace_back("--" + key);
+                            // value
+                            vargv_.emplace_back(param[key].asString());
+                        } else  {
+                            for (auto& member : param[key]) {
+                                // --option
+                                vargv_.emplace_back("--" + key);
+                                // value
+                                vargv_.emplace_back(member.asString());
+                            }
+                        }
+
+                    } else {
+                        // --option
+                        vargv_.emplace_back("--" + key);
                     }
                 }
                 break;
