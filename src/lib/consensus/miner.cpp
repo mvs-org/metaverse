@@ -42,7 +42,7 @@ namespace libbitcoin{
 namespace consensus{
 typedef boost::tuple<double, double, int64_t, miner::transaction_ptr> transaction_priority;
 
-miner::miner(p2p_node& node) : node_(node), state_(state::init_), setting_(dynamic_cast<block_chain_impl&>(node_.chain()).chain_settings())
+miner::miner(p2p_node& node) : node_(node), state_(state::init_), setting_(node_.chain_impl().chain_settings())
 {
     if (setting_.use_testnet_rules){
         bc::HeaderAux::set_as_testnet();
@@ -102,7 +102,7 @@ bool miner::script_hash_signature_operations_count(size_t &count, chain::input& 
 	const auto& previous_output = input.previous_output;
 	transaction previous_tx;
 	boost::uint64_t h;
-	if(dynamic_cast<block_chain_impl&>(node_.chain()).get_transaction(previous_tx, h, input.previous_output.hash) == false){
+	if(node_.chain_impl().get_transaction(previous_tx, h, input.previous_output.hash) == false){
 		bool found = false;
 		for(auto& tx : transactions)
 		{
@@ -263,7 +263,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 	get_transaction(transactions);
 
 	vector<transaction_priority> transaction_prioritys;
-	block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+	block_chain_impl& block_chain = node_.chain_impl();
 
 	uint64_t current_block_height = 0;
 	header prev_header;
@@ -484,7 +484,7 @@ unsigned int miner::get_adjust_time(uint64_t height)
 
 unsigned int miner::get_median_time_past(uint64_t height)
 {
-	block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+	block_chain_impl& block_chain = node_.chain_impl();
 
 	int num = min<uint64_t>(height, median_time_span);
 	vector<uint64_t> times;
@@ -581,7 +581,7 @@ bool miner::stop()
 uint64_t miner::get_height()
 {
 	uint64_t height = 0;
-	dynamic_cast<block_chain_impl&>(node_.chain()).get_last_height(height);
+	node_.chain_impl().get_last_height(height);
 	return height;
 }
 
@@ -688,7 +688,7 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
 void miner::get_state(uint64_t &height, uint64_t &rate, string& difficulty, bool& is_mining)
 {
 	rate = MinerAux::getRate();
-	block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+    block_chain_impl& block_chain = node_.chain_impl();
 	header prev_header;
 	block_chain.get_last_height(height);
 	block_chain.get_header(prev_header, height);
@@ -705,7 +705,7 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
 			return true;
 		}
     } else if (!para.empty()) {
-        block_chain_impl& block_chain = dynamic_cast<block_chain_impl&>(node_.chain());
+        block_chain_impl& block_chain = node_.chain_impl();
         uint64_t height{0};
         if (para == "latest") {
             if (!block_chain.get_last_height(height)) {
