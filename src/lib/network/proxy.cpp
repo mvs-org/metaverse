@@ -32,9 +32,6 @@
 #include <metaverse/network/define.hpp>
 #include <metaverse/network/socket.hpp>
 #include <metaverse/bitcoin/utility/time.hpp>
-#include <chrono>
-#include <atomic>
-#include <iostream>
 
 namespace libbitcoin {
 namespace network {
@@ -54,7 +51,7 @@ public:
 
     ~traffic(){
         auto now = std::chrono::system_clock::now();
-        log::trace(LOG_NETWORK) << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ",tx," << tx_.load();
+        std::cout << "it costs " << std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() << " seconds, rx," << rx_.load() << ", tx," << tx_.load() << std::endl;
     }
 private:
     static boost::detail::spinlock spinlock_;
