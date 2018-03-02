@@ -28,6 +28,7 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
@@ -202,6 +203,30 @@ public:
 		ss << "\t address = " << address
 			<< "\t status = " << status
 			<< "\t quantity = " << quantity << "\n"
+			<< "\t detail = " << detail.to_string() << "\n";
+	
+		return ss.str();
+	}
+#endif
+};
+
+class BC_API business_address_did
+{
+public:
+	typedef std::vector<business_address_did> list;
+	
+	std::string  address;
+	uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
+	did_detail detail;
+	
+#ifdef MVS_DEBUG
+	// just used for unit test in block_chain_impl_test.cpp
+	std::string to_string() 
+	{
+		std::ostringstream ss;
+	
+		ss << "\t address = " << address
+			<< "\t status = " << status
 			<< "\t detail = " << detail.to_string() << "\n";
 	
 		return ss.str();

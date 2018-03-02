@@ -116,6 +116,10 @@ bool data_base::upgrade_database(const settings& settings, const chain::block& g
 
 		if (!instance.blockchain_asset_create())
 			return false;
+
+        if (!instance.blockchain_did_create())
+			return false;
+
 		instance.stop();
 		instance.start();
 		//instance.upgrade_address_utxo();
@@ -151,6 +155,9 @@ data_base::store::store(const path& prefix)
 	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
 	account_assets_lookup = prefix / "account_asset_table";
 	account_assets_rows = prefix / "account_asset_row";
+    dids_lookup = prefix / "did_table"; 
+    account_dids_lookup = prefix / "account_did_table";
+    account_dids_rows = prefix / "account_did_row";
 	account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
 	/* end database for account, asset, address_asset relationship */
@@ -184,6 +191,9 @@ bool data_base::store::touch_all() const
         touch_file(address_assets_rows)&&
         touch_file(account_assets_lookup)&&
         touch_file(account_assets_rows)&&
+        touch_file(dids_lookup)&&
+        touch_file(account_dids_lookup)&&
+        touch_file(account_dids_rows)&&
 		touch_file(account_addresses_lookup)&&
 		touch_file(account_addresses_rows);
 		/* end database for account, asset, address_asset relationship */
@@ -196,11 +206,13 @@ data_base::blockchain_store::blockchain_store(const path& prefix)
     history_lookup = prefix / "history_table";
     spends_lookup = prefix / "spend_table";
     transactions_lookup = prefix / "transaction_table";
-	/* begin database for account, asset, address_asset relationship */
+	/* begin database for account, asset, address_asset, did relationship */
 	assets_lookup = prefix / "asset_table";  // for blockchain assets
 	address_assets_lookup = prefix / "address_asset_table"; // for blockchain 
 	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
-	/* end database for account, asset, address_asset relationship */
+    dids_lookup = prefix / "did_table";  // for blockchain dids
+
+	/* end database for account, asset, address_asset, did relationship */
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -221,11 +233,12 @@ bool data_base::blockchain_store::touch_all() const
         touch_file(stealth_rows) &&
         touch_file(spends_lookup) &&
         touch_file(transactions_lookup)&&
-		/* begin database for account, asset, address_asset relationship */
+		/* begin database for account, asset, address_asset, did relationship */
         touch_file(assets_lookup)&&
         touch_file(address_assets_lookup)&&
-        touch_file(address_assets_rows)
-		/* end database for account, asset, address_asset relationship */
+        touch_file(address_assets_rows)&&
+        touch_file(dids_lookup)        
+		/* end database for account, asset, address_asset, did relationship */
 		;
 }
 
@@ -244,6 +257,23 @@ bool data_base::blockchain_asset_store::touch_all() const
 		/* begin database for account, asset, address_asset relationship */
 		touch_file(assets_lookup);
 		/* end database for account, asset, address_asset relationship */
+}
+
+data_base::blockchain_did_store::blockchain_did_store(const path& prefix)
+{
+    // Hash-based lookup (hash tables).
+	/* begin database for account, asset, address_asset relationship */
+	dids_lookup = prefix / "did_table";  // for blockchain dids
+	/* end database for account, asset, address_asset relationship */
+}
+
+bool data_base::blockchain_did_store::touch_all() const
+{
+    // Return the result of the database file create.
+    return
+		/* begin database for account, asset, address_asset, did relationship */
+		touch_file(dids_lookup);
+		/* end database for account, asset, address_asset, did relationship */
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -389,13 +419,15 @@ data_base::data_base(const store& paths, size_t history_height,
     stealth(paths.stealth_rows, mutex_),
     spends(paths.spends_lookup, mutex_),
     transactions(paths.transactions_lookup, mutex_),
-	/* begin database for account, asset, address_asset relationship */
+	/* begin database for account, asset, address_asset, did relationship */
 	accounts(paths.accounts_lookup, mutex_),
 	assets(paths.assets_lookup, mutex_),
 	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
 	account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
+    dids(paths.dids_lookup, mutex_),
+    account_dids(paths.account_dids_lookup, paths.account_dids_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
-	/* end database for account, asset, address_asset relationship */
+	/* end database for account, asset, address_asset, did relationship */
 {
 }
 
@@ -454,6 +486,8 @@ bool data_base::create()
 		assets.create()&&
 		address_assets.create()&&
 		account_assets.create()&&
+        dids.create()&&
+        account_dids.create()&&
 		account_addresses.create()
 		/* end database for account, asset, address_asset relationship */
 		;
@@ -469,7 +503,8 @@ bool data_base::blockchain_create()
         transactions.create()&&
 		/* begin database for account, asset, address_asset relationship */
 		assets.create()&&
-		address_assets.create()
+		address_assets.create()&&
+        dids.create()
 		/* end database for account, asset, address_asset relationship */
 		;
 }
@@ -478,16 +513,26 @@ bool data_base::blockchain_asset_create()
     // Return the result of the database create.
     return 
 		/* begin database for account, asset, address_asset relationship */
-		assets.create()
+		assets.create();
 		/* end database for account, asset, address_asset relationship */
-		;
 }
+
+bool data_base::blockchain_did_create()
+{
+    // Return the result of the database create.
+    return 
+		/* begin database for account, asset, address_asset relationship */
+		dids.create();
+		/* end database for account, asset, address_asset relationship */
+}
+
 bool data_base::account_db_start()
 {
 	return 
 		accounts.start()&&
 		account_assets.start()&&
-		account_addresses.start();
+		account_addresses.start()&&
+        account_dids.start();
 }
 
 void data_base::upgrade_blockchain_asset()
@@ -550,6 +595,8 @@ bool data_base::start()
 		assets.start()&&
 		address_assets.start()&&
 		account_assets.start()&&
+        dids.start()&&
+        account_dids.start()&&
 		account_addresses.start()
 		/* end database for account, asset, address_asset relationship */
         ;
@@ -573,6 +620,8 @@ bool data_base::stop()
 	const auto assets_stop = assets.stop();
 	const auto address_assets_stop = address_assets.stop();
 	const auto account_assets_stop = account_assets.stop();
+	const auto dids_stop = dids.stop();
+	const auto account_dids_stop = account_dids.stop();    
 	const auto account_addresses_stop = account_addresses.stop();
 	/* end database for account, asset, address_asset relationship */
     const auto end_exclusive = end_write();
@@ -595,6 +644,8 @@ bool data_base::stop()
 		assets_stop &&
 		address_assets_stop &&
 		account_assets_stop &&
+        dids_stop &&
+        account_dids_stop &&
 		account_addresses_stop &&
 		/* end database for account, asset, address_asset relationship */
         end_exclusive;
@@ -613,6 +664,9 @@ bool data_base::close()
 	const auto assets_close = assets.close();
 	const auto address_assets_close = address_assets.close();
 	const auto account_assets_close = account_assets.close();
+	const auto dids_close = dids.close();
+	const auto account_dids_close = account_dids.close();
+    
 	const auto account_addresses_close = account_addresses.close();
 	/* end database for account, asset, address_asset relationship */
 
@@ -628,6 +682,9 @@ bool data_base::close()
 		assets_close &&
 		address_assets_close&&
 		account_assets_close&&
+		dids_close &&
+		account_dids_close&&
+        
 		account_addresses_close
 		/* end database for account, asset, address_asset relationship */
         ;
@@ -695,6 +752,8 @@ void data_base::synchronize()
 	assets.sync();
 	address_assets.sync();
 	account_assets.sync();
+	dids.sync();
+    account_dids.sync();
 	account_addresses.sync();
 	/* end database for account, asset, address_asset relationship */
     blocks.sync();
@@ -946,6 +1005,12 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 				const auto symbol_hash = sha256_hash(symbol_data);
 				assets.remove(symbol_hash);
 			}
+            /*if(op.is_did_issue()){
+                auto symbol = op.get_did_symbol();
+				const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
+				const auto symbol_hash = sha256_hash(symbol_data);
+				dids.remove(symbol_hash);
+            }*/
         }
     }
 }

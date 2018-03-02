@@ -63,6 +63,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
+#include <metaverse/explorer/extensions/commands/createdid.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
@@ -161,6 +162,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<decoderawtx>());
     func(make_shared<signrawtx>());
     func(make_shared<sendrawtx>());
+
+    //did
+    func(make_shared<createdid>());
 }
 
 shared_ptr<command> find_extension(const string& symbol)
@@ -285,6 +289,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getmemorypool>();
     if (symbol == getaddressasset::symbol())
         return make_shared<getaddressasset>();
+    if (symbol == createdid::symbol())
+        return make_shared<createdid>();
     return nullptr;
 }
 

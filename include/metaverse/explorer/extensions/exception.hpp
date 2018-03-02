@@ -169,6 +169,10 @@ DEFINE_EXPLORER_EXCEPTION(encode_exception, 6001);
 DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6002);
 DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6003);
 
+DEFINE_EXPLORER_EXCEPTION(did_symbol_name_exception, 7001);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_existed_exception, 7002);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_length_exception, 7003);
+DEFINE_EXPLORER_EXCEPTION(did_description_length_exception, 7004);
 
 DEFINE_EXPLORER_EXCEPTION(seed_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);
