@@ -211,10 +211,6 @@ std::istream& operator>>(std::istream& in, payment_address& to)
 {
     std::string value;
     in >> value;
-
-    if (value.empty())
-        throw std::logic_error{"empty payment address is invalid."};
-
     to = payment_address(value);
 
     if (!to)
