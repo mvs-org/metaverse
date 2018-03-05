@@ -187,7 +187,7 @@ public:
 	virtual void populate_change(); 
 
 	virtual void populate_tx_header(){
-	    tx_.version = transaction_version::max_version - 1;
+	    tx_.version = transaction_version::check_output_script;
 	    tx_.locktime = 0;
 	};
 
