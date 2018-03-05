@@ -1583,6 +1583,30 @@ void issuing_asset::populate_change() {
             receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
+
+void issuing_did::sum_payment_amount() {
+    if(receiver_list_.empty())
+        throw toaddress_empty_exception{"empty target address"};
+    //if (payment_etp_ < maximum_fee)
+    if (payment_etp_ < 1000000000) // test code 10 etp now
+        throw did_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+    }
+}
+
+void issuing_did::populate_change() {
+    if(from_.empty()) {
+        if(unspent_etp_ - payment_etp_) // etp value != 0
+            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    } else {
+        if(unspent_etp_ - payment_etp_) // etp value != 0
+            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
 void issuing_locked_asset::sum_payment_amount() {
     if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};

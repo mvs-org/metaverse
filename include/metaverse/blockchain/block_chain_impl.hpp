@@ -260,7 +260,9 @@ public:
 	operation_result store_account_did(std::shared_ptr<did_detail> detail);
 	std::shared_ptr<did_detail> get_issued_did(std::string& symbol);
 	std::shared_ptr<std::vector<did_detail>> get_issued_dids();    
-	std::shared_ptr<std::vector<did_detail>> get_local_dids();    
+	std::shared_ptr<std::vector<did_detail>> get_local_dids();
+    std::shared_ptr<did_detail> get_account_unissued_did(const std::string& name,
+		const std::string& symbol);    
 
 	std::shared_ptr<std::vector<business_history>> get_account_business_history(const std::string& name,
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
