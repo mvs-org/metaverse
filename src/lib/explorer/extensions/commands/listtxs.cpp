@@ -250,9 +250,13 @@ console_result listtxs::invoke (Json::Value& jv_output,
                     if (get_api_version() == 1) {
                         tree["maximum_supply"] += detail_info.get_maximum_supply();
                         tree["decimal_number"] += detail_info.get_decimal_number();
+                        tree["secondissue_assetshare_threshold"] += detail_info.get_secondissue_assetshare_threshold();
+                        tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
                     } else {
                         tree["maximum_supply"] = detail_info.get_maximum_supply();
                         tree["decimal_number"] = detail_info.get_decimal_number();
+                        tree["secondissue_assetshare_threshold"] = detail_info.get_secondissue_assetshare_threshold();
+                        tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
                     }
                     tree["issuer"] = detail_info.get_issuer();
                     tree["address"] = detail_info.get_address();
@@ -273,11 +277,12 @@ console_result listtxs::invoke (Json::Value& jv_output,
                     auto symbol = trans_info.get_address();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
 
-                    if(issued_asset && get_api_version() == 1) {
-                        tree["decimal_number"] += issued_asset->get_decimal_number();
-                    }
-                    if(issued_asset && get_api_version() == 2) {
-                        tree["decimal_number"] = issued_asset->get_decimal_number();
+                    if (issued_asset) {
+                        if (get_api_version() == 1) {
+                            tree["decimal_number"] += issued_asset->get_decimal_number();
+                        } else {
+                            tree["decimal_number"] = issued_asset->get_decimal_number();
+                        }
                     }
                 }
             } else if(attach_data.get_type() == MESSAGE_TYPE) {
