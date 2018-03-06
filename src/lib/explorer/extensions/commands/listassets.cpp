@@ -56,7 +56,7 @@ console_result listassets::invoke (Json::Value& jv_output,
             asset_data["symbol"] = elem.get_symbol();
             if (get_api_version() == 1) {
                 asset_data["maximum_supply"] += elem.get_maximum_supply();
-                asset_data["decimal_number"] = std::to_string(elem.get_decimal_number());
+                asset_data["decimal_number"] += elem.get_decimal_number();
                 asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
                 asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
             } else {
@@ -88,20 +88,22 @@ console_result listassets::invoke (Json::Value& jv_output,
         
         for (auto& elem: *sh_vec) {
             Json::Value asset_data;
-            asset_data["symbol"] = elem.get_symbol();
             symbol = elem.get_symbol();
             if (get_api_version() == 1) {
                 asset_data["quantity"] += elem.get_maximum_supply();
+                asset_data["decimal_number"] += elem.get_decimal_number();
+                asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
+                asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
             } else {
                 asset_data["quantity"] = elem.get_maximum_supply();
+                asset_data["decimal_number"] = elem.get_decimal_number();
+                asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
+                asset_data["is_secondissue"] = elem.is_asset_secondissue();
             }
-            auto issued_asset = blockchain.get_issued_asset(symbol);
-            if(issued_asset && get_api_version() == 1) {
-                asset_data["decimal_number"] = std::to_string(issued_asset->get_decimal_number());
-            }
-            if(issued_asset && get_api_version() == 2) {
-                asset_data["decimal_number"] = issued_asset->get_decimal_number();
-            }
+            asset_data["symbol"] = symbol;
+            asset_data["issuer"] = elem.get_issuer();
+            asset_data["address"] = elem.get_address();
+            asset_data["description"] = elem.get_description();
             asset_data["status"] = "unspent";
             assets.append(asset_data);
         }
@@ -109,12 +111,11 @@ console_result listassets::invoke (Json::Value& jv_output,
         // shoudl filter all issued asset which be stored in local account asset database
         sh_vec->clear();
         sh_vec = blockchain.get_issued_assets();
-        //std::shared_ptr<std::vector<business_address_asset>>
         auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);          
         for (auto& elem: *sh_unissued) {
             
-            auto symbol = elem.detail.get_symbol();            
-            auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const asset_detail& elem){
+            symbol = elem.detail.get_symbol();
+            auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&symbol](const asset_detail& elem){
                     return symbol == elem.get_symbol();
                     });
             
@@ -122,15 +123,21 @@ console_result listassets::invoke (Json::Value& jv_output,
                 continue;
             } 
             Json::Value asset_data;
-            asset_data["symbol"] = elem.detail.get_symbol();
-            symbol = elem.detail.get_symbol();
             if (get_api_version() == 1) {
                 asset_data["quantity"] += elem.detail.get_maximum_supply();
-                asset_data["decimal_number"] = std::to_string(elem.detail.get_decimal_number());
+                asset_data["decimal_number"] += elem.detail.get_decimal_number();
+                asset_data["secondissue_assetshare_threshold"] += elem.detail.get_secondissue_assetshare_threshold();
+                asset_data["is_secondissue"] = "false";
             } else {
                 asset_data["quantity"] = elem.detail.get_maximum_supply();
                 asset_data["decimal_number"] = elem.detail.get_decimal_number();
+                asset_data["secondissue_assetshare_threshold"] = elem.detail.get_secondissue_assetshare_threshold();
+                asset_data["is_secondissue"] = false;
             }
+            asset_data["symbol"] = symbol;
+            asset_data["issuer"] = elem.detail.get_issuer();
+            asset_data["address"] = elem.detail.get_address();
+            asset_data["description"] = elem.detail.get_description();
             asset_data["status"] = "unissued";
             assets.append(asset_data);
         }
