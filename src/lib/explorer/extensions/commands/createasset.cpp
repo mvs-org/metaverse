@@ -163,9 +163,11 @@ console_result createasset::invoke (Json::Value& jv_output,
     if (get_api_version() == 1) {
         asset_data["maximum-supply"] += acc->get_maximum_supply();
         asset_data["decimal_number"] += acc->get_decimal_number();
+        asset_data["secondissue_assetshare_threshold"] += acc->get_secondissue_assetshare_threshold();
     } else {
         asset_data["maximum-supply"] = acc->get_maximum_supply();
         asset_data["decimal_number"] = acc->get_decimal_number();
+        asset_data["secondissue_assetshare_threshold"] = acc->get_secondissue_assetshare_threshold();
     }
     asset_data["issuer"] = acc->get_issuer();
     asset_data["address"] = acc->get_address();
