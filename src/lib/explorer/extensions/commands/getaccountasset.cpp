@@ -64,21 +64,21 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     for (auto& elem: *sh_vec) {
         if(!argument_.symbol.empty() && argument_.symbol !=  elem.get_symbol())
             continue;
-        asset_data["symbol"] = elem.get_symbol();
+        auto symbol = elem.get_symbol();
+        auto issued_asset = blockchain.get_issued_asset(symbol);
+        if (!issued_asset) {
+            continue;
+        }
+        asset_data["symbol"] = symbol;
         asset_data["address"] = elem.get_address();
-        symbol = elem.get_symbol();
         if (get_api_version() == 1) {
             asset_data["quantity"] += elem.get_maximum_supply();
+            asset_data["decimal_number"] += issued_asset->get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
         } else {
             asset_data["quantity"] = elem.get_maximum_supply();
-        }
-        //asset_data["address"] = elem.get_address();
-        auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset && get_api_version() == 1) {
-            asset_data["decimal_number"] += issued_asset->get_decimal_number();
-        }
-        if(issued_asset && get_api_version() == 2) {
             asset_data["decimal_number"] = issued_asset->get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
         }
         asset_data["status"] = "unspent";
         assets.append(asset_data);
@@ -87,12 +87,11 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     // shoudl filter all issued asset which be stored in local account asset database
     sh_vec->clear();
     sh_vec = blockchain.get_issued_assets();
-    //std::shared_ptr<std::vector<business_address_asset>>
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         
-        auto symbol = elem.detail.get_symbol();         
-        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const asset_detail& elem){
+        auto& symbol = elem.detail.get_symbol();
+        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&symbol](const asset_detail& elem){
             return symbol == elem.get_symbol();
         });
         
@@ -103,12 +102,17 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
         if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
             continue;
         Json::Value asset_data;
-        asset_data["symbol"] = elem.detail.get_symbol();
+        asset_data["symbol"] = symbol;
         asset_data["address"] = "";
-        symbol = elem.detail.get_symbol();
-        asset_data["quantity"] += elem.detail.get_maximum_supply();
-        asset_data["decimal_number"] += elem.detail.get_decimal_number();
-        //asset_data["address"] = "";
+        if (get_api_version() == 1) {
+            asset_data["quantity"] += elem.detail.get_maximum_supply();
+            asset_data["decimal_number"] += elem.detail.get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] += elem.detail.get_secondissue_assetshare_threshold();
+        } else {
+            asset_data["quantity"] = elem.detail.get_maximum_supply();
+            asset_data["decimal_number"] = elem.detail.get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] = elem.detail.get_secondissue_assetshare_threshold();
+        }
         asset_data["status"] = "unissued";
         assets.append(asset_data);
     }
