@@ -309,7 +309,6 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 		{
 			if(asset_name.empty() == false)
 				return error::asset_secondissue_error;
-			asset_name = o.get_asset_symbol();
 			auto && asset_detail = o.get_asset_detail();
 			asset_name = asset_detail.get_symbol();
 			asset_issuer = asset_detail.get_issuer();
@@ -350,7 +349,6 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
 		{
 			if(asset_name.empty() == false)
 				return error::asset_secondissue_error;
-			asset_name = o.get_asset_symbol();
 			auto && asset_detail = o.get_asset_detail();
 			asset_name = asset_detail.get_symbol();
 			asset_issuer = asset_detail.get_issuer();
