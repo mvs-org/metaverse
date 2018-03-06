@@ -113,16 +113,15 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
         addr->set_hd_index(acc->get_hd_index());
         account_addresses.push_back(addr);
 
-        // write to output json
         addresses.append(addr->get_address());
-
-        if(get_api_version() == 1 && option_.count == 1)
-            jv_output = addr->get_address();
     }
 
     blockchain.safe_store_account(*acc, account_addresses);
 
-    if(get_api_version() == 2 || option_.count != 1)
+    // write to output json
+    if (get_api_version() == 1 && option_.count == 1)
+        aroot = addresses[0];
+    else
         aroot["addresses"] = addresses;
     
     return console_result::okay;
