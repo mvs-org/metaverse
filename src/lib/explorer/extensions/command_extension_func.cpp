@@ -28,7 +28,6 @@
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>   
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
-
 #include <metaverse/explorer/extensions/commands/shutdown.hpp>
 #include <metaverse/explorer/extensions/commands/stopmining.hpp>
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
@@ -65,6 +64,8 @@
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
 #include <metaverse/explorer/extensions/commands/createdid.hpp>
 #include <metaverse/explorer/extensions/commands/issuedid.hpp>
+#include <metaverse/explorer/extensions/commands/didsend.hpp>
+#include <metaverse/explorer/extensions/commands/didsendasset.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
@@ -167,6 +168,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     //did
     func(make_shared<createdid>());
     func(make_shared<issuedid>());    
+    func(make_shared<didsend>());
+    func(make_shared<didsendasset>());
+    
 
 }
 
@@ -295,7 +299,11 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == createdid::symbol())
         return make_shared<createdid>();
     if (symbol == issuedid::symbol())
-        return make_shared<issuedid>();    
+        return make_shared<issuedid>(); 
+    if (symbol == didsend::symbol())
+        return make_shared<didsend>();
+    if (symbol == didsendasset::symbol())
+        return make_shared<didsendasset>();    
     return nullptr;
 }
 

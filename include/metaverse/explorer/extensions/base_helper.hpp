@@ -39,7 +39,9 @@ enum utxo_attach_type : uint32_t
 	asset_locked_transfer,  // 5
 	message,
 	digital_identity,
-	did_issue
+	did_issue,
+	did_transfer_etp,
+	did_transfer_asset
 };
 
 struct address_asset_record{
