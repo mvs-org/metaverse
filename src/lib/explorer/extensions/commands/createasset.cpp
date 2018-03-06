@@ -109,7 +109,6 @@ void validate(boost::any& v,
     if (s[0] == '-') {
         throw argument_legality_exception{"volume must not be negative number."};
     }
-    //v = lexical_cast<unsigned long long>(s);
     v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
 
@@ -146,17 +145,13 @@ console_result createasset::invoke (Json::Value& jv_output,
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
-    //acc->set_maximum_supply(volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    //acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
     acc->set_secondissue_assetshare_threshold(option_.secondissue_assetshare_threshold);
     
     blockchain.store_account_asset(acc);
 
-    //output<<option_.symbol<<" created at local, you can issue it.";
-    
     auto& aroot = jv_output;
     Json::Value asset_data;
     asset_data["symbol"] = acc->get_symbol();
@@ -172,9 +167,9 @@ console_result createasset::invoke (Json::Value& jv_output,
     asset_data["issuer"] = acc->get_issuer();
     asset_data["address"] = acc->get_address();
     asset_data["description"] = acc->get_description();
+    asset_data["status"] = "unissued";
     aroot["asset"] = asset_data;
 
-    
     return console_result::okay;
 }
 } // namespace commands
