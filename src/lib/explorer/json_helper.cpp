@@ -367,7 +367,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 
             if (version_ == 1) {
                 tree["quantity"] += detail_info.get_maximum_supply();
-                tree["decimal_number"] = std::to_string(detail_info.get_decimal_number());
+                tree["decimal_number"] += detail_info.get_decimal_number();
             } else {
                 tree["quantity"] = detail_info.get_maximum_supply();
                 tree["decimal_number"] = detail_info.get_decimal_number();

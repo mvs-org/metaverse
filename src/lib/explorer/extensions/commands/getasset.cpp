@@ -60,7 +60,7 @@ console_result getasset::invoke (Json::Value& jv_output,
                 asset_data["symbol"] = elem.get_symbol();
                 if (get_api_version() == 1) {
                     asset_data["maximum_supply"] += elem.get_maximum_supply();
-                    asset_data["decimal_number"] = std::to_string(elem.get_decimal_number());
+                    asset_data["decimal_number"] += elem.get_decimal_number();
                     asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
                     asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
                 } else {
