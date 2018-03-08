@@ -36,9 +36,9 @@ asset_detail::asset_detail()
 }
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
-    uint8_t asset_type, std::string issuer,
+    uint8_t decimal_number, std::string issuer,
     std::string address, std::string description):
-    symbol(symbol), maximum_supply(maximum_supply), decimal_number(asset_type), 
+    symbol(symbol), maximum_supply(maximum_supply), decimal_number(decimal_number),
 	issuer(issuer), address(address), description(description),secondissue_assetshare_threshold(0),
 	unused2(0), unused3(0)
 {
@@ -75,7 +75,6 @@ void asset_detail::reset()
 {	
     symbol = "";
     maximum_supply = 0;
-    //asset_type = 0;
     decimal_number = 0;
 	secondissue_assetshare_threshold = 0;
 	unused2 = 0;
@@ -83,17 +82,6 @@ void asset_detail::reset()
     issuer = ""; 
     address = "";
     description = "";
-    //issue_price = 0;
-
-    //restrict section
-    //number_of_decimal_point = 0; //number of decimal point
-    //life circle
-    //flag = 0; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //fee = 0.0;
-    //correlation asset
-    //authentication_organization = ""; //authentication organization
 }
 
 bool asset_detail::from_data(const data_chunk& data)
@@ -114,7 +102,6 @@ bool asset_detail::from_data(reader& source)
 
     symbol = source.read_string();
     maximum_supply = source.read_8_bytes_little_endian();
-    //asset_type = source.read_4_bytes_little_endian();
     decimal_number = source.read_byte();
     secondissue_assetshare_threshold = source.read_byte();
     unused2 = source.read_byte();
@@ -122,17 +109,7 @@ bool asset_detail::from_data(reader& source)
     issuer = source.read_string(); 
     address =  source.read_string();
     description =  source.read_string();
-    //issue_price =  source.read_8_bytes_little_endian();
 
-    //restrict section
-    //number_of_decimal_point =  source.read_4_bytes_little_endian(); //number of decimal point
-    //life circle
-    //flag =  source.read_8_bytes_little_endian(); //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation asset
-    //authentication_organization =  source.read_string(); //authentication organization
     auto result = static_cast<bool>(source);
     if (!result)
         reset();
@@ -146,7 +123,6 @@ data_chunk asset_detail::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
     return data;
 }
 
@@ -160,7 +136,6 @@ void asset_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);
-	//sink.write_4_bytes_little_endian(asset_type);
 	sink.write_byte(decimal_number);
 	sink.write_byte(secondissue_assetshare_threshold);
 	sink.write_byte(unused2);
@@ -182,7 +157,8 @@ std::string asset_detail::to_string() const
 
     ss << "\t symbol = " << symbol << "\n"
 		<< "\t maximum_supply = " << maximum_supply << "\n"
-		<< "\t asset_type = " << decimal_number << "\n"
+		<< "\t decimal_number = " << decimal_number << "\n"
+		<< "\t secondissue_assetshare_threshold = " << secondissue_assetshare_threshold << "\n"
 		<< "\t issuer = " << issuer << "\n"
 		<< "\t address = " << address << "\n"
         << "\t description=" << description << "\n";
@@ -195,7 +171,8 @@ void asset_detail::to_json(std::ostream& output)
 	minijson::object_writer json_writer(output);
 	json_writer.write("symbol", symbol);
 	json_writer.write("maximum_supply", maximum_supply);
-	//json_writer.write("asset_type", asset_type);
+	json_writer.write("decimal_number", decimal_number);
+	json_writer.write("secondissue_assetshare_threshold", secondissue_assetshare_threshold);
 	json_writer.write("issuer", issuer);
 	json_writer.write("address", address);
 	json_writer.write("description", description);

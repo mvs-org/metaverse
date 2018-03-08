@@ -49,16 +49,10 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
-	enum asset_detail_type : uint32_t
-	{
-		created,
-		issued_not_in_blockchain,
-		issued_in_blockchain
-	};
 	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint8_t asset_type, std::string issuer,
+		uint8_t decimal_number, std::string issuer,
 		std::string address, std::string description);
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
@@ -110,7 +104,6 @@ public:
 private:    
     std::string symbol;
     uint64_t maximum_supply;
-    //uint32_t asset_type;
     uint8_t decimal_number;
     uint8_t secondissue_assetshare_threshold;
 	uint8_t unused2;
@@ -118,17 +111,6 @@ private:
     std::string issuer; 
     std::string address;
     std::string description;
-    //uint64_t issue_price;
-
-    //restrict section
-    //uint32_t number_of_decimal_point; //number of decimal point
-    //life circle
-    //uint64_t flag; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation asset
-    //std::string authentication_organization; //authentication organization
 };
 
 } // namespace chain

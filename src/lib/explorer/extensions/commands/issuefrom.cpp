@@ -51,10 +51,6 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
     if(!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
-    #if 0
-    if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
-        throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
-    #endif
 
     // receiver
     std::vector<receiver_record> receiver{
@@ -66,20 +62,6 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     issue_helper.exec();
     // json output
     auto tx = issue_helper.get_transaction();
-#if 0
-    auto issue_helper = issuing_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-    
-    issue_helper.exec();
-    // json output
-    auto tx = issue_helper.get_transaction();
-#endif
-    // change asset status
-    #if 0
-    sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
-    auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
-    blockchain.store_account_asset(detail);
-    #endif
 
     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 

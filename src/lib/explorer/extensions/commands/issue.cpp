@@ -50,10 +50,6 @@ console_result issue::invoke (Json::Value& jv_output,
     auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
     if(!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
-    #if 0
-    if(asset_detail::asset_detail_type::created != sh_asset->at(0).detail.get_asset_type())
-        throw asset_symbol_duplicate_exception{argument_.symbol + " has been issued"};
-    #endif
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty()) 
@@ -75,13 +71,6 @@ console_result issue::invoke (Json::Value& jv_output,
     // json output
     auto tx = issue_helper.get_transaction();
      jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
-
-    // change asset status
-    #if 0
-    sh_asset->at(0).detail.set_asset_type(asset_detail::asset_detail_type::issued_not_in_blockchain);
-    auto detail = std::make_shared<asset_detail>(sh_asset->at(0).detail);
-    blockchain.store_account_asset(detail);
-    #endif
 
     return console_result::okay;
 }
