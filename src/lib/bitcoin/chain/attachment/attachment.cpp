@@ -120,6 +120,11 @@ bool attachment::from_data(reader& source)
 				attach = blockchain_message();
 				break;
 			}
+			case DID_TYPE:
+			{
+				attach = did();
+				break;
+			}
 		}
 		auto visitor = from_data_visitor(source);
 		result = boost::apply_visitor(visitor, attach);

@@ -151,7 +151,6 @@ console_result createdid::invoke (Json::Value& jv_output,
     Json::Value did_data;
     did_data["symbol"] = acc->get_symbol();
     did_data["issuer"] = acc->get_issuer();
-    did_data["address"] = acc->get_address();
     did_data["description"] = acc->get_description();
     aroot["did"] = did_data;
 

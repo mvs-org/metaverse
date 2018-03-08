@@ -50,7 +50,9 @@
 #include <metaverse/database/databases/blockchain_asset_database.hpp>
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/database/databases/account_did_database.hpp>
+#include <metaverse/database/databases/address_did_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 
 
@@ -91,9 +93,11 @@ public:
         path account_dids_lookup;
         path account_dids_rows;
         path dids_lookup;
+        path address_dids_lookup;
+        path address_dids_rows;
         path account_addresses_lookup;
         path account_addresses_rows;
-		/* end database for account, asset, address_asset, did relationship */
+		/* end database for account, asset, address_asset, did ,address_did relationship */
     };
 
 
@@ -116,6 +120,8 @@ public:
         path address_assets_lookup;
         path address_assets_rows;
         path dids_lookup;
+        path address_dids_lookup;
+        path address_dids_rows;
 		/* end database for account, asset, address_asset, did relationship */
     };
 
@@ -188,7 +194,7 @@ public:
 	bool blockchain_did_create();
  
 	void upgrade_blockchain_asset();
-	//void upgrade_blockchain_did();
+	void upgrade_blockchain_did();
     
 	bool account_db_start();
     /// Start all databases.
@@ -245,6 +251,15 @@ public:
 	void push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 
+    void push_did(const did& sp, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
+
+    void push_did_detail(const did_detail& sp_detail, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
+
+    void push_did_transfer(const did_transfer& did_transfer, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
+
    class attachment_visitor : public boost::static_visitor<void>
 	{
 	public:
@@ -270,6 +285,10 @@ public:
 		{
 			return db_->push_message(t, sh_hash_, outpoint_, output_height_, value_);
 		}
+        void operator()(const did &t) const
+		{
+			return db_->push_did(t, sh_hash_, outpoint_, output_height_, value_);
+		}
 	private:
         data_base* db_;
 		short_hash sh_hash_;
@@ -294,6 +313,31 @@ public:
 		void operator()(const asset_transfer &t) const
 		{
 		 	return db_->push_asset_transfer(t, key_, outpoint_, output_height_, value_);
+		}
+	private:
+        data_base* db_;
+		short_hash key_;
+		output_point outpoint_;
+		uint32_t output_height_;
+		uint64_t value_;
+	};
+
+    class did_visitor : public boost::static_visitor<void>
+	{
+	public:
+		did_visitor(data_base* db, const short_hash& key,
+			const output_point& outpoint, uint32_t output_height, uint64_t value):
+			db_(db), key_(key), outpoint_(outpoint), output_height_(output_height), value_(value)
+		{
+
+		}
+		void operator()(const did_detail &t) const
+		{
+			return db_->push_did_detail(t, key_, outpoint_, output_height_, value_);
+		}
+		void operator()(const did_transfer &t) const
+		{
+		 	return db_->push_did_transfer(t, key_, outpoint_, output_height_, value_);
 		}
 	private:
         data_base* db_;
@@ -361,6 +405,7 @@ public:
     //did_database dids;    
     account_did_database account_dids;
     blockchain_did_database dids;
+    address_did_database address_dids;
     
     account_address_database account_addresses;
 	/* end database for account, asset, address_asset relationship */

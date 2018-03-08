@@ -30,6 +30,8 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
+#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+
 namespace libbitcoin {
 namespace chain {
 
@@ -58,6 +60,8 @@ public:
 	bool is_asset_transfer();
 	bool is_asset_issue();
 	bool is_etp();
+    bool is_did_issue();
+	std::string get_did_symbol();
 	
     uint64_t value;
     chain::script script;
