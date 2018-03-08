@@ -101,7 +101,7 @@ public:
         (
             "decimalnumber,n",
             value<uint32_t>(&option_.decimal_number),
-            "The asset amount decimal number."
+            "The asset amount decimal number, defaults to 0."
         )
 		(
             "issuer,i",
@@ -111,7 +111,7 @@ public:
         (
             "description,d",
             value<std::string>(&option_.description),
-            "The asset description."
+            "The asset description, defaults to empty string."
         );
 
         return options;
@@ -134,6 +134,7 @@ public:
 		  : symbol(""),
 			maximum_supply{0},
 			decimal_number(0),
+            secondissue_assetshare_threshold(0),
 			issuer(""),
 			description("")
     	{
