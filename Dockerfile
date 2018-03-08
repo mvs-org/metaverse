@@ -23,7 +23,7 @@ COPY ./ /tmp/metaverse/
 # setup gmp link => without-bignum
 ENV IS_TRAVIS_LINUX 1
 
-RUN cd /tmp/metaverse && /bin/bash install_dependencies.sh --build-boost
+RUN cd /tmp/metaverse && /bin/bash install_dependencies.sh --build-boost --build-upnpc
 
 RUN cd /tmp/metaverse \
   && mkdir -p build && cd build && cmake .. && make -j2 && make install \
