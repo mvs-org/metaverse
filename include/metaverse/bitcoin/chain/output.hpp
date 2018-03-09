@@ -59,7 +59,7 @@ public:
 	bool is_asset_issue();
 	bool is_etp();
     bool is_asset_secondissue();
-    asset_detail get_asset_detail();
+    asset_detail get_asset_detail(const std::string& addr = "");
 	
     uint64_t value;
     chain::script script;

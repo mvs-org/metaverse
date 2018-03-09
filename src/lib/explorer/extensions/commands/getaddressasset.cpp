@@ -58,22 +58,25 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         auto sh_vec = blockchain.get_address_business_history(argument_.address, kind, business_status::unspent);
         const auto sum = [&](const business_history& bh)
         {
+            asset_detail detail;
             // get asset info
             uint64_t num;
             if(kind == business_kind::asset_transfer) {
                 auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
                 symbol = transfer_info.get_address();
                 num = transfer_info.get_quantity();
+                detail = asset_detail(symbol, num, 0, 0, "", argument_.address, "");
             } else { // asset issued
                 auto asset_info = boost::get<asset_detail>(bh.data.get_data());
                 symbol = asset_info.get_symbol();
                 num = asset_info.get_maximum_supply();
+                detail = asset_info;
             }
             
             // update asset quantity
             auto r = symbol_set.insert(symbol);
             if(r.second) { // new symbol
-                asset_vec.push_back(asset_detail(symbol, num, 0, "", argument_.address, ""));
+                asset_vec.push_back(detail);
             } else { // already exist
                 const auto add_num = [&](asset_detail& elem)
                 {

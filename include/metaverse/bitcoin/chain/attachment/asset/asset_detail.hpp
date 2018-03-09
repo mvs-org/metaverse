@@ -52,7 +52,7 @@ public:
 	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint8_t decimal_number, std::string issuer,
+		uint8_t decimal_number, uint8_t threshold, std::string issuer,
 		std::string address, std::string description);
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);

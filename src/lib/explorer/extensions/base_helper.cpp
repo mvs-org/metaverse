@@ -290,7 +290,7 @@ void sync_fetch_asset_balance (std::string& addr,
                         });
                 
                 if (pos == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, "", addr, ""));
+                    sh_asset_vec->push_back(output.get_asset_detail(addr));
                 } else { // exist just add amount
                     pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
                 }
@@ -324,7 +324,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
                         });
                 
                 if (pos == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, "", addr, ""));
+                    sh_asset_vec->push_back(output.get_asset_detail(addr));
                 } else { // exist just add amount
                     pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
                 }
@@ -848,23 +848,17 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
     } 
 
     if(record.type == utxo_attach_type::asset_issue) {
-        //std::shared_ptr<asset_detail>
         auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         if(!sh_asset)
             throw asset_symbol_notfound_exception{symbol_ + " not found"};
-        //if(sh_asset->at(0).detail.get_maximum_supply() != record.asset_amount)
-            //throw asset_amount_exception{symbol_ + " amount not match with maximum supply"};
         
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
         return attachment(ASSET_TYPE, attach_version, ass);
 	} else if(record.type == utxo_attach_type::asset_secondissue) {
-        //std::shared_ptr<asset_detail>
         auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         if(!sh_asset)
             throw asset_symbol_notfound_exception{symbol_ + " not found"};
-        //if(sh_asset->at(0).detail.get_maximum_supply() != record.asset_amount)
-            //throw asset_amount_exception{symbol_ + " amount not match with maximum supply"};
         
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
@@ -1245,14 +1239,7 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
     } 
 
     if(record.type == utxo_attach_type::asset_issue) {
-        //std::shared_ptr<asset_detail>
-        //auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
-        //if(!sh_asset)
         throw tx_attachment_value_exception{"not support this utxo type"};
-        
-        //sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
-        //auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
-        //return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::asset_transfer) {
         auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
@@ -1622,13 +1609,9 @@ attachment secondissuing_asset::populate_output_attachment(receiver_record& reco
     if(record.type == utxo_attach_type::etp) {
         return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
     }  else if(record.type == utxo_attach_type::asset_secondissue) {
-        //std::shared_ptr<asset_detail>
-        //auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         auto sh_asset = blockchain_.get_issued_asset(symbol_);
         if(!sh_asset)
             throw std::logic_error{symbol_ + " not found"};
-        //if(sh_asset->at(0).detail.get_maximum_supply() != record.asset_amount)
-            //throw std::logic_error{symbol_ + " amount not match with maximum supply"};
         
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         sh_asset->set_asset_secondissue();

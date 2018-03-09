@@ -36,11 +36,13 @@ asset_detail::asset_detail()
 }
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
-    uint8_t decimal_number, std::string issuer,
+    uint8_t decimal_number, uint8_t threshold, std::string issuer,
     std::string address, std::string description):
-    symbol(symbol), maximum_supply(maximum_supply), decimal_number(decimal_number),
-	issuer(issuer), address(address), description(description),secondissue_assetshare_threshold(0),
-	unused2(0), unused3(0)
+    symbol(symbol), maximum_supply(maximum_supply),
+    decimal_number(decimal_number),
+    secondissue_assetshare_threshold(threshold),
+    unused2(0), unused3(0),
+    issuer(issuer), address(address), description(description)
 {
 }
 

@@ -137,7 +137,7 @@ std::istream& operator>>(std::istream& input, metaverse_output& argument)
     } else if(type == "asset-issue") {
         deserialize(symbol, tokens[3], true);
         deserialize(value, tokens[4], true);
-        auto detail = asset_detail(symbol, 0, 0, "", target, ""); // fill later
+        auto detail = asset_detail(symbol, 0, 0, 0, "", target, ""); // fill later
         auto ass = asset(ASSET_DETAIL_TYPE, detail);
         argument.attach_data_ = attachment(ASSET_TYPE, version, ass);
     } else if(type == "asset-transfer") {
