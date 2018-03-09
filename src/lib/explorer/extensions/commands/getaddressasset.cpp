@@ -58,25 +58,22 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         auto sh_vec = blockchain.get_address_business_history(argument_.address, kind, business_status::unspent);
         const auto sum = [&](const business_history& bh)
         {
-            asset_detail detail;
             // get asset info
             uint64_t num;
             if(kind == business_kind::asset_transfer) {
                 auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
                 symbol = transfer_info.get_address();
                 num = transfer_info.get_quantity();
-                detail = asset_detail(symbol, num, 0, 0, "", argument_.address, "");
             } else { // asset issued
                 auto asset_info = boost::get<asset_detail>(bh.data.get_data());
                 symbol = asset_info.get_symbol();
                 num = asset_info.get_maximum_supply();
-                detail = asset_info;
             }
             
             // update asset quantity
             auto r = symbol_set.insert(symbol);
             if(r.second) { // new symbol
-                asset_vec.push_back(detail);
+                asset_vec.push_back(asset_detail(symbol, num, 0, 0, "", argument_.address, ""));
             } else { // already exist
                 const auto add_num = [&](asset_detail& elem)
                 {
@@ -96,17 +93,21 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         if (!issued_asset) {
             continue;
         }
+        asset_data["symbol"] = symbol;
+        asset_data["address"] = elem.get_address();
         if (get_api_version() == 1) {
             asset_data["quantity"] += elem.get_maximum_supply();
             asset_data["decimal_number"] += issued_asset->get_decimal_number();
-            asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
+            asset_data["secondissue_assetshare_threshold"] += issued_asset->get_secondissue_assetshare_threshold();
+            asset_data["is_secondissue"] = issued_asset->is_asset_secondissue() ? "true" : "false";
         } else {
             asset_data["quantity"] = elem.get_maximum_supply();
             asset_data["decimal_number"] = issued_asset->get_decimal_number();
-            asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
+            asset_data["secondissue_assetshare_threshold"] = issued_asset->get_secondissue_assetshare_threshold();
+            asset_data["is_secondissue"] = issued_asset->is_asset_secondissue();
         }
-        asset_data["symbol"] = symbol;
-        asset_data["address"] = elem.get_address();
+        asset_data["issuer"] = issued_asset->get_issuer();
+        asset_data["description"] = issued_asset->get_description();
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }

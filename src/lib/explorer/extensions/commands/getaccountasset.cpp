@@ -61,23 +61,28 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
 
     Json::Value asset_data;
     for (auto& elem: *sh_vec) {
-        if(!argument_.symbol.empty() && argument_.symbol !=  elem.get_symbol())
+        auto symbol = elem.get_symbol();
+        if(!argument_.symbol.empty() && argument_.symbol != symbol)
             continue;
-        asset_data["symbol"] = elem.get_symbol();
+        auto issued_asset = blockchain.get_issued_asset(symbol);
+        if (!issued_asset) {
+            continue;
+        }
+        asset_data["symbol"] = symbol;
         asset_data["address"] = elem.get_address();
         if (get_api_version() == 1) {
             asset_data["quantity"] += elem.get_maximum_supply();
-            asset_data["decimal_number"] += elem.get_decimal_number();
-            asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
-            asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
+            asset_data["decimal_number"] += issued_asset->get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] += issued_asset->get_secondissue_assetshare_threshold();
+            asset_data["is_secondissue"] = issued_asset->is_asset_secondissue() ? "true" : "false";
         } else {
             asset_data["quantity"] = elem.get_maximum_supply();
-            asset_data["decimal_number"] = elem.get_decimal_number();
-            asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
-            asset_data["is_secondissue"] = elem.is_asset_secondissue();
+            asset_data["decimal_number"] = issued_asset->get_decimal_number();
+            asset_data["secondissue_assetshare_threshold"] = issued_asset->get_secondissue_assetshare_threshold();
+            asset_data["is_secondissue"] = issued_asset->is_asset_secondissue();
         }
-        asset_data["issuer"] = elem.get_issuer();
-        asset_data["description"] = elem.get_description();
+        asset_data["issuer"] = issued_asset->get_issuer();
+        asset_data["description"] = issued_asset->get_description();
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }
@@ -106,12 +111,12 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
             asset_data["quantity"] += elem.detail.get_maximum_supply();
             asset_data["decimal_number"] += elem.detail.get_decimal_number();
             asset_data["secondissue_assetshare_threshold"] += elem.detail.get_secondissue_assetshare_threshold();
-            asset_data["is_secondissue"] = elem.detail.is_asset_secondissue() ? "true" : "false";
+            asset_data["is_secondissue"] = "false";
         } else {
             asset_data["quantity"] = elem.detail.get_maximum_supply();
             asset_data["decimal_number"] = elem.detail.get_decimal_number();
             asset_data["secondissue_assetshare_threshold"] = elem.detail.get_secondissue_assetshare_threshold();
-            asset_data["is_secondissue"] = elem.detail.is_asset_secondissue();
+            asset_data["is_secondissue"] = false;
         }
         asset_data["issuer"] = elem.detail.get_issuer();
         asset_data["description"] = elem.detail.get_description();

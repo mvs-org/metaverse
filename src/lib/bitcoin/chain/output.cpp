@@ -223,19 +223,16 @@ std::string output::get_asset_symbol() // for validate_transaction.cpp to calcul
 	return std::string("");
 }
 
-asset_detail output::get_asset_detail(const std::string& addr)
+asset_detail output::get_asset_detail()
 {
     if (attach_data.get_type() == ASSET_TYPE) {
         auto asset_info = boost::get<asset>(attach_data.get_attach());
         if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             return boost::get<asset_detail>(asset_info.get_data());
         }
-        if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-            auto trans_info = boost::get<asset_transfer>(asset_info.get_data());
-            return asset_detail(trans_info.get_address(), trans_info.get_quantity(), 0, 0, "", addr, "");
-        }
     }
-    return asset_detail("", 0, 0, 0, "", addr, "");
+    log::error("output::get_asset_detail") << "Asset type is not ASSET_DETAIL_TYPE.";
+    return asset_detail();
 }
 
 } // namspace chain

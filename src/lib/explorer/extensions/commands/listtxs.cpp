@@ -256,7 +256,7 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         tree["maximum_supply"] = detail_info.get_maximum_supply();
                         tree["decimal_number"] = detail_info.get_decimal_number();
                         tree["secondissue_assetshare_threshold"] = detail_info.get_secondissue_assetshare_threshold();
-                        tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
+                        tree["is_secondissue"] = detail_info.is_asset_secondissue();
                     }
                     tree["issuer"] = detail_info.get_issuer();
                     tree["address"] = detail_info.get_address();

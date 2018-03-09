@@ -290,7 +290,7 @@ void sync_fetch_asset_balance (std::string& addr,
                         });
                 
                 if (pos == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(output.get_asset_detail(addr));
+                    sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, 0, "", addr, ""));
                 } else { // exist just add amount
                     pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
                 }
@@ -324,7 +324,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
                         });
                 
                 if (pos == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(output.get_asset_detail(addr));
+                    sh_asset_vec->push_back(asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, 0, "", addr, ""));
                 } else { // exist just add amount
                     pos->set_maximum_supply(pos->get_maximum_supply()+output.get_asset_amount());
                 }
