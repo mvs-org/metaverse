@@ -350,6 +350,7 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
     return tree;
 }
 
+// is_secondissue has no meaning for asset quantity summary.
 Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply)
 {
     Json::Value tree;
@@ -364,18 +365,23 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, b
         tree[maximum_supply_or_quantity] += detail_info.get_maximum_supply();
         tree["decimal_number"] += detail_info.get_decimal_number();
         tree["secondissue_assetshare_threshold"] += detail_info.get_secondissue_assetshare_threshold();
-        tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
+        if (is_maximum_supply) {
+            tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
+        }
     } else {
         tree[maximum_supply_or_quantity] = detail_info.get_maximum_supply();
         tree["decimal_number"] = detail_info.get_decimal_number();
         tree["secondissue_assetshare_threshold"] = detail_info.get_secondissue_assetshare_threshold();
-        tree["is_secondissue"] = detail_info.is_asset_secondissue();
+        if (is_maximum_supply) {
+            tree["is_secondissue"] = detail_info.is_asset_secondissue();
+        }
     }
     return tree;
 }
 
 // detail_info only "symbol" "address" "quantity" info included in it.
 // issued_info include the other info.
+// is_secondissue has no meaning for asset quantity summary.
 Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info)
 {
     Json::Value tree;
@@ -390,13 +396,11 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, c
 
         tree["decimal_number"] += issued_info.get_decimal_number();
         tree["secondissue_assetshare_threshold"] += issued_info.get_secondissue_assetshare_threshold();
-        tree["is_secondissue"] = issued_info.is_asset_secondissue() ? "true" : "false";
     } else {
         tree["quantity"] = detail_info.get_maximum_supply();
 
         tree["decimal_number"] = issued_info.get_decimal_number();
         tree["secondissue_assetshare_threshold"] = issued_info.get_secondissue_assetshare_threshold();
-        tree["is_secondissue"] = issued_info.is_asset_secondissue();
     }
     return tree;
 }
