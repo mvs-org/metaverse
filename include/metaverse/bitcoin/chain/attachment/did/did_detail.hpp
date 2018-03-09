@@ -33,15 +33,11 @@ namespace libbitcoin {
 namespace chain {
 
 BC_CONSTEXPR size_t DID_DETAIL_SYMBOL_FIX_SIZE = 64;
-BC_CONSTEXPR size_t DID_DETAIL_MAX_SUPPLY_FIX_SIZE = 8;
-BC_CONSTEXPR size_t DID_DETAIL_DID_TYPE_FIX_SIZE = 4;
 BC_CONSTEXPR size_t DID_DETAIL_ISSUER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t DID_DETAIL_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t DID_DETAIL_DESCRIPTION_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t DID_DETAIL_FIX_SIZE = DID_DETAIL_SYMBOL_FIX_SIZE
-			+ DID_DETAIL_MAX_SUPPLY_FIX_SIZE
-			+ DID_DETAIL_DID_TYPE_FIX_SIZE
 			+ DID_DETAIL_ISSUER_FIX_SIZE
 			+ DID_DETAIL_ADDRESS_FIX_SIZE
 			+ DID_DETAIL_DESCRIPTION_FIX_SIZE;
@@ -88,9 +84,6 @@ public:
 private:    
     std::string symbol;
     //uint32_t did_type;
-	uint8_t unused1;
-	uint8_t unused2;
-	uint8_t unused3;
     std::string issuer; 
     std::string address;
     std::string description;

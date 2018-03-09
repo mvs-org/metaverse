@@ -185,6 +185,81 @@ public:
         READWRITE(content);
     }
 };
+
+class CDidDetail
+{
+public:
+    std::string symbol;
+    std::string issuer; 
+    std::string address;
+    std::string description;
+
+	
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(issuer);
+        READWRITE(address);
+        READWRITE(description);
+    }
+};
+
+class CDidTransfer
+{
+public:
+    std::string address;  // symbol  -- in block
+    uint64_t quantity;  // -- in block
+	
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(address);
+        READWRITE(quantity);
+    }
+};
+
+class CDid
+{
+public:
+    uint32_t status;
+	CDidDetail detail;
+	CDidTransfer trans;
+	
+    size_t GetSerializeSize(int nType, int nVersion) const {                         
+        CSizeComputer s(nType, nVersion);                                            
+        NCONST_PTR(this)->Serialize(s, nType, nVersion);
+        return s.size();                                                             
+    }                                                                                
+    template<typename Stream>                                                        
+    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
+        (::SerReadWrite(s, (status), nType, nVersion, CSerActionSerialize()));
+		switch(status) {
+			case 1: // did detail
+				(::SerReadWrite(s, (*(CDidDetail*)(&detail)), nType, nVersion, CSerActionSerialize()));
+				break;
+			case 2: // did transfer
+				(::SerReadWrite(s, (*(CDidTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
+				break;
+		};
+    }                                                                                
+    template<typename Stream>                                                        
+    void Unserialize(Stream& s, int nType, int nVersion) {                           
+        //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
+        (::SerReadWrite(s, (status), nType, nVersion, CSerActionUnserialize()));
+		switch(status) {
+			case 1: // did detail
+				(::SerReadWrite(s, (*(CDidDetail*)(&detail)), nType, nVersion, CSerActionUnserialize()));
+				break;
+			case 2: // did transfer
+				(::SerReadWrite(s, (*(CDidTransfer*)(&trans)), nType, nVersion, CSerActionUnserialize()));
+				break;
+		};
+    }
+};
 /** An output of a transaction.  It contains the public key that the next input
  * must be able to sign with to claim it.
  */
@@ -198,6 +273,7 @@ public:
     uint32_t type;
 	
 	CAsset asset;
+    CDid did;
 	CMessage message;
 	
 	CTxOut()
@@ -231,6 +307,9 @@ public:
 			case 3: // message
 				(::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionSerialize()));
 				break;
+            case 4: //did
+                (::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionSerialize()));
+				break;
 		};
     }                                                                                
     template<typename Stream>                                                        
@@ -250,6 +329,9 @@ public:
 				break;
 			case 3: // message
 				(::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionUnserialize()));
+				break;
+            case 4: // did
+				(::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionUnserialize()));
 				break;
 		};
     }

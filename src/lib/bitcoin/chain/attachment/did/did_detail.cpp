@@ -37,8 +37,7 @@ did_detail::did_detail()
 did_detail::did_detail(
     std::string symbol, std::string issuer,
     std::string address, std::string description):
-    symbol(symbol), issuer(issuer), address(address), description(description),unused1(0),
-	unused2(0), unused3(0)
+    symbol(symbol), issuer(issuer), address(address), description(description)
 {
 }
 
@@ -72,9 +71,6 @@ void did_detail::reset()
 {	
     symbol = "";
     //did_type = 0;
-	unused1 = 0;
-	unused2 = 0;
-	unused3 = 0;
     issuer = ""; 
     address = "";
     description = "";
@@ -109,9 +105,6 @@ bool did_detail::from_data(reader& source)
 
     symbol = source.read_string();
     //did_type = source.read_4_bytes_little_endian();
-    unused1 = source.read_byte();
-    unused2 = source.read_byte();
-    unused3 = source.read_byte();
     issuer = source.read_string(); 
     address =  source.read_string();
     description =  source.read_string();
@@ -153,9 +146,6 @@ void did_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
 	//sink.write_4_bytes_little_endian(did_type);
-	sink.write_byte(unused1);
-	sink.write_byte(unused2);
-	sink.write_byte(unused3);
 	sink.write_string(issuer);
 	sink.write_string(address);
 	sink.write_string(description);
@@ -163,7 +153,7 @@ void did_detail::to_data(writer& sink) const
 
 uint64_t did_detail::serialized_size() const
 {
-    size_t len = symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4;
+    size_t len = symbol.size()  + issuer.size() + address.size() + description.size() + 4 ;
     return std::min(DID_DETAIL_FIX_SIZE, len);
 }
 
