@@ -46,7 +46,6 @@ console_result getasset::invoke (Json::Value& jv_output,
     Json::Value assets;
     std::set<std::string> symbols;
     for (auto& elem: *sh_vec) {
-        Json::Value asset_data;
 
         if (argument_.symbol.empty()) {
             // get rid of duplicate symbols
@@ -57,21 +56,7 @@ console_result getasset::invoke (Json::Value& jv_output,
         } else {
             // find out target from blockchain 
             if (elem.get_symbol().compare(argument_.symbol) == 0) {
-                asset_data["symbol"] = elem.get_symbol();
-                if (get_api_version() == 1) {
-                    asset_data["maximum_supply"] += elem.get_maximum_supply();
-                    asset_data["decimal_number"] += elem.get_decimal_number();
-                    asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
-                    asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
-                } else {
-                    asset_data["maximum_supply"] = elem.get_maximum_supply();
-                    asset_data["decimal_number"] = elem.get_decimal_number();
-                    asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
-                    asset_data["is_secondissue"] = elem.is_asset_secondissue();
-                }
-                asset_data["issuer"] = elem.get_issuer();
-                asset_data["address"] = elem.get_address();
-                asset_data["description"] = elem.get_description();
+                Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, true);
                 asset_data["status"] = "issued";
                 assets.append(asset_data);
             }

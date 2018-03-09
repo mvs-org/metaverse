@@ -39,7 +39,6 @@ console_result listassets::invoke (Json::Value& jv_output,
     auto& aroot = jv_output;
     Json::Value assets;
     
-    std::string symbol;
     auto& blockchain = node.chain_impl();
     auto sh_vec = std::make_shared<std::vector<asset_detail>>();
     
@@ -51,23 +50,7 @@ console_result listassets::invoke (Json::Value& jv_output,
 
         // add blockchain assets
         for (auto& elem: *sh_vec) {
-            Json::Value asset_data;
-            
-            asset_data["symbol"] = elem.get_symbol();
-            if (get_api_version() == 1) {
-                asset_data["maximum_supply"] += elem.get_maximum_supply();
-                asset_data["decimal_number"] += elem.get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] += elem.get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = elem.is_asset_secondissue() ? "true" : "false";
-            } else {
-                asset_data["maximum_supply"] = elem.get_maximum_supply();
-                asset_data["decimal_number"] = elem.get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] = elem.get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = elem.is_asset_secondissue();
-            }
-            asset_data["issuer"] = elem.get_issuer();
-            asset_data["address"] = elem.get_address();
-            asset_data["description"] = elem.get_description();
+            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, true);
             asset_data["status"] = "issued";
             assets.append(asset_data);
         }
@@ -86,28 +69,14 @@ console_result listassets::invoke (Json::Value& jv_output,
             sync_fetch_asset_balance (addr, blockchain, sh_vec);
         }
         
+        std::string symbol;
         for (auto& elem: *sh_vec) {
-            Json::Value asset_data;
             symbol = elem.get_symbol();
             auto issued_asset = blockchain.get_issued_asset(symbol);
             if (!issued_asset) {
                 continue;
             }
-            asset_data["symbol"] = symbol;
-            asset_data["address"] = elem.get_address();
-            if (get_api_version() == 1) {
-                asset_data["quantity"] += elem.get_maximum_supply();
-                asset_data["decimal_number"] += issued_asset->get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] += issued_asset->get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = issued_asset->is_asset_secondissue() ? "true" : "false";
-            } else {
-                asset_data["quantity"] = elem.get_maximum_supply();
-                asset_data["decimal_number"] = issued_asset->get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] = issued_asset->get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = issued_asset->is_asset_secondissue();
-            }
-            asset_data["issuer"] = issued_asset->get_issuer();
-            asset_data["description"] = issued_asset->get_description();
+            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset);
             asset_data["status"] = "unspent";
             assets.append(asset_data);
         }
@@ -126,22 +95,7 @@ console_result listassets::invoke (Json::Value& jv_output,
             if (pos != sh_vec->end()){ // asset already issued in blockchain
                 continue;
             } 
-            Json::Value asset_data;
-            if (get_api_version() == 1) {
-                asset_data["quantity"] += elem.detail.get_maximum_supply();
-                asset_data["decimal_number"] += elem.detail.get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] += elem.detail.get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = "false";
-            } else {
-                asset_data["quantity"] = elem.detail.get_maximum_supply();
-                asset_data["decimal_number"] = elem.detail.get_decimal_number();
-                asset_data["secondissue_assetshare_threshold"] = elem.detail.get_secondissue_assetshare_threshold();
-                asset_data["is_secondissue"] = false;
-            }
-            asset_data["symbol"] = symbol;
-            asset_data["issuer"] = elem.detail.get_issuer();
-            asset_data["address"] = elem.detail.get_address();
-            asset_data["description"] = elem.detail.get_description();
+            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false);
             asset_data["status"] = "unissued";
             assets.append(asset_data);
         }

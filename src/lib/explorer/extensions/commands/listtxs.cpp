@@ -238,45 +238,13 @@ console_result listtxs::invoke (Json::Value& jv_output,
             }
 
             auto attach_data = op.attach_data;
-            Json::Value tree;
-            if(attach_data.get_type() == ETP_TYPE) {
-                tree["type"] = "etp";
-            } else if(attach_data.get_type() == ASSET_TYPE) {
+            Json::Value tree = config::json_helper(get_api_version()).prop_list(attach_data);
+            if (attach_data.get_type() == ASSET_TYPE) {
                 auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
-                if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
-                    tree["type"] = "asset-issue";
-                    auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
-                    tree["symbol"] = detail_info.get_symbol();
-                    if (get_api_version() == 1) {
-                        tree["maximum_supply"] += detail_info.get_maximum_supply();
-                        tree["decimal_number"] += detail_info.get_decimal_number();
-                        tree["secondissue_assetshare_threshold"] += detail_info.get_secondissue_assetshare_threshold();
-                        tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
-                    } else {
-                        tree["maximum_supply"] = detail_info.get_maximum_supply();
-                        tree["decimal_number"] = detail_info.get_decimal_number();
-                        tree["secondissue_assetshare_threshold"] = detail_info.get_secondissue_assetshare_threshold();
-                        tree["is_secondissue"] = detail_info.is_asset_secondissue();
-                    }
-                    tree["issuer"] = detail_info.get_issuer();
-                    tree["address"] = detail_info.get_address();
-                    tree["description"] = detail_info.get_description();
-                }
-                if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-
-                    tree["type"] = "asset-transfer";
-                    auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-                    tree["symbol"] = trans_info.get_symbol();
-
-                    if (get_api_version() == 1) {
-                        tree["quantity"] += trans_info.get_quantity();
-                    } else {
-                        tree["quantity"] = trans_info.get_quantity();
-                    }
-
+                if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
                     // asset_transfer dose not contain decimal_number message,
                     // so we get decimal_number from the issued asset with the same symbol.
-                    auto symbol = trans_info.get_symbol();
+                    auto symbol = tree["symbol"].asString();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
 
                     if (issued_asset) {
@@ -287,12 +255,6 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         }
                     }
                 }
-            } else if(attach_data.get_type() == MESSAGE_TYPE) {
-                tree["type"] = "message";
-                auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
-                tree["content"] = msg_info.get_content();
-            } else {
-                tree["type"] = "unknown business";
             }
             pt_output["attachment"] = tree;
             ////////////////////////////////////////////////////////////

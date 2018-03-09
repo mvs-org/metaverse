@@ -155,22 +155,7 @@ console_result createasset::invoke (Json::Value& jv_output,
     blockchain.store_account_asset(acc);
 
     auto& aroot = jv_output;
-    Json::Value asset_data;
-    asset_data["symbol"] = acc->get_symbol();
-    if (get_api_version() == 1) {
-        asset_data["maximum-supply"] += acc->get_maximum_supply();
-        asset_data["decimal_number"] += acc->get_decimal_number();
-        asset_data["secondissue_assetshare_threshold"] += acc->get_secondissue_assetshare_threshold();
-        asset_data["is_secondissue"] = "false";
-    } else {
-        asset_data["maximum-supply"] = acc->get_maximum_supply();
-        asset_data["decimal_number"] = acc->get_decimal_number();
-        asset_data["secondissue_assetshare_threshold"] = acc->get_secondissue_assetshare_threshold();
-        asset_data["is_secondissue"] = false;
-    }
-    asset_data["issuer"] = acc->get_issuer();
-    asset_data["address"] = acc->get_address();
-    asset_data["description"] = acc->get_description();
+    Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
     asset_data["status"] = "unissued";
     aroot["asset"] = asset_data;
 

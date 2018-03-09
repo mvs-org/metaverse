@@ -1699,7 +1699,7 @@ std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_issued_assets()
 	return sp_vec;
 }
 
-std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(std::string& symbol)
+std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(const std::string& symbol)
 {
 	std::shared_ptr<asset_detail> sp_asset(nullptr);
 	const auto hash = get_hash(symbol);
