@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,37 +19,37 @@
  */
 
 
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/extensions/command_extension.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+/************************ fetchheaderext *************************/
 
-/************************ importkeyfile *************************/
-
-class importkeyfile: public command_extension
+class fetchheaderext: public command_extension
 {
 public:
-    static const char* symbol(){ return "importkeyfile";}
-    const char* name() override { return symbol();} 
+    static const char* symbol(){ return "fetchheaderext";}
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
-    const char* description() override { return "importkeyfile "; }
+    const char* description() override { return "fetchheaderext "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("FILE", 1);
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("NUMBER", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(option_.file, "FILE", variables, input, raw);
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.number, "NUMBER", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -57,20 +57,25 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
         (
-            "password,p",
-            value<std::string>(&option_.depasswd)->required(),
-            "provide the password to decrypt the keyfile"
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
         )
         (
-            "FILE",
-            value<boost::filesystem::path>(&option_.file)->required(),
-            "account info file path"
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
+        )
+        (
+            "NUMBER",
+            value<std::string>(&argument_.number)->required(),
+            "Block number, or earliest, latest or pending"
         );
 
         return options;
@@ -85,17 +90,11 @@ public:
 
     struct argument
     {
+        std::string number;
     } argument_;
 
     struct option
     {
-        option()
-          : file(""), depasswd("")
-        {
-        }
-
-        boost::filesystem::path file;
-        std::string depasswd;
     } option_;
 
 };

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,41 +19,35 @@
  */
 
 
-#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
-#include <metaverse/explorer/extensions/commands/getwork.hpp>
-#include <metaverse/explorer/extensions/command_extension_func.hpp>
+#include <metaverse/explorer/extensions/commands/fetchheaderext.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/json_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-/************************ getwork *************************/
+/************************ fetchheaderext *************************/
 
-console_result getwork::invoke (Json::Value& jv_output,
+console_result fetchheaderext::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-
-    administrator_required_checker(node, auth_.name, auth_.auth);
-
-    std::string seed_hash;
-    std::string header_hash;
-    std::string boundary;
-
     auto& blockchain = node.chain_impl();
-    auto& miner = node.miner();
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    if(argument_.number.empty())
+        throw block_height_get_exception{"Block number or earliest, latest, pending is needed"};
 
-    auto ret = miner.get_work(seed_hash, header_hash, boundary);
+    chain::header block_header;
+
+    auto& miner = node.miner();
+    auto ret = miner.get_block_header(block_header, argument_.number);
 
     auto& aroot = jv_output;
 
     if (ret) {
-        
-        Json::Value result;
-        result.append(header_hash);
-        result.append(seed_hash);
-        result.append(boundary);
+
+        auto&& result = config::json_helper(get_api_version()).prop_list(block_header);
 
         if (get_api_version() == 1) {
             aroot["result"] = result;
@@ -62,11 +56,12 @@ console_result getwork::invoke (Json::Value& jv_output,
         }
 
     } else {
-        throw setting_required_exception{"Use command <setminingaccount> to set mining address."};
+        throw block_height_get_exception{"get block header on height " + argument_.number + " failed."};
     }
 
     return console_result::okay;
 }
+
 
 
 } // namespace commands

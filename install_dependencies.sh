@@ -40,7 +40,9 @@ QRENCODE_ARCHIVE="qrencode-3.4.4.tar.bz2"
 
 # Boost archive.
 #------------------------------------------------------------------------------
-BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
+BOOST_URL="https://raw.githubusercontent.com/jowenshaw/boost-tarball/master/boost_1_58_0.tar.bz2"
+# the following URL is not stable, sometimes it is unable to connect.
+#BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
 BOOST_ARCHIVE="boost_1_58_0.tar.bz2"
 
 # miniupnpc archive

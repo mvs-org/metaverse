@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\command.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-stealth.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\help.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\offline_commands_impl.hpp" />
@@ -62,6 +63,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaccountasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaddressasset.hpp" />
@@ -124,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-stealth.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\help.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\commands\offline\stealth-decode.cpp" />
@@ -172,6 +175,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccountasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressasset.cpp" />

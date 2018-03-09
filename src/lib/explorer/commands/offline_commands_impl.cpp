@@ -65,10 +65,38 @@ data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
 {
     const auto word_count = words.size();
 
+    if (word_count == 0)
+    {
+        throw mnemonicwords_empty_exception{MVSCLI_EC_MNEMONIC_TO_SEED_EMPTY_WORDS};
+    }
+
     if ((word_count % bw::mnemonic_word_multiple) != 0)
     {
         // chenhao exception
         throw mnemonicwords_amount_exception{MVSCLI_EC_MNEMONIC_TO_SEED_LENGTH_INVALID_SENTENCE};
+    }
+
+    // check if mnemonic words are all in someone/specified dictionary
+    bool all_word_in_dictionary = true;
+    for (const auto& lexicon: language)
+    {
+        all_word_in_dictionary = true;
+        for (const auto& word: words)
+        {
+            if (std::find(lexicon->begin(), lexicon->end(), word) == lexicon->end())
+            {
+                all_word_in_dictionary = false;
+                break;
+            }
+        }
+        if (all_word_in_dictionary)
+        {
+            break;
+        }
+    }
+    if (!all_word_in_dictionary)
+    {
+        throw mnemonicwords_content_exception{MVSCLI_EC_MNEMONIC_TO_SEED_WORD_NOT_IN_DICTIONARY};
     }
 
     const auto valid = bw::validate_mnemonic(words, language);

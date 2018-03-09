@@ -51,6 +51,10 @@ const uint32_t hd_default_public_version = 76067358;
         "The specified words are not a valid mnemonic in the specified dictionary."
 #define MVSCLI_EC_MNEMONIC_TO_SEED_INVALID_IN_LANGUAGES \
         "WARNING: The specified words are not a valid mnemonic in any supported dictionary."
+#define MVSCLI_EC_MNEMONIC_TO_SEED_EMPTY_WORDS \
+        "The specified words are empty."
+#define MVSCLI_EC_MNEMONIC_TO_SEED_WORD_NOT_IN_DICTIONARY \
+        "The specified words contain illegal word that is not included in the dictionary."
 #define MVSCLI_HD_NEW_SHORT_SEED \
         "The seed is less than 128 bits long."
 #define MVSCLI_HD_NEW_INVALID_KEY \

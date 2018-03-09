@@ -110,6 +110,17 @@ bool parser::parse(std::string& out_error, std::istream& input,
             help_ = true;
         }
     }
+    catch (const po::invalid_option_value& e)
+    {
+        // prevent boost from throwing 'std::out_of_range' when calling e.what()
+        // see /usr/include/boost/program_options/errors.hpp
+        // line 29 : return text.substr(text.find_first_not_of("-/"));
+        // which will throw 'std::out_of_range' when text.find_first_not_of return string::npos
+        po::invalid_option_value ex{e};
+        ex.set_original_token("OPTION");
+        out_error = ex.what();
+        return false;
+    }
     catch (const po::error& e)
     {
         // This is obtained from boost, which circumvents our localization.
