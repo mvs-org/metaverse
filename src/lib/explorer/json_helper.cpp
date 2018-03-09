@@ -379,7 +379,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
             tree["type"] = "asset-transfer";
             auto&& trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-            tree["symbol"] = trans_info.get_address();
+            tree["symbol"] = trans_info.get_symbol();
 
             if (version_ == 1) {
                 tree["quantity"] += trans_info.get_quantity();

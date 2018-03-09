@@ -102,6 +102,9 @@ public:
     }
 
 private:    
+    // NOTICE: ref CAssetDetail in transaction.h
+    // asset_detail and CAssetDetail should have the same size and order.
+    // uint32_t asset_type in CAssetDetail is divided into four uint8_t parts here.
     std::string symbol;
     uint64_t maximum_supply;
     uint8_t decimal_number;

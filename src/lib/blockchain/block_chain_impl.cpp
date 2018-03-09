@@ -1454,7 +1454,7 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 		
 		if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
 			auto transfer = boost::get<asset_transfer>(iter->data.get_data());
-			asset_symbol = transfer.get_address();
+			asset_symbol = transfer.get_symbol();
 		}
 		
         if ( 0 == symbol.compare(asset_symbol)){
@@ -1486,7 +1486,7 @@ std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_busi
 			
 			if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
 				auto transfer = boost::get<asset_transfer>(iter->data.get_data());
-				asset_symbol = transfer.get_address();
+				asset_symbol = transfer.get_symbol();
 			}
 			
 	        if (symbol == asset_symbol) {

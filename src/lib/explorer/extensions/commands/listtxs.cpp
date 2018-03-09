@@ -266,7 +266,7 @@ console_result listtxs::invoke (Json::Value& jv_output,
 
                     tree["type"] = "asset-transfer";
                     auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-                    tree["symbol"] = trans_info.get_address();
+                    tree["symbol"] = trans_info.get_symbol();
 
                     if (get_api_version() == 1) {
                         tree["quantity"] += trans_info.get_quantity();
@@ -274,7 +274,9 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         tree["quantity"] = trans_info.get_quantity();
                     }
 
-                    auto symbol = trans_info.get_address();
+                    // asset_transfer dose not contain decimal_number message,
+                    // so we get decimal_number from the issued asset with the same symbol.
+                    auto symbol = trans_info.get_symbol();
                     auto issued_asset = blockchain.get_issued_asset(symbol);
 
                     if (issued_asset) {

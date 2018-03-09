@@ -32,10 +32,10 @@ namespace chain {
 
 asset_transfer::asset_transfer()
 {
-	reset();
+    reset();
 }
-asset_transfer::asset_transfer(const std::string& address, uint64_t quantity):
-	address(address),quantity(quantity)
+asset_transfer::asset_transfer(const std::string& symbol, uint64_t quantity):
+    symbol(symbol),quantity(quantity)
 {
 
 }
@@ -62,14 +62,14 @@ asset_transfer asset_transfer::factory_from_data(reader& source)
 
 bool asset_transfer::is_valid() const
 {
-    return !(address.empty() 
-			|| quantity==0
-			|| address.size() +1 > ASSET_TRANSFER_ADDRESS_FIX_SIZE);
+    return !(symbol.empty()
+            || quantity==0
+            || symbol.size()+1 > ASSET_TRANSFER_SYMBOL_FIX_SIZE);
 }
 
 void asset_transfer::reset()
-{	
-    address = "";
+{
+    symbol = "";
     quantity = 0;
 }
 
@@ -88,14 +88,14 @@ bool asset_transfer::from_data(std::istream& stream)
 bool asset_transfer::from_data(reader& source)
 {
     reset();
-    address = source.read_string();
+    symbol = source.read_string();
     quantity = source.read_8_bytes_little_endian();
-	
+
     auto result = static_cast<bool>(source);
     if (!result)
         reset();
 
-    return result;	
+    return result;
 }
 
 data_chunk asset_transfer::to_data() const
@@ -116,50 +116,52 @@ void asset_transfer::to_data(std::ostream& stream) const
 
 void asset_transfer::to_data(writer& sink) const
 {
-    sink.write_string(address);
-	sink.write_8_bytes_little_endian(quantity);
+    sink.write_string(symbol);
+    sink.write_8_bytes_little_endian(quantity);
 }
 
 uint64_t asset_transfer::serialized_size() const
 {
-    size_t len = address.size() + 8 + 1;
-	return std::min(len, ASSET_TRANSFER_FIX_SIZE);
+    size_t len = symbol.size() + 8 + 1;
+    return std::min(len, ASSET_TRANSFER_FIX_SIZE);
 }
 
-std::string asset_transfer::to_string() const 
+#ifdef MVS_DEBUG
+std::string asset_transfer::to_string() const
 {
     std::ostringstream ss;
 
-    ss << "\t address = " << address << "\n"
-		<< "\t quantity = " << quantity << "\n";
+    ss << "\t symbol = " << symbol << "\n"
+        << "\t quantity = " << quantity << "\n";
 
     return ss.str();
 }
 
-void asset_transfer::to_json(std::ostream& output) 
+void asset_transfer::to_json(std::ostream& output)
 {
-	minijson::object_writer json_writer(output);
-	json_writer.write("address", address);
-	json_writer.write("quantity", quantity);
-	json_writer.close();
+    minijson::object_writer json_writer(output);
+    json_writer.write("symbol", symbol);
+    json_writer.write("quantity", quantity);
+    json_writer.close();
 }
+#endif
 
-const std::string& asset_transfer::get_address() const
-{ 
-    return address;
+const std::string& asset_transfer::get_symbol() const
+{
+    return symbol;
 }
-void asset_transfer::set_address(const std::string& address)
-{ 
-	 size_t len = address.size()+1 < (ASSET_TRANSFER_ADDRESS_FIX_SIZE) ?address.size()+1:ASSET_TRANSFER_ADDRESS_FIX_SIZE;
-	 this->address = address.substr(0, len);
+void asset_transfer::set_symbol(const std::string& symbol)
+{
+     size_t len = std::min(symbol.size()+1, ASSET_TRANSFER_SYMBOL_FIX_SIZE);
+     this->symbol = symbol.substr(0, len);
 }
 
 uint64_t asset_transfer::get_quantity() const
-{ 
+{
     return quantity;
 }
 void asset_transfer::set_quantity(uint64_t quantity)
-{ 
+{
      this->quantity = quantity;
 }
 

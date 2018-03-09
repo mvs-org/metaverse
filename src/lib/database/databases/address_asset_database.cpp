@@ -285,7 +285,7 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
                 
                 if(row.data.get_kind_value() ==  business_kind::asset_transfer) {
                     auto transfer = boost::get<asset_transfer>(row.data.get_data());
-                    asset_symbol = transfer.get_address();
+                    asset_symbol = transfer.get_symbol();
                 }
                 
                 if (symbol == asset_symbol) {
@@ -660,7 +660,7 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 		{
 			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
 			detail.quantity = transfer_info.get_quantity();
-			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
+			detail.detail.set_symbol(transfer_info.get_symbol());
 		}
 
 		detail.address = address; // account address
@@ -704,7 +704,7 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 		{
 			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
 			detail.quantity = transfer_info.get_quantity();
-			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
+			detail.detail.set_symbol(transfer_info.get_symbol());
 		}
 
 		detail.address = address; // account address

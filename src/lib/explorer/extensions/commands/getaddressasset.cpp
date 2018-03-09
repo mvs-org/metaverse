@@ -62,7 +62,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
             uint64_t num;
             if(kind == business_kind::asset_transfer) {
                 auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
-                symbol = transfer_info.get_address();
+                symbol = transfer_info.get_symbol();
                 num = transfer_info.get_quantity();
             } else { // asset issued
                 auto asset_info = boost::get<asset_detail>(bh.data.get_data());

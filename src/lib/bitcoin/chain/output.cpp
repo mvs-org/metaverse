@@ -217,7 +217,7 @@ std::string output::get_asset_symbol() // for validate_transaction.cpp to calcul
 		}
 		if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
 			auto trans_info = boost::get<asset_transfer>(asset_info.get_data());
-			return trans_info.get_address();
+			return trans_info.get_symbol();
 		}
 	}
 	return std::string("");

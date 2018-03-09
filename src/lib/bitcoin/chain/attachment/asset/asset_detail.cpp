@@ -153,6 +153,7 @@ uint64_t asset_detail::serialized_size() const
     return std::min(ASSET_DETAIL_FIX_SIZE, len);
 }
 
+#ifdef MVS_DEBUG
 std::string asset_detail::to_string() const
 {
     std::ostringstream ss;
@@ -180,6 +181,7 @@ void asset_detail::to_json(std::ostream& output)
 	json_writer.write("description", description);
 	json_writer.close();
 }
+#endif
 
 const std::string& asset_detail::get_symbol() const
 { 
