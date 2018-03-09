@@ -126,7 +126,6 @@ public:
 	
 #ifdef MVS_DEBUG
     std::string to_string() ;
-	void to_json(std::ostream& output);
 #endif
 	
 	const std::string& get_name() const;

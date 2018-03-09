@@ -366,16 +366,6 @@ std::string account::to_string()
 		}
     return ss.str();
 }
-void account::to_json(std::ostream& output) 
-{
-	minijson::object_writer json_writer(output);
-	json_writer.write("name", name);
-	json_writer.write("mnemonic", mnemonic);
-	//json_writer.write_array("passwd", std::begin(passwd.data()), std::passwd.end());
-	json_writer.write("hd_index", hd_index);
-	json_writer.write("priority", priority);
-	json_writer.close();
-}
 #endif
 
 const std::string& account::get_name() const

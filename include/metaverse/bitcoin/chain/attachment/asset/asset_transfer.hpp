@@ -56,7 +56,6 @@ public:
     void to_data(writer& sink) const;
 
     std::string to_string() const;
-	void to_json(std::ostream& output) ;
 
     bool is_valid() const;
     void reset();

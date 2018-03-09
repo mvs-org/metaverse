@@ -126,7 +126,6 @@ uint64_t asset_transfer::serialized_size() const
     return std::min(len, ASSET_TRANSFER_FIX_SIZE);
 }
 
-#ifdef MVS_DEBUG
 std::string asset_transfer::to_string() const
 {
     std::ostringstream ss;
@@ -136,15 +135,6 @@ std::string asset_transfer::to_string() const
 
     return ss.str();
 }
-
-void asset_transfer::to_json(std::ostream& output)
-{
-    minijson::object_writer json_writer(output);
-    json_writer.write("symbol", symbol);
-    json_writer.write("quantity", quantity);
-    json_writer.close();
-}
-#endif
 
 const std::string& asset_transfer::get_symbol() const
 {

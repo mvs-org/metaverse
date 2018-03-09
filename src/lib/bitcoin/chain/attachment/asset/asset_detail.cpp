@@ -153,7 +153,6 @@ uint64_t asset_detail::serialized_size() const
     return std::min(ASSET_DETAIL_FIX_SIZE, len);
 }
 
-#ifdef MVS_DEBUG
 std::string asset_detail::to_string() const
 {
     std::ostringstream ss;
@@ -168,20 +167,6 @@ std::string asset_detail::to_string() const
 
     return ss.str();
 }
-
-void asset_detail::to_json(std::ostream& output) 
-{
-	minijson::object_writer json_writer(output);
-	json_writer.write("symbol", symbol);
-	json_writer.write("maximum_supply", maximum_supply);
-	json_writer.write("decimal_number", decimal_number);
-	json_writer.write("secondissue_assetshare_threshold", secondissue_assetshare_threshold);
-	json_writer.write("issuer", issuer);
-	json_writer.write("address", address);
-	json_writer.write("description", description);
-	json_writer.close();
-}
-#endif
 
 const std::string& asset_detail::get_symbol() const
 { 
