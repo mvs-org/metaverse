@@ -141,7 +141,10 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
 
     // Recheck the memory pool, as a duplicate may have been added.
     if (is_in_pool(tx->hash()))
+    {
         handler(error::duplicate, tx, {});
+        return;
+    }
 
     for(auto& output : tx->outputs){
         if(output.is_asset_issue()

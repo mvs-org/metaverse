@@ -71,7 +71,8 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
 		set<hash_digest> sets;
 		for(auto i = transactions.begin(); i != transactions.end(); ) {
 			auto& tx = **i;
-			auto hash = (*i)->hash();
+			auto hash = tx.hash();
+			auto output_script_is_ok = true;
 
 			if (tx.version >= transaction_version::check_output_script) {
         		for(auto& output : tx.outputs){
@@ -80,13 +81,13 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
             			log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
 #endif
 						node_.pool().delete_tx(hash);
-						i = transactions.erase(i);
-						continue;
+						output_script_is_ok = false;
+						break;
             		}
         		}
 			}
 
-			if(sets.find(hash) == sets.end()){
+			if (output_script_is_ok || (sets.find(hash) == sets.end())) {
 				sets.insert(hash);
 				++i;
 			} else {
@@ -102,13 +103,14 @@ bool miner::script_hash_signature_operations_count(size_t &count, chain::input& 
 	const auto& previous_output = input.previous_output;
 	transaction previous_tx;
 	boost::uint64_t h;
-	if(node_.chain_impl().get_transaction(previous_tx, h, input.previous_output.hash) == false){
+	if (node_.chain_impl().get_transaction(previous_tx, h, previous_output.hash) == false) {
 		bool found = false;
 		for(auto& tx : transactions)
 		{
-			if(input.previous_output.hash == tx->hash()){
+			if (previous_output.hash == tx->hash()) {
 				previous_tx = *tx;
 				found = true;
+				break;
 			}
 		}
 		if(found == false)
