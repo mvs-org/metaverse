@@ -135,6 +135,12 @@ enum error_code_t
     asset_symbol_invalid,
     asset_exist,
 
+
+    // did check
+	did_symbol_not_match,
+    did_symbol_invalid,
+    did_exist,
+
 	//syn block
 	fetch_more_block,
 	bad_magic,

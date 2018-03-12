@@ -280,6 +280,35 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         tree["decimal_number"] = issued_asset->get_decimal_number();
                     }
                 }
+            } else if(attach_data.get_type() == DID_TYPE) {
+                auto did_info = boost::get<bc::chain::did>(attach_data.get_attach());
+                if(did_info.get_status() == DID_DETAIL_TYPE) {
+                    tree["type"] = "did-issue";
+                    auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
+                    tree["symbol"] = detail_info.get_symbol();
+                    tree["issuer"] = detail_info.get_issuer();
+                    tree["address"] = detail_info.get_address();
+                    tree["description"] = detail_info.get_description();
+                }
+                else if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
+
+                    tree["type"] = "did-transfer";
+                    auto trans_info = boost::get<bc::chain::did_transfer>(did_info.get_data());
+                    tree["symbol"] = trans_info.get_address();
+
+                    if (get_api_version() == 1) {
+                        tree["quantity"] += trans_info.get_quantity();
+                    } else {
+                        tree["quantity"] = trans_info.get_quantity();
+                    }
+
+                    auto symbol = trans_info.get_address();
+                    auto issued_did = blockchain.get_issued_did(symbol);
+
+                    if(issued_did && get_api_version() == 1) {
+                        
+                    }
+                }
             } else if(attach_data.get_type() == MESSAGE_TYPE) {
                 tree["type"] = "message";
                 auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());

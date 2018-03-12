@@ -308,6 +308,14 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 }
             }
         }
+
+        for(auto& output : const_cast<transaction&>(tx).outputs){
+            if(output.is_did_issue()) {
+                if(chain.is_did_exist(output.get_did_symbol(), false)) {
+                    return error::did_exist;
+                }
+            }
+        }
     }
     return ret;
 }
@@ -348,6 +356,14 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         if(output.is_asset_issue()) {
             if(!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
+            }
+        }
+    }
+
+    for(auto& output : const_cast<transaction&>(tx).outputs){
+        if(output.is_did_issue()) {
+            if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
+               return error::did_symbol_invalid;
             }
         }
     }

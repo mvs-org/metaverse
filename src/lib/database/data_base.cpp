@@ -1049,7 +1049,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 			short_hash hash = ripemd160_hash(data);
 			address_assets.delete_last_row(hash);
 			address_dids.delete_last_row(hash);
-			// remove asset from asset database
+			// remove asset or did from database
 			bc::chain::output op = *output;
 			if (op.is_asset_issue()) {
 				auto symbol = op.get_asset_symbol();
