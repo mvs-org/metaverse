@@ -124,7 +124,9 @@ bool data_base::upgrade_database(const settings& settings, const chain::block& g
 		instance.start();
 		//instance.upgrade_address_utxo();
 		instance.upgrade_blockchain_asset();
+        instance.upgrade_blockchain_did();
 		instance.synchronize();
+
 		// metadata
 		auto metadata_path = default_data_path() / settings.directory / db_metadata::file_name;
 		//auto metadata = db_metadata();
