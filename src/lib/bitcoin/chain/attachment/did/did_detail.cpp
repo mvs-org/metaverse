@@ -64,7 +64,7 @@ did_detail did_detail::factory_from_data(reader& source)
 bool did_detail::is_valid() const
 {
     return !(symbol.empty() 
-			|| (symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4)>DID_DETAIL_FIX_SIZE);
+			|| (symbol.size() + issuer.size() + address.size() + description.size() + 4)>DID_DETAIL_FIX_SIZE);
 }
 
 void did_detail::reset()
