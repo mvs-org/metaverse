@@ -1865,7 +1865,7 @@ void merging_asset::sum_payment_amount()
     if (receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
     if (receiver_list_.size() > 1)
-        throw toaddress_empty_exception{"multiple target address"};
+        throw toaddress_invalid_exception{"multiple target address"};
     if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
         throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
 }
@@ -1950,6 +1950,11 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
 
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
+
+        // if --mychange specified and no enough etp to pay fees,
+        // the tx will fail.
+        if (!from_.empty() && (unspent_etp_ < payment_etp_))
+            break;
     }
     payment_asset_ = unspent_asset_;
     rows.clear();
