@@ -68,6 +68,7 @@
 #include <metaverse/explorer/extensions/commands/didsendasset.hpp>
 #include <metaverse/explorer/extensions/commands/didsendfrom.hpp>
 #include <metaverse/explorer/extensions/commands/didsendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/listdids.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
@@ -173,7 +174,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<didsend>());
     func(make_shared<didsendfrom>());
     func(make_shared<didsendasset>());
-    func(make_shared<didsendassetfrom>());    
+    func(make_shared<didsendassetfrom>());
+    func(make_shared<listdids>());
+        
 
 }
 
@@ -310,7 +313,9 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == didsendfrom::symbol())
         return make_shared<didsendfrom>();
     if (symbol == didsendassetfrom::symbol())
-        return make_shared<didsendassetfrom>();    
+        return make_shared<didsendassetfrom>();
+    if (symbol == listdids::symbol())
+        return make_shared<listdids>();    
     return nullptr;
 }
 

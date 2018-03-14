@@ -1582,6 +1582,23 @@ std::shared_ptr<did_detail> block_chain_impl::get_account_unissued_did(const std
 	return sp_did;
 }
 
+// get all local unissued dids belongs to the account/name
+std::shared_ptr<std::vector<business_address_did>> block_chain_impl::get_account_unissued_dids(const std::string& name)
+{
+	auto sp_did_vec = std::make_shared<std::vector<business_address_did>>();
+	// copy each did_vec element to sp_did
+	const auto add_did = [&](const business_address_did& addr_did)
+	{
+		sp_did_vec->emplace_back(std::move(addr_did));
+	};
+
+	// get account did which is not issued (not in blockchain)
+	auto no_issued_dids = database_.account_dids.get_unissued_dids(get_short_hash(name));
+	std::for_each(no_issued_dids->begin(), no_issued_dids->end(), add_did);
+
+	return sp_did_vec;
+}
+
 
 uint64_t block_chain_impl::shrink_amount(uint64_t amount, uint8_t decimal_number){
 	double db_amount = static_cast<double>(amount);
