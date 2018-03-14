@@ -334,10 +334,14 @@ public:
 class BCX_API secondissuing_asset : public base_transfer_helper
 {
 public:
-    secondissuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
-        fee, std::move(symbol)), volume_(volume)
+    secondissuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
+        base_transfer_helper(cmd, blockchain,
+                std::move(name), std::move(passwd),
+                std::move(from), std::move(receiver_list),
+                fee, std::move(symbol)), volume_(volume)
     {};
 
     ~secondissuing_asset(){};

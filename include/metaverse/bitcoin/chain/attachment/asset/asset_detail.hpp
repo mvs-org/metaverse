@@ -84,7 +84,7 @@ public:
 	void set_description(const std::string& description);
 
     bool is_asset_secondissue() const { return secondissue_assetshare_threshold >= 128; }
-    void set_asset_secondissue() { secondissue_assetshare_threshold += 128; }
+    void set_asset_secondissue() { if (!is_asset_secondissue()) { secondissue_assetshare_threshold += 128; } }
     uint8_t get_secondissue_assetshare_threshold() const
     {
         if(secondissue_assetshare_threshold > 128)

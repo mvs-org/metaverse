@@ -1562,9 +1562,8 @@ void sending_multisig_etp::exec(){
 void issuing_asset::sum_payment_amount() {
     if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
-    //if (payment_etp_ < maximum_fee)
-    if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+    if (payment_etp_ < 1000000000) // 10 etp now
+        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -1573,21 +1572,19 @@ void issuing_asset::sum_payment_amount() {
 }
 
 void issuing_asset::populate_change() {
-    if(from_.empty()) {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    } else {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+    // etp utxo
+    if (unspent_etp_ > payment_etp_) {
+        receiver_list_.push_back({from_addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
 void secondissuing_asset::sum_payment_amount() {
     if(receiver_list_.empty())
         throw std::logic_error{"empty target address"};
-    //if (payment_etp_ < maximum_fee)
-    if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw std::logic_error{"fee must more than 10000000000 satoshi == 100 etp"};
+    if (payment_etp_ < 1000000000) // 10 etp now
+        throw std::logic_error{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -1596,12 +1593,11 @@ void secondissuing_asset::sum_payment_amount() {
 }
 
 void secondissuing_asset::populate_change() {
-    if(from_.empty()) {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    } else {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+    // etp utxo
+    if (unspent_etp_ > payment_etp_) {
+        receiver_list_.push_back({from_addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
@@ -1941,10 +1937,8 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
 
         if (output.is_etp())
             record.type = utxo_attach_type::etp;
-        else if (output.is_asset_transfer())
-            record.type = utxo_attach_type::asset_transfer;
         else
-            record.type = utxo_attach_type::asset_issue;
+            record.type = utxo_attach_type::asset_transfer;
 
         from_list_.push_back(record);
 
