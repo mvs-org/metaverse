@@ -73,7 +73,17 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    );
+	    )
+        (
+            "address,a",
+            value<std::string>(&argument_.address),
+            "The target node address[x.x.x.x:port]."
+        )
+        (
+            "command,c",
+            value<std::string>(&argument_.command),
+            "The command[add|remove] for the target node."
+        );
 
         return options;
     }
@@ -87,6 +97,8 @@ public:
 
     struct argument
     {
+        std::string address;
+        std::string command;
     } argument_;
 
     struct option

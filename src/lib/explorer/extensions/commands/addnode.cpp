@@ -23,6 +23,8 @@
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
+#include <metaverse/bitcoin/config/authority.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -34,7 +36,29 @@ namespace commands {
 console_result addnode::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    jv_output["message"] = IN_DEVELOPING;
+    //jv_output["message"] = IN_DEVELOPING;
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+    auto& root = jv_output;
+
+    auto address = libbitcoin::config::authority(argument_.address).to_network_address();
+
+    code errcode;
+    auto handler = [&errcode](const code& ec){
+        errcode = ec;
+    };
+
+    if (argument_.command == "add") {
+        node.store(address, handler);
+    } else if (argument_.command == "remove") {
+        node.remove(address, handler);
+    } else {
+        jv_output["message"] = std::string("invalid command[") + argument_.command + "].";
+        return console_result::okay;
+    }
+
+    jv_output["message"] = "done.";
+
     return console_result::okay;
 }
 
