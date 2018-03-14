@@ -411,6 +411,25 @@ private:
 	uint32_t						  deposit_cycle_{0};
 };
 
+class BCX_API merging_asset : public base_transfer_helper
+{
+public:
+    merging_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd, std::string&& symbol,
+        std::vector<receiver_record>&& receiver_list, std::string&& mychange_address, uint64_t fee):
+        base_transfer_helper(cmd, blockchain,
+            std::move(name), std::move(passwd), std::move(mychange_address),
+            std::move(receiver_list), fee, std::move(symbol))
+        {};
+
+    ~merging_asset() {};
+
+    void sum_payment_amount() override;
+    void populate_change() override;
+    void populate_unspent_list() override;
+    void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
+};
+
 } // commands
 } // explorer
 } // libbitcoin

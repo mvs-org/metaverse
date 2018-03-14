@@ -1860,6 +1860,144 @@ void sending_locked_asset::populate_tx_outputs() {
     }
 }
 
+void merging_asset::sum_payment_amount()
+{
+    if (receiver_list_.empty())
+        throw toaddress_empty_exception{"empty target address"};
+    if (receiver_list_.size() > 1)
+        throw toaddress_empty_exception{"multiple target address"};
+    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
+        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
+}
+
+void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
+{
+    auto waddr = wallet::payment_address(addr);
+    auto rows = get_address_history(waddr, blockchain_);
+
+    uint64_t height = 0;
+    blockchain_.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spended
+        if (row.spend.hash != null_hash)
+            continue;
+
+        chain::transaction tx_temp;
+        uint64_t tx_height;
+        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
+            continue;
+
+        auto output = tx_temp.outputs.at(row.output.index);
+        auto asset_amount = output.get_asset_amount();
+        auto asset_symbol = output.get_asset_symbol();
+
+        // filter output
+        if (output.is_etp()) {
+            BITCOIN_ASSERT(asset_amount == 0);
+            // enough to pay tx fees, and no asset to connect
+            if (unspent_etp_ >= payment_etp_)
+                continue;
+        } else {
+            if (symbol_ != asset_symbol)
+                continue;
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue()) )
+                continue;
+        }
+
+        // deposit utxo in transaction pool
+        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+                    && (row.output_height == 0)) {
+            continue;
+        }
+        // deposit utxo in block
+        else if (tx_temp.is_coinbase()) { // incase readd deposit
+            // coin base etp maturity etp check
+            // coinbase_maturity etp check
+            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+                continue;
+            }
+        }
+
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+            && (row.output_height != 0)) {
+            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+                continue;
+            }
+        }
+
+        // add to from list
+        address_asset_record record;
+
+        record.prikey = prikey;
+        record.addr = addr;
+        record.amount = row.value;
+        record.symbol = symbol_;
+        record.asset_amount = asset_amount;
+        record.output = row.output;
+        record.script = output.script;
+
+        if (output.is_etp())
+            record.type = utxo_attach_type::etp;
+        else if (output.is_asset_transfer())
+            record.type = utxo_attach_type::asset_transfer;
+        else
+            record.type = utxo_attach_type::asset_issue;
+
+        from_list_.push_back(record);
+
+        unspent_etp_ += record.amount;
+        unspent_asset_ += record.asset_amount;
+    }
+    payment_asset_ = unspent_asset_;
+    rows.clear();
+}
+
+void merging_asset::populate_change()
+{
+    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+    // etp utxo
+    if (unspent_etp_ > payment_etp_) {
+        receiver_list_.push_back({from_addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+    BITCOIN_ASSERT(unspent_asset_ == payment_asset_);
+}
+
+void merging_asset::populate_unspent_list()
+{
+    // get address list
+    auto pvaddr = blockchain_.get_account_addresses(name_);
+    if (!pvaddr)
+        throw address_list_nullptr_exception{"nullptr for address list"};
+
+    // get from address balances
+    for (const auto& each : *pvaddr) {
+        // filter script address
+        if (blockchain_.is_script_address(each.get_address()))
+            continue;
+
+        // select utxo in all account addresses
+        sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+    }
+
+    if (from_list_.empty())
+        throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
+
+    // addresses balances check
+    if (unspent_etp_ < payment_etp_)
+        throw account_balance_lack_exception{"no enough balance"};
+
+    // asset amount check
+    if (unspent_asset_ == 0)
+        throw asset_lack_exception{"no enough asset amount"};
+
+    // change
+    populate_change();
+}
+
 } //commands
 } // explorer
 } // libbitcoin
