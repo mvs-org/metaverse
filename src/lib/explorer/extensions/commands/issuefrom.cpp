@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -22,7 +22,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
-#include <metaverse/explorer/extensions/exception.hpp> 
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
@@ -54,11 +54,11 @@ console_result issuefrom::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
+        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
     };
-    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
-    
+
     issue_helper.exec();
     // json output
     auto tx = issue_helper.get_transaction();

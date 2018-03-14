@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class issuefrom: public command_extension
 {
 public:
     static const char* symbol(){ return "issuefrom";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "issuefrom "; }
 
@@ -48,7 +48,7 @@ public:
             .add("SYMBOL", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -63,36 +63,36 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"ADDRESS",
-			value<std::string>(&argument_.address)->required(),
-			"target address"
-		)
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"issued asset symbol"
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(1000000000),
-			"The fee of tx. default_value 10 etp"
-		);
+        )
+        (
+            "ADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "target address"
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "issued asset symbol"
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(1000000000),
+            "The fee of tx. default_value 10 etp"
+        );
 
         return options;
     }
@@ -106,9 +106,9 @@ public:
 
     struct argument
     {
-    	std::string address;
-    	std::string symbol;
-    	uint64_t fee;
+        std::string address;
+        std::string symbol;
+        uint64_t fee;
     } argument_;
 
     struct option

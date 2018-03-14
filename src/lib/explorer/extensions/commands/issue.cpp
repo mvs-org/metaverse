@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -52,20 +52,20 @@ console_result issue::invoke (Json::Value& jv_output,
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty()) 
+    if(!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
-    
-    // get random address    
+
+    // get random address
     auto index = bc::pseudo_random() % pvaddr->size();
     auto addr = pvaddr->at(index).get_address();
-    
+
     // receiver
     std::vector<receiver_record> receiver{
-        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}  
+        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
     };
-    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-    
+
     issue_helper.exec();
 
     // json output
