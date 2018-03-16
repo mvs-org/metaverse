@@ -65,9 +65,9 @@ console_result mergeasset::invoke (Json::Value& jv_output,
     };
     auto merge_helper = merging_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.symbol), std::move(receiver),
             std::move(argument_.mychange_address),
-            argument_.fee);
+            std::move(argument_.symbol),
+            std::move(receiver), argument_.fee);
 
     merge_helper.exec();
 

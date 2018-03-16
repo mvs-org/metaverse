@@ -95,6 +95,11 @@ public:
            "The vlolume of asset"
         )
         (
+            "mychange,m",
+            value<std::string>(&argument_.mychange_address),
+            "Mychange to this address"
+	    )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(1000000000),
             "The fee of tx. default_value 10 etp"
@@ -113,6 +118,7 @@ public:
     struct argument
     {
         std::string address;
+        std::string mychange_address;
         std::string symbol;
         uint64_t fee;
         uint64_t volume;

@@ -347,6 +347,7 @@ public:
     ~secondissuing_asset(){};
     void sum_payment_amount() override;
     void populate_change() override;
+    void populate_unspent_list() override;
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
     attachment populate_output_attachment(receiver_record& record) override;
     uint64_t get_volume() { return volume_; };
@@ -357,6 +358,7 @@ public:
 
 private:
     uint64_t volume_;
+    std::shared_ptr<asset_detail> issued_asset_;
 };
 
 class BCX_API issuing_locked_asset : public base_transfer_helper
@@ -419,10 +421,10 @@ class BCX_API merging_asset : public base_transfer_helper
 {
 public:
     merging_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
-        std::string&& name, std::string&& passwd, std::string&& symbol,
-        std::vector<receiver_record>&& receiver_list, std::string&& mychange_address, uint64_t fee):
+        std::string&& name, std::string&& passwd, std::string&& from, std::string&& symbol,
+        std::vector<receiver_record>&& receiver_list, uint64_t fee):
         base_transfer_helper(cmd, blockchain,
-            std::move(name), std::move(passwd), std::move(mychange_address),
+            std::move(name), std::move(passwd), std::move(from),
             std::move(receiver_list), fee, std::move(symbol))
         {};
 
