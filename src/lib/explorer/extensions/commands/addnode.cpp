@@ -48,16 +48,10 @@ console_result addnode::invoke (Json::Value& jv_output,
         errcode = ec;
     };
 
-    if (argument_.command == "add") {
-        node.store(address, handler);
-    } else if (argument_.command == "remove") {
-        node.remove(address, handler);
-    } else {
-        jv_output["message"] = std::string("invalid command[") + argument_.command + "].";
-        return console_result::okay;
-    }
+    node.store(address, handler);
+    //node.remove(address, handler);
 
-    jv_output["message"] = "done.";
+    jv_output = errcode.message();
 
     return console_result::okay;
 }

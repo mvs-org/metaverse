@@ -43,7 +43,8 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("NODEADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -52,6 +53,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "NODEADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -75,14 +77,9 @@ public:
             BX_ACCOUNT_AUTH
 	    )
         (
-            "address,a",
-            value<std::string>(&argument_.address),
+            "NODEADDRESS",
+            value<std::string>(&argument_.address)->required(),
             "The target node address[x.x.x.x:port]."
-        )
-        (
-            "command,c",
-            value<std::string>(&argument_.command),
-            "The command[add|remove] for the target node."
         );
 
         return options;
@@ -98,7 +95,6 @@ public:
     struct argument
     {
         std::string address;
-        std::string command;
     } argument_;
 
     struct option
