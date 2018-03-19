@@ -479,9 +479,13 @@ unsigned int miner::get_adjust_time(uint64_t height)
 	typedef std::chrono::system_clock wall_clock;
 	const auto now = wall_clock::now();
 	unsigned int t = wall_clock::to_time_t(now);
-	unsigned int t_past = get_median_time_past(height);
 
-	return max(t, t_past + 1);
+    if (height >= future_blocktime_fork_height) {
+        return t;
+    } else {
+	    unsigned int t_past = get_median_time_past(height);
+	    return max(t, t_past + 1);
+    }
 }
 
 unsigned int miner::get_median_time_past(uint64_t height)

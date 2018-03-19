@@ -88,6 +88,7 @@ protected:
     virtual bool is_active(chain::script_context flag) const;
     bool is_spent_duplicate(const chain::transaction& tx) const;
     bool is_valid_time_stamp(uint32_t timestamp) const;
+    bool is_valid_time_stamp_new(uint32_t timestamp) const;
     u256 work_required(bool is_testnet) const;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
