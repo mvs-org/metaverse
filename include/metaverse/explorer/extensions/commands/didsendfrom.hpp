@@ -37,15 +37,15 @@ public:
     static const char* symbol(){ return "didsendfrom";}
     const char* name() override { return symbol();} 
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp from a specified address of this account to target did, mychange goes to from_address."; }
+    const char* description() override { return "send etp from a specified did/address of this account to target did/address, mychange goes to from_did/address."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
-            .add("TODID", 1)
+            .add("FROMDID/FROMADDRESS", 1)
+            .add("TODID/TOADDRESS", 1)
             .add("AMOUNT", 1);
     }
 
@@ -55,9 +55,9 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(auth_.auth, "FROMADDRESS", variables, input, raw);
-        load_input(auth_.auth, "TODID", variables, input, raw);
-        load_input(auth_.auth, "AMOUNT", variables, input, raw);
+        load_input(argument_.fromdid, "FROMDID/FROMADDRESS", variables, input, raw);
+        load_input(argument_.todid, "TODID/TOADDRESS", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -81,14 +81,14 @@ public:
             BX_ACCOUNT_AUTH
 	    )
 		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"Send from this address"
+			"FROMDID/FROMADDRESS",
+			value<std::string>(&argument_.fromdid)->required(),
+			"Send from this did/address"
 		)
 		(
-			"TODID",
-			value<std::string>(&argument_.did)->required(),
-			"Send to this did"
+			"TODID/TOADDRESS",
+			value<std::string>(&argument_.todid)->required(),
+			"Send to this did/address"
 		)
 		(
 			"AMOUNT",
@@ -119,10 +119,10 @@ public:
     struct argument
     {
     
-        argument():from(""), did(""), memo("")
+        argument():fromdid(""), todid(""), memo("")
         {};
-    	std::string from;
-		std::string did;
+    	std::string fromdid;
+		std::string todid;
 		uint64_t amount;
 		uint64_t fee;
         std::string memo;

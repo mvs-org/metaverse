@@ -55,9 +55,9 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(auth_.auth, "FROMADDRESS", variables, input, raw);
-        load_input(auth_.auth, "TOADDRESS", variables, input, raw);
-        load_input(auth_.auth, "AMOUNT", variables, input, raw);
+        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
+        load_input(argument_.to, "TOADDRESS", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
     options_metadata& load_options() override

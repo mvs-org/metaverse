@@ -37,15 +37,20 @@ console_result issuedid::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if(argument_.fee < 1000000000)
-        throw did_issue_poundage_exception{"issue did fee less than 1000000000!"};
+    if(argument_.fee < 100000000)
+        throw did_issue_poundage_exception{"issue did fee less than 100000000 satoshi = 1 etp!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
+        
     // fail if did is already in blockchain
     if(blockchain.is_did_exist(argument_.symbol, false))
         throw did_symbol_existed_exception{"did symbol is already exist in blockchain"};
+
+    // fail if address is already binded with did in blockchain
+    if(blockchain.is_address_issued_did(argument_.address, false))
+        throw did_symbol_existed_exception{"address is already binded with some did in blockchain"};
 
     // local database did check
     auto sh_did = blockchain.get_account_unissued_did(auth_.name, argument_.symbol);

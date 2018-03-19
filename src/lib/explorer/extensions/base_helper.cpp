@@ -1590,7 +1590,7 @@ void issuing_asset::sum_payment_amount() {
         throw toaddress_empty_exception{"empty target address"};
     //if (payment_etp_ < maximum_fee)
     if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -1612,8 +1612,8 @@ void issuing_did::sum_payment_amount() {
     if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
     //if (payment_etp_ < maximum_fee)
-    if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw did_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+    if (payment_etp_ < 100000000) // test code 10 etp now
+        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 100 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -1636,7 +1636,7 @@ void issuing_locked_asset::sum_payment_amount() {
         throw toaddress_empty_exception{"empty target address"};
     //if (payment_etp_ < maximum_fee)
     if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;

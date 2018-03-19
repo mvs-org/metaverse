@@ -35,14 +35,14 @@ public:
     static const char* symbol(){ return "didsend";}
     const char* name() override { return symbol();} 
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp to a targert did, mychange goes to another existed did of this account."; }
+    const char* description() override { return "send etp to a targert did/address, mychange goes to another existed address of this account."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("TODID", 1)
+            .add("TODID/TOADDRESS", 1)
             .add("AMOUNT", 1);
     }
 
@@ -52,7 +52,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.did, "TODID", variables, input, raw);
+        load_input(argument_.did, "TODID/TOADDRESS", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -77,9 +77,9 @@ public:
             BX_ACCOUNT_AUTH
 	    )
         (
-            "TODID",
+            "TODID/TOADDRESS",
             value<std::string>(&argument_.did)->required(),
-            "Send to this did"
+            "Send to this did/address"
 	    )
         (
             "AMOUNT",

@@ -90,7 +90,7 @@ public:
 		)
 		(
 			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(1000000000),
+			value<uint64_t>(&argument_.fee)->default_value(100000000),
 			"The fee of tx. default_value 10 etp"
 		);
 

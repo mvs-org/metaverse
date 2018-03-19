@@ -256,6 +256,7 @@ public:
 		const std::string& symbol);
     //account did api
 	bool is_did_exist(const std::string& did_name, bool add_local_db=true);
+    bool is_address_issued_did(const std::string& address, bool check_local_db=true);
     operation_result store_account_did(const did_detail& detail);
 	operation_result store_account_did(std::shared_ptr<did_detail> detail);
 	std::shared_ptr<did_detail> get_issued_did(std::string& symbol);

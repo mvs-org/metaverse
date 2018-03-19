@@ -35,27 +35,53 @@ console_result didsendfrom::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!blockchain.is_valid_address(argument_.from)) 
-        throw fromaddress_invalid_exception{"invalid from address!"};
-    
-    blockchain.uppercase_symbol(argument_.did);
-    if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"did symbol length must be less than 64."};
-    if(!blockchain.is_did_exist(argument_.did, false))
-        throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};  
 
+    std::string fromaddress = "";
+    std::string toaddress = "";
 
-    auto diddetail=blockchain.get_issued_did(argument_.did); 
+    //support address as well as did
+    if (blockchain.is_valid_address(argument_.fromdid))
+    {
+        fromaddress = argument_.fromdid;
+    }
+    else
+    {
+        blockchain.uppercase_symbol(argument_.fromdid);
+        if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+            throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
+        if(!blockchain.is_did_exist(argument_.fromdid, false))
+            throw did_symbol_existed_exception{"fromdid symbol is not exist in blockchain"};  
+
+        auto diddetail=blockchain.get_issued_did(argument_.fromdid); 
+        fromaddress = diddetail->get_address();
+    }
+
+    //support address as well as did
+    if (blockchain.is_valid_address(argument_.todid))
+    {
+        toaddress = argument_.todid;
+    }
+    else
+    {
+        blockchain.uppercase_symbol(argument_.todid);
+        if (argument_.todid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+            throw did_symbol_length_exception{"todid symbol length must be less than 64."};
+        if(!blockchain.is_did_exist(argument_.todid, false))
+            throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};  
+
+        auto diddetail=blockchain.get_issued_did(argument_.todid); 
+        toaddress = diddetail->get_address();
+    }
     
     // receiver
     std::vector<receiver_record> receiver{
-        {diddetail->get_address(), "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
+        {toaddress, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
     };
     if(!argument_.memo.empty())
-        receiver.push_back({diddetail->get_address(), "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
+        receiver.push_back({toaddress, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
     
     auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.from), std::move(receiver), argument_.fee);
+            std::move(fromaddress), std::move(receiver), argument_.fee);
     
     send_helper.exec();
 

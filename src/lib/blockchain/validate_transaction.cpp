@@ -314,6 +314,10 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 if(chain.is_did_exist(output.get_did_symbol(), false)) {
                     return error::did_exist;
                 }
+
+                if(chain.is_address_issued_did(output.get_did_address(), false)) {
+                    return error::address_issued_did;
+                }
             }
         }
     }

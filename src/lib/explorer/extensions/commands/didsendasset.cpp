@@ -36,22 +36,35 @@ console_result didsendasset::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
-    blockchain.uppercase_symbol(argument_.did);
-    
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"did symbol length must be less than 64."};   
-    if(!blockchain.is_did_exist(argument_.did, false))
-        throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};     
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
 
-    auto diddetail=blockchain.get_issued_did(argument_.did);
+    std::string tempaddress;
+    
+    //support address as well as did
+    if (blockchain.is_valid_address(argument_.did))
+    {
+        tempaddress = argument_.did;
+    }
+    else
+    {
+        blockchain.uppercase_symbol(argument_.did);
+        if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+            throw did_symbol_length_exception{"did symbol length must be less than 64."};   
+        if(!blockchain.is_did_exist(argument_.did, false))
+            throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};     
+        if (!argument_.amount)
+            throw asset_amount_exception{"invalid asset amount parameter!"};
+
+        auto diddetail = blockchain.get_issued_did(argument_.did);
+        tempaddress = diddetail->get_address();
+    }
+
+    
 
     // receiver
     std::vector<receiver_record> receiver{
-        {diddetail->get_address(), argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+        {tempaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
     };
     auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee);

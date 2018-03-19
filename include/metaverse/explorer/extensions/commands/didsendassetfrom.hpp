@@ -44,8 +44,8 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
-            .add("TODID", 1)
+            .add("FROMDID/FROMADDRESS", 1)
+            .add("TODID/TOADDRESS", 1)
             .add("SYMBOL", 1)
             .add("AMOUNT", 1);
     }
@@ -56,8 +56,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
-        load_input(argument_.did, "TODID", variables, input, raw);
+        load_input(argument_.fromdid, "FROMDID/FROMADDRESS", variables, input, raw);
+        load_input(argument_.todid, "TODID/TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
@@ -83,14 +83,14 @@ public:
             BX_ACCOUNT_AUTH
 	    )
 		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"From address"
+			"FROMDID/FROMADDRESS",
+			value<std::string>(&argument_.fromdid)->required(),
+			"From did/address"
 		)
 		(
-			"TODID",
-			value<std::string>(&argument_.did)->required(),
-			"Target did"
+			"TODID/TOADDRESS",
+			value<std::string>(&argument_.todid)->required(),
+			"Target did/address"
 		)
 		(
 			"SYMBOL",
@@ -120,8 +120,8 @@ public:
 
     struct argument
     {
-		std::string from;
-		std::string did;
+		std::string fromdid;
+		std::string todid;
 		std::string symbol;
 		uint64_t amount;
 		uint64_t fee;

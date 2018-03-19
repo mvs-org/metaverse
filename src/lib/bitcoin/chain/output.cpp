@@ -224,9 +224,17 @@ std::string output::get_did_symbol() // for validate_transaction.cpp to calculat
 			auto detail_info = boost::get<did_detail>(did_info.get_data());
 			return detail_info.get_symbol();
 		}
-		if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
-			auto trans_info = boost::get<did_transfer>(did_info.get_data());
-			return trans_info.get_address();
+	}
+	return std::string("");
+}
+
+std::string output::get_did_address() // for validate_transaction.cpp to calculate did transfer amount
+{
+	if(attach_data.get_type() == DID_TYPE) {
+		auto did_info = boost::get<did>(attach_data.get_attach());
+		if(did_info.get_status() == DID_DETAIL_TYPE) {
+			auto detail_info = boost::get<did_detail>(did_info.get_data());
+			return detail_info.get_address();
 		}
 	}
 	return std::string("");
