@@ -80,6 +80,11 @@ public:
             "NODEADDRESS",
             value<std::string>(&argument_.address)->required(),
             "The target node address[x.x.x.x:port]."
+        )
+        (
+            "operation,p",
+            value<std::string>(&argument_.operation)->required(),
+            "The operation[ add|ban ] to the target node address. default: add."
         );
 
         return options;
@@ -94,6 +99,7 @@ public:
 
     struct argument
     {
+        std::string operation;
         std::string address;
     } argument_;
 

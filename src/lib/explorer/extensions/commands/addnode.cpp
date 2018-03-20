@@ -25,6 +25,7 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
 #include <metaverse/bitcoin/config/authority.hpp>
+#include <metaverse/network/channel.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -48,8 +49,16 @@ console_result addnode::invoke (Json::Value& jv_output,
         errcode = ec;
     };
 
-    node.store(address, handler);
-    //node.remove(address, handler);
+    if (argument_.operation == "ban") {
+        network::channel::manual_ban(address);
+        node.remove(address, handler);
+    } else if ((argument_.operation == "add") || (argument_.operation == "")){
+        network::channel::manual_unban(address);
+        node.store(address, handler);
+    } else {
+        jv_output = string("Invalid operation [") +argument_.operation+"]." ;
+    }
+
 
     jv_output = errcode.message();
 
