@@ -320,13 +320,14 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 		}
 	}
 
-	if(asset_name.empty() == false)
-	{
-		if(tx.outputs.size() > 2 || has_other_type_output)
-		{
-			return error::asset_secondissue_error;
-		}
-	}
+    if (asset_name.empty()) {
+        return error::success;
+    }
+
+    if (tx.outputs.size() > 2 || has_other_type_output)
+    {
+        return error::asset_secondissue_error;
+    }
 
     uint64_t asset_input_volume{0};
     for (const auto& input: tx.inputs)
@@ -374,13 +375,14 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
 		}
 	}
 
-	if(asset_name.empty() == false)
-	{
-		if(tx.outputs.size() > 2 || has_other_type_output)
-		{
-			return error::asset_secondissue_error;
-		}
-	}
+    if (asset_name.empty()) {
+        return error::success;
+    }
+
+    if (tx.outputs.size() > 2 || has_other_type_output)
+    {
+        return error::asset_secondissue_error;
+    }
 
     uint64_t asset_input_volume{0};
     for (const auto& input: tx.inputs)
@@ -400,7 +402,7 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
     if (secondissue_assetshare_threshold == 0 || asset_input_volume < total_volume / 100 * secondissue_assetshare_threshold)
         return error::asset_secondissue_share_not_enough;
 
-	return error::success;
+    return error::success;
 }
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
