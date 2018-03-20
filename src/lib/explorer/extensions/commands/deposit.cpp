@@ -49,12 +49,12 @@ console_result deposit::invoke (Json::Value& jv_output,
     if(!pvaddr || pvaddr->empty()) 
         throw address_list_nullptr_exception{"nullptr for address list"};
 
-    auto random = bc::pseudo_random();
-    auto index = random % pvaddr->size();
-
     auto addr = argument_.address;
-    if(addr.empty())
+    if (addr.empty()) {
+        auto random = bc::pseudo_random();
+        auto index = random % pvaddr->size();
         addr = pvaddr->at(index).get_address();
+    }
         
     // receiver
     std::vector<receiver_record> receiver{
