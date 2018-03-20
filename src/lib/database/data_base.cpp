@@ -78,6 +78,29 @@ bool data_base::initialize(const path& prefix, const chain::block& genesis)
     instance.push(genesis);
     return instance.stop();
 }
+
+bool data_base::initialize_dids(const path& prefix)
+{
+    auto metadata_path = prefix / db_metadata::file_name;
+    if (!boost::filesystem::exists(metadata_path))
+        return false;
+
+    const store paths(prefix);
+    if (paths.dids_exist())
+        return true;
+    if (!paths.touch_dids())
+        return false;
+
+    data_base instance(prefix, 0, 0);
+    if (!instance.create_dids())
+        return false;
+
+    instance.stop();
+    instance.start();
+    instance.synchronize_dids();
+    return instance.stop();
+}
+
 bool data_base::is_lower_database(const path& prefix)
 {
 	auto metadata_path = prefix / db_metadata::file_name;
@@ -203,6 +226,26 @@ bool data_base::store::touch_all() const
 		touch_file(account_addresses_lookup)&&
 		touch_file(account_addresses_rows);
 		/* end database for account, asset, address_asset relationship */
+}
+
+bool data_base::store::dids_exist() const
+{
+    return
+        boost::filesystem::exists(dids_lookup) ||
+        boost::filesystem::exists(address_dids_lookup) ||
+        boost::filesystem::exists(address_dids_rows) ||
+        boost::filesystem::exists(account_dids_lookup) ||
+        boost::filesystem::exists(account_dids_rows);
+}
+
+bool data_base::store::touch_dids() const
+{
+    return
+        touch_file(dids_lookup) &&
+        touch_file(address_dids_lookup) &&
+        touch_file(address_dids_rows) &&
+        touch_file(account_dids_lookup) &&
+        touch_file(account_dids_rows);
 }
 
 data_base::blockchain_store::blockchain_store(const path& prefix)
@@ -540,6 +583,14 @@ bool data_base::blockchain_did_create()
 		/* end database for account, asset, address_asset relationship */
 }
 
+bool data_base::create_dids()
+{
+    return
+        dids.create()&&
+        account_dids.create()&&
+        address_dids.create();
+}
+
 bool data_base::account_db_start()
 {
 	return 
@@ -806,6 +857,13 @@ void data_base::synchronize()
 	account_addresses.sync();
 	/* end database for account, asset, address_asset relationship */
     blocks.sync();
+}
+
+void data_base::synchronize_dids()
+{
+    dids.sync();
+    address_dids.sync();
+    account_dids.sync();
 }
 
 void data_base::push(const block& block)

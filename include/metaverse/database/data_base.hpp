@@ -74,6 +74,8 @@ public:
     public:
         store(const path& prefix);
         bool touch_all() const;
+        bool touch_dids() const;
+        bool dids_exist() const;
 		
         path database_lock;
         path blocks_lookup;
@@ -172,6 +174,7 @@ public:
 
     /// Create a new database file with a given path prefix and default paths.
     static bool initialize(const path& prefix, const chain::block& genesis);
+    static bool initialize_dids(const path& prefix);
     static bool touch_file(const path& file_path);
 	static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
 	static void read_metadata(const path& metadata_path, data_base::db_metadata& metadata);
@@ -189,6 +192,7 @@ public:
 
     /// Create and start all databases.
     bool create();
+    bool create_dids();
 	bool blockchain_create();
 	bool blockchain_asset_create();
 	bool blockchain_did_create();
@@ -363,6 +367,7 @@ private:
     static file_lock initialize_lock(const path& lock);
 
     void synchronize();
+    void synchronize_dids();
     void push_inputs(const hash_digest& tx_hash, size_t height,
         const inputs& inputs);
     void push_outputs(const hash_digest& tx_hash, size_t height,

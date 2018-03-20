@@ -132,6 +132,13 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
     }
+    else
+    {
+        const auto result = data_base::initialize_dids(data_path);
+        if (!result) {
+            throw std::runtime_error{ " initialize did database failed!" };
+        }
+    }
 
     if (ec.value() == directory_exists)
     {
