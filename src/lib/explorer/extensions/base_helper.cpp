@@ -622,6 +622,22 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                         }
                         log::trace("unspent_asset_=")<< unspent_asset_;
                         log::trace("unspent_etp_=")<< unspent_etp_;
+                    }else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
+                        record.prikey = prikey;
+                        record.addr = addr;
+                        record.amount = row.value;
+                        record.symbol = output.get_did_symbol();
+                        record.asset_amount = 0;
+                        record.type = utxo_attach_type::did_issue;
+                        record.output = row.output;
+                        record.script = output.script;
+                        
+                        if((unspent_asset_ < payment_asset_)
+                            || (unspent_etp_ < payment_etp_)) {
+                            from_list_.push_back(record);
+                            unspent_asset_ += record.asset_amount;
+                            unspent_etp_ += record.amount;
+                        }
                     }
                     // not add message process here, because message utxo have no etp value
                 }
@@ -865,7 +881,15 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
     } else if(record.type == utxo_attach_type::message) {
         auto msg = boost::get<bc::chain::blockchain_message>(record.attach_elem.get_attach());
         return attachment(MESSAGE_TYPE, attach_version, msg);
-    }
+    } else if(record.type == utxo_attach_type::did_issue) {
+        auto sh_did = blockchain_.get_account_unissued_did(name_, symbol_);
+        if(!sh_did)
+            throw did_symbol_notfound_exception{symbol_ + " not found"};
+     
+        sh_did->set_address(record.target); // target is setted in metaverse_output.cpp
+        auto ass = did(DID_DETAIL_TYPE, *sh_did);
+        return attachment(DID_TYPE, attach_version, ass);
+    } 
 
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
 }
@@ -1566,7 +1590,7 @@ void issuing_asset::sum_payment_amount() {
         throw toaddress_empty_exception{"empty target address"};
     //if (payment_etp_ < maximum_fee)
     if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
@@ -1583,12 +1607,36 @@ void issuing_asset::populate_change() {
             receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
+
+void issuing_did::sum_payment_amount() {
+    if(receiver_list_.empty())
+        throw toaddress_empty_exception{"empty target address"};
+    //if (payment_etp_ < maximum_fee)
+    if (payment_etp_ < 100000000) // test code 10 etp now
+        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 100 etp"};
+
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+    }
+}
+
+void issuing_did::populate_change() {
+    if(from_.empty()) {
+        if(unspent_etp_ - payment_etp_) // etp value != 0
+            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    } else {
+        if(unspent_etp_ - payment_etp_) // etp value != 0
+            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
 void issuing_locked_asset::sum_payment_amount() {
     if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
     //if (payment_etp_ < maximum_fee)
     if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 10000000000 satoshi == 100 etp"};
+        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
 
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;

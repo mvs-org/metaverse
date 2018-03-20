@@ -1,8 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2015 metaverse developers (see AUTHORS)
  *
- * This file is part of metaverse.
+ * This file is part of mvs-node.
  *
  * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -18,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MVS_CHAIN_OUTPUT_HPP
-#define MVS_CHAIN_OUTPUT_HPP
+#ifndef MVS_CHAIN_ATTACH_DID_HPP
+#define MVS_CHAIN_ATTACH_DID_HPP
 
 #include <cstdint>
 #include <istream>
@@ -29,55 +28,64 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
-#include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
-#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+#include <boost/variant.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
+
+using namespace libbitcoin::chain;
+
+#define DID_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<did::did_status>::type>(kd))
+
+#define DID_DETAIL_TYPE DID_STATUS2UINT32(did::did_status::did_locked)
+#define DID_TRANSFERABLE_TYPE DID_STATUS2UINT32(did::did_status::did_transferable)
 
 namespace libbitcoin {
 namespace chain {
 
-class BC_API output
+class BC_API did
 {
 public:
-    typedef std::vector<output> list;
+	enum class did_status : uint32_t
+	{
+		did_none,
+		did_locked,
+		did_transferable,
+	};
+	typedef boost::variant<did_detail, did_transfer> did_data_type;
 
-    static output factory_from_data(const data_chunk& data);
-    static output factory_from_data(std::istream& stream);
-    static output factory_from_data(reader& source);
+	did();
+	did(uint32_t status, const did_detail& detail);
+	did(uint32_t status, const did_transfer& detail);
+    static did factory_from_data(const data_chunk& data);
+    static did factory_from_data(std::istream& stream);
+    static did factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-	static bool is_valid_symbol(const std::string& symbol);
+
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
-    std::string to_string(uint32_t flags) const;
+    std::string to_string() const;
+	bool is_valid_type() const;
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	uint64_t get_asset_amount() const;
-	std::string get_asset_symbol();
-	bool is_asset_transfer();
-	bool is_asset_issue();
-	bool is_etp();
-    bool is_did_issue();
-	std::string get_did_symbol();
-    std::string get_did_address();
+	uint32_t get_status() const;
+	void set_status(uint32_t status);
+	void set_data(const did_detail& detail);
+	void set_data(const did_transfer& detail);
+	did_data_type& get_data();
 	
-    uint64_t value;
-    chain::script script;
-	attachment attach_data; // added for asset issue/transfer
-};
+private:
+    uint32_t status;
+    did_data_type data;
 
-struct BC_API output_info
-{
-    typedef std::vector<output_info> list;
-
-    output_point point;
-    uint64_t value;
 };
 
 } // namespace chain
 } // namespace libbitcoin
 
 #endif
+

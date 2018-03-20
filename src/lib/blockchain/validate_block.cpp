@@ -282,6 +282,27 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
+    std::set<string> dids;
+    for (const auto& tx: transactions)
+    {
+        RETURN_IF_STOPPED();
+
+        const auto ec = validate_transaction::check_transaction_basic(tx, chain);
+        if (ec)
+            return ec;
+
+       for(auto& output : const_cast<transaction&>(tx).outputs){
+           if(output.is_did_issue()) {
+               auto r = dids.insert(output.get_did_symbol());
+               if(r.second == false) {
+                   return error::did_exist;
+               }
+           }
+       }
+    }
+
+    RETURN_IF_STOPPED();
+
     if (!is_distinct_tx_set(transactions))
     {
         log::warning(LOG_BLOCKCHAIN) << "is_distinct_tx_set!!!";

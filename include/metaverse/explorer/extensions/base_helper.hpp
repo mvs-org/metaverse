@@ -38,7 +38,10 @@ enum utxo_attach_type : uint32_t
 	asset_locked_issue,
 	asset_locked_transfer,  // 5
 	message,
-	digital_identity
+	digital_identity,
+	did_issue,
+	did_transfer_etp,
+	did_transfer_asset
 };
 
 struct address_asset_record{
@@ -59,6 +62,7 @@ struct receiver_record {
 	std::string symbol;
     uint64_t    amount; // etp value
     uint64_t    asset_amount;
+	
 	utxo_attach_type type; // only used for non-etp asset
 	attachment attach_elem;  // only used for message , maybe used for "digital identity" later
 };
@@ -383,6 +387,22 @@ public:
 
 private:
 	uint32_t						  deposit_cycle_{0};
+};
+
+class BCX_API issuing_did : public base_transfer_helper
+{
+public:
+	issuing_did(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
+		std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
+		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), 
+			fee, std::move(symbol))
+		{};
+
+	~issuing_did(){};
+		
+	void sum_payment_amount() override;
+	
+	void populate_change() override;
 };
 
 } // commands

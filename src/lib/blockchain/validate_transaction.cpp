@@ -308,6 +308,18 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 }
             }
         }
+
+        for(auto& output : const_cast<transaction&>(tx).outputs){
+            if(output.is_did_issue()) {
+                if(chain.is_did_exist(output.get_did_symbol(), false)) {
+                    return error::did_exist;
+                }
+
+                if(chain.is_address_issued_did(output.get_did_address(), false)) {
+                    return error::address_issued_did;
+                }
+            }
+        }
     }
     return ret;
 }
@@ -348,6 +360,18 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         if(output.is_asset_issue()) {
             if(!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
+            }
+        }
+    }
+
+    for(auto& output : const_cast<transaction&>(tx).outputs){
+        if(output.is_did_issue()) {
+            if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
+               return error::did_symbol_invalid;
+            }
+
+            if (is_did_validate(chain)){
+                return error::did_func_not_actived;    
             }
         }
     }
@@ -543,6 +567,25 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
 	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
 		return false;
 	return true;
+}
+
+bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
+{
+    if (chain.chain_settings().use_testnet_rules)
+    {
+        return true;
+    }
+
+    uint64_t current_blockheight = 0;
+
+    chain.get_last_height(current_blockheight);
+
+    if (current_blockheight < 1130000)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace blockchain

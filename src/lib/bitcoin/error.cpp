@@ -193,6 +193,18 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::asset_exist:
             return "asset exist";
 
+        // did errors
+        case error::did_symbol_not_match:
+			return "did symbol not match";
+		case error::did_symbol_invalid:
+			return "did symbol invalid";
+        case error::did_exist:
+            return "did exist";
+        case error::address_issued_did:
+            return "address already issued did";  
+        case error::did_func_not_actived:
+			return "did function has not been actived until block height is larger than 1130000";      
+
         // unknown errors
         case error::unknown:
         default:

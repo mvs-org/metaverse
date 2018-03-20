@@ -1,8 +1,7 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
- * Copyright (c) 2016-2018 metaverse core developers (see MVS-AUTHORS)
+ * Copyright (c) 2011-2015 metaverse developers (see AUTHORS)
  *
- * This file is part of metaverse.
+ * This file is part of mvs-node.
  *
  * metaverse is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
@@ -18,8 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MVS_CHAIN_OUTPUT_HPP
-#define MVS_CHAIN_OUTPUT_HPP
+#pragma once
 
 #include <cstdint>
 #include <istream>
@@ -29,55 +27,54 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
-#include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
-#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
-class BC_API output
+class BC_API blockchain_did
 {
 public:
-    typedef std::vector<output> list;
-
-    static output factory_from_data(const data_chunk& data);
-    static output factory_from_data(std::istream& stream);
-    static output factory_from_data(reader& source);
+	typedef std::vector<blockchain_did> list;
+	blockchain_did();
+	blockchain_did(uint32_t version, const output_point& tx_point,
+			uint64_t height, const did_detail& did);
+    static blockchain_did factory_from_data(const data_chunk& data);
+    static blockchain_did factory_from_data(std::istream& stream);
+    static blockchain_did factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-	static bool is_valid_symbol(const std::string& symbol);
+
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
-    std::string to_string(uint32_t flags) const;
+
+#ifdef MVS_DEBUG
+    std::string to_string() const;
+#endif
+
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	uint64_t get_asset_amount() const;
-	std::string get_asset_symbol();
-	bool is_asset_transfer();
-	bool is_asset_issue();
-	bool is_etp();
-    bool is_did_issue();
-	std::string get_did_symbol();
-    std::string get_did_address();
-	
-    uint64_t value;
-    chain::script script;
-	attachment attach_data; // added for asset issue/transfer
-};
+	const uint32_t& get_version() const;
+	void set_version(const uint32_t& version_);
+	const output_point& get_tx_point() const;
+	void set_tx_point(const output_point& tx_point_);
+	const uint64_t& get_height() const;
+	void set_height(const uint64_t& height_);
+	const did_detail& get_did() const;
+	void set_did(const did_detail& did_);
 
-struct BC_API output_info
-{
-    typedef std::vector<output_info> list;
-
-    output_point point;
-    uint64_t value;
+private:    
+    uint32_t version_;
+    output_point tx_point_;
+	uint64_t height_;
+	did_detail did_;
 };
 
 } // namespace chain
 } // namespace libbitcoin
 
-#endif
+

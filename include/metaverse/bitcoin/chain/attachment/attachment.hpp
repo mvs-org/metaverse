@@ -27,6 +27,7 @@
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
@@ -38,6 +39,7 @@ using namespace libbitcoin::chain;
 #define ETP_AWARD_TYPE TYPE2UINT32(attachment::attachment_type::attachment_etp_award)
 #define ASSET_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset)
 #define MESSAGE_TYPE TYPE2UINT32(attachment::attachment_type::attachment_message)
+#define DID_TYPE TYPE2UINT32(attachment::attachment_type::attachment_did)
 
 
 
@@ -54,8 +56,9 @@ public:
 		attachment_etp_award,
 		attachment_asset,
 		attachment_message,
+		attachment_did
 	};
-	typedef boost::variant<etp, etp_award, asset, blockchain_message> attachment_data_type;
+	typedef boost::variant<etp, etp_award, asset, blockchain_message,did> attachment_data_type;
 
 	attachment();
 	template<class Type>

@@ -1478,6 +1478,156 @@ std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_issued_assets()
 	return sp_vec;
 }
 
+/* find did symbol exist or not
+*  find steps:
+*  1. find from blockchain
+*  2. find from local database(includes account created asset) if add_local_db = true
+*/
+bool block_chain_impl::is_did_exist(const std::string& did_name, bool add_local_db)
+{
+	// 1. find from blockchain database
+	if(get_issued_did(const_cast<std::string&>(did_name)))
+		return true;
+
+	// 2. find from local database did
+	if(add_local_db) {
+		auto sh_acc_vec = get_local_dids();
+		// scan all account did
+		for(auto& acc : *sh_acc_vec) {
+			if(did_name.compare(acc.get_symbol())==0)
+				return true;
+		}
+	}
+	
+	return false;
+}
+
+/* find did address exist or not
+*  find steps:
+*  1. find from blockchain
+*  2. find from local database(includes account created did) if check_local_db = true
+*/
+bool block_chain_impl::is_address_issued_did(const std::string& did_address, bool check_local_db)
+{
+	// 1. find from blockchain database
+	business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+
+	if (!did_vec.empty())
+	{
+		return true;
+	}
+
+	// 2. find from local database did
+	if(check_local_db) {
+		auto sh_acc_vec = get_local_dids();
+		// scan all account did
+		for (auto& acc : *sh_acc_vec) {
+			if (did_address.compare(acc.get_address())==0)
+				return true;
+		}
+	}
+	
+	return false;
+}
+
+/// get did from local database including all account's dids
+std::shared_ptr<std::vector<did_detail>> block_chain_impl::get_local_dids()
+{
+	auto ret_vec = std::make_shared<std::vector<did_detail>>();
+	auto sh_acc_vec = get_accounts();
+	// scan all account did -- maybe the did has been issued
+	for(auto& acc : *sh_acc_vec) {
+		auto no_issued_dids = database_.account_dids.get(get_short_hash(acc.get_name()));
+		for (auto& detail : no_issued_dids){
+			ret_vec->emplace_back(std::move(detail));
+		}
+	}
+	
+	return ret_vec;
+}
+
+std::shared_ptr<did_detail> block_chain_impl::get_issued_did(std::string& symbol)
+{
+	std::shared_ptr<did_detail> sp_did(nullptr);
+	const auto hash = get_hash(symbol);
+	auto sh_block_did = database_.dids.get(hash);
+	if(sh_block_did)
+		sp_did = std::make_shared<did_detail>(sh_block_did->get_did());
+	return sp_did;
+}
+
+/// get all the did in blockchain
+std::shared_ptr<std::vector<did_detail>> block_chain_impl::get_issued_dids()
+{
+	auto sp_blockchain_vec = database_.dids.get_blockchain_dids();
+	auto sp_vec = std::make_shared<std::vector<did_detail>>();
+	for(auto& each : *sp_blockchain_vec) 
+		sp_vec->push_back(each.get_did());
+	return sp_vec;
+}
+
+operation_result block_chain_impl::store_account_did(const did_detail& detail)
+{
+	if (stopped())
+	{
+		return operation_result::failure;
+	}
+	///////////////////////////////////////////////////////////////////////////
+	// Critical Section.
+	unique_lock lock(mutex_);
+
+	const auto hash = get_short_hash(detail.get_issuer());
+	database_.account_dids.store(hash, detail);
+	database_.account_dids.sync();
+	///////////////////////////////////////////////////////////////////////////
+	return operation_result::okay;
+}
+
+operation_result block_chain_impl::store_account_did(std::shared_ptr<did_detail> detail)
+{
+	if (!(detail))
+	{
+        throw std::runtime_error{"nullptr for asset"};
+	}
+	return store_account_did(*detail);
+}
+
+std::shared_ptr<did_detail> block_chain_impl::get_account_unissued_did(const std::string& name,
+	const std::string& symbol)
+{
+	std::shared_ptr<did_detail> sp_did(nullptr);
+	// copy each did_vec element to sp_did
+	const auto add_did = [&](const business_address_did& addr_did)
+	{
+		if(addr_did.detail.get_symbol() == symbol)
+			sp_did = std::make_shared<did_detail>(addr_did.detail);
+	};
+
+	// get account did which is not issued (not in blockchain)
+	auto no_issued_dids = database_.account_dids.get_unissued_dids(get_short_hash(name));
+	std::for_each(no_issued_dids->begin(), no_issued_dids->end(), add_did);
+
+	return sp_did;
+}
+
+// get all local unissued dids belongs to the account/name
+std::shared_ptr<std::vector<business_address_did>> block_chain_impl::get_account_unissued_dids(const std::string& name)
+{
+	auto sp_did_vec = std::make_shared<std::vector<business_address_did>>();
+	// copy each did_vec element to sp_did
+	const auto add_did = [&](const business_address_did& addr_did)
+	{
+		sp_did_vec->emplace_back(std::move(addr_did));
+	};
+
+	// get account did which is not issued (not in blockchain)
+	auto no_issued_dids = database_.account_dids.get_unissued_dids(get_short_hash(name));
+	std::for_each(no_issued_dids->begin(), no_issued_dids->end(), add_did);
+
+	return sp_did_vec;
+}
+
+
 uint64_t block_chain_impl::shrink_amount(uint64_t amount, uint8_t decimal_number){
 	double db_amount = static_cast<double>(amount);
 	if(decimal_number) {

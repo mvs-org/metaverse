@@ -28,6 +28,8 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
@@ -48,6 +50,8 @@ enum class business_kind : uint16_t
     asset_transfer = 2,
     message = 3,
 	etp_award = 4, // store to address_asset database
+	did_issue = 5,
+    did_transfer = 6
 };
 // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
 enum business_status : uint8_t
@@ -63,12 +67,14 @@ enum attachment_type : uint16_t
     asset_transfer_attach = 2,
     message_attach = 3,
 	etp_award_attach = 4, // miner award etp
-	etp_deposit_attach = 5
+	etp_deposit_attach = 5,
+    did_issue_attach = 6,
+    did_transfer_attach = 7	
 };
 class BC_API business_data
 {
 public:
-	typedef boost::variant<etp, etp_award, asset_detail, asset_transfer, blockchain_message> business_data_type;
+	typedef boost::variant<etp, etp_award, asset_detail, asset_transfer, blockchain_message, did_detail, did_transfer> business_data_type;
     static business_data factory_from_data(const data_chunk& data);
     static business_data factory_from_data(std::istream& stream);
     static business_data factory_from_data(reader& source);
@@ -202,6 +208,30 @@ public:
 		ss << "\t address = " << address
 			<< "\t status = " << status
 			<< "\t quantity = " << quantity << "\n"
+			<< "\t detail = " << detail.to_string() << "\n";
+	
+		return ss.str();
+	}
+#endif
+};
+
+class BC_API business_address_did
+{
+public:
+	typedef std::vector<business_address_did> list;
+	
+	std::string  address;
+	uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
+	did_detail detail;
+	
+#ifdef MVS_DEBUG
+	// just used for unit test in block_chain_impl_test.cpp
+	std::string to_string() 
+	{
+		std::ostringstream ss;
+	
+		ss << "\t address = " << address
+			<< "\t status = " << status
 			<< "\t detail = " << detail.to_string() << "\n";
 	
 		return ss.str();

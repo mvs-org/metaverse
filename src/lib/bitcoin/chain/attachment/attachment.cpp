@@ -71,7 +71,8 @@ bool attachment::is_valid_type() const
     return ((ETP_TYPE == type)
 		|| (ASSET_TYPE == type)
 		|| (MESSAGE_TYPE == type)
-		|| (ETP_AWARD_TYPE == type));
+		|| (ETP_AWARD_TYPE == type)
+		|| (DID_TYPE == type));
 }
 
 
@@ -118,6 +119,11 @@ bool attachment::from_data(reader& source)
 			case MESSAGE_TYPE:
 			{
 				attach = blockchain_message();
+				break;
+			}
+			case DID_TYPE:
+			{
+				attach = did();
 				break;
 			}
 		}

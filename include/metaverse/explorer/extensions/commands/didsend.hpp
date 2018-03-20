@@ -29,23 +29,20 @@ namespace explorer {
 namespace commands {
 
 
-/************************ sendfrom *************************/
-
-class sendfrom: public send_command
+class didsend: public send_command
 {
 public:
-    static const char* symbol(){ return "sendfrom";}
+    static const char* symbol(){ return "didsend";}
     const char* name() override { return symbol();} 
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp from a specified address of this account to target address, mychange goes to from_address."; }
+    const char* description() override { return "send etp to a targert did/address, mychange goes to another existed address of this account."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
-            .add("TOADDRESS", 1)
+            .add("TODID/TOADDRESS", 1)
             .add("AMOUNT", 1);
     }
 
@@ -55,8 +52,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
-        load_input(argument_.to, "TOADDRESS", variables, input, raw);
+        load_input(argument_.did, "TODID/TOADDRESS", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -80,31 +76,26 @@ public:
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
 	    )
-		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"Send from this address"
-		)
-		(
-			"TOADDRESS",
-			value<std::string>(&argument_.to)->required(),
-			"Send to this address"
-		)
-		(
-			"AMOUNT",
-			value<uint64_t>(&argument_.amount)->required(),
-			"ETP integer bits."
-		)
+        (
+            "TODID/TOADDRESS",
+            value<std::string>(&argument_.did)->required(),
+            "Send to this did/address"
+	    )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "ETP integer bits."
+        )
         (
             "memo,m",
             value<std::string>(&argument_.memo),
-            "The memo to descript transaction"
+            "Attached memo for this transaction."
         )
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		);
+	    (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 etp bits"
+	    );
 
         return options;
     }
@@ -118,13 +109,11 @@ public:
 
     struct argument
     {
-    
-        argument():from(""), to(""), memo("")
-        {};
-    	std::string from;
-		std::string to;
-		uint64_t amount;
-		uint64_t fee;
+        argument():did(""), memo("")
+		{};
+        std::string did;
+        uint64_t amount;
+        uint64_t fee;
         std::string memo;
     } argument_;
 

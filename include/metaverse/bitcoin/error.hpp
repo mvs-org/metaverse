@@ -138,6 +138,13 @@ enum error_code_t
 	//syn block
 	fetch_more_block,
 	bad_magic,
+
+    // did check
+	did_symbol_not_match,
+    did_symbol_invalid,
+    did_exist,
+    address_issued_did,
+    did_func_not_actived
 };
 
 enum error_condition_t
