@@ -326,12 +326,25 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 		{
 			return error::asset_secondissue_error;
 		}
-
-		auto total_volume = blockchain.get_asset_volume(asset_name);
-		auto asset_account_volume = blockchain.get_account_asset_volume(asset_issuer, asset_name, true, false);
-		if(secondissue_assetshare_threshold == 0 || asset_account_volume < total_volume / 100 * secondissue_assetshare_threshold)
-			return error::asset_secondissue_share_not_enough;
 	}
+
+    uint64_t asset_input_volume{0};
+    for (const auto& input: tx.inputs)
+    {
+        const auto& previous_output = input.previous_output;
+        if (previous_output.is_null())
+            return error::previous_output_null;
+
+        transaction t;
+        uint64_t height{0};
+        if (blockchain.get_transaction(t, height, previous_output.hash)) {
+            asset_input_volume += t.outputs[previous_output.index].get_asset_amount();
+        }
+    }
+
+    auto total_volume = blockchain.get_asset_volume(asset_name);
+    if (secondissue_assetshare_threshold == 0 || asset_input_volume < total_volume / 100 * secondissue_assetshare_threshold)
+        return error::asset_secondissue_share_not_enough;
 
 	return error::success;
 }
@@ -367,12 +380,25 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
 		{
 			return error::asset_secondissue_error;
 		}
-
-		auto total_volume = blockchain.get_asset_volume(asset_name) - asset_amount;
-		auto asset_account_volume = blockchain.get_account_asset_volume(asset_issuer, asset_name, false, false) - asset_amount;
-		if(secondissue_assetshare_threshold == 0 || asset_account_volume < total_volume / 100 * secondissue_assetshare_threshold)
-			return error::asset_secondissue_share_not_enough;
 	}
+
+    uint64_t asset_input_volume{0};
+    for (const auto& input: tx.inputs)
+    {
+        const auto& previous_output = input.previous_output;
+        if (previous_output.is_null())
+            return error::previous_output_null;
+
+        transaction t;
+        uint64_t height{0};
+        if (blockchain.get_transaction(t, height, previous_output.hash)) {
+            asset_input_volume += t.outputs[previous_output.index].get_asset_amount();
+        }
+    }
+
+    auto total_volume = blockchain.get_asset_volume(asset_name) - asset_amount;
+    if (secondissue_assetshare_threshold == 0 || asset_input_volume < total_volume / 100 * secondissue_assetshare_threshold)
+        return error::asset_secondissue_share_not_enough;
 
 	return error::success;
 }

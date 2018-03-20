@@ -1635,6 +1635,11 @@ void secondissuing_asset::populate_change() {
         receiver_list_.push_back({from_addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
+    // asset utxo
+    if (unspent_asset_ > payment_asset_) {
+        receiver_list_.push_back({from_addr, "",
+                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_locked_transfer, attachment()});
+    }
 }
 
 attachment secondissuing_asset::populate_output_attachment(receiver_record& record){
@@ -1760,7 +1765,6 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
                     + std::to_string(unspent_asset_) + ", maximum_supply = " + std::to_string(max_supply)};
         }
     }
-    payment_asset_ = unspent_asset_;
     rows.clear();
 }
 
