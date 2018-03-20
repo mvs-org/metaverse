@@ -314,6 +314,10 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 			asset_issuer = asset_detail.get_issuer();
 			secondissue_assetshare_threshold = asset_detail.get_secondissue_assetshare_threshold();
 		}
+        else if (o.is_did_issue())
+        {
+            return error::success;
+        }
 		else if(o.is_etp() == false)
 		{
 			has_other_type_output = true;
@@ -430,18 +434,16 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 				}
 			}
         }
+        else if(output.is_did_issue()) {
+            if(chain.is_did_exist(output.get_did_symbol(), false)) {
+                return error::did_exist;
+            }
 
-        for(auto& output : const_cast<transaction&>(tx).outputs){
-            if(output.is_did_issue()) {
-                if(chain.is_did_exist(output.get_did_symbol(), false)) {
-                    return error::did_exist;
-                }
-
-                if(chain.is_address_issued_did(output.get_did_address(), false)) {
-                    return error::address_issued_did;
-                }
+            if(chain.is_address_issued_did(output.get_did_address(), false)) {
+                return error::address_issued_did;
             }
         }
+        
     }
     return ret;
 }
@@ -484,15 +486,12 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                return error::asset_symbol_invalid;
             }
         }
-    }
-
-    for(auto& output : const_cast<transaction&>(tx).outputs){
-        if(output.is_did_issue()) {
+        else if(output.is_did_issue()) {
             if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
                return error::did_symbol_invalid;
             }
 
-            if (is_did_validate(chain)){
+            if (!is_did_validate(chain)){
                 return error::did_func_not_actived;    
             }
         }
