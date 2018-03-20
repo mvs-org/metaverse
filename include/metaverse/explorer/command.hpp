@@ -60,6 +60,22 @@ namespace explorer {
 BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 
 /**
+ * Suppported command category.
+ */
+enum : int {
+    ctgy_extension = 1 << 0,
+    ctgy_online = 1 << 1,
+    ctgy_admin_required = 1 << 2,
+    ctgy_account_required = 1 << 3,
+
+    ex_online = ctgy_extension | ctgy_online,
+    ex_admin = ctgy_extension | ctgy_admin_required,
+    ex_account = ctgy_extension | ctgy_account_required,
+    ex_on_admin = ctgy_extension | ctgy_online | ctgy_admin_required,
+    ex_on_account = ctgy_extension | ctgy_online | ctgy_account_required
+};
+
+/**
  * Base class for definition of each Bitcoin Explorer command.
  */
 class BCX_API command

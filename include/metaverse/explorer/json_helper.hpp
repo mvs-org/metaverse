@@ -407,6 +407,30 @@ BCX_API Json::Value prop_tree(const wallet::bitcoin_uri& uri);
  */
 BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
 
+/**
+ * Generate a property list for a asset detail.
+ * @param[in]  detail_info          The asset detail.
+ * @param[in]  is_maximum_supply    The asset amount means maximum_supply or quantity.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply);
+
+/**
+ * Generate a property list for a asset transfer with detail.
+ * @param[in]  detail_info  The asset detail. only "symbol" "address" "quantity" info included in it.
+ * @param[in]  issued_info  The issued asset detail. include the other info.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info);
+
+/**
+ * Generate a property list for a asset transfer.
+ * @param[in]  trans_info        The asset transfer.
+ * @param[in]  decimal_number    The asset transfer unit. if equals max_uint8, do not add "decimal_number" index.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_transfer& trans_info, uint8_t decimal_number = max_uint8);
+
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;
 };

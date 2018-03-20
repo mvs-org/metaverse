@@ -111,6 +111,9 @@ public:
     bool get_transaction(chain::transaction& out_transaction,
         uint64_t& out_block_height, const hash_digest& transaction_hash) const;
 
+    bool get_transaction(chain::transaction& out_transaction,
+        uint64_t& out_block_height, const hash_digest& transaction_hash, bool is_use_transactionpool, bool is_safe);
+
     /// Import a block to the blockchain.
     bool import(chain::block::ptr block, uint64_t height);
 
@@ -193,6 +196,9 @@ public:
     void fetch_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_fetch_handler handler);
 
+    bool fetch_history(const wallet::payment_address& address,
+        uint64_t limit, uint64_t from_height, history_compact::list& history);
+
     /// fetch stealth results.
     void fetch_stealth(const binary& filter, uint64_t from_height,
         stealth_fetch_handler handler);
@@ -245,10 +251,14 @@ public:
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name,
 					business_kind kind);
+    uint64_t get_address_asset_volume(const std::string& address, const std::string& asset, bool is_use_transactionpool, bool is_safe);
+    uint64_t get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe);
+    uint64_t get_asset_volume(const std::string& asset);
+
 	bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
 	bool get_asset_height(const std::string& asset_name, uint64_t& height);
 	std::shared_ptr<std::vector<asset_detail>> get_local_assets();
-	std::shared_ptr<asset_detail> get_issued_asset(std::string& symbol);
+	std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets();
 	std::shared_ptr<std::vector<asset_detail>> get_issued_assets();
 	std::shared_ptr<std::vector<business_address_asset>> get_account_unissued_assets(const std::string& name);
@@ -292,10 +302,6 @@ public:
     bool is_stealth_address(const std::string& address);
     bool is_script_address(const std::string& address);
 
-	uint64_t shrink_amount(uint64_t amount, uint8_t decimal_number);
-	uint64_t multiple_amount(uint64_t amount, uint8_t decimal_number);
-	uint64_t get_asset_amount(std::string& symbol, uint64_t amount);
-	uint64_t get_asset_multiple_amount(std::string& symbol, uint64_t amount);
 	void fired();
 	organizer& get_organizer();
 	bool get_transaction(const hash_digest& hash,
@@ -311,6 +317,12 @@ public:
 	code broadcast_transaction(const chain::transaction& tx);
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
     void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
+
+    //return value:
+    //0, success
+    //-1, operate database fail
+    //>0, validate error, return error block index
+    int replace_chain(uint64_t begin_height, const block_detail::list& new_blocks, block_detail::list& released_blocks);
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
@@ -331,6 +343,11 @@ private:
         const auto result = database_.end_write();
         BITCOIN_ASSERT(result);
         handler(std::forward<Args>(args)...);
+    }
+
+    void stop_write()
+    {
+        database_.end_write();
     }
 
     void start_write();

@@ -77,7 +77,7 @@ public:
        	(
 			"number,n",
 			value<std::uint32_t>(&option_.count),
-			"The address count."
+			"The address count, defaults to 1."
 		);
 
         return options;

@@ -59,6 +59,7 @@
 #include <metaverse/explorer/extensions/commands/sendfrom.hpp>
 #include <metaverse/explorer/extensions/commands/listassets.hpp>
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
+#include <metaverse/explorer/extensions/commands/secondissue.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
@@ -74,6 +75,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/mergeasset.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
 #include <metaverse/explorer/extensions/commands/setminingaccount.hpp>
@@ -150,9 +152,11 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<createasset>());
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
+    func(make_shared<secondissue>());
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
+    func(make_shared<mergeasset>());
 
     // multi-sig
     func(make_shared<getpublickey>());
@@ -260,12 +264,16 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<deletelocalasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
+    if (symbol == secondissue::symbol())
+        return make_shared<secondissue>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
     if (symbol == sendasset::symbol())
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
+    if (symbol == mergeasset::symbol())
+        return make_shared<mergeasset>();
     if (symbol == getwork::symbol())
         return make_shared<getwork>();
     if (symbol == submitwork::symbol())

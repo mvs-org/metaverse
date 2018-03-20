@@ -134,6 +134,10 @@ enum error_code_t
 	asset_symbol_not_match,
     asset_symbol_invalid,
     asset_exist,
+    asset_not_exist,
+    asset_secondissue_error,
+    asset_secondissue_share_not_enough,
+    asset_secondissue_assetshare_threshold_invalid,
 
 	//syn block
 	fetch_more_block,

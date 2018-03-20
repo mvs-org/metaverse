@@ -29,15 +29,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ issuefrom *************************/
+/************************ mergeasset *************************/
 
-class issuefrom: public command_extension
+class mergeasset : public command_extension
 {
 public:
-    static const char* symbol(){ return "issuefrom";}
+    static const char* symbol() { return "mergeasset";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "issuefrom "; }
+    const char* description() override { return "merge together all assets of specified symbol one owns"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -81,32 +81,37 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address"
+            "Asset receiver address."
         )
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "issued asset symbol"
+            "Asset symbol/name."
         )
         (
+            "mychange,m",
+            value<std::string>(&argument_.mychange_address),
+            "Mychange to this address"
+	    )
+        (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(1000000000),
-            "The fee of tx. default_value 10 etp"
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
         );
-
         return options;
     }
 
-    void set_defaults_from_config (po::variables_map& variables) override
+    void set_defaults_from_config(po::variables_map& variables) override
     {
     }
 
-    console_result invoke (Json::Value& jv_output,
+    console_result invoke(Json::Value& jv_output,
          libbitcoin::server::server_node& node) override;
 
     struct argument
     {
         std::string address;
+        std::string mychange_address;
         std::string symbol;
         uint64_t fee;
     } argument_;
@@ -116,7 +121,6 @@ public:
     } option_;
 
 };
-
 
 } // namespace commands
 } // namespace explorer

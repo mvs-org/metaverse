@@ -33,16 +33,16 @@
 namespace libbitcoin {
 namespace chain {
 
-BC_CONSTEXPR size_t ASSET_TRANSFER_ADDRESS_FIX_SIZE = 64;
+BC_CONSTEXPR size_t ASSET_TRANSFER_SYMBOL_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_TRANSFER_QUANTITY_FIX_SIZE = 8;
 
-BC_CONSTEXPR size_t ASSET_TRANSFER_FIX_SIZE = ASSET_TRANSFER_ADDRESS_FIX_SIZE + ASSET_TRANSFER_QUANTITY_FIX_SIZE;
+BC_CONSTEXPR size_t ASSET_TRANSFER_FIX_SIZE = ASSET_TRANSFER_SYMBOL_FIX_SIZE + ASSET_TRANSFER_QUANTITY_FIX_SIZE;
 
 class BC_API asset_transfer
 {
 public:
 	asset_transfer();
-	asset_transfer(const std::string& address, uint64_t quantity);
+	asset_transfer(const std::string& symbol, uint64_t quantity);
     static asset_transfer factory_from_data(const data_chunk& data);
     static asset_transfer factory_from_data(std::istream& stream);
     static asset_transfer factory_from_data(reader& source);
@@ -56,18 +56,17 @@ public:
     void to_data(writer& sink) const;
 
     std::string to_string() const;
-	void to_json(std::ostream& output) ;
 
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const std::string& get_address() const;
-	void set_address(const std::string& address);
+	const std::string& get_symbol() const;
+	void set_symbol(const std::string& symbol);
 	uint64_t get_quantity() const;
 	void set_quantity(uint64_t quantity);
 	
 private:
-    std::string address;  // symbol  -- in block
+    std::string symbol;  // symbol  -- in block
     uint64_t quantity;  // -- in block
 };
 

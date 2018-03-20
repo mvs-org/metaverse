@@ -39,7 +39,6 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     auto& aroot = jv_output;
     Json::Value assets;
     
-    std::string symbol;
     auto& blockchain = node.chain_impl();
     
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
@@ -60,26 +59,15 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
         sync_fetch_asset_balance_record (addr, blockchain, sh_vec);
     }
 
-    Json::Value asset_data;
     for (auto& elem: *sh_vec) {
-        if(!argument_.symbol.empty() && argument_.symbol !=  elem.get_symbol())
+        auto& symbol = elem.get_symbol();
+        if(!argument_.symbol.empty() && argument_.symbol != symbol)
             continue;
-        asset_data["symbol"] = elem.get_symbol();
-        asset_data["address"] = elem.get_address();
-        symbol = elem.get_symbol();
-        if (get_api_version() == 1) {
-            asset_data["quantity"] += elem.get_maximum_supply();
-        } else {
-            asset_data["quantity"] = elem.get_maximum_supply();
-        }
-        //asset_data["address"] = elem.get_address();
         auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset && get_api_version() == 1) {
-            asset_data["decimal_number"] += issued_asset->get_decimal_number();
+        if (!issued_asset) {
+            continue;
         }
-        if(issued_asset && get_api_version() == 2) {
-            asset_data["decimal_number"] = issued_asset->get_decimal_number();
-        }
+        Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset);
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }
@@ -87,12 +75,11 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     // shoudl filter all issued asset which be stored in local account asset database
     sh_vec->clear();
     sh_vec = blockchain.get_issued_assets();
-    //std::shared_ptr<std::vector<business_address_asset>>
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         
-        auto symbol = elem.detail.get_symbol();         
-        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const asset_detail& elem){
+        auto& symbol = elem.detail.get_symbol();
+        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&symbol](const asset_detail& elem){
             return symbol == elem.get_symbol();
         });
         
@@ -102,13 +89,7 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
         // symbol filter
         if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
             continue;
-        Json::Value asset_data;
-        asset_data["symbol"] = elem.detail.get_symbol();
-        asset_data["address"] = "";
-        symbol = elem.detail.get_symbol();
-        asset_data["quantity"] += elem.detail.get_maximum_supply();
-        asset_data["decimal_number"] += elem.detail.get_decimal_number();
-        //asset_data["address"] = "";
+        Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false);
         asset_data["status"] = "unissued";
         assets.append(asset_data);
     }

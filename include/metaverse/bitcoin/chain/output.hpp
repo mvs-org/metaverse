@@ -61,9 +61,11 @@ public:
 	bool is_asset_issue();
 	bool is_etp();
     bool is_did_issue();
-	std::string get_did_symbol();
+    bool is_asset_secondissue();
+    asset_detail get_asset_detail();
+    std::string get_did_symbol();
     std::string get_did_address();
-	
+
     uint64_t value;
     chain::script script;
 	attachment attach_data; // added for asset issue/transfer

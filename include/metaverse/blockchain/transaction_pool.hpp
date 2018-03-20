@@ -76,6 +76,7 @@ public:
 
     void inventory(message::inventory::ptr inventory);
     void fetch(const hash_digest& tx_hash, fetch_handler handler);
+    void sync_fetch(const hash_digest& tx_hash, fetch_handler handler);
     void fetch(fetch_all_handler handler);
     void delete_tx(const hash_digest& tx_hash);
     void fetch_history(const wallet::payment_address& address, size_t limit,

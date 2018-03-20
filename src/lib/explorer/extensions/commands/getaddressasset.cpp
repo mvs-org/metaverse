@@ -59,11 +59,10 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         const auto sum = [&](const business_history& bh)
         {
             // get asset info
-            std::string symbol;
             uint64_t num;
             if(kind == business_kind::asset_transfer) {
                 auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
-                symbol = transfer_info.get_address();
+                symbol = transfer_info.get_symbol();
                 num = transfer_info.get_quantity();
             } else { // asset issued
                 auto asset_info = boost::get<asset_detail>(bh.data.get_data());
@@ -74,7 +73,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
             // update asset quantity
             auto r = symbol_set.insert(symbol);
             if(r.second) { // new symbol
-                asset_vec.push_back(asset_detail(symbol, num, 0, "", argument_.address, ""));
+                asset_vec.push_back(asset_detail(symbol, num, 0, 0, "", argument_.address, ""));
             } else { // already exist
                 const auto add_num = [&](asset_detail& elem)
                 {
@@ -88,26 +87,11 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     } 
     
     for (auto& elem: asset_vec) {
-        Json::Value asset_data;
-        asset_data["symbol"] = elem.get_symbol();
-        symbol = elem.get_symbol();
-        if (get_api_version() == 1) {
-            asset_data["quantity"] += elem.get_maximum_supply();
-        } else {
-            asset_data["quantity"] = elem.get_maximum_supply();
+        auto issued_asset = blockchain.get_issued_asset(elem.get_symbol());
+        if (!issued_asset) {
+            continue;
         }
-        auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset && get_api_version() == 1) {
-            asset_data["decimal_number"] += issued_asset->get_decimal_number();
-        }
-        if(issued_asset && get_api_version() == 2) {
-            asset_data["decimal_number"] = issued_asset->get_decimal_number();
-        }
-        //asset_data["asset_type"] = elem.detail.get_asset_type();
-        //asset_data["issuer"] = elem.detail.get_issuer();
-        //asset_data["address"] = elem.detail.get_address();
-        //asset_data["description"] = elem.detail.get_description();
-        asset_data["address"] = elem.get_address();
+        Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset);
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }

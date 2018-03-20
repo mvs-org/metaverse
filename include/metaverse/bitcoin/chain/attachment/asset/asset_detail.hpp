@@ -49,16 +49,10 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
-	enum asset_detail_type : uint32_t
-	{
-		created,
-		issued_not_in_blockchain,
-		issued_in_blockchain
-	};
 	typedef std::vector<asset_detail> list;
 	asset_detail();
 	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint8_t asset_type, std::string issuer,
+		uint8_t decimal_number, uint8_t threshold, std::string issuer,
 		std::string address, std::string description);
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
@@ -72,7 +66,6 @@ public:
     void to_data(writer& sink) const;
 
     std::string to_string() const;
-	void to_json(std::ostream& out);
 
     bool is_valid() const;
     void reset();
@@ -90,28 +83,36 @@ public:
 	const std::string& get_description() const;
 	void set_description(const std::string& description);
 
+    bool is_asset_secondissue() const { return secondissue_assetshare_threshold >= 128; }
+    void set_asset_secondissue() { if (!is_asset_secondissue()) { secondissue_assetshare_threshold += 128; } }
+    uint8_t get_secondissue_assetshare_threshold() const
+    {
+        if(secondissue_assetshare_threshold > 128)
+            return secondissue_assetshare_threshold - 128;
+        else
+            return secondissue_assetshare_threshold;
+    }
+    void set_secondissue_assetshare_threshold(uint8_t share)
+    {
+        if(secondissue_assetshare_threshold > 128)
+            secondissue_assetshare_threshold = share + 128;
+        else
+            secondissue_assetshare_threshold = share;
+    }
+
 private:    
+    // NOTICE: ref CAssetDetail in transaction.h
+    // asset_detail and CAssetDetail should have the same size and order.
+    // uint32_t asset_type in CAssetDetail is divided into four uint8_t parts here.
     std::string symbol;
     uint64_t maximum_supply;
-    //uint32_t asset_type;
     uint8_t decimal_number;
-	uint8_t unused1;
+    uint8_t secondissue_assetshare_threshold;
 	uint8_t unused2;
 	uint8_t unused3;
     std::string issuer; 
     std::string address;
     std::string description;
-    //uint64_t issue_price;
-
-    //restrict section
-    //uint32_t number_of_decimal_point; //number of decimal point
-    //life circle
-    //uint64_t flag; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation asset
-    //std::string authentication_organization; //authentication organization
 };
 
 } // namespace chain

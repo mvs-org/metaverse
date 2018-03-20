@@ -113,6 +113,65 @@ const memory_ptr slab_hash_table<KeyType>::find(const KeyType& key) const
     return nullptr;
 }
 
+// This is limited to returning the last of multiple matching key values.
+template <typename KeyType>
+const memory_ptr slab_hash_table<KeyType>::rfind(const KeyType& key) const
+{
+    memory_ptr ret;
+    // Find start item...
+    auto current = read_bucket_value(key);
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        // Found.
+        if (item.compare(key))
+            ret = item.data();
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return ret;
+}
+
+// This is returning all of multiple matching key values.
+template <typename KeyType>
+std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const KeyType& key) const
+{
+    std::vector<memory_ptr> ret;
+    // Find start item...
+    auto current = read_bucket_value(key);
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        // Found.
+        if (item.compare(key))
+            ret.push_back(item.data());
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return ret;
+}
 
 // This is limited to returning all the item in the special index.
 template <typename KeyType>

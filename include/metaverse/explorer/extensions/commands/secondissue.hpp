@@ -29,15 +29,14 @@ namespace explorer {
 namespace commands {
 
 
-/************************ issuefrom *************************/
-
-class issuefrom: public command_extension
+/************************ secondissue *************************/
+class secondissue: public command_extension
 {
 public:
-    static const char* symbol(){ return "issuefrom";}
+    static const char* symbol(){ return "secondissue";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "issuefrom "; }
+    const char* description() override { return "secondissue "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -45,7 +44,8 @@ public:
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
             .add("ADDRESS", 1)
-            .add("SYMBOL", 1);
+            .add("SYMBOL", 1)
+            .add("VOLUME", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -56,6 +56,7 @@ public:
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.address, "ADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.volume, "VOLUME", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -71,23 +72,33 @@ public:
         (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
+            "Account name."
         )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
+            "Account password/authorization."
         )
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address"
+            "target address to check and issue asset"
         )
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
             "issued asset symbol"
         )
+        (
+           "VOLUME",
+           value<uint64_t>(&argument_.volume)->required(),
+           "The vlolume of asset"
+        )
+        (
+            "mychange,m",
+            value<std::string>(&argument_.mychange_address),
+            "Mychange to this address"
+	    )
         (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(1000000000),
@@ -101,14 +112,16 @@ public:
     {
     }
 
-    console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+    console_result invoke(Json::Value& jv_output,
+        libbitcoin::server::server_node& node) override;
 
     struct argument
     {
         std::string address;
+        std::string mychange_address;
         std::string symbol;
         uint64_t fee;
+        uint64_t volume;
     } argument_;
 
     struct option
@@ -116,7 +129,6 @@ public:
     } option_;
 
 };
-
 
 } // namespace commands
 } // namespace explorer

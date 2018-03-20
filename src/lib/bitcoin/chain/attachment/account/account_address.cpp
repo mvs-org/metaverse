@@ -184,15 +184,6 @@ std::string account_address::to_string()
 
     return ss.str();
 }
-void account_address::to_json(std::ostream& output) 
-{
-	minijson::object_writer json_writer(output);
-	json_writer.write("name", name);
-	json_writer.write("prv_key", prv_key);
-	json_writer.write("pub_key", pub_key);
-	json_writer.write("hd_index", hd_index);
-	json_writer.close();
-}
 #endif
 
 const std::string& account_address::get_name() const

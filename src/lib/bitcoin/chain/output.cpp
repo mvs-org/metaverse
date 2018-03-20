@@ -177,13 +177,29 @@ bool output::is_asset_transfer()
 	}
 	return false;
 }
+
 bool output::is_asset_issue()
 {
-	if(attach_data.get_type() == ASSET_TYPE) {
-		auto asset_info = boost::get<asset>(attach_data.get_attach());
-		return (asset_info.get_status() == ASSET_DETAIL_TYPE); 
-	}
-	return false;
+    if(attach_data.get_type() == ASSET_TYPE) {
+    auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            auto detail_info = boost::get<asset_detail>(asset_info.get_data());
+			return !detail_info.is_asset_secondissue();
+        }
+    }
+    return false;
+}
+
+bool output::is_asset_secondissue()
+{
+    if(attach_data.get_type() == ASSET_TYPE) {
+    auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            auto detail_info = boost::get<asset_detail>(asset_info.get_data());
+			return detail_info.is_asset_secondissue();
+        }
+    }
+    return false;
 }
 
 bool output::is_etp()
@@ -201,7 +217,7 @@ std::string output::get_asset_symbol() // for validate_transaction.cpp to calcul
 		}
 		if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
 			auto trans_info = boost::get<asset_transfer>(asset_info.get_data());
-			return trans_info.get_address();
+			return trans_info.get_symbol();
 		}
 	}
 	return std::string("");
@@ -238,6 +254,18 @@ std::string output::get_did_address() // for validate_transaction.cpp to calcula
 		}
 	}
 	return std::string("");
+}
+
+asset_detail output::get_asset_detail()
+{
+    if (attach_data.get_type() == ASSET_TYPE) {
+        auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            return boost::get<asset_detail>(asset_info.get_data());
+        }
+    }
+    log::error("output::get_asset_detail") << "Asset type is not ASSET_DETAIL_TYPE.";
+    return asset_detail();
 }
 
 } // namspace chain

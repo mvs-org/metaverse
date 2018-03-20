@@ -109,7 +109,6 @@ void validate(boost::any& v,
     if (s[0] == '-') {
         throw argument_legality_exception{"volume must not be negative number."};
     }
-    //v = lexical_cast<unsigned long long>(s);
     v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
 
@@ -118,6 +117,21 @@ console_result createasset::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    // check options
+    if (option_.symbol.empty())
+        throw asset_symbol_length_exception{"asset symbol can not be empty."};
+    if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
+        throw asset_description_length_exception{"asset description length must be less than 64."};
+    if ((option_.secondissue_assetshare_threshold > 0 && option_.secondissue_assetshare_threshold < 51) || option_.secondissue_assetshare_threshold > 100)
+        throw std::logic_error{"secondissue assetshare threshold value error, is must be 0 or in range of 51 to 100."};
+    if (option_.decimal_number > 19u)
+        throw asset_amount_exception{"asset decimal number must less than 20."};
+    if (option_.maximum_supply.volume == 0u)
+        throw argument_legality_exception{"volume must not be zero."};
+
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
@@ -129,47 +143,22 @@ console_result createasset::invoke (Json::Value& jv_output,
     auto ret = blockchain.is_asset_exist(option_.symbol);
     if(ret) 
         throw asset_symbol_existed_exception{"asset symbol is already exist, please use another one"};
-    if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
-        throw asset_description_length_exception{"asset description length must be less than 64."};
-    if (auth_.name.length() > 64) // maybe will be remove later
-        throw account_length_exception{"asset issue(account name) length must be less than 64."};
-    if (option_.decimal_number > 19u)
-        throw asset_amount_exception{"asset decimal number must less than 20."};
-
-    if(!option_.maximum_supply.volume) 
-        throw argument_legality_exception{"volume must not be zero."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
-    //acc->set_maximum_supply(volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    //acc->set_asset_type(asset_detail::asset_detail_type::created); 
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
+    acc->set_secondissue_assetshare_threshold(option_.secondissue_assetshare_threshold);
     
     blockchain.store_account_asset(acc);
 
-    //output<<option_.symbol<<" created at local, you can issue it.";
-    
     auto& aroot = jv_output;
-    Json::Value asset_data;
-    asset_data["symbol"] = acc->get_symbol();
-    if (get_api_version() == 1) {
-        asset_data["maximum-supply"] += acc->get_maximum_supply();
-        asset_data["decimal_number"] += acc->get_decimal_number();
-    } else {
-        asset_data["maximum-supply"] = acc->get_maximum_supply();
-        asset_data["decimal_number"] = acc->get_decimal_number();
-    }
-    asset_data["issuer"] = acc->get_issuer();
-    asset_data["address"] = acc->get_address();
-    asset_data["description"] = acc->get_description();
+    Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
+    asset_data["status"] = "unissued";
     aroot["asset"] = asset_data;
 
-    
     return console_result::okay;
 }
 } // namespace commands

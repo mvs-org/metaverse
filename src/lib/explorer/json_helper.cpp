@@ -350,6 +350,82 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
     return tree;
 }
 
+// is_secondissue has no meaning for asset quantity summary.
+Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply)
+{
+    Json::Value tree;
+    tree["symbol"] = detail_info.get_symbol();
+    tree["issuer"] = detail_info.get_issuer();
+    tree["address"] = detail_info.get_address();
+    tree["description"] = detail_info.get_description();
+
+    const char* maximum_supply_or_quantity = is_maximum_supply ? "maximum_supply" : "quantity";
+
+    if (version_ == 1) {
+        tree[maximum_supply_or_quantity] += detail_info.get_maximum_supply();
+        tree["decimal_number"] += detail_info.get_decimal_number();
+        tree["secondissue_assetshare_threshold"] += detail_info.get_secondissue_assetshare_threshold();
+        if (is_maximum_supply) {
+            tree["is_secondissue"] = detail_info.is_asset_secondissue() ? "true" : "false";
+        }
+    } else {
+        tree[maximum_supply_or_quantity] = detail_info.get_maximum_supply();
+        tree["decimal_number"] = detail_info.get_decimal_number();
+        tree["secondissue_assetshare_threshold"] = detail_info.get_secondissue_assetshare_threshold();
+        if (is_maximum_supply) {
+            tree["is_secondissue"] = detail_info.is_asset_secondissue();
+        }
+    }
+    return tree;
+}
+
+// detail_info only "symbol" "address" "quantity" info included in it.
+// issued_info include the other info.
+// is_secondissue has no meaning for asset quantity summary.
+Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info)
+{
+    Json::Value tree;
+    tree["symbol"] = detail_info.get_symbol();
+    tree["address"] = detail_info.get_address();
+
+    tree["issuer"] = issued_info.get_issuer();
+    tree["description"] = issued_info.get_description();
+
+    if (version_ == 1) {
+        tree["quantity"] += detail_info.get_maximum_supply();
+
+        tree["decimal_number"] += issued_info.get_decimal_number();
+        tree["secondissue_assetshare_threshold"] += issued_info.get_secondissue_assetshare_threshold();
+    } else {
+        tree["quantity"] = detail_info.get_maximum_supply();
+
+        tree["decimal_number"] = issued_info.get_decimal_number();
+        tree["secondissue_assetshare_threshold"] = issued_info.get_secondissue_assetshare_threshold();
+    }
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::asset_transfer& trans_info, uint8_t decimal_number)
+{
+    Json::Value tree;
+    tree["symbol"] = trans_info.get_symbol();
+
+    if (version_ == 1) {
+        tree["quantity"] += trans_info.get_quantity();
+    } else {
+        tree["quantity"] = trans_info.get_quantity();
+    }
+
+    if (decimal_number != max_uint8) {
+        if (version_ == 1) {
+            tree["decimal_number"] += decimal_number;
+        } else {
+            tree["decimal_number"] = decimal_number;
+        }
+    }
+    return tree;
+}
+
 Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
@@ -361,31 +437,14 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 
         auto&& asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
         if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
-            tree["type"] = "asset-issue";
             auto&& detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
-            tree["symbol"] = detail_info.get_symbol();
-
-            if (version_ == 1) {
-                tree["quantity"] += detail_info.get_maximum_supply();
-                tree["decimal_number"] = std::to_string(detail_info.get_decimal_number());
-            } else {
-                tree["quantity"] = detail_info.get_maximum_supply();
-                tree["decimal_number"] = detail_info.get_decimal_number();
-            }
-            tree["issuer"] = detail_info.get_issuer();
-            tree["address"] = detail_info.get_address();
-            tree["description"] = detail_info.get_description();
+            tree = prop_list(detail_info, false);
+            tree["type"] = "asset-issue";
         }
         if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-            tree["type"] = "asset-transfer";
             auto&& trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
-            tree["symbol"] = trans_info.get_address();
-
-            if (version_ == 1) {
-                tree["quantity"] += trans_info.get_quantity();
-            } else {
-                tree["quantity"] = trans_info.get_quantity();
-            }
+            tree = prop_list(trans_info);
+            tree["type"] = "asset-transfer";
         }
 
     } else if(attach_data.get_type() == DID_TYPE) {

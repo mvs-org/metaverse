@@ -356,7 +356,7 @@ uint64_t transaction::total_output_transfer_amount() const
 bool transaction::has_asset_issue()
 {
 	for (auto& elem: outputs) {
-		if(elem.is_asset_issue())
+		if(elem.is_asset_issue() || elem.is_asset_secondissue())
 			return true;
 	}
 	return false;
