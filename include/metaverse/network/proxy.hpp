@@ -104,6 +104,9 @@ public:
     void dispatch();
 
     static bool blacklisted(const config::authority&);
+    static bool manualbanned(const config::authority& authority);
+    static void manual_ban(const config::authority&);
+    static void manual_unban(const config::authority&);
 
     virtual bool misbehaving(int32_t howmuch);
 

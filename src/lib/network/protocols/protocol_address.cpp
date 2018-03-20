@@ -156,13 +156,14 @@ bool protocol_address::handle_receive_address(const code& ec,
     network_address::list addresses;
     addresses.reserve(message->addresses.size());
     for (auto& addr:message->addresses) {
-        if (!channel::blacklisted(addr)) {
+        //if (!channel::blacklisted(addr)) {
+        if (!channel::manualbanned(addr)) {
             addresses.push_back(addr);
         }
     }
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).
-    network_.store(message->addresses, BIND2(handle_store_addresses, _1, message));
+    network_.store(addresses, BIND2(handle_store_addresses, _1, message));
 
     // RESUBSCRIBE
     return true;
