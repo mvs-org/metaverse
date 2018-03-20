@@ -369,6 +369,10 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
                return error::did_symbol_invalid;
             }
+
+            if (is_did_validate(chain)){
+                return error::did_func_not_actived;    
+            }
         }
     }
 
@@ -563,6 +567,25 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
 	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
 		return false;
 	return true;
+}
+
+bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
+{
+    if (chain.chain_settings().use_testnet_rules)
+    {
+        return true;
+    }
+
+    uint64_t current_blockheight = 0;
+
+    chain.get_last_height(current_blockheight);
+
+    if (current_blockheight < 1130000)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace blockchain
