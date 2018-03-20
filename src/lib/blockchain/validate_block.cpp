@@ -91,6 +91,8 @@ static constexpr uint64_t retargeting_interval = target_timespan_seconds /
 // The window by which a time stamp may exceed our current time (2 hours).
 static const auto time_stamp_window = asio::hours(2);
 
+static const auto time_stamp_window_future_blocktime_fix = asio::seconds(24);
+
 // The nullptr option is for backward compatibility only.
 validate_block::validate_block(size_t height, const block& block, bool testnet,
     const config::checkpoint::list& checks, stopped_callback callback)
@@ -210,8 +212,31 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    if (!is_valid_time_stamp(header.timestamp))
-        return error::futuristic_timestamp;
+    //TO.FIX.CHENHAO.Reject
+	if(current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
+       // 校验未来区块时间攻击分叉点
+        bc::config::checkpoint::list blocktime_checkpoints;
+        blocktime_checkpoints.push_back({"ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63", bc::consensus::future_blocktime_fork_height});
+
+        const auto block_hash = header.hash();
+        if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
+    	    return error::checkpoints_failed;
+        }
+    }
+
+	if(current_block_.header.number >= bc::consensus::future_blocktime_fork_height) {
+	    // 未来区块时间攻击分叉，执行新规则检查
+        if (!is_valid_time_stamp_new(header.timestamp))
+        	return error::futuristic_timestamp;
+        // 过去区块时间检查
+	    chain::header prev_header = fetch_block(height_ - 1);
+        if(current_block_.header.timestamp < prev_header.timestamp)
+            return error::timestamp_too_early;
+
+	} else {
+    	if (!is_valid_time_stamp(header.timestamp))
+        	return error::futuristic_timestamp;
+	}
 
     RETURN_IF_STOPPED();
 
@@ -328,6 +353,17 @@ bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
     return block_time <= two_hour_future;
 }
 
+bool validate_block::is_valid_time_stamp_new(uint32_t timestamp) const
+{ 
+    // Use system clock because we require accurate time of day.
+    typedef std::chrono::system_clock wall_clock;
+    const auto block_time = wall_clock::from_time_t(timestamp);
+    const auto seconds_24_future = wall_clock::now() + time_stamp_window_future_blocktime_fix;
+    return block_time <= seconds_24_future;
+
+    // return timestamp < (time(NULL) + max_time_error);
+}
+
 // TODO: move to bc::chain::opcode.
 // Determine if code is in the op_n range.
 inline bool within_op_n(opcode code)
@@ -413,8 +449,16 @@ code validate_block::accept_block() const
 
     RETURN_IF_STOPPED();
 
-    if (header.timestamp <= median_time_past())
-        return error::timestamp_too_early;
+	//CHENHAO. future blocktime attack
+#if 0
+	if (header.number >= bc::consensus::future_blocktime_fork_height) {
+
+	} else {
+    	if (header.timestamp <= median_time_past())
+        	return error::timestamp_too_early;
+	}
+#endif
+
 
     RETURN_IF_STOPPED();
 
