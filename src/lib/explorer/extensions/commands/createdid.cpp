@@ -119,6 +119,10 @@ console_result createdid::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    if (option_.symbol.length() == 0){
+        option_.symbol = auth_.name;
+    }
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 

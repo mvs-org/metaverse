@@ -85,8 +85,8 @@ public:
 	    )
 	    (
             "symbol,s",
-            value<std::string>(&option_.symbol)->required(),
-            "The did symbol/name. Global unique."
+            value<std::string>(&option_.symbol),
+            "The did symbol/name. Global unique..defaults to account name"
         )
 		(
             "issuer,i",
@@ -117,16 +117,12 @@ public:
     {
     	option()
 		  : symbol(""),
-			maximum_supply{0},
-			decimal_number(0),
 			issuer(""),
 			description("")
     	{
     	};
 		
 		std::string symbol;
-		positive_uint64 maximum_supply;
-		uint32_t decimal_number;
 		std::string issuer; 
 		std::string description;
     } option_;
