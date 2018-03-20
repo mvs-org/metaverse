@@ -140,8 +140,7 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 
 u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
 {
-	const unsigned c_expDiffPeriod = 100000;
-	auto minimumDifficulty = is_testnet ? bigint(10) : bigint(10);
+	auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 	bigint target;
 
     // DO NOT MODIFY time_config in release
