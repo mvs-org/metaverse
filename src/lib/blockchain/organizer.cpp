@@ -357,7 +357,6 @@ void organizer::replace_chain(uint64_t fork_index,
         return;
     }
 
-#ifdef whh
     // Replace! Switch!
     block_detail::list released_blocks;
     DEBUG_ONLY(auto success =) chain_.pop_from(released_blocks, begin_index);
@@ -401,27 +400,6 @@ void organizer::replace_chain(uint64_t fork_index,
                 << " hash:"  << encode_hash(arrival_block->actual()->header.hash());
         }
     }
-#endif
-
-    block_detail::list released_blocks;
-	int ret = ((block_chain_impl&)chain_).replace_chain(begin_index, orphan_chain, released_blocks);
-	if(ret == -1)
-	{
-		return;
-	}
-	else if(ret > 0)
-	{
-		for(auto it = orphan_chain.begin() + ret - 1; it != orphan_chain.end(); ++it)
-			orphan_pool_.remove(*it);
-		return;
-	}
-
-    for (const auto &block: orphan_chain)
-    {
-       	// Indicates the block is not an orphan.
-       	block->set_height(block->actual()->header.number);
-        orphan_pool_.remove(block);
-	}
 
     // Add the old blocks back to the pool (as processed with orphan height).
     for (const auto replaced_block: released_blocks)
