@@ -338,13 +338,13 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     }
 
     if (command == "headers") {
-    	log::trace(LOG_NETWORK) << "";
+        log::trace(LOG_NETWORK) << "";
     }
 
     //thin log network
-	log::trace(LOG_NETWORK)
-		<< "Sending " << command << " to [" << authority() << "] ("
-		<< buffer.size() << " bytes)";
+    log::trace(LOG_NETWORK)
+        << "Sending " << command << " to [" << authority() << "] ("
+        << buffer.size() << " bytes)";
 
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////
@@ -363,10 +363,10 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
                 return;
             }
             const auto socket = socket_->get_socket();
-			auto& native_socket = socket->get();
+            auto& native_socket = socket->get();
             async_write(native_socket, buffer,
                     std::bind(&proxy::handle_send,
-                    		shared_from_this(), _1, buffer, handler));
+                            shared_from_this(), _1, buffer, handler));
         };
         const auto socket = socket_->get_socket();
         outbound_size = outbound_queue_.size();
@@ -423,8 +423,8 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     handler(error);
 #ifdef QUEUE_REQUEST
     if(error){
-    	const auto socket = socket_->get_socket();
-    	std::queue<request_callback>{}.swap(outbound_queue_);
+        const auto socket = socket_->get_socket();
+        std::queue<request_callback>{}.swap(outbound_queue_);
         return;
     }
 
@@ -468,8 +468,8 @@ void proxy::stop(const code& ec)
     // Give channel opportunity to terminate timers.
     handle_stopping();
     {
-		const auto socket = socket_->get_socket();
-		std::queue<request_callback>{}.swap(outbound_queue_);
+        const auto socket = socket_->get_socket();
+        std::queue<request_callback>{}.swap(outbound_queue_);
     }
 
     // The socket_ is internally guarded against concurrent use.
@@ -512,6 +512,38 @@ bool proxy::blacklisted(const config::authority& authority)
         return true;
     }
     return false;
+}
+
+bool proxy::manualbanned(const config::authority& authority)
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+    auto it = banned_.find(authority);
+    if (it != banned_.end()) {
+        return it->second == 0;
+    }
+    return false;
+}
+
+
+//set ban time to 0 ~ which means never timeout.
+void proxy::manual_ban(const config::authority& authority)
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+    auto it = banned_.find(authority);
+    if (it == banned_.end()) {
+        banned_.insert({authority, 0});
+    } else if (it->second != 0) {
+        it->second = 0;
+    }
+}
+
+void proxy::manual_unban(const config::authority& authority)
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+    auto it = banned_.find(authority);
+    if(it != banned_.end()) {
+        banned_.erase(it);
+    }
 }
 
 

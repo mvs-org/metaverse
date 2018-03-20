@@ -43,7 +43,8 @@ public:
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("NODEADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -52,6 +53,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "NODEADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -73,7 +75,17 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    );
+	    )
+        (
+            "NODEADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "The target node address[x.x.x.x:port]."
+        )
+        (
+            "operation,p",
+            value<std::string>(&argument_.operation),
+            "The operation[ add|ban ] to the target node address. default: add."
+        );
 
         return options;
     }
@@ -87,6 +99,8 @@ public:
 
     struct argument
     {
+        std::string operation;
+        std::string address;
     } argument_;
 
     struct option

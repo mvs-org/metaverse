@@ -23,6 +23,9 @@
 #include <metaverse/explorer/extensions/commands/addnode.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/node_method_wrapper.hpp>
+#include <metaverse/bitcoin/config/authority.hpp>
+#include <metaverse/network/channel.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -34,7 +37,31 @@ namespace commands {
 console_result addnode::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    jv_output["message"] = IN_DEVELOPING;
+    //jv_output["message"] = IN_DEVELOPING;
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
+    auto& root = jv_output;
+
+    auto address = libbitcoin::config::authority(argument_.address).to_network_address();
+
+    code errcode;
+    auto handler = [&errcode](const code& ec){
+        errcode = ec;
+    };
+
+    if (argument_.operation == "ban") {
+        network::channel::manual_ban(address);
+        node.remove(address, handler);
+    } else if ((argument_.operation == "add") || (argument_.operation == "")){
+        network::channel::manual_unban(address);
+        node.store(address, handler);
+    } else {
+        jv_output = string("Invalid operation [") +argument_.operation+"]." ;
+    }
+
+
+    jv_output = errcode.message();
+
     return console_result::okay;
 }
 
