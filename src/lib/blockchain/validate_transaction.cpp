@@ -277,8 +277,8 @@ void validate_transaction::check_fees()
         return;
     }
 	
-	if(((business_tp_in_== ASSET_DETAIL_TYPE) && tx_->has_asset_transfer())
-		|| ((business_tp_in_== ASSET_TRANSFERABLE_TYPE) && tx_->has_asset_transfer())) {
+    auto is_asset_type = (business_tp_in_ == ASSET_DETAIL_TYPE) || (business_tp_in_ == ASSET_TRANSFERABLE_TYPE);
+    if (is_asset_type && tx_->has_asset_transfer()) {
 	    if (!check_asset_amount(*tx_))
 	    {
 	        handle_validate_(error::asset_amount_not_equal, tx_, {});

@@ -93,6 +93,7 @@ public:
 		 this->attach = attach;
 	};
 	attachment_data_type& get_attach();
+	const attachment_data_type& get_attach() const;
 
 private:
     uint32_t version;

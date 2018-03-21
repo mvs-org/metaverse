@@ -205,6 +205,10 @@ attachment::attachment_data_type& attachment::get_attach()
 {
 	return this->attach;
 }
+const attachment::attachment_data_type& attachment::get_attach() const
+{
+	return this->attach;
+}
 
 } // namspace chain
 } // namspace libbitcoin

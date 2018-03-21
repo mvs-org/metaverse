@@ -348,6 +348,10 @@ uint64_t transaction::total_output_transfer_amount() const
 {
     const auto value = [](uint64_t total, const output& output)
     {
+        // asset issue is from air, so not add them.
+        if (output.is_asset_issue() || output.is_asset_secondissue()) {
+            return total;
+        }
         return total + output.get_asset_amount();
     };
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);

@@ -57,11 +57,11 @@ public:
     uint64_t serialized_size() const;
 	uint64_t get_asset_amount() const;
 	std::string get_asset_symbol();
-	bool is_asset_transfer();
-	bool is_asset_issue();
+	bool is_asset_transfer() const;
+	bool is_asset_issue() const;
 	bool is_etp();
     bool is_did_issue();
-    bool is_asset_secondissue();
+    bool is_asset_secondissue() const;
     asset_detail get_asset_detail();
     std::string get_did_symbol();
     std::string get_did_address();

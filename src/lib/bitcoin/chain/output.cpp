@@ -169,7 +169,7 @@ uint64_t output::get_asset_amount() const // for validate_transaction.cpp to cal
 	}
 	return 0;
 }
-bool output::is_asset_transfer()
+bool output::is_asset_transfer() const
 {
 	if(attach_data.get_type() == ASSET_TYPE) {
 		auto asset_info = boost::get<asset>(attach_data.get_attach());
@@ -178,7 +178,7 @@ bool output::is_asset_transfer()
 	return false;
 }
 
-bool output::is_asset_issue()
+bool output::is_asset_issue() const
 {
     if(attach_data.get_type() == ASSET_TYPE) {
     auto asset_info = boost::get<asset>(attach_data.get_attach());
@@ -190,7 +190,7 @@ bool output::is_asset_issue()
     return false;
 }
 
-bool output::is_asset_secondissue()
+bool output::is_asset_secondissue() const
 {
     if(attach_data.get_type() == ASSET_TYPE) {
     auto asset_info = boost::get<asset>(attach_data.get_attach());
