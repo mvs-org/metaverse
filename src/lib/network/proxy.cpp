@@ -531,6 +531,7 @@ void proxy::manual_ban(const config::authority& authority)
     auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
     if (it == manual_banned_.end()) {
         manual_banned_.push_back(local_authority);
+        log::info(LOG_NETWORK) << "add to manual_ban_list: " << local_authority.to_string();
     }
 }
 
@@ -541,6 +542,7 @@ void proxy::manual_unban(const config::authority& authority)
     auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
     if (it != manual_banned_.end()) {
         manual_banned_.erase(it);
+        log::info(LOG_NETWORK) << "remove from manual_ban_list: " << local_authority.to_string();
     }
 }
 
