@@ -148,7 +148,7 @@ void connections::stop(const config::authority& address)
 {
     const auto match = [&address](channel::ptr entry)
     {
-        return entry->authority() == address;
+        return entry->authority().ip() == address.ip();
     };
 
     // Critical Section

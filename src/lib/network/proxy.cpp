@@ -494,7 +494,9 @@ bool proxy::stopped() const
 }
 
 std::map<config::authority, int64_t> proxy::banned_;
+std::list<config::authority> proxy::manual_banned_;
 boost::detail::spinlock proxy::spinlock_;
+boost::detail::spinlock proxy::manual_banned_spinlock_;
 
 bool proxy::blacklisted(const config::authority& authority)
 {
@@ -507,12 +509,6 @@ bool proxy::blacklisted(const config::authority& authority)
         ms = it->second;
     }
 
-    //manual banned
-    if (ms == 0)
-    {
-        return true;
-    }
-
     auto millissecond = unix_millisecond();
     if (ms >= millissecond)
     {
@@ -523,33 +519,28 @@ bool proxy::blacklisted(const config::authority& authority)
 
 bool proxy::manualbanned(const config::authority& authority)
 {
-    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-    auto it = banned_.find(authority);
-    if (it != banned_.end()) {
-        return it->second == 0;
-    }
-    return false;
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), config::authority(authority.ip(), 0));
+    return (it != manual_banned_.end());
 }
 
-
-//set ban time to 0 ~ which means never timeout.
 void proxy::manual_ban(const config::authority& authority)
 {
-    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-    auto it = banned_.find(authority);
-    if (it == banned_.end()) {
-        banned_.insert({authority, 0});
-    } else if (it->second != 0) {
-        it->second = 0;
+    const config::authority local_authority{authority.ip(), 0};
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
+    if (it == manual_banned_.end()) {
+        manual_banned_.push_back(local_authority);
     }
 }
 
 void proxy::manual_unban(const config::authority& authority)
 {
-    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
-    auto it = banned_.find(authority);
-    if(it != banned_.end()) {
-        banned_.erase(it);
+    const config::authority local_authority{authority.ip(), 0};
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
+    if (it != manual_banned_.end()) {
+        manual_banned_.erase(it);
     }
 }
 

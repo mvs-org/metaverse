@@ -161,6 +161,9 @@ private:
     std::atomic_int misbehaving_;
     static boost::detail::spinlock spinlock_;
     static std::map<config::authority, int64_t> banned_;
+
+    static boost::detail::spinlock manual_banned_spinlock_;
+    static std::list<config::authority> manual_banned_;
 };
 
 } // namespace network
