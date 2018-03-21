@@ -125,7 +125,7 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
-    if ((option_.secondaryissue_assetshare_threshold > 0 && option_.secondaryissue_assetshare_threshold < 51) || option_.secondaryissue_assetshare_threshold > 100)
+    if ((option_.secondaryissue_threshold > 0 && option_.secondaryissue_threshold < 51) || option_.secondaryissue_threshold > 100)
         throw std::logic_error{"secondaryissue assetshare threshold value error, is must be 0 or in range of 51 to 100."};
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};
@@ -150,7 +150,7 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
-    acc->set_secondaryissue_assetshare_threshold(option_.secondaryissue_assetshare_threshold);
+    acc->set_secondaryissue_threshold(option_.secondaryissue_threshold);
     
     blockchain.store_account_asset(acc);
 

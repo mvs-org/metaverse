@@ -198,7 +198,7 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "second issue asset error";
         case error::asset_secondaryissue_share_not_enough:
             return "user asset share is not enought to second issue asset ";
-        case error::asset_secondaryissue_assetshare_threshold_invalid:
+        case error::asset_secondaryissue_threshold_invalid:
             return "asset secondaryissue assetshare threshold value invalid";
 
         // did errors

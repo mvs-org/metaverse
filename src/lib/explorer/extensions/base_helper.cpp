@@ -1792,7 +1792,7 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         // verify if the threshhold is satisfied
         if (!output.is_etp() && (addr == target_addr)) {
             auto max_supply = issued_asset_->get_maximum_supply();
-            auto threshold = issued_asset_->get_secondaryissue_assetshare_threshold();
+            auto threshold = issued_asset_->get_secondaryissue_threshold();
             if (unspent_asset_ < max_supply / 100 * threshold)
                 throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
                     + std::to_string(unspent_asset_) + ", maximum_supply = " + std::to_string(max_supply)};

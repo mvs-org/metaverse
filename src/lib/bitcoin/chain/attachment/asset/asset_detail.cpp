@@ -40,7 +40,7 @@ asset_detail::asset_detail(
     std::string address, std::string description):
     symbol(symbol), maximum_supply(maximum_supply),
     decimal_number(decimal_number),
-    secondaryissue_assetshare_threshold(threshold),
+    secondaryissue_threshold(threshold),
     unused2(0), unused3(0),
     issuer(issuer), address(address), description(description)
 {
@@ -78,7 +78,7 @@ void asset_detail::reset()
     symbol = "";
     maximum_supply = 0;
     decimal_number = 0;
-	secondaryissue_assetshare_threshold = 0;
+	secondaryissue_threshold = 0;
 	unused2 = 0;
 	unused3 = 0;
     issuer = ""; 
@@ -105,7 +105,7 @@ bool asset_detail::from_data(reader& source)
     symbol = source.read_string();
     maximum_supply = source.read_8_bytes_little_endian();
     decimal_number = source.read_byte();
-    secondaryissue_assetshare_threshold = source.read_byte();
+    secondaryissue_threshold = source.read_byte();
     unused2 = source.read_byte();
     unused3 = source.read_byte();
     issuer = source.read_string(); 
@@ -139,7 +139,7 @@ void asset_detail::to_data(writer& sink) const
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);
 	sink.write_byte(decimal_number);
-	sink.write_byte(secondaryissue_assetshare_threshold);
+	sink.write_byte(secondaryissue_threshold);
 	sink.write_byte(unused2);
 	sink.write_byte(unused3);
 	sink.write_string(issuer);
@@ -161,7 +161,7 @@ std::string asset_detail::to_string() const
 		<< "\t maximum_supply = " << std::to_string(maximum_supply) << "\n"
 		<< "\t decimal_number = " << std::to_string(decimal_number) << "\n"
 		<< "\t is_asset_secondaryissue = " << (is_asset_secondaryissue() ? "true" : "false") << "\n"
-		<< "\t secondaryissue_assetshare_threshold = " << std::to_string(get_secondaryissue_assetshare_threshold()) << "\n"
+		<< "\t secondaryissue_threshold = " << std::to_string(get_secondaryissue_threshold()) << "\n"
 		<< "\t issuer = " << issuer << "\n"
 		<< "\t address = " << address << "\n"
         << "\t description = " << description << "\n";

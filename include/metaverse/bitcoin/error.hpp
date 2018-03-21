@@ -137,7 +137,7 @@ enum error_code_t
     asset_not_exist,
     asset_secondaryissue_error,
     asset_secondaryissue_share_not_enough,
-    asset_secondaryissue_assetshare_threshold_invalid,
+    asset_secondaryissue_threshold_invalid,
 
 	//syn block
 	fetch_more_block,

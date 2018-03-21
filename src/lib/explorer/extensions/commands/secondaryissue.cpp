@@ -65,8 +65,8 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if(!asset)
         throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
 
-    auto secondaryissue_assetshare_threshold = asset->get_secondaryissue_assetshare_threshold();
-    if(secondaryissue_assetshare_threshold == 0)
+    auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
+    if(secondaryissue_threshold == 0)
         throw std::logic_error{"asset is not allow second issue"};
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
@@ -75,7 +75,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     //auto asset_account_volume = blockchain.get_account_asset_volume(auth_.name, argument_.symbol, true, true);
     auto asset_account_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol, true, true);
-    if (asset_account_volume < total_volume / 100 * secondaryissue_assetshare_threshold)
+    if (asset_account_volume < total_volume / 100 * secondaryissue_threshold)
         throw asset_lack_exception{"asset volum is not enought to secondaryissue"};
 
     // receiver
