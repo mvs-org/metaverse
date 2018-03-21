@@ -35,7 +35,7 @@ using namespace bc::explorer::config;
 console_result getinfo::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
@@ -45,7 +45,13 @@ console_result getinfo::invoke (Json::Value& jv_output,
     jv["database-version"] = MVS_DATABASE_VERSION;
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
     jv["peers"] = get_connections_count(node); 
-    jv["network-assets-count"] = static_cast<uint64_t>(blockchain.get_issued_assets()->size()); 
+
+    auto sh_vec = blockchain.get_issued_assets();
+    std::set<std::string> symbols;
+    for (const auto& elem: *sh_vec) {
+        symbols.insert(elem.get_symbol());
+    }
+    jv["network-assets-count"] = static_cast<uint64_t>(symbols.size());
     jv["wallet-account-count"] = static_cast<uint64_t>(blockchain.get_accounts()->size());
 
     uint64_t height;
