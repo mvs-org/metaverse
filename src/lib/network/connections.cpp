@@ -146,19 +146,17 @@ void connections::remove(channel::ptr channel, result_handler handler)
 
 void connections::stop(const config::authority& address)
 {
-    const auto match = [&address](channel::ptr entry)
-    {
-        return entry->authority().ip() == address.ip();
-    };
-
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(mutex_);
 
-    const auto it = std::find_if(channels_.begin(), channels_.end(), match);
-    if ( it != channels_.end() )
+    for(auto it = channels_.begin(); it != channels_.end(); ++it)
     {
-        (*it)->stop(error::address_blocked);
+        if ( (*it)->authority().ip() == address.ip())
+        {
+            (*it)->stop(error::address_blocked);
+            log::info(LOG_NETWORK) << "actively disconnect from blocked address: " << (*it)->authority().to_string();
+        }
     }
 }
 
