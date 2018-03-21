@@ -160,7 +160,8 @@ std::string asset_detail::to_string() const
     ss << "\t symbol = " << symbol << "\n"
 		<< "\t maximum_supply = " << std::to_string(maximum_supply) << "\n"
 		<< "\t decimal_number = " << std::to_string(decimal_number) << "\n"
-		<< "\t secondissue_assetshare_threshold = " << std::to_string(secondissue_assetshare_threshold) << "\n"
+		<< "\t is_asset_secondissue = " << (is_asset_secondissue() ? "true" : "false") << "\n"
+		<< "\t secondissue_assetshare_threshold = " << std::to_string(get_secondissue_assetshare_threshold()) << "\n"
 		<< "\t issuer = " << issuer << "\n"
 		<< "\t address = " << address << "\n"
         << "\t description = " << description << "\n";
