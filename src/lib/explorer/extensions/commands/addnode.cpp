@@ -38,11 +38,11 @@ console_result addnode::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     //jv_output["message"] = IN_DEVELOPING;
-
-    administrator_required_checker(node, auth_.name, auth_.auth);
+    auto& blockchain = node.chain_impl();
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     auto& root = jv_output;
 
-    auto address = libbitcoin::config::authority(argument_.address).to_network_address();
+    const auto authority = libbitcoin::config::authority(argument_.address);
 
     code errcode;
     auto handler = [&errcode](const code& ec){
@@ -50,18 +50,18 @@ console_result addnode::invoke (Json::Value& jv_output,
     };
 
     if (argument_.operation == "ban") {
-        network::channel::manual_ban(address);
-        node.remove(address, handler);
+        network::channel::manual_ban(authority);
+        node.connections_ptr()->stop(authority);
     } else if ((argument_.operation == "add") || (argument_.operation == "")){
-        network::channel::manual_unban(address);
-        node.store(address, handler);
+        network::channel::manual_unban(authority);
+        node.store(authority.to_network_address(), handler);
     } else {
         jv_output = string("Invalid operation [") +argument_.operation+"]." ;
+        return console_result::okay;
     }
 
 
     jv_output = errcode.message();
-
     return console_result::okay;
 }
 

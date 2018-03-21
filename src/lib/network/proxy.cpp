@@ -506,6 +506,13 @@ bool proxy::blacklisted(const config::authority& authority)
             return false;
         ms = it->second;
     }
+
+    //manual banned
+    if (ms == 0)
+    {
+        return true;
+    }
+
     auto millissecond = unix_millisecond();
     if (ms >= millissecond)
     {

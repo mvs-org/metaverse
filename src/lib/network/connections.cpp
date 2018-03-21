@@ -144,6 +144,24 @@ void connections::remove(channel::ptr channel, result_handler handler)
     handler(safe_remove(channel) ? error::success : error::not_found);
 }
 
+void connections::stop(const config::authority& address)
+{
+    const auto match = [&address](channel::ptr entry)
+    {
+        return entry->authority() == address;
+    };
+
+    // Critical Section
+    ///////////////////////////////////////////////////////////////////////////
+    shared_lock lock(mutex_);
+
+    const auto it = std::find_if(channels_.begin(), channels_.end(), match);
+    if ( it != channels_.end() )
+    {
+        (*it)->stop(error::address_blocked);
+    }
+}
+
 code connections::safe_store(channel::ptr channel)
 {
     const auto nonce = channel->nonce();

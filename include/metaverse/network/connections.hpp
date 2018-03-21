@@ -95,6 +95,7 @@ public:
     }
 
     virtual void stop(const code& ec);
+    virtual void stop(const config::authority& authority);
     virtual void count(count_handler handler) const;
     virtual void store(channel::ptr channel, result_handler handler);
     virtual void remove(channel::ptr channel, result_handler handler);

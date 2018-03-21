@@ -82,7 +82,7 @@ public:
             "The target node address[x.x.x.x:port]."
         )
         (
-            "operation,p",
+            "operation,o",
             value<std::string>(&argument_.operation),
             "The operation[ add|ban ] to the target node address. default: add."
         );
