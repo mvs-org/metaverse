@@ -64,3 +64,6 @@ cscope.*
 *.orig
 *.rej
 *.swp
+
+# Macosx Desktop Services Store file
+.DS_Store
