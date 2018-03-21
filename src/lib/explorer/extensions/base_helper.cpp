@@ -1662,14 +1662,18 @@ void secondissuing_asset::populate_change() {
     // asset utxo
     if (unspent_asset_ > payment_asset_) {
         receiver_list_.push_back({from_addr, "",
-                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_locked_transfer, attachment()});
+                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
     }
 }
 
 attachment secondissuing_asset::populate_output_attachment(receiver_record& record){
-    if(record.type == utxo_attach_type::etp) {
+    if (record.type == utxo_attach_type::etp) {
         return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
-    }  else if(record.type == utxo_attach_type::asset_secondissue) {
+    } else if (record.type == utxo_attach_type::asset_transfer) {
+        auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
+        auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
+        return attachment(ASSET_TYPE, attach_version, ass);
+    } else if (record.type == utxo_attach_type::asset_secondissue) {
         auto asset_detail = *issued_asset_;
         asset_detail.set_address(record.target); // target is setted in metaverse_output.cpp
         asset_detail.set_asset_secondissue();
@@ -1677,7 +1681,7 @@ attachment secondissuing_asset::populate_output_attachment(receiver_record& reco
         asset_detail.set_issuer(name_);
         auto ass = asset(ASSET_DETAIL_TYPE, asset_detail);
         return attachment(ASSET_TYPE, attach_version, ass);
-    } 
+    }
             
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
 }

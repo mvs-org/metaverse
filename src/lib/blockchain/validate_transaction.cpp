@@ -303,6 +303,7 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 	std::string asset_issuer;
 	int secondissue_assetshare_threshold = 0;
 	bool has_other_type_output = false;
+    uint64_t asset_transfer_volume{0};
 	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
 	{
 		if(o.is_asset_secondissue())
@@ -314,9 +315,14 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 			asset_issuer = asset_detail.get_issuer();
 			secondissue_assetshare_threshold = asset_detail.get_secondissue_assetshare_threshold();
 		}
+
         else if (o.is_did_issue())
         {
             return error::success;
+        }
+        else if (o.is_asset_transfer())
+        {
+            asset_transfer_volume += o.get_asset_amount();
         }
 		else if(o.is_etp() == false)
 		{
@@ -324,30 +330,17 @@ code validate_transaction::check_secondissue_transaction_with_transactionpool(co
 		}
 	}
 
-	if(asset_name.empty() == false)
-	{
-		if(tx.outputs.size() > 2 || has_other_type_output)
-		{
-			return error::asset_secondissue_error;
-		}
-	}
+    if (asset_name.empty()) {
+        return error::success;
+    }
 
-    uint64_t asset_input_volume{0};
-    for (const auto& input: tx.inputs)
+    if (tx.outputs.size() > 3 || has_other_type_output)
     {
-        const auto& previous_output = input.previous_output;
-        if (previous_output.is_null())
-            return error::previous_output_null;
-
-        transaction t;
-        uint64_t height{0};
-        if (blockchain.get_transaction(t, height, previous_output.hash)) {
-            asset_input_volume += t.outputs[previous_output.index].get_asset_amount();
-        }
+        return error::asset_secondissue_error;
     }
 
     auto total_volume = blockchain.get_asset_volume(asset_name);
-    if (secondissue_assetshare_threshold == 0 || asset_input_volume < total_volume / 100 * secondissue_assetshare_threshold)
+    if (secondissue_assetshare_threshold == 0 || asset_transfer_volume < total_volume / 100 * secondissue_assetshare_threshold)
         return error::asset_secondissue_share_not_enough;
 
 	return error::success;
@@ -360,6 +353,7 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
 	int secondissue_assetshare_threshold = 0;
 	bool has_other_type_output = false;
 	uint64_t asset_amount = 0;
+    uint64_t asset_transfer_volume{0};
 	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
 	{
 		if(o.is_asset_secondissue())
@@ -372,39 +366,30 @@ code validate_transaction::check_secondissue_transaction(const chain::transactio
 			secondissue_assetshare_threshold = asset_detail.get_secondissue_assetshare_threshold();
 			asset_amount = asset_detail.get_maximum_supply();
 		}
+        else if (o.is_asset_transfer())
+        {
+            asset_transfer_volume += o.get_asset_amount();
+        }
 		else if(o.is_etp() == false)
 		{
 			has_other_type_output = true;
 		}
 	}
 
-	if(asset_name.empty() == false)
-	{
-		if(tx.outputs.size() > 2 || has_other_type_output)
-		{
-			return error::asset_secondissue_error;
-		}
-	}
+    if (asset_name.empty()) {
+        return error::success;
+    }
 
-    uint64_t asset_input_volume{0};
-    for (const auto& input: tx.inputs)
+    if (tx.outputs.size() > 3 || has_other_type_output)
     {
-        const auto& previous_output = input.previous_output;
-        if (previous_output.is_null())
-            return error::previous_output_null;
-
-        transaction t;
-        uint64_t height{0};
-        if (blockchain.get_transaction(t, height, previous_output.hash)) {
-            asset_input_volume += t.outputs[previous_output.index].get_asset_amount();
-        }
+        return error::asset_secondissue_error;
     }
 
     auto total_volume = blockchain.get_asset_volume(asset_name) - asset_amount;
-    if (secondissue_assetshare_threshold == 0 || asset_input_volume < total_volume / 100 * secondissue_assetshare_threshold)
+    if (secondissue_assetshare_threshold == 0 || asset_transfer_volume < total_volume / 100 * secondissue_assetshare_threshold)
         return error::asset_secondissue_share_not_enough;
 
-	return error::success;
+    return error::success;
 }
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)

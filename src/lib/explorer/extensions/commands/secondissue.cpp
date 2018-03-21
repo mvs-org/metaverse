@@ -56,10 +56,10 @@ console_result secondissue::invoke(Json::Value& jv_output,
         throw std::logic_error{"nullptr for address list"};
 
     if (!blockchain.get_account_address(auth_.name, argument_.address))
-        throw address_dismatch_account_exception{"address does not match account. " + argument_.address};
+        throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
 
-    if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
-        throw address_dismatch_account_exception{"address does not match account." + argument_.mychange_address};
+    if (!argument_.mychange_address.empty() && !blockchain.get_account_address(auth_.name, argument_.mychange_address))
+        throw address_dismatch_account_exception{"mychange address does not match account." + argument_.mychange_address};
 
     auto asset = blockchain.get_issued_asset(argument_.symbol);
     if(!asset)
