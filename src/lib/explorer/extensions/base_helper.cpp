@@ -1613,8 +1613,8 @@ void secondissuing_asset::sum_payment_amount() {
         throw std::logic_error{"empty target address"};
     if (receiver_list_.size() > 1)
         throw toaddress_invalid_exception{"multiple target address"};
-    if (payment_etp_ < 1000000000) // 10 etp now
-        throw asset_exchange_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
+    if (payment_etp_ < 10000) // 10000 ETP bits now
+        throw asset_exchange_poundage_exception{"fee must more than 10000 satoshi == 0.0001 etp"};
     if (payment_etp_ > maximum_fee)
         throw asset_exchange_poundage_exception{"fee must be less than 10000000000 satoshi == 100 etp"};
 }

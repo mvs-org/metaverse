@@ -40,8 +40,8 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if(argument_.fee < 1000000000)
-        throw std::logic_error{"issue asset fee less than 1000000000!"};
+    if(argument_.fee < 10000)
+        throw std::logic_error{"issue asset fee less than 10000 ETP bits!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
