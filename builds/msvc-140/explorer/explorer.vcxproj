@@ -100,7 +100,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\mergeasset.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondissue.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
@@ -220,7 +220,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\mergeasset.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondissue.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />

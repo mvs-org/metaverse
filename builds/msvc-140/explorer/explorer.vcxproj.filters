@@ -356,13 +356,37 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getblockheader.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondissue.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\commands\fetch-history.hpp">
       <Filter>Header Files\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createdid.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\mergeasset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -678,13 +702,37 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getblockheader.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondissue.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\commands\fetch-history.cpp">
       <Filter>Source Files\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createdid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\mergeasset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
