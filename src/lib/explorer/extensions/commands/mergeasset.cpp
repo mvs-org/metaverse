@@ -56,7 +56,7 @@ console_result mergeasset::invoke (Json::Value& jv_output,
     if (!blockchain.get_account_address(auth_.name, argument_.address))
         throw address_dismatch_account_exception{"address does not match account. " + argument_.address};
 
-    if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
+    if (!argument_.mychange_address.empty() && !blockchain.get_account_address(auth_.name, argument_.mychange_address))
         throw address_dismatch_account_exception{"address does not match account." + argument_.mychange_address};
 
     // receiver
