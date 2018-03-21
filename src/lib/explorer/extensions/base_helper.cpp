@@ -871,7 +871,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
         return attachment(ASSET_TYPE, attach_version, ass);
-	} else if(record.type == utxo_attach_type::asset_secondissue) {
+    } else if(record.type == utxo_attach_type::asset_secondissue) {
         auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         if(!sh_asset)
             throw asset_symbol_notfound_exception{symbol_ + " not found"};
@@ -996,10 +996,14 @@ void base_transfer_helper::sign_tx_inputs(){
 }
 
 void base_transfer_helper::send_tx(){
-    if(blockchain_.validate_transaction(tx_))
-            throw tx_validate_exception{"validate transaction failure"};
+    if(blockchain_.validate_transaction(tx_)) {
+#ifdef MVS_DEBUG
+        throw tx_validate_exception{"validate transaction failure. " + tx_.to_string(1)};
+#endif
+        throw tx_validate_exception{"validate transaction failure"};
+    }
     if(blockchain_.broadcast_transaction(tx_)) 
-            throw tx_broadcast_exception{"broadcast transaction failure"};
+        throw tx_broadcast_exception{"broadcast transaction failure"};
 }
 void base_transfer_helper::exec(){  
     // prepare 
@@ -1660,8 +1664,9 @@ void secondissuing_asset::populate_change() {
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
     // asset utxo
+    auto target_addr = receiver_list_.at(0).target;
     if (unspent_asset_ > payment_asset_) {
-        receiver_list_.push_back({from_addr, "",
+        receiver_list_.push_back({target_addr, symbol_,
                 0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
     }
 }
@@ -2077,7 +2082,6 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
         if ((from_ == addr) && (unspent_etp_ < payment_etp_))
             break;
     }
-    payment_asset_ = unspent_asset_;
     rows.clear();
 }
 
@@ -2089,7 +2093,12 @@ void merging_asset::populate_change()
         receiver_list_.push_back({from_addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
-    BITCOIN_ASSERT(unspent_asset_ == payment_asset_);
+    // asset utxo
+    auto target_addr = receiver_list_.at(0).target;
+    if (unspent_asset_ > payment_asset_) {
+        receiver_list_.push_back({target_addr, symbol_,
+                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
+    }
 }
 
 void merging_asset::populate_unspent_list()
