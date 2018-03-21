@@ -301,6 +301,7 @@ public:
     bool is_payment_address(const std::string& address);
     bool is_stealth_address(const std::string& address);
     bool is_script_address(const std::string& address);
+    bool is_blackhole_address(const std::string& address);
 
 	void fired();
 	organizer& get_organizer();

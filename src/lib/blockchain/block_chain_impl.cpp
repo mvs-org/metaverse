@@ -2010,7 +2010,13 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 {	
     return  is_payment_address(address) ||
             is_script_address(address) ||
-            is_stealth_address(address);
+            is_stealth_address(address) ||
+            is_blackhole_address(address);
+}
+
+bool block_chain_impl::is_blackhole_address(const std::string& address)
+{	
+	return (address == "1111111111111111111114oLvT2");
 }
 
 bool block_chain_impl::is_stealth_address(const std::string& address)
