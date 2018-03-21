@@ -132,7 +132,7 @@ bool executor::do_initchain()
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
     }
-    else
+    else if (MVS_DATABASE_VERSION_NUMBER >= 63)
     {
         const auto result = data_base::initialize_dids(data_path);
         if (!result) {
