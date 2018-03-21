@@ -184,19 +184,19 @@ bool output::is_asset_issue() const
     auto asset_info = boost::get<asset>(attach_data.get_attach());
         if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
-			return !detail_info.is_asset_secondissue();
+			return !detail_info.is_asset_secondaryissue();
         }
     }
     return false;
 }
 
-bool output::is_asset_secondissue() const
+bool output::is_asset_secondaryissue() const
 {
     if(attach_data.get_type() == ASSET_TYPE) {
     auto asset_info = boost::get<asset>(attach_data.get_attach());
         if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
-			return detail_info.is_asset_secondissue();
+			return detail_info.is_asset_secondaryissue();
         }
     }
     return false;

@@ -349,7 +349,7 @@ uint64_t transaction::total_output_transfer_amount() const
     const auto value = [](uint64_t total, const output& output)
     {
         // asset issue is from air, so not add them.
-        if (output.is_asset_issue() || output.is_asset_secondissue()) {
+        if (output.is_asset_issue() || output.is_asset_secondaryissue()) {
             return total;
         }
         return total + output.get_asset_amount();
@@ -360,7 +360,7 @@ uint64_t transaction::total_output_transfer_amount() const
 bool transaction::has_asset_issue()
 {
 	for (auto& elem: outputs) {
-		if(elem.is_asset_issue() || elem.is_asset_secondissue())
+		if(elem.is_asset_issue() || elem.is_asset_secondaryissue())
 			return true;
 	}
 	return false;

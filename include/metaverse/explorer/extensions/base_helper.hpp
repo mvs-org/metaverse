@@ -39,7 +39,7 @@ enum utxo_attach_type : uint32_t
 	asset_locked_transfer,  // 5
 	message,
 	digital_identity,
-    asset_secondissue,
+    asset_secondaryissue,
 	did_issue,
 	did_transfer_etp,
 	did_transfer_asset
@@ -356,7 +356,7 @@ public:
     attachment populate_output_attachment(receiver_record& record) override;
     uint64_t get_volume() { return volume_; };
     void populate_tx_header(){
-        tx_.version = transaction_version::asset_secondissue_and_frozen;
+        tx_.version = transaction_version::asset_secondaryissue_and_frozen;
         tx_.locktime = 0;
     };
 

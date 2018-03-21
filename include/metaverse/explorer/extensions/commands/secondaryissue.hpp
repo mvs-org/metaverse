@@ -29,14 +29,14 @@ namespace explorer {
 namespace commands {
 
 
-/************************ secondissue *************************/
-class secondissue: public command_extension
+/************************ secondaryissue *************************/
+class secondaryissue: public command_extension
 {
 public:
-    static const char* symbol(){ return "secondissue";}
+    static const char* symbol(){ return "secondaryissue";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "secondissue "; }
+    const char* description() override { return "secondaryissue "; }
 
     arguments_metadata& load_arguments() override
     {

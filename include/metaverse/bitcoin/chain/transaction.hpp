@@ -40,7 +40,7 @@ namespace chain {
 enum transaction_version{
     first = 1,   //the frist version
     check_output_script,   //add check output script 
-    asset_secondissue_and_frozen,	//add secondissue asset and frozen asset
+    asset_secondaryissue_and_frozen,	//add secondaryissue asset and frozen asset
     max_version
 };
 

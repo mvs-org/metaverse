@@ -83,21 +83,21 @@ public:
 	const std::string& get_description() const;
 	void set_description(const std::string& description);
 
-    bool is_asset_secondissue() const { return secondissue_assetshare_threshold >= 128; }
-    void set_asset_secondissue() { if (!is_asset_secondissue()) { secondissue_assetshare_threshold += 128; } }
-    uint8_t get_secondissue_assetshare_threshold() const
+    bool is_asset_secondaryissue() const { return secondaryissue_assetshare_threshold >= 128; }
+    void set_asset_secondaryissue() { if (!is_asset_secondaryissue()) { secondaryissue_assetshare_threshold += 128; } }
+    uint8_t get_secondaryissue_assetshare_threshold() const
     {
-        if(secondissue_assetshare_threshold > 128)
-            return secondissue_assetshare_threshold - 128;
+        if(secondaryissue_assetshare_threshold > 128)
+            return secondaryissue_assetshare_threshold - 128;
         else
-            return secondissue_assetshare_threshold;
+            return secondaryissue_assetshare_threshold;
     }
-    void set_secondissue_assetshare_threshold(uint8_t share)
+    void set_secondaryissue_assetshare_threshold(uint8_t share)
     {
-        if(secondissue_assetshare_threshold > 128)
-            secondissue_assetshare_threshold = share + 128;
+        if(secondaryissue_assetshare_threshold > 128)
+            secondaryissue_assetshare_threshold = share + 128;
         else
-            secondissue_assetshare_threshold = share;
+            secondaryissue_assetshare_threshold = share;
     }
 
 private:    
@@ -107,7 +107,7 @@ private:
     std::string symbol;
     uint64_t maximum_supply;
     uint8_t decimal_number;
-    uint8_t secondissue_assetshare_threshold;
+    uint8_t secondaryissue_assetshare_threshold;
 	uint8_t unused2;
 	uint8_t unused3;
     std::string issuer; 

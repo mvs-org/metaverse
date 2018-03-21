@@ -85,8 +85,8 @@ public:
 	    )
         (
 	        "rate,r",
-		    value<uint32_t>(&option_.secondissue_assetshare_threshold),
-		    "The rate of secondissue. Default 0, is not allowed secondissue; otherwise, rate is range of 51 to 100."
+		    value<uint32_t>(&option_.secondaryissue_assetshare_threshold),
+		    "The rate of secondaryissue. Default 0, is not allowed secondaryissue; otherwise, rate is range of 51 to 100."
 		)
 	    (
             "symbol,s",
@@ -134,7 +134,7 @@ public:
 		  : symbol(""),
 			maximum_supply{0},
 			decimal_number(0),
-            secondissue_assetshare_threshold(0),
+            secondaryissue_assetshare_threshold(0),
 			issuer(""),
 			description("")
     	{
@@ -143,7 +143,7 @@ public:
 		std::string symbol;
 		non_negative_uint64 maximum_supply;
 		uint32_t decimal_number;
-		uint32_t secondissue_assetshare_threshold;
+		uint32_t secondaryissue_assetshare_threshold;
 		std::string issuer; 
 		std::string description;
     } option_;

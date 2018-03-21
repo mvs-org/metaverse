@@ -1115,7 +1115,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 			address_dids.delete_last_row(hash);
 			// remove asset or did from database
 			bc::chain::output op = *output;
-			if(op.is_asset_issue() || op.is_asset_secondissue()) {
+			if(op.is_asset_issue() || op.is_asset_secondaryissue()) {
 				auto symbol = op.get_asset_symbol();
 				const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
 				const auto symbol_hash = sha256_hash(symbol_data);

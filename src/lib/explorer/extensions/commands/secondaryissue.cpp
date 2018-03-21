@@ -20,7 +20,7 @@
 
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/secondissue.hpp>
+#include <metaverse/explorer/extensions/commands/secondaryissue.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -31,8 +31,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-/************************ secondissue *************************/
-console_result secondissue::invoke(Json::Value& jv_output,
+/************************ secondaryissue *************************/
+console_result secondaryissue::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -65,22 +65,22 @@ console_result secondissue::invoke(Json::Value& jv_output,
     if(!asset)
         throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
 
-    auto secondissue_assetshare_threshold = asset->get_secondissue_assetshare_threshold();
-    if(secondissue_assetshare_threshold == 0)
+    auto secondaryissue_assetshare_threshold = asset->get_secondaryissue_assetshare_threshold();
+    if(secondaryissue_assetshare_threshold == 0)
         throw std::logic_error{"asset is not allow second issue"};
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if(total_volume > ULLONG_MAX - argument_.volume)
-        throw asset_amount_exception{"secondissue volume cannot exceed maximum value"};
+        throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
     //auto asset_account_volume = blockchain.get_account_asset_volume(auth_.name, argument_.symbol, true, true);
     auto asset_account_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol, true, true);
-    if (asset_account_volume < total_volume / 100 * secondissue_assetshare_threshold)
-        throw asset_lack_exception{"asset volum is not enought to secondissue"};
+    if (asset_account_volume < total_volume / 100 * secondaryissue_assetshare_threshold)
+        throw asset_lack_exception{"asset volum is not enought to secondaryissue"};
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_secondissue, attachment()}
+        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_secondaryissue, attachment()}
     };
     auto issue_helper = secondissuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),

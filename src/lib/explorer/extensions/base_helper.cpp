@@ -284,7 +284,7 @@ void sync_fetch_asset_balance (std::string& addr,
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             auto output = tx_temp.outputs.at(row.output.index);
-            if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue())) {
+            if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue())) {
                 auto pos = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), [&](const asset_detail& elem){
                         return output.get_asset_symbol() == elem.get_symbol();
                         });
@@ -317,7 +317,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             auto output = tx_temp.outputs.at(row.output.index);
-            if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue())) {
+            if((output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue())) {
                 auto pos = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), [&](const asset_detail& elem){
                         return ((output.get_asset_symbol() == elem.get_symbol()) 
                             && (addr == elem.get_address()));
@@ -588,7 +588,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                             from_list_.push_back(record);
                             unspent_etp_ += record.amount;
                         }
-                    } else if ((output.is_asset_issue() || output.is_asset_secondissue()) && (symbol_ == output.get_asset_symbol())){
+                    } else if ((output.is_asset_issue() || output.is_asset_secondaryissue()) && (symbol_ == output.get_asset_symbol())){
                         record.prikey = prikey;
                         record.addr = addr;
                         record.amount = row.value;
@@ -871,7 +871,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
         return attachment(ASSET_TYPE, attach_version, ass);
-    } else if(record.type == utxo_attach_type::asset_secondissue) {
+    } else if(record.type == utxo_attach_type::asset_secondaryissue) {
         auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
         if(!sh_asset)
             throw asset_symbol_notfound_exception{symbol_ + " not found"};
@@ -1678,10 +1678,10 @@ attachment secondissuing_asset::populate_output_attachment(receiver_record& reco
         auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
-    } else if (record.type == utxo_attach_type::asset_secondissue) {
+    } else if (record.type == utxo_attach_type::asset_secondaryissue) {
         auto asset_detail = *issued_asset_;
         asset_detail.set_address(record.target); // target is setted in metaverse_output.cpp
-        asset_detail.set_asset_secondissue();
+        asset_detail.set_asset_secondaryissue();
         asset_detail.set_maximum_supply(volume_);
         asset_detail.set_issuer(name_);
         auto ass = asset(ASSET_DETAIL_TYPE, asset_detail);
@@ -1729,7 +1729,7 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue()) )
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
                 continue;
             // only get asset from specified address
             if (addr != target_addr)
@@ -1774,8 +1774,8 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
             record.type = utxo_attach_type::asset_transfer;
         else if (output.is_asset_issue())
             record.type = utxo_attach_type::asset_issue;
-        else if (output.is_asset_secondissue())
-            record.type = utxo_attach_type::asset_secondissue;
+        else if (output.is_asset_secondaryissue())
+            record.type = utxo_attach_type::asset_secondaryissue;
         else
             throw asset_type_exception("Unkown asset type.");
 
@@ -1792,9 +1792,9 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         // verify if the threshhold is satisfied
         if (!output.is_etp() && (addr == target_addr)) {
             auto max_supply = issued_asset_->get_maximum_supply();
-            auto threshold = issued_asset_->get_secondissue_assetshare_threshold();
+            auto threshold = issued_asset_->get_secondaryissue_assetshare_threshold();
             if (unspent_asset_ < max_supply / 100 * threshold)
-                throw asset_lack_exception{"asset volum is not enought to secondissue on address " + addr + ", unspent = "
+                throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
                     + std::to_string(unspent_asset_) + ", maximum_supply = " + std::to_string(max_supply)};
         }
     }
@@ -2025,7 +2025,7 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondissue()) )
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
                 continue;
         }
 
@@ -2067,8 +2067,8 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
             record.type = utxo_attach_type::asset_transfer;
         else if (output.is_asset_issue())
             record.type = utxo_attach_type::asset_issue;
-        else if (output.is_asset_secondissue())
-            record.type = utxo_attach_type::asset_secondissue;
+        else if (output.is_asset_secondaryissue())
+            record.type = utxo_attach_type::asset_secondaryissue;
         else
             throw asset_type_exception("Unkown asset type.");
 
