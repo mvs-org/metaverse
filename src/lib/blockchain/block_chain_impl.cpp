@@ -323,23 +323,26 @@ int block_chain_impl::replace_chain(uint64_t begin_height, const block_detail::l
                     {
                         ret = it - new_blocks.begin() + 1;
                         block_detail::list blocks;
-                        pop_from(blocks, begin_height);
                         start_write();
+                        pop_from(blocks, begin_height);
                         for(auto& b : released_blocks)
                             push(b);
                         stop_write();
 
                         log::error(LOG_BLOCKCHAIN)
                             << " push block height:" << block->actual()->header.number
-                            << " hash:"  << encode_hash(block->actual()->header.hash());
+                            << " hash:"  << encode_hash(block->actual()->header.hash())
+                            << "failed";
 
                         break;
                     }
                 }
 
-                log::debug(LOG_BLOCKCHAIN)
-                    << " push block height:" << block->actual()->header.number
-                    << " hash:"  << encode_hash(block->actual()->header.hash());
+                if (ret == 0) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << " push block height:" << block->actual()->header.number
+                        << " hash:"  << encode_hash(block->actual()->header.hash());
+                }
             }
             else
             {

@@ -67,7 +67,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
     if(secondaryissue_threshold == 0)
-        throw std::logic_error{"asset is not allow second issue"};
+        throw std::logic_error{"asset is not allow secondary issue"};
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if(total_volume > ULLONG_MAX - argument_.volume)

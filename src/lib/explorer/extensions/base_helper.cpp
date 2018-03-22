@@ -572,7 +572,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                         from_list_.push_back(record);
                         unspent_etp_ += record.amount;
                     }
-                // asset issue/transfer /second issue
+                // asset issue/transfer /secondary issue
                 } else { 
                     if(output.is_etp()){
                         record.prikey = prikey;
