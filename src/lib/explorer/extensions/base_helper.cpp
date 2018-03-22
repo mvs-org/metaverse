@@ -1743,7 +1743,8 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_did_issue() || output.is_asset_secondaryissue()) )
+            // filter out all non-asset output
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
                 continue;
             // only get asset from specified address
             if (addr != target_addr)
@@ -1790,8 +1791,6 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
             record.type = utxo_attach_type::asset_issue;
         else if (output.is_asset_secondaryissue())
             record.type = utxo_attach_type::asset_secondaryissue;
-        else if (output.is_did_issue())
-            record.type = utxo_attach_type::did_issue;
         else
             throw asset_type_exception("Unkown asset type.");
 
@@ -2041,7 +2040,8 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_did_issue()|| output.is_asset_secondaryissue()) )
+            // filter out all non-asset output
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
                 continue;
         }
 
@@ -2085,8 +2085,6 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
             record.type = utxo_attach_type::asset_issue;
         else if (output.is_asset_secondaryissue())
             record.type = utxo_attach_type::asset_secondaryissue;
-        else if (output.is_did_issue())
-            record.type = utxo_attach_type::did_issue;
         else
             throw asset_type_exception("Unkown asset type.");
 
