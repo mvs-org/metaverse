@@ -239,7 +239,9 @@ console_result listtxs::invoke (Json::Value& jv_output,
 
             auto attach_data = op.attach_data;
             Json::Value tree = config::json_helper(get_api_version()).prop_list(attach_data);
-            if (attach_data.get_type() == ASSET_TYPE) {
+            if (attach_data.get_type() == ETP_TYPE) {
+                tree["type"] = "etp";
+            } else if (attach_data.get_type() == ASSET_TYPE) {
                 auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
                 if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
                     // asset_transfer dose not contain decimal_number message,
