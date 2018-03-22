@@ -91,7 +91,6 @@ public:
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;
 	uint64_t total_output_transfer_amount() const;
-	bool has_asset_issue();
 	bool has_asset_transfer();
 
     uint32_t version;
