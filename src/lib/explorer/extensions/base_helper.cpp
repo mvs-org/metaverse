@@ -1188,7 +1188,21 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
                         }
                         log::trace("unspent_asset_=")<< unspent_asset_;
                         log::trace("unspent_etp_=")<< unspent_etp_;
-                    }
+                    }else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
+                        //record.prikey = prikey;
+                        record.addr = addr;
+                        record.amount = row.value;
+                        record.symbol = output.get_did_symbol();
+                        record.asset_amount = 0;
+                        record.type = utxo_attach_type::did_issue;
+                        record.output = row.output;
+                        //record.script = output.script;
+                        
+                        if(unspent_etp_ < payment_etp_) {
+                            from_list_.push_back(record);
+                            unspent_etp_ += record.amount;
+                        }
+                    } 
                     // not add message process here, because message utxo have no etp value
                 }
             }
@@ -1729,7 +1743,7 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_did_issue() || output.is_asset_secondaryissue()) )
                 continue;
             // only get asset from specified address
             if (addr != target_addr)
@@ -1776,6 +1790,8 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
             record.type = utxo_attach_type::asset_issue;
         else if (output.is_asset_secondaryissue())
             record.type = utxo_attach_type::asset_secondaryissue;
+        else if (output.is_did_issue())
+            record.type = utxo_attach_type::did_issue;
         else
             throw asset_type_exception("Unkown asset type.");
 
@@ -2025,7 +2041,7 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
         } else {
             if (symbol_ != asset_symbol)
                 continue;
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
+            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_did_issue()|| output.is_asset_secondaryissue()) )
                 continue;
         }
 
@@ -2069,6 +2085,8 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
             record.type = utxo_attach_type::asset_issue;
         else if (output.is_asset_secondaryissue())
             record.type = utxo_attach_type::asset_secondaryissue;
+        else if (output.is_did_issue())
+            record.type = utxo_attach_type::did_issue;
         else
             throw asset_type_exception("Unkown asset type.");
 
