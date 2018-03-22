@@ -147,6 +147,62 @@ code organizer::verify_asset_exist(uint64_t fork_point,
     return error::success;
 }
 
+code organizer::verify_did_exist(uint64_t fork_point,
+    const block_detail::list& orphan_chain, uint64_t orphan_index)
+{
+    block_chain_impl& chain = (block_chain_impl&)chain_;
+    auto& block = *orphan_chain[orphan_index]->actual();
+    std::set<string> dids;
+    for(auto& tx : block.transactions)
+    {
+        for(auto& output : tx.outputs)
+        {
+            if(output.is_did_issue())
+            {
+                auto result = dids.insert(output.get_asset_symbol());
+                if(result.second == false)
+                {
+                    return error::did_exist;
+                }
+            }
+        }
+    }
+
+    if(dids.empty())
+    {
+        return error::success;
+    }
+
+    for(auto& i: dids)
+    {
+        uint64_t height = 0;
+        if(chain.get_did_height(i, height) && height <= fork_point)
+        {
+            return error::did_exist;
+        }
+    }
+
+    for(uint64_t i = 0; i < orphan_index; ++i)
+    {
+        auto& block = *orphan_chain[orphan_index - 1]->actual();
+        for(auto& tx : block.transactions)
+        {
+            for(auto& output : tx.outputs)
+            {
+                if(output.is_did_issue())
+                {
+                    if(dids.find(output.get_did_symbol()) != dids.end())
+                    {
+                        return error::did_exist;
+                    }
+                }
+            }
+        }
+    }
+
+    return error::success;
+}
+
 // This verifies the block at orphan_chain[orphan_index]->actual()
 code organizer::verify(uint64_t fork_point,
     const block_detail::list& orphan_chain, uint64_t orphan_index)
@@ -209,6 +265,11 @@ code organizer::verify(uint64_t fork_point,
     if(ec == error::success) {
         ec = verify_asset_exist(fork_point, orphan_chain, orphan_index);
     }
+
+    if(ec == error::success) {
+        ec = verify_did_exist(fork_point, orphan_chain, orphan_index);
+    }
+    
 
     // Execute the timed validation.
     const auto elapsed = timer<std::chrono::milliseconds>::duration(timed);
