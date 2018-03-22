@@ -309,42 +309,41 @@ void validate_transaction::check_fees()
 
 code validate_transaction::check_secondaryissue_transaction_with_transactionpool(const chain::transaction& tx, blockchain::block_chain_impl& blockchain)
 {
-	std::string asset_name;
-	std::string asset_issuer;
-	int secondaryissue_threshold = 0;
-	bool has_other_type_output = false;
+    std::string asset_name;
+    int secondaryissue_threshold = 0;
+    bool has_other_type_output = false;
     uint64_t asset_transfer_volume{0};
-	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
-	{
-		if(o.is_asset_secondaryissue())
-		{
-			if(asset_name.empty() == false)
-				return error::asset_secondaryissue_error;
-			auto && asset_detail = o.get_asset_detail();
-			asset_name = asset_detail.get_symbol();
-			asset_issuer = asset_detail.get_issuer();
-			secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
-		}
-
-        else if (o.is_did_issue())
+    int num_asset_transfer{0};
+    bool is_asset_secondaryissue{false};
+    for (auto& output : const_cast<chain::transaction&>(tx).outputs)
+    {
+        if (output.is_asset_secondaryissue())
         {
-            return error::success;
+            if (is_asset_secondaryissue) {
+                return error::asset_secondaryissue_error;
+            }
+            is_asset_secondaryissue = true;
+            auto && asset_detail = output.get_asset_detail();
+            asset_name = asset_detail.get_symbol();
+            secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
         }
-        else if (o.is_asset_transfer())
+        else if (output.is_asset_transfer())
         {
-            asset_transfer_volume += o.get_asset_amount();
+            ++num_asset_transfer;
+            asset_transfer_volume += output.get_asset_amount();
         }
-		else if(o.is_etp() == false)
-		{
-			has_other_type_output = true;
-		}
-	}
+        else if (output.is_etp() == false)
+        {
+            has_other_type_output = true;
+        }
+    }
 
-    if (asset_name.empty()) {
+    if (!is_asset_secondaryissue) {
         return error::success;
     }
 
-    if (tx.outputs.size() > 3 || has_other_type_output)
+    if ((tx.outputs.size() > 3) || has_other_type_output
+        || (asset_transfer_volume == 0) || (num_asset_transfer > 1))
     {
         return error::asset_secondaryissue_error;
     }
@@ -353,49 +352,53 @@ code validate_transaction::check_secondaryissue_transaction_with_transactionpool
     if (secondaryissue_threshold == 0 || asset_transfer_volume < total_volume / 100 * secondaryissue_threshold)
         return error::asset_secondaryissue_share_not_enough;
 
-	return error::success;
+    return error::success;
 }
 
 code validate_transaction::check_secondaryissue_transaction(const chain::transaction& tx, blockchain::block_chain_impl& blockchain)
 {
-	std::string asset_name;
-	std::string asset_issuer;
-	int secondaryissue_threshold = 0;
-	bool has_other_type_output = false;
-	uint64_t asset_amount = 0;
+    std::string asset_name;
+    int secondaryissue_threshold = 0;
+    bool has_other_type_output = false;
+    uint64_t secondaryissue_asset_amount = 0;
     uint64_t asset_transfer_volume{0};
-	for(auto& o : const_cast<chain::transaction&>(tx).outputs)
-	{
-		if(o.is_asset_secondaryissue())
-		{
-			if(asset_name.empty() == false)
-				return error::asset_secondaryissue_error;
-			auto && asset_detail = o.get_asset_detail();
-			asset_name = asset_detail.get_symbol();
-			asset_issuer = asset_detail.get_issuer();
-			secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
-			asset_amount = asset_detail.get_maximum_supply();
-		}
-        else if (o.is_asset_transfer())
+    int num_asset_transfer{0};
+    bool is_asset_secondaryissue{false};
+    for (auto& output : const_cast<chain::transaction&>(tx).outputs)
+    {
+        if (output.is_asset_secondaryissue())
         {
-            asset_transfer_volume += o.get_asset_amount();
+            if (is_asset_secondaryissue) {
+                return error::asset_secondaryissue_error;
+            }
+            is_asset_secondaryissue = true;
+            auto && asset_detail = output.get_asset_detail();
+            asset_name = asset_detail.get_symbol();
+            secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
+            secondaryissue_asset_amount = asset_detail.get_maximum_supply();
         }
-		else if(o.is_etp() == false)
-		{
-			has_other_type_output = true;
-		}
-	}
+        else if (output.is_asset_transfer())
+        {
+            ++num_asset_transfer;
+            asset_transfer_volume += output.get_asset_amount();
+        }
+        else if (output.is_etp() == false)
+        {
+            has_other_type_output = true;
+        }
+    }
 
-    if (asset_name.empty()) {
+    if (!is_asset_secondaryissue) {
         return error::success;
     }
 
-    if (tx.outputs.size() > 3 || has_other_type_output)
+    if ((tx.outputs.size() > 3) || has_other_type_output
+        || (asset_transfer_volume == 0) || (num_asset_transfer > 1))
     {
         return error::asset_secondaryissue_error;
     }
 
-    auto total_volume = blockchain.get_asset_volume(asset_name) - asset_amount;
+    auto total_volume = blockchain.get_asset_volume(asset_name) - secondaryissue_asset_amount;
     if (secondaryissue_threshold == 0 || asset_transfer_volume < total_volume / 100 * secondaryissue_threshold)
         return error::asset_secondaryissue_share_not_enough;
 
