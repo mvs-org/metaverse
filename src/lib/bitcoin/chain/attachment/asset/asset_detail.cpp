@@ -32,7 +32,7 @@ namespace chain {
 
 asset_detail::asset_detail()
 {
-	reset();
+    reset();
 }
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
@@ -68,20 +68,20 @@ asset_detail asset_detail::factory_from_data(reader& source)
 }
 bool asset_detail::is_valid() const
 {
-    return !(symbol.empty() 
-			|| (maximum_supply==0)
-			|| (symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4)>ASSET_DETAIL_FIX_SIZE);
+    return !(symbol.empty()
+            || (maximum_supply==0)
+            || (symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4)>ASSET_DETAIL_FIX_SIZE);
 }
 
 void asset_detail::reset()
-{	
+{
     symbol = "";
     maximum_supply = 0;
     decimal_number = 0;
-	secondaryissue_threshold = 0;
-	unused2 = 0;
-	unused3 = 0;
-    issuer = ""; 
+    secondaryissue_threshold = 0;
+    unused2 = 0;
+    unused3 = 0;
+    issuer = "";
     address = "";
     description = "";
 }
@@ -108,7 +108,7 @@ bool asset_detail::from_data(reader& source)
     secondaryissue_threshold = source.read_byte();
     unused2 = source.read_byte();
     unused3 = source.read_byte();
-    issuer = source.read_string(); 
+    issuer = source.read_string();
     address =  source.read_string();
     description =  source.read_string();
 
@@ -116,7 +116,7 @@ bool asset_detail::from_data(reader& source)
     if (!result)
         reset();
 
-    return result;	
+    return result;
 }
 
 data_chunk asset_detail::to_data() const
@@ -138,13 +138,13 @@ void asset_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);
-	sink.write_byte(decimal_number);
-	sink.write_byte(secondaryissue_threshold);
-	sink.write_byte(unused2);
-	sink.write_byte(unused3);
-	sink.write_string(issuer);
-	sink.write_string(address);
-	sink.write_string(description);
+    sink.write_byte(decimal_number);
+    sink.write_byte(secondaryissue_threshold);
+    sink.write_byte(unused2);
+    sink.write_byte(unused3);
+    sink.write_string(issuer);
+    sink.write_string(address);
+    sink.write_string(description);
 }
 
 uint64_t asset_detail::serialized_size() const
@@ -158,73 +158,73 @@ std::string asset_detail::to_string() const
     std::ostringstream ss;
 
     ss << "\t symbol = " << symbol << "\n"
-		<< "\t maximum_supply = " << std::to_string(maximum_supply) << "\n"
-		<< "\t decimal_number = " << std::to_string(decimal_number) << "\n"
-		<< "\t is_asset_secondaryissue = " << (is_asset_secondaryissue() ? "true" : "false") << "\n"
-		<< "\t secondaryissue_threshold = " << std::to_string(get_secondaryissue_threshold()) << "\n"
-		<< "\t issuer = " << issuer << "\n"
-		<< "\t address = " << address << "\n"
+        << "\t maximum_supply = " << std::to_string(maximum_supply) << "\n"
+        << "\t decimal_number = " << std::to_string(decimal_number) << "\n"
+        << "\t is_asset_secondaryissue = " << (is_asset_secondaryissue() ? "true" : "false") << "\n"
+        << "\t secondaryissue_threshold = " << std::to_string(get_secondaryissue_threshold()) << "\n"
+        << "\t issuer = " << issuer << "\n"
+        << "\t address = " << address << "\n"
         << "\t description = " << description << "\n";
 
     return ss.str();
 }
 
 const std::string& asset_detail::get_symbol() const
-{ 
+{
     return symbol;
 }
 void asset_detail::set_symbol(const std::string& symbol)
-{ 
-	size_t len = symbol.size()+1 < (ASSET_DETAIL_SYMBOL_FIX_SIZE) ?symbol.size()+1:ASSET_DETAIL_SYMBOL_FIX_SIZE;
+{
+    size_t len = symbol.size()+1 < (ASSET_DETAIL_SYMBOL_FIX_SIZE) ?symbol.size()+1:ASSET_DETAIL_SYMBOL_FIX_SIZE;
     this->symbol = symbol.substr(0, len);
 }
 
 uint64_t asset_detail::get_maximum_supply() const
-{ 
+{
     return maximum_supply;
 }
 void asset_detail::set_maximum_supply(uint64_t maximum_supply)
-{ 
+{
      this->maximum_supply = maximum_supply;
 }
 
 uint8_t asset_detail::get_decimal_number() const
-{ 
+{
     return decimal_number;
 }
 void asset_detail::set_decimal_number(uint8_t decimal_number)
-{ 
+{
      this->decimal_number = decimal_number;
 }
 
 const std::string& asset_detail::get_issuer() const
-{ 
+{
     return issuer;
 }
 void asset_detail::set_issuer(const std::string& issuer)
-{ 
-	 size_t len = issuer.size()+1 < (ASSET_DETAIL_ISSUER_FIX_SIZE) ?issuer.size()+1:ASSET_DETAIL_ISSUER_FIX_SIZE;
-	 this->issuer = issuer.substr(0, len);
+{
+     size_t len = issuer.size()+1 < (ASSET_DETAIL_ISSUER_FIX_SIZE) ?issuer.size()+1:ASSET_DETAIL_ISSUER_FIX_SIZE;
+     this->issuer = issuer.substr(0, len);
 }
 
 const std::string& asset_detail::get_address() const
-{ 
+{
     return address;
 }
 void asset_detail::set_address(const std::string& address)
-{ 
-	 size_t len = address.size()+1 < (ASSET_DETAIL_ADDRESS_FIX_SIZE) ?address.size()+1:ASSET_DETAIL_ADDRESS_FIX_SIZE;
-	 this->address = address.substr(0, len);
+{
+     size_t len = address.size()+1 < (ASSET_DETAIL_ADDRESS_FIX_SIZE) ?address.size()+1:ASSET_DETAIL_ADDRESS_FIX_SIZE;
+     this->address = address.substr(0, len);
 }
 
 const std::string& asset_detail::get_description() const
-{ 
+{
     return description;
 }
 void asset_detail::set_description(const std::string& description)
-{ 
-	 size_t len = description.size()+1 < (ASSET_DETAIL_DESCRIPTION_FIX_SIZE) ?description.size()+1:ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
-	 this->description = description.substr(0, len);
+{
+     size_t len = description.size()+1 < (ASSET_DETAIL_DESCRIPTION_FIX_SIZE) ?description.size()+1:ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
+     this->description = description.substr(0, len);
 }
 
 

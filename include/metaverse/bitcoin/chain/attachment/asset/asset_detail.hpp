@@ -40,20 +40,20 @@ BC_CONSTEXPR size_t ASSET_DETAIL_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_DETAIL_DESCRIPTION_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
-			+ ASSET_DETAIL_MAX_SUPPLY_FIX_SIZE
-			+ ASSET_DETAIL_ASSET_TYPE_FIX_SIZE
-			+ ASSET_DETAIL_ISSUER_FIX_SIZE
-			+ ASSET_DETAIL_ADDRESS_FIX_SIZE
-			+ ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
+            + ASSET_DETAIL_MAX_SUPPLY_FIX_SIZE
+            + ASSET_DETAIL_ASSET_TYPE_FIX_SIZE
+            + ASSET_DETAIL_ISSUER_FIX_SIZE
+            + ASSET_DETAIL_ADDRESS_FIX_SIZE
+            + ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
 
 class BC_API asset_detail
 {
 public:
-	typedef std::vector<asset_detail> list;
-	asset_detail();
-	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint8_t decimal_number, uint8_t threshold, std::string issuer,
-		std::string address, std::string description);
+    typedef std::vector<asset_detail> list;
+    asset_detail();
+    asset_detail(std::string symbol, uint64_t maximum_supply,
+        uint8_t decimal_number, uint8_t threshold, std::string issuer,
+        std::string address, std::string description);
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
     static asset_detail factory_from_data(reader& source);
@@ -70,18 +70,18 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const std::string& get_symbol() const;
-	void set_symbol(const std::string& symbol);
-	uint64_t get_maximum_supply() const;
-	void set_maximum_supply(uint64_t maximum_supply);
-	uint8_t get_decimal_number() const;
-	void set_decimal_number(uint8_t decimal_number);
-	const std::string& get_issuer() const;
-	void set_issuer(const std::string& issuer);
-	const std::string& get_address() const;
-	void set_address(const std::string& address);
-	const std::string& get_description() const;
-	void set_description(const std::string& description);
+    const std::string& get_symbol() const;
+    void set_symbol(const std::string& symbol);
+    uint64_t get_maximum_supply() const;
+    void set_maximum_supply(uint64_t maximum_supply);
+    uint8_t get_decimal_number() const;
+    void set_decimal_number(uint8_t decimal_number);
+    const std::string& get_issuer() const;
+    void set_issuer(const std::string& issuer);
+    const std::string& get_address() const;
+    void set_address(const std::string& address);
+    const std::string& get_description() const;
+    void set_description(const std::string& description);
 
     bool is_asset_secondaryissue() const { return secondaryissue_threshold >= 128; }
     void set_asset_secondaryissue() { if (!is_asset_secondaryissue()) { secondaryissue_threshold += 128; } }
@@ -100,7 +100,7 @@ public:
             secondaryissue_threshold = share;
     }
 
-private:    
+private:
     // NOTICE: ref CAssetDetail in transaction.h
     // asset_detail and CAssetDetail should have the same size and order.
     // uint32_t asset_type in CAssetDetail is divided into four uint8_t parts here.
@@ -108,9 +108,9 @@ private:
     uint64_t maximum_supply;
     uint8_t decimal_number;
     uint8_t secondaryissue_threshold;
-	uint8_t unused2;
-	uint8_t unused3;
-    std::string issuer; 
+    uint8_t unused2;
+    uint8_t unused3;
+    std::string issuer;
     std::string address;
     std::string description;
 };
