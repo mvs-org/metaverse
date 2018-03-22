@@ -178,6 +178,15 @@ bool output::is_asset_transfer() const
 	return false;
 }
 
+bool output::is_did_transfer() const
+{
+	if(attach_data.get_type() == DID_TYPE) {
+		auto did_info = boost::get<did>(attach_data.get_attach());
+		return (did_info.get_status() == DID_TRANSFERABLE_TYPE); 
+	}
+	return false;
+}
+
 bool output::is_asset_issue() const
 {
     if(attach_data.get_type() == ASSET_TYPE) {
@@ -223,7 +232,7 @@ std::string output::get_asset_symbol() // for validate_transaction.cpp to calcul
 	return std::string("");
 }
 
-bool output::is_did_issue()
+bool output::is_did_issue() const
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());

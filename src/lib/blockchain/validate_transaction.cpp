@@ -291,6 +291,16 @@ void validate_transaction::check_fees()
 	        return;
 	    }
 	}
+
+    auto is_did_type = (business_tp_in_ == DID_DETAIL_TYPE) || (business_tp_in_ == DID_TRANSFERABLE_TYPE);
+    if (is_did_type && tx_->has_did_transfer()) {
+		
+	    if (!check_did_symbol(*tx_))
+	    {
+	        handle_validate_(error::did_symbol_not_match, tx_, {});
+	        return;
+	    }
+	}
     // Who cares?
     // Fuck the police
     // Every tx equal!
@@ -692,6 +702,27 @@ bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
     }
 
     return true;
+}
+
+bool validate_transaction::check_did_symbol(const transaction& tx)
+{
+	// check did symbol in out
+	std::string old_symbol = "";
+	std::string new_symbol = "";
+	for (auto elem: tx.outputs) {
+		new_symbol = elem.get_did_symbol();
+		if(!new_symbol.empty()) {
+			if(old_symbol.empty()) {
+				old_symbol = new_symbol;
+			} else {
+				if(0 != old_symbol.compare(new_symbol))
+					return false; // different did in outputs
+			}
+		}
+	}
+	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
+		return false;
+	return true;
 }
 
 } // namespace blockchain

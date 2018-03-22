@@ -73,6 +73,7 @@ public:
 	bool check_asset_symbol(const transaction& tx);
 
     static bool is_did_validate(blockchain::block_chain_impl& chain);
+    bool check_did_symbol(const transaction& tx);
 
 private:
     code basic_checks(blockchain::block_chain_impl& chain) const;

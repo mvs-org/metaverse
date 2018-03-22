@@ -60,7 +60,8 @@ public:
 	bool is_asset_transfer() const;
 	bool is_asset_issue() const;
 	bool is_etp();
-    bool is_did_issue();
+    bool is_did_issue() const;
+    bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;
     asset_detail get_asset_detail();
     std::string get_did_symbol();

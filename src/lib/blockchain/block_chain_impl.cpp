@@ -1983,6 +1983,20 @@ bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t&
 	
 	return (sp_asset != nullptr);
 }
+
+bool block_chain_impl::get_did_height(const std::string& did_name, uint64_t& height)
+{	
+	const data_chunk& data = data_chunk(did_name.begin(), did_name.end());
+    const auto hash = sha256_hash(data);
+
+	// std::shared_ptr<blockchain_asset>
+	auto sp_did = database_.dids.get(hash);
+	if(sp_did) {
+		height = sp_did->get_height();
+	}
+	
+	return (sp_did != nullptr);
+}
 /// get asset from local database including all account's assets
 std::shared_ptr<std::vector<asset_detail>> block_chain_impl::get_local_assets()
 {

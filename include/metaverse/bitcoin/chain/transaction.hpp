@@ -94,6 +94,9 @@ public:
 	bool has_asset_issue();
 	bool has_asset_transfer();
 
+    bool has_did_issue();
+	bool has_did_transfer();
+
     uint32_t version;
     uint32_t locktime;
     input::list inputs;
