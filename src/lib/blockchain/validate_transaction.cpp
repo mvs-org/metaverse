@@ -394,6 +394,14 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 return error::did_exist;
             }
 
+            std::string attach_address=output.get_did_address(); 
+            const auto address = payment_address::extract(output.script);
+
+            if (attach_address != address.encoded())
+            { 
+                return error::did_address_not_match;
+            }
+
             if(chain.is_address_issued_did(output.get_did_address(), false)) {
                 return error::address_issued_did;
             }

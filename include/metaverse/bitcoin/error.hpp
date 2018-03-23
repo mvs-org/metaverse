@@ -148,7 +148,8 @@ enum error_code_t
     did_symbol_invalid,
     did_exist,
     address_issued_did,
-    did_func_not_actived
+    did_func_not_actived,
+    did_address_not_match
 };
 
 enum error_condition_t

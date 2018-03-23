@@ -211,7 +211,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::address_issued_did:
             return "address already issued did";  
         case error::did_func_not_actived:
-			return "did function has not been actived until block height is larger than 1130000";      
+			return "did function has not been actived until block height is larger than 1130000";  
+        case error::did_address_not_match:
+			return "attach did address must equal with output address"; 
 
         // unknown errors
         case error::unknown:
