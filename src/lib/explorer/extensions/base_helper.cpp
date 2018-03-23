@@ -1819,11 +1819,11 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
 
         // verify if the threshhold is satisfied
         if (!output.is_etp() && (addr == target_addr)) {
-            auto max_supply = issued_asset_->get_maximum_supply();
+            auto total_volume = blockchain_.get_asset_volume(symbol_);
             auto threshold = issued_asset_->get_secondaryissue_threshold();
-            if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, max_supply, threshold)) {
+            if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
                 throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
-                    + std::to_string(unspent_asset_) + ", maximum_supply = " + std::to_string(max_supply)};
+                    + std::to_string(unspent_asset_) + ", total_volume = " + std::to_string(total_volume)};
             }
         }
     }
