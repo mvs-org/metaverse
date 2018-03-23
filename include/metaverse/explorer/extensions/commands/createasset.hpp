@@ -85,7 +85,7 @@ public:
 	    )
         (
 	        "rate,r",
-		    value<uint8_t>(&option_.secondaryissue_threshold),
+		    value<int32_t>(&option_.secondaryissue_threshold),
 		    "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than the rate value."
 		)
 	    (
@@ -143,7 +143,7 @@ public:
 		std::string symbol;
 		non_negative_uint64 maximum_supply;
 		uint32_t decimal_number;
-		uint8_t secondaryissue_threshold;
+		int32_t secondaryissue_threshold;
 		std::string issuer; 
 		std::string description;
     } option_;
