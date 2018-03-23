@@ -45,6 +45,8 @@ enum utxo_attach_type : uint32_t
 	did_transfer_asset
 };
 
+extern utxo_attach_type get_utxo_attach_type(const chain::output&);
+
 struct address_asset_record{
 	std::string prikey;
 	std::string addr;

@@ -29,6 +29,27 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+utxo_attach_type get_utxo_attach_type(const chain::output& output_)
+{
+    auto& output = const_cast<chain::output&>(output_);
+    if (output.is_etp()) {
+        return utxo_attach_type::etp;
+    }
+    if (output.is_asset_transfer()) {
+        return utxo_attach_type::asset_transfer;
+    }
+    if (output.is_asset_issue()) {
+        return utxo_attach_type::asset_issue;
+    }
+    if (output.is_asset_secondaryissue()) {
+        return utxo_attach_type::asset_secondaryissue;
+    }
+    if (output.is_did_issue()) {
+        return utxo_attach_type::did_issue;
+    }
+    throw std::logic_error("get_utxo_attach_type : Unkown output type.");
+}
+
 std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys){
     std::sort(public_keys.begin(), public_keys.end());
     std::ostringstream ss;
@@ -1729,11 +1750,14 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
         auto output = tx_temp.outputs.at(row.output.index);
         auto asset_amount = output.get_asset_amount();
         auto asset_symbol = output.get_asset_symbol();
+        auto etp_amount = row.value;
 
         // filter output
         if (output.is_etp()) {
             BITCOIN_ASSERT(asset_amount == 0);
             BITCOIN_ASSERT(asset_symbol.empty());
+            if (etp_amount == 0)
+                continue;
             // enough to pay tx fees, and no asset to connect
             if (unspent_etp_ >= payment_etp_)
                 continue;
@@ -1741,10 +1765,9 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
             if (!from_.empty() && (from_ != addr))
                 continue;
         } else {
-            if (symbol_ != asset_symbol)
+            if (asset_amount == 0)
                 continue;
-            // filter out all non-asset output
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
+            if (symbol_ != asset_symbol)
                 continue;
             // only get asset from specified address
             if (addr != target_addr)
@@ -1777,22 +1800,12 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
 
         record.prikey = prikey;
         record.addr = addr;
-        record.amount = row.value;
+        record.amount = etp_amount;
         record.symbol = symbol_;
         record.asset_amount = asset_amount;
         record.output = row.output;
         record.script = output.script;
-
-        if (output.is_etp())
-            record.type = utxo_attach_type::etp;
-        else if (output.is_asset_transfer())
-            record.type = utxo_attach_type::asset_transfer;
-        else if (output.is_asset_issue())
-            record.type = utxo_attach_type::asset_issue;
-        else if (output.is_asset_secondaryissue())
-            record.type = utxo_attach_type::asset_secondaryissue;
-        else
-            throw asset_type_exception("Unkown asset type.");
+        record.type = get_utxo_attach_type(output);
 
         from_list_.push_back(record);
 
@@ -2026,11 +2039,14 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
         auto output = tx_temp.outputs.at(row.output.index);
         auto asset_amount = output.get_asset_amount();
         auto asset_symbol = output.get_asset_symbol();
+        auto etp_amount = row.value;
 
         // filter output
         if (output.is_etp()) {
             BITCOIN_ASSERT(asset_amount == 0);
             BITCOIN_ASSERT(asset_symbol.empty());
+            if (etp_amount == 0)
+                continue;
             // enough to pay tx fees, and no asset to connect
             if (unspent_etp_ >= payment_etp_)
                 continue;
@@ -2038,10 +2054,9 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
             if (!from_.empty() && (from_ != addr))
                 continue;
         } else {
-            if (symbol_ != asset_symbol)
+            if (asset_amount == 0)
                 continue;
-            // filter out all non-asset output
-            if (! (output.is_asset_transfer() || output.is_asset_issue() || output.is_asset_secondaryissue()) )
+            if (symbol_ != asset_symbol)
                 continue;
         }
 
@@ -2071,22 +2086,12 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
 
         record.prikey = prikey;
         record.addr = addr;
-        record.amount = row.value;
+        record.amount = etp_amount;
         record.symbol = symbol_;
         record.asset_amount = asset_amount;
         record.output = row.output;
         record.script = output.script;
-
-        if (output.is_etp())
-            record.type = utxo_attach_type::etp;
-        else if (output.is_asset_transfer())
-            record.type = utxo_attach_type::asset_transfer;
-        else if (output.is_asset_issue())
-            record.type = utxo_attach_type::asset_issue;
-        else if (output.is_asset_secondaryissue())
-            record.type = utxo_attach_type::asset_secondaryissue;
-        else
-            throw asset_type_exception("Unkown asset type.");
+        record.type = get_utxo_attach_type(output);
 
         from_list_.push_back(record);
 
