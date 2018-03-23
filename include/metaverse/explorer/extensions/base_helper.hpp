@@ -337,10 +337,10 @@ public:
 	void populate_change() override;
 };
 
-class BCX_API secondissuing_asset : public base_transfer_helper
+class BCX_API secondary_issuing_asset : public base_transfer_helper
 {
 public:
-    secondissuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    secondary_issuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
@@ -350,7 +350,7 @@ public:
                 fee, std::move(symbol)), volume_(volume)
     {};
 
-    ~secondissuing_asset(){};
+    ~secondary_issuing_asset(){};
     void sum_payment_amount() override;
     void populate_change() override;
     void populate_unspent_list() override;

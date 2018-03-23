@@ -1643,7 +1643,7 @@ void issuing_asset::populate_change() {
     }
 }
 
-void secondissuing_asset::sum_payment_amount() {
+void secondary_issuing_asset::sum_payment_amount() {
     if (receiver_list_.empty())
         throw std::logic_error{"empty target address"};
     if (receiver_list_.size() > 1)
@@ -1654,7 +1654,7 @@ void secondissuing_asset::sum_payment_amount() {
         throw asset_exchange_poundage_exception{"fee must be less than 10000000000 satoshi == 100 etp"};
 }
 
-void secondissuing_asset::populate_unspent_list()
+void secondary_issuing_asset::populate_unspent_list()
 {
     if (!issued_asset_)
         issued_asset_ = blockchain_.get_issued_asset(symbol_);
@@ -1691,7 +1691,7 @@ void secondissuing_asset::populate_unspent_list()
     populate_change();
 }
 
-void secondissuing_asset::populate_change() {
+void secondary_issuing_asset::populate_change() {
     auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
     // etp utxo
     if (unspent_etp_ > payment_etp_) {
@@ -1706,7 +1706,7 @@ void secondissuing_asset::populate_change() {
     }
 }
 
-attachment secondissuing_asset::populate_output_attachment(receiver_record& record){
+attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record){
     if (record.type == utxo_attach_type::etp) {
         return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
     } else if (record.type == utxo_attach_type::asset_transfer) {
@@ -1726,7 +1726,7 @@ attachment secondissuing_asset::populate_output_attachment(receiver_record& reco
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
 }
 
-void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr) 
+void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
     auto rows = get_address_history(waddr, blockchain_);

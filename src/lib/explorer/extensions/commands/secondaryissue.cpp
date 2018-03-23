@@ -83,7 +83,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_secondaryissue, attachment()}
     };
-    auto issue_helper = secondissuing_asset(*this, blockchain,
+    auto issue_helper = secondary_issuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.mychange_address), std::move(argument_.symbol),
             std::move(receiver), argument_.fee, argument_.volume);
