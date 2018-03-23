@@ -1811,23 +1811,23 @@ void secondissuing_asset::sync_fetchutxo (const std::string& prikey, const std::
 
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
-
-        // if specified from address but no enough etp to pay fees,
-        // the tx will fail.
-        if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-            break;
-
-        // verify if the threshhold is satisfied
-        if (!output.is_etp() && (addr == target_addr)) {
-            auto total_volume = blockchain_.get_asset_volume(symbol_);
-            auto threshold = issued_asset_->get_secondaryissue_threshold();
-            if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
-                throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
-                    + std::to_string(unspent_asset_) + ", total_volume = " + std::to_string(total_volume)};
-            }
-        }
     }
     rows.clear();
+
+    // if specified from address but no enough etp to pay fees,
+    // the tx will fail.
+    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
+        throw tx_source_exception{"not enough etp in from address!"};
+
+    // verify if the threshhold is satisfied
+    if (addr == target_addr) {
+        auto total_volume = blockchain_.get_asset_volume(symbol_);
+        auto threshold = issued_asset_->get_secondaryissue_threshold();
+        if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
+            throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
+                + std::to_string(unspent_asset_) + ", total_volume = " + std::to_string(total_volume)};
+        }
+    }
 }
 
 void issuing_did::sum_payment_amount() {
@@ -2098,13 +2098,13 @@ void merging_asset::sync_fetchutxo (const std::string& prikey, const std::string
 
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
-
-        // if specified from address but no enough etp to pay fees,
-        // the tx will fail.
-        if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-            break;
     }
     rows.clear();
+
+    // if specified from address but no enough etp to pay fees,
+    // the tx will fail.
+    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
+        throw tx_source_exception{"not enough etp in from address!"};
 }
 
 void merging_asset::populate_change()

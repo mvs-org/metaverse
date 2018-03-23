@@ -124,7 +124,7 @@ public:
             return true;
         if (!is_secondaryissue_legal(threshold))
             return false;
-        return own < (uint64_t)(((double)total) / 100 * threshold);
+        return own >= (uint64_t)(((double)total) / 100 * threshold);
     }
 
 private:

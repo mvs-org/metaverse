@@ -190,6 +190,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 			return "asset symbol not match";
 		case error::asset_symbol_invalid:
 			return "asset symbol invalid";
+        case error::asset_address_not_match:
+            return "asset attachment address must be equal with output address";
         case error::asset_exist:
             return "asset exist";
         case error::asset_not_exist:

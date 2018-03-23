@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <istream>
 #include <vector>
+#include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
@@ -44,7 +45,7 @@ public:
     static output factory_from_data(std::istream& stream);
     static output factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-	static bool is_valid_symbol(const std::string& symbol);
+    static bool is_valid_symbol(const std::string& symbol);
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
@@ -53,23 +54,25 @@ public:
     void to_data(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
+    code check_attachment_address() const;
     void reset();
     uint64_t serialized_size() const;
-	uint64_t get_asset_amount() const;
-	std::string get_asset_symbol();
-	bool is_asset_transfer() const;
-	bool is_asset_issue() const;
-	bool is_etp();
+    uint64_t get_asset_amount() const;
+    std::string get_asset_symbol() const;
+    std::string get_asset_address() const;
+    bool is_asset_transfer() const;
+    bool is_asset_issue() const;
+    bool is_etp() const;
     bool is_did_issue() const;
     bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;
-    asset_detail get_asset_detail();
-    std::string get_did_symbol();
-    std::string get_did_address();
+    asset_detail get_asset_detail() const;
+    std::string get_did_symbol() const;
+    std::string get_did_address() const;
 
     uint64_t value;
     chain::script script;
-	attachment attach_data; // added for asset issue/transfer
+    attachment attach_data; // added for asset issue/transfer
 };
 
 struct BC_API output_info

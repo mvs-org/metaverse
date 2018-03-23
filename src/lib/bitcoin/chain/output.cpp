@@ -26,6 +26,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/bitcoin/wallet/payment_address.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -67,6 +68,30 @@ bool output::is_valid() const
 {
     return (value != 0) || script.is_valid()
 		|| attach_data.is_valid(); // added for asset issue/transfer
+}
+
+code output::check_attachment_address() const
+{
+    bool is_asset = false;
+    bool is_did = false;
+    std::string attachment_address;
+    if (is_asset_issue() || is_asset_secondaryissue()) {
+        attachment_address = get_asset_address();
+        is_asset = true;
+    } else if (is_did_issue()) {
+        attachment_address = get_did_address();
+        is_did = true;
+    }
+    if (is_asset || is_did) {
+        const auto payment_address = wallet::payment_address::extract(script);
+        if (attachment_address != payment_address.encoded()) {
+            if (is_asset)
+                return error::asset_address_not_match;
+            if (is_did)
+                return error::did_address_not_match;
+        }
+    }
+    return error::success;
 }
 
 void output::reset()
@@ -211,12 +236,12 @@ bool output::is_asset_secondaryissue() const
     return false;
 }
 
-bool output::is_etp()
+bool output::is_etp() const
 {
 	return (attach_data.get_type() == ETP_TYPE);
 }
 
-std::string output::get_asset_symbol() // for validate_transaction.cpp to calculate asset transfer amount
+std::string output::get_asset_symbol() const // for validate_transaction.cpp to calculate asset transfer amount
 {
 	if(attach_data.get_type() == ASSET_TYPE) {
 		auto asset_info = boost::get<asset>(attach_data.get_attach());
@@ -232,6 +257,18 @@ std::string output::get_asset_symbol() // for validate_transaction.cpp to calcul
 	return std::string("");
 }
 
+std::string output::get_asset_address() const // for validate_transaction.cpp to verify asset address
+{
+    if (attach_data.get_type() == ASSET_TYPE) {
+        auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            auto detail_info = boost::get<asset_detail>(asset_info.get_data());
+            return detail_info.get_address();
+        }
+    }
+    return std::string("");
+}
+
 bool output::is_did_issue() const
 {
 	if(attach_data.get_type() == DID_TYPE) {
@@ -241,7 +278,7 @@ bool output::is_did_issue() const
 	return false;
 }
 
-std::string output::get_did_symbol() // for validate_transaction.cpp to calculate did transfer amount
+std::string output::get_did_symbol() const // for validate_transaction.cpp to calculate did transfer amount
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
@@ -253,7 +290,7 @@ std::string output::get_did_symbol() // for validate_transaction.cpp to calculat
 	return std::string("");
 }
 
-std::string output::get_did_address() // for validate_transaction.cpp to calculate did transfer amount
+std::string output::get_did_address() const // for validate_transaction.cpp to calculate did transfer amount
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
@@ -265,7 +302,7 @@ std::string output::get_did_address() // for validate_transaction.cpp to calcula
 	return std::string("");
 }
 
-asset_detail output::get_asset_detail()
+asset_detail output::get_asset_detail() const
 {
     if (attach_data.get_type() == ASSET_TYPE) {
         auto asset_info = boost::get<asset>(attach_data.get_attach());

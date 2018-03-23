@@ -333,6 +333,13 @@ code validate_transaction::check_secondaryissue_transaction(
             if (!in_transaction_pool) {
                 secondaryissue_asset_amount = asset_detail.get_maximum_supply();
             }
+            if (!blockchain.is_asset_exist(asset_name, in_transaction_pool)) {
+                return error::asset_not_exist;
+            }
+            if (!asset_detail.is_asset_secondaryissue()
+                || !asset_detail.is_secondaryissue_threshold_value_ok()) {
+                return error::asset_secondaryissue_threshold_invalid;
+            }
         }
         else if (output.is_asset_transfer())
         {
@@ -365,41 +372,32 @@ code validate_transaction::check_secondaryissue_transaction(
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
 {
-    auto ret = check_transaction_basic(tx, chain);
-	if(!ret)
-		ret = check_secondaryissue_transaction(tx, chain, true);
+    code ret = error::success;
+    if ((ret = check_transaction_basic(tx, chain)) != error::success)
+        return ret;
 
-	if(ret)
-		return ret;
+    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
+        return ret;
 
-    for(auto& output : const_cast<transaction&>(tx).outputs)
-	{
+    for (auto& output : const_cast<transaction&>(tx).outputs)
+    {
+        if ((ret = output.check_attachment_address()) != error::success)
+            return ret;
+
         if(output.is_asset_issue()) 
-		{
-            if(chain.is_asset_exist(output.get_asset_symbol(), false))
-			{
+        {
+            if(chain.is_asset_exist(output.get_asset_symbol(), false)) {
                 return error::asset_exist;
+            } else {
+                asset_detail&& detail = output.get_asset_detail();
+                if (!detail.is_secondaryissue_threshold_value_ok()) {
+                    return error::asset_secondaryissue_threshold_invalid;
+                }
             }
-			else
-			{
-				asset_detail&& detail = output.get_asset_detail();
-				if (!detail.is_secondaryissue_threshold_value_ok())
-				{
-					return error::asset_secondaryissue_threshold_invalid;
-				}
-			}
         }
         else if(output.is_did_issue()) {
             if(chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_exist;
-            }
-
-            std::string attach_address=output.get_did_address(); 
-            const auto address = payment_address::extract(output.script);
-
-            if (attach_address != address.encoded())
-            { 
-                return error::did_address_not_match;
             }
 
             if(chain.is_address_issued_did(output.get_did_address(), false)) {

@@ -133,6 +133,7 @@ enum error_code_t
 	asset_amount_not_equal,
 	asset_symbol_not_match,
     asset_symbol_invalid,
+    asset_address_not_match,
     asset_exist,
     asset_not_exist,
     asset_secondaryissue_error,
