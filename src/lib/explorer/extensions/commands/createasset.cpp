@@ -125,8 +125,9 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
-    if ((option_.secondaryissue_threshold > 0 && option_.secondaryissue_threshold < 51) || option_.secondaryissue_threshold > 100)
-        throw std::logic_error{"secondaryissue assetshare threshold value error, is must be 0 or in range of 51 to 100."};
+    if (!asset_detail::is_secondaryissue_threshold_value_ok(option_.secondaryissue_threshold)) {
+        throw std::logic_error{"secondaryissue assetshare threshold value error, is must be -1 or 0 or in range of 1 to 100."};
+    }
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};
     if (option_.maximum_supply.volume == 0u)

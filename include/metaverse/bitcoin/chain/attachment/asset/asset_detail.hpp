@@ -87,17 +87,44 @@ public:
     void set_asset_secondaryissue() { if (!is_asset_secondaryissue()) { secondaryissue_threshold += 128; } }
     uint8_t get_secondaryissue_threshold() const
     {
-        if(secondaryissue_threshold > 128)
+        if (is_secondaryissue_freely())
+            return secondaryissue_threshold;
+        else if (is_asset_secondaryissue())
             return secondaryissue_threshold - 128;
         else
             return secondaryissue_threshold;
     }
     void set_secondaryissue_threshold(uint8_t share)
     {
-        if(secondaryissue_threshold > 128)
+        if (is_asset_secondaryissue())
             secondaryissue_threshold = share + 128;
         else
             secondaryissue_threshold = share;
+    }
+
+    bool is_secondaryissue_threshold_value_ok() { return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold()); }
+    bool is_secondaryissue_forbidden() const { return is_secondaryissue_forbidden(secondaryissue_threshold); }
+    bool is_secondaryissue_freely()    const { return is_secondaryissue_freely(secondaryissue_threshold); }
+    bool is_secondaryissue_legal()     const { return is_secondaryissue_legal(get_secondaryissue_threshold()); }
+
+    static bool is_secondaryissue_threshold_value_ok(uint8_t threshold)
+    {
+        return is_secondaryissue_forbidden(threshold) || is_secondaryissue_legal(threshold);
+    }
+    static bool is_secondaryissue_forbidden(uint8_t threshold) { return threshold == 0; }
+    static bool is_secondaryissue_freely(uint8_t threshold)    { return threshold == 255; }
+    static bool is_secondaryissue_legal(uint8_t threshold)
+    {
+        return is_secondaryissue_freely(threshold) || ((threshold >= 1) && (threshold <= 100));
+    }
+
+    static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold)
+    {
+        if (is_secondaryissue_freely(threshold))
+            return true;
+        if (!is_secondaryissue_legal(threshold))
+            return false;
+        return own < (uint64_t)(((double)total) / 100 * threshold);
     }
 
 private:
