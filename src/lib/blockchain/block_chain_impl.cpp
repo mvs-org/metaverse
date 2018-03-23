@@ -319,7 +319,7 @@ int block_chain_impl::replace_chain(uint64_t begin_height, const block_detail::l
             {
                 for(auto& tx : block->actual()->transactions)
                 {
-                    if(validate_transaction::check_secondaryissue_transaction(tx, *this))
+                    if (validate_transaction::check_secondaryissue_transaction(tx, *this, false))
                     {
                         ret = it - new_blocks.begin() + 1;
                         block_detail::list blocks;
