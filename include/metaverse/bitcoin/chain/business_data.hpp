@@ -55,6 +55,7 @@ enum class business_kind : uint16_t
     did_transfer = 6,
     asset_cert = 7,
 };
+
 // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
 enum business_status : uint8_t
 {
@@ -62,17 +63,7 @@ enum business_status : uint8_t
 	confirmed = 1, // in blockchain confirmed
 	unissued = 2 //  in local database ,special for asset related business
 };
-enum attachment_type : uint16_t
-{
-    etp_attach = 0,
-    asset_issue_attach = 1,
-    asset_transfer_attach = 2,
-    message_attach = 3,
-	etp_award_attach = 4, // miner award etp
-	etp_deposit_attach = 5,
-    did_issue_attach = 6,
-    did_transfer_attach = 7	
-};
+
 class BC_API business_data
 {
 public:

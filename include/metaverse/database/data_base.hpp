@@ -178,9 +178,6 @@ public:
     static bool touch_file(const path& file_path);
 	static void write_metadata(const path& metadata_path, data_base::db_metadata& metadata);
 	static void read_metadata(const path& metadata_path, data_base::db_metadata& metadata);
-	static bool is_lower_database(const path& prefix);
-	static bool is_higher_database(const path& prefix);
-	static bool upgrade_database(const settings& settings, const chain::block& genesis);
     /// Construct all databases.
     data_base(const settings& settings);
 
@@ -197,9 +194,6 @@ public:
 	bool blockchain_asset_create();
 	bool blockchain_did_create();
  
-	void upgrade_blockchain_asset();
-	void upgrade_blockchain_did();
-    
 	bool account_db_start();
     /// Start all databases.
     bool start();
