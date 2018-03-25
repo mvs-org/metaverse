@@ -22,11 +22,18 @@
 
 #include <cstdint>
 #include <istream>
+#include <set>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 
 namespace libbitcoin {
+
+// forward declaration
+namespace blockchain {
+    class block_chain_impl;
+}
+
 namespace chain {
 
 BC_CONSTEXPR size_t ASSET_CERT_SYMBOL_FIX_SIZE = 64;
@@ -45,10 +52,12 @@ namespace asset_cert_ns {
 class BC_API asset_cert
 {
 public:
+    using asset_cert_container = std::set<asset_cert>;
     asset_cert();
     asset_cert(std::string symbol, std::string owner, asset_cert_type certs);
     void reset();
     bool is_valid() const;
+    bool operator< (const asset_cert& other) const;
 
     static asset_cert factory_from_data(const data_chunk& data);
     static asset_cert factory_from_data(std::istream& stream);
@@ -74,9 +83,14 @@ public:
     void set_certs(asset_cert_type certs);
 
     // auxiliary functions
+    bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     bool test_certs(asset_cert_type bits) const;
-    bool split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits);
-    static bool check_certs_split(asset_cert s, asset_cert d1, asset_cert d2);
+    bool split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const;
+
+    static bool check_certs_split(
+            const asset_cert_container& src,
+            const asset_cert_container& dest,
+            bc::blockchain::block_chain_impl& chain);
 
 private:
     std::string symbol_; // asset name/symbol

@@ -324,6 +324,7 @@ code validate_transaction::check_secondaryissue_transaction(
         if (output.is_asset_secondaryissue())
         {
             if (is_asset_secondaryissue) {
+                // can not secondary issue multiple assets at the same transaction
                 return error::asset_secondaryissue_error;
             }
             is_asset_secondaryissue = true;
@@ -370,23 +371,68 @@ code validate_transaction::check_secondaryissue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_asset_cert_transaction(
+        const transaction& tx, blockchain::block_chain_impl& chain)
 {
-    code ret = error::success;
-    if ((ret = check_transaction_basic(tx, chain)) != error::success)
-        return ret;
+    std::set<asset_cert> input_certs;
+    for (const auto& input: tx.inputs) {
+        transaction previous_tx;
+        uint64_t height{0};
+        if (chain.get_transaction(previous_tx, height, input.previous_output.hash)) {
+            const output& prev_output = previous_tx.outputs[input.previous_output.index];
+            if (prev_output.is_asset_cert()) {
+                auto cert = boost::get<asset_cert>(prev_output.attach_data.get_attach());
+                input_certs.insert(cert);
+            }
+        }
+    }
 
-    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
-        return ret;
+    if (input_certs.empty()) {
+        return error::success;
+    }
 
+    bool has_other_type_output{false};
+    std::set<asset_cert> output_certs;
+    for (auto& output : tx.outputs) {
+        if (output.is_asset_cert()) {
+            auto cert = boost::get<asset_cert>(output.attach_data.get_attach());
+            output_certs.insert(cert);
+        }
+        else if (!output.is_etp()) {
+            has_other_type_output = true;
+        }
+    }
+
+    if (has_other_type_output) {
+        return error::asset_cert_error;
+    }
+
+    if (!asset_cert::check_certs_split(input_certs, output_certs, chain)) {
+        return error::asset_cert_error;
+    }
+
+    return error::success;
+}
+
+code validate_transaction::check_asset_issue_transaction(
+        const transaction& tx, blockchain::block_chain_impl& chain)
+{
+    bool is_asset_issue{false};
+    bool has_other_type_output{false};
+    int num_asset_cert{0};
+    std::string asset_symbol;
+    std::string asset_cert_symbol;
     for (auto& output : const_cast<transaction&>(tx).outputs)
     {
-        if ((ret = output.check_attachment_address()) != error::success)
-            return ret;
-
-        if(output.is_asset_issue()) 
+        if (output.is_asset_issue())
         {
-            if(chain.is_asset_exist(output.get_asset_symbol(), false)) {
+            if (is_asset_issue) {
+                // can not issue multiple assets at the same transaction
+                return error::asset_issue_error;
+            }
+            is_asset_issue = true;
+            asset_symbol = output.get_asset_symbol();
+            if (chain.is_asset_exist(asset_symbol, false)) {
                 return error::asset_exist;
             } else {
                 asset_detail&& detail = output.get_asset_detail();
@@ -395,7 +441,49 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 }
             }
         }
-        else if(output.is_did_issue()) {
+        else if (output.is_asset_cert()) {
+            ++num_asset_cert;
+            asset_cert_symbol = output.get_asset_cert_symbol();
+        }
+        else if (!output.is_etp())
+        {
+            has_other_type_output = true;
+        }
+    }
+
+    if (!is_asset_issue) {
+        return error::success;
+    }
+
+    if ((tx.outputs.size() > 3) || has_other_type_output
+        || (num_asset_cert > 1) || (asset_cert_symbol != asset_symbol)) {
+        return error::asset_issue_error;
+    }
+
+    return error::success;
+}
+
+code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
+{
+    code ret = error::success;
+    if ((ret = check_transaction_basic(tx, chain)) != error::success)
+        return ret;
+
+    if ((ret = check_asset_issue_transaction(tx, chain)) != error::success)
+        return ret;
+
+    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
+        return ret;
+
+    if ((ret = check_asset_cert_transaction(tx, chain)) != error::success)
+        return ret;
+
+    for (auto& output : const_cast<transaction&>(tx).outputs)
+    {
+        if ((ret = output.check_attachment_address()) != error::success)
+            return ret;
+
+        if(output.is_did_issue()) {
             if(chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_exist;
             }
@@ -404,7 +492,6 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 return error::address_issued_did;
             }
         }
-        
     }
     return ret;
 }

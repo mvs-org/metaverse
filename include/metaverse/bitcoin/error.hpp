@@ -136,9 +136,11 @@ enum error_code_t
     asset_address_not_match,
     asset_exist,
     asset_not_exist,
+    asset_issue_error,
     asset_secondaryissue_error,
     asset_secondaryissue_share_not_enough,
     asset_secondaryissue_threshold_invalid,
+    asset_cert_error,
 
 	//syn block
 	fetch_more_block,

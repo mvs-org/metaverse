@@ -60,8 +60,12 @@ public:
     uint64_t get_asset_amount() const;
     std::string get_asset_symbol() const;
     std::string get_asset_address() const;
+    std::string get_asset_cert_symbol() const;
+    std::string get_asset_cert_owner() const;
+    asset_cert_type get_asset_cert_type() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
+    bool is_asset_cert() const;
     bool is_etp() const;
     bool is_did_issue() const;
     bool is_did_transfer() const;

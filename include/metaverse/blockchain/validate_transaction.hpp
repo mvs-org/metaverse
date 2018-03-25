@@ -58,6 +58,12 @@ public:
 
     static code check_transaction(const chain::transaction& tx, blockchain::block_chain_impl& chain);
     static code check_transaction_basic(const chain::transaction& tx, blockchain::block_chain_impl& chain);
+    static code check_asset_cert_transaction(
+            const chain::transaction& tx,
+            blockchain::block_chain_impl& chain);
+    static code check_asset_issue_transaction(
+            const chain::transaction& tx,
+            blockchain::block_chain_impl& chain);
     static code check_secondaryissue_transaction(
             const chain::transaction& tx,
             blockchain::block_chain_impl& chain,

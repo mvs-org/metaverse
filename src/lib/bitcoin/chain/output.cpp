@@ -53,6 +53,8 @@ output output::factory_from_data(reader& source)
 }
 bool output::is_valid_symbol(const std::string& symbol)
 {
+    if (symbol.empty())
+        return false;
     // length check	
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
 		return false;
@@ -236,6 +238,11 @@ bool output::is_asset_secondaryissue() const
     return false;
 }
 
+bool output::is_asset_cert() const
+{
+	return (attach_data.get_type() == ASSET_CERT_TYPE);
+}
+
 bool output::is_etp() const
 {
 	return (attach_data.get_type() == ETP_TYPE);
@@ -267,6 +274,27 @@ std::string output::get_asset_address() const // for validate_transaction.cpp to
         }
     }
     return std::string("");
+}
+
+std::string output::get_asset_cert_symbol() const
+{
+    if (is_asset_cert()) {
+    }
+    return std::string("");
+}
+
+std::string output::get_asset_cert_owner() const
+{
+    if (is_asset_cert()) {
+    }
+    return std::string("");
+}
+
+asset_cert_type output::get_asset_cert_type() const
+{
+    if (is_asset_cert()) {
+    }
+    return asset_cert_ns::none;
 }
 
 bool output::is_did_issue() const

@@ -23,6 +23,8 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/blockchain/validate_transaction.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -54,6 +56,12 @@ bool asset_cert::is_valid() const
             || ((symbol_.size()+1) > ASSET_CERT_SYMBOL_FIX_SIZE)
             || ((owner_.size()+1) > ASSET_CERT_OWNER_FIX_SIZE)
             );
+}
+
+bool asset_cert::operator< (const asset_cert& other) const
+{
+    return (symbol_ < other.symbol_)
+        || ((symbol_ == other.symbol_) && (certs_ < other.certs_));
 }
 
 asset_cert asset_cert::factory_from_data(const data_chunk& data)
@@ -177,9 +185,10 @@ bool asset_cert::test_certs(asset_cert_type bits) const
     return (certs_ & bits) == bits;
 }
 
-bool asset_cert::split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits)
+// split input certs of this into two output parts d1 and d2, d1 with bits, d2 with the other.
+bool asset_cert::split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const
 {
-    if (!test_certs(bits)) {
+    if (!test_certs(bits) || (&d1 == this) || (&d2 == this)) {
         return false;
     }
     d1.set_symbol(symbol_);
@@ -189,11 +198,65 @@ bool asset_cert::split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bit
     return true;
 }
 
-bool asset_cert::check_certs_split(asset_cert s, asset_cert d1, asset_cert d2)
+bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
 {
-    return (s.certs_ == (d1.certs_ ^ d2.certs_))
-        && (s.symbol_ == d1.symbol_)
-        && (s.symbol_ == d2.symbol_);
+    // don't check if did is not enabled.
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+        return true;
+    }
+    auto did_symbol = owner_;
+    return chain.get_issued_did(did_symbol) != nullptr;
+}
+
+bool asset_cert::check_certs_split(
+        const asset_cert_container& src,
+        const asset_cert_container& dest,
+        bc::blockchain::block_chain_impl& chain)
+{
+    if (src.empty() || dest.empty()) {
+        return false;
+    }
+    bool did_enabled = bc::blockchain::validate_transaction::is_did_validate(chain);
+    std::shared_ptr<std::vector<did_detail>> sp_issued_dids;
+    if (did_enabled) {
+        sp_issued_dids = chain.get_issued_dids();
+    }
+    auto check_owner = [did_enabled, &sp_issued_dids](std::string owner) {
+        return (!did_enabled)
+            || (std::find_if(sp_issued_dids->begin(), sp_issued_dids->end(),
+                [&owner](did_detail& elem) {
+                    return elem.get_symbol() == owner;
+                })) != sp_issued_dids->end();
+    };
+
+    auto symbol = src.begin()->get_symbol();
+    asset_cert_type src_types{0};
+    asset_cert_type dest_types{0};
+    for (auto& cert : src) {
+        if (cert.get_symbol() != symbol) {
+            return false;
+        }
+        if ((src_types & cert.get_certs()) != 0) {
+            return false;
+        }
+        if (!check_owner(cert.get_owner())) {
+            return false;
+        }
+        src_types |= cert.get_certs();
+    }
+    for (auto& cert : dest) {
+        if (cert.get_symbol() != symbol) {
+            return false;
+        }
+        if ((dest_types & cert.get_certs()) != 0) {
+            return false;
+        }
+        if (!check_owner(cert.get_owner())) {
+            return false;
+        }
+        dest_types |= cert.get_certs();
+    }
+    return src_types == dest_types;
 }
 
 } // namspace chain
