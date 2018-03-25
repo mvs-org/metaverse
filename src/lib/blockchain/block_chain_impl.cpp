@@ -1442,12 +1442,17 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 			continue;
 		
 		// etp business process
-		if((iter->data.get_kind_value() ==  business_kind::etp)
-				&& kind == business_kind::etp) {
+		if (kind == business_kind::etp) {
 			ret_vector->emplace_back(std::move(*iter));
 			continue;
 		}
 		
+		// etp award business process
+		if (kind == business_kind::etp_award) {
+			ret_vector->emplace_back(std::move(*iter));
+			continue;
+		}
+
 		// asset business process
 		asset_symbol = "";
 		if(iter->data.get_kind_value() ==  business_kind::asset_issue) {
@@ -1458,6 +1463,11 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 		if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
 			auto transfer = boost::get<asset_transfer>(iter->data.get_data());
 			asset_symbol = transfer.get_symbol();
+		}
+
+		if (iter->data.get_kind_value() ==  business_kind::asset_cert) {
+			auto cert = boost::get<asset_cert>(iter->data.get_data());
+			asset_symbol = cert.get_symbol();
 		}
 		
         if ( 0 == symbol.compare(asset_symbol)){
@@ -1490,6 +1500,11 @@ std::shared_ptr<std::vector<business_record>> block_chain_impl::get_address_busi
 			if(iter->data.get_kind_value() ==  business_kind::asset_transfer) {
 				auto transfer = boost::get<asset_transfer>(iter->data.get_data());
 				asset_symbol = transfer.get_symbol();
+			}
+
+			if (iter->data.get_kind_value() ==  business_kind::asset_cert) {
+				auto cert = boost::get<asset_cert>(iter->data.get_data());
+				asset_symbol = cert.get_symbol();
 			}
 			
 	        if (symbol == asset_symbol) {

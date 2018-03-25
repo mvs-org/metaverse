@@ -44,7 +44,6 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         throw address_invalid_exception{"invalid address!"};
     
     // 1. get asset in blockchain
-    auto kind = business_kind::asset_transfer;
     std::set<std::string> symbol_set;
     std::vector<asset_detail> asset_vec; // just used asset_detail class
 
