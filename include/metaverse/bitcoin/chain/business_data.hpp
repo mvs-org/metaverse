@@ -51,7 +51,8 @@ enum class business_kind : uint16_t
     message = 3,
 	etp_award = 4, // store to address_asset database
 	did_issue = 5,
-    did_transfer = 6
+    did_transfer = 6,
+    asset_cert = 7,
 };
 // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
 enum business_status : uint8_t

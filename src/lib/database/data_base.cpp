@@ -1176,6 +1176,15 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
 	boost::apply_visitor(visitor, const_cast<asset&>(sp).get_data());
 }
 
+void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
+            const output_point& outpoint, uint32_t output_height, uint64_t value)
+{
+    address_assets.store_output(key, outpoint, output_height, value,
+        static_cast<typename std::underlying_type<business_kind>::type>(
+            business_kind::asset_cert), timestamp_, sp_cert);
+    address_assets.sync();
+}
+
 void data_base::push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value)
 

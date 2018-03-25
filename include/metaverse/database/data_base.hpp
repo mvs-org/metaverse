@@ -249,6 +249,9 @@ public:
 	void push_asset(const asset& sp, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
+	void push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
+				const output_point& outpoint, uint32_t output_height, uint64_t value);
+
 	void push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 	
@@ -276,6 +279,10 @@ public:
 		void operator()(const asset &t) const
 		{
 			return db_->push_asset(t, sh_hash_, outpoint_, output_height_, value_);
+		}
+		void operator()(const asset_cert &t) const
+		{
+			return db_->push_asset_cert(t, sh_hash_, outpoint_, output_height_, value_);
 		}
 		void operator()(const etp &t) const
 		{

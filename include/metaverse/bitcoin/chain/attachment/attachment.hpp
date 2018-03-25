@@ -27,6 +27,7 @@
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
@@ -35,12 +36,12 @@
 using namespace libbitcoin::chain;
 #define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
 
-#define ETP_TYPE TYPE2UINT32(attachment::attachment_type::attachment_etp)
-#define ETP_AWARD_TYPE TYPE2UINT32(attachment::attachment_type::attachment_etp_award)
-#define ASSET_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset)
-#define MESSAGE_TYPE TYPE2UINT32(attachment::attachment_type::attachment_message)
-#define DID_TYPE TYPE2UINT32(attachment::attachment_type::attachment_did)
-
+#define ETP_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_etp)
+#define ETP_AWARD_TYPE  TYPE2UINT32(attachment::attachment_type::attachment_etp_award)
+#define ASSET_TYPE      TYPE2UINT32(attachment::attachment_type::attachment_asset)
+#define MESSAGE_TYPE    TYPE2UINT32(attachment::attachment_type::attachment_message)
+#define DID_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_did)
+#define ASSET_CERT_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset_cert)
 
 
 namespace libbitcoin {
@@ -56,9 +57,17 @@ public:
 		attachment_etp_award,
 		attachment_asset,
 		attachment_message,
-		attachment_did
+		attachment_did,
+		attachment_asset_cert,
 	};
-	typedef boost::variant<etp, etp_award, asset, blockchain_message,did> attachment_data_type;
+	typedef boost::variant<
+        etp,
+        etp_award,
+        asset,
+        blockchain_message,
+        did,
+        asset_cert
+        > attachment_data_type;
 
 	attachment();
 	template<class Type>
