@@ -30,6 +30,7 @@
 #define ETP_AWARD_TYPE      KIND2UINT16(business_kind::etp_award)
 #define ASSET_ISSUE_TYPE    KIND2UINT16(business_kind::asset_issue)
 #define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
+#define ASSET_CERT_TYPE     KIND2UINT16(business_kind::asset_cert)
 #define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
 #define DID_ISSUE_TYPE    	KIND2UINT16(business_kind::did_issue)
 
@@ -74,6 +75,7 @@ bool business_data::is_valid_type() const
     return ((ETP_TYPE == KIND2UINT16(kind))
 		|| (ASSET_ISSUE_TYPE == KIND2UINT16(kind))
 		|| (ASSET_TRANSFER_TYPE == KIND2UINT16(kind))
+		|| (ASSET_CERT_TYPE == KIND2UINT16(kind))
 		|| (ETP_AWARD_TYPE == KIND2UINT16(kind))
 		|| (MESSAGE_TYPE == KIND2UINT16(kind))
 		|| (DID_ISSUE_TYPE == KIND2UINT16(kind)));
@@ -123,6 +125,11 @@ bool business_data::from_data(reader& source)
 				data = asset_transfer();
 				break;
 			}
+			case ASSET_CERT_TYPE:
+			{
+			    data = asset_cert();
+			    break;
+			}
 			case MESSAGE_TYPE:
 			{
 				data = blockchain_message();
@@ -153,7 +160,6 @@ data_chunk business_data::to_data()
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
     return data;
 }
 

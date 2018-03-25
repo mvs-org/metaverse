@@ -28,6 +28,7 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
@@ -75,7 +76,16 @@ enum attachment_type : uint16_t
 class BC_API business_data
 {
 public:
-	typedef boost::variant<etp, etp_award, asset_detail, asset_transfer, blockchain_message, did_detail, did_transfer> business_data_type;
+	typedef boost::variant<
+        etp,
+        etp_award,
+        asset_detail,
+        asset_transfer,
+        asset_cert,
+        blockchain_message,
+        did_detail,
+        did_transfer
+        > business_data_type;
     static business_data factory_from_data(const data_chunk& data);
     static business_data factory_from_data(std::istream& stream);
     static business_data factory_from_data(reader& source);
