@@ -199,7 +199,7 @@ business_record::list address_asset_database::get(const short_hash& key,
         const auto address = REMAP_ADDRESS(record);
 
         // Skip rows below from_height.
-        if (from_height == 0 || read_height(address) <= from_height) // from current block height
+        if (from_height == 0 || read_height(address) >= from_height) // from current block height
             result.emplace_back(read_row(address));
     }
 
@@ -266,8 +266,8 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
         std::string asset_symbol;
 
         // Skip rows below from_height.
-        if (((start_height == 0)&&(end_height == 0)) 
-			|| ((start_height <= height) && (height < end_height))) { // from current block height
+        if ((start_height <= height)
+            && ((end_height == 0) || (height < end_height))) { // from current block height
             //result->emplace_back(read_row(address));
             auto row = read_row(address);
             if(symbol.empty()) { // all utxo
@@ -286,6 +286,11 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
                 if(row.data.get_kind_value() ==  business_kind::asset_transfer) {
                     auto transfer = boost::get<asset_transfer>(row.data.get_data());
                     asset_symbol = transfer.get_symbol();
+                }
+
+                if (row.data.get_kind_value() ==  business_kind::asset_cert) {
+                    auto cert = boost::get<asset_cert>(row.data.get_data());
+                    asset_symbol = cert.get_symbol();
                 }
                 
                 if (symbol == asset_symbol) {
@@ -355,9 +360,10 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
         const auto address = REMAP_ADDRESS(record);
 		auto height = read_height(address);
         // Skip rows below from_height.
-        if (((start_height == 0)&&(end_height == 0)) 
-			|| ((start_height <= height) && (height < end_height))) // from current block height
+        if ((start_height <= height)
+            && ((end_height == 0) || (height < end_height))) {
             result->emplace_back(read_row(address));
+        }
     }
 
     // TODO: we could sort result here.
@@ -561,6 +567,8 @@ business_history::list address_asset_database::get_business_history(const std::s
 	// asset type check
 	if((kind != business_kind::asset_issue) // asset_detail
 		&& (kind != business_kind::asset_transfer) // asset_transfer
+		&& (kind != business_kind::asset_cert) // asset_cert
+		&& (kind != business_kind::etp_award)
 		&& (kind != business_kind::etp))
 		return unspent;
 	
@@ -570,12 +578,12 @@ business_history::list address_asset_database::get_business_history(const std::s
 			continue;
 		
         if ((row.spend.hash == null_hash)
-				&& (status == 0)) // unspent business
+				&& (status == business_status::unspent)) // unspent business
 			unspent.emplace_back(row);
 
 		if (row.output_height != 0 
 				&&(row.spend.hash == null_hash || row.spend_height == 0)
-				&& (status == 1)) // confirmed business
+				&& (status == business_status::confirmed)) // confirmed business
 			unspent.emplace_back(row);
 		
     }
@@ -597,6 +605,8 @@ business_history::list address_asset_database::get_business_history(const std::s
 	// asset type check
 	if((kind != business_kind::asset_issue) // asset_detail
 		&& (kind != business_kind::asset_transfer) // asset_transfer
+		&& (kind != business_kind::asset_cert) // asset_cert
+		&& (kind != business_kind::etp_award)
 		&& (kind != business_kind::etp))
 		return unspent;
 	
@@ -608,13 +618,13 @@ business_history::list address_asset_database::get_business_history(const std::s
 			continue;
 		
         if ((row.spend.hash == null_hash)) {//0 -- unspent business
-        	row.status = 0;
+			row.status = business_status::unspent;
 			unspent.emplace_back(row);
         }
 
 		if (row.output_height != 0 
 				&&(row.spend.hash == null_hash || row.spend_height == 0)) {// 1 -- confirmed business
-			row.status = 1;
+			row.status = business_status::confirmed;
 			unspent.emplace_back(row);
 		}
 		
@@ -641,13 +651,13 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
     	if(row.data.get_kind_value() != kind)
 			continue;
 		
-        uint8_t status = 0xff; 
+        uint8_t status = business_status::unknown;
         if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
+			status = business_status::unspent; // 0 -- unspent  1 -- confirmed
 
 		if (row.output_height != 0 &&
             (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
+            status = business_status::confirmed;
 		
 		business_address_asset detail;
 		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
@@ -685,13 +695,13 @@ business_address_asset::list address_asset_database::get_assets(const std::strin
 			&& (row.data.get_kind_value() != business_kind::asset_transfer))  // asset_transfer
 			continue;
 		
-        uint8_t status = 0xff; 
+        uint8_t status = business_status::unknown;
         if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
+			status = business_status::unspent; // 0 -- unspent  1 -- confirmed
 
 		if (row.output_height != 0 &&
             (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
+            status = business_status::confirmed;
 		
 		business_address_asset detail;
 		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
@@ -727,13 +737,13 @@ business_address_message::list address_asset_database::get_messages(const std::s
     	if((row.data.get_kind_value() != business_kind::message))  // asset_detail
 			continue;
 		
-        uint8_t status = 0xff; 
+        uint8_t status = business_status::unknown;
         if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
+			status = business_status::unspent; // 0 -- unspent  1 -- confirmed
 
 		if (row.output_height != 0 &&
             (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
+            status = business_status::confirmed;
 		
 		business_address_message detail;
 		auto issue_info = boost::get<chain::blockchain_message>(row.data.get_data());
@@ -746,6 +756,38 @@ business_address_message::list address_asset_database::get_messages(const std::s
 	return unspent;
 	    
 }
+
+business_address_asset_cert::list address_asset_database::get_asset_certs(const std::string& address,
+    size_t from_height) const
+{
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_address_asset_cert::list unspent;
+    for (const auto& row: result)
+    {
+        if((row.data.get_kind_value() != business_kind::asset_cert))  // asset_cert
+            continue;
+
+        uint8_t status = business_status::unknown;
+        if (row.spend.hash == null_hash)
+            status = business_status::unspent;
+
+        if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = business_status::confirmed;
+
+        business_address_asset_cert cert;
+        auto cert_info = boost::get<asset_cert>(row.data.get_data());
+        cert.certs = cert_info;
+
+        cert.address = address; // account address
+        cert.status = status; // 0 -- unspent  1 -- confirmed
+        unspent.emplace_back(cert);
+    }
+    return unspent;
+}
+
 void address_asset_database::sync()
 {
     lookup_manager_.sync();

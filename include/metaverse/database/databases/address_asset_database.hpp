@@ -115,7 +115,9 @@ public:
 		size_t from_height) const;
 	business_address_message::list get_messages(const std::string& address, 
 		size_t from_height) const;
-	
+    business_address_asset_cert::list get_asset_certs(const std::string& address,
+        size_t from_height) const;
+
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 

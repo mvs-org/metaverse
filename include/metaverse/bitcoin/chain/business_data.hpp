@@ -61,7 +61,8 @@ enum business_status : uint8_t
 {
 	unspent = 0, // in blockchain but unspent
 	confirmed = 1, // in blockchain confirmed
-	unissued = 2 //  in local database ,special for asset related business
+	unissued = 2, //  in local database ,special for asset related business
+	unknown = 0xff
 };
 
 class BC_API business_data
@@ -214,6 +215,30 @@ public:
 	
 		return ss.str();
 	}
+#endif
+};
+
+class BC_API business_address_asset_cert
+{
+public:
+    typedef std::vector<business_address_asset_cert> list;
+
+    std::string  address;
+    uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
+    asset_cert certs;
+
+#ifdef MVS_DEBUG
+    // just used for unit test in block_chain_impl_test.cpp
+    std::string to_string()
+    {
+        std::ostringstream ss;
+
+        ss << "\t address = " << address
+            << "\t status = " << status
+            << "\t certs = " << certs.to_string() << "\n";
+
+        return ss.str();
+    }
 #endif
 };
 
