@@ -71,6 +71,7 @@ public:
     bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;
     asset_detail get_asset_detail() const;
+    asset_cert get_asset_cert() const;
     std::string get_did_symbol() const;
     std::string get_did_address() const;
 

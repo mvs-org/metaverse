@@ -276,9 +276,19 @@ std::string output::get_asset_address() const // for validate_transaction.cpp to
     return std::string("");
 }
 
+asset_cert output::get_asset_cert() const
+{
+    if (is_asset_cert()) {
+        return boost::get<asset_cert>(attach_data.get_attach());
+    }
+    return asset_cert();
+}
+
 std::string output::get_asset_cert_symbol() const
 {
     if (is_asset_cert()) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        return cert_info.get_symbol();
     }
     return std::string("");
 }
@@ -286,6 +296,8 @@ std::string output::get_asset_cert_symbol() const
 std::string output::get_asset_cert_owner() const
 {
     if (is_asset_cert()) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        return cert_info.get_owner();
     }
     return std::string("");
 }
@@ -293,6 +305,8 @@ std::string output::get_asset_cert_owner() const
 asset_cert_type output::get_asset_cert_type() const
 {
     if (is_asset_cert()) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        return cert_info.get_certs();
     }
     return asset_cert_ns::none;
 }

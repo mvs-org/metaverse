@@ -420,6 +420,8 @@ code validate_transaction::check_asset_issue_transaction(
     bool is_asset_issue{false};
     bool has_other_type_output{false};
     int num_asset_cert{0};
+    asset_cert_type cert_mask{asset_cert_ns::none};
+    asset_cert_type cert_type{asset_cert_ns::none};
     std::string asset_symbol;
     std::string asset_cert_symbol;
     for (auto& output : const_cast<transaction&>(tx).outputs)
@@ -439,11 +441,17 @@ code validate_transaction::check_asset_issue_transaction(
                 if (!detail.is_secondaryissue_threshold_value_ok()) {
                     return error::asset_secondaryissue_threshold_invalid;
                 }
+                cert_mask = detail.get_asset_cert_mask();
             }
         }
         else if (output.is_asset_cert()) {
             ++num_asset_cert;
-            asset_cert_symbol = output.get_asset_cert_symbol();
+            asset_cert&& cert_info = output.get_asset_cert();
+            if (!cert_info.check_cert_owner(chain)) {
+                return error::asset_issue_error;
+            }
+            asset_cert_symbol = cert_info.get_symbol();
+            cert_type = cert_info.get_certs();
         }
         else if (!output.is_etp())
         {
@@ -456,7 +464,8 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     if ((tx.outputs.size() > 3) || has_other_type_output
-        || (num_asset_cert > 1) || (asset_cert_symbol != asset_symbol)) {
+        || (num_asset_cert > 1) || (asset_cert_symbol != asset_symbol)
+        || (cert_type != cert_mask)) {
         return error::asset_issue_error;
     }
 
