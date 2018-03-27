@@ -24,6 +24,7 @@
 #include <istream>
 #include <set>
 #include <metaverse/bitcoin/define.hpp>
+#include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 
@@ -87,7 +88,7 @@ public:
     bool test_certs(asset_cert_type bits) const;
     bool split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const;
 
-    static bool check_certs_split(
+    static code check_certs_split(
             const asset_cert_container& src,
             const asset_cert_container& dest,
             bc::blockchain::block_chain_impl& chain);

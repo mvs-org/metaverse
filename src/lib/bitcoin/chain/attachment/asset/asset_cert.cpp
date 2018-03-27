@@ -208,13 +208,13 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
     return chain.get_issued_did(did_symbol) != nullptr;
 }
 
-bool asset_cert::check_certs_split(
+code asset_cert::check_certs_split(
         const asset_cert_container& src,
         const asset_cert_container& dest,
         bc::blockchain::block_chain_impl& chain)
 {
     if (src.empty() || dest.empty()) {
-        return false;
+        return error::asset_cert_error;
     }
     bool did_enabled = bc::blockchain::validate_transaction::is_did_validate(chain);
     std::shared_ptr<std::vector<did_detail>> sp_issued_dids;
@@ -234,29 +234,29 @@ bool asset_cert::check_certs_split(
     asset_cert_type dest_types{0};
     for (auto& cert : src) {
         if (cert.get_symbol() != symbol) {
-            return false;
+            return error::asset_cert_error;
         }
         if ((src_types & cert.get_certs()) != 0) {
-            return false;
-        }
-        if (!check_owner(cert.get_owner())) {
-            return false;
+            return error::asset_cert_error;
         }
         src_types |= cert.get_certs();
     }
     for (auto& cert : dest) {
         if (cert.get_symbol() != symbol) {
-            return false;
+            return error::asset_cert_error;
         }
         if ((dest_types & cert.get_certs()) != 0) {
-            return false;
+            return error::asset_cert_error;
         }
         if (!check_owner(cert.get_owner())) {
-            return false;
+            return error::did_address_needed;
         }
         dest_types |= cert.get_certs();
     }
-    return src_types == dest_types;
+    if (src_types != dest_types ) {
+        return error::asset_cert_error;
+    }
+    return error::success;
 }
 
 } // namspace chain

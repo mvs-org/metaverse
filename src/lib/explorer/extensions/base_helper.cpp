@@ -771,6 +771,9 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         auto ass = did(DID_DETAIL_TYPE, *sh_did);
         return attachment(DID_TYPE, attach_version, ass);
     } else if (record.type == utxo_attach_type::asset_cert) {
+        if (record.asset_cert == asset_cert_ns::none) {
+            throw asset_cert_exception("asset cert is none");
+        }
         auto cert_info = chain::asset_cert(symbol_, record.target, record.asset_cert);
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
@@ -1508,15 +1511,6 @@ void issuing_asset::populate_change() {
     if (unspent_etp_ > payment_etp_) {
         receiver_list_.push_back({from_addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
-    // asset_cert utxo
-    auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
-    if (sh_asset) {
-        auto certs = sh_asset->get_asset_cert_mask();
-        if (certs != asset_cert_ns::none) {
-            auto target_addr = receiver_list_.at(0).target;
-            receiver_list_.push_back({target_addr, symbol_, 0, 0, certs, utxo_attach_type::asset_cert, attachment()});
-        }
     }
 }
 

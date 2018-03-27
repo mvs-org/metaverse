@@ -407,8 +407,9 @@ code validate_transaction::check_asset_cert_transaction(
         return error::asset_cert_error;
     }
 
-    if (!asset_cert::check_certs_split(input_certs, output_certs, chain)) {
-        return error::asset_cert_error;
+    code ret = error::success;
+    if ((ret = asset_cert::check_certs_split(input_certs, output_certs, chain)) != error::success) {
+        return ret;
     }
 
     return error::success;
@@ -447,9 +448,6 @@ code validate_transaction::check_asset_issue_transaction(
         else if (output.is_asset_cert()) {
             ++num_asset_cert;
             asset_cert&& cert_info = output.get_asset_cert();
-            if (!cert_info.check_cert_owner(chain)) {
-                return error::asset_issue_error;
-            }
             asset_cert_symbol = cert_info.get_symbol();
             cert_type = cert_info.get_certs();
         }
