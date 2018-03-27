@@ -1794,7 +1794,7 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
 		}
 	}
 	
-	return NULL;
+	return "";
 }
 
 /// get did from local database including all account's dids
