@@ -42,7 +42,8 @@ enum utxo_attach_type : uint32_t
     asset_secondaryissue,
 	did_issue,
 	did_transfer_etp,
-	did_transfer_asset
+	did_transfer_asset,
+	asset_cert,
 };
 
 extern utxo_attach_type get_utxo_attach_type(const chain::output&);
@@ -65,9 +66,32 @@ struct receiver_record {
 	std::string symbol;
     uint64_t    amount; // etp value
     uint64_t    asset_amount;
+    asset_cert_type asset_cert;
 	
 	utxo_attach_type type; // only used for non-etp asset
 	attachment attach_elem;  // only used for message , maybe used for "digital identity" later
+
+    receiver_record()
+        : target(), symbol()
+        , amount(0), asset_amount(0), asset_cert(asset_cert_ns::none)
+        , type(utxo_attach_type::etp), attach_elem()
+    {}
+
+    receiver_record(std::string target_, std::string symbol_,
+        uint64_t amount_, uint64_t asset_amount_,
+        utxo_attach_type type_, attachment attach_elem_)
+        : target(target_), symbol(symbol_)
+        , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_ns::none)
+        , type(type_), attach_elem(attach_elem_)
+    {}
+
+    receiver_record(std::string target_, std::string symbol_,
+        uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
+        utxo_attach_type type_, attachment attach_elem_)
+        : target(target_), symbol(symbol_)
+        , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_)
+        , type(type_), attach_elem(attach_elem_)
+    {}
 };
 
 struct balances {

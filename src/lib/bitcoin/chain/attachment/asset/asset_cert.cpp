@@ -52,7 +52,7 @@ bool asset_cert::is_valid() const
 {
     return !(symbol_.empty()
             || owner_.empty()
-            || (certs_ == 0)
+            || (certs_ == asset_cert_ns::none)
             || ((symbol_.size()+1) > ASSET_CERT_SYMBOL_FIX_SIZE)
             || ((owner_.size()+1) > ASSET_CERT_OWNER_FIX_SIZE)
             );

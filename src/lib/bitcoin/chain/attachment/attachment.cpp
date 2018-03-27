@@ -61,9 +61,11 @@ void attachment::reset()
     auto visitor = reset_visitor();
 	boost::apply_visitor(visitor, attach);
 }
+
 bool attachment::is_valid() const
 {
-    return true;
+    auto visitor = is_valid_visitor();
+    return boost::apply_visitor(visitor, attach);
 }
 
 bool attachment::is_valid_type() const
