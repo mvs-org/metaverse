@@ -268,6 +268,7 @@ public:
 	bool is_did_exist(const std::string& did_name, bool add_local_db=true);
     bool get_did_height(const std::string& did_name, uint64_t& height);
     bool is_address_issued_did(const std::string& address, bool check_local_db=true);
+    std::string get_did_from_address(const std::string& address, bool check_local_db=true);
     operation_result store_account_did(const did_detail& detail);
 	operation_result store_account_did(std::shared_ptr<did_detail> detail);
 	std::shared_ptr<did_detail> get_issued_did(std::string& symbol);

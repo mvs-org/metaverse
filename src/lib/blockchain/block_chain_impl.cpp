@@ -1757,7 +1757,7 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address, boo
 	}
 
 	// 2. find from local database did
-	if(check_local_db) {
+	if (check_local_db) {
 		auto sh_acc_vec = get_local_dids();
 		// scan all account did
 		for (auto& acc : *sh_acc_vec) {
@@ -1767,6 +1767,34 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address, boo
 	}
 	
 	return false;
+}
+
+/* find did by address 
+*  find steps:
+*  1. find from blockchain
+*  2. find from local database(includes account created did) if check_local_db = true
+*/
+std::string block_chain_impl::get_did_from_address(const std::string& did_address, bool check_local_db)
+{
+	// 1. find from blockchain database
+	business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+
+	if (!did_vec.empty())
+	{
+		return did_vec[0].detail.get_symbol();
+	}
+
+	// 2. find from local database did
+	if (check_local_db) {
+		auto sh_acc_vec = get_local_dids();
+		// scan all account did
+		for (auto& acc : *sh_acc_vec) {
+			if (did_address.compare(acc.get_address())==0)
+				return acc.get_symbol();
+		}
+	}
+	
+	return NULL;
 }
 
 /// get did from local database including all account's dids
