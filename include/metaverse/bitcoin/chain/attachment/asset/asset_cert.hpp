@@ -92,10 +92,6 @@ public:
     static std::string get_certs_name(asset_cert_type certs);
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
     static asset_cert_type get_certs_from_name(const std::string& certs_name);
-    static code check_certs_split(
-            const asset_cert_container& src,
-            const asset_cert_container& dest,
-            bc::blockchain::block_chain_impl& chain);
 
 private:
     std::string symbol_; // asset name/symbol
