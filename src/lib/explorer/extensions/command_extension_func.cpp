@@ -75,6 +75,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/sendassetcert.hpp>
 #include <metaverse/explorer/extensions/commands/mergeasset.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
@@ -157,6 +158,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
+    func(make_shared<sendassetcert>());
     func(make_shared<mergeasset>());
 
     // multi-sig
@@ -273,6 +275,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
+    if (symbol == sendassetcert::symbol())
+        return make_shared<sendassetcert>();
     if (symbol == mergeasset::symbol())
         return make_shared<mergeasset>();
     if (symbol == getwork::symbol())

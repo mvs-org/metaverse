@@ -82,12 +82,16 @@ public:
 
     asset_cert_type get_certs() const;
     void set_certs(asset_cert_type certs);
+    std::string get_certs_name() const;
 
     // auxiliary functions
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     bool test_certs(asset_cert_type bits) const;
     bool split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const;
 
+    static std::string get_certs_name(asset_cert_type certs);
+    static bool test_certs(asset_cert_type certs, asset_cert_type bits);
+    static asset_cert_type get_certs_from_name(const std::string& certs_name);
     static code check_certs_split(
             const asset_cert_container& src,
             const asset_cert_container& dest,
