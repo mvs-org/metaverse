@@ -43,6 +43,9 @@ console_result issuedid::invoke (Json::Value& jv_output,
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
+
+    if (!blockchain.get_account_address(auth_.name, argument_.address))
+         throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
         
     // fail if did is already in blockchain
     if(blockchain.is_did_exist(argument_.symbol, false))

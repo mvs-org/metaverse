@@ -42,7 +42,7 @@ class BC_API did_transfer
 {
 public:
 	did_transfer();
-	did_transfer(const std::string& address, uint64_t quantity);
+	did_transfer(const std::string& address);
     static did_transfer factory_from_data(const data_chunk& data);
     static did_transfer factory_from_data(std::istream& stream);
     static did_transfer factory_from_data(reader& source);
@@ -63,12 +63,9 @@ public:
     uint64_t serialized_size() const;
 	const std::string& get_address() const;
 	void set_address(const std::string& address);
-	uint64_t get_quantity() const;
-	void set_quantity(uint64_t quantity);
 	
 private:
     std::string address;  // symbol  -- in block
-    uint64_t quantity;  // -- in block
 };
 
 } // namespace chain

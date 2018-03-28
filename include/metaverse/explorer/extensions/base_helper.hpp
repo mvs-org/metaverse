@@ -43,7 +43,8 @@ enum utxo_attach_type : uint32_t
 	did_issue,
 	did_transfer_etp,
 	did_transfer_asset,
-	asset_cert,
+	did_transfer,
+	asset_cert
 };
 
 extern utxo_attach_type get_utxo_attach_type(const chain::output&);
@@ -460,6 +461,20 @@ public:
 		
 	void sum_payment_amount() override;
 	
+	void populate_change() override;
+};
+
+class BCX_API sending_did : public base_transfer_helper
+{
+public:
+	sending_did(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
+		std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
+		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), 
+			fee, std::move(symbol))
+		{};
+
+	~sending_did(){};
+	void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
 	void populate_change() override;
 };
 

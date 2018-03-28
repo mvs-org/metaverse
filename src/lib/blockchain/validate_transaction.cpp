@@ -501,6 +501,11 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
                 return error::address_issued_did;
             }
         }
+        else if (output.is_did_transfer()) {
+            if(chain.is_address_issued_did(output.get_did_address(), false)) {
+                return error::address_issued_did;
+            }
+        }
     }
     return ret;
 }
@@ -548,9 +553,9 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                return error::did_symbol_invalid;
             }
 
-            if (!is_did_validate(chain)){
+            /*if (!is_did_validate(chain)){
                 return error::did_func_not_actived;    
-            }
+            }*/
         }
     }
 
@@ -758,10 +763,10 @@ bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
 
     chain.get_last_height(current_blockheight);
 
-    if (current_blockheight < 1130000)
+    /*if (current_blockheight < 1130000)
     {
         return false;
-    }
+    }*/
 
     return true;
 }

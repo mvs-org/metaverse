@@ -50,6 +50,9 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     if (output.is_did_issue()) {
         return utxo_attach_type::did_issue;
     }
+    if (output.is_did_transfer()) {
+        return utxo_attach_type::did_transfer;
+    }
     throw std::logic_error("get_utxo_attach_type : Unkown output type.");
 }
 
@@ -662,6 +665,21 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                             unspent_asset_ += record.asset_amount;
                             unspent_etp_ += record.amount;
                         }
+                    }else if (output.is_did_transfer() && (symbol_ == output.get_did_symbol())){
+                        record.prikey = prikey;
+                        record.addr = addr;
+                        record.amount = row.value;
+                        record.symbol = output.get_did_symbol();
+                        record.asset_amount = 0;
+                        record.type = utxo_attach_type::did_transfer;
+                        record.output = row.output;
+                        record.script = output.script;
+                        
+                        if(unspent_etp_ < payment_etp_) {
+                            from_list_.push_back(record);
+                            unspent_etp_ += record.amount;
+                        }
+                        log::trace("unspent_etp_=")<< unspent_etp_;
                     }
                     // not add message process here, because message utxo have no etp value
                 }
@@ -917,6 +935,10 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
      
         sh_did->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = did(DID_DETAIL_TYPE, *sh_did);
+        return attachment(DID_TYPE, attach_version, ass);
+    } else if(record.type == utxo_attach_type::did_transfer) {
+        auto transfer = libbitcoin::chain::did_transfer(record.symbol);
+        auto ass = did(DID_TRANSFERABLE_TYPE, transfer);
         return attachment(DID_TYPE, attach_version, ass);
     } else if (record.type == utxo_attach_type::asset_cert) {
         auto cert_info = chain::asset_cert(symbol_, record.target, record.asset_cert);
@@ -1225,13 +1247,27 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
                         }
                         log::trace("unspent_asset_=")<< unspent_asset_;
                         log::trace("unspent_etp_=")<< unspent_etp_;
-                    }else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
+                    } else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
                         //record.prikey = prikey;
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_did_symbol();
                         record.asset_amount = 0;
                         record.type = utxo_attach_type::did_issue;
+                        record.output = row.output;
+                        //record.script = output.script;
+                        
+                        if(unspent_etp_ < payment_etp_) {
+                            from_list_.push_back(record);
+                            unspent_etp_ += record.amount;
+                        }
+                    } else if (output.is_did_transfer() && (symbol_ == output.get_did_symbol())){
+                        //record.prikey = prikey;
+                        record.addr = addr;
+                        record.amount = row.value;
+                        record.symbol = output.get_did_symbol();
+                        record.asset_amount = 0;
+                        record.type = utxo_attach_type::did_transfer;
                         record.output = row.output;
                         //record.script = output.script;
                         
@@ -1968,6 +2004,105 @@ void sending_asset::populate_change() {
         utxo_attach_type::asset_transfer, attachment()});
     }
 }
+
+void sending_did::populate_change() {
+    if(unspent_etp_ - payment_etp_) {
+        if(from_.empty())
+            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+        else
+            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
+void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& addr)
+{
+    auto waddr = wallet::payment_address(addr);
+    auto rows = get_address_history(waddr, blockchain_);
+
+    uint64_t height = 0;
+    blockchain_.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spended
+        if (row.spend.hash != null_hash)
+            continue;
+
+        chain::transaction tx_temp;
+        uint64_t tx_height;
+        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
+            continue;
+
+        auto output = tx_temp.outputs.at(row.output.index);
+        auto did_symbol = output.get_did_symbol();
+        auto etp_amount = row.value;
+
+        // filter output
+        if (output.is_etp()) 
+        {
+            if (etp_amount == 0)
+                continue;
+            // enough to pay tx fees, and no asset to connect
+            if (unspent_etp_ >= payment_etp_)
+                continue;
+            // if secified from address, then ignore others
+            if (!from_.empty() && (from_ != addr))
+                continue;
+        } else if (output.is_did_issue() || output.is_did_transfer())
+        {
+            if (symbol_ != did_symbol)
+                continue;
+        } else
+        {
+            continue;
+        }
+
+        // deposit utxo in transaction pool
+        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+                    && (row.output_height == 0)) {
+            continue;
+        } else if (tx_temp.is_coinbase()) { // incase readd deposit
+            // coin base etp maturity etp check
+            // coinbase_maturity etp check
+            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+                continue;
+            }
+        }
+
+        // deposit utxo in block
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+            && (row.output_height != 0)) {
+            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+                continue;
+            }
+        }
+
+        // add to from list
+        address_asset_record record;
+
+        record.prikey = prikey;
+        record.addr = addr;
+        record.amount = etp_amount;
+        record.symbol = symbol_;
+        record.asset_amount = 0;
+        record.output = row.output;
+        record.script = output.script;
+        record.type = get_utxo_attach_type(output);
+
+        from_list_.push_back(record);
+
+        unspent_etp_ += record.amount;
+        unspent_asset_ += record.asset_amount;
+    }
+    rows.clear();
+
+    // if specified from address but no enough etp to pay fees,
+    // the tx will fail.
+    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
+        throw tx_source_exception{"not enough etp in from address!"};
+}
+
 void sending_locked_asset::populate_change() {
     if(from_.empty()) {
         if(unspent_etp_ - payment_etp_)

@@ -93,6 +93,7 @@
 #include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/didmodifyaddress.hpp>
 
 
 namespace libbitcoin {
@@ -180,7 +181,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<didsendasset>());
     func(make_shared<didsendassetfrom>());
     func(make_shared<listdids>());
-        
+    func(make_shared<didmodifyaddress>());    
 
 }
 
@@ -323,7 +324,9 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == didsendassetfrom::symbol())
         return make_shared<didsendassetfrom>();
     if (symbol == listdids::symbol())
-        return make_shared<listdids>();    
+        return make_shared<listdids>();
+    if (symbol == didmodifyaddress::symbol())
+        return make_shared<didmodifyaddress>();     
     return nullptr;
 }
 

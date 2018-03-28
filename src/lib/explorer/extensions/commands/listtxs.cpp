@@ -268,23 +268,12 @@ console_result listtxs::invoke (Json::Value& jv_output,
                     tree["description"] = detail_info.get_description();
                 }
                 else if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
-
                     tree["type"] = "did-transfer";
-                    auto trans_info = boost::get<bc::chain::did_transfer>(did_info.get_data());
-                    tree["symbol"] = trans_info.get_address();
-
-                    if (get_api_version() == 1) {
-                        tree["quantity"] += trans_info.get_quantity();
-                    } else {
-                        tree["quantity"] = trans_info.get_quantity();
-                    }
-
-                    auto symbol = trans_info.get_address();
-                    auto issued_did = blockchain.get_issued_did(symbol);
-
-                    if(issued_did && get_api_version() == 1) {
-                        
-                    }
+                    auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
+                    tree["symbol"] = detail_info.get_symbol();
+                    tree["issuer"] = detail_info.get_issuer();
+                    tree["address"] = detail_info.get_address();
+                    tree["description"] = detail_info.get_description();
                 }
             } else if(attach_data.get_type() == MESSAGE_TYPE) {
                 tree["type"] = "message";

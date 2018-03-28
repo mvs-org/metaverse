@@ -34,8 +34,8 @@ did_transfer::did_transfer()
 {
 	reset();
 }
-did_transfer::did_transfer(const std::string& address, uint64_t quantity):
-	address(address),quantity(quantity)
+did_transfer::did_transfer(const std::string& address):
+	address(address)
 {
 
 }
@@ -63,14 +63,12 @@ did_transfer did_transfer::factory_from_data(reader& source)
 bool did_transfer::is_valid() const
 {
     return !(address.empty() 
-			|| quantity==0
 			|| address.size() +1 > DID_TRANSFER_ADDRESS_FIX_SIZE);
 }
 
 void did_transfer::reset()
 {	
     address = "";
-    quantity = 0;
 }
 
 bool did_transfer::from_data(const data_chunk& data)
@@ -89,7 +87,6 @@ bool did_transfer::from_data(reader& source)
 {
     reset();
     address = source.read_string();
-    quantity = source.read_8_bytes_little_endian();
 	
     auto result = static_cast<bool>(source);
     if (!result)
@@ -117,12 +114,11 @@ void did_transfer::to_data(std::ostream& stream) const
 void did_transfer::to_data(writer& sink) const
 {
     sink.write_string(address);
-	sink.write_8_bytes_little_endian(quantity);
 }
 
 uint64_t did_transfer::serialized_size() const
 {
-    size_t len = address.size() + 8 + 1;
+    size_t len = address.size() + 1;
 	return std::min(len, DID_TRANSFER_FIX_SIZE);
 }
 
@@ -130,8 +126,7 @@ std::string did_transfer::to_string() const
 {
     std::ostringstream ss;
 
-    ss << "\t address = " << address << "\n"
-		<< "\t quantity = " << quantity << "\n";
+    ss << "\t address = " << address << "\n";
 
     return ss.str();
 }
@@ -140,7 +135,6 @@ void did_transfer::to_json(std::ostream& output)
 {
 	minijson::object_writer json_writer(output);
 	json_writer.write("address", address);
-	json_writer.write("quantity", quantity);
 	json_writer.close();
 }
 
@@ -153,16 +147,6 @@ void did_transfer::set_address(const std::string& address)
 	 size_t len = address.size()+1 < (DID_TRANSFER_ADDRESS_FIX_SIZE) ?address.size()+1:DID_TRANSFER_ADDRESS_FIX_SIZE;
 	 this->address = address.substr(0, len);
 }
-
-uint64_t did_transfer::get_quantity() const
-{ 
-    return quantity;
-}
-void did_transfer::set_quantity(uint64_t quantity)
-{ 
-     this->quantity = quantity;
-}
-
 
 } // namspace chain
 } // namspace libbitcoin

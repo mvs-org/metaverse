@@ -454,16 +454,17 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
             tree["type"] = "did-issue";
             auto&& detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
-
             tree["issuer"] = detail_info.get_issuer();
             tree["address"] = detail_info.get_address();
             tree["description"] = detail_info.get_description();
         }
         if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
             tree["type"] = "did-transfer";
-            auto&& trans_info = boost::get<bc::chain::did_transfer>(did_info.get_data());
-            tree["symbol"] = trans_info.get_address();
-            tree["quantity"] = trans_info.get_quantity();
+            auto&& detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
+            tree["symbol"] = detail_info.get_symbol();
+            tree["issuer"] = detail_info.get_issuer();
+            tree["address"] = detail_info.get_address();
+            tree["description"] = detail_info.get_description();
         }
 
     } else if(attach_data.get_type() == MESSAGE_TYPE) {
