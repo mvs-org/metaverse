@@ -77,15 +77,7 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     sh_vec = blockchain.get_issued_assets();
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
-        
         auto& symbol = elem.detail.get_symbol();
-        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&symbol](const asset_detail& elem){
-            return symbol == elem.get_symbol();
-        });
-        
-        if (pos != sh_vec->end()){ // asset already issued in blockchain
-            continue;
-        } 
         // symbol filter
         if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
             continue;

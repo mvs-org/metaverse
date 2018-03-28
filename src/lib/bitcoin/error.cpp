@@ -220,6 +220,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 			return "did function has not been actived until block height is larger than 1130000";  
         case error::did_address_not_match:
 			return "attach did address must equal with output address"; 
+        case error::did_address_needed:
+			return "did address is needed but not supplied";
 
         // unknown errors
         case error::unknown:

@@ -63,6 +63,12 @@ console_result issue::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
     };
+    // asset_cert utxo
+    auto certs = sh_asset->get_asset_cert_mask();
+    if (certs != asset_cert_ns::none) {
+        receiver.push_back({addr, argument_.symbol, 0, 0, certs, utxo_attach_type::asset_cert, attachment()});
+    }
+
     auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 

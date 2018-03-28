@@ -124,6 +124,7 @@ DEFINE_EXPLORER_EXCEPTION(asset_symbol_length_exception, 5011);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_name_exception, 5012);
 DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
 DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5015);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 
@@ -176,6 +177,7 @@ DEFINE_EXPLORER_EXCEPTION(did_description_length_exception, 7004);
 DEFINE_EXPLORER_EXCEPTION(did_issue_poundage_exception, 7005);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_notfound_exception, 7006);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_duplicate_exception, 7007);
+DEFINE_EXPLORER_EXCEPTION(did_address_needed_exception, 7008);
 
 DEFINE_EXPLORER_EXCEPTION(seed_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);

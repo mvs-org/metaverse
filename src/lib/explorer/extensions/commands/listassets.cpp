@@ -86,15 +86,6 @@ console_result listassets::invoke (Json::Value& jv_output,
         sh_vec = blockchain.get_issued_assets();
         auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);          
         for (auto& elem: *sh_unissued) {
-            
-            symbol = elem.detail.get_symbol();
-            auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&symbol](const asset_detail& elem){
-                    return symbol == elem.get_symbol();
-                    });
-            
-            if (pos != sh_vec->end()){ // asset already issued in blockchain
-                continue;
-            } 
             Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false);
             asset_data["status"] = "unissued";
             assets.append(asset_data);

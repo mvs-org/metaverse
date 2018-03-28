@@ -1693,18 +1693,24 @@ std::shared_ptr<asset_detail> block_chain_impl::get_account_unissued_asset(const
 // get all local unissued assets belongs to the account/name
 std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_account_unissued_assets(const std::string& name)
 {
-	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
-	// copy each asset_vec element to sp_asset
-	const auto add_asset = [&](const business_address_asset& addr_asset)
-	{
-		sp_asset_vec->emplace_back(std::move(addr_asset));
-	};
+    auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
+    auto sp_issues_asset_vec = get_issued_assets();
+    // copy each asset_vec element which is unissued to sp_asset
+    const auto add_asset = [&sp_asset_vec, &sp_issues_asset_vec](const business_address_asset& addr_asset)
+    {
+        auto& symbol = addr_asset.address;
+        auto pos = std::find_if(sp_issues_asset_vec->begin(), sp_issues_asset_vec->end(),
+                [&symbol](const asset_detail& elem) { return symbol == elem.get_symbol(); });
+        if (pos == sp_issues_asset_vec->end()) { // asset is unissued in blockchain
+            sp_asset_vec->emplace_back(std::move(addr_asset));
+        }
+    };
 
-	// get account asset which is not issued (not in blockchain)
-	auto no_issued_assets = database_.account_assets.get_unissued_assets(get_short_hash(name));
-	std::for_each(no_issued_assets->begin(), no_issued_assets->end(), add_asset);
+    // get account asset which is not issued (not in blockchain)
+    auto no_issued_assets = database_.account_assets.get_unissued_assets(get_short_hash(name));
+    std::for_each(no_issued_assets->begin(), no_issued_assets->end(), add_asset);
 
-	return sp_asset_vec;
+    return sp_asset_vec;
 }
 
 /// get all the asset in blockchain
