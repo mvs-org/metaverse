@@ -40,8 +40,6 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if(argument_.fee < 10000)
-        throw std::logic_error{"issue asset fee less than 10000 ETP bits!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
@@ -69,13 +67,16 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw std::logic_error{"asset is not allow secondary issue, or the threshold is illegal."};
 
+    auto certs_owned = blockchain.get_address_asset_certs(argument_.address, argument_.symbol);
+    if (!asset_cert::test_certs(certs_owned, asset_cert_ns::secondary_issue))
+        throw asset_cert_exception("no secondaryissue asset cert owned");
+
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if(total_volume > ULLONG_MAX - argument_.volume)
         throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
-    //auto asset_account_volume = blockchain.get_account_asset_volume(auth_.name, argument_.symbol, true, true);
-    auto asset_account_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol, true, true);
-    if (!asset_detail::is_secondaryissue_owns_enough(asset_account_volume, total_volume, secondaryissue_threshold)) {
+    auto asset_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol, true, true);
+    if (!asset_detail::is_secondaryissue_owns_enough(asset_volume, total_volume, secondaryissue_threshold)) {
         throw asset_lack_exception{"asset volum is not enought to secondaryissue"};
     }
 
