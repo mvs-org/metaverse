@@ -267,7 +267,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<deletelocalasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
-    if (symbol == secondaryissue::symbol())
+    if (symbol == secondaryissue::symbol() || (symbol == "additionalissue") )
         return make_shared<secondaryissue>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
