@@ -1775,6 +1775,7 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address, boo
 	return false;
 }
 
+
 /* find did by address 
 *  find steps:
 *  1. find from blockchain

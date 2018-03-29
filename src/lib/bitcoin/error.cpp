@@ -222,6 +222,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 			return "attach did address must equal with output address"; 
         case error::did_address_needed:
 			return "did address is needed but not supplied";
+        case error::did_not_exist:
+            return "did is not exist";
 
         // unknown errors
         case error::unknown:

@@ -262,26 +262,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     }
 
     std::set<string> assets;
-    for (const auto& tx: transactions)
-    {
-        RETURN_IF_STOPPED();
-
-        const auto ec = validate_transaction::check_transaction_basic(tx, chain);
-        if (ec)
-            return ec;
-
-       for(auto& output : const_cast<transaction&>(tx).outputs){
-           if(output.is_asset_issue()) {
-               auto r = assets.insert(output.get_asset_symbol());
-               if(r.second == false) {
-                   return error::asset_exist;
-               }
-           }
-       }
-    }
-
-    RETURN_IF_STOPPED();
-
     std::set<string> dids;
     for (const auto& tx: transactions)
     {
@@ -292,7 +272,13 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             return ec;
 
        for(auto& output : const_cast<transaction&>(tx).outputs){
-           if(output.is_did_issue()) {
+           if (output.is_asset_issue()) {
+               auto r = assets.insert(output.get_asset_symbol());
+               if(r.second == false) {
+                   return error::asset_exist;
+               }
+           }
+           else if (output.is_did_issue() || output.is_did_transfer()) {
                auto r = dids.insert(output.get_did_symbol());
                if(r.second == false) {
                    return error::did_exist;

@@ -153,7 +153,8 @@ enum error_code_t
     address_issued_did,
     did_func_not_actived,
     did_address_not_match,
-    did_address_needed
+    did_address_needed,
+    did_not_exist
 };
 
 enum error_condition_t

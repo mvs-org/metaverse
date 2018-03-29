@@ -147,15 +147,13 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
     }
 
     for(auto& output : tx->outputs){
-        if(output.is_asset_issue()
+        if (output.is_asset_issue()
             && is_in_pool(output.get_asset_symbol())){
             handler(error::asset_exist, tx, {});
             return;
          }
-    }
 
-    for(auto& output : tx->outputs){
-        if(output.is_did_issue()
+         if ((output.is_did_issue() || output.is_did_transfer())
             && is_in_pool(output.get_did_symbol())){
             handler(error::did_exist, tx, {});
             return;
@@ -621,17 +619,18 @@ transaction_pool::const_iterator transaction_pool::find(
 {
     const auto found = [&symbol_name](const entry& entry)
     {
-        for(auto& output : entry.tx->outputs)
-            if(output.is_asset_issue() 
+        for(auto& output : entry.tx->outputs) {
+            if (output.is_asset_issue() 
 				&& output.get_asset_symbol() == symbol_name){
                 return true;
             } 
-        
-        for(auto& output : entry.tx->outputs)
-            if(output.is_did_issue() 
+
+            if ((output.is_did_issue() || output.is_did_transfer())
 				&& output.get_did_symbol() == symbol_name){
                 return true;
             } 
+        }
+            
 
         return false;
     };

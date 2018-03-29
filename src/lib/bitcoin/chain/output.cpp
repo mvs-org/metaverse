@@ -80,7 +80,7 @@ code output::check_attachment_address() const
     if (is_asset_issue() || is_asset_secondaryissue()) {
         attachment_address = get_asset_address();
         is_asset = true;
-    } else if (is_did_issue()) {
+    } else if (is_did_issue() || is_did_transfer()) {
         attachment_address = get_did_address();
         is_did = true;
     }
@@ -322,13 +322,13 @@ bool output::is_did_issue() const
 
 std::string output::get_did_symbol() const // for validate_transaction.cpp to calculate did transfer amount
 {
-	if(attach_data.get_type() == DID_TYPE) {
+	if (attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
-		if(did_info.get_status() == DID_DETAIL_TYPE) {
+		if(did_info.get_status() == DID_DETAIL_TYPE || did_info.get_status() == DID_TRANSFERABLE_TYPE) {
 			auto detail_info = boost::get<did_detail>(did_info.get_data());
 			return detail_info.get_symbol();
 		}
-	}
+	} 
 	return std::string("");
 }
 
@@ -336,7 +336,10 @@ std::string output::get_did_address() const // for validate_transaction.cpp to c
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
-		if(did_info.get_status() == DID_DETAIL_TYPE) {
+		if (did_info.get_status() == DID_DETAIL_TYPE) {
+			auto detail_info = boost::get<did_detail>(did_info.get_data());
+			return detail_info.get_address();
+		} else if (did_info.get_status() == DID_TRANSFERABLE_TYPE) {
 			auto detail_info = boost::get<did_detail>(did_info.get_data());
 			return detail_info.get_address();
 		}

@@ -789,8 +789,12 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         auto ass = did(DID_DETAIL_TYPE, *sh_did);
         return attachment(DID_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::did_transfer) {
-        auto transfer = libbitcoin::chain::did_transfer(record.symbol);
-        auto ass = did(DID_TRANSFERABLE_TYPE, transfer);
+        auto sh_did = blockchain_.get_issued_did(symbol_);
+        if(!sh_did)
+            throw did_symbol_notfound_exception{symbol_ + " not found"};
+     
+        sh_did->set_address(record.target); // target is setted in metaverse_output.cpp
+        auto ass = did(DID_TRANSFERABLE_TYPE, *sh_did);
         return attachment(DID_TYPE, attach_version, ass);
     } else if (record.type == utxo_attach_type::asset_cert) {
         if (record.asset_cert == asset_cert_ns::none) {

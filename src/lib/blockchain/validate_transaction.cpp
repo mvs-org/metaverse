@@ -491,16 +491,20 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
             return ret;
 
         if(output.is_did_issue()) {
-            if(chain.is_did_exist(output.get_did_symbol(), false)) {
+            if (chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_exist;
             }
 
-            if(chain.is_address_issued_did(output.get_did_address(), false)) {
+            if (chain.is_address_issued_did(output.get_did_address(), false)) {
                 return error::address_issued_did;
             }
         }
         else if (output.is_did_transfer()) {
-            if(chain.is_address_issued_did(output.get_did_address(), false)) {
+            if (!chain.is_did_exist(output.get_did_symbol(), false)) {
+                return error::did_not_exist;
+            }
+
+            if (chain.is_address_issued_did(output.get_did_address(), false)) {
                 return error::address_issued_did;
             }
         }
@@ -542,18 +546,18 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
 
     for(auto& output : const_cast<transaction&>(tx).outputs){
         if(output.is_asset_issue()) {
-            if(!chain::output::is_valid_symbol(output.get_asset_symbol())) {
+            if (!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
             }
         }
-        else if(output.is_did_issue()) {
+        else if (output.is_did_issue() || output.is_did_transfer()) {
             if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
                return error::did_symbol_invalid;
             }
 
-            /*if (!is_did_validate(chain)){
+            if (!is_did_validate(chain)){
                 return error::did_func_not_actived;    
-            }*/
+            }
         }
     }
 

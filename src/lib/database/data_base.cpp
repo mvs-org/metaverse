@@ -1000,7 +1000,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 				const auto symbol_hash = sha256_hash(symbol_data);
 				assets.remove(symbol_hash);
 			}
-            else if (op.is_did_issue()){
+            else if (op.is_did_issue() || op.is_did_transfer()){
                 auto symbol = op.get_did_symbol();
 				const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
 				const auto symbol_hash = sha256_hash(symbol_data);

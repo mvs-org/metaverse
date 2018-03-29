@@ -12,7 +12,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
+ * GNU Affero General Public License for more transfers.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
@@ -34,11 +34,13 @@ did_transfer::did_transfer()
 {
 	reset();
 }
-did_transfer::did_transfer(const std::string& address):
-	address(address)
+did_transfer::did_transfer(
+    std::string symbol, std::string issuer,
+    std::string address, std::string description):
+    symbol(symbol), issuer(issuer), address(address), description(description)
 {
-
 }
+
 did_transfer did_transfer::factory_from_data(const data_chunk& data)
 {
     did_transfer instance;
@@ -59,16 +61,30 @@ did_transfer did_transfer::factory_from_data(reader& source)
     instance.from_data(source);
     return instance;
 }
-
 bool did_transfer::is_valid() const
 {
-    return !(address.empty() 
-			|| address.size() +1 > DID_TRANSFER_ADDRESS_FIX_SIZE);
+    return !(symbol.empty() 
+			|| (symbol.size() + issuer.size() + address.size() + description.size() + 4)>DID_TRANSFER_FIX_SIZE);
 }
 
 void did_transfer::reset()
 {	
+    symbol = "";
+    //did_type = 0;
+    issuer = ""; 
     address = "";
+    description = "";
+    //issue_price = 0;
+
+    //restrict section
+    //number_of_decimal_point = 0; //number of decimal point
+    //life circle
+    //flag = 0; //is_white_list/is_tx_backwards/is_require_approval
+    
+    // relationship section
+    //fee = 0.0;
+    //correlation did
+    //authentication_organization = ""; //authentication organization
 }
 
 bool did_transfer::from_data(const data_chunk& data)
@@ -86,8 +102,23 @@ bool did_transfer::from_data(std::istream& stream)
 bool did_transfer::from_data(reader& source)
 {
     reset();
-    address = source.read_string();
-	
+
+    symbol = source.read_string();
+    //did_type = source.read_4_bytes_little_endian();
+    issuer = source.read_string(); 
+    address =  source.read_string();
+    description =  source.read_string();
+    //issue_price =  source.read_8_bytes_little_endian();
+
+    //restrict section
+    //number_of_decimal_point =  source.read_4_bytes_little_endian(); //number of decimal point
+    //life circle
+    //flag =  source.read_8_bytes_little_endian(); //is_white_list/is_tx_backwards/is_require_approval
+    
+    // relationship section
+    //double fee;
+    //correlation did
+    //authentication_organization =  source.read_string(); //authentication organization
     auto result = static_cast<bool>(source);
     if (!result)
         reset();
@@ -113,20 +144,27 @@ void did_transfer::to_data(std::ostream& stream) const
 
 void did_transfer::to_data(writer& sink) const
 {
-    sink.write_string(address);
+    sink.write_string(symbol);
+	//sink.write_4_bytes_little_endian(did_type);
+	sink.write_string(issuer);
+	sink.write_string(address);
+	sink.write_string(description);
 }
 
 uint64_t did_transfer::serialized_size() const
 {
-    size_t len = address.size() + 1;
-	return std::min(len, DID_TRANSFER_FIX_SIZE);
+    size_t len = symbol.size()  + issuer.size() + address.size() + description.size() + 4 ;
+    return std::min(DID_TRANSFER_FIX_SIZE, len);
 }
 
-std::string did_transfer::to_string() const 
+std::string did_transfer::to_string() const
 {
     std::ostringstream ss;
 
-    ss << "\t address = " << address << "\n";
+    ss << "\t symbol = " << symbol << "\n"
+		<< "\t issuer = " << issuer << "\n"
+		<< "\t address = " << address << "\n"
+        << "\t description=" << description << "\n";
 
     return ss.str();
 }
@@ -134,8 +172,32 @@ std::string did_transfer::to_string() const
 void did_transfer::to_json(std::ostream& output) 
 {
 	minijson::object_writer json_writer(output);
+	json_writer.write("symbol", symbol);
+	//json_writer.write("did_type", did_type);
+	json_writer.write("issuer", issuer);
 	json_writer.write("address", address);
+	json_writer.write("description", description);
 	json_writer.close();
+}
+
+const std::string& did_transfer::get_symbol() const
+{ 
+    return symbol;
+}
+void did_transfer::set_symbol(const std::string& symbol)
+{ 
+	size_t len = symbol.size()+1 < (DID_TRANSFER_SYMBOL_FIX_SIZE) ?symbol.size()+1:DID_TRANSFER_SYMBOL_FIX_SIZE;
+    this->symbol = symbol.substr(0, len);
+}
+
+const std::string& did_transfer::get_issuer() const
+{ 
+    return issuer;
+}
+void did_transfer::set_issuer(const std::string& issuer)
+{ 
+	 size_t len = issuer.size()+1 < (DID_TRANSFER_ISSUER_FIX_SIZE) ?issuer.size()+1:DID_TRANSFER_ISSUER_FIX_SIZE;
+	 this->issuer = issuer.substr(0, len);
 }
 
 const std::string& did_transfer::get_address() const
@@ -147,6 +209,17 @@ void did_transfer::set_address(const std::string& address)
 	 size_t len = address.size()+1 < (DID_TRANSFER_ADDRESS_FIX_SIZE) ?address.size()+1:DID_TRANSFER_ADDRESS_FIX_SIZE;
 	 this->address = address.substr(0, len);
 }
+
+const std::string& did_transfer::get_description() const
+{ 
+    return description;
+}
+void did_transfer::set_description(const std::string& description)
+{ 
+	 size_t len = description.size()+1 < (DID_TRANSFER_DESCRIPTION_FIX_SIZE) ?description.size()+1:DID_TRANSFER_DESCRIPTION_FIX_SIZE;
+	 this->description = description.substr(0, len);
+}
+
 
 } // namspace chain
 } // namspace libbitcoin
