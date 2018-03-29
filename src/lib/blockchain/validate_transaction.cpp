@@ -468,7 +468,8 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
             }
         }
         else if (output.is_asset_cert()) {
-            if (!chain.is_did_exist(output.get_asset_cert_symbol(), false)) {
+            auto&& asset_cert = output.get_asset_cert();
+            if (!asset_cert.check_cert_owner(chain)) {
                 return error::did_address_needed;
             }
         }

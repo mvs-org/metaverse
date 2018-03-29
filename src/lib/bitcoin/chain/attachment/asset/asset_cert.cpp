@@ -267,12 +267,14 @@ bool asset_cert::split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bit
 
 bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
 {
-    // don't check if did is not enabled.
+    if (owner_.empty()) {
+        return false;
+    }
+    // don't check did existence if did is not enabled.
     if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return true;
     }
-    auto did_symbol = owner_;
-    return chain.get_issued_did(did_symbol) != nullptr;
+    return chain.is_did_exist(owner_, false);
 }
 
 } // namspace chain
