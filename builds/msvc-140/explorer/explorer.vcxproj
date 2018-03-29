@@ -63,6 +63,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetcert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
@@ -183,6 +185,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletelocalasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp" />
@@ -223,6 +226,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetcert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp" />
