@@ -116,9 +116,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp">
       <Filter>Header Files\config</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp">
-      <Filter>Header Files\config</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp">
       <Filter>Header Files\config</Filter>
     </ClInclude>
@@ -392,7 +389,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetcert.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transferissueright.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -442,9 +439,6 @@
       <Filter>Source Files\config</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\config\language.cpp">
-      <Filter>Source Files\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\config\metaverse_output.cpp">
       <Filter>Source Files\config</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\config\output.cpp">
@@ -744,7 +738,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetcert.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transferissueright.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
