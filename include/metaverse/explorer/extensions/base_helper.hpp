@@ -500,10 +500,10 @@ public:
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
 };
 
-class BCX_API sending_asset_cert : public base_transfer_helper
+class BCX_API transferring_asset_cert : public base_transfer_helper
 {
 public:
-    sending_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    transferring_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::vector<receiver_record>&& receiver_list, uint64_t fee):
@@ -513,7 +513,7 @@ public:
             fee, std::move(symbol))
         {};
 
-    ~sending_asset_cert(){};
+    ~transferring_asset_cert(){};
 
     void sum_payment_amount() override;
     void populate_change() override;
