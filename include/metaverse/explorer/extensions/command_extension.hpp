@@ -27,7 +27,6 @@
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/command.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>  // used for createasset
-#include <metaverse/explorer/config/metaverse_output.hpp>
 #include <metaverse/server/server_node.hpp>
 
 namespace libbitcoin {
