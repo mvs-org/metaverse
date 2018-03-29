@@ -55,6 +55,7 @@ struct address_asset_record{
 	uint64_t	amount; // spendable etp amount
 	std::string symbol;
 	uint64_t	asset_amount; // spendable asset amount
+    asset_cert_type asset_cert{asset_cert_ns::none};
 	utxo_attach_type type; // only used for non-etp asset
 	output_point output;
 	chain::script script;
@@ -175,8 +176,10 @@ protected:
 	std::string                       from_;
 	uint64_t					      payment_etp_{0};
 	uint64_t					      payment_asset_{0};
+	uint64_t					      payment_asset_cert_{asset_cert_ns::none};
 	uint64_t                          unspent_etp_{0};
 	uint64_t                          unspent_asset_{0};
+	uint64_t                          unspent_asset_cert_{asset_cert_ns::none};
 	uint64_t                          tx_item_idx_{0};
     // to
     std::vector<receiver_record>      receiver_list_;
@@ -496,6 +499,27 @@ public:
     void populate_unspent_list() override;
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
 };
+
+class BCX_API sending_asset_cert : public base_transfer_helper
+{
+public:
+    sending_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        std::vector<receiver_record>&& receiver_list, uint64_t fee):
+        base_transfer_helper(cmd, blockchain,
+            std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list),
+            fee, std::move(symbol))
+        {};
+
+    ~sending_asset_cert(){};
+
+    void sum_payment_amount() override;
+    void populate_change() override;
+    void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
+};
+
 
 } // commands
 } // explorer

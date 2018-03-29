@@ -19,6 +19,7 @@
  */
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
@@ -28,6 +29,17 @@
 
 namespace libbitcoin {
 namespace chain {
+
+// assert cert name definition
+const char* asset_cert_name_none            = "NONE";
+const char* asset_cert_name_secondary_issue = "ASI";
+const char* asset_cert_name_all             = "ALL";
+// name to type map
+static std::unordered_map<std::string, asset_cert_type> cert_name_type_map{
+    {asset_cert_name_none, asset_cert_ns::none},
+    {asset_cert_name_secondary_issue, asset_cert_ns::secondary_issue},
+    {asset_cert_name_all, asset_cert_ns::all}
+};
 
 asset_cert::asset_cert()
 {
@@ -144,7 +156,7 @@ std::string asset_cert::to_string() const
     std::ostringstream ss;
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t owner = " << owner_ << "\n";
-    ss << "\t certs = " << certs_ << "\n";
+    ss << "\t certs = " << get_certs_name() << "\n";
     return ss.str();
 }
 
@@ -182,7 +194,62 @@ void asset_cert::set_certs(asset_cert_type certs)
 
 bool asset_cert::test_certs(asset_cert_type bits) const
 {
-    return (certs_ & bits) == bits;
+    return test_certs(certs_, bits);
+}
+
+bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
+{
+    return (certs & bits) == bits;
+}
+
+std::string asset_cert::get_certs_name() const
+{
+    return get_certs_name(certs_);
+}
+
+std::string asset_cert::get_certs_name(asset_cert_type certs)
+{
+    if (certs == asset_cert_ns::none) {
+        return "NONE";
+    }
+    if (certs == asset_cert_ns::all) {
+        return "ALL";
+    }
+    // collect cert names to a set container
+    std::set<std::string> name_vec;
+    if (test_certs(certs, asset_cert_ns::secondary_issue)) {
+        name_vec.insert(asset_cert_name_secondary_issue);
+    }
+
+    // concat cert names, separated by comma
+    std::string certs_name;
+    for (auto iter = name_vec.begin(); iter != name_vec.end(); ++iter) {
+        if (iter == name_vec.begin()) {
+            certs_name += *iter;
+        } else {
+            certs_name += ("," + *iter);
+        }
+    }
+
+    if (certs_name.empty()) {
+        return "NONE";
+    }
+
+    return certs_name;
+}
+
+asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
+{
+    asset_cert_type certs = asset_cert_ns::none;
+    std::vector<std::string> name_vec;
+    boost::split(name_vec, certs_name, boost::is_any_of(","));
+    for (const auto& name : name_vec) {
+        auto iter = cert_name_type_map.find(name);
+        if (iter != cert_name_type_map.end()) {
+            certs |= iter->second;
+        }
+    }
+    return certs;
 }
 
 // split input certs of this into two output parts d1 and d2, d1 with bits, d2 with the other.
@@ -206,57 +273,6 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
     }
     auto did_symbol = owner_;
     return chain.get_issued_did(did_symbol) != nullptr;
-}
-
-code asset_cert::check_certs_split(
-        const asset_cert_container& src,
-        const asset_cert_container& dest,
-        bc::blockchain::block_chain_impl& chain)
-{
-    if (src.empty() || dest.empty()) {
-        return error::asset_cert_error;
-    }
-    bool did_enabled = bc::blockchain::validate_transaction::is_did_validate(chain);
-    std::shared_ptr<std::vector<did_detail>> sp_issued_dids;
-    if (did_enabled) {
-        sp_issued_dids = chain.get_issued_dids();
-    }
-    auto check_owner = [did_enabled, &sp_issued_dids](std::string owner) {
-        return (!did_enabled)
-            || (std::find_if(sp_issued_dids->begin(), sp_issued_dids->end(),
-                [&owner](did_detail& elem) {
-                    return elem.get_symbol() == owner;
-                })) != sp_issued_dids->end();
-    };
-
-    auto symbol = src.begin()->get_symbol();
-    asset_cert_type src_types{0};
-    asset_cert_type dest_types{0};
-    for (auto& cert : src) {
-        if (cert.get_symbol() != symbol) {
-            return error::asset_cert_error;
-        }
-        if ((src_types & cert.get_certs()) != 0) {
-            return error::asset_cert_error;
-        }
-        src_types |= cert.get_certs();
-    }
-    for (auto& cert : dest) {
-        if (cert.get_symbol() != symbol) {
-            return error::asset_cert_error;
-        }
-        if ((dest_types & cert.get_certs()) != 0) {
-            return error::asset_cert_error;
-        }
-        if (!check_owner(cert.get_owner())) {
-            return error::did_address_needed;
-        }
-        dest_types |= cert.get_certs();
-    }
-    if (src_types != dest_types ) {
-        return error::asset_cert_error;
-    }
-    return error::success;
 }
 
 } // namspace chain
