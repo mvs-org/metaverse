@@ -57,7 +57,7 @@ void asset_cert::reset()
 {
     symbol_ = "";
     owner_ = "";
-    certs_ = 0;
+    certs_ = asset_cert_ns::none;
 }
 
 bool asset_cert::is_valid() const

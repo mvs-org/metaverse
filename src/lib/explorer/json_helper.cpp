@@ -447,6 +447,13 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
             tree["type"] = "asset-transfer";
         }
 
+    } else if (attach_data.get_type() == ASSET_CERT_TYPE) {
+        auto&& cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
+        tree["symbol"] = cert_info.get_symbol();
+        tree["owner"] = cert_info.get_owner();
+        tree["certs"] = cert_info.get_certs();
+        tree["type"] = "asset-cert";
+
     } else if(attach_data.get_type() == DID_TYPE) {
 
         auto&& did_info = boost::get<bc::chain::did>(attach_data.get_attach());
