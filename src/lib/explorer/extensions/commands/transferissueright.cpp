@@ -65,7 +65,7 @@ console_result transferissueright::invoke (Json::Value& jv_output,
     }
 
     // check issue right
-    auto certs_send = asset_cert_ns::secondary_issue;
+    auto certs_send = asset_cert_ns::issue;
     auto certs_mask = sh_asset->get_asset_cert_mask();
     if (asset_cert::test_certs(certs_mask, certs_send))
         throw asset_cert_exception("no issue right to transfer");

@@ -31,13 +31,13 @@ namespace libbitcoin {
 namespace chain {
 
 // assert cert name definition
-const char* asset_cert_name_none            = "NONE";
-const char* asset_cert_name_secondary_issue = "ASI";
-const char* asset_cert_name_all             = "ALL";
+const char* asset_cert_name_none  = "NONE";
+const char* asset_cert_name_issue = "ISSUE";
+const char* asset_cert_name_all   = "ALL";
 // name to type map
 static std::unordered_map<std::string, asset_cert_type> cert_name_type_map{
     {asset_cert_name_none, asset_cert_ns::none},
-    {asset_cert_name_secondary_issue, asset_cert_ns::secondary_issue},
+    {asset_cert_name_issue, asset_cert_ns::issue},
     {asset_cert_name_all, asset_cert_ns::all}
 };
 
@@ -209,16 +209,10 @@ std::string asset_cert::get_certs_name() const
 
 std::string asset_cert::get_certs_name(asset_cert_type certs)
 {
-    if (certs == asset_cert_ns::none) {
-        return "NONE";
-    }
-    if (certs == asset_cert_ns::all) {
-        return "ALL";
-    }
     // collect cert names to a set container
     std::set<std::string> name_vec;
-    if (test_certs(certs, asset_cert_ns::secondary_issue)) {
-        name_vec.insert(asset_cert_name_secondary_issue);
+    if (test_certs(certs, asset_cert_ns::issue)) {
+        name_vec.insert(asset_cert_name_issue);
     }
 
     // concat cert names, separated by comma
@@ -250,19 +244,6 @@ asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
         }
     }
     return certs;
-}
-
-// split input certs of this into two output parts d1 and d2, d1 with bits, d2 with the other.
-bool asset_cert::split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const
-{
-    if (!test_certs(bits) || (&d1 == this) || (&d2 == this)) {
-        return false;
-    }
-    d1.set_symbol(symbol_);
-    d2.set_symbol(symbol_);
-    d1.set_certs(bits);
-    d2.set_certs(certs_ & (~bits));
-    return true;
 }
 
 bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const

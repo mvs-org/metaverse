@@ -68,7 +68,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw std::logic_error{"asset is not allow secondary issue, or the threshold is illegal."};
 
     auto certs_owned = blockchain.get_address_asset_certs(argument_.address, argument_.symbol);
-    if (!asset_cert::test_certs(certs_owned, asset_cert_ns::secondary_issue))
+    if (!asset_cert::test_certs(certs_owned, asset_cert_ns::issue))
         throw asset_cert_exception("no secondaryissue asset cert owned");
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);

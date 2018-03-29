@@ -451,7 +451,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         auto&& cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
         tree["symbol"] = cert_info.get_symbol();
         tree["owner"] = cert_info.get_owner();
-        tree["certs"] = cert_info.get_certs();
+        tree["certs"] = cert_info.get_certs_name();
         tree["type"] = "asset-cert";
 
     } else if(attach_data.get_type() == DID_TYPE) {

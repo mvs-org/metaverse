@@ -46,7 +46,7 @@ BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = ASSET_CERT_SYMBOL_FIX_SIZE + ASSET_CER
 using asset_cert_type = uint64_t;
 namespace asset_cert_ns {
     constexpr asset_cert_type none{0};
-    constexpr asset_cert_type secondary_issue{1 << 0};
+    constexpr asset_cert_type issue{1 << 0};
     constexpr asset_cert_type all{0xffffffffffffffff};
 }
 
@@ -87,7 +87,6 @@ public:
     // auxiliary functions
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     bool test_certs(asset_cert_type bits) const;
-    bool split_certs(asset_cert& d1, asset_cert& d2, asset_cert_type bits) const;
 
     static std::string get_certs_name(asset_cert_type certs);
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
