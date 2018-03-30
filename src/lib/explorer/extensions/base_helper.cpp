@@ -1964,7 +1964,7 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
     // if specified from address but no enough etp to pay fees,
     // the tx will fail.
     if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-        throw tx_source_exception{"not enough etp in from address!"};
+        throw tx_source_exception{"not enough etp in to address to pay fee!"};
 }
 
 void sending_locked_asset::populate_change() {

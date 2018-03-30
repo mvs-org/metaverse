@@ -152,6 +152,7 @@ void blockchain_did_database::store(const hash_digest& hash, const blockchain_di
 {
     // Write block data.
     const auto key = hash;
+    remove(hash);
     const auto sp_size = sp_detail.serialized_size();
 #ifdef MVS_DEBUG
 	log::debug("did_database::store") << sp_detail.to_string();

@@ -125,6 +125,7 @@ void address_did_database::store_input(const short_hash& key,
     const output_point& inpoint, uint32_t input_height,
     const input_point& previous, uint32_t timestamp)
 {
+    delete_last_row(key);
     auto write = [&](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));

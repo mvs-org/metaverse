@@ -324,8 +324,12 @@ std::string output::get_did_symbol() const // for validate_transaction.cpp to ca
 {
 	if (attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
-		if(did_info.get_status() == DID_DETAIL_TYPE || did_info.get_status() == DID_TRANSFERABLE_TYPE) {
+		if(did_info.get_status() == DID_DETAIL_TYPE ) {
 			auto detail_info = boost::get<did_detail>(did_info.get_data());
+			return detail_info.get_symbol();
+		} 
+        else if (did_info.get_status() == DID_TRANSFERABLE_TYPE ) {
+			auto detail_info = boost::get<did_transfer>(did_info.get_data());
 			return detail_info.get_symbol();
 		}
 	} 
@@ -340,7 +344,7 @@ std::string output::get_did_address() const // for validate_transaction.cpp to c
 			auto detail_info = boost::get<did_detail>(did_info.get_data());
 			return detail_info.get_address();
 		} else if (did_info.get_status() == DID_TRANSFERABLE_TYPE) {
-			auto detail_info = boost::get<did_detail>(did_info.get_data());
+			auto detail_info = boost::get<did_transfer>(did_info.get_data());
 			return detail_info.get_address();
 		}
 	}
