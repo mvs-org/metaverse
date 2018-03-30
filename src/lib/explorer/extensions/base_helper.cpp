@@ -1788,10 +1788,10 @@ void sending_asset::populate_change() {
 
 void sending_did::populate_change() {
     if(unspent_etp_ - payment_etp_) {
-        if(from_.empty())
+        if(fromfee.empty())
             receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
         else
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+            receiver_list_.push_back({fromfee, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
@@ -1803,6 +1803,7 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
+    //fetch did utxo
     for (auto& row: rows)
     {
         // spended
@@ -1818,23 +1819,11 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
         auto did_symbol = output.get_did_symbol();
         auto etp_amount = row.value;
 
-        // filter output
-        if (output.is_etp()) 
-        {
-            if (etp_amount == 0)
-                continue;
-            // enough to pay tx fees, and no asset to connect
-            if (unspent_etp_ >= payment_etp_)
-                continue;
-            // if secified from address, then ignore others
-            if (!from_.empty() && (from_ != addr))
-                continue;
-        } else if (output.is_did_issue() || output.is_did_transfer())
+        if (output.is_did_issue() || output.is_did_transfer())
         {
             if (symbol_ != did_symbol)
                 continue;
-        } else
-        {
+        }else{
             continue;
         }
 
@@ -1877,6 +1866,100 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
         unspent_asset_ += record.asset_amount;
     }
     rows.clear();
+
+
+    waddr = wallet::payment_address(fromfee);
+    rows = get_address_history(waddr, blockchain_);
+    std::string feeprikey = "";
+
+    auto pvaddr = blockchain_.get_account_addresses(name_);
+    if(!pvaddr) 
+        throw address_list_nullptr_exception{"nullptr for target address"};
+
+    // get fromfee address prikey
+    for (auto& each : *pvaddr) {
+       
+        if ( fromfee == each.get_address() ) { // find address
+               feeprikey = each.get_prv_key(passwd_);
+        }
+        
+    }
+
+    if (feeprikey.empty()) {
+        throw address_list_nullptr_exception{"nullptr get prikey for target address"};
+    }
+
+     //fetch fee utxo
+    for (auto& row: rows)
+    {
+        // spended
+        if (row.spend.hash != null_hash)
+            continue;
+
+        chain::transaction tx_temp;
+        uint64_t tx_height;
+        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
+            continue;
+
+        auto output = tx_temp.outputs.at(row.output.index);
+        auto did_symbol = output.get_did_symbol();
+        auto etp_amount = row.value;
+
+        // filter output
+        if (output.is_etp()) 
+        {
+            if (etp_amount == 0)
+                continue;
+            // enough to pay tx fees, and no asset to connect
+            if (unspent_etp_ >= payment_etp_)
+                continue;
+            // if secified from address, then ignore others
+            if (!from_.empty() && (from_ != addr))
+                continue;
+        } else {
+            continue;
+        }
+
+        // deposit utxo in transaction pool
+        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+                    && (row.output_height == 0)) {
+            continue;
+        } else if (tx_temp.is_coinbase()) { // incase readd deposit
+            // coin base etp maturity etp check
+            // coinbase_maturity etp check
+            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+                continue;
+            }
+        }
+
+        // deposit utxo in block
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
+            && (row.output_height != 0)) {
+            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+                continue;
+            }
+        }
+
+        // add to from list
+        address_asset_record record;
+
+        record.prikey = feeprikey;
+        record.addr = fromfee;
+        record.amount = etp_amount;
+        record.symbol = symbol_;
+        record.asset_amount = 0;
+        record.output = row.output;
+        record.script = output.script;
+        record.type = get_utxo_attach_type(output);
+
+        from_list_.push_back(record);
+
+        unspent_etp_ += record.amount;
+        unspent_asset_ += record.asset_amount;
+    }
+    rows.clear();
+
 
     // if specified from address but no enough etp to pay fees,
     // the tx will fail.

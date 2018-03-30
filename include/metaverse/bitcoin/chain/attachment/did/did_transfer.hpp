@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -80,6 +81,8 @@ public:
 	void set_address(const std::string& address);
 	const std::string& get_description() const;
 	void set_description(const std::string& description);
+
+    did_detail to_did_detail() const;
 
 private:    
     std::string symbol;

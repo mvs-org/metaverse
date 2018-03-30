@@ -664,6 +664,21 @@ bool validate_transaction::connect_input(const transaction& tx,
             return false;
         }
     }
+    else if(previous_output.attach_data.get_type() == DID_TYPE) {		
+		// 2. do did symbol check
+		new_symbol_in = const_cast<output&>(previous_output).get_did_symbol();
+		if(!new_symbol_in.empty()) { // did input
+			if(old_symbol_in.empty()) { // init old symbol
+				old_symbol_in = new_symbol_in;
+			} else {
+				if(0 != old_symbol_in.compare(new_symbol_in)) // there are different did symbol in this transaction
+					return false;
+			}
+		}
+		// 3. set business type
+        if (previous_output.is_did_issue() || previous_output.is_did_transfer())
+            business_tp_in = DID_TRANSFERABLE_TYPE;
+    } 
 
     if (previous_tx.is_coinbase())
     {

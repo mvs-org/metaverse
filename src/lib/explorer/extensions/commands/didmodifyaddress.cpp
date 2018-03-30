@@ -69,7 +69,7 @@ console_result didmodifyaddress::invoke (Json::Value& jv_output,
         {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}  
     };
     auto send_helper = sending_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.to), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+            std::move(argument_.from),std::move(argument_.to), std::move(argument_.symbol), std::move(receiver), argument_.fee);
     
     send_helper.exec();
 

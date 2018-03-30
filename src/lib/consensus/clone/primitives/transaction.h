@@ -209,15 +209,20 @@ public:
 class CDidTransfer
 {
 public:
-    std::string address;  // symbol  -- in block
-    uint64_t quantity;  // -- in block
+    std::string symbol;
+    std::string issuer; 
+    std::string address;
+    std::string description;
+
 	
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(issuer);
         READWRITE(address);
-        READWRITE(quantity);
+        READWRITE(description);
     }
 };
 

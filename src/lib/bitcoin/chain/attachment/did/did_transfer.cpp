@@ -220,6 +220,10 @@ void did_transfer::set_description(const std::string& description)
 	 this->description = description.substr(0, len);
 }
 
+did_detail did_transfer::to_did_detail() const
+{ 
+	 return did_detail(symbol, issuer,address,description);
+}
 
 } // namspace chain
 } // namspace libbitcoin

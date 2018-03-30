@@ -471,14 +471,17 @@ class BCX_API sending_did : public base_transfer_helper
 {
 public:
 	sending_did(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
-		std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
+		std::string&& from,std::string&& feefrom, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
 		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), 
-			fee, std::move(symbol))
-		{};
+			fee, std::move(symbol)),fromfee(feefrom)
+		{
+
+		};
 
 	~sending_did(){};
 	void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
 	void populate_change() override;
+	std::string fromfee ;
 };
 
 class BCX_API merging_asset : public base_transfer_helper

@@ -195,7 +195,7 @@ verify_result_type verify_script(const unsigned char* transaction,
         TxInputStream stream(transaction, transaction_size);
         Unserialize(stream, tx, SER_NETWORK, PROTOCOL_VERSION);
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
         return verify_result_tx_invalid;
     }

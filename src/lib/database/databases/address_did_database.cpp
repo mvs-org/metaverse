@@ -285,7 +285,7 @@ std::shared_ptr<std::vector<business_record>> address_did_database::get(const st
                 
                 if(row.data.get_kind_value() ==  business_kind::did_transfer) {
                     auto transfer = boost::get<did_transfer>(row.data.get_data());
-                    did_symbol = transfer.get_address();
+                    did_symbol = transfer.get_symbol();
                 }
                 
                 if (symbol == did_symbol) {
@@ -655,10 +655,10 @@ business_address_did::list address_did_database::get_dids(const std::string& add
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;
 		}
-		else //did transfer
+		else if(row.data.get_kind_value() == business_kind::did_transfer)//did transfer
 		{
-			auto transfer_info = boost::get<did_transfer>(row.data.get_data());
-			detail.detail.set_symbol(transfer_info.get_address()); // did address == symbol/name
+			auto issue_info = boost::get<did_detail>(row.data.get_data());
+			detail.detail = issue_info;
 		}
 
 		detail.address = address; // account address
@@ -697,10 +697,10 @@ business_address_did::list address_did_database::get_dids(const std::string& add
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;
 		}
-		else //did transfer
+		else if(row.data.get_kind_value() == business_kind::did_transfer)//did transfer
 		{
-			auto transfer_info = boost::get<did_transfer>(row.data.get_data());
-			detail.detail.set_symbol(transfer_info.get_address()); // did address == symbol/name
+			auto transfer_info = boost::get<did_detail>(row.data.get_data());
+			detail.detail = transfer_info; // did address == symbol/name
 		}
 
 		detail.address = address; // account address
