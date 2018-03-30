@@ -179,10 +179,13 @@ bool executor::menu()
 	{
 	    log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
         // set block data absolute path
-        const auto& home = metadata_.configured.data_dir ;
         const auto& directory = metadata_.configured.database.directory ;
         if (!directory.is_absolute()) {
+            const auto& home = metadata_.configured.data_dir ;
             metadata_.configured.database.directory = home / directory ;
+        } else {
+            const auto& default_directory = metadata_.configured.database.default_directory;
+            metadata_.configured.database.directory = directory / default_directory;
         }
 
 	    auto result = do_initchain(); // false means no need to initial chain

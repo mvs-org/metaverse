@@ -2179,7 +2179,7 @@ void merging_asset::populate_unspent_list()
     populate_change();
 }
 
-void sending_asset_cert::sum_payment_amount()
+void transferring_asset_cert::sum_payment_amount()
 {
     if (from_.empty())
         throw fromaddress_empty_exception{"empty from address"};
@@ -2200,7 +2200,7 @@ void sending_asset_cert::sum_payment_amount()
     }
 }
 
-void sending_asset_cert::populate_change()
+void transferring_asset_cert::populate_change()
 {
     // etp utxo
     if (unspent_etp_ > payment_etp_) {
@@ -2215,7 +2215,7 @@ void sending_asset_cert::populate_change()
     }
 }
 
-void sending_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
+void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
     auto rows = get_address_history(waddr, blockchain_);

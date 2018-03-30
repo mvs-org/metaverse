@@ -1377,6 +1377,16 @@ history::list get_address_history(wallet::payment_address& addr, bc::blockchain:
 	}
 }
 
+asset_cert_type block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& asset)
+{
+    auto business_certs = database_.address_assets.get_asset_certs(address, asset, 0);
+    auto certs = asset_cert_ns::none;
+    for (const auto& cert : business_certs) {
+        certs |= cert.certs.get_certs();
+    }
+    return certs;
+}
+
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset, bool is_use_transactionpool, bool is_safe)
 {
 	uint64_t asset_volume = 0;

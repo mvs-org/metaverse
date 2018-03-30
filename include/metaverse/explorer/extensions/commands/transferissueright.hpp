@@ -29,15 +29,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ sendassetcert *************************/
+/************************ transferissueright *************************/
 
-class sendassetcert : public command_extension
+class transferissueright : public command_extension
 {
 public:
-    static const char* symbol(){ return "sendassetcert";}
+    static const char* symbol(){ return "transferissueright";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "sendassetcert"; }
+    const char* description() override { return "transferissueright"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -46,8 +46,7 @@ public:
             .add("ACCOUNTAUTH", 1)
             .add("FROMADDRESS", 1)
             .add("TOADDRESS", 1)
-            .add("SYMBOL", 1)
-            .add("CERTS", 1);
+            .add("SYMBOL", 1);
 
     }
 
@@ -60,7 +59,6 @@ public:
         load_input(argument_.from, "FROMADDRESS", variables, input, raw);
         load_input(argument_.to, "TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
-        load_input(argument_.certs, "CERTS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -99,11 +97,6 @@ public:
             "asset symbol"
         )
         (
-            "CERTS",
-            value<std::string>(&argument_.certs)->required(),
-            "asset certs name, comma separated."
-        )
-        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -124,7 +117,6 @@ public:
         std::string from;
         std::string to;
         std::string symbol;
-        std::string certs;
         uint64_t fee;
     } argument_;
 

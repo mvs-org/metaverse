@@ -19,7 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/extensions/commands/sendassetcert.hpp>
+#include <metaverse/explorer/extensions/commands/transferissueright.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,7 +30,7 @@ namespace explorer {
 namespace commands {
 
 
-console_result sendassetcert::invoke (Json::Value& jv_output,
+console_result transferissueright::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -57,24 +57,25 @@ console_result sendassetcert::invoke (Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.to))
         throw address_invalid_exception{"invalid address parameter! " + argument_.to};
 
-    auto did_symbol = blockchain.get_did_from_address(argument_.to);
-    if (did_symbol.empty())
-        throw did_address_needed_exception("target address is not an did address. " + argument_.to);
+    std::string did_symbol;
+    if (!bc::blockchain::validate_transaction::is_did_validate(blockchain)) {
+        did_symbol = blockchain.get_did_from_address(argument_.to);
+        if (did_symbol.empty())
+            throw did_address_needed_exception("target address is not an did address. " + argument_.to);
+    }
 
-    auto certs_send = asset_cert::get_certs_from_name(argument_.certs);
-    if (certs_send == asset_cert_ns::none)
-        throw asset_cert_exception("no valid asset cert is to be sent: " + argument_.certs);
-
+    // check issue right
+    auto certs_send = asset_cert_ns::issue;
     auto certs_mask = sh_asset->get_asset_cert_mask();
     if (asset_cert::test_certs(certs_mask, certs_send))
-        throw asset_cert_exception("not support all the asset certs being send: " + argument_.certs);
+        throw asset_cert_exception("no issue right to transfer");
 
     // receiver
     std::vector<receiver_record> receiver{
         {argument_.to, argument_.symbol, 0, 0, certs_send, utxo_attach_type::asset_cert, attachment()}
     };
 
-    auto helper = sending_asset_cert(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+    auto helper = transferring_asset_cert(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.from), std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
     helper.exec();

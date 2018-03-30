@@ -758,7 +758,7 @@ business_address_message::list address_asset_database::get_messages(const std::s
 }
 
 business_address_asset_cert::list address_asset_database::get_asset_certs(const std::string& address,
-    size_t from_height) const
+    const std::string& symbol, size_t from_height) const
 {
     data_chunk data(address.begin(), address.end());
     auto key = ripemd160_hash(data);
@@ -766,8 +766,15 @@ business_address_asset_cert::list address_asset_database::get_asset_certs(const 
     business_address_asset_cert::list unspent;
     for (const auto& row: result)
     {
-        if((row.data.get_kind_value() != business_kind::asset_cert))  // asset_cert
+        if ((row.data.get_kind_value() != business_kind::asset_cert))  // asset_cert
             continue;
+
+        auto cert_info = boost::get<asset_cert>(row.data.get_data());
+        if (!symbol.empty()) {
+            if (symbol != cert_info.get_symbol()) {
+                continue;
+            }
+        }
 
         uint8_t status = business_status::unknown;
         if (row.spend.hash == null_hash)
@@ -778,7 +785,6 @@ business_address_asset_cert::list address_asset_database::get_asset_certs(const 
             status = business_status::confirmed;
 
         business_address_asset_cert cert;
-        auto cert_info = boost::get<asset_cert>(row.data.get_data());
         cert.certs = cert_info;
 
         cert.address = address; // account address

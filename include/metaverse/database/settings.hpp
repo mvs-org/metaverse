@@ -39,6 +39,7 @@ public:
     uint32_t history_start_height;
     uint32_t stealth_start_height;
     boost::filesystem::path directory;
+    boost::filesystem::path default_directory;
 };
 
 } // namespace database

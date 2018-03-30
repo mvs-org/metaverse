@@ -39,7 +39,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\header.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\input.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\language.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\config\metaverse_output.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\output.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\point.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\config\raw.hpp" />
@@ -63,6 +62,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp" />
@@ -103,6 +103,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transferissueright.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
@@ -160,7 +161,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\config\header.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\input.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\language.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\config\metaverse_output.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\output.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\point.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\config\raw.cpp" />
@@ -183,6 +183,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletelocalasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp" />
@@ -223,6 +224,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transferissueright.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp" />

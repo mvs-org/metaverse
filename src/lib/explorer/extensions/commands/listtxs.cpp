@@ -239,9 +239,8 @@ console_result listtxs::invoke (Json::Value& jv_output,
 
             auto attach_data = op.attach_data;
             Json::Value tree = config::json_helper(get_api_version()).prop_list(attach_data);
-            if (attach_data.get_type() == ETP_TYPE) {
-                tree["type"] = "etp";
-            } else if (attach_data.get_type() == ASSET_TYPE) {
+
+            if (attach_data.get_type() == ASSET_TYPE) {
                 auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
                 if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
                     // asset_transfer dose not contain decimal_number message,
@@ -257,31 +256,8 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         }
                     }
                 }
-            } else if(attach_data.get_type() == DID_TYPE) {
-                auto did_info = boost::get<bc::chain::did>(attach_data.get_attach());
-                if(did_info.get_status() == DID_DETAIL_TYPE) {
-                    tree["type"] = "did-issue";
-                    auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
-                    tree["symbol"] = detail_info.get_symbol();
-                    tree["issuer"] = detail_info.get_issuer();
-                    tree["address"] = detail_info.get_address();
-                    tree["description"] = detail_info.get_description();
-                }
-                else if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
-                    tree["type"] = "did-transfer";
-                    auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
-                    tree["symbol"] = detail_info.get_symbol();
-                    tree["issuer"] = detail_info.get_issuer();
-                    tree["address"] = detail_info.get_address();
-                    tree["description"] = detail_info.get_description();
-                }
-            } else if(attach_data.get_type() == MESSAGE_TYPE) {
-                tree["type"] = "message";
-                auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
-                tree["content"] = msg_info.get_content();
-            } else {
-                tree["type"] = "unknown business";
             }
+
             pt_output["attachment"] = tree;
             ////////////////////////////////////////////////////////////
             

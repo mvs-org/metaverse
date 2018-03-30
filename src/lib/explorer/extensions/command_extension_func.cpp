@@ -75,7 +75,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
-#include <metaverse/explorer/extensions/commands/sendassetcert.hpp>
+#include <metaverse/explorer/extensions/commands/transferissueright.hpp>
 #include <metaverse/explorer/extensions/commands/mergeasset.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
@@ -158,7 +158,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
-    func(make_shared<sendassetcert>());
+    func(make_shared<transferissueright>());
     func(make_shared<mergeasset>());
 
     // multi-sig
@@ -267,7 +267,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<deletelocalasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
-    if (symbol == secondaryissue::symbol())
+    if (symbol == secondaryissue::symbol() || (symbol == "additionalissue") )
         return make_shared<secondaryissue>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
@@ -275,8 +275,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
-    if (symbol == sendassetcert::symbol())
-        return make_shared<sendassetcert>();
+    if (symbol == transferissueright::symbol())
+        return make_shared<transferissueright>();
     if (symbol == mergeasset::symbol())
         return make_shared<mergeasset>();
     if (symbol == getwork::symbol())

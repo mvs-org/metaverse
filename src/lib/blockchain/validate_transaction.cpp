@@ -468,7 +468,8 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
             }
         }
         else if (output.is_asset_cert()) {
-            if (!chain.is_did_exist(output.get_asset_cert_symbol(), false)) {
+            auto&& asset_cert = output.get_asset_cert();
+            if (!asset_cert.check_cert_owner(chain)) {
                 return error::did_address_needed;
             }
         }
@@ -659,6 +660,12 @@ bool validate_transaction::connect_input(const transaction& tx,
             business_tp_in = ASSET_TRANSFERABLE_TYPE;
     } else if (previous_output.is_asset_cert()) {
         business_tp_in = ASSET_CERT_TYPE;
+        new_symbol_in = previous_output.get_asset_cert_symbol();
+        if (old_symbol_in.empty()) { // init old symbol
+            old_symbol_in = new_symbol_in;
+        } else if (old_symbol_in != new_symbol_in) { // asset symbol must be same
+            return false;
+        }
         asset_certs = previous_output.get_asset_cert_type();
         if (asset_certs_in & asset_certs) { // double certs exists
             return false;
@@ -744,20 +751,19 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
 bool validate_transaction::check_asset_certs(const transaction& tx)
 {
     asset_cert_type asset_certs_out = asset_cert_ns::none;
-    std::string symbol;
     for (auto& output : tx.outputs) {
         if (output.is_asset_cert()) {
             auto&& asset_cert = output.get_asset_cert();
-            auto asset_certs = asset_cert.get_certs();
-            if (symbol.empty()) {
-                symbol = asset_cert.get_symbol();
-            } else if (symbol != asset_cert.get_symbol()) {
+            if (old_symbol_in_ != asset_cert.get_symbol()) { // check asset symbol
                 return false;
             }
+            auto asset_certs = asset_cert.get_certs();
             if (asset_certs_out & asset_certs) { // double certs exists
                 return false;
             }
             asset_certs_out |= asset_certs;
+        } else if (!output.is_etp()) { // asset cert transfer tx only related to asset_cet and etp output
+            return false;
         }
     }
     return asset_certs_in_ == asset_certs_out;
