@@ -57,17 +57,14 @@ console_result transferissueright::invoke (Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.to))
         throw address_invalid_exception{"invalid address parameter! " + argument_.to};
 
-    std::string did_symbol;
-    if (!bc::blockchain::validate_transaction::is_did_validate(blockchain)) {
-        did_symbol = blockchain.get_did_from_address(argument_.to);
-        if (did_symbol.empty())
-            throw did_address_needed_exception("target address is not an did address. " + argument_.to);
-    }
+    std::string cert_owner = asset_cert::get_owner_from_address(argument_.to, blockchain);
+    if (cert_owner.empty())
+        throw did_address_needed_exception("target address is not an did address. " + argument_.to);
 
     // check issue right
     auto certs_send = asset_cert_ns::issue;
-    auto certs_mask = sh_asset->get_asset_cert_mask();
-    if (asset_cert::test_certs(certs_mask, certs_send))
+    auto certs_owned = blockchain.get_address_asset_certs(argument_.from, argument_.symbol);
+    if (asset_cert::test_certs(certs_owned, certs_send))
         throw asset_cert_exception("no issue right to transfer");
 
     // receiver

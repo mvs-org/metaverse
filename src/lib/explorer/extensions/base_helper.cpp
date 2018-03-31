@@ -731,7 +731,8 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         if (record.asset_cert == asset_cert_ns::none) {
             throw asset_cert_exception("asset cert is none");
         }
-        auto cert_info = chain::asset_cert(symbol_, record.target, record.asset_cert);
+        auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
+        auto cert_info = chain::asset_cert(symbol_, cert_owner, record.asset_cert);
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
 
@@ -1494,6 +1495,14 @@ void secondary_issuing_asset::sum_payment_amount() {
         throw asset_exchange_poundage_exception{"fee must more than 10000 satoshi == 0.0001 etp"};
     if (payment_etp_ > maximum_fee)
         throw asset_exchange_poundage_exception{"fee must be less than 10000000000 satoshi == 100 etp"};
+
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+        payment_asset_cert_ |= iter.asset_cert;
+    }
+    if (payment_asset_cert_ != asset_cert_ns::issue)
+        throw asset_cert_exception("no asset cert of issue right is provided.");
 }
 
 void secondary_issuing_asset::populate_unspent_list()
@@ -1529,6 +1538,9 @@ void secondary_issuing_asset::populate_unspent_list()
     if (unspent_asset_ == 0)
         throw asset_lack_exception{"no enough asset amount"};
 
+    if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
+        throw asset_cert_exception{"no enough asset cert right"};
+
     // change
     populate_change();
 }
@@ -1546,6 +1558,12 @@ void secondary_issuing_asset::populate_change() {
         receiver_list_.push_back({target_addr, symbol_,
                 0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
     }
+    // asset cert utxo
+    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
+    if (cert_left != asset_cert_ns::none) {
+        receiver_list_.push_back({target_addr, symbol_,
+                0, cert_left, utxo_attach_type::asset_cert, attachment()});
+    }
 }
 
 attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record){
@@ -1555,6 +1573,13 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
         auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
+    } else if (record.type == utxo_attach_type::asset_cert) {
+        if (record.asset_cert == asset_cert_ns::none) {
+            throw asset_cert_exception("asset cert is none");
+        }
+        auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
+        auto cert_info = chain::asset_cert(symbol_, cert_owner, record.asset_cert);
+        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     } else if (record.type == utxo_attach_type::asset_secondaryissue) {
         auto asset_detail = *issued_asset_;
         asset_detail.set_address(record.target); // target is setted in metaverse_output.cpp
@@ -1592,6 +1617,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
         auto output = tx_temp.outputs.at(row.output.index);
         auto asset_amount = output.get_asset_amount();
         auto asset_symbol = output.get_asset_symbol();
+        auto asset_certs = output.get_asset_cert_type();
         auto etp_amount = row.value;
 
         // filter output
@@ -1610,6 +1636,8 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             if (asset_amount == 0)
                 continue;
             if (symbol_ != asset_symbol)
+                continue;
+            if ((asset_certs & payment_asset_cert_) == asset_cert_ns::none)
                 continue;
             // only get asset from specified address
             if (addr != target_addr)
@@ -1645,6 +1673,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
         record.amount = etp_amount;
         record.symbol = symbol_;
         record.asset_amount = asset_amount;
+        record.asset_cert = asset_certs;
         record.output = row.output;
         record.script = output.script;
         record.type = get_utxo_attach_type(output);
@@ -1653,6 +1682,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
+        unspent_asset_cert_ |= record.asset_cert;
     }
     rows.clear();
 
@@ -1661,13 +1691,17 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
     if ((from_ == addr) && (unspent_etp_ < payment_etp_))
         throw tx_source_exception{"not enough etp in from address!"};
 
-    // verify if the threshhold is satisfied
     if (addr == target_addr) {
+        // verify if the threshhold is satisfied
         auto total_volume = blockchain_.get_asset_volume(symbol_);
         auto threshold = issued_asset_->get_secondaryissue_threshold();
         if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
             throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
                 + std::to_string(unspent_asset_) + ", total_volume = " + std::to_string(total_volume)};
+        }
+        // verify if asset cert right is satisfied
+        if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
+            throw asset_cert_exception{"no enough asset cert right"};
         }
     }
 }

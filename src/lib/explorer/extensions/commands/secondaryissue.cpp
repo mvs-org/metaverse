@@ -67,8 +67,9 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw std::logic_error{"asset is not allow secondary issue, or the threshold is illegal."};
 
+    auto certs_send = asset_cert_ns::issue;
     auto certs_owned = blockchain.get_address_asset_certs(argument_.address, argument_.symbol);
-    if (!asset_cert::test_certs(certs_owned, asset_cert_ns::issue))
+    if (!asset_cert::test_certs(certs_owned, certs_send))
         throw asset_cert_exception("no secondaryissue asset cert owned");
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
@@ -84,6 +85,10 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_secondaryissue, attachment()}
     };
+    // asset_cert utxo
+    receiver.push_back({argument_.address, argument_.symbol,
+            0, 0, certs_send, utxo_attach_type::asset_cert, attachment()});
+
     auto issue_helper = secondary_issuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.mychange_address), std::move(argument_.symbol),

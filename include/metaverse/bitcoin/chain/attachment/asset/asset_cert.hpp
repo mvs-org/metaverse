@@ -78,6 +78,7 @@ public:
     void set_symbol(const std::string& symbol);
 
     const std::string& get_owner() const;
+    std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     void set_owner(const std::string& owner);
 
     asset_cert_type get_certs() const;
@@ -91,6 +92,8 @@ public:
     static std::string get_certs_name(asset_cert_type certs);
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
     static asset_cert_type get_certs_from_name(const std::string& certs_name);
+    static std::string get_owner_from_address(const std::string& address,
+            bc::blockchain::block_chain_impl& chain);
 
 private:
     std::string symbol_; // asset name/symbol

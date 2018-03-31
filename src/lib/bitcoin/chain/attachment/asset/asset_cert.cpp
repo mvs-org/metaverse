@@ -246,6 +246,21 @@ asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
     return certs;
 }
 
+std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl& chain) const
+{
+    return get_owner_from_address(owner_, chain);
+}
+
+std::string asset_cert::get_owner_from_address(const std::string& address,
+        bc::blockchain::block_chain_impl& chain)
+{
+    // don't convert to did-symbol if did is not enabled.
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+        return address;
+    }
+    return chain.get_did_from_address(address, false);
+}
+
 bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
 {
     if (owner_.empty()) {

@@ -325,6 +325,7 @@ code validate_transaction::check_secondaryissue_transaction(
     uint64_t asset_transfer_volume{0};
     int num_asset_transfer{0};
     bool is_asset_secondaryissue{false};
+    asset_cert_type certs_out{asset_cert_ns::none};
     for (auto& output : const_cast<chain::transaction&>(tx).outputs)
     {
         if (output.is_asset_secondaryissue())
@@ -353,7 +354,12 @@ code validate_transaction::check_secondaryissue_transaction(
             ++num_asset_transfer;
             asset_transfer_volume += output.get_asset_amount();
         }
-        else if (output.is_etp() == false)
+        else if (output.is_asset_cert())
+        {
+            auto && asset_cert = output.get_asset_cert();
+            certs_out |= asset_cert.get_certs();
+        }
+        else if (!output.is_etp())
         {
             has_other_type_output = true;
         }
@@ -367,6 +373,10 @@ code validate_transaction::check_secondaryissue_transaction(
         || (asset_transfer_volume == 0) || (num_asset_transfer > 1))
     {
         return error::asset_secondaryissue_error;
+    }
+
+    if ((certs_out & asset_cert_ns::issue) == asset_cert_ns::none) {
+        return error::asset_cert_error;
     }
 
     auto total_volume = blockchain.get_asset_volume(asset_name) - secondaryissue_asset_amount;
