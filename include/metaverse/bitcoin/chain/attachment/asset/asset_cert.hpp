@@ -80,6 +80,7 @@ public:
     const std::string& get_owner() const;
     std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     void set_owner(const std::string& owner);
+    std::string get_address(bc::blockchain::block_chain_impl& chain) const;
 
     asset_cert_type get_certs() const;
     void set_certs(asset_cert_type certs);

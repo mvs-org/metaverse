@@ -246,6 +246,19 @@ asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
     return certs;
 }
 
+std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const
+{
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+        return owner_;
+    }
+    auto did_symbol = owner_;
+    auto sp_did_detail = chain.get_issued_did(did_symbol);
+    if (sp_did_detail) {
+        return sp_did_detail->get_address();
+    }
+    return owner_;
+}
+
 std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl& chain) const
 {
     return get_owner_from_address(owner_, chain);

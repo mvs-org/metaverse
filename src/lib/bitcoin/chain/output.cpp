@@ -72,7 +72,13 @@ bool output::is_valid() const
 		|| attach_data.is_valid(); // added for asset issue/transfer
 }
 
-code output::check_attachment_address() const
+std::string output::get_script_address() const
+{
+    auto payment_address = wallet::payment_address::extract(script);
+    return payment_address.encoded();
+}
+
+code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) const
 {
     bool is_asset = false;
     bool is_did = false;
@@ -80,13 +86,16 @@ code output::check_attachment_address() const
     if (is_asset_issue() || is_asset_secondaryissue()) {
         attachment_address = get_asset_address();
         is_asset = true;
+    } else if (is_asset_cert()) {
+        attachment_address = get_asset_cert_address(chain);
+        is_asset = true;
     } else if (is_did_issue() || is_did_transfer()) {
         attachment_address = get_did_address();
         is_did = true;
     }
     if (is_asset || is_did) {
-        const auto payment_address = wallet::payment_address::extract(script);
-        if (attachment_address != payment_address.encoded()) {
+        auto script_address = get_script_address();
+        if (attachment_address != script_address) {
             if (is_asset)
                 return error::asset_address_not_match;
             if (is_did)
@@ -302,6 +311,15 @@ std::string output::get_asset_cert_owner() const
     return std::string("");
 }
 
+std::string output::get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const
+{
+    if (is_asset_cert()) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        return cert_info.get_address(chain);
+    }
+    return std::string("");
+}
+
 asset_cert_type output::get_asset_cert_type() const
 {
     if (is_asset_cert()) {
@@ -349,6 +367,18 @@ std::string output::get_did_address() const // for validate_transaction.cpp to c
 		}
 	}
 	return std::string("");
+}
+
+asset_transfer output::get_asset_transfer() const
+{
+    if (attach_data.get_type() == ASSET_TYPE) {
+        auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+            return boost::get<asset_transfer>(asset_info.get_data());
+        }
+    }
+    log::error("output::get_asset_transfer") << "Asset type is not asset_transfer_TYPE.";
+    return asset_transfer();
 }
 
 asset_detail output::get_asset_detail() const

@@ -54,7 +54,8 @@ public:
     void to_data(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
-    code check_attachment_address() const;
+    code check_attachment_address(bc::blockchain::block_chain_impl& chain) const;
+    std::string get_script_address() const;
     void reset();
     uint64_t serialized_size() const;
     uint64_t get_asset_amount() const;
@@ -62,6 +63,7 @@ public:
     std::string get_asset_address() const;
     std::string get_asset_cert_symbol() const;
     std::string get_asset_cert_owner() const;
+    std::string get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const;
     asset_cert_type get_asset_cert_type() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
@@ -71,6 +73,7 @@ public:
     bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;
     asset_detail get_asset_detail() const;
+    asset_transfer get_asset_transfer() const;
     asset_cert get_asset_cert() const;
     std::string get_did_symbol() const;
     std::string get_did_address() const;

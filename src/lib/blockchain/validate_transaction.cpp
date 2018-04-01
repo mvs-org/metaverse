@@ -318,15 +318,27 @@ code validate_transaction::check_secondaryissue_transaction(
         blockchain::block_chain_impl& blockchain,
         bool in_transaction_pool)
 {
-    std::string asset_name;
-    int secondaryissue_threshold = 0;
-    bool has_other_type_output = false;
-    uint64_t secondaryissue_asset_amount = 0;
+    bool is_asset_secondaryissue{false};
+    for (auto& output : tx.outputs) {
+        if (output.is_asset_secondaryissue()) {
+            is_asset_secondaryissue = true;
+            break;
+        }
+    }
+    if (!is_asset_secondaryissue) {
+        return error::success;
+    }
+
+    is_asset_secondaryissue = false;
+    std::string asset_symbol;
+    std::string asset_address;
+    uint8_t secondaryissue_threshold{0};
+    uint64_t secondaryissue_asset_amount{0};
     uint64_t asset_transfer_volume{0};
     int num_asset_transfer{0};
-    bool is_asset_secondaryissue{false};
+    int num_asset_cert{0};
     asset_cert_type certs_out{asset_cert_ns::none};
-    for (auto& output : const_cast<chain::transaction&>(tx).outputs)
+    for (auto& output : tx.outputs)
     {
         if (output.is_asset_secondaryissue())
         {
@@ -336,42 +348,76 @@ code validate_transaction::check_secondaryissue_transaction(
             }
             is_asset_secondaryissue = true;
             auto && asset_detail = output.get_asset_detail();
-            asset_name = asset_detail.get_symbol();
-            secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
-            if (!in_transaction_pool) {
-                secondaryissue_asset_amount = asset_detail.get_maximum_supply();
-            }
-            if (!blockchain.is_asset_exist(asset_name, in_transaction_pool)) {
-                return error::asset_not_exist;
-            }
             if (!asset_detail.is_asset_secondaryissue()
                 || !asset_detail.is_secondaryissue_threshold_value_ok()) {
                 return error::asset_secondaryissue_threshold_invalid;
+            }
+            if (asset_symbol.empty()) {
+                asset_symbol = asset_detail.get_symbol();
+            } else if (asset_symbol != asset_detail.get_symbol()) {
+                return error::asset_secondaryissue_error;
+            }
+            if (!blockchain.is_asset_exist(asset_symbol, in_transaction_pool)) {
+                return error::asset_not_exist;
+            }
+            auto asset_address_out = asset_detail.get_address();
+            if (asset_address.empty()) {
+                asset_address = asset_address_out;
+            } else if (asset_address != asset_address_out) {
+                return error::asset_secondaryissue_error;
+            }
+            secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
+            if (!in_transaction_pool) {
+                secondaryissue_asset_amount = asset_detail.get_maximum_supply();
             }
         }
         else if (output.is_asset_transfer())
         {
             ++num_asset_transfer;
-            asset_transfer_volume += output.get_asset_amount();
+            if (num_asset_transfer > 1) {
+                return error::asset_secondaryissue_error;
+            }
+            auto && asset_transfer = output.get_asset_transfer();
+            if (asset_symbol.empty()) {
+                asset_symbol = asset_transfer.get_symbol();
+            } else if (asset_symbol != asset_transfer.get_symbol()) {
+                return error::asset_secondaryissue_error;
+            }
+            auto asset_address_out = output.get_script_address();
+            if (asset_address.empty()) {
+                asset_address = asset_address_out;
+            } else if (asset_address != asset_address_out) {
+                return error::asset_secondaryissue_error;
+            }
+            asset_transfer_volume += asset_transfer.get_quantity();
         }
         else if (output.is_asset_cert())
         {
-            auto && asset_cert = output.get_asset_cert();
-            certs_out |= asset_cert.get_certs();
+            ++num_asset_cert;
+            if (num_asset_cert > 2) {
+                return error::asset_secondaryissue_error;
+            }
+            auto && cert_info = output.get_asset_cert();
+            if (asset_symbol.empty()) {
+                asset_symbol = cert_info.get_symbol();
+            } else if (asset_symbol != cert_info.get_symbol()) {
+                return error::asset_secondaryissue_error;
+            }
+            auto asset_address_out = output.get_script_address();
+            if (asset_address.empty()) {
+                asset_address = asset_address_out;
+            } else if (asset_address != asset_address_out) {
+                return error::asset_secondaryissue_error;
+            }
+            certs_out |= cert_info.get_certs();
         }
         else if (!output.is_etp())
         {
-            has_other_type_output = true;
+            return error::asset_secondaryissue_error;
         }
     }
 
-    if (!is_asset_secondaryissue) {
-        return error::success;
-    }
-
-    if ((tx.outputs.size() > 3) || has_other_type_output
-        || (asset_transfer_volume == 0) || (num_asset_transfer > 1))
-    {
+    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0) || asset_symbol.empty() || asset_address.empty()) {
         return error::asset_secondaryissue_error;
     }
 
@@ -379,9 +425,30 @@ code validate_transaction::check_secondaryissue_transaction(
         return error::asset_cert_error;
     }
 
-    auto total_volume = blockchain.get_asset_volume(asset_name) - secondaryissue_asset_amount;
+    auto total_volume = blockchain.get_asset_volume(asset_symbol) - secondaryissue_asset_amount;
     if (!asset_detail::is_secondaryissue_owns_enough(asset_transfer_volume, total_volume, secondaryissue_threshold)) {
         return error::asset_secondaryissue_share_not_enough;
+    }
+
+    // check inputs asset address
+    for (const auto& input: tx.inputs) {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+            return error::input_not_found;
+        }
+        auto prev_output = prev_tx.outputs.at(input.previous_output.index);
+        if (prev_output.is_asset_issue()
+            || prev_output.is_asset_secondaryissue()
+            || prev_output.is_asset_transfer()
+            || prev_output.is_asset_cert()) {
+            auto asset_address_in = prev_output.get_script_address();
+            if (asset_address != asset_address_in) {
+                return error::validate_inputs_failed;
+            }
+        } else if (!prev_output.is_etp()) {
+            return error::validate_inputs_failed;
+        }
     }
 
     return error::success;
@@ -391,13 +458,23 @@ code validate_transaction::check_asset_issue_transaction(
         const transaction& tx, blockchain::block_chain_impl& chain)
 {
     bool is_asset_issue{false};
-    bool has_other_type_output{false};
+    for (auto& output : tx.outputs) {
+        if (output.is_asset_issue()) {
+            is_asset_issue = true;
+            break;
+        }
+    }
+    if (!is_asset_issue) {
+        return error::success;
+    }
+
+    is_asset_issue = false;
     int num_asset_cert{0};
     asset_cert_type cert_mask{asset_cert_ns::none};
     asset_cert_type cert_type{asset_cert_ns::none};
     std::string asset_symbol;
-    std::string asset_cert_symbol;
-    for (auto& output : const_cast<transaction&>(tx).outputs)
+    std::string asset_address;
+    for (auto& output : tx.outputs)
     {
         if (output.is_asset_issue())
         {
@@ -406,36 +483,50 @@ code validate_transaction::check_asset_issue_transaction(
                 return error::asset_issue_error;
             }
             is_asset_issue = true;
-            asset_symbol = output.get_asset_symbol();
+            asset_detail&& detail = output.get_asset_detail();
+            if (!detail.is_secondaryissue_threshold_value_ok()) {
+                return error::asset_secondaryissue_threshold_invalid;
+            }
+            if (asset_symbol.empty()) {
+                asset_symbol = detail.get_symbol();
+            } else if (asset_symbol != detail.get_symbol()) {
+                return error::asset_issue_error;
+            }
             if (chain.is_asset_exist(asset_symbol, false)) {
                 return error::asset_exist;
-            } else {
-                asset_detail&& detail = output.get_asset_detail();
-                if (!detail.is_secondaryissue_threshold_value_ok()) {
-                    return error::asset_secondaryissue_threshold_invalid;
-                }
-                cert_mask = detail.get_asset_cert_mask();
             }
+            if (asset_address.empty()) {
+                asset_address = detail.get_address();
+            } else if (asset_address != detail.get_address()) {
+                return error::asset_issue_error;
+            }
+            cert_mask = detail.get_asset_cert_mask();
         }
         else if (output.is_asset_cert()) {
             ++num_asset_cert;
+            if (num_asset_cert > 1) {
+                return error::asset_issue_error;
+            }
             asset_cert&& cert_info = output.get_asset_cert();
-            asset_cert_symbol = cert_info.get_symbol();
+            if (asset_symbol.empty()) {
+                asset_symbol = cert_info.get_symbol();
+            } else if (asset_symbol != cert_info.get_symbol()) {
+                return error::asset_issue_error;
+            }
+            if (asset_address.empty()) {
+                asset_address = cert_info.get_address(chain);
+            } else if (asset_address != cert_info.get_address(chain)) {
+                return error::asset_issue_error;
+            }
             cert_type = cert_info.get_certs();
         }
         else if (!output.is_etp())
         {
-            has_other_type_output = true;
+            return error::asset_issue_error;
         }
     }
 
-    if (!is_asset_issue) {
-        return error::success;
-    }
-
-    if ((tx.outputs.size() > 3) || has_other_type_output
-        || (num_asset_cert > 1) || (asset_cert_symbol != asset_symbol)
-        || (cert_type != cert_mask)) {
+    if ((tx.outputs.size() > 3) || (cert_type != cert_mask)) {
         return error::asset_issue_error;
     }
 
@@ -456,7 +547,7 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 
     for (auto& output : const_cast<transaction&>(tx).outputs)
     {
-        if ((ret = output.check_attachment_address()) != error::success)
+        if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
 
         if(output.is_did_issue()) {
@@ -519,7 +610,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             return error::output_value_overflow;
     }
 
-    for(auto& output : const_cast<transaction&>(tx).outputs){
+    for (auto& output : tx.outputs) {
         if(output.is_asset_issue()) {
             if (!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
