@@ -1737,7 +1737,7 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
     // copy each asset_vec element which is unissued to sp_asset
     const auto add_asset = [&sp_asset_vec, &sp_issues_asset_vec](const business_address_asset& addr_asset)
     {
-        auto& symbol = addr_asset.address;
+        auto& symbol = addr_asset.detail.get_symbol();
         auto pos = std::find_if(sp_issues_asset_vec->begin(), sp_issues_asset_vec->end(),
                 [&symbol](const asset_detail& elem) { return symbol == elem.get_symbol(); });
         if (pos == sp_issues_asset_vec->end()) { // asset is unissued in blockchain

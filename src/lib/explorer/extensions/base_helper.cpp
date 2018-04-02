@@ -1489,8 +1489,8 @@ void issuing_asset::populate_change() {
 void secondary_issuing_asset::sum_payment_amount() {
     if (receiver_list_.empty())
         throw std::logic_error{"empty target address"};
-    if (receiver_list_.size() > 1)
-        throw toaddress_invalid_exception{"multiple target address"};
+    if (receiver_list_.size() > 2)
+        throw toaddress_invalid_exception{"too many target address"};
     if (payment_etp_ < 10000) // 10000 ETP bits now
         throw asset_exchange_poundage_exception{"fee must more than 10000 satoshi == 0.0001 etp"};
     if (payment_etp_ > maximum_fee)

@@ -186,6 +186,23 @@ public:
     }
 };
 
+class CAssetCert
+{
+public:
+    std::string symbol;
+    std::string owner;
+    uint64_t certs;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(owner);
+        READWRITE(certs);
+    }
+};
+
 class CDidDetail
 {
 public:
@@ -278,6 +295,7 @@ public:
     uint32_t type;
 	
 	CAsset asset;
+    CAssetCert assetcert;
     CDid did;
 	CMessage message;
 	
@@ -315,6 +333,9 @@ public:
             case 4: //did
                 (::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionSerialize()));
 				break;
+            case 5: // asset cert
+                (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
+                break;
 		};
     }                                                                                
     template<typename Stream>                                                        
@@ -338,6 +359,9 @@ public:
             case 4: // did
 				(::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionUnserialize()));
 				break;
+            case 5: // asset cert
+                (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionUnserialize()));
+                break;
 		};
     }
 

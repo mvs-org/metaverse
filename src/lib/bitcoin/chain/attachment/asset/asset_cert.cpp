@@ -218,14 +218,7 @@ std::string asset_cert::get_certs_name(asset_cert_type certs)
     }
 
     // concat cert names, separated by comma
-    std::string certs_name;
-    for (auto iter = name_vec.begin(); iter != name_vec.end(); ++iter) {
-        if (iter == name_vec.begin()) {
-            certs_name += *iter;
-        } else {
-            certs_name += ("," + *iter);
-        }
-    }
+    std::string certs_name = boost::join(name_vec, ",");
 
     if (certs_name.empty()) {
         return "NONE";

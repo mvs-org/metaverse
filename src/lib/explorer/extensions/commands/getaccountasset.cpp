@@ -74,7 +74,6 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     // 2. get asset in local database
     // shoudl filter all issued asset which be stored in local account asset database
     sh_vec->clear();
-    sh_vec = blockchain.get_issued_assets();
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         auto& symbol = elem.detail.get_symbol();
