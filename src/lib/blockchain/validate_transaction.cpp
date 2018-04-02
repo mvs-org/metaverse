@@ -963,10 +963,10 @@ bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
 
     chain.get_last_height(current_blockheight);
 
-    /*if (current_blockheight < 1130000)
+    if (current_blockheight < 1130000)
     {
         return false;
-    }*/
+    }
 
     return true;
 }
