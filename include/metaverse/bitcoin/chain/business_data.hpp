@@ -30,7 +30,6 @@
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
-#include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
@@ -75,9 +74,7 @@ public:
         asset_transfer,
         asset_cert,
         blockchain_message,
-        did_detail,
-        did_transfer
-        > business_data_type;
+        did_detail> business_data_type;
     static business_data factory_from_data(const data_chunk& data);
     static business_data factory_from_data(std::istream& stream);
     static business_data factory_from_data(reader& source);

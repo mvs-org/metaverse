@@ -144,7 +144,7 @@ bool business_data::from_data(reader& source)
 			}
 			case DID_TRANSFER_TYPE:
 			{
-				data = did_transfer();
+				data = did_detail();
 				break;
 			}
 		}

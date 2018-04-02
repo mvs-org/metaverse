@@ -258,9 +258,6 @@ public:
     void push_did_detail(const did_detail& sp_detail, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 
-    void push_did_transfer(const did_transfer& did_transfer, const short_hash& key,
-				const output_point& outpoint, uint32_t output_height, uint64_t value);
-
    class attachment_visitor : public boost::static_visitor<void>
 	{
 	public:
@@ -340,10 +337,7 @@ public:
 		{
 			return db_->push_did_detail(t, key_, outpoint_, output_height_, value_);
 		}
-		void operator()(const did_transfer &t) const
-		{
-		 	return db_->push_did_transfer(t, key_, outpoint_, output_height_, value_);
-		}
+
 	private:
         data_base* db_;
 		short_hash key_;

@@ -617,7 +617,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
         }
         else if (output.is_did_issue() || output.is_did_transfer()) {
-            if(!chain::output::is_valid_symbol(output.get_did_symbol())) {
+            if (!chain::output::is_valid_symbol(output.get_did_symbol())) {
                return error::did_symbol_invalid;
             }
 

@@ -30,7 +30,6 @@
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
-#include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
 
 using namespace libbitcoin::chain;
 
@@ -51,11 +50,10 @@ public:
 		did_locked,
 		did_transferable,
 	};
-	typedef boost::variant<did_detail, did_transfer> did_data_type;
+	typedef boost::variant<did_detail> did_data_type;
 
 	did();
 	did(uint32_t status, const did_detail& detail);
-	did(uint32_t status, const did_transfer& detail);
     static did factory_from_data(const data_chunk& data);
     static did factory_from_data(std::istream& stream);
     static did factory_from_data(reader& source);
@@ -75,7 +73,6 @@ public:
 	uint32_t get_status() const;
 	void set_status(uint32_t status);
 	void set_data(const did_detail& detail);
-	void set_data(const did_transfer& detail);
 	did_data_type& get_data();
 	
 private:

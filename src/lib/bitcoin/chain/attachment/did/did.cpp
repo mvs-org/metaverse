@@ -20,7 +20,6 @@
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/bitcoin/chain/attachment/variant_visitor.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
-#include <metaverse/bitcoin/chain/attachment/did/did_transfer.hpp>
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
@@ -39,10 +38,7 @@ did::did(uint32_t status, const did_detail& detail):
 	status(status), data(detail)
 {
 }
-did::did(uint32_t status, const did_transfer& detail):
-	status(status), data(detail)
-{
-}
+
 did did::factory_from_data(const data_chunk& data)
 {
     did instance;
@@ -110,7 +106,7 @@ bool did::from_data(reader& source)
 			}
 			case DID_TRANSFERABLE_TYPE:
 			{
-				data = did_transfer();
+				data = did_detail();
 				break;
 			}			
 		}	
@@ -179,10 +175,7 @@ void did::set_data(const did_detail& detail)
 {
 	this->data = detail;
 }
-void did::set_data(const did_transfer& detail)
-{
-	this->data = detail;
-}
+
 did::did_data_type& did::get_data()
 {
 	return this->data;
