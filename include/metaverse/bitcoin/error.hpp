@@ -154,7 +154,9 @@ enum error_code_t
     did_func_not_actived,
     did_address_not_match,
     did_address_needed,
-    did_not_exist
+    did_not_exist,
+    did_multi_type_exist,
+    did_input_error
 };
 
 enum error_condition_t

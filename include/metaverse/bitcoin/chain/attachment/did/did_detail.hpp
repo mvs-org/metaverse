@@ -71,6 +71,7 @@ public:
 
     bool is_valid() const;
     void reset();
+    uint32_t count_size() const;
     uint64_t serialized_size() const;
 	const std::string& get_symbol() const;
 	void set_symbol(const std::string& symbol);

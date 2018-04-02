@@ -354,6 +354,14 @@ std::string output::get_did_address() const // for validate_transaction.cpp to c
 	return std::string("");
 }
 
+did output::get_did() const
+{
+    if(attach_data.get_type() == DID_TYPE) {
+		return boost::get<did>(attach_data.get_attach());
+	}
+	return did();
+}
+
 asset_transfer output::get_asset_transfer() const
 {
     if (attach_data.get_type() == ASSET_TYPE) {
