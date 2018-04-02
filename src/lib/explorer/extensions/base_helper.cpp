@@ -1633,11 +1633,9 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             if (!from_.empty() && (from_ != addr))
                 continue;
         } else {
-            if (asset_amount == 0)
+            if ((asset_amount == 0) && ((asset_certs & payment_asset_cert_) == asset_cert_ns::none))
                 continue;
             if (symbol_ != asset_symbol)
-                continue;
-            if ((asset_certs & payment_asset_cert_) == asset_cert_ns::none)
                 continue;
             // only get asset from specified address
             if (addr != target_addr)

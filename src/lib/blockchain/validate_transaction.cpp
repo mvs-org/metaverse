@@ -761,7 +761,7 @@ bool validate_transaction::connect_input(const transaction& tx,
             business_tp_in = ASSET_TRANSFERABLE_TYPE;
     } else if (previous_output.is_asset_cert()) {
         business_tp_in = ASSET_CERT_TYPE;
-        new_symbol_in = previous_output.get_asset_cert_symbol();
+        new_symbol_in = previous_output.get_asset_symbol();
         if (old_symbol_in.empty()) { // init old symbol
             old_symbol_in = new_symbol_in;
         } else if (old_symbol_in != new_symbol_in) { // asset symbol must be same
