@@ -95,22 +95,6 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         assets.append(asset_data);
     }
 
-    // get asset certs
-    auto sp_asset_certs = blockchain.get_address_asset_certs(argument_.address, "");
-    if (sp_asset_certs) {
-        for (const auto& business_cert : *sp_asset_certs) {
-            auto cert_type = business_cert.certs.get_certs();
-            if (cert_type != asset_cert_ns::none) {
-                Json::Value asset_data;
-                asset_data["address"] = business_cert.address;
-                asset_data["symbol"] = business_cert.certs.get_symbol();
-                asset_data["owner"] = business_cert.certs.get_owner();
-                asset_data["certs"] = asset_cert::get_certs_name(cert_type);
-                assets.append(asset_data);
-            }
-        }
-    }
-
     if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
         aroot["assets"] = "";
     }
