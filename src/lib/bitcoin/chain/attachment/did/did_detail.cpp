@@ -64,7 +64,7 @@ did_detail did_detail::factory_from_data(reader& source)
 bool did_detail::is_valid() const
 {
     return !(symbol.empty() 
-			|| (symbol.size() + issuer.size() + address.size() + description.size() + 4)>DID_DETAIL_FIX_SIZE);
+			|| count_size()>DID_DETAIL_FIX_SIZE);
 }
 
 void did_detail::reset()
@@ -153,8 +153,13 @@ void did_detail::to_data(writer& sink) const
 
 uint64_t did_detail::serialized_size() const
 {
-    size_t len = symbol.size()  + issuer.size() + address.size() + description.size() + 4 ;
+    size_t len = count_size();
     return std::min(DID_DETAIL_FIX_SIZE, len);
+}
+
+uint32_t did_detail::count_size() const 
+{
+    return symbol.size()  + issuer.size() + address.size() + description.size() + 4;
 }
 
 std::string did_detail::to_string() const
@@ -186,7 +191,7 @@ const std::string& did_detail::get_symbol() const
 }
 void did_detail::set_symbol(const std::string& symbol)
 { 
-	size_t len = symbol.size()+1 < (DID_DETAIL_SYMBOL_FIX_SIZE) ?symbol.size()+1:DID_DETAIL_SYMBOL_FIX_SIZE;
+    size_t len = std::min(symbol.size()+1 , DID_DETAIL_SYMBOL_FIX_SIZE);
     this->symbol = symbol.substr(0, len);
 }
 
@@ -196,8 +201,8 @@ const std::string& did_detail::get_issuer() const
 }
 void did_detail::set_issuer(const std::string& issuer)
 { 
-	 size_t len = issuer.size()+1 < (DID_DETAIL_ISSUER_FIX_SIZE) ?issuer.size()+1:DID_DETAIL_ISSUER_FIX_SIZE;
-	 this->issuer = issuer.substr(0, len);
+    size_t len = std::min(issuer.size()+1 , DID_DETAIL_ISSUER_FIX_SIZE);
+    this->issuer = issuer.substr(0, len);
 }
 
 const std::string& did_detail::get_address() const
@@ -206,7 +211,7 @@ const std::string& did_detail::get_address() const
 }
 void did_detail::set_address(const std::string& address)
 { 
-	 size_t len = address.size()+1 < (DID_DETAIL_ADDRESS_FIX_SIZE) ?address.size()+1:DID_DETAIL_ADDRESS_FIX_SIZE;
+     size_t len = std::min(address.size()+1 , DID_DETAIL_ADDRESS_FIX_SIZE);
 	 this->address = address.substr(0, len);
 }
 
@@ -216,7 +221,7 @@ const std::string& did_detail::get_description() const
 }
 void did_detail::set_description(const std::string& description)
 { 
-	 size_t len = description.size()+1 < (DID_DETAIL_DESCRIPTION_FIX_SIZE) ?description.size()+1:DID_DETAIL_DESCRIPTION_FIX_SIZE;
+     size_t len = std::min(description.size()+1 , DID_DETAIL_DESCRIPTION_FIX_SIZE);
 	 this->description = description.substr(0, len);
 }
 

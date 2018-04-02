@@ -533,19 +533,16 @@ code validate_transaction::check_asset_issue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_did_transaction(
+        const chain::transaction& tx,
+        blockchain::block_chain_impl& chain,
+        bool in_transaction_pool)
 {
     code ret = error::success;
-    if ((ret = check_transaction_basic(tx, chain)) != error::success)
-        return ret;
 
-    if ((ret = check_asset_issue_transaction(tx, chain)) != error::success)
-        return ret;
+    uint8_t type = 255;
 
-    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
-        return ret;
-
-    for (auto& output : const_cast<transaction&>(tx).outputs)
+     for (auto& output : const_cast<transaction&>(tx).outputs)
     {
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
@@ -558,8 +555,18 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
             if (chain.is_address_issued_did(output.get_did_address(), false)) {
                 return error::address_issued_did;
             }
+
+            if (type != 255) {
+                return error::did_multi_type_exist;
+            }
+            type = DID_DETAIL_TYPE;
+            
+            if (!connect_did_input(tx,chain,boost::get<did>(output.get_did()))) {
+                return error::did_input_error;
+            }
         }
         else if (output.is_did_transfer()) {
+            //did transfer only for did is exist
             if (!chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_not_exist;
             }
@@ -567,14 +574,89 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
             if (chain.is_address_issued_did(output.get_did_address(), false)) {
                 return error::address_issued_did;
             }
+
+            if (type != 255) {
+                return error::did_multi_type_exist;
+            }
+            type = DID_TRANSFERABLE_TYPE;
+
+            if (!connect_did_input(tx,chain,boost::get<did>(output.get_did()))) {
+                return error::did_input_error;
+            }
         }
         else if (output.is_asset_cert()) {
             auto&& asset_cert = output.get_asset_cert();
             if (!asset_cert.check_cert_owner(chain)) {
                 return error::did_address_needed;
             }
+
+            if (type != 255) {
+                return error::did_multi_type_exist;
+            }
+            type = ASSET_CERT_TYPE;
         }
     }
+
+    
+
+    return ret;
+}
+
+bool validate_transaction::connect_did_input(
+            const chain::transaction& tx,
+            blockchain::block_chain_impl& chain,
+            did info) {
+
+    
+
+    auto detail_info = boost::get<did_detail>(info.get_data());
+    bool found_did_info = false;
+    bool found_address_info =false;
+    
+    for (const auto& input: tx.inputs) {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+            return false;
+        }
+        auto prev_output = prev_tx.outputs.at(input.previous_output.index);
+
+        if (prev_output.is_did_issue() || prev_output.is_did_transfer()) {
+            if (info.get_status() ==  DID_TRANSFERABLE_TYPE) {
+                if (detail_info.get_symbol() == prev_output.get_did_symbol()) {
+                    found_did_info = true;
+                }               
+            }
+        }
+        else if (prev_output.is_etp()) {
+            auto did_address_in = prev_output.get_script_address();
+            if (detail_info.get_address() == did_address_in) {
+                found_address_info = true;
+            }
+            
+        }
+        
+    }
+
+    return (found_did_info&&found_address_info&&info.get_status() ==  DID_TRANSFERABLE_TYPE)
+            ||(found_address_info&&info.get_status() ==  DID_DETAIL_TYPE);
+}
+
+code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
+{
+    code ret = error::success;
+    if ((ret = check_transaction_basic(tx, chain)) != error::success)
+        return ret;
+
+    if ((ret = check_asset_issue_transaction(tx, chain)) != error::success)
+        return ret;
+
+    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
+        return ret;
+        
+    if ((ret = check_did_transaction(tx, chain, true)) != error::success)
+        return ret;
+      
     return ret;
 }
 

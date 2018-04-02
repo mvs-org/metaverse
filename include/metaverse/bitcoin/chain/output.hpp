@@ -77,6 +77,7 @@ public:
     asset_cert get_asset_cert() const;
     std::string get_did_symbol() const;
     std::string get_did_address() const;
+    did get_did() const;
 
     uint64_t value;
     chain::script script;

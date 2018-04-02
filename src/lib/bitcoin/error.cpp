@@ -223,7 +223,12 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::did_address_needed:
 			return "did address is needed but not supplied";
         case error::did_not_exist:
-            return "did is not exist";
+            return "did does not exist";
+        case error::did_input_error:
+            return "did input error";
+        case error::did_multi_type_exist:
+            return "did attchment type can not be with some others";
+    
 
         // unknown errors
         case error::unknown:
