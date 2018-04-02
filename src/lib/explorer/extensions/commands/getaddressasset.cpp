@@ -94,6 +94,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
         asset_data["status"] = "unspent";
         assets.append(asset_data);
     }
+
     if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
         aroot["assets"] = "";
     }

@@ -357,9 +357,6 @@ code validate_transaction::check_secondaryissue_transaction(
             } else if (asset_symbol != asset_detail.get_symbol()) {
                 return error::asset_secondaryissue_error;
             }
-            if (!blockchain.is_asset_exist(asset_symbol, in_transaction_pool)) {
-                return error::asset_not_exist;
-            }
             auto asset_address_out = asset_detail.get_address();
             if (asset_address.empty()) {
                 asset_address = asset_address_out;
@@ -584,17 +581,6 @@ code validate_transaction::check_did_transaction(
                 return error::did_input_error;
             }
         }
-        else if (output.is_asset_cert()) {
-            auto&& asset_cert = output.get_asset_cert();
-            if (!asset_cert.check_cert_owner(chain)) {
-                return error::did_address_needed;
-            }
-
-            if (type != 255) {
-                return error::did_multi_type_exist;
-            }
-            type = ASSET_CERT_TYPE;
-        }
     }
 
     
@@ -696,6 +682,12 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         if(output.is_asset_issue()) {
             if (!chain::output::is_valid_symbol(output.get_asset_symbol())) {
                return error::asset_symbol_invalid;
+            }
+        }
+        else if (output.is_asset_cert()) {
+            auto&& asset_cert = output.get_asset_cert();
+            if (!asset_cert.check_cert_owner(chain)) {
+                return error::did_address_needed;
             }
         }
         else if (output.is_did_issue() || output.is_did_transfer()) {
@@ -843,7 +835,7 @@ bool validate_transaction::connect_input(const transaction& tx,
             business_tp_in = ASSET_TRANSFERABLE_TYPE;
     } else if (previous_output.is_asset_cert()) {
         business_tp_in = ASSET_CERT_TYPE;
-        new_symbol_in = previous_output.get_asset_cert_symbol();
+        new_symbol_in = previous_output.get_asset_symbol();
         if (old_symbol_in.empty()) { // init old symbol
             old_symbol_in = new_symbol_in;
         } else if (old_symbol_in != new_symbol_in) { // asset symbol must be same

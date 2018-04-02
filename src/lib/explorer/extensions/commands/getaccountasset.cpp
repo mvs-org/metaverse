@@ -36,21 +36,21 @@ using namespace bc::explorer::config;
 console_result getaccountasset::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    auto& aroot = jv_output;
-    Json::Value assets;
-    
     auto& blockchain = node.chain_impl();
+    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     
-    auto sh_vec = std::make_shared<std::vector<asset_detail>>();
-    
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
         throw address_list_nullptr_exception{"nullptr for address list"};
     
+    auto& aroot = jv_output;
+    Json::Value assets;
+
+    auto sh_vec = std::make_shared<std::vector<asset_detail>>();
+
     // 1. get asset in blockchain       
     // get address unspent asset balance
     std::string addr;
@@ -74,7 +74,6 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     // 2. get asset in local database
     // shoudl filter all issued asset which be stored in local account asset database
     sh_vec->clear();
-    sh_vec = blockchain.get_issued_assets();
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         auto& symbol = elem.detail.get_symbol();

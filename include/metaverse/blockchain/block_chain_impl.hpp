@@ -254,7 +254,9 @@ public:
     uint64_t get_address_asset_volume(const std::string& address, const std::string& asset, bool is_use_transactionpool, bool is_safe);
     uint64_t get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe);
     uint64_t get_asset_volume(const std::string& asset);
-    asset_cert_type get_address_asset_certs(const std::string& address, const std::string& asset);
+    asset_cert_type get_address_asset_cert_type(const std::string& address, const std::string& asset);
+    std::shared_ptr<std::vector<business_address_asset_cert>> get_address_asset_certs(const std::string& address, const std::string& asset);
+    std::shared_ptr<std::vector<business_address_asset_cert>> get_account_asset_certs(const std::string& account, const std::string& asset);
 
 	bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
 	bool get_asset_height(const std::string& asset_name, uint64_t& height);
