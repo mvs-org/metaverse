@@ -784,6 +784,10 @@ business_address_asset_cert::list address_asset_database::get_asset_certs(const 
             (row.spend.hash == null_hash || row.spend_height == 0))
             status = business_status::confirmed;
 
+        if (status == business_status::unknown) {
+            continue;
+        }
+
         business_address_asset_cert cert;
         cert.certs = cert_info;
 
