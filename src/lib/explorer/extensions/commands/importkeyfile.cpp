@@ -44,11 +44,22 @@ console_result importkeyfile::invoke (Json::Value& jv_output,
     if(!fs::is_regular_file(status)) 
         throw argument_legality_exception{option_.file.string() + std::string(" not a regular file.")};
 
+    std::ifstream file_input(option_.file.string(), std::ofstream::in);
+    std::string file_content((std::istreambuf_iterator<char>(file_input)),
+                    std::istreambuf_iterator<char>());
+    file_input.close();
+
+    Json::Reader reader;
+    Json::Value file_root;
+    if (file_content.length() && (file_content[0] == '{') && reader.parse(file_content, file_root)){
+        file_content = file_root["accounts"].asString();
+    }
+
+    std::stringstream ss(file_content);
+
     // decrypt account info file first
     account_info all_info(blockchain, option_.depasswd);
-    std::ifstream file_input(option_.file.string(), std::ofstream::in);
-    file_input >> all_info;
-    file_input.close();
+    ss >> all_info;
 
     // name check
     auto acc = all_info.get_account();

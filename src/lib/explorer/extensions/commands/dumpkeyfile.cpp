@@ -23,6 +23,8 @@
 #include <metaverse/explorer/extensions/account_info.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
+#include <cryptojs/cryptojs_impl.h>
+
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
@@ -45,7 +47,7 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
         throw argument_legality_exception{"last word not matching."};
     }
 
-    std::string keyfile_name = "mvs-" + auth_.name + ".keystore";
+    std::string keyfile_name = "mvs_keystore.json";
 
     if (argument_.dst.empty()) {
         // default path. provides download.
@@ -96,9 +98,20 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     }
     account_info all_info(blockchain, auth_.auth, *acc, *pvaddr, *sh_asset_vec);
 
+    std::stringstream ss;
+    ss << all_info;
+
+
+    Json::Value file_root;
+    file_root["version"] = "0.2.1";
+    file_root["algo"] = "aes";
+    file_root["index"] = 10;
+    file_root["mnemonic"] = cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth);
+    file_root["accounts"] =  ss.str();
+
     // store encrypted data to file
     bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
-    file_output << all_info << std::flush;
+    file_output << file_root.toStyledString() << std::flush;
     file_output.close();
 
     auto& root = jv_output;
