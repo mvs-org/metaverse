@@ -1377,14 +1377,43 @@ history::list get_address_history(wallet::payment_address& addr, bc::blockchain:
 	}
 }
 
-asset_cert_type block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& asset)
+asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& asset)
 {
+    BITCOIN_ASSERT(!asset.empty());
     auto business_certs = database_.address_assets.get_asset_certs(address, asset, 0);
     auto certs = asset_cert_ns::none;
     for (const auto& cert : business_certs) {
         certs |= cert.certs.get_certs();
     }
     return certs;
+}
+
+std::shared_ptr<std::vector<business_address_asset_cert>>
+block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& asset)
+{
+    auto ret_vector = std::make_shared<std::vector<business_address_asset_cert>>();
+    auto business_certs = database_.address_assets.get_asset_certs(address, asset, 0);
+    for (auto business_cert : business_certs) {
+        ret_vector->emplace_back(std::move(business_cert));
+    }
+    return ret_vector;
+}
+
+std::shared_ptr<std::vector<business_address_asset_cert>>
+block_chain_impl::get_account_asset_certs(const std::string& account, const std::string& asset)
+{
+    auto ret_vector = std::make_shared<std::vector<business_address_asset_cert>>();
+    auto pvaddr = get_account_addresses(account);
+    if (pvaddr) {
+        for (const auto& account_address : *pvaddr) {
+            auto business_certs = database_.address_assets.
+                get_asset_certs(account_address.get_address(), asset, 0);
+            for (auto business_cert : business_certs) {
+                ret_vector->emplace_back(std::move(business_cert));
+            }
+        }
+    }
+    return ret_vector;
 }
 
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset, bool is_use_transactionpool, bool is_safe)
