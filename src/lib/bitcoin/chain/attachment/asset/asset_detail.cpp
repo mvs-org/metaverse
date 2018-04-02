@@ -230,7 +230,7 @@ void asset_detail::set_description(const std::string& description)
 asset_cert_type asset_detail::get_asset_cert_mask() const
 {
     auto certs = asset_cert_ns::none;
-    if (is_asset_secondaryissue()) {
+    if (is_secondaryissue_legal()) {
         certs |= asset_cert_ns::issue;
     }
     return certs;

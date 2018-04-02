@@ -30,6 +30,8 @@
 namespace libbitcoin {
 namespace chain {
 
+constexpr bool use_did_address = false;
+
 // assert cert name definition
 const char* asset_cert_name_none  = "NONE";
 const char* asset_cert_name_issue = "ISSUE";
@@ -248,7 +250,7 @@ asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
 
 std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const
 {
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return owner_;
     }
     auto did_symbol = owner_;
@@ -268,7 +270,7 @@ std::string asset_cert::get_owner_from_address(const std::string& address,
         bc::blockchain::block_chain_impl& chain)
 {
     // don't convert to did-symbol if did is not enabled.
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return address;
     }
     return chain.get_did_from_address(address, false);
@@ -280,7 +282,7 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
         return false;
     }
     // don't check did existence if did is not enabled.
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return true;
     }
     return chain.is_did_exist(owner_, false);
