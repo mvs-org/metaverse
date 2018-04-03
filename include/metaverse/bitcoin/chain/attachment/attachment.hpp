@@ -43,6 +43,8 @@ using namespace libbitcoin::chain;
 #define DID_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_did)
 #define ASSET_CERT_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset_cert)
 
+#define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
+
 
 namespace libbitcoin {
 namespace chain {
@@ -95,6 +97,9 @@ public:
 	void set_version(uint32_t version);
 	uint32_t get_type() const;
 	void set_type(uint32_t type);
+
+	std::string get_to_did() const;
+	void set_to_did(std::string did);
 	
 	template<class Type>
 	void set_attach(const Type& attach)
@@ -108,7 +113,7 @@ private:
     uint32_t version;
     uint32_t type;
     attachment_data_type attach;
-
+	std::string todid;
 };
 
 } // namespace chain

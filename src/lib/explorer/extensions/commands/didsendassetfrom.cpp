@@ -83,8 +83,11 @@ console_result didsendassetfrom::invoke (Json::Value& jv_output,
    
 
     // receiver
+    attachment attach;
+    attach.set_to_did(argument_.todid);
+    attach.set_version(DID_ATTACH_VERIFY_VERSION);
     std::vector<receiver_record> receiver{
-        {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+        {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}  
     };
     auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             std::move(fromaddress), std::move(argument_.symbol), std::move(receiver), argument_.fee);

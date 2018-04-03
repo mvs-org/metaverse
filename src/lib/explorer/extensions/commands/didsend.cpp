@@ -57,16 +57,19 @@ console_result didsend::invoke (Json::Value& jv_output,
     }
 
     // receiver
-        std::vector<receiver_record> receiver{
-            {tempaddress, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
-        };
+    attachment attach;
+    attach.set_to_did(argument_.did);
+    attach.set_version(DID_ATTACH_VERIFY_VERSION);
+    std::vector<receiver_record> receiver{
+        {tempaddress, "", argument_.amount, 0, utxo_attach_type::etp, attach}  
+    };
 
-        if(!argument_.memo.empty())
+    if(!argument_.memo.empty())
         receiver.push_back({tempaddress, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
         auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             "", std::move(receiver), argument_.fee);
     
-        send_helper.exec();
+    send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();

@@ -72,10 +72,12 @@ console_result didsendfrom::invoke (Json::Value& jv_output,
         auto diddetail=blockchain.get_issued_did(argument_.todid); 
         toaddress = diddetail->get_address();
     }
-    
     // receiver
+    attachment attach;
+    attach.set_to_did(argument_.todid);
+    attach.set_version(DID_ATTACH_VERIFY_VERSION);
     std::vector<receiver_record> receiver{
-        {toaddress, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
+        {toaddress, "", argument_.amount, 0, utxo_attach_type::etp, attach}  
     };
     if(!argument_.memo.empty())
         receiver.push_back({toaddress, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
