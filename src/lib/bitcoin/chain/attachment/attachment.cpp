@@ -60,6 +60,7 @@ void attachment::reset()
     type = 0; //attachment_type::attach_none;
     auto visitor = reset_visitor();
 	boost::apply_visitor(visitor, attach);
+	todid = "";
 }
 
 bool attachment::is_valid() const
@@ -137,6 +138,10 @@ bool attachment::from_data(reader& source)
 		}
 		auto visitor = from_data_visitor(source);
 		result = boost::apply_visitor(visitor, attach);
+
+		if (result && version == DID_ATTACH_VERIFY_VERSION) {
+			todid = source.read_string();
+		} 
     }
 	else {
 		result = false;
@@ -165,15 +170,27 @@ void attachment::to_data(std::ostream& stream) const
 
 void attachment::to_data(writer& sink) const
 {
+	
     sink.write_4_bytes_little_endian(version);
     sink.write_4_bytes_little_endian(type);
 	auto visitor = to_data_visitor(sink);
 	boost::apply_visitor(visitor, attach);
+	if (version == DID_ATTACH_VERIFY_VERSION) {
+		sink.write_string(todid);
+	} 
+
 }
 
 uint64_t attachment::serialized_size() const
 {
-    uint64_t size = 4 + 4;
+	uint64_t size = 0;
+	if(version == DID_ATTACH_VERIFY_VERSION) {
+		size = 4 + 4 + todid.size();
+	}
+	else {
+		size = 4 + 4;
+	}
+    
 	auto visitor = serialized_size_visitor();
 	size += boost::apply_visitor(visitor, attach);
 
@@ -209,6 +226,16 @@ void attachment::set_type(uint32_t type)
 { 
      this->type = type;
 }
+
+std::string attachment::get_to_did() const
+{ 
+    return todid;
+}
+void attachment::set_to_did(std::string did)
+{ 
+     this->todid = todid;
+}
+
 attachment::attachment_data_type& attachment::get_attach()
 {
 	return this->attach;

@@ -544,6 +544,9 @@ code validate_transaction::check_did_transaction(
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
 
+        if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
+            return ret;
+
         if(output.is_did_issue()) {
             if (chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_exist;

@@ -27,6 +27,7 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/bitcoin/wallet/payment_address.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -102,6 +103,20 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
                 return error::did_address_not_match;
         }
     }
+    return error::success;
+}
+
+code output::check_attachment_did_match_address(bc::blockchain::block_chain_impl& chain) const
+{
+   
+    if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION ) {
+        auto address = get_script_address();
+        auto did = attach_data.get_to_did();
+        if ( did != chain.get_did_from_address(address)) {
+            return error::did_address_not_match;
+        }
+    }
+
     return error::success;
 }
 

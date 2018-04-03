@@ -41,8 +41,6 @@ enum utxo_attach_type : uint32_t
 	digital_identity,
     asset_secondaryissue,
 	did_issue,
-	did_transfer_etp,
-	did_transfer_asset,
 	did_transfer,
 	asset_cert
 };
