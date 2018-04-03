@@ -157,6 +157,7 @@ void validate_transaction::set_last_height(const code& ec,
     current_input_ = 0;
     value_in_ = 0;
 	asset_amount_in_ = 0;
+    asset_certs_in_ = asset_cert_ns::none;
 	old_symbol_in_ = "";
 	new_symbol_in_ = "";
 	business_tp_in_ = 0;
@@ -414,7 +415,8 @@ code validate_transaction::check_secondaryissue_transaction(
         }
     }
 
-    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0) || asset_symbol.empty() || asset_address.empty()) {
+    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0)
+        || asset_symbol.empty() || asset_address.empty()) {
         return error::asset_secondaryissue_error;
     }
 
