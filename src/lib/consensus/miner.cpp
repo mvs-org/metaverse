@@ -516,7 +516,7 @@ uint64_t miner::store_block(block_ptr block)
 	auto f = [&height, &mutex](const error_code& code, boost::uint64_t new_height) -> void
 	{
 		if(new_height == 0 && code.value() != 0)
-			log::error(LOG_HEADER) << "store_block error_code: " << code.value();
+			log::error(LOG_HEADER) << "store_block error: " << code.message();
 
 		height = new_height;
 		mutex.unlock();

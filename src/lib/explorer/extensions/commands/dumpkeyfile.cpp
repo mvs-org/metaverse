@@ -107,7 +107,7 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     //Shared by full-wallet from now on. 2018-04-01
     file_root["version"] = "0.2.1";
     file_root["algo"] = "aes";
-    file_root["index"] = pvaddr->size();
+    file_root["index"] = uint64_t(pvaddr->size());
     file_root["mnemonic"] = cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth);
     file_root["accounts"] =  ss.str();
 
