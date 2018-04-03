@@ -426,6 +426,15 @@ Json::Value json_helper::prop_list(const bc::chain::asset_transfer& trans_info, 
     return tree;
 }
 
+Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
+{
+    Json::Value tree;
+    tree["symbol"] = cert_info.get_symbol();
+    tree["owner"] = cert_info.get_owner();
+    tree["certs"] = cert_info.get_certs_name();
+    return tree;
+}
+
 Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
@@ -449,9 +458,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 
     } else if (attach_data.get_type() == ASSET_CERT_TYPE) {
         auto&& cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
-        tree["symbol"] = cert_info.get_symbol();
-        tree["owner"] = cert_info.get_owner();
-        tree["certs"] = cert_info.get_certs_name();
+        tree = prop_list(cert_info);
         tree["type"] = "asset-cert";
 
     } else if(attach_data.get_type() == DID_TYPE) {

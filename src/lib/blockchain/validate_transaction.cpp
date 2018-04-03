@@ -653,7 +653,9 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
 {
     if(tx.version >= transaction_version::max_version){
         return error::transaction_version_error;
-    } else if (tx.version >= transaction_version::check_output_script) {
+    }
+
+    if (tx.version >= transaction_version::check_output_script) {
         for(auto& i : tx.outputs){
             if(i.script.pattern() == script_pattern::non_standard) {
                 return error::script_not_standard;
