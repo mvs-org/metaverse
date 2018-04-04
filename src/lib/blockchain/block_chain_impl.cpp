@@ -2122,7 +2122,7 @@ bool block_chain_impl::is_valid_address(const std::string& address)
 
 bool block_chain_impl::is_blackhole_address(const std::string& address)
 {	
-	return (address == "1111111111111111111114oLvT2");
+	return (address == wallet::payment_address::blackhole_address);
 }
 
 bool block_chain_impl::is_stealth_address(const std::string& address)

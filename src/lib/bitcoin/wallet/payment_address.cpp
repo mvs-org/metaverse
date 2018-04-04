@@ -36,6 +36,7 @@ namespace wallet {
 //chenhao bad modify
 uint8_t payment_address::mainnet_p2kh = 0x32;
 const uint8_t payment_address::mainnet_p2sh = 0x05;
+const std::string payment_address::blackhole_address = "1111111111111111111114oLvT2";
 
 payment_address::payment_address()
   : valid_(false), version_(0), hash_(null_short_hash)
@@ -288,6 +289,9 @@ payment_address payment_address::extract(const chain::script& script,
         case chain::script_pattern::sign_script_hash:
             BITCOIN_ASSERT(ops.size() > 1);
             break;
+        case chain::script_pattern::pay_blackhole_address:
+            BITCOIN_ASSERT(ops.size() == 1);
+            break;
         case chain::script_pattern::non_standard:
         default:;
     }
@@ -374,6 +378,9 @@ payment_address payment_address::extract(const chain::script& script,
         case chain::script_pattern::sign_script_hash:
             hash = bitcoin_short_hash(ops.back().data);
             return payment_address(hash, p2sh_version);
+
+        case chain::script_pattern::pay_blackhole_address:
+            return payment_address(blackhole_address);
 
         case chain::script_pattern::non_standard:
         default:
