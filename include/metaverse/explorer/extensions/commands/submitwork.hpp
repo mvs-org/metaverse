@@ -69,17 +69,17 @@ public:
         (
             "NOUNCE",
             value<std::string>(&argument_.nounce)->required(),
-            "nounce."
+            "nounce. without leading 0x"
         )
         (
             "HEADERHASH",
             value<std::string>(&argument_.header_hash)->required(),
-            "header hash."
+            "header hash. with leading 0x"
         )
         (
             "MIXHASH",
             value<std::string>(&argument_.mix_hash)->required(),
-            "mix hash."
+            "mix hash. with leading 0x"
         );
 
         return options;
