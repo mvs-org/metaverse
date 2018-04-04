@@ -685,7 +685,12 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         || (record.type == utxo_attach_type::deposit)
         || (((record.type == utxo_attach_type::asset_transfer) || (record.type == utxo_attach_type::asset_locked_transfer)) 
                 && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
+        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+            attachment attach(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
+            attach.set_to_did(record.attach_elem.get_to_did());
+            return attach;           
+        }
+        return attachment(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
     } 
 
     if(record.type == utxo_attach_type::asset_issue) {

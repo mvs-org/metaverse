@@ -102,6 +102,10 @@ bool attachment::from_data(reader& source)
     if (result)        
 		type = source.read_4_bytes_little_endian();
 
+	if (result && version == DID_ATTACH_VERIFY_VERSION) {
+			todid = source.read_string();
+	} 
+
 	result = static_cast<bool>(source);
     if (result && is_valid_type()) {
 		switch(type) {
@@ -139,9 +143,7 @@ bool attachment::from_data(reader& source)
 		auto visitor = from_data_visitor(source);
 		result = boost::apply_visitor(visitor, attach);
 
-		if (result && version == DID_ATTACH_VERIFY_VERSION) {
-			todid = source.read_string();
-		} 
+		
     }
 	else {
 		result = false;
@@ -173,12 +175,11 @@ void attachment::to_data(writer& sink) const
 	
     sink.write_4_bytes_little_endian(version);
     sink.write_4_bytes_little_endian(type);
-	auto visitor = to_data_visitor(sink);
-	boost::apply_visitor(visitor, attach);
 	if (version == DID_ATTACH_VERIFY_VERSION) {
 		sink.write_string(todid);
 	} 
-
+	auto visitor = to_data_visitor(sink);
+	boost::apply_visitor(visitor, attach);
 }
 
 uint64_t attachment::serialized_size() const
@@ -233,7 +234,7 @@ std::string attachment::get_to_did() const
 }
 void attachment::set_to_did(std::string did)
 { 
-     this->todid = todid;
+     this->todid = did;
 }
 
 attachment::attachment_data_type& attachment::get_attach()

@@ -112,8 +112,8 @@ public:
 private:
     uint32_t version;
     uint32_t type;
-    attachment_data_type attach;
 	std::string todid;
+    attachment_data_type attach;
 };
 
 } // namespace chain

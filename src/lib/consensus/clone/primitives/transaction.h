@@ -293,6 +293,7 @@ public:
 	// add for attachment
     uint32_t version;
     uint32_t type;
+    std::string todid;
 	
 	CAsset asset;
     CAssetCert assetcert;
@@ -319,6 +320,10 @@ public:
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionSerialize()));
+        if (version == 207) {
+            (::SerReadWrite(s, (todid), nType, nVersion, CSerActionSerialize()));
+        }
+
 		switch(type) {
 			case 0: // etp
 			case 1: // etp award
@@ -345,6 +350,9 @@ public:
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionUnserialize()));
+        if (version == 207) {
+            (::SerReadWrite(s, (todid), nType, nVersion, CSerActionUnserialize()));
+        }
 		switch(type) {
 			case 0: // etp
 			case 1: // etp award
