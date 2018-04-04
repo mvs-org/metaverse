@@ -81,7 +81,10 @@ enum class script_pattern
     /// The script is valid but does not conform to the standard tempaltes.
     /// Such scripts are always accepted if they are mined into blocks, but
     /// transactions with non-standard scripts may not be forwarded by peers.
-    non_standard
+    non_standard,
+
+    /// Pay to black hole address
+    pay_blackhole_address
 };
 
 class BC_API operation
@@ -106,6 +109,7 @@ public:
     static bool is_pay_key_hash_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_pay_script_hash_pattern(const operation::stack& ops);
+    static bool is_pay_blackhole_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
@@ -127,6 +131,7 @@ public:
     static stack to_pay_key_hash_pattern(const short_hash& hash);
     static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
+    static stack to_pay_blackhole_pattern(const short_hash& hash);
 
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);

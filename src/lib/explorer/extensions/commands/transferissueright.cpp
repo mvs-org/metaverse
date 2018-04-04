@@ -64,7 +64,7 @@ console_result transferissueright::invoke (Json::Value& jv_output,
     // check issue right
     auto certs_send = asset_cert_ns::issue;
     auto certs_owned = blockchain.get_address_asset_cert_type(argument_.from, argument_.symbol);
-    if (asset_cert::test_certs(certs_owned, certs_send))
+    if (!asset_cert::test_certs(certs_owned, certs_send))
         throw asset_cert_exception("no issue right to transfer");
 
     // receiver

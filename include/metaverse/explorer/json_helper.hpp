@@ -431,6 +431,13 @@ BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, const 
  */
 BCX_API Json::Value prop_list(const bc::chain::asset_transfer& trans_info, uint8_t decimal_number = max_uint8);
 
+/**
+ * Generate a property list for a asset cert.
+ * @param[in]  cert_info        The asset cert.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
+
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;
 };

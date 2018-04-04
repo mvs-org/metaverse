@@ -36,7 +36,7 @@ console_result getaddressassetright::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    if(!blockchain.is_valid_address(argument_.address))
+    if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
     Json::Value assetright;
@@ -45,13 +45,9 @@ console_result getaddressassetright::invoke (Json::Value& jv_output,
     auto sp_asset_certs = blockchain.get_address_asset_certs(argument_.address, "");
     if (sp_asset_certs) {
         for (const auto& business_cert : *sp_asset_certs) {
-            auto cert_type = business_cert.certs.get_certs();
-            if (cert_type != asset_cert_ns::none) {
-                Json::Value asset_cert;
+            if (business_cert.certs.get_certs() != asset_cert_ns::none) {
+                Json::Value asset_cert = config::json_helper(get_api_version()).prop_list(business_cert.certs);
                 asset_cert["address"] = business_cert.address;
-                asset_cert["symbol"] = business_cert.certs.get_symbol();
-                asset_cert["owner"] = business_cert.certs.get_owner();
-                asset_cert["certs"] = asset_cert::get_certs_name(cert_type);
                 assetright.append(asset_cert);
             }
         }

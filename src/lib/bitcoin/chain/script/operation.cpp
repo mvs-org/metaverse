@@ -352,6 +352,12 @@ bool operation::is_pay_script_hash_pattern(const operation::stack& ops)
         && ops[2].code == opcode::equal;
 }
 
+bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
+{
+    return ops.size() == 1
+        && ops[0].code == opcode::return_;
+}
+
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
 {
     if (ops.size() < 2 || !is_push_only(ops))
@@ -522,6 +528,14 @@ operation::stack operation::to_pay_script_hash_pattern(const short_hash& hash)
         { opcode::hash160, {} },
         { opcode::special, to_chunk(hash) },
         { opcode::equal, {} }
+    };
+}
+
+operation::stack operation::to_pay_blackhole_pattern(const short_hash&)
+{
+    return operation::stack
+    {
+        { opcode::return_, {} }
     };
 }
 

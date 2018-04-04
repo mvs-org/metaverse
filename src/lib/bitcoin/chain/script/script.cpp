@@ -113,6 +113,9 @@ script_pattern script::pattern() const
     if (operation::is_sign_script_hash_pattern(operations))
         return script_pattern::sign_script_hash;
 
+    if (operation::is_pay_blackhole_pattern(operations))
+        return script_pattern::pay_blackhole_address;
+
     return script_pattern::non_standard;
 }
 

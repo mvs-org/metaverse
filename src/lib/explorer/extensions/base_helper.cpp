@@ -771,7 +771,11 @@ void base_transfer_helper::populate_tx_outputs(){
             throw toaddress_invalid_exception{"invalid target address"};
 
         auto&& hash = payment.hash();
-        if (payment.version() == wallet::payment_address::mainnet_p2kh) 
+        if (blockchain_.is_blackhole_address(iter.target))
+        {
+            payment_ops = chain::operation::to_pay_blackhole_pattern(hash);
+        }
+        else if (payment.version() == wallet::payment_address::mainnet_p2kh)
         {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); 
         } 
