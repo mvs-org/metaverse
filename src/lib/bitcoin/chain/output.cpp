@@ -272,6 +272,16 @@ bool output::is_etp() const
 	return (attach_data.get_type() == ETP_TYPE);
 }
 
+bool output::is_etp_award() const
+{
+    return (attach_data.get_type() == ETP_AWARD_TYPE);
+}
+
+bool output::is_message() const
+{
+    return (attach_data.get_type() == MESSAGE_TYPE);
+}
+
 std::string output::get_asset_symbol() const // for validate_transaction.cpp to calculate asset transfer amount
 {
 	if(attach_data.get_type() == ASSET_TYPE) {
