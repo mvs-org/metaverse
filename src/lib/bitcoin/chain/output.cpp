@@ -110,10 +110,12 @@ code output::check_attachment_did_match_address(bc::blockchain::block_chain_impl
 {
    
     if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION ) {
-        auto address = get_script_address();
-        auto did = attach_data.get_to_did();
-        if ( did != chain.get_did_from_address(address)) {
-            return error::did_address_not_match;
+        auto todid = attach_data.get_to_did();
+        if (!todid.empty()) {
+            auto address = get_script_address();        
+            if ( todid != chain.get_did_from_address(address)) {
+                return error::did_address_not_match;
+            }
         }
     }
 

@@ -549,6 +549,12 @@ code validate_transaction::check_did_transaction(
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
 
+        if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION && !output.attach_data.get_from_did().empty()) {
+            if (!connect_input_address_match_did(tx,chain,output.attach_data.get_from_did())){
+                return error::did_address_not_match;
+            }
+        }
+
         if(output.is_did_issue()) {
             if (chain.is_did_exist(output.get_did_symbol(), false)) {
                 return error::did_exist;
@@ -631,6 +637,37 @@ bool validate_transaction::connect_did_input(
 
     return (found_did_info&&found_address_info&&info.get_status() ==  DID_TRANSFERABLE_TYPE)
             ||(found_address_info&&info.get_status() ==  DID_DETAIL_TYPE);
+}
+
+bool validate_transaction::connect_input_address_match_did(
+            const chain::transaction& tx,
+            blockchain::block_chain_impl& chain,
+            std::string did) {
+
+    if (did.empty()) {
+        return false;
+    }
+
+    if (tx.inputs.size() >1) {
+        return false;
+    }
+
+    const auto& input = tx.inputs[0];
+    
+    chain::transaction prev_tx;
+    uint64_t prev_height{0};
+    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+        return false;
+    }
+    auto prev_output = prev_tx.outputs.at(input.previous_output.index);
+
+    
+    auto address = prev_output.get_script_address();        
+    if ( did != chain.get_did_from_address(address)) {
+        return false;
+    }
+
+    return true;
 }
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)

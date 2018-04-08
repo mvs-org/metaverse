@@ -688,6 +688,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
             attachment attach(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
             attach.set_to_did(record.attach_elem.get_to_did());
+            attach.set_from_did(record.attach_elem.get_from_did());
             return attach;           
         }
         return attachment(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));

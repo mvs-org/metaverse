@@ -76,6 +76,11 @@ public:
             blockchain::block_chain_impl& chain,
             did info);
 
+    static bool connect_input_address_match_did(
+            const chain::transaction& tx,
+            blockchain::block_chain_impl& chain,
+            std::string did);
+
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,
         size_t parent_height, size_t last_block_height, uint64_t& value_in,

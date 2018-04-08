@@ -43,6 +43,8 @@ console_result didsendassetfrom::invoke (Json::Value& jv_output,
     std::string fromaddress = "";
     std::string toaddress = "";
 
+    attachment attach;
+    
     //support address as well as did
     if (blockchain.is_valid_address(argument_.fromdid))
     {
@@ -59,6 +61,7 @@ console_result didsendassetfrom::invoke (Json::Value& jv_output,
 
         auto diddetail = blockchain.get_issued_did(argument_.fromdid);
         fromaddress = diddetail->get_address();
+        attach.set_from_did(argument_.fromdid);
     }
 
     //support address as well as did
@@ -76,6 +79,7 @@ console_result didsendassetfrom::invoke (Json::Value& jv_output,
 
         auto diddetail=blockchain.get_issued_did(argument_.todid); 
         toaddress = diddetail->get_address();
+        attach.set_to_did(argument_.todid);
     }
 
     if (!argument_.amount)
@@ -83,8 +87,7 @@ console_result didsendassetfrom::invoke (Json::Value& jv_output,
    
 
     // receiver
-    attachment attach;
-    attach.set_to_did(argument_.todid);
+    
     attach.set_version(DID_ATTACH_VERIFY_VERSION);
     std::vector<receiver_record> receiver{
         {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}  

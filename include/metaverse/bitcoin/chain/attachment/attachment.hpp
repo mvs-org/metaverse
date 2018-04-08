@@ -100,6 +100,9 @@ public:
 
 	std::string get_to_did() const;
 	void set_to_did(std::string did);
+
+	std::string get_from_did() const;
+	void set_from_did(std::string did);
 	
 	template<class Type>
 	void set_attach(const Type& attach)
@@ -113,6 +116,7 @@ private:
     uint32_t version;
     uint32_t type;
 	std::string todid;
+	std::string fromdid;
     attachment_data_type attach;
 };
 
