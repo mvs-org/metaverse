@@ -280,19 +280,18 @@ void validate_transaction::check_fees()
     }
 	
     auto is_asset_type = (business_tp_in_ == ASSET_DETAIL_TYPE) || (business_tp_in_ == ASSET_TRANSFERABLE_TYPE);
-    if (is_asset_type && tx_->has_asset_transfer()) {
-	    if (!check_asset_amount(*tx_))
-	    {
-	        handle_validate_(error::asset_amount_not_equal, tx_, {});
-	        return;
-	    }
-		
-	    if (!check_asset_symbol(*tx_))
-	    {
-	        handle_validate_(error::asset_symbol_not_match, tx_, {});
-	        return;
-	    }
-	} else if (business_tp_in_ == ASSET_CERT_TYPE) {
+    if (is_asset_type) {
+        if (tx_->has_asset_transfer()) {
+            if (!check_asset_amount(*tx_)) {
+                handle_validate_(error::asset_amount_not_equal, tx_, {});
+                return;
+            }
+            if (!check_asset_symbol(*tx_)) {
+                handle_validate_(error::asset_symbol_not_match, tx_, {});
+                return;
+            }
+        }
+    } else if (business_tp_in_ == ASSET_CERT_TYPE) {
         if (!check_asset_certs(*tx_)) {
             handle_validate_(error::asset_cert_error, tx_, {});
             return;
@@ -981,6 +980,8 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
                 return false;
             }
             asset_certs_out |= asset_certs;
+        } else if (!output.get_asset_symbol().empty()) { // asset related
+            continue;
         } else if (!output.is_etp()) { // asset cert transfer tx only related to asset_cet and etp output
             return false;
         }
