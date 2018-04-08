@@ -53,7 +53,14 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     if (output.is_did_transfer()) {
         return utxo_attach_type::did_transfer;
     }
-    throw std::logic_error("get_utxo_attach_type : Unkown output type.");
+    if (output.is_message()) {
+        return utxo_attach_type::message;
+    }
+    if (output.is_etp_award()) {
+        throw std::logic_error("get_utxo_attach_type : Unexpected etp_award type.");
+    }
+    throw std::logic_error("get_utxo_attach_type : Unkown output type "
+            + std::to_string(output.attach_data.get_type()));
 }
 
 std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys){

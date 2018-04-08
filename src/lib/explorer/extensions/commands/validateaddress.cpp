@@ -46,6 +46,8 @@ console_result validateaddress::invoke (Json::Value& jv_output,
         version_info = "p2kh(test-net)";
     } else if (payment_address.version() ==  0x05 ) {
         version_info = "p2sh(multi-signature)";
+    } else if (blockchain.is_blackhole_address(argument_.address)) {
+        version_info = "p2blackhole";
     } else {
         version_info = "none";
         message = "invalid address!";
