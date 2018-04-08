@@ -81,7 +81,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address"
+            "target address to issue asset, also pay fees from this address."
         )
         (
             "SYMBOL",

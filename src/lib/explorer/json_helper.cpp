@@ -351,12 +351,16 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
 }
 
 // is_secondaryissue has no meaning for asset quantity summary.
-Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply)
+// don't add address info if show_address is not true.
+Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
+        bool is_maximum_supply, bool show_address)
 {
     Json::Value tree;
     tree["symbol"] = detail_info.get_symbol();
     tree["issuer"] = detail_info.get_issuer();
-    tree["address"] = detail_info.get_address();
+    if (show_address) {
+        tree["address"] = detail_info.get_address();
+    }
     tree["description"] = detail_info.get_description();
 
     const char* maximum_supply_or_quantity = is_maximum_supply ? "maximum_supply" : "quantity";
@@ -382,11 +386,15 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, b
 // detail_info only "symbol" "address" "quantity" info included in it.
 // issued_info include the other info.
 // is_secondaryissue has no meaning for asset quantity summary.
-Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info)
+// don't add address info if show_address is not true.
+Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
+        const bc::chain::asset_detail& issued_info, bool show_address)
 {
     Json::Value tree;
     tree["symbol"] = detail_info.get_symbol();
-    tree["address"] = detail_info.get_address();
+    if (show_address) {
+        tree["address"] = detail_info.get_address();
+    }
 
     tree["issuer"] = issued_info.get_issuer();
     tree["description"] = issued_info.get_description();

@@ -72,12 +72,12 @@ public:
         (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
-            "Account name."
+            BX_ACCOUNT_NAME
         )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
-            "Account password/authorization."
+            BX_ACCOUNT_AUTH
         )
         (
             "ADDRESS",
@@ -92,7 +92,7 @@ public:
         (
            "VOLUME",
            value<uint64_t>(&argument_.volume)->required(),
-           "The vlolume of asset"
+           "The volume of asset, with unit of integer bits."
         )
         (
             "mychange,m",

@@ -411,17 +411,19 @@ BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
  * Generate a property list for a asset detail.
  * @param[in]  detail_info          The asset detail.
  * @param[in]  is_maximum_supply    The asset amount means maximum_supply or quantity.
+ * @param[in]  show_address         A boolean value indicate whether show address.
  * @return             A property list.
  */
-BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply);
+BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply, bool show_address = true);
 
 /**
  * Generate a property list for a asset transfer with detail.
  * @param[in]  detail_info  The asset detail. only "symbol" "address" "quantity" info included in it.
  * @param[in]  issued_info  The issued asset detail. include the other info.
+ * @param[in]  show_address A boolean value indicate whether show address.
  * @return             A property list.
  */
-BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info);
+BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
 
 /**
  * Generate a property list for a asset transfer.

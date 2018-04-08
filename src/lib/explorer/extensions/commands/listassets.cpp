@@ -66,7 +66,7 @@ console_result listassets::invoke (Json::Value& jv_output,
         std::string addr;
         for (auto& each : *pvaddr){
             addr = each.get_address();
-            sync_fetch_asset_balance (addr, blockchain, sh_vec);
+            sync_fetch_asset_balance(addr, blockchain, sh_vec);
         }
         
         std::string symbol;
@@ -76,17 +76,16 @@ console_result listassets::invoke (Json::Value& jv_output,
             if (!issued_asset) {
                 continue;
             }
-            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset);
+            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset, false);
             asset_data["status"] = "unspent";
             assets.append(asset_data);
         }
         // 2. get asset in local database
         // shoudl filter all issued asset which be stored in local account asset database
         sh_vec->clear();
-        sh_vec = blockchain.get_issued_assets();
         auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);          
         for (auto& elem: *sh_unissued) {
-            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false);
+            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false, false);
             asset_data["status"] = "unissued";
             assets.append(asset_data);
         }

@@ -96,7 +96,7 @@ public:
         (
             "volume,v",
             value<non_negative_uint64>(&option_.maximum_supply)->required(),
-            "The asset maximum supply volume."
+            "The asset maximum supply volume, with unit of integer bits."
         )
         (
             "decimalnumber,n",
@@ -106,7 +106,7 @@ public:
 		(
             "issuer,i",
             value<std::string>(&option_.issuer),
-            "The asset issuer.defaults to account name."
+            "The asset issuer, defaults to account name."
         )
         (
             "description,d",
