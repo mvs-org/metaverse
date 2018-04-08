@@ -208,7 +208,8 @@ data_chunk transaction::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
+    uint64_t i =data.size() ;
+    BITCOIN_ASSERT(i == serialized_size());
 
     return data;
 }

@@ -189,7 +189,7 @@ uint64_t attachment::serialized_size() const
 {
 	uint64_t size = 0;
 	if(version == DID_ATTACH_VERIFY_VERSION) {
-		size = 4 + 4 + todid.size() + fromdid.size();
+		size = 4 + 4 + todid.size() + 1 + fromdid.size() + 1;
 	}
 	else {
 		size = 4 + 4;

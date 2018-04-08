@@ -293,6 +293,7 @@ public:
 	// add for attachment
     uint32_t version;
     uint32_t type;
+    std::string fromdid;
     std::string todid;
 	
 	CAsset asset;
@@ -321,6 +322,7 @@ public:
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionSerialize()));
         if (version == 207) {
+            (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionSerialize()));
             (::SerReadWrite(s, (todid), nType, nVersion, CSerActionSerialize()));
         }
 
@@ -351,6 +353,7 @@ public:
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionUnserialize()));
         if (version == 207) {
+            (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionUnserialize()));
             (::SerReadWrite(s, (todid), nType, nVersion, CSerActionUnserialize()));
         }
 		switch(type) {

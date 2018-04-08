@@ -76,6 +76,7 @@ public:
 	void store_output(const short_hash& key, const output_point& outpoint, 
 		uint32_t output_height, uint64_t value, uint16_t business_kd, uint32_t timestamp, BusinessDataType& business_data)
 	{
+        delete_last_row(key);
 		auto write = [&](memory_ptr data)
 		{
 			auto serial = make_serializer(REMAP_ADDRESS(data));
