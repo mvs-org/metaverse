@@ -37,7 +37,7 @@ using namespace std::placeholders;
 
 session_inbound::session_inbound(p2p& network)
   : session(network, true, true),
-    network_{network},
+    network_(network),
     CONSTRUCT_TRACK(session_inbound)
 {
 }

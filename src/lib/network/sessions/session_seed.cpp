@@ -40,7 +40,7 @@ using namespace std::placeholders;
 session_seed::session_seed(p2p& network)
   : session(network, true, false),
     CONSTRUCT_TRACK(session_seed),
-	network_{network}
+	network_(network)
 {
 }
 
