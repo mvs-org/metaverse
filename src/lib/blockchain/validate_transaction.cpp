@@ -160,7 +160,7 @@ void validate_transaction::set_last_height(const code& ec,
     asset_certs_in_ = asset_cert_ns::none;
 	old_symbol_in_ = "";
 	new_symbol_in_ = "";
-	business_tp_in_ = 0;
+	business_kind_in_ = business_kind::etp;
 
     // Begin looping through the inputs, fetching the previous tx.
     if (!tx_->inputs.empty())
@@ -235,7 +235,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
     if (!connect_input(*tx_, current_input_, previous_tx, parent_height,
         last_block_height_, value_in_, script_context::all_enabled,
         asset_amount_in_, asset_certs_in_,
-        old_symbol_in_, new_symbol_in_, business_tp_in_))
+        old_symbol_in_, new_symbol_in_, business_kind_in_))
     {
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
@@ -279,7 +279,7 @@ void validate_transaction::check_fees()
         return;
     }
 	
-    auto is_asset_type = (business_tp_in_ == ASSET_DETAIL_TYPE) || (business_tp_in_ == ASSET_TRANSFERABLE_TYPE);
+    auto is_asset_type = (business_kind_in_ == business_kind::asset_issue) || (business_kind_in_ == business_kind::asset_transfer);
     if (is_asset_type) {
         if (tx_->has_asset_transfer()) {
             if (!check_asset_amount(*tx_)) {
@@ -291,14 +291,14 @@ void validate_transaction::check_fees()
                 return;
             }
         }
-    } else if (business_tp_in_ == ASSET_CERT_TYPE) {
+    } else if (business_kind_in_ == business_kind::asset_cert) {
         if (!check_asset_certs(*tx_)) {
             handle_validate_(error::asset_cert_error, tx_, {});
             return;
         }
     }
 
-    auto is_did_type = (business_tp_in_ == DID_DETAIL_TYPE) || (business_tp_in_ == DID_TRANSFERABLE_TYPE);
+    auto is_did_type = (business_kind_in_ == business_kind::did_issue) || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
 		
 	    if (!check_did_symbol(*tx_))
@@ -842,7 +842,7 @@ bool validate_transaction::connect_input(const transaction& tx,
     size_t current_input, const transaction& previous_tx,
     size_t parent_height, size_t last_block_height, uint64_t& value_in,
     uint32_t flags, uint64_t& asset_amount_in, asset_cert_type& asset_certs_in,
-    std::string& old_symbol_in, std::string& new_symbol_in, uint32_t& business_tp_in)
+    std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in)
 {
     const auto& input = tx.inputs[current_input];
     const auto& previous_outpoint = tx.inputs[current_input].previous_output;
@@ -873,11 +873,11 @@ bool validate_transaction::connect_input(const transaction& tx,
 		}
 		// 3. set business type
         if (previous_output.is_asset_issue() || previous_output.is_asset_secondaryissue())
-            business_tp_in = ASSET_DETAIL_TYPE;
+            business_kind_in = business_kind::asset_issue;
         else if(previous_output.is_asset_transfer())
-            business_tp_in = ASSET_TRANSFERABLE_TYPE;
+            business_kind_in = business_kind::did_transfer;
     } else if (previous_output.is_asset_cert()) {
-        business_tp_in = ASSET_CERT_TYPE;
+        business_kind_in = business_kind::asset_cert;
         new_symbol_in = previous_output.get_asset_symbol();
         if (old_symbol_in.empty()) { // init old symbol
             old_symbol_in = new_symbol_in;
@@ -901,8 +901,11 @@ bool validate_transaction::connect_input(const transaction& tx,
 			}
 		}
 		// 3. set business type
-        if (previous_output.is_did_issue() || previous_output.is_did_transfer())
-            business_tp_in = DID_TRANSFERABLE_TYPE;
+        if (previous_output.is_did_issue()) {
+            business_kind_in = business_kind::did_issue;
+        } else if (previous_output.is_did_transfer()) {
+            business_kind_in = business_kind::did_transfer;
+        }
     } 
 
     if (previous_tx.is_coinbase())
