@@ -777,6 +777,7 @@ void block_chain_impl::fetch_block_header(uint64_t height,
     		if(result)
     		{
     			header = result.header();
+    			header.transaction_count = result.transaction_count();
     			found = true;
     		}
     	}
@@ -805,6 +806,7 @@ void block_chain_impl::fetch_block_header(const hash_digest& hash,
 			if(result)
 			{
 				header = result.header();
+				header.transaction_count = result.transaction_count();
 				found = true;
 			}
 		}
