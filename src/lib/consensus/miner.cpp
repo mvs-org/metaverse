@@ -183,7 +183,7 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 	pblock->transactions.push_back(tx_new);
 
 	// Fill in header 
-	pblock->header.previous_block_hash = {};
+	pblock->header.previous_block_hash = null_hash;
 	pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions); 
 	pblock->header.transaction_count = 1; 
 	pblock->header.version = 1;
