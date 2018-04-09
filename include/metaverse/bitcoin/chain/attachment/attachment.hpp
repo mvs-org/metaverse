@@ -99,10 +99,10 @@ public:
 	void set_type(uint32_t type);
 
 	std::string get_to_did() const;
-	void set_to_did(std::string did);
+	void set_to_did(const std::string& did);
 
 	std::string get_from_did() const;
-	void set_from_did(std::string did);
+	void set_from_did(const std::string& did);
 	
 	template<class Type>
 	void set_attach(const Type& attach)

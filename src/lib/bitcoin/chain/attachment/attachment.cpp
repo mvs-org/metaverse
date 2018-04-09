@@ -235,7 +235,7 @@ std::string attachment::get_to_did() const
 { 
     return todid;
 }
-void attachment::set_to_did(std::string did)
+void attachment::set_to_did(const std::string& did)
 { 
      this->todid = did;
 }
@@ -244,7 +244,7 @@ std::string attachment::get_from_did() const
 { 
     return fromdid;
 }
-void attachment::set_from_did(std::string did)
+void attachment::set_from_did(const std::string& did)
 { 
      this->fromdid = did;
 }
