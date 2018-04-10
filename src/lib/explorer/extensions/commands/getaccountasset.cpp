@@ -45,8 +45,31 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) 
         throw address_list_nullptr_exception{"nullptr for address list"};
+
+    if (option_.is_cert) { // only get asset certs
+        Json::Value assetcerts;
+
+        // get asset certs
+        auto sp_asset_certs = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
+        if (sp_asset_certs) {
+            for (const auto& business_cert : *sp_asset_certs) {
+                if (business_cert.certs.get_certs() != asset_cert_ns::none) {
+                    Json::Value asset_cert = config::json_helper(get_api_version()).prop_list(business_cert.certs);
+                    asset_cert["address"] = business_cert.address;
+                    assetcerts.append(asset_cert);
+                }
+            }
+        }
+
+        if (get_api_version() == 1 && assetcerts.isNull()) { //compatible for v1
+            jv_output["assetcerts"] = "";
+        } else {
+            jv_output["assetcerts"] = assetcerts;
+        }
+
+        return console_result::okay;
+    }
     
-    auto& aroot = jv_output;
     Json::Value assets;
 
     auto sh_vec = std::make_shared<std::vector<asset_detail>>();
@@ -86,9 +109,9 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     }
 
     if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        aroot["assets"] = "";
+        jv_output["assets"] = "";
     } else {
-        aroot["assets"] = assets;
+        jv_output["assets"] = assets;
     }
     
     return console_result::okay;
