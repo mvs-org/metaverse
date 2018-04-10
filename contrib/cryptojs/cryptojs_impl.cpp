@@ -23,11 +23,9 @@
 //
 #include "cryptojs_impl.h"
 #include "aes256_cbc.h"
-#include "../mongoose/mongoose.h"
+#include "md5.h"
 #include <metaverse/bitcoin/utility/random.hpp>
-#include <metaverse/bitcoin/utility/data.hpp>
 #include <metaverse/bitcoin/formats/base_64.hpp>
-#include <vector>
 #include <boost/smart_ptr.hpp>
 
 #define CONCAT(a,b) a.insert(a.end(), b.begin(), b.end())
@@ -36,12 +34,11 @@ namespace cryptojs {
     using libbitcoin::data_chunk;
 
     data_chunk MD5Hash(const data_chunk &data) {
-        unsigned char hash[16];
-        MD5_CTX ctx;
-        MD5_Init(&ctx);
-        MD5_Update(&ctx, data.data(), data.size());
-        MD5_Final(hash, &ctx);
-        return data_chunk(hash, hash + 16);
+        MD5 md5;
+        md5.update(data.data(), data.size());
+        md5.finalize();
+
+        return data_chunk(md5.raw_digest(), md5.raw_digest() + 16);
     }
 
     void derive_key(const data_chunk &passphrase, const data_chunk &salt, data_chunk &key, data_chunk &iv) {
