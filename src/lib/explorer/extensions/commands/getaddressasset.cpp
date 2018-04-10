@@ -35,14 +35,37 @@ using namespace bc::explorer::config;
 console_result getaddressasset::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    auto& aroot = jv_output;
-    Json::Value assets;
-    std::string symbol;
-
     auto& blockchain = node.chain_impl();
     if(!blockchain.is_valid_address(argument_.address)) 
         throw address_invalid_exception{"invalid address!"};
+
+    if (option_.is_cert) { // only get asset certs
+        Json::Value assetcerts;
+
+        // get asset certs
+        auto sp_asset_certs = blockchain.get_address_asset_certs(argument_.address, "");
+        if (sp_asset_certs) {
+            for (const auto& business_cert : *sp_asset_certs) {
+                if (business_cert.certs.get_certs() != asset_cert_ns::none) {
+                    Json::Value asset_cert = config::json_helper(get_api_version()).prop_list(business_cert.certs);
+                    asset_cert["address"] = business_cert.address;
+                    assetcerts.append(asset_cert);
+                }
+            }
+        }
+
+        if (get_api_version() == 1 && assetcerts.isNull()) { //compatible for v1
+            jv_output["assetcerts"] = "";
+        } else {
+            jv_output["assetcerts"] = assetcerts;
+        }
+
+        return console_result::okay;
+    }
     
+    Json::Value assets;
+    std::string symbol;
+
     // 1. get asset in blockchain
     std::set<std::string> symbol_set;
     std::vector<asset_detail> asset_vec; // just used asset_detail class
@@ -96,10 +119,10 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     }
 
     if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        aroot["assets"] = "";
+        jv_output["assets"] = "";
     }
     else {
-        aroot["assets"] = assets;
+        jv_output["assets"] = assets;
     }
 
     return console_result::okay;

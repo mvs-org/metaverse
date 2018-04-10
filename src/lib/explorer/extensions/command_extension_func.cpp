@@ -62,7 +62,6 @@
 #include <metaverse/explorer/extensions/commands/secondaryissue.hpp>
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
-#include <metaverse/explorer/extensions/commands/getaddressassetright.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
 #include <metaverse/explorer/extensions/commands/createdid.hpp>
 #include <metaverse/explorer/extensions/commands/issuedid.hpp>
@@ -151,7 +150,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<getasset>());
     func(make_shared<getaddressasset>());
     func(make_shared<getaccountasset>());
-    func(make_shared<getaddressassetright>());
     func(make_shared<createasset>());
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
@@ -329,8 +327,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<listdids>();
     if (symbol == didmodifyaddress::symbol())
         return make_shared<didmodifyaddress>();     
-    if (symbol == getaddressassetright::symbol())
-        return make_shared<getaddressassetright>();
     return nullptr;
 }
 

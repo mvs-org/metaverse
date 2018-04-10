@@ -70,7 +70,12 @@ public:
 			"ADDRESS",
 			value<std::string>(&argument_.address)->required(),
 			"address"
-		);
+		)
+        (
+            "cert",
+            value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
+            "If specified, then only get related asset cert. Default is not specified."
+        );
 
         return options;
     }
@@ -89,6 +94,7 @@ public:
 
     struct option
     {
+        bool is_cert;
     } option_;
 
 };
