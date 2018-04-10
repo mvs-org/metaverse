@@ -65,7 +65,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
-        throw std::logic_error{"asset is not allow secondary issue, or the threshold is illegal."};
+        throw asset_secondaryissue_threshold_exception{"asset is not allowed to secondary issue, or the threshold is illegal."};
 
     auto certs_send = asset_cert_ns::issue;
     auto certs_owned = blockchain.get_address_asset_cert_type(argument_.address, argument_.symbol);

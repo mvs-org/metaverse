@@ -127,7 +127,7 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_description_length_exception{"asset description length must be less than 64."};
     auto threshold = option_.secondaryissue_threshold;
     if ((threshold < -1) || (threshold > 100)) {
-        throw std::logic_error{"secondaryissue assetshare threshold value error, is must be -1 or in range of 0 to 100."};
+        throw asset_secondaryissue_threshold_exception{"secondaryissue threshold value error, is must be -1 or in range of 0 to 100."};
     }
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};

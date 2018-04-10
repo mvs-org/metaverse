@@ -86,7 +86,7 @@ public:
         (
 	        "rate,r",
 		    value<int32_t>(&option_.secondaryissue_threshold),
-		    "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than the rate value."
+		    "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than or equal to the rate value."
 		)
 	    (
             "symbol,s",
