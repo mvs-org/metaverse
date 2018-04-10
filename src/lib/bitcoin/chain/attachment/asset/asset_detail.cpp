@@ -41,6 +41,7 @@ asset_detail::asset_detail(
     symbol(symbol), maximum_supply(maximum_supply),
     decimal_number(decimal_number),
     secondaryissue_threshold(threshold),
+    attenuation_model_index(ATTENUATION_MODEL_NONE),
     unused2(0), unused3(0),
     issuer(issuer), address(address), description(description)
 {
@@ -79,6 +80,7 @@ void asset_detail::reset()
     maximum_supply = 0;
     decimal_number = 0;
     secondaryissue_threshold = 0;
+    attenuation_model_index = ATTENUATION_MODEL_NONE;
     unused2 = 0;
     unused3 = 0;
     issuer = "";
@@ -106,7 +108,9 @@ bool asset_detail::from_data(reader& source)
     maximum_supply = source.read_8_bytes_little_endian();
     decimal_number = source.read_byte();
     secondaryissue_threshold = source.read_byte();
-    unused2 = source.read_byte();
+    uint8_t byte_num = source.read_byte();
+    attenuation_model_index = (byte_num & 0x7); // lower 3 bits
+    unused2 = ((byte_num >> 3) & 0x1f); // higher 5 bits
     unused3 = source.read_byte();
     issuer = source.read_string();
     address =  source.read_string();
@@ -140,7 +144,8 @@ void asset_detail::to_data(writer& sink) const
     sink.write_8_bytes_little_endian(maximum_supply);
     sink.write_byte(decimal_number);
     sink.write_byte(secondaryissue_threshold);
-    sink.write_byte(unused2);
+    uint8_t byte_num = (attenuation_model_index + (unused2 << 3));
+    sink.write_byte(byte_num);
     sink.write_byte(unused3);
     sink.write_string(issuer);
     sink.write_string(address);
@@ -162,6 +167,7 @@ std::string asset_detail::to_string() const
         << "\t decimal_number = " << std::to_string(decimal_number) << "\n"
         << "\t is_asset_secondaryissue = " << (is_asset_secondaryissue() ? "true" : "false") << "\n"
         << "\t secondaryissue_threshold = " << std::to_string(get_secondaryissue_threshold()) << "\n"
+        << "\t attenuation_model_index = " << std::to_string(get_attenuation_model_index()) << "\n"
         << "\t issuer = " << issuer << "\n"
         << "\t address = " << address << "\n"
         << "\t description = " << description << "\n";

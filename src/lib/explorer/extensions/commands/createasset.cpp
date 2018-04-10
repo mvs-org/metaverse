@@ -67,6 +67,10 @@ console_result createasset::invoke (Json::Value& jv_output,
     if (option_.maximum_supply.volume == 0u)
         throw argument_legality_exception{"volume must not be zero."};
 
+    if (option_.attenuation_model_index >= ATTENUATION_MODEL_FIRST_UNUSED) {
+        throw asset_attenuation_model_exception{"attenuation model index is invalid, it must be lower than " + std::to_string(ATTENUATION_MODEL_FIRST_UNUSED)};
+    }
+
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
@@ -86,7 +90,8 @@ console_result createasset::invoke (Json::Value& jv_output,
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?
         asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
-
+    acc->set_attenuation_model_index(option_.attenuation_model_index);
+    
     blockchain.store_account_asset(acc);
 
     auto& aroot = jv_output;
