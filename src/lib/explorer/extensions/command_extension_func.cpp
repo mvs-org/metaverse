@@ -75,6 +75,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/burn.hpp>
 #include <metaverse/explorer/extensions/commands/transfercert.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
@@ -157,6 +158,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
+    func(make_shared<burn>());
     func(make_shared<transfercert>());
 
     // multi-sig
@@ -273,6 +275,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
+    if (symbol == burn::symbol())
+        return make_shared<burn>();
     if (symbol == transfercert::symbol())
         return make_shared<transfercert>();
     if (symbol == getwork::symbol())
@@ -303,8 +307,6 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendrawtx>();
     if (symbol == issuefrom::symbol())
         return make_shared<issuefrom>();
-    if (symbol == sendassetfrom::symbol())
-        return make_shared<sendassetfrom>();
     if (symbol == shutdown::symbol())
         return make_shared<shutdown>();
     if (symbol == getmemorypool::symbol())
