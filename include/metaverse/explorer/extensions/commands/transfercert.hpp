@@ -29,15 +29,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ transferissueright *************************/
+/************************ transfercert *************************/
 
-class transferissueright : public command_extension
+class transfercert : public command_extension
 {
 public:
-    static const char* symbol(){ return "transferissueright";}
+    static const char* symbol(){ return "transfercert";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "transferissueright"; }
+    const char* description() override { return "transfercert"; }
 
     arguments_metadata& load_arguments() override
     {
@@ -97,6 +97,11 @@ public:
             "asset symbol"
         )
         (
+            "issue",
+            value<bool>(&option_.is_issue)->default_value(false)->zero_tokens(),
+            "If specified, then transfer asset cert of ISSUE. Default is not specified."
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -122,6 +127,7 @@ public:
 
     struct option
     {
+        bool is_issue;
     } option_;
 
 };

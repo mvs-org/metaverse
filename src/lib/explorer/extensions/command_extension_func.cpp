@@ -75,7 +75,7 @@
 #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
-#include <metaverse/explorer/extensions/commands/transferissueright.hpp>
+#include <metaverse/explorer/extensions/commands/transfercert.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
 #include <metaverse/explorer/extensions/commands/setminingaccount.hpp>
@@ -157,7 +157,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
-    func(make_shared<transferissueright>());
+    func(make_shared<transfercert>());
 
     // multi-sig
     func(make_shared<getpublickey>());
@@ -273,8 +273,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol())
         return make_shared<sendassetfrom>();
-    if (symbol == transferissueright::symbol())
-        return make_shared<transferissueright>();
+    if (symbol == transfercert::symbol())
+        return make_shared<transfercert>();
     if (symbol == getwork::symbol())
         return make_shared<getwork>();
     if (symbol == submitwork::symbol())

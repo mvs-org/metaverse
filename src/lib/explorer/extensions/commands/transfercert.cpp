@@ -19,7 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/extensions/commands/transferissueright.hpp>
+#include <metaverse/explorer/extensions/commands/transfercert.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,7 +30,7 @@ namespace explorer {
 namespace commands {
 
 
-console_result transferissueright::invoke (Json::Value& jv_output,
+console_result transfercert::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -61,11 +61,19 @@ console_result transferissueright::invoke (Json::Value& jv_output,
     if (cert_owner.empty())
         throw did_address_needed_exception("target address is not an did address. " + argument_.to);
 
-    // check issue right
-    auto certs_send = asset_cert_ns::issue;
+    auto certs_send = asset_cert_ns::none;
+    if (option_.is_issue) {
+        certs_send |= asset_cert_ns::issue;
+    }
+    if (certs_send == asset_cert_ns::none) {
+        throw asset_cert_exception("no asset cert is specified to transfer");
+    }
+
+    // check issue cert
     auto certs_owned = blockchain.get_address_asset_cert_type(argument_.from, argument_.symbol);
-    if (!asset_cert::test_certs(certs_owned, certs_send))
-        throw asset_cert_exception("no issue right to transfer");
+    if (!asset_cert::test_certs(certs_owned, certs_send)) {
+        throw asset_cert_exception("do not have enough asset cert to transfer");
+    }
 
     // receiver
     std::vector<receiver_record> receiver{
