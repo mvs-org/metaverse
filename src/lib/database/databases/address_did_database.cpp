@@ -140,6 +140,10 @@ void address_did_database::store_input(const short_hash& key,
     rows_multimap_.add_row(key, write);
 }
 
+void address_did_database::delete_old_did(const short_hash& key)
+{
+	delete_last_row();
+}
 
 void address_did_database::delete_last_row(const short_hash& key)
 {

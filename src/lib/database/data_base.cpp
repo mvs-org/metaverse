@@ -814,8 +814,8 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
 		address_assets.sync();
 		/* end added for asset issue/transfer */
 
-        //address_dids.store_input(key, point, height, previous, timestamp_);
-		//address_dids.sync();
+        address_dids.delete_old_did(key);
+		address_dids.sync();
     }
 }
 

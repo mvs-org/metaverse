@@ -76,7 +76,7 @@ public:
 	void store_output(const short_hash& key, const output_point& outpoint, 
 		uint32_t output_height, uint64_t value, uint16_t business_kd, uint32_t timestamp, BusinessDataType& business_data)
 	{
-        delete_last_row(key);
+        //delete_last_row(key);
 		auto write = [&](memory_ptr data)
 		{
 			auto serial = make_serializer(REMAP_ADDRESS(data));
@@ -116,6 +116,9 @@ public:
 	business_address_message::list get_messages(const std::string& address, 
 		size_t from_height) const;
 	
+	//unbind the old did with address
+	void delete_old_did(const short_hash& key);
+
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 
