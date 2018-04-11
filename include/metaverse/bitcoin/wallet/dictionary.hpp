@@ -59,6 +59,16 @@ namespace language
     extern const dictionary_list all;
 }
 
+namespace symbol
+{
+    typedef std::array<const char*, 64> dictionary2;
+    // built in ban dict (upper case):
+    extern const dictionary2 ban_list; //S level
+    bool is_sensitive(const std::string& symbol);
+
+    // All built-in ban list:
+}
+
 } // namespace wallet
 } // namespace libbitcoin
 

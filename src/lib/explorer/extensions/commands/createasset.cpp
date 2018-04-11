@@ -24,79 +24,12 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 /************************ createasset *************************/
-static std::vector<std::string> forbidden_str {
-        "hujintao",
-        "wenjiabao",
-        "wjb",
-        "xijinping",
-        "xjp",
-        "tankman",
-        "liusi",
-        "vpn",
-        "64memo",
-        "gfw",
-        "freedom",
-        "freechina",
-        "likeqiang",
-        "zhouyongkang",
-        "lichangchun",
-        "wubangguo",
-        "heguoqiang",
-        "jiangzemin",
-        "jzm",
-        "fuck",
-        "shit",
-        "198964",
-        "64",
-        "gongchandang",
-        "gcd",
-        "tugong",
-        "communism",
-        "falungong",
-        "communist",
-        "party",
-        "ccp",
-        "cpc",
-        "hongzhi",
-        "lihongzhi",
-        "lhz",
-        "dajiyuan",
-        "zangdu",
-        "dalai",
-        "minzhu",
-        "China",
-        "Chinese",
-        "taiwan",
-        "SHABI",
-        "penis",
-        "j8",
-        "Islam",
-        "allha",
-        "USD",
-        "CNY",
-        "EUR",
-        "AUD",
-        "GBP",
-        "CHF",
-        "ETP",
-        "currency",
-        "asset",
-        "balance",
-        "exchange",
-        "token",
-        "BUY",
-        "SELL",
-        "ASK",
-        "BID",
-        "ZEN."
-};
 
 void validate(boost::any& v,
               const std::vector<std::string>& values,
@@ -137,14 +70,12 @@ console_result createasset::invoke (Json::Value& jv_output,
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-    for(auto& each : forbidden_str) {
-        if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
-            throw asset_symbol_name_exception{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
+    if(bc::wallet::symbol::is_sensitive(option_.symbol)) {
+        throw asset_symbol_name_exception{"invalid symbol start with " + option_.symbol};
     }
-    
-    auto ret = blockchain.is_asset_exist(option_.symbol);
-    if(ret) 
-        throw asset_symbol_existed_exception{"asset symbol is already exist, please use another one"};
+
+    if(blockchain.is_asset_exist(option_.symbol)) 
+        throw asset_symbol_existed_exception{"symbol is already used."};
 
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);

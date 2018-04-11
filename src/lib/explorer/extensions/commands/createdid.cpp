@@ -31,73 +31,6 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 /************************ createdid *************************/
-static std::vector<std::string> forbidden_str {
-        "hujintao",
-        "wenjiabao",
-        "wjb",
-        "xijinping",
-        "xjp",
-        "tankman",
-        "liusi",
-        "vpn",
-        "64memo",
-        "gfw",
-        "freedom",
-        "freechina",
-        "likeqiang",
-        "zhouyongkang",
-        "lichangchun",
-        "wubangguo",
-        "heguoqiang",
-        "jiangzemin",
-        "jzm",
-        "fuck",
-        "shit",
-        "198964",
-        "64",
-        "gongchandang",
-        "gcd",
-        "tugong",
-        "communism",
-        "falungong",
-        "communist",
-        "party",
-        "ccp",
-        "cpc",
-        "hongzhi",
-        "lihongzhi",
-        "lhz",
-        "dajiyuan",
-        "zangdu",
-        "dalai",
-        "minzhu",
-        "China",
-        "Chinese",
-        "taiwan",
-        "SHABI",
-        "penis",
-        "j8",
-        "Islam",
-        "allha",
-        "USD",
-        "CNY",
-        "EUR",
-        "AUD",
-        "GBP",
-        "CHF",
-        "ETP",
-        "currency",
-        "asset",
-        "balance",
-        "exchange",
-        "token",
-        "BUY",
-        "SELL",
-        "ASK",
-        "BID",
-        "ZEN.",
-        "DID"
-};
 
 void validate(boost::any& v,
               const std::vector<std::string>& values,
@@ -124,13 +57,13 @@ console_result createdid::invoke (Json::Value& jv_output,
         option_.symbol = auth_.name;
     }
     // maybe throw
-    blockchain.uppercase_symbol(option_.symbol);
+    auto symbol_check = option_.symbol; // only for check
+    blockchain.uppercase_symbol(symbol_check);
 
-    for(auto& each : forbidden_str) {
-        if (boost::starts_with(option_.symbol, boost::to_upper_copy(each)))
-            throw did_symbol_name_exception{"invalid symbol and can not begin with " + boost::to_upper_copy(each)};
+    if(bc::wallet::symbol::is_sensitive(symbol_check)) {
+        throw did_symbol_name_exception{"invalid symbol start with " + option_.symbol};
     }
-    
+
     auto ret = blockchain.is_did_exist(option_.symbol);
     if(ret) 
         throw did_symbol_existed_exception{"did symbol is already exist, please use another one"};
@@ -149,8 +82,6 @@ console_result createdid::invoke (Json::Value& jv_output,
     
     blockchain.store_account_did(acc);
 
-    //output<<option_.symbol<<" created at local, you can issue it.";
-    
     auto& aroot = jv_output;
     Json::Value did_data;
     did_data["symbol"] = acc->get_symbol();
