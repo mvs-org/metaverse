@@ -134,7 +134,7 @@ namespace cryptojs {
         return prefix;//libbitcoin::encode_base64(prefix);
     }
 
-    std::string decrypt(const data_chunk &cipher_txt, const std::string &passphrase_)
+    bool decrypt(const data_chunk &cipher_txt, const std::string &passphrase_, std::string &message)
     {
         const data_chunk &cipher_data = cipher_txt;
         /*if (false == libbitcoin::decode_base64(cipher_data, cipher_txt)){
@@ -144,7 +144,7 @@ namespace cryptojs {
         const data_chunk prefix = {0x53, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f};
         auto it = std::find_first_of(cipher_data.begin(), cipher_data.end(), prefix.begin(), prefix.end());
         if (it != cipher_data.begin()){
-            return "invalid cipher text!";
+            return false;
         }
 
         const data_chunk salt(cipher_data.begin() + 8, cipher_data.begin() + 16);
@@ -158,9 +158,10 @@ namespace cryptojs {
         data_chunk plain_data = aes256_cbc_decrypt(key, iv, encrypted);
         const uint8_t padding = plain_data[plain_data.size() - 1];
         if (padding > 0x10) {
-            return "invalid cipher text!";
+            return false;
         }
 
-        return std::string(plain_data.begin(), plain_data.begin() + plain_data.size() - padding);
+        message.assign(plain_data.begin(), plain_data.begin() + plain_data.size() - padding);
+        return true;
     }
 }

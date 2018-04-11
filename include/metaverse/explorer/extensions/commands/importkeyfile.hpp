@@ -42,6 +42,8 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
             .add("FILE", 1);
     }
 
@@ -49,6 +51,8 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(option_.file, "FILE", variables, input, raw);
     }
 
@@ -63,14 +67,19 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "password,p",
-            value<std::string>(&option_.depasswd)->required(),
-            "provide the password to decrypt the keyfile"
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
         )
         (
             "FILE",
             value<boost::filesystem::path>(&option_.file)->required(),
-            "account info file path"
+            "key file path."
         );
 
         return options;
@@ -90,12 +99,11 @@ public:
     struct option
     {
         option()
-          : file(""), depasswd("")
+          : file("")
         {
         }
 
         boost::filesystem::path file;
-        std::string depasswd;
     } option_;
 
 };
