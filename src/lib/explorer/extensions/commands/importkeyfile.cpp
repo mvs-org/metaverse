@@ -116,7 +116,7 @@ console_result importkeyfile::invoke (Json::Value& jv_output,
                 std::vector<std::string> vec_k;
 
                 const auto &k = multisigs[i]["k"];
-                for (int j=0; j < k.size(); ++j) {
+                for (unsigned int j=0; j < k.size(); ++j) {
                     std::string d = k[j].asString();
                     vec_k.push_back(d);
                 }
