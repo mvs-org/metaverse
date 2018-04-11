@@ -52,6 +52,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\account_info.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\base_helper.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\addnode.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\burn.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\changepasswd.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createdid.hpp" />
@@ -99,11 +100,10 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\mergeasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transferissueright.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
@@ -173,6 +173,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\account_info.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\base_helper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\addnode.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\burn.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\changepasswd.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createdid.cpp" />
@@ -220,11 +221,10 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\mergeasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transferissueright.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp" />

@@ -22,7 +22,6 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\blockchain_did.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\did.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\did_detail.cpp" />
-    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\did_transfer.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\etp\etp_award.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\message\message.cpp" />
@@ -178,7 +177,6 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\blockchain_did.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\did.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\did_detail.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\did_transfer.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\etp\etp_award.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\message\message.hpp" />

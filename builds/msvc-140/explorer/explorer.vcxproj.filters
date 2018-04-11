@@ -380,16 +380,16 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\mergeasset.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transferissueright.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\burn.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -729,16 +729,16 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\mergeasset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transferissueright.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\burn.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>

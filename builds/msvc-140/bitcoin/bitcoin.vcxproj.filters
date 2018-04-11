@@ -111,6 +111,12 @@
     <Filter Include="Header Files\impl\utility">
       <UniqueIdentifier>{c8c20504-4b54-41e1-b579-cb1d645b59ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\chain\attachment\did">
+      <UniqueIdentifier>{5d7a4cb5-55b6-43ab-bf4e-3c6704029f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\chain\attachment\did">
+      <UniqueIdentifier>{988d417c-c327-4d0d-8c55-d372478a4a90}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\lib\bitcoin\config\authority.cpp">
@@ -564,9 +570,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\did_detail.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\did_transfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_cert.cpp">
@@ -1136,9 +1139,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\did_detail.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\did_transfer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_cert.hpp">
