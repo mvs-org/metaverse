@@ -30,6 +30,15 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+void burn::set_defaults_from_config (po::variables_map& variables)
+{
+    // if --symbol="" is specified, throw an exception.
+    const auto& symbol = variables["symbol"];
+    if (!symbol.empty() && symbol.as<std::string>().empty()) {
+        throw asset_symbol_length_exception{"asset symbol can not be empty."};
+    }
+}
+
 console_result burn::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {

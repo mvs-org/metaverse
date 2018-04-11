@@ -81,30 +81,28 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address to burn ETP/assets"
+            "target address to burn ETP/assets."
         )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
-            "Asset integer bits. see asset <decimal_number>."
+            "amount of integer bits."
         )
         (
             "symbol,s",
             value<std::string>(&option_.symbol),
-            "Asset symbol, defaults to empty string. If non-empty, then burn assets specified by this symbol."
+            "If specified an asset symbol, then burn this asset. Default is not specified."
         )
         (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
+            "Transaction fee. defaults to 10000 ETP bits."
         );
 
         return options;
     }
 
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
+    void set_defaults_from_config (po::variables_map& variables) override;
 
     console_result invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node) override;
