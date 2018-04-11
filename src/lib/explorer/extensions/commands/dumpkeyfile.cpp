@@ -40,8 +40,7 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
 
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    std::vector<std::string> results;
-    boost::split(results, mnemonic, boost::is_any_of(" "));
+    auto&& results = bc::split(mnemonic, " ", true); // with trim
 
     if (*results.rbegin() != argument_.last_word){
         throw argument_legality_exception{"last word not matching."};

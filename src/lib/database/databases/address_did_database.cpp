@@ -142,7 +142,7 @@ void address_did_database::store_input(const short_hash& key,
 
 void address_did_database::delete_old_did(const short_hash& key)
 {
-	delete_last_row();
+	delete_last_row(key);
 }
 
 void address_did_database::delete_last_row(const short_hash& key)
