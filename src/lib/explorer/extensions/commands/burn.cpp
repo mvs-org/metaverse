@@ -36,48 +36,17 @@ console_result burn::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    if (!blockchain.is_valid_address(argument_.address))
-        throw fromaddress_invalid_exception{"invalid target address parameter!"};
-
     if (!argument_.amount)
         throw argument_legality_exception{"invalid amount parameter!"};
 
+    auto&& amount = std::to_string(argument_.amount);
     auto blackhole_address = wallet::payment_address::blackhole_address;
 
-    if (!option_.symbol.empty()) {
-        // check asset symbol
-        blockchain.uppercase_symbol(option_.symbol);
-        if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-            throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    std::stringstream sout("");
+    const char* cmds[]{"sendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_address.c_str(), argument_.symbol.c_str(), amount.c_str()};
 
-        // receiver
-        std::vector<receiver_record> receiver{
-            {blackhole_address, option_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}
-        };
-
-        auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                std::move(argument_.address), std::move(option_.symbol), std::move(receiver), argument_.fee);
-
-        send_helper.exec();
-
-        // json output
-        const auto& tx = send_helper.get_transaction();
-        jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
-
-    } else {
-        // receiver
-        std::vector<receiver_record> receiver{
-            {blackhole_address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}
-        };
-
-        auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                std::move(argument_.address), std::move(receiver), argument_.fee);
-
-        send_helper.exec();
-
-        // json output
-        const auto& tx = send_helper.get_transaction();
-        jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    if (dispatch_command(6, cmds, jv_output, node, 2) != console_result::okay) {
+        throw address_generate_exception(sout.str());
     }
 
     return console_result::okay;

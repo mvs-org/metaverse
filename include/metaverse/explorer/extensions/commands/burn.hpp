@@ -37,14 +37,14 @@ public:
     static const char* symbol(){ return "burn";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "burn everything, sends them to blackhole address."; }
+    const char* description() override { return "Burn asset to blackhole address 1111111111111111111114oLvT2."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("ADDRESS", 1)
+            .add("SYMBOL", 1)
             .add("AMOUNT", 1);
     }
 
@@ -54,7 +54,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -79,24 +79,14 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "ADDRESS",
-            value<std::string>(&argument_.address)->required(),
-            "target address to burn ETP/assets"
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "The asset will be burned."
         )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
             "Asset integer bits. see asset <decimal_number>."
-        )
-        (
-            "symbol,s",
-            value<std::string>(&option_.symbol),
-            "Asset symbol, defaults to empty string. If non-empty, then burn assets specified by this symbol."
-        )
-        (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
         );
 
         return options;
@@ -111,14 +101,12 @@ public:
 
     struct argument
     {
-        std::string address;
+        std::string symbol;
         uint64_t amount;
-        uint64_t fee;
     } argument_;
 
     struct option
     {
-        std::string symbol;
     } option_;
 
 };
