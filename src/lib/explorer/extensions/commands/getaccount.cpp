@@ -41,8 +41,7 @@ console_result getaccount::invoke (Json::Value& jv_output,
     //auto&& mnemonic = acc->get_mnemonic(auth_.auth);
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    std::vector<std::string> results;
-    boost::split(results, mnemonic, boost::is_any_of(" "));
+    auto&& results = bc::split(mnemonic, " ", true); // with trim
 
     if (*results.rbegin() != argument_.last_word){
         throw argument_dismatch_exception{"last word not matching."};

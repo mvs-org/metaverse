@@ -42,11 +42,8 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
     if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
     if (!option_.count || (option_.count & 0xfff00000)) { throw address_amount_exception("invalid address number parameter"); }
     
-    std::vector<std::string> words;
-    words.reserve(24);
-
-    //split mnemonic to words
-    boost::split(words, mnemonic, boost::is_any_of(" "));
+    //split mnemonic to vector words
+    auto&& words = bc::split(mnemonic, " ", true); // with trim
 
     if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
         throw mnemonicwords_amount_exception{"invliad size of backup words."};

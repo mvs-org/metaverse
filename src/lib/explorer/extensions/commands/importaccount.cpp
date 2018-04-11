@@ -39,7 +39,7 @@ console_result importaccount::invoke (Json::Value& jv_output,
     // parameter account name check
     auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
-     throw account_existed_exception{"account already exist"};
+        throw account_existed_exception{"account already exist"};
 
 #ifdef NDEBUG
 	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
@@ -49,7 +49,7 @@ console_result importaccount::invoke (Json::Value& jv_output,
 
     if (argument_.words.size() == 1)
     {
-        boost::split(argument_.words, argument_.words[0], boost::is_any_of(" "));
+       argument_.words = bc::split(argument_.words[0], " ", true);
     }
 
     // are vliad mnemonic words.
