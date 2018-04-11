@@ -19,7 +19,7 @@
  */
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <sstream>
-#include <boost/algorithm/string.hpp>
+#include <metaverse/bitcoin/utility/string.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
@@ -212,13 +212,13 @@ std::string asset_cert::get_certs_name() const
 std::string asset_cert::get_certs_name(asset_cert_type certs)
 {
     // collect cert names to a set container
-    std::set<std::string> name_vec;
+    std::vector<std::string> name_vec;
     if (test_certs(certs, asset_cert_ns::issue)) {
-        name_vec.insert(asset_cert_name_issue);
+        name_vec.emplace_back(asset_cert_name_issue);
     }
 
     // concat cert names, separated by comma
-    std::string certs_name = boost::join(name_vec, ",");
+    auto certs_name = bc::join(name_vec, ",");
 
     if (certs_name.empty()) {
         return "NONE";
@@ -230,8 +230,7 @@ std::string asset_cert::get_certs_name(asset_cert_type certs)
 asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
 {
     asset_cert_type certs = asset_cert_ns::none;
-    std::vector<std::string> name_vec;
-    boost::split(name_vec, certs_name, boost::is_any_of(","));
+    auto name_vec = bc::split(certs_name, ",");
     for (const auto& name : name_vec) {
         auto iter = cert_name_type_map.find(name);
         if (iter != cert_name_type_map.end()) {

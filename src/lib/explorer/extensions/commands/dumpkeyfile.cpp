@@ -46,7 +46,7 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
         throw argument_legality_exception{"last word not matching."};
     }
 
-    std::string keyfile_name = "mvs_keystore.json";
+    std::string keyfile_name = "mvs_keystore_" + auth_.name + ".json";
 
     if (argument_.dst.empty()) {
         // default path. provides download.
@@ -77,28 +77,28 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
             throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
     }
         
-    acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
+    //acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
 
     // account address info
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
-    std::string prv_key;
-    for (auto& each : *pvaddr){
-        prv_key = each.get_prv_key(auth_.auth);
-        each.set_prv_key(prv_key); // reset private key to plain text
-    }
+    //std::string prv_key;
+    //for (auto& each : *pvaddr){
+    //    prv_key = each.get_prv_key(auth_.auth);
+    //    each.set_prv_key(prv_key); // reset private key to plain text
+    //}
 
     // account asset info
-    auto sh_asset_vec = std::make_shared<std::vector<asset_detail>>();
-    auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
-    for (auto& elem: *sh_unissued) {
-        sh_asset_vec->push_back(elem.detail);         
-    }
-    account_info all_info(blockchain, auth_.auth, *acc, *pvaddr, *sh_asset_vec);
+    //auto sh_asset_vec = std::make_shared<std::vector<asset_detail>>();
+    //auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);
+    //for (auto& elem: *sh_unissued) {
+    //    sh_asset_vec->push_back(elem.detail);
+    //}
+    //account_info all_info(blockchain, auth_.auth, *acc, *pvaddr, *sh_asset_vec);
 
-    std::stringstream ss;
-    ss << all_info;
+    //std::stringstream ss;
+    //ss << all_info;
 
 
     Json::Value file_root;
@@ -106,9 +106,23 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     //Shared by full-wallet from now on. 2018-04-01
     file_root["version"] = "0.2.1";
     file_root["algo"] = "aes";
-    file_root["index"] = uint64_t(pvaddr->size());
+    file_root["index"] = uint32_t(pvaddr->size() - acc->get_multisig_vec().size());
     file_root["mnemonic"] = libbitcoin::encode_base64( cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth) );
-    file_root["accounts"] =  ss.str();
+    //file_root["accounts"] =  ss.str();
+
+    Json::Value multisig_lst;
+    for (auto ms : acc->get_multisig_vec()) {
+        Json::Value multisig;
+        multisig["m"] = ms.get_m();
+        multisig["n"] = ms.get_n();
+        multisig["s"] = ms.get_pubkey();
+        multisig["d"] = ms.get_description();
+        for (const std::string &cosigner_pubkey : ms.get_cosigner_pubkeys()) {
+            multisig["k"].append( cosigner_pubkey );
+        }
+        multisig_lst.append(multisig);
+    }
+    file_root["multisigs"] = multisig_lst;
 
     // store encrypted data to file
     bc::ofstream file_output(argument_.dst.string(), std::ofstream::out);
