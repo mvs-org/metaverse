@@ -25,14 +25,13 @@
 #include "aes256_cbc.h"
 #include "md5.h"
 #include <metaverse/bitcoin/utility/random.hpp>
-#include <metaverse/bitcoin/formats/base_64.hpp>
 #include <boost/smart_ptr.hpp>
+
 
 #define CONCAT(a,b) a.insert(a.end(), b.begin(), b.end())
 
 namespace cryptojs {
-    using libbitcoin::data_chunk;
-
+    //using libbitcoin::data_chunk;
     data_chunk MD5Hash(const data_chunk &data) {
         MD5 md5;
         md5.update(data.data(), data.size());
@@ -104,7 +103,7 @@ namespace cryptojs {
         return data_chunk(p, p + BLOCK_SIZE);
     }
 
-    std::string encrypt(const std::string &message, const std::string &passphrase_) {
+    data_chunk encrypt(const std::string &message, const std::string &passphrase_) {
         const auto nonce = bc::pseudo_random();
 
         data_chunk salt = {
@@ -132,20 +131,20 @@ namespace cryptojs {
         CONCAT(prefix, salt);
         CONCAT(prefix, encrypted);
 
-        return libbitcoin::encode_base64(prefix);
+        return prefix;//libbitcoin::encode_base64(prefix);
     }
 
-    std::string decrypt(const std::string &cipher_txt, const std::string &passphrase_)
+    std::string decrypt(const data_chunk &cipher_txt, const std::string &passphrase_)
     {
-        data_chunk cipher_data;
-        if (false == libbitcoin::decode_base64(cipher_data, cipher_txt)){
+        const data_chunk &cipher_data = cipher_txt;
+        /*if (false == libbitcoin::decode_base64(cipher_data, cipher_txt)){
             return "base64 cipher text decode error";
-        }
+        }*/
 
         const data_chunk prefix = {0x53, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x5f, 0x5f};
         auto it = std::find_first_of(cipher_data.begin(), cipher_data.end(), prefix.begin(), prefix.end());
         if (it != cipher_data.begin()){
-            return "invalid cipher text";
+            return "invalid cipher text!";
         }
 
         const data_chunk salt(cipher_data.begin() + 8, cipher_data.begin() + 16);
@@ -159,7 +158,7 @@ namespace cryptojs {
         data_chunk plain_data = aes256_cbc_decrypt(key, iv, encrypted);
         const uint8_t padding = plain_data[plain_data.size() - 1];
         if (padding > 0x10) {
-            return "invalid cipher text";
+            return "invalid cipher text!";
         }
 
         return std::string(plain_data.begin(), plain_data.begin() + plain_data.size() - padding);

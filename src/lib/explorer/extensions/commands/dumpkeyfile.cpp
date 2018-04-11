@@ -22,7 +22,7 @@
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/account_info.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-
+#include <metaverse/bitcoin/formats/base_64.hpp>
 #include <cryptojs/cryptojs_impl.h>
 
 namespace libbitcoin {
@@ -108,7 +108,7 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
     file_root["version"] = "0.2.1";
     file_root["algo"] = "aes";
     file_root["index"] = uint64_t(pvaddr->size());
-    file_root["mnemonic"] = cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth);
+    file_root["mnemonic"] = libbitcoin::encode_base64( cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth) );
     file_root["accounts"] =  ss.str();
 
     // store encrypted data to file

@@ -25,12 +25,13 @@
 #ifndef METAVERSE_CRYPTOJS_IMPL_H
 #define METAVERSE_CRYPTOJS_IMPL_H
 
+#include <vector>
 #include <string>
 
 namespace cryptojs {
+    typedef std::vector<uint8_t> data_chunk;
+    data_chunk encrypt(const std::string &message, const std::string &passphrase_);
 
-    std::string encrypt(const std::string &message, const std::string &passphrase_);
-
-    std::string decrypt(const std::string &cipher_txt, const std::string &passphrase_);
+    std::string decrypt(const data_chunk &cipher_txt, const std::string &passphrase_);
 }
 #endif //METAVERSE_CRYPTJS_IMPL_H
