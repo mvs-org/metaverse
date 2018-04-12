@@ -725,12 +725,8 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         auto msg = boost::get<bc::chain::blockchain_message>(record.attach_elem.get_attach());
         return attachment(MESSAGE_TYPE, attach_version, msg);
     } else if(record.type == utxo_attach_type::did_issue) {
-        auto sh_did = blockchain_.get_account_unissued_did(name_, symbol_);
-        if(!sh_did)
-            throw did_symbol_notfound_exception{symbol_ + " not found"};
-     
-        sh_did->set_address(record.target); // target is setted in metaverse_output.cpp
-        auto ass = did(DID_DETAIL_TYPE, *sh_did);
+        did_detail diddetail (symbol_,record.target);
+        auto ass = did(DID_DETAIL_TYPE, diddetail);
         return attachment(DID_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::did_transfer) {
         auto sh_did = blockchain_.get_issued_did(symbol_);

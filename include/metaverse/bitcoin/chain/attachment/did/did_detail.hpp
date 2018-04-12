@@ -33,14 +33,10 @@ namespace libbitcoin {
 namespace chain {
 
 BC_CONSTEXPR size_t DID_DETAIL_SYMBOL_FIX_SIZE = 64;
-BC_CONSTEXPR size_t DID_DETAIL_ISSUER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t DID_DETAIL_ADDRESS_FIX_SIZE = 64;
-BC_CONSTEXPR size_t DID_DETAIL_DESCRIPTION_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t DID_DETAIL_FIX_SIZE = DID_DETAIL_SYMBOL_FIX_SIZE
-			+ DID_DETAIL_ISSUER_FIX_SIZE
-			+ DID_DETAIL_ADDRESS_FIX_SIZE
-			+ DID_DETAIL_DESCRIPTION_FIX_SIZE;
+			+ DID_DETAIL_ADDRESS_FIX_SIZE;
 
 class BC_API did_detail
 {
@@ -53,8 +49,7 @@ public:
 	};
 	typedef std::vector<did_detail> list;
 	did_detail();
-	did_detail(std::string symbol, std::string issuer,
-		std::string address, std::string description);
+	did_detail(std::string symbol, std::string address);
     static did_detail factory_from_data(const data_chunk& data);
     static did_detail factory_from_data(std::istream& stream);
     static did_detail factory_from_data(reader& source);
@@ -75,30 +70,13 @@ public:
     uint64_t serialized_size() const;
 	const std::string& get_symbol() const;
 	void set_symbol(const std::string& symbol);
-	const std::string& get_issuer() const;
-	void set_issuer(const std::string& issuer);
 	const std::string& get_address() const;
 	void set_address(const std::string& address);
-	const std::string& get_description() const;
-	void set_description(const std::string& description);
 
 private:    
     std::string symbol;
-    //uint32_t did_type;
-    std::string issuer; 
     std::string address;
-    std::string description;
-    //uint64_t issue_price;
 
-    //restrict section
-    //uint32_t number_of_decimal_point; //number of decimal point
-    //life circle
-    //uint64_t flag; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation did
-    //std::string authentication_organization; //authentication organization
 };
 
 } // namespace chain

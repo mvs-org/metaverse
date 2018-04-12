@@ -50,7 +50,7 @@ console_result didsendfrom::invoke (Json::Value& jv_output,
         blockchain.uppercase_symbol(argument_.fromdid);
         if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
-        if(!blockchain.is_did_exist(argument_.fromdid, false))
+        if(!blockchain.is_did_exist(argument_.fromdid))
             throw did_symbol_existed_exception{"fromdid symbol is not exist in blockchain"};  
 
         auto diddetail=blockchain.get_issued_did(argument_.fromdid); 
@@ -68,7 +68,7 @@ console_result didsendfrom::invoke (Json::Value& jv_output,
         blockchain.uppercase_symbol(argument_.todid);
         if (argument_.todid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"todid symbol length must be less than 64."};
-        if(!blockchain.is_did_exist(argument_.todid, false))
+        if(!blockchain.is_did_exist(argument_.todid))
             throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};  
 
         auto diddetail=blockchain.get_issued_did(argument_.todid); 

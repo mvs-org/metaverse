@@ -35,9 +35,8 @@ did_detail::did_detail()
 	reset();
 }
 did_detail::did_detail(
-    std::string symbol, std::string issuer,
-    std::string address, std::string description):
-    symbol(symbol), issuer(issuer), address(address), description(description)
+    std::string symbol, std::string address):
+    symbol(symbol), address(address)
 {
 }
 
@@ -70,21 +69,7 @@ bool did_detail::is_valid() const
 void did_detail::reset()
 {	
     symbol = "";
-    //did_type = 0;
-    issuer = ""; 
     address = "";
-    description = "";
-    //issue_price = 0;
-
-    //restrict section
-    //number_of_decimal_point = 0; //number of decimal point
-    //life circle
-    //flag = 0; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //fee = 0.0;
-    //correlation did
-    //authentication_organization = ""; //authentication organization
 }
 
 bool did_detail::from_data(const data_chunk& data)
@@ -104,21 +89,8 @@ bool did_detail::from_data(reader& source)
     reset();
 
     symbol = source.read_string();
-    //did_type = source.read_4_bytes_little_endian();
-    issuer = source.read_string(); 
     address =  source.read_string();
-    description =  source.read_string();
-    //issue_price =  source.read_8_bytes_little_endian();
 
-    //restrict section
-    //number_of_decimal_point =  source.read_4_bytes_little_endian(); //number of decimal point
-    //life circle
-    //flag =  source.read_8_bytes_little_endian(); //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation did
-    //authentication_organization =  source.read_string(); //authentication organization
     auto result = static_cast<bool>(source);
     if (!result)
         reset();
@@ -145,10 +117,7 @@ void did_detail::to_data(std::ostream& stream) const
 void did_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
-	//sink.write_4_bytes_little_endian(did_type);
-	sink.write_string(issuer);
 	sink.write_string(address);
-	sink.write_string(description);
 }
 
 uint64_t did_detail::serialized_size() const
@@ -159,7 +128,7 @@ uint64_t did_detail::serialized_size() const
 
 uint32_t did_detail::count_size() const 
 {
-    return symbol.size()  + issuer.size() + address.size() + description.size() + 4;
+    return symbol.size()  + address.size() + 2;
 }
 
 std::string did_detail::to_string() const
@@ -167,9 +136,7 @@ std::string did_detail::to_string() const
     std::ostringstream ss;
 
     ss << "\t symbol = " << symbol << "\n"
-		<< "\t issuer = " << issuer << "\n"
-		<< "\t address = " << address << "\n"
-        << "\t description=" << description << "\n";
+		<< "\t address = " << address << "\n";
 
     return ss.str();
 }
@@ -178,10 +145,7 @@ void did_detail::to_json(std::ostream& output)
 {
 	minijson::object_writer json_writer(output);
 	json_writer.write("symbol", symbol);
-	//json_writer.write("did_type", did_type);
-	json_writer.write("issuer", issuer);
 	json_writer.write("address", address);
-	json_writer.write("description", description);
 	json_writer.close();
 }
 
@@ -195,16 +159,6 @@ void did_detail::set_symbol(const std::string& symbol)
     this->symbol = symbol.substr(0, len);
 }
 
-const std::string& did_detail::get_issuer() const
-{ 
-    return issuer;
-}
-void did_detail::set_issuer(const std::string& issuer)
-{ 
-    size_t len = std::min(issuer.size()+1 , DID_DETAIL_ISSUER_FIX_SIZE);
-    this->issuer = issuer.substr(0, len);
-}
-
 const std::string& did_detail::get_address() const
 { 
     return address;
@@ -214,17 +168,6 @@ void did_detail::set_address(const std::string& address)
      size_t len = std::min(address.size()+1 , DID_DETAIL_ADDRESS_FIX_SIZE);
 	 this->address = address.substr(0, len);
 }
-
-const std::string& did_detail::get_description() const
-{ 
-    return description;
-}
-void did_detail::set_description(const std::string& description)
-{ 
-     size_t len = std::min(description.size()+1 , DID_DETAIL_DESCRIPTION_FIX_SIZE);
-	 this->description = description.substr(0, len);
-}
-
 
 } // namspace chain
 } // namspace libbitcoin

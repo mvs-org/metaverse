@@ -555,11 +555,11 @@ code validate_transaction::check_did_transaction(
         }
 
         if(output.is_did_issue()) {
-            if (chain.is_did_exist(output.get_did_symbol(), false)) {
+            if (chain.is_did_exist(output.get_did_symbol())) {
                 return error::did_exist;
             }
 
-            if (chain.is_address_issued_did(output.get_did_address(), false)) {
+            if (chain.is_address_issued_did(output.get_did_address())) {
                 return error::address_issued_did;
             }
 
@@ -574,11 +574,11 @@ code validate_transaction::check_did_transaction(
         }
         else if (output.is_did_transfer()) {
             //did transfer only for did is exist
-            if (!chain.is_did_exist(output.get_did_symbol(), false)) {
+            if (!chain.is_did_exist(output.get_did_symbol())) {
                 return error::did_not_exist;
             }
 
-            if (chain.is_address_issued_did(output.get_did_address(), false)) {
+            if (chain.is_address_issued_did(output.get_did_address())) {
                 return error::address_issued_did;
             }
 

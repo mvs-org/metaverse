@@ -55,9 +55,7 @@ console_result listdids::invoke (Json::Value& jv_output,
             Json::Value did_data;
             
             did_data["symbol"] = elem.get_symbol();
-            did_data["issuer"] = elem.get_issuer();
             did_data["address"] = elem.get_address();
-            did_data["description"] = elem.get_description();
             did_data["status"] = "issued";
             dids.append(did_data);
         }
@@ -82,34 +80,8 @@ console_result listdids::invoke (Json::Value& jv_output,
             Json::Value did_data;
             did_data["symbol"] = elem.get_symbol();
             symbol = elem.get_symbol();
-            did_data["issuer"] = elem.get_issuer();
             did_data["address"] = elem.get_address();
-            did_data["description"] = elem.get_description();
             did_data["status"] = "issued";
-            dids.append(did_data);
-        }
-        // 2. get did in local database
-        // shoudl filter all issued did which be stored in local account did database
-        sh_vec->clear();
-        sh_vec = blockchain.get_issued_dids();
-        //std::shared_ptr<std::vector<business_address_did>>
-        auto sh_unissued = blockchain.get_account_unissued_dids(auth_.name);          
-        for (auto& elem: *sh_unissued) {
-            
-            auto symbol = elem.detail.get_symbol();            
-            auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const did_detail& elem){
-                    return symbol == elem.get_symbol();
-                    });
-            
-            if (pos != sh_vec->end()){ // did already issued in blockchain
-                continue;
-            } 
-            Json::Value did_data;
-            did_data["symbol"] = elem.detail.get_symbol();
-            did_data["issuer"] = elem.detail.get_issuer();
-            did_data["address"] = elem.detail.get_address();
-            did_data["description"] = elem.detail.get_description();
-            did_data["status"] = "unissued";
             dids.append(did_data);
         }
     }

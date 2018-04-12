@@ -51,10 +51,8 @@
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
-#include <metaverse/database/databases/account_did_database.hpp>
-#include <metaverse/database/databases/address_did_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
-
+#include <metaverse/database/databases/address_did_database.hpp>
 
 using namespace libbitcoin::wallet;                                         
 using namespace libbitcoin::chain;   
@@ -403,10 +401,8 @@ public:
     address_asset_database address_assets;
     account_asset_database account_assets;
     //did_database dids;    
-    account_did_database account_dids;
     blockchain_did_database dids;
     address_did_database address_dids;
-    
     account_address_database account_addresses;
 	/* end database for account, asset, address_asset relationship */
 };

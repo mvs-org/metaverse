@@ -207,9 +207,7 @@ class CDidDetail
 {
 public:
     std::string symbol;
-    std::string issuer; 
     std::string address;
-    std::string description;
 
 	
     ADD_SERIALIZE_METHODS;
@@ -217,9 +215,7 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(symbol);
-        READWRITE(issuer);
         READWRITE(address);
-        READWRITE(description);
     }
 };
 
@@ -227,9 +223,7 @@ class CDidTransfer
 {
 public:
     std::string symbol;
-    std::string issuer; 
     std::string address;
-    std::string description;
 
 	
     ADD_SERIALIZE_METHODS;
@@ -237,9 +231,7 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(symbol);
-        READWRITE(issuer);
         READWRITE(address);
-        READWRITE(description);
     }
 };
 

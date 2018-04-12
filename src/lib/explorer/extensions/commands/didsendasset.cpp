@@ -51,7 +51,7 @@ console_result didsendasset::invoke (Json::Value& jv_output,
         blockchain.uppercase_symbol(argument_.did);
         if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"did symbol length must be less than 64."};   
-        if(!blockchain.is_did_exist(argument_.did, false))
+        if(!blockchain.is_did_exist(argument_.did))
             throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};     
         if (!argument_.amount)
             throw asset_amount_exception{"invalid asset amount parameter!"};

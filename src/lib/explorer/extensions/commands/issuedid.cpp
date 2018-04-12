@@ -39,7 +39,7 @@ console_result issuedid::invoke (Json::Value& jv_output,
 
     if(argument_.fee < 100000000)
         throw did_issue_poundage_exception{"issue did fee less than 100000000 satoshi = 1 etp!"};
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
+    if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
@@ -48,21 +48,13 @@ console_result issuedid::invoke (Json::Value& jv_output,
          throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
         
     // fail if did is already in blockchain
-    if(blockchain.is_did_exist(argument_.symbol, false))
+    if(blockchain.is_did_exist(argument_.symbol))
         throw did_symbol_existed_exception{"did symbol is already exist in blockchain"};
 
     // fail if address is already binded with did in blockchain
-    if(blockchain.is_address_issued_did(argument_.address, false))
+    if(blockchain.is_address_issued_did(argument_.address))
         throw did_symbol_existed_exception{"address is already binded with some did in blockchain"};
 
-    // local database did check
-    auto sh_did = blockchain.get_account_unissued_did(auth_.name, argument_.symbol);
-    if(!sh_did)
-        throw did_symbol_notfound_exception{argument_.symbol + " not found"};
-    #if 0
-    if(did_detail::did_detail_type::created != sh_did->at(0).detail.get_did_type())
-        throw did_symbol_duplicate_exception{argument_.symbol + " has been issued"};
-    #endif
 
     // receiver
     std::vector<receiver_record> receiver{
@@ -74,20 +66,6 @@ console_result issuedid::invoke (Json::Value& jv_output,
     issue_helper.exec();
     // json output
     auto tx = issue_helper.get_transaction();
-#if 0
-    auto issue_helper = issuing_locked_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-    
-    issue_helper.exec();
-    // json output
-    auto tx = issue_helper.get_transaction();
-#endif
-    // change did status
-    #if 0
-    sh_did->at(0).detail.set_did_type(did_detail::did_detail_type::issued_not_in_blockchain);
-    auto detail = std::make_shared<did_detail>(sh_did->at(0).detail);
-    blockchain.store_account_did(detail);
-    #endif
 
     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 

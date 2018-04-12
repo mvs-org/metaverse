@@ -122,8 +122,6 @@ data_base::store::store(const path& prefix)
     dids_lookup = prefix / "did_table"; 
     address_dids_lookup = prefix / "address_did_table"; // for blockchain 
 	address_dids_rows = prefix / "address_did_row"; // for blockchain 
-    account_dids_lookup = prefix / "account_did_table";
-    account_dids_rows = prefix / "account_did_row";
 	account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
 	/* end database for account, asset, address_asset relationship */
@@ -160,8 +158,6 @@ bool data_base::store::touch_all() const
         touch_file(dids_lookup)&&
         touch_file(address_dids_lookup)&&
         touch_file(address_dids_rows)&&
-        touch_file(account_dids_lookup)&&
-        touch_file(account_dids_rows)&&
 		touch_file(account_addresses_lookup)&&
 		touch_file(account_addresses_rows);
 		/* end database for account, asset, address_asset relationship */
@@ -172,9 +168,7 @@ bool data_base::store::dids_exist() const
     return
         boost::filesystem::exists(dids_lookup) ||
         boost::filesystem::exists(address_dids_lookup) ||
-        boost::filesystem::exists(address_dids_rows) ||
-        boost::filesystem::exists(account_dids_lookup) ||
-        boost::filesystem::exists(account_dids_rows);
+        boost::filesystem::exists(address_dids_rows);
 }
 
 bool data_base::store::touch_dids() const
@@ -182,9 +176,7 @@ bool data_base::store::touch_dids() const
     return
         touch_file(dids_lookup) &&
         touch_file(address_dids_lookup) &&
-        touch_file(address_dids_rows) &&
-        touch_file(account_dids_lookup) &&
-        touch_file(account_dids_rows);
+        touch_file(address_dids_rows);
 }
 
 data_base::blockchain_store::blockchain_store(const path& prefix)
@@ -418,7 +410,6 @@ data_base::data_base(const store& paths, size_t history_height,
 	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
 	account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
     dids(paths.dids_lookup, mutex_),
-    account_dids(paths.account_dids_lookup, paths.account_dids_rows, mutex_),
 	address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),    
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
 	/* end database for account, asset, address_asset, did relationship */
@@ -481,7 +472,6 @@ bool data_base::create()
 		address_assets.create()&&
 		account_assets.create()&&
         dids.create()&&
-        account_dids.create()&&
 		address_dids.create()&&        
 		account_addresses.create()
 		/* end database for account, asset, address_asset relationship */
@@ -526,7 +516,6 @@ bool data_base::create_dids()
 {
     return
         dids.create()&&
-        account_dids.create()&&
         address_dids.create();
 }
 
@@ -535,8 +524,7 @@ bool data_base::account_db_start()
 	return 
 		accounts.start()&&
 		account_assets.start()&&
-		account_addresses.start()&&
-        account_dids.start();
+		account_addresses.start();
 }
 
 // Start must be called before performing queries.
@@ -570,7 +558,6 @@ bool data_base::start()
 		address_assets.start()&&
 		account_assets.start()&&
         dids.start()&&
-        account_dids.start()&&
 		address_dids.start()&&
 		account_addresses.start()
 		/* end database for account, asset, address_asset relationship */
@@ -596,8 +583,7 @@ bool data_base::stop()
 	const auto address_assets_stop = address_assets.stop();
 	const auto account_assets_stop = account_assets.stop();
 	const auto dids_stop = dids.stop();
-	const auto address_dids_stop = address_dids.stop();
-	const auto account_dids_stop = account_dids.stop();    
+	const auto address_dids_stop = address_dids.stop();  
 	const auto account_addresses_stop = account_addresses.stop();
 	/* end database for account, asset, address_asset relationship */
     const auto end_exclusive = end_write();
@@ -622,7 +608,6 @@ bool data_base::stop()
 		account_assets_stop &&
         dids_stop &&
 		address_dids_stop &&        
-        account_dids_stop &&
 		account_addresses_stop &&
 		/* end database for account, asset, address_asset relationship */
         end_exclusive;
@@ -643,7 +628,6 @@ bool data_base::close()
 	const auto address_dids_close = address_dids.close();    
 	const auto account_assets_close = account_assets.close();
 	const auto dids_close = dids.close();
-	const auto account_dids_close = account_dids.close();
     
 	const auto account_addresses_close = account_addresses.close();
 	/* end database for account, asset, address_asset relationship */
@@ -661,7 +645,6 @@ bool data_base::close()
 		address_assets_close&&
 		account_assets_close&&
 		dids_close &&
-		account_dids_close&&
         
 		account_addresses_close
 		/* end database for account, asset, address_asset relationship */
@@ -732,7 +715,6 @@ void data_base::synchronize()
 	account_assets.sync();
 	dids.sync();
 	address_dids.sync();    
-    account_dids.sync();
 	account_addresses.sync();
 	/* end database for account, asset, address_asset relationship */
     blocks.sync();
@@ -741,8 +723,7 @@ void data_base::synchronize()
 void data_base::synchronize_dids()
 {
     dids.sync();
-    address_dids.sync();
-    account_dids.sync();
+    address_dids.sync();;
 }
 
 void data_base::push(const block& block)

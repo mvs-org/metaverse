@@ -41,7 +41,7 @@ console_result didmodifyaddress::invoke (Json::Value& jv_output,
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
 
     // fail if did is already in blockchain
-    if (!blockchain.is_did_exist(argument_.symbol, false))
+    if (!blockchain.is_did_exist(argument_.symbol))
         throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};
     
     
@@ -50,7 +50,7 @@ console_result didmodifyaddress::invoke (Json::Value& jv_output,
         throw fromaddress_invalid_exception{"invalid from address parameter!"};
 
     // fail if address is not binded with did in blockchain
-    std::string did=blockchain.get_did_from_address(argument_.from, false);
+    std::string did=blockchain.get_did_from_address(argument_.from);
     if (did != argument_.symbol)
         throw did_symbol_existed_exception{"from address is not binded with this did in blockchain"};
 
@@ -61,7 +61,7 @@ console_result didmodifyaddress::invoke (Json::Value& jv_output,
          throw address_dismatch_account_exception{"target address does not match account. " + argument_.to};
 
      // fail if address is already binded with did in blockchain
-    if(blockchain.is_address_issued_did(argument_.to, false))
+    if(blockchain.is_address_issued_did(argument_.to))
         throw did_symbol_existed_exception{"target address is already binded with some did in blockchain"};
 
     // receiver

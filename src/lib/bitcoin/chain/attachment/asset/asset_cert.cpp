@@ -265,7 +265,7 @@ std::string asset_cert::get_owner_from_address(const std::string& address,
     if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return address;
     }
-    return chain.get_did_from_address(address, false);
+    return chain.get_did_from_address(address);
 }
 
 bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
@@ -277,7 +277,7 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
     if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return true;
     }
-    return chain.is_did_exist(owner_, false);
+    return chain.is_did_exist(owner_);
 }
 
 } // namspace chain
