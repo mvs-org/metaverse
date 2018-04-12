@@ -89,6 +89,7 @@ namespace symbol {
         "SELL",
         "ASK",
         "BID",
+        "DID",
         "ZEN."
     };
 
