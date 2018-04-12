@@ -377,5 +377,31 @@ bool transaction::has_did_transfer()
 	return false;
 }
 
+std::string transaction::get_did_transfer_old_address() const
+{
+    std::string newdidstr = "";
+	for (auto& elem: outputs) {
+		if(elem.is_did_transfer()) {
+            newdidstr = elem.get_script_address();
+        }
+			
+	}
+
+    if (newdidstr.empty()){
+        return newdidstr;
+    }
+
+    for (auto& elem: inputs) {
+		if(elem.get_script_address()!=newdidstr) {
+            newdidstr = elem.get_script_address();
+            return newdidstr;
+        }
+			
+	}
+
+
+    return newdidstr;
+}
+
 } // namspace chain
 } // namspace libbitcoin

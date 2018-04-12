@@ -749,6 +749,14 @@ void data_base::push(const block& block, uint64_t height)
         if (!tx.is_coinbase())
             push_inputs(tx_hash, height, tx.inputs);
 
+        std::string didaddress = tx.get_did_transfer_old_address();
+        if (!didaddress.empty()) {
+            data_chunk data(didaddress.begin(), didaddress.end());
+		    short_hash key = ripemd160_hash(data);
+            address_dids.delete_old_did(key);
+		    address_dids.sync();
+        }
+
         // Add outputs
         push_outputs(tx_hash, height, tx.outputs);
 
@@ -795,8 +803,8 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
 		address_assets.sync();
 		/* end added for asset issue/transfer */
 
-        address_dids.delete_old_did(key);
-		address_dids.sync();
+        //address_dids.delete_old_did(key);
+		//address_dids.sync();
     }
 }
 

@@ -95,6 +95,7 @@ public:
 
     bool has_did_issue();
 	bool has_did_transfer();
+    std::string get_did_transfer_old_address() const;
 
     uint32_t version;
     uint32_t locktime;

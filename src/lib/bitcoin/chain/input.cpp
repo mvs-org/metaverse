@@ -151,5 +151,11 @@ bool input::is_final() const
     return (sequence == max_input_sequence);
 }
 
+std::string input::get_script_address() const
+{
+    auto payment_address = wallet::payment_address::extract(script);
+    return payment_address.encoded();
+}
+
 } // namspace chain
 } // namspace libbitcoin

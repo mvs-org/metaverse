@@ -29,6 +29,7 @@
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/wallet/payment_address.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -54,6 +55,7 @@ public:
     void reset();
     bool is_final() const;
     uint64_t serialized_size() const;
+    std::string get_script_address() const;
 
     output_point previous_output;
     chain::script script;
