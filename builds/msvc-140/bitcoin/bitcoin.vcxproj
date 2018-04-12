@@ -144,6 +144,7 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\utility\work.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\bitcoin_uri.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\dictionary.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\dictionary_symbol.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_private.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ec_public.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\ek_private.cpp" />

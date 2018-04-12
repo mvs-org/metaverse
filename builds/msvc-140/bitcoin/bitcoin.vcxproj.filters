@@ -575,6 +575,9 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_cert.cpp">
       <Filter>Source Files\chain\attachment\asset</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\dictionary_symbol.cpp">
+      <Filter>Source Files\wallet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp">
