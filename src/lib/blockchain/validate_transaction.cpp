@@ -602,8 +602,9 @@ bool validate_transaction::connect_did_input(
             const chain::transaction& tx,
             blockchain::block_chain_impl& chain,
             did info) {
-
-    
+    if (info.get_status() ==  DID_TRANSFERABLE_TYPE && tx.inputs.size()!=2) {
+        return false;
+    }
 
     auto detail_info = boost::get<did_detail>(info.get_data());
     bool found_did_info = false;
