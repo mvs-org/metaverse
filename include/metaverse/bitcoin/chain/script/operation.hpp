@@ -84,7 +84,16 @@ enum class script_pattern
     non_standard,
 
     /// Pay to black hole address
-    pay_blackhole_address
+    pay_blackhole_address,
+
+    /// Pay to Public Key Hash [P2PKH] with attenuation model
+    /// Pubkey script:
+    ///     OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+    ///     <model_index> OP_NUMEQUALVERIFY <model_param> OP_DROP
+    /// Signature script: <model_index> <sig> <pubkey>
+    pay_key_hash_with_attenuation_model,
+    sign_key_hash_with_attenuation_model,
+
 };
 
 class BC_API operation
@@ -110,6 +119,7 @@ public:
     static bool is_pay_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_pay_script_hash_pattern(const operation::stack& ops);
     static bool is_pay_blackhole_pattern(const operation::stack& ops);
+    static bool is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
@@ -117,9 +127,13 @@ public:
     static bool is_sign_key_hash_pattern(const operation::stack& ops);
     static bool is_sign_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_sign_script_hash_pattern(const operation::stack& ops);
+    static bool is_sign_key_hash_with_attenuation_model_pattern(const operation::stack& ops);
 
     static uint64_t get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops);
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
+    static uint8_t get_model_index_from_sign_key_hash_with_attenuation_model(const operation::stack& ops);
+    static uint8_t get_model_index_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static std::string get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);
@@ -132,6 +146,7 @@ public:
     static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
     static stack to_pay_blackhole_pattern(const short_hash& hash);
+    static stack to_pay_key_hash_with_attenuation_model_pattern(const short_hash& hash, uint8_t model_index, const std::string& model_param);
 
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
