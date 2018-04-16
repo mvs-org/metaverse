@@ -89,7 +89,7 @@ static constexpr uint64_t retargeting_interval = target_timespan_seconds /
     target_spacing_seconds;
 
 // The window by which a time stamp may exceed our current time (2 hours).
-static const auto time_stamp_window = asio::hours(2);
+static const auto time_stamp_window = asio::seconds(2 * 60 * 60);
 
 static const auto time_stamp_window_future_blocktime_fix = asio::seconds(24);
 
@@ -331,23 +331,22 @@ bool validate_block::is_distinct_tx_set(const transaction::list& txs)
 }
 
 bool validate_block::is_valid_time_stamp(uint32_t timestamp) const
-{ 
-    // Use system clock because we require accurate time of day.
-    typedef std::chrono::system_clock wall_clock;
-    const auto block_time = wall_clock::from_time_t(timestamp);
-    const auto two_hour_future = wall_clock::now() + time_stamp_window;
-    return block_time <= two_hour_future;
+{
+    return check_time_stamp(timestamp, time_stamp_window);
 }
 
 bool validate_block::is_valid_time_stamp_new(uint32_t timestamp) const
-{ 
+{
+    return check_time_stamp(timestamp, time_stamp_window_future_blocktime_fix);
+}
+
+bool validate_block::check_time_stamp(uint32_t timestamp, const asio::seconds& window) const
+{
     // Use system clock because we require accurate time of day.
     typedef std::chrono::system_clock wall_clock;
     const auto block_time = wall_clock::from_time_t(timestamp);
-    const auto seconds_24_future = wall_clock::now() + time_stamp_window_future_blocktime_fix;
-    return block_time <= seconds_24_future;
-
-    // return timestamp < (time(NULL) + max_time_error);
+    const auto future_time = wall_clock::now() + window;
+    return block_time <= future_time;
 }
 
 // TODO: move to bc::chain::opcode.
@@ -378,7 +377,7 @@ inline size_t count_script_sigops(const operation::stack& operations,
     opcode last_opcode = opcode::bad_operation;
     for (const auto& op: operations)
     {
-        if (op.code == opcode::checksig || 
+        if (op.code == opcode::checksig ||
             op.code == opcode::checksigverify)
         {
             total_sigs++;
@@ -580,7 +579,7 @@ code validate_block::connect_block(hash_digest& err_tx) const
     }
 
     if(get_coinage_reward_tx_count != coinage_reward_coinbase_index - 1) {
-        return error::invalid_coinage_reward_coinbase; 
+        return error::invalid_coinage_reward_coinbase;
     }
 
     RETURN_IF_STOPPED();
