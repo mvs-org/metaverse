@@ -222,6 +222,19 @@ uint64_t output::get_asset_amount() const // for validate_transaction.cpp to cal
 	}
 	return 0;
 }
+
+uint64_t output::get_available_asset_amount() const
+{
+    // ASSET_TODO
+    return 0;
+}
+
+uint64_t output::get_locked_asset_amount() const
+{
+    // ASSET_TODO
+    return 0;
+}
+
 bool output::is_asset_transfer() const
 {
 	if(attach_data.get_type() == ASSET_TYPE) {

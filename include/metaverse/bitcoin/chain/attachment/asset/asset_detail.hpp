@@ -29,14 +29,7 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include "asset_cert.hpp"
-
-using namespace libbitcoin::chain;
-
-#define MODEL2UINT8(model)  (static_cast<typename std::underlying_type<asset_detail::attenuation_model>::type>(model))
-#define ATTENUATION_MODEL_NONE              MODEL2UINT8(asset_detail::attenuation_model::none)
-#define ATTENUATION_MODEL_FIXED_QUANTITY    MODEL2UINT8(asset_detail::attenuation_model::fixed_quantity)
-#define ATTENUATION_MODEL_FIXED_RATE        MODEL2UINT8(asset_detail::attenuation_model::fixed_rate)
-#define ATTENUATION_MODEL_FIRST_UNUSED      MODEL2UINT8(asset_detail::attenuation_model::unused1)
+#include "attenuation_model.hpp"
 
 namespace libbitcoin {
 namespace chain {
@@ -111,11 +104,21 @@ public:
     static bool is_secondaryissue_legal(uint8_t threshold);
     static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold);
 
-    void set_attenuation_model(attenuation_model model) { attenuation_model_index = MODEL2UINT8(model); }
-    attenuation_model get_attenuation_model() const { return (attenuation_model)attenuation_model_index; }
-    void set_attenuation_model_index(uint8_t index) { attenuation_model_index = index; }
-    uint8_t get_attenuation_model_index() const { return attenuation_model_index; }
-    bool is_attenuation_model_index_valid() { return attenuation_model_index < ATTENUATION_MODEL_FIRST_UNUSED; }
+    void set_attenuation_model_type(attenuation_model::model_index model) {
+        attenuation_model_index = MODEL2UINT8(model);
+    }
+    attenuation_model::model_index get_attenuation_model_type() const {
+        return (attenuation_model::model_index)attenuation_model_index;
+    }
+    void set_attenuation_model_index(uint8_t index) {
+        attenuation_model_index = index;
+    }
+    uint8_t get_attenuation_model_index() const {
+        return attenuation_model_index;
+    }
+    bool is_attenuation_model_index_valid() {
+        return attenuation_model_index < ATTENUATION_MODEL_FIRST_UNUSED;
+    }
 
 private:
     // NOTICE: ref CAssetDetail in transaction.h
