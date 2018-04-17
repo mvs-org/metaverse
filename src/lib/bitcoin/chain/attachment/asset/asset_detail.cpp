@@ -307,5 +307,30 @@ bool asset_detail::is_secondaryissue_owns_enough(uint64_t own, uint64_t total, u
     return own >= (uint64_t)(((double)total) / 100 * threshold);
 }
 
+void asset_detail::set_attenuation_model_type(attenuation_model::model_index model)
+{
+    attenuation_model_index = MODEL2UINT8(model);
+}
+
+attenuation_model::model_index asset_detail::get_attenuation_model_type() const
+{
+    return (attenuation_model::model_index)attenuation_model_index;
+}
+
+void asset_detail::set_attenuation_model_index(uint8_t index)
+{
+    attenuation_model_index = index;
+}
+
+uint8_t asset_detail::get_attenuation_model_index() const
+{
+    return attenuation_model_index;
+}
+
+bool asset_detail::is_attenuation_model_index_valid()
+{
+    return attenuation_model::check_model_index(attenuation_model_index);
+}
+
 } // namspace chain
 } // namspace libbitcoin

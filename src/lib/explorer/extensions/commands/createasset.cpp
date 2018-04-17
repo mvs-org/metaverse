@@ -91,7 +91,7 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_secondaryissue_threshold((threshold == -1) ?
         asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
     acc->set_attenuation_model_index(option_.attenuation_model_index);
-    
+
     blockchain.store_account_asset(acc);
 
     auto& aroot = jv_output;
