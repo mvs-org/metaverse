@@ -42,7 +42,7 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("NOUNCE", 1)
+            .add("NONCE", 1)
             .add("HEADERHASH", 1)
             .add("MIXHASH", 1);
     }
@@ -51,7 +51,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(argument_.nounce, "NOUNCE", variables, input, raw);
+        load_input(argument_.nonce, "NONCE", variables, input, raw);
         load_input(argument_.header_hash, "HEADERHASH", variables, input, raw);
         load_input(argument_.mix_hash, "MIXHASH", variables, input, raw);
     }
@@ -67,9 +67,9 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "NOUNCE",
-            value<std::string>(&argument_.nounce)->required(),
-            "nounce. without leading 0x"
+            "NONCE",
+            value<std::string>(&argument_.nonce)->required(),
+            "nonce. without leading 0x"
         )
         (
             "HEADERHASH",
@@ -94,7 +94,7 @@ public:
 
     struct argument
     {
-        std::string nounce;     
+        std::string nonce;
         std::string mix_hash;   
         std::string header_hash;
     } argument_;

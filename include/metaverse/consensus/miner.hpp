@@ -79,7 +79,7 @@ public:
 
 	block_ptr get_block(bool is_force_create_block = false);
 	bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
-	bool put_result(const std::string& nounce, const std::string& mix_hash, const std::string& header_hash);
+	bool put_result(const std::string& nonce, const std::string& mix_hash, const std::string& header_hash, const uint64_t &nounce_mask);
 	bool set_miner_public_key(const string& public_key);
 	bool set_miner_payment_address(const wallet::payment_address& address);
 	void get_state(uint64_t &height,  uint64_t &rate, string& difficulty, bool& is_mining);

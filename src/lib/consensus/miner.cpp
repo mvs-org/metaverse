@@ -544,7 +544,7 @@ void miner::work(const wallet::payment_address pay_address)
 		if(block) 
 		{ 
 			if(MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number))){
-				boost::uint64_t height = store_block(block); 
+				boost::uint64_t height = store_block(block);
 				log::info(LOG_HEADER) << "solo miner create new block at heigth:" << height;
 			}
 		} 
@@ -655,7 +655,7 @@ bool miner::get_work(std::string& seed_hash, std::string& header_hash, std::stri
 	return false;
 }
 
-bool miner::put_result(const std::string& nonce, const std::string& mix_hash, const std::string& header_hash)
+bool miner::put_result(const std::string& nonce, const std::string& mix_hash, const std::string& header_hash, const uint64_t &nounce_mask)
 {
 	bool ret = false;
     if (!get_block()) {
@@ -673,7 +673,7 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash, co
             return false;
         }
 #endif
-		uint64_t nonce_t = n_nonce ^0x6675636b6d657461;
+		uint64_t nonce_t = n_nonce^nounce_mask; // nounce_mask defination is moved to the caller by chengzhiping 2018-3-15.
 		new_block_->header.nonce = (u64) nonce_t;
 		new_block_->header.mixhash = (FixedHash<32>::Arith)h256(mix_hash);
 		uint64_t height = store_block(new_block_);
