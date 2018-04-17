@@ -83,7 +83,8 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
-    acc->set_secondaryissue_threshold(option_.secondaryissue_threshold);
+    // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
+    acc->set_secondaryissue_threshold((threshold == -1) ? 127 : threshold);
     
     blockchain.store_account_asset(acc);
 

@@ -277,9 +277,9 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<burn>();
     if (symbol == transfercert::symbol())
         return make_shared<transfercert>();
-    if (symbol == getwork::symbol())
+    if ((symbol == getwork::symbol()) || (symbol == "eth_getWork"))
         return make_shared<getwork>();
-    if (symbol == submitwork::symbol())
+    if ((symbol == submitwork::symbol()) || ( symbol == "eth_submitWork"))
         return make_shared<submitwork>();
     if (symbol == setminingaccount::symbol())
         return make_shared<setminingaccount>();

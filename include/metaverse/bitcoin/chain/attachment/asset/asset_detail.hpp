@@ -90,9 +90,7 @@ public:
     void set_asset_secondaryissue() { if (!is_asset_secondaryissue()) { secondaryissue_threshold += 128; } }
     uint8_t get_secondaryissue_threshold() const
     {
-        if (is_secondaryissue_freely())
-            return secondaryissue_threshold;
-        else if (is_asset_secondaryissue())
+        if (is_asset_secondaryissue())
             return secondaryissue_threshold - 128;
         else
             return secondaryissue_threshold;
@@ -115,7 +113,7 @@ public:
         return is_secondaryissue_forbidden(threshold) || is_secondaryissue_legal(threshold);
     }
     static bool is_secondaryissue_forbidden(uint8_t threshold) { return threshold == 0; }
-    static bool is_secondaryissue_freely(uint8_t threshold)    { return threshold == 255; }
+    static bool is_secondaryissue_freely(uint8_t threshold)    { return (threshold == 127) || (threshold == 255); }
     static bool is_secondaryissue_legal(uint8_t threshold)
     {
         return is_secondaryissue_freely(threshold) || ((threshold >= 1) && (threshold <= 100));
