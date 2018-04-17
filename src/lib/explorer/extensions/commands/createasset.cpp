@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -74,7 +74,7 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_symbol_name_exception{"invalid symbol start with " + option_.symbol};
     }
 
-    if(blockchain.is_asset_exist(option_.symbol)) 
+    if(blockchain.is_asset_exist(option_.symbol))
         throw asset_symbol_existed_exception{"symbol is already used."};
 
     auto acc = std::make_shared<asset_detail>();
@@ -84,8 +84,9 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_issuer(auth_.name);
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
-    acc->set_secondaryissue_threshold((threshold == -1) ? 127 : threshold);
-    
+    acc->set_secondaryissue_threshold((threshold == -1) ?
+        asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
+
     blockchain.store_account_asset(acc);
 
     auto& aroot = jv_output;

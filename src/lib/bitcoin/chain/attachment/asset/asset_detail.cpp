@@ -236,5 +236,70 @@ asset_cert_type asset_detail::get_asset_cert_mask() const
     return certs;
 }
 
+bool asset_detail::is_asset_secondaryissue() const
+{
+    return secondaryissue_threshold >= 128;
+}
+
+void asset_detail::set_asset_secondaryissue()
+{
+    if (!is_asset_secondaryissue()) {
+        secondaryissue_threshold += 128;
+    }
+}
+
+uint8_t asset_detail::get_secondaryissue_threshold() const
+{
+    if (is_asset_secondaryissue())
+        return secondaryissue_threshold - 128;
+    else
+        return secondaryissue_threshold;
+}
+
+void asset_detail::set_secondaryissue_threshold(uint8_t share)
+{
+    BITCOIN_ASSERT(share < 128);
+    secondaryissue_threshold = share;
+}
+
+bool asset_detail::is_secondaryissue_threshold_value_ok() const 
+{ 
+    return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold()); 
+}
+
+bool asset_detail::is_secondaryissue_legal() const 
+{ 
+    return is_secondaryissue_legal(get_secondaryissue_threshold()); 
+}
+
+bool asset_detail::is_secondaryissue_forbidden(uint8_t threshold) 
+{ 
+    return threshold == forbidden_secondaryissue_threshold; 
+}
+
+bool asset_detail::is_secondaryissue_freely(uint8_t threshold)    
+{ 
+    return threshold == freely_secondaryissue_threshold; 
+}
+
+bool asset_detail::is_secondaryissue_threshold_value_ok(uint8_t threshold)
+{
+    return is_secondaryissue_forbidden(threshold) || is_secondaryissue_legal(threshold);
+}
+
+bool asset_detail::is_secondaryissue_legal(uint8_t threshold)
+{
+    return is_secondaryissue_freely(threshold) || ((threshold >= 1) && (threshold <= 100));
+}
+
+bool asset_detail::is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold)
+{
+    if (is_secondaryissue_freely(threshold))
+        return true;
+    if (!is_secondaryissue_legal(threshold))
+        return false;
+    return own >= (uint64_t)(((double)total) / 100 * threshold);
+}
+
 } // namspace chain
 } // namspace libbitcoin

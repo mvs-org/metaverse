@@ -50,6 +50,9 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
+    static BC_CONSTEXPR uint8_t forbidden_secondaryissue_threshold = 0;
+    static BC_CONSTEXPR uint8_t freely_secondaryissue_threshold = 127;
+
     typedef std::vector<asset_detail> list;
     asset_detail();
     asset_detail(std::string symbol, uint64_t maximum_supply,
@@ -86,47 +89,19 @@ public:
 
     asset_cert_type get_asset_cert_mask() const;
 
-    bool is_asset_secondaryissue() const { return secondaryissue_threshold >= 128; }
-    void set_asset_secondaryissue() { if (!is_asset_secondaryissue()) { secondaryissue_threshold += 128; } }
-    uint8_t get_secondaryissue_threshold() const
-    {
-        if (is_asset_secondaryissue())
-            return secondaryissue_threshold - 128;
-        else
-            return secondaryissue_threshold;
-    }
-    void set_secondaryissue_threshold(uint8_t share)
-    {
-        if (is_asset_secondaryissue())
-            secondaryissue_threshold = share + 128;
-        else
-            secondaryissue_threshold = share;
-    }
+    bool is_asset_secondaryissue() const;
+    void set_asset_secondaryissue();
+    uint8_t get_secondaryissue_threshold() const;
+    void set_secondaryissue_threshold(uint8_t share);
 
-    bool is_secondaryissue_threshold_value_ok() { return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold()); }
-    bool is_secondaryissue_forbidden() const { return is_secondaryissue_forbidden(secondaryissue_threshold); }
-    bool is_secondaryissue_freely()    const { return is_secondaryissue_freely(secondaryissue_threshold); }
-    bool is_secondaryissue_legal()     const { return is_secondaryissue_legal(get_secondaryissue_threshold()); }
+    bool is_secondaryissue_threshold_value_ok() const;
+    bool is_secondaryissue_legal() const;
 
-    static bool is_secondaryissue_threshold_value_ok(uint8_t threshold)
-    {
-        return is_secondaryissue_forbidden(threshold) || is_secondaryissue_legal(threshold);
-    }
-    static bool is_secondaryissue_forbidden(uint8_t threshold) { return threshold == 0; }
-    static bool is_secondaryissue_freely(uint8_t threshold)    { return (threshold == 127) || (threshold == 255); }
-    static bool is_secondaryissue_legal(uint8_t threshold)
-    {
-        return is_secondaryissue_freely(threshold) || ((threshold >= 1) && (threshold <= 100));
-    }
-
-    static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold)
-    {
-        if (is_secondaryissue_freely(threshold))
-            return true;
-        if (!is_secondaryissue_legal(threshold))
-            return false;
-        return own >= (uint64_t)(((double)total) / 100 * threshold);
-    }
+    static bool is_secondaryissue_forbidden(uint8_t threshold);
+    static bool is_secondaryissue_freely(uint8_t threshold);
+    static bool is_secondaryissue_threshold_value_ok(uint8_t threshold);
+    static bool is_secondaryissue_legal(uint8_t threshold);
+    static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold);
 
 private:
     // NOTICE: ref CAssetDetail in transaction.h
