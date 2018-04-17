@@ -515,7 +515,7 @@ void p2p::thread_map_port(uint16_t map_port)
                 else
                     log::info("UPnP") << "Port Mapping successful.";
 
-                boost::this_thread::sleep(boost::posix_time::milliseconds(20 * 60 * 1000));
+                std::this_thread::sleep_for(asio::milliseconds(20 * 60 * 1000));
             }
         }
         catch (const boost::thread_interrupted&)

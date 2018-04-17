@@ -23,6 +23,7 @@
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -30,12 +31,25 @@ namespace commands {
 using namespace bc::explorer::config;
 
 /************************ submitwork *************************/
+inline bool startswith(const string &str, const char *prefix) {
+    return str.find(prefix) == 0;
+}
 
 console_result submitwork::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     auto& miner = node.miner();
-    auto ret = miner.put_result(argument_.nounce, argument_.mix_hash, argument_.header_hash);
+
+    const uint64_t nounce_mask = (get_api_version() == 3) ? 0 : 0x6675636b6d657461;
+    //Note: submitwork does not starts with 0x, while eth_submitWork does!
+    if (get_api_version() == 3) {
+        if ( !startswith(argument_.nonce, "0x") ) {
+            throw argument_legality_exception{"nonce should start with \"0x\" for eth_submitWork"};
+        }
+        argument_.nonce = argument_.nonce.substr(2, argument_.nonce.size()-2);
+    }
+
+    auto ret = miner.put_result(argument_.nonce, argument_.mix_hash, argument_.header_hash, nounce_mask);
     auto& root = jv_output;
 
     if (ret) {
