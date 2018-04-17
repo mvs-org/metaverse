@@ -1437,6 +1437,16 @@ bool op_checklocktimeverify(evaluation_context& context, const script& script,
     return is_locktime_type_match(stack, transaction);
 }
 
+// ASSET_TODO
+bool op_checkattenuationverify(evaluation_context& context, const script& script,
+    const transaction& parent_tx, uint32_t input_index)
+{
+    if (input_index >= parent_tx.inputs.size())
+        return false;
+
+    return false;
+}
+
 // Test flags for a given context.
 bool script::is_active(uint32_t flags, script_context flag)
 {
@@ -1718,12 +1728,18 @@ bool run_operation(const operation& op, const transaction& parent_tx,
                 op_checklocktimeverify(context, script, parent_tx,
                     input_index) : true;
 
+        case opcode::checkattenuationverify:
+            return script::is_active(context.flags, script_context::attenuation_enabled) ?
+                op_checkattenuationverify(context, script, parent_tx, input_index) : true;
+
         case opcode::op_nop1:
 
         // op_nop2 has been consumed by checklocktimeverify
         ////case opcode::op_nop2:
 
-        case opcode::op_nop3:
+        // op_nop3 has been consumed by checkattenuationverify
+        ////case opcode::op_nop3:
+
         case opcode::op_nop4:
         case opcode::op_nop5:
         case opcode::op_nop6:

@@ -117,7 +117,7 @@ public:
         return attenuation_model_index;
     }
     bool is_attenuation_model_index_valid() {
-        return attenuation_model_index < ATTENUATION_MODEL_FIRST_UNUSED;
+        return attenuation_model::check_model_index(attenuation_model_index);
     }
 
 private:

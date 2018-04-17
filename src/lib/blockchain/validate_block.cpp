@@ -152,6 +152,9 @@ void validate_block::initialize_context()
     if (activate(count_4))
         activations_ |= script_context::bip65_enabled;
 
+    if (activate(count_4))
+        activations_ |= script_context::attenuation_enabled;
+
     // bip66 is activated based on 75% of preceding 1000 mainnet blocks.
     if (activate(count_3))
         activations_ |= script_context::bip66_enabled;
@@ -178,6 +181,7 @@ bool validate_block::is_active(script_context flag) const
 
     const auto version = current_block_.header.version;
     return
+        (flag == script_context::attenuation_enabled && version >= version_4) ||
         (flag == script_context::bip65_enabled && version >= version_4) ||
         (flag == script_context::bip66_enabled && version >= version_3) ||
         (flag == script_context::bip34_enabled && version >= version_2);

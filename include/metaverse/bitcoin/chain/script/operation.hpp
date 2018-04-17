@@ -89,7 +89,7 @@ enum class script_pattern
     /// Pay to Public Key Hash [P2PKH] with attenuation model
     /// Pubkey script:
     ///     OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-    ///     <model_index> OP_NUMEQUALVERIFY <model_param> OP_DROP
+    ///     OP_DUP <model_index> OP_NUMEQUALVERIFY <model_param> OP_CHECKATTENUATIONVERIFY
     /// Signature script: <model_index> <sig> <pubkey>
     pay_key_hash_with_attenuation_model,
     sign_key_hash_with_attenuation_model,
@@ -133,7 +133,7 @@ public:
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
     static uint8_t get_model_index_from_sign_key_hash_with_attenuation_model(const operation::stack& ops);
     static uint8_t get_model_index_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
-    static std::string get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static data_chunk get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);

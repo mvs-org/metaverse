@@ -23,6 +23,16 @@
 namespace libbitcoin {
 namespace chain {
 
+bool attenuation_model::check_model_index(uint32_t index)
+{
+    return index < ATTENUATION_MODEL_FIRST_UNUSED;
+}
+
+// ASSET_TODO
+bool attenuation_model::check_model_param(uint32_t index, const data_chunk& param)
+{
+    return true;
+}
 
 } // namspace chain
 } // namspace libbitcoin

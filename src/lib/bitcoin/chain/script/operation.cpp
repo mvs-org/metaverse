@@ -360,17 +360,18 @@ bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
 
 bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
 {
-    return ops.size() == 9
+    return ops.size() == 10
         && ops[0].code == opcode::dup
         && ops[1].code == opcode::hash160
         && ops[2].code == opcode::special
         && ops[2].data.size() == short_hash_size
         && ops[3].code == opcode::equalverify
         && ops[4].code == opcode::checksig
-        && ops[5].code == opcode::special
-        && ops[6].code == opcode::numequalverify
-        && ops[7].code == opcode::special
-        && ops[8].code == opcode::drop;
+        && ops[5].code == opcode::dup
+        && ops[6].code == opcode::special
+        && ops[7].code == opcode::numequalverify
+        && ops[8].code == opcode::special
+        && ops[9].code == opcode::checkattenuationverify;
 }
 
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
@@ -452,14 +453,13 @@ uint8_t operation::get_model_index_from_sign_key_hash_with_attenuation_model(con
 
 uint8_t operation::get_model_index_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
-    CScriptNum num(ops[5].data, 1);
+    CScriptNum num(ops[6].data, 1);
     return num.getint();
 }
 
-std::string operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+data_chunk operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
-    const auto& params = ops[5].data;
-    return std::string(params.begin(), params.end());
+    return ops[6].data;
 }
 
 // pattern templates
@@ -589,10 +589,11 @@ operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
         { opcode::special, to_chunk(hash) },
         { opcode::equalverify, {} },
         { opcode::checksig, {} },
+        { opcode::dup, {} },
         { opcode::special, CScriptNum::serialize(model_index) },
         { opcode::numequalverify, {} },
         { opcode::special, to_chunk(model_param) },
-        { opcode::drop, {} },
+        { opcode::checkattenuationverify, {} }
     };
 }
 

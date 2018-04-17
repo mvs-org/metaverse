@@ -474,6 +474,8 @@ opcode string_to_opcode(const std::string& value)
     // Replaces nop2 with BIP65 activation.
     else if (value == "checklocktimeverify")
         return opcode::checklocktimeverify;
+    else if (value == "checkattenuationverify")
+        return opcode::checkattenuationverify;
     else if (value == "nop1")
         return opcode::op_nop1;
     else if (value == "nop2")

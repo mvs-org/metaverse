@@ -55,8 +55,11 @@ public:
         invalid = 8
     };
 
+    static bool check_model_index(uint32_t index);
+    static bool check_model_param(uint32_t index, const data_chunk& param);
+
 private:
-    model_index model_index_;
+    model_index model_index_{model_index::none};
 };
 
 } // namespace chain
