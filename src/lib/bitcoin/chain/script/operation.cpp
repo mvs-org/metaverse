@@ -459,7 +459,7 @@ uint8_t operation::get_model_index_from_pay_key_hash_with_attenuation_model(cons
 
 data_chunk operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
-    return ops[6].data;
+    return ops[8].data;
 }
 
 // pattern templates

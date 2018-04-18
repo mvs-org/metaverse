@@ -231,7 +231,7 @@ uint64_t script::satoshi_content_size() const
     {
         return operations[0].serialized_size();
     }
-    
+
     const auto value = [](uint64_t total, const operation& op)
     {
         return total + op.serialized_size();
@@ -1342,7 +1342,7 @@ signature_parse_result op_checkmultisigverify(evaluation_context& context,
             script_code.operations.push_back(*it);
 
     // The exact number of signatures are required and must be in order.
-    // One key can validate more than one script. So we always advance 
+    // One key can validate more than one script. So we always advance
     // until we exhaust either pubkeys (fail) or signatures (pass).
     auto pubkey_iterator = pubkeys.begin();
 
@@ -1733,13 +1733,6 @@ bool run_operation(const operation& op, const transaction& parent_tx,
                 op_checkattenuationverify(context, script, parent_tx, input_index) : true;
 
         case opcode::op_nop1:
-
-        // op_nop2 has been consumed by checklocktimeverify
-        ////case opcode::op_nop2:
-
-        // op_nop3 has been consumed by checkattenuationverify
-        ////case opcode::op_nop3:
-
         case opcode::op_nop4:
         case opcode::op_nop5:
         case opcode::op_nop6:
@@ -1835,7 +1828,7 @@ bool next_step(const transaction& parent_tx, uint32_t input_index,
 
     if (opcode_is_disabled(op.code))
         return false;
-    
+
     if (!context.conditional.succeeded() && !is_condition_opcode(op.code))
         return true;
 

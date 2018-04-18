@@ -34,6 +34,7 @@ asset_detail::asset_detail()
 {
     reset();
 }
+
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
     uint8_t decimal_number, uint8_t threshold, std::string issuer,
@@ -67,6 +68,7 @@ asset_detail asset_detail::factory_from_data(reader& source)
     instance.from_data(source);
     return instance;
 }
+
 bool asset_detail::is_valid() const
 {
     return !(symbol.empty()
@@ -268,24 +270,24 @@ void asset_detail::set_secondaryissue_threshold(uint8_t share)
     secondaryissue_threshold = share;
 }
 
-bool asset_detail::is_secondaryissue_threshold_value_ok() const 
-{ 
-    return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold()); 
+bool asset_detail::is_secondaryissue_threshold_value_ok() const
+{
+    return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold());
 }
 
-bool asset_detail::is_secondaryissue_legal() const 
-{ 
-    return is_secondaryissue_legal(get_secondaryissue_threshold()); 
+bool asset_detail::is_secondaryissue_legal() const
+{
+    return is_secondaryissue_legal(get_secondaryissue_threshold());
 }
 
-bool asset_detail::is_secondaryissue_forbidden(uint8_t threshold) 
-{ 
-    return threshold == forbidden_secondaryissue_threshold; 
+bool asset_detail::is_secondaryissue_forbidden(uint8_t threshold)
+{
+    return threshold == forbidden_secondaryissue_threshold;
 }
 
-bool asset_detail::is_secondaryissue_freely(uint8_t threshold)    
-{ 
-    return threshold == freely_secondaryissue_threshold; 
+bool asset_detail::is_secondaryissue_freely(uint8_t threshold)
+{
+    return threshold == freely_secondaryissue_threshold;
 }
 
 bool asset_detail::is_secondaryissue_threshold_value_ok(uint8_t threshold)

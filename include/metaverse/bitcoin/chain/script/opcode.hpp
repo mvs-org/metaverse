@@ -135,10 +135,8 @@ enum class opcode : uint8_t
     checkmultisig = 174,
     checkmultisigverify = 175,
     op_nop1 = 176,
-    op_nop2 = 177,
-    checklocktimeverify = op_nop2,
-    op_nop3 = 178,
-    checkattenuationverify = op_nop3,
+    checklocktimeverify = 177,      // op_nop2
+    checkattenuationverify = 178,   // op_nop3
     op_nop4 = 179,
     op_nop5 = 180,
     op_nop6 = 181,
