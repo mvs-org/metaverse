@@ -710,13 +710,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::asset_secondaryissue) {
-        auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
-        if(!sh_asset)
-            throw asset_symbol_notfound_exception{symbol_ + " not found"};
-
-        sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
-        auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
-        return attachment(ASSET_TYPE, attach_version, ass);
+        throw tx_attachment_value_exception("secondaryissue must be processed by secondary_issuing_asset");
     } else if(record.type == utxo_attach_type::asset_transfer) {
         auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
