@@ -55,11 +55,24 @@ public:
         invalid = 8
     };
 
+    attenuation_model(uint8_t index, const std::string& param);
+
     static bool check_model_index(uint32_t index);
     static bool check_model_param(uint32_t index, const data_chunk& param);
 
+    model_index get_model_index() const;
+    const std::string& get_model_param() const;
+
+    uint64_t get_issued_quantity() const;                  // IQ  total issued quantity
+    uint64_t get_locked_quantity() const;                  // LQ  total locked quantity
+    uint64_t get_locked_period() const;                    // LP  total locked period
+    std::vector<uint64_t> get_unlock_cycles() const;       // UCt size()==1 means fixed cycle
+    std::vector<uint8_t> get_issue_rates() const;          // IRt size()==1 means fixed rate
+    std::vector<uint64_t> get_unlocked_quantities() const; // UQt size()==1 means fixed quantity
+
 private:
-    model_index model_index_{model_index::none};
+    class impl;
+    std::unique_ptr<impl> pimpl;
 };
 
 } // namespace chain

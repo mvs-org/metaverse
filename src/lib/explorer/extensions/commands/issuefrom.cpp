@@ -67,9 +67,9 @@ console_result issuefrom::invoke (Json::Value& jv_output,
             std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
     issue_helper.exec();
+
     // json output
     auto tx = issue_helper.get_transaction();
-
     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
