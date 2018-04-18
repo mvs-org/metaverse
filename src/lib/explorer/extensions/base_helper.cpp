@@ -742,27 +742,46 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
 }
 
+bool receiver_record::is_empty() const
+{
+    // has etp amount
+    if (amount != 0) {
+        return false;
+    }
+
+    // etp business , etp == 0
+    if ((type == utxo_attach_type::etp) ||
+        (type == utxo_attach_type::deposit)) {
+        return true;
+    }
+
+    // has asset amount
+    if (asset_amount != 0) {
+        return false;
+    }
+
+    // asset transfer business, etp == 0 && asset_amount == 0
+    if ((type == utxo_attach_type::asset_transfer) ||
+        (type == utxo_attach_type::asset_locked_transfer)) {
+        return true;
+    }
+
+    // other business
+    return false;
+}
+
 void base_transfer_helper::populate_tx_outputs(){
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // etp business , value == 0
-        if ( !iter.amount
-                && ((iter.type == utxo_attach_type::etp)
-                    || (iter.type == utxo_attach_type::deposit))) {
-            continue;
-        }
-
-        // asset transfer business, etp == 0 && asset_amount == 0
-        if ( !iter.amount && !iter.asset_amount
-                && (iter.type == utxo_attach_type::asset_transfer)) {
-            continue;
-        }
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1170,23 +1189,14 @@ void base_transaction_constructor::populate_tx_outputs(){
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // etp business , value == 0
-        if ( !iter.amount
-                && ((iter.type == utxo_attach_type::etp)
-                    || (iter.type == utxo_attach_type::deposit))) {
-            continue;
-        }
-
-        // asset transfer business, etp == 0 && asset_amount == 0
-        if ( !iter.amount && !iter.asset_amount
-                && (iter.type == utxo_attach_type::asset_transfer)) {
-            continue;
-        }
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1262,23 +1272,14 @@ void depositing_etp::populate_tx_outputs() {
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // etp business , value == 0
-        if ( !iter.amount
-                && ((iter.type == utxo_attach_type::etp)
-                    || (iter.type == utxo_attach_type::deposit))) {
-            continue;
-        }
-
-        // asset transfer business, etp == 0 && asset_amount == 0
-        if ( !iter.amount && !iter.asset_amount
-                && (iter.type == utxo_attach_type::asset_transfer)) {
-            continue;
-        }
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1319,23 +1320,14 @@ void depositing_etp_transaction::populate_tx_outputs() {
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // etp business , value == 0
-        if ( !iter.amount
-                && ((iter.type == utxo_attach_type::etp)
-                    || (iter.type == utxo_attach_type::deposit))) {
-            continue;
-        }
-
-        // asset transfer business, etp == 0 && asset_amount == 0
-        if ( !iter.amount && !iter.asset_amount
-                && (iter.type == utxo_attach_type::asset_transfer)) {
-            continue;
-        }
 
         // complicated script and asset should be implemented in subclass
         // generate script

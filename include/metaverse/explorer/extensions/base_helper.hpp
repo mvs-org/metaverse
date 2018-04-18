@@ -112,6 +112,9 @@ struct receiver_record {
         , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_)
         , type(type_), attach_elem(attach_elem_)
     {}
+
+    bool is_empty() const;
+
 };
 
 struct balances {
