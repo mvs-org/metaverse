@@ -152,6 +152,15 @@
     <ClInclude Include="..\..\..\src\lib\database\mman-win32\mman.h">
       <Filter>Source Files\mman-win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_did_database.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\address_did_database.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_did_database.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\database\impl\hash_table_header.ipp">
@@ -263,6 +272,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\database\result\account_address_result.cpp">
       <Filter>Source Files\result</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\address_did_database.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_did_database.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -708,9 +708,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createdid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

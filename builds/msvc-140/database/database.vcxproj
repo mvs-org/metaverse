@@ -65,7 +65,6 @@
     <ClCompile Include="..\..\..\src\lib\database\databases\account_address_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\account_asset_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\account_database.cpp" />
-    <ClCompile Include="..\..\..\src\lib\database\databases\account_did_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\address_asset_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\address_did_database.cpp" />
     <ClCompile Include="..\..\..\src\lib\database\databases\asset_database.cpp" />

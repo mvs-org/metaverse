@@ -176,7 +176,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\burn.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\changepasswd.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createasset.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createdid.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createmultisigtx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createrawtx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\decoderawtx.cpp" />
