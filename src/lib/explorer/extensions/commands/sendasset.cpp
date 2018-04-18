@@ -50,10 +50,6 @@ console_result sendasset::invoke (Json::Value& jv_output,
     };
     auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
     
     send_helper.exec();
 

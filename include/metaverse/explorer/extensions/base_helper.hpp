@@ -28,21 +28,41 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands{
 
-// output attachment type
-enum utxo_attach_type : uint32_t
+/// NOTICE: this type is not equal to attachment_type and business_kind
+/// attachment_type : the collapsed type of tx output attachment, **recorded on blockchain**
+/// business_kind   : the expanded type of attachment, mainly used for database/history query
+/// for example :
+/// attachment_type           |  business_kind
+/// -------------------------------------------------------------------
+/// attachment_etp           --> etp
+/// attachment_etp_award     --> etp_award
+/// attachment_asset         --> asset_issue | asset_transfer
+/// attachment_message       --> message
+/// attachment_did           --> did_issue   |  did_transfer
+/// attachment_asset_cert    --> asset_cert
+/// -------------------------------------------------------------------
+/// utxo_attach_type is only used in explorer module
+/// utxo_attach_type will be used to generate attachment with attachment_type and content
+/// for example :
+/// utxo_attach_type::asset_issue    --> attachment_asset of asset_detail
+///     auto asset_detail = asset(ASSET_DETAIL_TYPE, asset_detail);
+///     attachment(ASSET_TYPE, attach_version, asset_detail);
+/// utxo_attach_type::asset_transfer --> attachment_asset of asset_transfer
+///     auto asset_transfer = asset(ASSET_TRANSFERABLE_TYPE, asset_transfer);
+///     attachment(ASSET_TYPE, attach_version, asset_transfer);
+enum class utxo_attach_type : uint32_t
 {
-	etp,  // 0
-	deposit,
-	asset_issue,
-	asset_transfer,
-	asset_locked_issue,
-	asset_locked_transfer,  // 5
-	message,
-	digital_identity,
-    asset_secondaryissue,
-	did_issue,
-	did_transfer,
-	asset_cert
+    etp = 0,
+    deposit = 1,
+    asset_issue = 2,
+    asset_transfer = 3,
+    asset_locked_issue = 4,
+    asset_locked_transfer = 5,
+    message = 6,
+    asset_cert = 7,
+    asset_secondaryissue = 8,
+    did_issue = 9,
+    did_transfer = 10,
 };
 
 extern utxo_attach_type get_utxo_attach_type(const chain::output&);
@@ -393,28 +413,6 @@ private:
     std::shared_ptr<asset_detail> issued_asset_;
 };
 
-class BCX_API issuing_locked_asset : public base_transfer_helper
-{
-public:
-	issuing_locked_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
-		std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee, 
-		uint32_t deposit_cycle = 0):
-		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), 
-			fee, std::move(symbol)), deposit_cycle_{deposit_cycle}
-		{};
-
-	~issuing_locked_asset(){};
-		
-	void sum_payment_amount() override;
-	
-	void populate_change() override;
-	// modify lock script
-	void populate_tx_outputs() override ;
-	uint32_t get_lock_height();
-	
-private:
-	uint32_t					      deposit_cycle_{0};
-};
 class BCX_API sending_asset : public base_transfer_helper
 {
 public:
@@ -427,26 +425,6 @@ public:
 	~sending_asset(){};
 			
 	void populate_change() override;
-};
-class BCX_API sending_locked_asset : public base_transfer_helper
-{
-public:
-	sending_locked_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd, 
-		std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee,
-		uint32_t deposit_cycle = 0):
-		base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list), 
-			fee, std::move(symbol)), deposit_cycle_{deposit_cycle}
-		{};
-
-	~sending_locked_asset(){};
-			
-	void populate_change() override;
-	// modify lock script
-	void populate_tx_outputs() override ;
-	uint32_t get_lock_height();
-
-private:
-	uint32_t						  deposit_cycle_{0};
 };
 
 class BCX_API issuing_did : public base_transfer_helper
