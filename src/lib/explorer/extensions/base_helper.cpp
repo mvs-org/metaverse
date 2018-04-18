@@ -690,7 +690,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
 
     if((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
-        || (((record.type == utxo_attach_type::asset_transfer) || (record.type == utxo_attach_type::asset_locked_transfer))
+        || ((record.type == utxo_attach_type::asset_transfer)
                 && ((record.amount > 0) && (!record.asset_amount)))) { // etp
         if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
             attachment attach(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
@@ -710,13 +710,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::asset_secondaryissue) {
-        auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
-        if(!sh_asset)
-            throw asset_symbol_notfound_exception{symbol_ + " not found"};
-
-        sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
-        auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
-        return attachment(ASSET_TYPE, attach_version, ass);
+        throw tx_attachment_value_exception("secondaryissue must be processed by secondary_issuing_asset");
     } else if(record.type == utxo_attach_type::asset_transfer) {
         auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
@@ -748,25 +742,46 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
     throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
 }
 
+bool receiver_record::is_empty() const
+{
+    // has etp amount
+    if (amount != 0) {
+        return false;
+    }
+
+    // etp business , etp == 0
+    if ((type == utxo_attach_type::etp) ||
+        (type == utxo_attach_type::deposit)) {
+        return true;
+    }
+
+    // has asset amount
+    if (asset_amount != 0) {
+        return false;
+    }
+
+    // asset transfer business, etp == 0 && asset_amount == 0
+    if ((type == utxo_attach_type::asset_transfer) ||
+        (type == utxo_attach_type::asset_locked_transfer)) {
+        return true;
+    }
+
+    // other business
+    return false;
+}
+
 void base_transfer_helper::populate_tx_outputs(){
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // filter zero etp and asset. status check just for issue asset
-        #if 0
-        if( !iter.amount && !iter.asset_amount && (iter.status != asset::asset_status::asset_locked))
-            continue;
-        #endif
-        if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter.amount && !iter.asset_amount
-            && ((iter.type == utxo_attach_type::asset_transfer)|| (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1152,7 +1167,7 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
 
     if((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
-        || (((record.type == utxo_attach_type::asset_transfer) || (record.type == utxo_attach_type::asset_locked_transfer))
+        || ((record.type == utxo_attach_type::asset_transfer)
                 && ((record.amount > 0) && (!record.asset_amount)))) { // etp
         return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
     }
@@ -1174,17 +1189,14 @@ void base_transaction_constructor::populate_tx_outputs(){
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // filter zero etp and asset. status check just for issue asset
-        if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter.amount && !iter.asset_amount
-            && ((iter.type == utxo_attach_type::asset_transfer)|| (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1260,17 +1272,14 @@ void depositing_etp::populate_tx_outputs() {
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // filter zero etp and asset
-        if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter.amount && !iter.asset_amount
-            && ((iter.type == utxo_attach_type::asset_transfer) || (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1311,17 +1320,14 @@ void depositing_etp_transaction::populate_tx_outputs() {
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
         if (tx_item_idx_ >= (tx_limit + 10)) {
                 throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
-
-        // filter zero etp and asset
-        if( !iter.amount && ((iter.type == utxo_attach_type::etp) || (iter.type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter.amount && !iter.asset_amount
-            && ((iter.type == utxo_attach_type::asset_transfer) || (iter.type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
 
         // complicated script and asset should be implemented in subclass
         // generate script
@@ -1740,75 +1746,6 @@ void issuing_did::populate_change() {
     }
 }
 
-void issuing_locked_asset::sum_payment_amount() {
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    //if (payment_etp_ < maximum_fee)
-    if (payment_etp_ < 1000000000) // test code 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
-    }
-}
-
-void issuing_locked_asset::populate_change() {
-    if(from_.empty()){
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        //receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, 0, utxo_attach_type::asset_locked_issue, attachment()});
-    } else {
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        //receiver_list_.push_back({from_, symbol_, 0, 0, utxo_attach_type::asset_locked_issue, attachment()});
-    }
-}
-uint32_t issuing_locked_asset::get_lock_height(){
-    //uint64_t height = (deposit_cycle_*24)*(3600/24);
-    uint64_t height = (deposit_cycle_)*3600;
-    if(0xffffffff <= height)
-        throw tx_locktime_exception{"lock time outofbound!"};
-    return static_cast<uint32_t>(height);
-}
-// modify lock script
-void issuing_locked_asset::populate_tx_outputs() {
-    chain::operation::stack payment_ops;
-
-    for (auto iter = receiver_list_.begin(); iter != receiver_list_.end(); iter++) {
-        if (tx_item_idx_ >= (tx_limit + 10)) {
-                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
-        }
-        tx_item_idx_++;
-
-        // filter zero etp and asset. status check just for issue asset
-        if( !iter->amount && ((iter->type == utxo_attach_type::etp) || (iter->type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter->amount && !iter->asset_amount
-            && ((iter->type == utxo_attach_type::asset_transfer) || (iter->type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
-
-        // complicated script and asset should be implemented in subclass
-        // generate script
-        const wallet::payment_address payment(iter->target);
-        if (!payment)
-            throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if(utxo_attach_type::asset_locked_issue == iter->type) { // issue locked asset record
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-
-        auto payment_script = chain::script{ payment_ops };
-
-        // generate asset info
-        auto&& output_att = populate_output_attachment(*iter);
-
-        // fill output
-        tx_.outputs.push_back({ iter->amount, payment_script, output_att });
-    }
-}
 void sending_asset::populate_change() {
     if(from_.empty()) {
         // etp utxo
@@ -2010,71 +1947,6 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
     // the tx will fail.
     if ((from_ == addr) && (unspent_etp_ < payment_etp_))
         throw tx_source_exception{"not enough etp in to address to pay fee!"};
-}
-
-void sending_locked_asset::populate_change() {
-    if(from_.empty()) {
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
-        utxo_attach_type::etp, attachment()});
-
-        if(unspent_asset_ - payment_asset_)
-            receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
-        utxo_attach_type::asset_locked_transfer, attachment()});
-    } else {
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
-        utxo_attach_type::etp, attachment()});
-
-        if(unspent_asset_ - payment_asset_)
-            receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
-        utxo_attach_type::asset_locked_transfer, attachment()});
-    }
-}
-uint32_t sending_locked_asset::get_lock_height(){
-    //uint64_t height = (deposit_cycle_*24)*(3600/24);
-    uint64_t height = (deposit_cycle_)*3600;
-    if(0xffffffff <= height)
-        throw tx_locktime_exception{"lock time outofbound!"};
-    return static_cast<uint32_t>(height);
-}
-// modify lock script
-void sending_locked_asset::populate_tx_outputs() {
-    chain::operation::stack payment_ops;
-
-    for (auto iter = receiver_list_.begin(); iter != receiver_list_.end(); iter++) {
-        if (tx_item_idx_ >= (tx_limit + 10)) {
-                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
-        }
-        tx_item_idx_++;
-
-        // filter zero etp and asset. status check just for issue asset
-        if( !iter->amount && ((iter->type == utxo_attach_type::etp) || (iter->type == utxo_attach_type::deposit))) // etp business , value == 0
-            continue;
-        if( !iter->amount && !iter->asset_amount
-            && ((iter->type == utxo_attach_type::asset_transfer) || (iter->type == utxo_attach_type::asset_locked_transfer))) // asset transfer business, etp == 0 && asset_amount == 0
-            continue;
-
-        // complicated script and asset should be implemented in subclass
-        // generate script
-        const wallet::payment_address payment(iter->target);
-        if (!payment)
-            throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
-        if(utxo_attach_type::asset_locked_transfer == iter->type) {
-            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_lock_height());
-        } else {
-            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
-        }
-
-        auto payment_script = chain::script{ payment_ops };
-
-        // generate asset info
-        auto&& output_att = populate_output_attachment(*iter);
-
-        // fill output
-        tx_.outputs.push_back({ iter->amount, payment_script, output_att });
-    }
 }
 
 void transferring_asset_cert::sum_payment_amount()
