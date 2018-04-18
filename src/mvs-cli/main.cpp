@@ -19,7 +19,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/utility/path.hpp>
-#include <boost/program_options.hpp> 
+#include <metaverse/bitcoin/unicode/ifstream.hpp>
+#include <boost/program_options.hpp>
 #include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
 #include <metaverse/bitcoin/unicode/unicode.hpp>
@@ -65,25 +66,31 @@ int bc::main(int argc, char* argv[])
     bc::set_utf8_stdout();
     auto work_path = bc::default_data_path();
     auto&& config_file = work_path / "mvs.conf";
-    std::string url{"127.0.0.1:8820/rpc/v2"}; 
+    std::string url{"127.0.0.1:8820/rpc/v2"};
 
-    if(boost::filesystem::exists(config_file)) {
+    if (boost::filesystem::exists(config_file)) {
+        const auto& path = config_file.string();
+        bc::ifstream file(path);
+
+        if (!file.good()) {
+            BOOST_THROW_EXCEPTION(po::reading_file(path.c_str()));
+        }
+
         std::string tmp;
         po::options_description desc("");
         desc.add_options()
             ("server.mongoose_listen", po::value<std::string>(&tmp)->default_value("127.0.0.1:8820"));
 
         po::variables_map vm;
-        po::store(po::parse_command_line(0, argv, desc), vm);
+        po::store(po::parse_config_file(file, desc, true), vm);
         po::notify(vm);
 
-        if (vm.count("server.mongoose_listen"))
-        {
+        if (vm.count("server.mongoose_listen")) {
             if (!tmp.empty()) {
                 url = tmp + "/rpc/v2";
             }
         }
-    } 
+    }
 
     // HTTP request call commands
     HttpReq req(url, 3000, reply_handler(my_impl));
