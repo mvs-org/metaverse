@@ -5,6 +5,14 @@ import utils.mvs_rpc as mvs_rpc
 import utils.common as common
 import binascii
 from ethereum.pow.ethpow import mine
+'''
+dependency: pyethereum
+
+sudo apt-get install libssl-dev build-essential automake pkg-config libtool libffi-dev libgmp-dev libyaml-cpp-dev
+git clone https://github.com/ethereum/pyethereum/
+cd pyethereum
+python setup.py install
+'''
 
 
 class TestWork(unittest.TestCase):
