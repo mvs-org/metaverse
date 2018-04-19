@@ -139,6 +139,11 @@ std::vector<uint64_t> attenuation_model::get_unlocked_quantities() const
     return pimpl->get_unlocked_quantities();
 }
 
+uint8_t attenuation_model::get_first_unused_index()
+{
+    return to_index(model_index::unused1);
+}
+
 uint8_t attenuation_model::to_index(attenuation_model::model_index model)
 {
     return static_cast<typename std::underlying_type<model_index>::type>(model);
@@ -152,7 +157,7 @@ attenuation_model::model_index attenuation_model::from_index(uint32_t index)
 
 bool attenuation_model::check_model_index(uint32_t index)
 {
-    return index < to_index(model_index::unused1);
+    return index < get_first_unused_index();
 }
 
 bool attenuation_model::check_model_param(uint32_t index, const data_chunk& param)

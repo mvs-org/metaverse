@@ -68,7 +68,9 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw argument_legality_exception{"volume must not be zero."};
 
     if (!attenuation_model::check_model_index(option_.attenuation_model_index)) {
-        throw asset_attenuation_model_exception{"attenuation model index is invalid, it must be lower than " + std::to_string(ATTENUATION_MODEL_FIRST_UNUSED)};
+        throw asset_attenuation_model_exception{
+            "attenuation model index is invalid, it must be lower than " +
+            std::to_string(attenuation_model::get_first_unused_index())};
     }
 
     // maybe throw

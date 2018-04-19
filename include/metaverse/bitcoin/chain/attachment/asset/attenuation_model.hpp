@@ -49,6 +49,7 @@ public:
 
     attenuation_model(uint8_t index, const std::string& param);
 
+    static uint8_t get_first_unused_index();
     static uint8_t to_index(model_index model);
     static model_index from_index(uint32_t index);
 
