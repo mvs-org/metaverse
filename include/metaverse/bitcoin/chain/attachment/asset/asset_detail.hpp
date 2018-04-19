@@ -104,12 +104,6 @@ public:
     static bool is_secondaryissue_legal(uint8_t threshold);
     static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold);
 
-    void set_attenuation_model_type(attenuation_model::model_index model);
-    attenuation_model::model_index get_attenuation_model_type() const;
-    void set_attenuation_model_index(uint8_t index);
-    uint8_t get_attenuation_model_index() const;
-    bool is_attenuation_model_index_valid();
-
 private:
     // NOTICE: ref CAssetDetail in transaction.h
     // asset_detail and CAssetDetail should have the same size and order.
@@ -118,8 +112,7 @@ private:
     uint64_t maximum_supply;
     uint8_t decimal_number;
     uint8_t secondaryissue_threshold;
-    uint8_t attenuation_model_index:3;
-    uint8_t unused2:5;
+    uint8_t unused2;
     uint8_t unused3;
     std::string issuer;
     std::string address;

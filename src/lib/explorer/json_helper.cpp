@@ -372,7 +372,6 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
         if (is_maximum_supply) {
             tree["is_secondaryissue"] = detail_info.is_asset_secondaryissue() ? "true" : "false";
         }
-        tree["attenuation_model_type"] += detail_info.get_attenuation_model_index();
     } else {
         tree[maximum_supply_or_quantity] = detail_info.get_maximum_supply();
         tree["decimal_number"] = detail_info.get_decimal_number();
@@ -380,7 +379,6 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
         if (is_maximum_supply) {
             tree["is_secondaryissue"] = detail_info.is_asset_secondaryissue();
         }
-        tree["attenuation_model_type"] = detail_info.get_attenuation_model_index();
     }
     return tree;
 }
@@ -406,13 +404,11 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
 
         tree["decimal_number"] += issued_info.get_decimal_number();
         tree["secondaryissue_threshold"] += issued_info.get_secondaryissue_threshold();
-        tree["attenuation_model_type"] += issued_info.get_attenuation_model_index();
     } else {
         tree["quantity"] = detail_info.get_maximum_supply();
 
         tree["decimal_number"] = issued_info.get_decimal_number();
         tree["secondaryissue_threshold"] = issued_info.get_secondaryissue_threshold();
-        tree["attenuation_model_type"] = issued_info.get_attenuation_model_index();
     }
     return tree;
 }

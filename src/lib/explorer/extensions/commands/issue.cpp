@@ -51,15 +51,6 @@ console_result issue::invoke (Json::Value& jv_output,
     if(!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
-    // check attenuation model param
-    data_chunk attenuation_model_param(
-            option_.attenuation_model_param.begin(), option_.attenuation_model_param.end());
-    if (!attenuation_model::check_model_param(
-            sh_asset->get_attenuation_model_index(), attenuation_model_param)) {
-        throw asset_attenuation_model_exception{
-            "wrong attenuation model param : " + option_.attenuation_model_param};
-    }
-
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};

@@ -85,7 +85,7 @@ private:
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
     // example of fixed quantity model param:
-    // "PN=0;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
+    // "TYPE=1;PN=0;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
 };
 

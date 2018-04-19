@@ -88,11 +88,6 @@ public:
 		    value<int32_t>(&option_.secondaryissue_threshold),
 		    "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than or equal to the rate value."
 		)
-        (
-            "model,m",
-            value<uint32_t>(&option_.attenuation_model_index),
-            "The asset attenuation model index, defaults to 0."
-        )
 	    (
             "symbol,s",
             value<std::string>(&option_.symbol)->required(),
@@ -140,7 +135,6 @@ public:
 			maximum_supply{0},
 			decimal_number(0),
             secondaryissue_threshold(0),
-            attenuation_model_index(0),
 			issuer(""),
 			description("")
     	{
@@ -150,7 +144,6 @@ public:
 		non_negative_uint64 maximum_supply;
 		uint32_t decimal_number;
 		int32_t secondaryissue_threshold;
-		uint32_t attenuation_model_index;
 		std::string issuer; 
 		std::string description;
     } option_;
