@@ -359,9 +359,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createdid.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -707,9 +704,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp">
       <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\createdid.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
       <Filter>Source Files</Filter>
