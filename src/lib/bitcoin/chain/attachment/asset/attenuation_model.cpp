@@ -41,6 +41,11 @@ public:
         return model_param_;
     }
 
+    // PN  current period number
+    uint64_t get_period_number() const {
+        return 0;
+    }
+
     // IQ  total issued quantity
     uint64_t get_issued_quantity() const {
         return 0;
@@ -76,6 +81,11 @@ public:
 
 private:
     model_index model_type_{model_index::none};
+    // semicolon separates outer key-value entries.
+    // comma separates inner container items of value.
+    // empty value or non-exist entry means the key is unset.
+    // example of fixed quantity model param:
+    // "PN=0;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
 };
 
@@ -92,6 +102,11 @@ attenuation_model::model_index attenuation_model::get_model_type() const
 const std::string& attenuation_model::get_model_param() const
 {
     return pimpl->get_model_param();
+}
+
+uint64_t attenuation_model::get_period_number() const
+{
+    return pimpl->get_period_number();
 }
 
 uint64_t attenuation_model::get_issued_quantity() const
