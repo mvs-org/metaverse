@@ -63,6 +63,10 @@ public:
     model_index get_model_index() const;
     const std::string& get_model_param() const;
 
+    // mutable params of the model
+    uint64_t get_period_number() const;                    // PN  current period number
+
+    // immutable params of the model
     uint64_t get_issued_quantity() const;                  // IQ  total issued quantity
     uint64_t get_locked_quantity() const;                  // LQ  total locked quantity
     uint64_t get_locked_period() const;                    // LP  total locked period
