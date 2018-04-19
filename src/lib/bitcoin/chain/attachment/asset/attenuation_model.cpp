@@ -19,9 +19,13 @@
  */
 
 #include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
+#include <metaverse/bitcoin/utility/string.hpp>
+#include <unordered_map>
 
 namespace libbitcoin {
 namespace chain {
+
+const char* LOG_HEADER{"attenuation_model"};
 
 // ASSET_TODO
 class attenuation_model::impl
@@ -30,52 +34,114 @@ public:
     impl(const std::string& param)
         : model_param_(param)
     {
-    }
-
-    model_type get_model_type() const {
-        return model_type_;
+        parse_param();
     }
 
     const std::string& get_model_param() const {
         return model_param_;
     }
 
+    // TYPE model type
+    model_type get_model_type() const {
+        return from_index(getnumber<uint8_t>("TYPE"));
+    }
+
     // PN  current period number
     uint64_t get_period_number() const {
-        return 0;
+        return getnumber("PN");
     }
 
     // IQ  total issued quantity
     uint64_t get_issued_quantity() const {
-        return 0;
+        return getnumber("IQ");
     }
 
     // LQ  total locked quantity
     uint64_t get_locked_quantity() const {
-        return 0;
+        return getnumber("LQ");
     }
 
     // LP  total locked period
     uint64_t get_locked_period() const {
-        return 0;
+        return getnumber("LP");
     }
 
     // UCt size()==1 means fixed cycle
     std::vector<uint64_t> get_unlock_cycles() const {
-        std::vector<uint64_t> cycles;
-        return cycles;
+        return std::move(get_numbers("UC"));
     }
 
     // IRt size()==1 means fixed rate
     std::vector<uint8_t> get_issue_rates() const {
-        std::vector<uint8_t> rates;
-        return rates;
+        return std::move(get_numbers<uint8_t>("IR"));
     }
 
     // UQt size()==1 means fixed quantity
     std::vector<uint64_t> get_unlocked_quantities() const {
-        std::vector<uint64_t> quantities;
-        return quantities;
+        return std::move(get_numbers("UQ"));
+    }
+
+private:
+    void parse_param() {
+        auto kv_vec = bc::split(model_param_, ";");
+        for (const auto& kv : kv_vec) {
+            auto vec = bc::split(kv, "=");
+            if (vec.size() == 2) {
+                map_[vec[0]] = vec[1];
+            } else {
+                set_wrong_format();
+                log::info(LOG_HEADER) << "key-value format is wrong";
+                break;
+            }
+        }
+    }
+
+    template<typename T = uint64_t>
+    T getnumber(const char* key) const {
+        if (is_wrong_format()) {
+            return 0;
+        }
+        auto iter = map_.find(key);
+        if (iter != map_.end()) {
+            try {
+                auto num = std::stoull(iter->second);
+                return num;
+            } catch (...) {
+                set_wrong_format();
+                log::info(LOG_HEADER) << "caught exception in getnumber()";
+            }
+        }
+        return 0;
+    }
+
+    template<typename T = uint64_t>
+    std::vector<T> get_numbers(const char* key) const {
+        std::vector<T> ret_vec;
+        if (is_wrong_format()) {
+            return ret_vec;
+        }
+        auto iter = map_.find(key);
+        if (iter != map_.end()) {
+            try {
+                auto num_vec = bc::split(iter->second, ",");
+                for (const auto& item : num_vec) {
+                    auto num = std::stoull(item);
+                    ret_vec.emplace_back(num);
+                }
+            } catch (...) {
+                set_wrong_format();
+                ret_vec.clear();
+                log::info(LOG_HEADER) << "caught exception in getnumbers()";
+            }
+        }
+        return ret_vec;
+    }
+
+    bool is_wrong_format() const {
+        return is_wrong_foramt;
+    }
+    void set_wrong_format() const {
+        const_cast<attenuation_model::impl*>(this)->is_wrong_foramt = true;
     }
 
 private:
@@ -85,7 +151,8 @@ private:
     // example of fixed quantity model param:
     // "PN=0;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
-    model_type model_type_{model_type::none};
+    std::unordered_map<std::string, std::string> map_;
+    bool is_wrong_foramt{false};
 };
 
 attenuation_model::attenuation_model(std::string&& param)
@@ -177,8 +244,7 @@ bool attenuation_model::check_model_param(uint32_t index, const data_chunk& para
         return true;
     }
     else {
-        log::info("attenuation_model")
-            << "Unsupported attenuation model: " << index;
+        log::info(LOG_HEADER) << "Unsupported attenuation model: " << index;
         return false;
     }
 
