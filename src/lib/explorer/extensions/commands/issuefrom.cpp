@@ -52,6 +52,15 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     if(!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
+    // check attenuation model param
+    data_chunk attenuation_model_param(
+            option_.attenuation_model_param.begin(), option_.attenuation_model_param.end());
+    if (!attenuation_model::check_model_param(
+            sh_asset->get_attenuation_model_index(), attenuation_model_param)) {
+        throw asset_attenuation_model_exception{
+            "wrong attenuation model param : " + option_.attenuation_model_param};
+    }
+
     // receiver
     std::vector<receiver_record> receiver{
         {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
@@ -63,8 +72,11 @@ console_result issuefrom::invoke (Json::Value& jv_output,
         receiver.push_back({argument_.address, argument_.symbol, 0, 0, certs, utxo_attach_type::asset_cert, attachment()});
     }
 
-    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto issue_helper = issuing_asset(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            std::move(argument_.address), std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 

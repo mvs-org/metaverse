@@ -373,10 +373,16 @@ private:
 class BCX_API issuing_asset : public base_transfer_helper
 {
 public:
-    issuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
-            fee, std::move(symbol))
+    issuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        std::string&& model_param,
+        std::vector<receiver_record>&& receiver_list, uint64_t fee):
+        base_transfer_helper(cmd, blockchain,
+                std::move(name), std::move(passwd),
+                std::move(from), std::move(receiver_list),
+                fee, std::move(symbol)),
+        attenuation_model_param(std::move(model_param))
         {};
 
     ~issuing_asset(){};
@@ -384,6 +390,9 @@ public:
     void sum_payment_amount() override;
 
     void populate_change() override;
+
+private:
+    std::string attenuation_model_param;
 };
 
 class BCX_API secondary_issuing_asset : public base_transfer_helper

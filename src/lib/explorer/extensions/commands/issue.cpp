@@ -51,6 +51,15 @@ console_result issue::invoke (Json::Value& jv_output,
     if(!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
+    // check attenuation model param
+    data_chunk attenuation_model_param(
+            option_.attenuation_model_param.begin(), option_.attenuation_model_param.end());
+    if (!attenuation_model::check_model_param(
+            sh_asset->get_attenuation_model_index(), attenuation_model_param)) {
+        throw asset_attenuation_model_exception{
+            "wrong attenuation model param : " + option_.attenuation_model_param};
+    }
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
@@ -63,20 +72,24 @@ console_result issue::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
     };
+
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
     if (certs != asset_cert_ns::none) {
         receiver.push_back({addr, argument_.symbol, 0, 0, certs, utxo_attach_type::asset_cert, attachment()});
     }
 
-    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto issue_helper = issuing_asset(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 
     // json output
     auto tx = issue_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }
