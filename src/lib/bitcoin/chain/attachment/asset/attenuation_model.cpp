@@ -68,17 +68,17 @@ public:
 
     // UCt size()==1 means fixed cycle
     std::vector<uint64_t> get_unlock_cycles() const {
-        return std::move(get_numbers("UC"));
+        return get_numbers("UC");
     }
 
     // IRt size()==1 means fixed rate
     std::vector<uint8_t> get_issue_rates() const {
-        return std::move(get_numbers<uint8_t>("IR"));
+        return get_numbers<uint8_t>("IR");
     }
 
     // UQt size()==1 means fixed quantity
     std::vector<uint64_t> get_unlocked_quantities() const {
-        return std::move(get_numbers("UQ"));
+        return get_numbers("UQ");
     }
 
 private:
