@@ -27,21 +27,13 @@
 
 using namespace libbitcoin::chain;
 
-#define MODEL2UINT8(model)  (static_cast<typename std::underlying_type<attenuation_model::model_index>::type>(model))
-#define ATTENUATION_MODEL_NONE              MODEL2UINT8(attenuation_model::model_index::none)
-#define ATTENUATION_MODEL_FIXED_QUANTITY    MODEL2UINT8(attenuation_model::model_index::fixed_quantity)
-#define ATTENUATION_MODEL_FIXED_RATE        MODEL2UINT8(attenuation_model::model_index::fixed_rate)
-#define ATTENUATION_MODEL_FIRST_UNUSED      MODEL2UINT8(attenuation_model::model_index::unused1)
-
-
 namespace libbitcoin {
 namespace chain {
-// forward declaration
-class asset_detail;
 
 class attenuation_model
 {
 public:
+    /// TODO rename to model_type
     enum model_index : uint8_t
     {
         none = 0,
@@ -57,10 +49,13 @@ public:
 
     attenuation_model(uint8_t index, const std::string& param);
 
+    static uint8_t to_index(model_index model);
+    static model_index from_index(uint32_t index);
+
     static bool check_model_index(uint32_t index);
     static bool check_model_param(uint32_t index, const data_chunk& param);
 
-    model_index get_model_index() const;
+    model_index get_model_type() const;
     const std::string& get_model_param() const;
 
     uint64_t get_issued_quantity() const;                  // IQ  total issued quantity

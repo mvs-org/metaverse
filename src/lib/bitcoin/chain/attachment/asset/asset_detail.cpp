@@ -42,7 +42,7 @@ asset_detail::asset_detail(
     symbol(symbol), maximum_supply(maximum_supply),
     decimal_number(decimal_number),
     secondaryissue_threshold(threshold),
-    attenuation_model_index(ATTENUATION_MODEL_NONE),
+    attenuation_model_index(attenuation_model::to_index(attenuation_model::model_index::none)),
     unused2(0), unused3(0),
     issuer(issuer), address(address), description(description)
 {
@@ -82,7 +82,7 @@ void asset_detail::reset()
     maximum_supply = 0;
     decimal_number = 0;
     secondaryissue_threshold = 0;
-    attenuation_model_index = ATTENUATION_MODEL_NONE;
+    attenuation_model_index = attenuation_model::to_index(attenuation_model::model_index::none);
     unused2 = 0;
     unused3 = 0;
     issuer = "";
@@ -169,7 +169,7 @@ std::string asset_detail::to_string() const
         << "\t decimal_number = " << std::to_string(decimal_number) << "\n"
         << "\t is_asset_secondaryissue = " << (is_asset_secondaryissue() ? "true" : "false") << "\n"
         << "\t secondaryissue_threshold = " << std::to_string(get_secondaryissue_threshold()) << "\n"
-        << "\t attenuation_model_index = " << std::to_string(get_attenuation_model_index()) << "\n"
+        << "\t attenuation_model_type = " << std::to_string(get_attenuation_model_index()) << "\n"
         << "\t issuer = " << issuer << "\n"
         << "\t address = " << address << "\n"
         << "\t description = " << description << "\n";
@@ -311,16 +311,17 @@ bool asset_detail::is_secondaryissue_owns_enough(uint64_t own, uint64_t total, u
 
 void asset_detail::set_attenuation_model_type(attenuation_model::model_index model)
 {
-    attenuation_model_index = MODEL2UINT8(model);
+    attenuation_model_index = attenuation_model::to_index(model);
 }
 
 attenuation_model::model_index asset_detail::get_attenuation_model_type() const
 {
-    return (attenuation_model::model_index)attenuation_model_index;
+    return attenuation_model::from_index(attenuation_model_index);
 }
 
 void asset_detail::set_attenuation_model_index(uint8_t index)
 {
+    BITCOIN_ASSERT(attenuation_model::check_model_index(index));
     attenuation_model_index = index;
 }
 

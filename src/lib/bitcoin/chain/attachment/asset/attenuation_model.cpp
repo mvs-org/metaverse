@@ -27,14 +27,14 @@ namespace chain {
 class attenuation_model::impl
 {
 public:
-    impl(uint8_t index, const std::string& param)
-        : model_index_((model_index)index)
+    impl(model_index model, const std::string& param)
+        : model_type_(model)
         , model_param_(param)
     {
     }
 
-    model_index get_model_index() const {
-        return model_index_;
+    model_index get_model_type() const {
+        return model_type_;
     }
 
     const std::string& get_model_param() const {
@@ -75,18 +75,18 @@ public:
     }
 
 private:
-    model_index model_index_{model_index::none};
+    model_index model_type_{model_index::none};
     std::string model_param_;
 };
 
 attenuation_model::attenuation_model(uint8_t index, const std::string& param)
-    : pimpl(new impl(index, param))
+    : pimpl(new impl(from_index(index), param))
 {
 }
 
-attenuation_model::model_index attenuation_model::get_model_index() const
+attenuation_model::model_index attenuation_model::get_model_type() const
 {
-    return pimpl->get_model_index();
+    return pimpl->get_model_type();
 }
 
 const std::string& attenuation_model::get_model_param() const
@@ -124,15 +124,46 @@ std::vector<uint64_t> attenuation_model::get_unlocked_quantities() const
     return pimpl->get_unlocked_quantities();
 }
 
-bool attenuation_model::check_model_index(uint32_t index)
+uint8_t attenuation_model::to_index(attenuation_model::model_index model)
 {
-    return index < ATTENUATION_MODEL_FIRST_UNUSED;
+    return static_cast<typename std::underlying_type<model_index>::type>(model);
 }
 
-// ASSET_TODO
+attenuation_model::model_index attenuation_model::from_index(uint32_t index)
+{
+    BITCOIN_ASSERT(check_model_index(index));
+    return (model_index)index;
+}
+
+bool attenuation_model::check_model_index(uint32_t index)
+{
+    return index < to_index(model_index::unused1);
+}
+
 bool attenuation_model::check_model_param(uint32_t index, const data_chunk& param)
 {
-    return true;
+    const model_index model = from_index(index);
+
+    if (model == model_index::none) {
+        return true;
+    }
+
+    else if (model == model_index::fixed_quantity) {
+        // ASSET_TODO
+        return true;
+    }
+
+    else if (model == model_index::fixed_rate) {
+        // ASSET_TODO
+        return true;
+    }
+    else {
+        log::info("attenuation_model")
+            << "Unsupported attenuation model: " << index;
+        return false;
+    }
+
+    return false;
 }
 
 } // namspace chain
