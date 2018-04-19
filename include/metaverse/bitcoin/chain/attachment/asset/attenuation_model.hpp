@@ -38,15 +38,15 @@ public:
         none = 0,
         fixed_quantity = 1,
         fixed_rate = 2,
-        unused1 = 3,
-        unused2 = 4,
-        unused3 = 5,
-        unused4 = 6,
-        unused5 = 7,
+        custom = 3,
+        unused1 = 4,
+        unused2 = 5,
+        unused3 = 6,
+        unused4 = 7,
         invalid = 8
     };
 
-    attenuation_model(uint8_t index, const std::string& param);
+    attenuation_model(std::string&& param);
 
     static uint8_t get_first_unused_index();
     static uint8_t to_index(model_type model);

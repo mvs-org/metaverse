@@ -27,9 +27,8 @@ namespace chain {
 class attenuation_model::impl
 {
 public:
-    impl(model_type model, const std::string& param)
-        : model_type_(model)
-        , model_param_(param)
+    impl(const std::string& param)
+        : model_param_(param)
     {
     }
 
@@ -80,17 +79,17 @@ public:
     }
 
 private:
-    model_type model_type_{model_type::none};
     // semicolon separates outer key-value entries.
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
     // example of fixed quantity model param:
     // "PN=0;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
+    model_type model_type_{model_type::none};
 };
 
-attenuation_model::attenuation_model(uint8_t index, const std::string& param)
-    : pimpl(new impl(from_index(index), param))
+attenuation_model::attenuation_model(std::string&& param)
+    : pimpl(std::make_unique<impl>(param))
 {
 }
 
