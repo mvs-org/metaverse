@@ -33,8 +33,7 @@ namespace chain {
 class attenuation_model
 {
 public:
-    /// TODO rename to model_type
-    enum model_index : uint8_t
+    enum class model_type : uint8_t
     {
         none = 0,
         fixed_quantity = 1,
@@ -50,13 +49,13 @@ public:
     attenuation_model(uint8_t index, const std::string& param);
 
     static uint8_t get_first_unused_index();
-    static uint8_t to_index(model_index model);
-    static model_index from_index(uint32_t index);
+    static uint8_t to_index(model_type model);
+    static model_type from_index(uint32_t index);
 
     static bool check_model_index(uint32_t index);
     static bool check_model_param(uint32_t index, const data_chunk& param);
 
-    model_index get_model_type() const;
+    model_type get_model_type() const;
     const std::string& get_model_param() const;
 
     // mutable params of the model

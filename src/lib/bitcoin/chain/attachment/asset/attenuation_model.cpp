@@ -27,13 +27,13 @@ namespace chain {
 class attenuation_model::impl
 {
 public:
-    impl(model_index model, const std::string& param)
+    impl(model_type model, const std::string& param)
         : model_type_(model)
         , model_param_(param)
     {
     }
 
-    model_index get_model_type() const {
+    model_type get_model_type() const {
         return model_type_;
     }
 
@@ -80,12 +80,12 @@ public:
     }
 
 private:
-    model_index model_type_{model_index::none};
+    model_type model_type_{model_type::none};
     // semicolon separates outer key-value entries.
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
     // example of fixed quantity model param:
-    // "TYPE=1;PN=0;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
+    // "PN=0;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
 };
 
@@ -94,7 +94,7 @@ attenuation_model::attenuation_model(uint8_t index, const std::string& param)
 {
 }
 
-attenuation_model::model_index attenuation_model::get_model_type() const
+attenuation_model::model_type attenuation_model::get_model_type() const
 {
     return pimpl->get_model_type();
 }
@@ -141,18 +141,18 @@ std::vector<uint64_t> attenuation_model::get_unlocked_quantities() const
 
 uint8_t attenuation_model::get_first_unused_index()
 {
-    return to_index(model_index::unused1);
+    return to_index(model_type::unused1);
 }
 
-uint8_t attenuation_model::to_index(attenuation_model::model_index model)
+uint8_t attenuation_model::to_index(attenuation_model::model_type model)
 {
-    return static_cast<typename std::underlying_type<model_index>::type>(model);
+    return static_cast<typename std::underlying_type<model_type>::type>(model);
 }
 
-attenuation_model::model_index attenuation_model::from_index(uint32_t index)
+attenuation_model::model_type attenuation_model::from_index(uint32_t index)
 {
     BITCOIN_ASSERT(check_model_index(index));
-    return (model_index)index;
+    return (model_type)index;
 }
 
 bool attenuation_model::check_model_index(uint32_t index)
@@ -162,18 +162,18 @@ bool attenuation_model::check_model_index(uint32_t index)
 
 bool attenuation_model::check_model_param(uint32_t index, const data_chunk& param)
 {
-    const model_index model = from_index(index);
+    const model_type model = from_index(index);
 
-    if (model == model_index::none) {
+    if (model == model_type::none) {
         return true;
     }
 
-    else if (model == model_index::fixed_quantity) {
+    else if (model == model_type::fixed_quantity) {
         // ASSET_TODO
         return true;
     }
 
-    else if (model == model_index::fixed_rate) {
+    else if (model == model_type::fixed_rate) {
         // ASSET_TODO
         return true;
     }
