@@ -96,6 +96,9 @@ const memory_ptr slab_hash_table<KeyType>::find(const KeyType& key) const
     {
         const slab_row<KeyType> item(manager_, current);
 
+        if(item.out_of_memory())
+            break;
+
         // Found.
         if (item.compare(key))
             return item.data();
@@ -126,6 +129,9 @@ const memory_ptr slab_hash_table<KeyType>::rfind(const KeyType& key) const
     {
         const slab_row<KeyType> item(manager_, current);
 
+        if(item.out_of_memory())
+            return nullptr;
+
         // Found.
         if (item.compare(key))
             ret = item.data();
@@ -155,6 +161,9 @@ std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const KeyType& key) cons
     while (current != header_.empty)
     {
         const slab_row<KeyType> item(manager_, current);
+
+        if(item.out_of_memory())
+            break;
 
         // Found.
         if (item.compare(key))
@@ -187,6 +196,9 @@ std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t
     {
         const slab_row<KeyType> item(manager_, current);
 
+        if(item.out_of_memory())
+            break;
+
         // Found.
         vec_memo->push_back(item.data());
 
@@ -211,6 +223,9 @@ bool slab_hash_table<KeyType>::unlink(const KeyType& key)
     // Find start item...
     const auto begin = read_bucket_value(key);
     const slab_row<KeyType> begin_item(manager_, begin);
+    
+    if (begin_item.out_of_memory())
+        return false;
 
     // If start item has the key then unlink from buckets.
     if (begin_item.compare(key))
@@ -228,6 +243,9 @@ bool slab_hash_table<KeyType>::unlink(const KeyType& key)
     {
         const slab_row<KeyType> item(manager_, current);
 
+        if (item.out_of_memory())
+            return false;
+            
         // Found, unlink current item from previous.
         if (item.compare(key))
         {

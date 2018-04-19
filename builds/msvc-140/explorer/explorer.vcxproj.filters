@@ -359,9 +359,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createdid.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

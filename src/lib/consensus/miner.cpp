@@ -40,7 +40,24 @@ using namespace std;
 
 namespace libbitcoin{
 namespace consensus{
+// tuples: (priority, fee_per_kb, fee, transaction_ptr)
 typedef boost::tuple<double, double, int64_t, miner::transaction_ptr> transaction_priority;
+
+namespace {
+    bool sort_by_priority(const transaction_priority& a, const transaction_priority& b)
+    {
+        if (a.get<1>() == b.get<1>())
+            return a.get<0>() < b.get<0>();
+        return a.get<1>() < b.get<1>();
+    };
+
+    bool sort_by_fee(const transaction_priority& a, const transaction_priority& b)
+    {
+        if (a.get<0>() == b.get<0>())
+            return a.get<1>() < b.get<1>();
+        return a.get<0>() < b.get<0>();
+    };
+} // end of anonymous namespace
 
 miner::miner(p2p_node& node) : node_(node), state_(state::init_), setting_(node_.chain_impl().chain_settings())
 {
@@ -342,22 +359,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 		transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, total_inputs - tx->total_output_value(), tx));
 	}
 
-	auto sort_by_priority = [](const transaction_priority& a, const transaction_priority& b) -> bool 
-	{ 
-		if (a.get<1>() == b.get<1>()) 
-			return a.get<0>() < b.get<0>(); 
-		return a.get<1>() < b.get<1>(); 
-	};
-
-	auto sort_by_fee = [](const transaction_priority& a, const transaction_priority& b) -> bool 
-	{ 
-		if (a.get<0>() == b.get<0>()) 
-			return a.get<1>() < b.get<1>(); 
-		return a.get<0>() < b.get<0>(); 
-	};
-
 	vector<transaction_ptr> blocked_transactions;
-	function<bool(const transaction_priority&, const transaction_priority&)> sort_func = sort_by_priority; 
+	auto sort_func = sort_by_priority;
 	bool is_resort = false; 
 	make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 

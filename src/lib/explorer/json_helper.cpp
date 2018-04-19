@@ -443,7 +443,11 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     Json::Value tree;
     tree["symbol"] = cert_info.get_symbol();
     tree["owner"] = cert_info.get_owner();
-    tree["certs"] = cert_info.get_certs_name();
+    if (version_ == 1) {
+        tree["certs"] += cert_info.get_certs();
+    } else {
+        tree["certs"] = cert_info.get_certs();
+    }
     return tree;
 }
 

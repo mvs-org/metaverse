@@ -55,7 +55,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\burn.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\changepasswd.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createasset.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createdid.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createmultisigtx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\createrawtx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\decoderawtx.hpp" />
