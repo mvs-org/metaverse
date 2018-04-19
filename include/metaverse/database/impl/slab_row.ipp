@@ -58,6 +58,9 @@ public:
     /// Write a new next position.
     void write_next_position(file_offset next);
 
+    //whether cross the memory 
+    bool out_of_memory() const;
+    
 private:
     const memory_ptr raw_next_data() const;
     const memory_ptr raw_data(file_offset offset) const;
@@ -157,6 +160,12 @@ const memory_ptr slab_row<KeyType>::raw_next_data() const
 {
     // Next position is after key data.
     return raw_data(key_size);
+}
+
+template <typename KeyType>
+bool slab_row<KeyType>::out_of_memory() const
+{
+  return position_ > manager_.payload_size();
 }
 
 } // namespace database
