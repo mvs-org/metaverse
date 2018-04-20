@@ -108,7 +108,6 @@ bool asset_detail::from_data(reader& source)
     maximum_supply = source.read_8_bytes_little_endian();
     decimal_number = source.read_byte();
     secondaryissue_threshold = source.read_byte();
-    uint8_t byte_num = source.read_byte();
     unused2 = source.read_byte();
     unused3 = source.read_byte();
     issuer = source.read_string();
