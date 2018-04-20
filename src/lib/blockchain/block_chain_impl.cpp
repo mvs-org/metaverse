@@ -1815,6 +1815,14 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
 	return "";
 }
 
+/* find history addresses by the did symbol 
+*/
+std::shared_ptr<std::vector<blockchain_did>> block_chain_impl::get_did_history_addresses(const std::string &symbol)
+{
+    const auto hash = get_hash(symbol);
+    return database_.dids.get_history_dids(hash);
+}
+
 std::shared_ptr<did_detail> block_chain_impl::get_issued_did(std::string& symbol)
 {
 	std::shared_ptr<did_detail> sp_did(nullptr);
@@ -1828,11 +1836,18 @@ std::shared_ptr<did_detail> block_chain_impl::get_issued_did(std::string& symbol
 /// get all the did in blockchain
 std::shared_ptr<std::vector<did_detail>> block_chain_impl::get_issued_dids()
 {
-	auto sp_blockchain_vec = database_.dids.get_blockchain_dids();
-	auto sp_vec = std::make_shared<std::vector<did_detail>>();
-	for(auto& each : *sp_blockchain_vec) 
-		sp_vec->push_back(each.get_did());
-	return sp_vec;
+    auto sp_vec = std::make_shared<std::vector<did_detail>>();
+    if (!sp_vec)
+        return nullptr;
+
+    auto sp_blockchain_vec = database_.dids.get_blockchain_dids();
+    for (const auto &each : *sp_blockchain_vec){
+        if (each.get_status() == blockchain_did::address_current){
+            sp_vec->emplace_back(each.get_did());
+        }
+    }
+
+    return sp_vec;
 }
 
 std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(const std::string& symbol)
@@ -2409,6 +2424,7 @@ void block_chain_impl::safe_store_account(account& acc, std::vector<std::shared_
     database_.accounts.sync();
 
 }
+
 
 
 } // namespace blockchain

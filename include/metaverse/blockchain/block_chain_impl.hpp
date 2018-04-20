@@ -273,7 +273,10 @@ public:
     bool is_address_issued_did(const std::string& address);
     std::string get_did_from_address(const std::string& address);
 	std::shared_ptr<did_detail> get_issued_did(std::string& symbol);
-	std::shared_ptr<std::vector<did_detail>> get_issued_dids();    
+	std::shared_ptr<std::vector<did_detail>> get_issued_dids(); 
+
+    //get history addresses from did symbol
+    std::shared_ptr<std::vector<blockchain_did>>  get_did_history_addresses(const std::string & symbol);  
 
 	std::shared_ptr<std::vector<business_history>> get_account_business_history(const std::string& name,
 					business_kind kind, uint32_t time_begin, uint32_t time_end);
