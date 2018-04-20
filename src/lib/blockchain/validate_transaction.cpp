@@ -390,6 +390,11 @@ code validate_transaction::check_secondaryissue_transaction(
         }
         else if (output.is_asset_cert())
         {
+            ++num_asset_cert_issue;
+            if (num_asset_cert_issue > 2) {
+                return error::asset_secondaryissue_error;
+            }
+
             // check address
             auto asset_address_out = output.get_script_address();
             if (asset_address.empty()) {
@@ -398,28 +403,14 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
 
-            // check cert
             asset_cert&& cert_info = output.get_asset_cert();
-            asset_cert_type cur_cert_type = cert_info.get_certs();
-            if (cur_cert_type == asset_cert_ns::issue) {
-                ++num_asset_cert_issue;
-                if (num_asset_cert_issue > 2) {
-                    return error::asset_secondaryissue_error;
-                }
-
-                if (asset_symbol.empty()) {
-                    asset_symbol = cert_info.get_symbol();
-                } else if (asset_symbol != cert_info.get_symbol()) {
-                    return error::asset_secondaryissue_error;
-                }
-            }
-            else {
-                log::error(LOG_BLOCKCHAIN)
-                    << "asset secondaryissue: Invalid asset cert type: " << cur_cert_type;
+            if (asset_symbol.empty()) {
+                asset_symbol = cert_info.get_symbol();
+            } else if (asset_symbol != cert_info.get_symbol()) {
                 return error::asset_secondaryissue_error;
             }
 
-            certs_out |= cur_cert_type;
+            certs_out |= cert_info.get_certs();
         }
         else if (!output.is_etp())
         {
@@ -427,8 +418,7 @@ code validate_transaction::check_secondaryissue_transaction(
         }
     }
 
-    size_t max_outputs_size = 3 + num_asset_cert_issue;
-    if ((tx.outputs.size() > max_outputs_size) || (asset_transfer_volume == 0)
+    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0)
         || asset_symbol.empty() || asset_address.empty()) {
         return error::asset_secondaryissue_error;
     }
