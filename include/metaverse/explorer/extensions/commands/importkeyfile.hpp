@@ -44,7 +44,8 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FILE", 1);
+            .add("FILE", 1)
+            .add("FILECONTENT", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -54,6 +55,7 @@ public:
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(option_.file, "FILE", variables, input, raw);
+        load_input(option_.content, "FILECONTENT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -80,6 +82,11 @@ public:
             "FILE",
             value<boost::filesystem::path>(&option_.file)->required(),
             "key file path."
+        )
+        (
+            "FILECONTENT",
+            value<std::string>(&option_.content),
+            "key file content. this will omit the FILE argument if specified."
         );
 
         return options;
@@ -99,11 +106,12 @@ public:
     struct option
     {
         option()
-          : file("")
+          : file(""), content("")
         {
         }
 
         boost::filesystem::path file;
+        std::string content;
     } option_;
 
 };

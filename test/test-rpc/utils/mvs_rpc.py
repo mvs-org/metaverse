@@ -52,10 +52,16 @@ def dump_keyfile(account, password, lastword, keyfile=""):
     )
     return handle_rpc_rsp(rpc_rsp)
 
-def import_keyfile(account, password, keystore_file):
+def import_keyfile(account, password, keystore_file, keyfile_content=None):
     rpc_cmd = RPC('importkeyfile')
+
+    if keyfile_content:
+        args = [account, password, "omitted", keyfile_content]
+    else:
+        args = [account, password, keystore_file]
+
     rpc_rsp = rpc_cmd.post(
-        [account, password, keystore_file],
+        args,
         {}
     )
 
@@ -337,3 +343,40 @@ def get_info():
     height = message['height']
     difficulty = message['difficulty']
     return int(height), int(difficulty)
+
+def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None, mychange=None, symbol=None):
+    '''
+    :param receivers: [address:amount, ...]
+    :param senders: [address, ...]
+    :param type:
+        0 -- transfer etp,
+        1 -- deposit etp,
+        3 -- transfer asset,
+        6 -- just only send message
+    :param deposit: support [7, 30, 90, 182, 365] days
+    :param fee:
+    :param message:
+    :param mychange: address
+    :param symbol: asset name, not specify this option for etp tx
+    :return:
+    '''
+    rpc_cmd = RPC('createrawtx')
+    rpc_rsp = rpc_cmd.post(
+        [],
+        {
+            '--receivers': receivers,
+            '--senders': senders,
+            '--type': type,
+            '--deposit': deposit,
+            '--fee': fee,
+            '--message': message,
+            '--mychange': mychange,
+            '--symbol': symbol,
+        }
+    )
+
+    result, message = handle_rpc_rsp(rpc_rsp)
+    if result:
+        return result, message["hex"]
+    return result, message
+

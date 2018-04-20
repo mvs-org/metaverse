@@ -19,7 +19,6 @@
  */
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <sstream>
-#include <metaverse/bitcoin/utility/string.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
@@ -31,17 +30,6 @@ namespace libbitcoin {
 namespace chain {
 
 constexpr bool use_did_address = false;
-
-// assert cert name definition
-const char* asset_cert_name_none  = "NONE";
-const char* asset_cert_name_issue = "ISSUE";
-const char* asset_cert_name_all   = "ALL";
-// name to type map
-static std::unordered_map<std::string, asset_cert_type> cert_name_type_map{
-    {asset_cert_name_none, asset_cert_ns::none},
-    {asset_cert_name_issue, asset_cert_ns::issue},
-    {asset_cert_name_all, asset_cert_ns::all}
-};
 
 asset_cert::asset_cert()
 {
@@ -158,7 +146,7 @@ std::string asset_cert::to_string() const
     std::ostringstream ss;
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t owner = " << owner_ << "\n";
-    ss << "\t certs = " << get_certs_name() << "\n";
+    ss << "\t certs = " << std::to_string(get_certs()) << "\n";
     return ss.str();
 }
 
@@ -202,42 +190,6 @@ bool asset_cert::test_certs(asset_cert_type bits) const
 bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
 {
     return (certs & bits) == bits;
-}
-
-std::string asset_cert::get_certs_name() const
-{
-    return get_certs_name(certs_);
-}
-
-std::string asset_cert::get_certs_name(asset_cert_type certs)
-{
-    // collect cert names to a set container
-    std::vector<std::string> name_vec;
-    if (test_certs(certs, asset_cert_ns::issue)) {
-        name_vec.emplace_back(asset_cert_name_issue);
-    }
-
-    // concat cert names, separated by comma
-    auto certs_name = bc::join(name_vec, ",");
-
-    if (certs_name.empty()) {
-        return "NONE";
-    }
-
-    return certs_name;
-}
-
-asset_cert_type asset_cert::get_certs_from_name(const std::string& certs_name)
-{
-    asset_cert_type certs = asset_cert_ns::none;
-    auto name_vec = bc::split(certs_name, ",");
-    for (const auto& name : name_vec) {
-        auto iter = cert_name_type_map.find(name);
-        if (iter != cert_name_type_map.end()) {
-            certs |= iter->second;
-        }
-    }
-    return certs;
 }
 
 std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const

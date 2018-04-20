@@ -87,6 +87,10 @@ int bc::main(int argc, char* argv[])
 
         if (vm.count("server.mongoose_listen")) {
             if (!tmp.empty()) {
+                // On Windows, client can not connect to 0.0.0.0
+                if (tmp.find("0.0.0.0") == 0) {
+                    tmp.replace(0, 7, "127.0.0.1");
+                }
                 url = tmp + "/rpc/v2";
             }
         }

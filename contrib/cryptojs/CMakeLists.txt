@@ -1,8 +1,5 @@
 FILE(GLOB_RECURSE cryptojs_SOURCES "*.cpp")
 
-
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-deprecated-declarations")
-
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 
 ADD_LIBRARY(cryptojs_static STATIC ${cryptojs_SOURCES})
