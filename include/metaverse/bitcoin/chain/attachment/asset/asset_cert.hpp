@@ -47,6 +47,7 @@ using asset_cert_type = uint64_t;
 namespace asset_cert_ns {
     constexpr asset_cert_type none{0};
     constexpr asset_cert_type issue{1 << 0};
+    constexpr asset_cert_type domain{1 << 1};
     constexpr asset_cert_type all{0xffffffffffffffff};
 }
 

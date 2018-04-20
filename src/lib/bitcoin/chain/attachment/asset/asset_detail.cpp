@@ -25,7 +25,10 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/bitcoin/utility/string.hpp>
 #include <json/minijson_writer.hpp>
+
+#define ASSET_SYMBOL_DELIMITER "."
 
 namespace libbitcoin {
 namespace chain {
@@ -179,6 +182,32 @@ void asset_detail::set_symbol(const std::string& symbol)
     this->symbol = symbol.substr(0, len);
 }
 
+std::string asset_detail::get_domain(const std::string& symbol)
+{
+    std::string domain("");
+    auto&& tokens = bc::split(symbol, ASSET_SYMBOL_DELIMITER, true);
+    if (tokens.size() > 0) {
+        domain = tokens[0];
+    }
+    return domain;
+}
+
+std::string asset_detail::get_domain() const
+{
+    return get_domain(symbol);
+}
+
+bool asset_detail::is_domain_valid(const std::string& domain)
+{
+    return !domain.empty();
+}
+
+bool asset_detail::is_domain_valid() const
+{
+    auto&& domain = get_domain();
+    return is_domain_valid(domain);
+}
+
 uint64_t asset_detail::get_maximum_supply() const
 {
     return maximum_supply;
@@ -233,6 +262,10 @@ asset_cert_type asset_detail::get_asset_cert_mask() const
     if (is_secondaryissue_legal()) {
         certs |= asset_cert_ns::issue;
     }
+
+    if (is_domain_valid()) {
+        certs |= asset_cert_ns::domain;
+    }
     return certs;
 }
 
@@ -262,24 +295,24 @@ void asset_detail::set_secondaryissue_threshold(uint8_t share)
     secondaryissue_threshold = share;
 }
 
-bool asset_detail::is_secondaryissue_threshold_value_ok() const 
-{ 
-    return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold()); 
+bool asset_detail::is_secondaryissue_threshold_value_ok() const
+{
+    return is_secondaryissue_threshold_value_ok(get_secondaryissue_threshold());
 }
 
-bool asset_detail::is_secondaryissue_legal() const 
-{ 
-    return is_secondaryissue_legal(get_secondaryissue_threshold()); 
+bool asset_detail::is_secondaryissue_legal() const
+{
+    return is_secondaryissue_legal(get_secondaryissue_threshold());
 }
 
-bool asset_detail::is_secondaryissue_forbidden(uint8_t threshold) 
-{ 
-    return threshold == forbidden_secondaryissue_threshold; 
+bool asset_detail::is_secondaryissue_forbidden(uint8_t threshold)
+{
+    return threshold == forbidden_secondaryissue_threshold;
 }
 
-bool asset_detail::is_secondaryissue_freely(uint8_t threshold)    
-{ 
-    return threshold == freely_secondaryissue_threshold; 
+bool asset_detail::is_secondaryissue_freely(uint8_t threshold)
+{
+    return threshold == freely_secondaryissue_threshold;
 }
 
 bool asset_detail::is_secondaryissue_threshold_value_ok(uint8_t threshold)

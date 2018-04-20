@@ -693,12 +693,12 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         || ((record.type == utxo_attach_type::asset_transfer)
                 && ((record.amount > 0) && (!record.asset_amount)))) { // etp
         if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attachment attach(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
+            attachment attach(ETP_TYPE, record.attach_elem.get_version(), chain::etp(record.amount));
             attach.set_to_did(record.attach_elem.get_to_did());
             attach.set_from_did(record.attach_elem.get_from_did());
             return attach;
         }
-        return attachment(ETP_TYPE, record.attach_elem.get_version(), libbitcoin::chain::etp(record.amount));
+        return attachment(ETP_TYPE, record.attach_elem.get_version(), chain::etp(record.amount));
     }
 
     if(record.type == utxo_attach_type::asset_issue) {
@@ -712,7 +712,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
     } else if(record.type == utxo_attach_type::asset_secondaryissue) {
         throw tx_attachment_value_exception("secondaryissue must be processed by secondary_issuing_asset");
     } else if(record.type == utxo_attach_type::asset_transfer) {
-        auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
+        auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::message) {
@@ -735,7 +735,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
             throw asset_cert_exception("asset cert is none");
         }
         auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
-        auto cert_info = chain::asset_cert(symbol_, cert_owner, record.asset_cert);
+        auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.asset_cert);
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
 
@@ -1169,13 +1169,13 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
                 && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
+        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
     }
 
     if(record.type == utxo_attach_type::asset_issue) {
         throw tx_attachment_value_exception{"not support this utxo type"};
     } else if(record.type == utxo_attach_type::asset_transfer) {
-        auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
+        auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::message) {
@@ -1520,7 +1520,8 @@ void secondary_issuing_asset::sum_payment_amount() {
         payment_asset_ += iter.asset_amount;
         payment_asset_cert_ |= iter.asset_cert;
     }
-    if (payment_asset_cert_ != asset_cert_ns::issue)
+
+    if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue))
         throw asset_cert_exception("no asset cert of issue right is provided.");
 }
 
@@ -1587,9 +1588,9 @@ void secondary_issuing_asset::populate_change() {
 
 attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record){
     if (record.type == utxo_attach_type::etp) {
-        return attachment(ETP_TYPE, attach_version, libbitcoin::chain::etp(record.amount));
+        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
     } else if (record.type == utxo_attach_type::asset_transfer) {
-        auto transfer = libbitcoin::chain::asset_transfer(record.symbol, record.asset_amount);
+        auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if (record.type == utxo_attach_type::asset_cert) {
@@ -1597,7 +1598,7 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
             throw asset_cert_exception("asset cert is none");
         }
         auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
-        auto cert_info = chain::asset_cert(symbol_, cert_owner, record.asset_cert);
+        auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.asset_cert);
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     } else if (record.type == utxo_attach_type::asset_secondaryissue) {
         auto asset_detail = *issued_asset_;

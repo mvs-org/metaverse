@@ -126,6 +126,7 @@ DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
 DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5015);
 DEFINE_EXPLORER_EXCEPTION(asset_secondaryissue_threshold_exception, 5016);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5017);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

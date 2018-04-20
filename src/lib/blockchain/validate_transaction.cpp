@@ -191,7 +191,7 @@ void validate_transaction::previous_tx_index(const code& ec,
 
     BITCOIN_ASSERT(current_input_ < tx_->inputs.size());
     const auto& prev_tx_hash = tx_->inputs[current_input_].previous_output.hash;
-    
+
     // Now fetch actual transaction body
     blockchain_.fetch_transaction(prev_tx_hash,
         dispatch_.unordered_delegate(&validate_transaction::handle_previous_tx,
@@ -248,7 +248,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
             shared_from_this(), _1, _2));
 }
 
-void validate_transaction::check_double_spend(const code& ec, 
+void validate_transaction::check_double_spend(const code& ec,
     const chain::input_point&)
 {
     if (ec != (code)error::unspent_output)
@@ -278,7 +278,7 @@ void validate_transaction::check_fees()
         handle_validate_(error::fees_out_of_range, tx_, {});
         return;
     }
-	
+
     auto is_asset_type = (business_kind_in_ == business_kind::asset_issue) || (business_kind_in_ == business_kind::asset_transfer);
     if (is_asset_type) {
         if (tx_->has_asset_transfer()) {
@@ -300,7 +300,7 @@ void validate_transaction::check_fees()
 
     auto is_did_type = (business_kind_in_ == business_kind::did_issue) || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
-		
+
 	    if (!check_did_symbol(*tx_))
 	    {
 	        handle_validate_(error::did_symbol_not_match, tx_, {});
@@ -336,7 +336,7 @@ code validate_transaction::check_secondaryissue_transaction(
     uint64_t secondaryissue_asset_amount{0};
     uint64_t asset_transfer_volume{0};
     int num_asset_transfer{0};
-    int num_asset_cert{0};
+    int num_asset_cert_issue{0};
     asset_cert_type certs_out{asset_cert_ns::none};
     for (auto& output : tx.outputs)
     {
@@ -390,23 +390,36 @@ code validate_transaction::check_secondaryissue_transaction(
         }
         else if (output.is_asset_cert())
         {
-            ++num_asset_cert;
-            if (num_asset_cert > 2) {
-                return error::asset_secondaryissue_error;
-            }
-            auto && cert_info = output.get_asset_cert();
-            if (asset_symbol.empty()) {
-                asset_symbol = cert_info.get_symbol();
-            } else if (asset_symbol != cert_info.get_symbol()) {
-                return error::asset_secondaryissue_error;
-            }
+            // check address
             auto asset_address_out = output.get_script_address();
             if (asset_address.empty()) {
                 asset_address = asset_address_out;
             } else if (asset_address != asset_address_out) {
                 return error::asset_secondaryissue_error;
             }
-            certs_out |= cert_info.get_certs();
+
+            // check cert
+            asset_cert&& cert_info = output.get_asset_cert();
+            asset_cert_type cur_cert_type = cert_info.get_certs();
+            if (cur_cert_type == asset_cert_ns::issue) {
+                ++num_asset_cert_issue;
+                if (num_asset_cert_issue > 2) {
+                    return error::asset_secondaryissue_error;
+                }
+
+                if (asset_symbol.empty()) {
+                    asset_symbol = cert_info.get_symbol();
+                } else if (asset_symbol != cert_info.get_symbol()) {
+                    return error::asset_secondaryissue_error;
+                }
+            }
+            else {
+                log::error(LOG_BLOCKCHAIN)
+                    << "asset secondaryissue: Invalid asset cert type: " << cur_cert_type;
+                return error::asset_secondaryissue_error;
+            }
+
+            certs_out |= cur_cert_type;
         }
         else if (!output.is_etp())
         {
@@ -414,12 +427,13 @@ code validate_transaction::check_secondaryissue_transaction(
         }
     }
 
-    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0)
+    size_t max_outputs_size = 3 + num_asset_cert_issue;
+    if ((tx.outputs.size() > max_outputs_size) || (asset_transfer_volume == 0)
         || asset_symbol.empty() || asset_address.empty()) {
         return error::asset_secondaryissue_error;
     }
 
-    if ((certs_out & asset_cert_ns::issue) == asset_cert_ns::none) {
+    if (!asset_cert::test_certs(certs_out, asset_cert_ns::issue)) {
         return error::asset_cert_error;
     }
 
@@ -467,7 +481,8 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     is_asset_issue = false;
-    int num_asset_cert{0};
+    int num_asset_cert_issue{0};
+    int num_asset_cert_domain{0};
     asset_cert_type cert_mask{asset_cert_ns::none};
     asset_cert_type cert_type{asset_cert_ns::none};
     std::string asset_symbol;
@@ -501,22 +516,49 @@ code validate_transaction::check_asset_issue_transaction(
             cert_mask = detail.get_asset_cert_mask();
         }
         else if (output.is_asset_cert()) {
-            ++num_asset_cert;
-            if (num_asset_cert > 1) {
-                return error::asset_issue_error;
-            }
             asset_cert&& cert_info = output.get_asset_cert();
-            if (asset_symbol.empty()) {
-                asset_symbol = cert_info.get_symbol();
-            } else if (asset_symbol != cert_info.get_symbol()) {
-                return error::asset_issue_error;
-            }
+
+            // check address
             if (asset_address.empty()) {
                 asset_address = cert_info.get_address(chain);
             } else if (asset_address != cert_info.get_address(chain)) {
                 return error::asset_issue_error;
             }
-            cert_type = cert_info.get_certs();
+
+            // check cert
+            asset_cert_type cur_cert_type = cert_info.get_certs();
+            if (cur_cert_type == asset_cert_ns::issue) {
+                ++num_asset_cert_issue;
+                if (num_asset_cert_issue > 1) {
+                    return error::asset_issue_error;
+                }
+
+                if (asset_symbol.empty()) {
+                    asset_symbol = cert_info.get_symbol();
+                } else if (asset_symbol != cert_info.get_symbol()) {
+                    return error::asset_issue_error;
+                }
+            }
+            else if (cur_cert_type == asset_cert_ns::domain) {
+                ++num_asset_cert_domain;
+                if (num_asset_cert_domain > 1) {
+                    return error::asset_issue_error;
+                }
+
+                if (!asset_symbol.empty()) {
+                    auto&& domain = asset_detail::get_domain(asset_symbol);
+                    if (domain != cert_info.get_symbol()) {
+                        return error::asset_issue_error;
+                    }
+                }
+            }
+            else {
+                log::error(LOG_BLOCKCHAIN)
+                    << "asset issue: Invalid asset cert type: " << cur_cert_type;
+                return error::asset_issue_error;
+            }
+
+            cert_type |= cur_cert_type;
         }
         else if (!output.is_etp())
         {
@@ -524,7 +566,8 @@ code validate_transaction::check_asset_issue_transaction(
         }
     }
 
-    if ((tx.outputs.size() > 3) || (cert_type != cert_mask)) {
+    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
+    if ((tx.outputs.size() > max_outputs_size) || (cert_type != cert_mask)) {
         return error::asset_issue_error;
     }
 
@@ -567,7 +610,7 @@ code validate_transaction::check_did_transaction(
                 return error::did_multi_type_exist;
             }
             type = DID_DETAIL_TYPE;
-            
+
             if (!connect_did_input(tx,chain,boost::get<did>(output.get_did()))) {
                 return error::did_input_error;
             }
@@ -593,7 +636,7 @@ code validate_transaction::check_did_transaction(
         }
     }
 
-    
+
 
     return ret;
 }
@@ -609,7 +652,7 @@ bool validate_transaction::connect_did_input(
     auto detail_info = boost::get<did_detail>(info.get_data());
     bool found_did_info = false;
     bool found_address_info =false;
-    
+
     for (const auto& input: tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
@@ -622,7 +665,7 @@ bool validate_transaction::connect_did_input(
             if (info.get_status() ==  DID_TRANSFERABLE_TYPE) {
                 if (detail_info.get_symbol() == prev_output.get_did_symbol()) {
                     found_did_info = true;
-                }               
+                }
             }
         }
         else if (prev_output.is_etp()) {
@@ -630,9 +673,9 @@ bool validate_transaction::connect_did_input(
             if (detail_info.get_address() == did_address_in) {
                 found_address_info = true;
             }
-            
+
         }
-        
+
     }
 
     return (found_did_info&&found_address_info&&info.get_status() ==  DID_TRANSFERABLE_TYPE)
@@ -653,7 +696,7 @@ bool validate_transaction::connect_input_address_match_did(
     }
 
     const auto& input = tx.inputs[0];
-    
+
     chain::transaction prev_tx;
     uint64_t prev_height{0};
     if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
@@ -661,8 +704,8 @@ bool validate_transaction::connect_input_address_match_did(
     }
     auto prev_output = prev_tx.outputs.at(input.previous_output.index);
 
-    
-    auto address = prev_output.get_script_address();        
+
+    auto address = prev_output.get_script_address();
     if ( did != chain.get_did_from_address(address)) {
         return false;
     }
@@ -681,10 +724,10 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 
     if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success)
         return ret;
-        
+
     if ((ret = check_did_transaction(tx, chain, true)) != error::success)
         return ret;
-      
+
     return ret;
 }
 
@@ -740,7 +783,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
 
             if (!is_did_validate(chain)){
-                return error::did_func_not_actived;    
+                return error::did_func_not_actived;
             }
         }
     }
@@ -777,11 +820,11 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
         }
 
-        for(auto& output : tx.outputs) 
+        for(auto& output : tx.outputs)
         {
             if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if((int)lock_height < 0 
+                if((int)lock_height < 0
                     || consensus::miner::get_lock_heights_index(lock_height) < 0){
                     return error::invalid_output_script_lock_height;
                 }
@@ -861,7 +904,7 @@ bool validate_transaction::connect_input(const transaction& tx,
 	if(previous_output.attach_data.get_type() == ASSET_TYPE) {
 		// 1. do asset transfer amount check
 		asset_transfer_amount = const_cast<output&>(previous_output).get_asset_amount();
-		
+
 		// 2. do asset symbol check
 		new_symbol_in = const_cast<output&>(previous_output).get_asset_symbol();
 		if(!new_symbol_in.empty()) { // asset input
@@ -890,7 +933,7 @@ bool validate_transaction::connect_input(const transaction& tx,
             return false;
         }
     }
-    else if(previous_output.attach_data.get_type() == DID_TYPE) {		
+    else if(previous_output.attach_data.get_type() == DID_TYPE) {
 		// 2. do did symbol check
 		new_symbol_in = const_cast<output&>(previous_output).get_did_symbol();
 		if(!new_symbol_in.empty()) { // did input
@@ -907,7 +950,7 @@ bool validate_transaction::connect_input(const transaction& tx,
         } else if (previous_output.is_did_transfer()) {
             business_kind_in = business_kind::did_transfer;
         }
-    } 
+    }
 
     if (previous_tx.is_coinbase())
     {
@@ -946,7 +989,7 @@ bool validate_transaction::check_asset_amount(const transaction& tx)
     const auto asset_amount_out = tx.total_output_transfer_amount();
     if (asset_amount_in_ != asset_amount_out) // asset amount must be equal
         return false;
-	
+
     return true;
 }
 bool validate_transaction::check_asset_symbol(const transaction& tx)
