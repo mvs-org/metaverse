@@ -116,6 +116,9 @@ script_pattern script::pattern() const
     if (operation::is_pay_blackhole_pattern(operations))
         return script_pattern::pay_blackhole_address;
 
+    if (operation::is_pay_key_hash_with_attenuation_model_pattern(operations))
+        return script_pattern::pay_key_hash_with_attenuation_model;
+
     return script_pattern::non_standard;
 }
 

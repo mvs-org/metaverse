@@ -360,18 +360,15 @@ bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
 
 bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
 {
-    return ops.size() == 10
-        && ops[0].code == opcode::dup
-        && ops[1].code == opcode::hash160
-        && ops[2].code == opcode::special
-        && ops[2].data.size() == short_hash_size
-        && ops[3].code == opcode::equalverify
-        && ops[4].code == opcode::checksig
-        && ops[5].code == opcode::dup
-        && ops[6].code == opcode::special
-        && ops[7].code == opcode::numequalverify
-        && ops[8].code == opcode::special
-        && ops[9].code == opcode::checkattenuationverify;
+    return ops.size() == 7
+        && ops[0].code == opcode::special
+        && ops[1].code == opcode::checkattenuationverify
+        && ops[2].code == opcode::dup
+        && ops[3].code == opcode::hash160
+        && ops[4].code == opcode::special
+        && ops[4].data.size() == short_hash_size
+        && ops[5].code == opcode::equalverify
+        && ops[6].code == opcode::checksig;
 }
 
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
@@ -438,28 +435,9 @@ bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
         || redeem_script_pattern == script_pattern::null_data;
 }
 
-bool operation::is_sign_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
-{
-    return ops.size() == 3 &&
-        is_push_only(ops) &&
-        is_public_key((ops.begin()+2)->data);
-}
-
-uint8_t operation::get_model_index_from_sign_key_hash_with_attenuation_model(const operation::stack& ops)
-{
-    CScriptNum num(ops[0].data, 1);
-    return num.getint();
-}
-
-uint8_t operation::get_model_index_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
-{
-    CScriptNum num(ops[6].data, 1);
-    return num.getint();
-}
-
 data_chunk operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
-    return ops[8].data;
+    return ops[0].data;
 }
 
 // pattern templates
@@ -584,16 +562,13 @@ operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
 {
     return operation::stack
     {
+        { opcode::special, to_chunk(model_param) },
+        { opcode::checkattenuationverify, {} },
         { opcode::dup, {} },
         { opcode::hash160, {} },
         { opcode::special, to_chunk(hash) },
         { opcode::equalverify, {} },
-        { opcode::checksig, {} },
-        { opcode::dup, {} },
-        { opcode::special, CScriptNum::serialize(model_index) },
-        { opcode::numequalverify, {} },
-        { opcode::special, to_chunk(model_param) },
-        { opcode::checkattenuationverify, {} }
+        { opcode::checksig, {} }
     };
 }
 

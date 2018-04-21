@@ -53,7 +53,7 @@ public:
     static model_type from_index(uint32_t index);
 
     static bool check_model_index(uint32_t index);
-    static bool check_model_param(uint32_t index, const data_chunk& param);
+    static bool check_model_param(const data_chunk& param);
 
     model_type get_model_type() const;
     const std::string& get_model_param() const;
@@ -66,6 +66,7 @@ public:
     uint64_t get_issued_quantity() const;    // IQ  total issued quantity
     uint64_t get_locked_quantity() const;    // LQ  total locked quantity
     uint64_t get_locked_period() const;      // LP  total locked period
+    uint64_t get_unlock_number() const;      // UN  total unlock numbers
     const std::vector<uint64_t>& get_unlock_cycles() const;        // UCt size()==1 means fixed cycle
     const std::vector<uint64_t>& get_issue_rates() const;          // IRt size()==1 means fixed rate
     const std::vector<uint64_t>& get_unlocked_quantities() const;  // UQt size()==1 means fixed quantity

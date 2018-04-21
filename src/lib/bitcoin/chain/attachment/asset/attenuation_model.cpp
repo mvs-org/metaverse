@@ -28,9 +28,23 @@ namespace chain {
 namespace {
     const char* LOG_HEADER{"attenuation_model"};
 
+    bool is_positive_number(uint64_t num) {
+        return num > 0;
+    };
+
+    uint64_t sum_and_check_numbers(auto&& container, std::function<bool(uint64_t)> predicate) {
+        uint64_t sum = 0;
+        for (const auto& num : container) {
+            if (!predicate(num)) {
+                return 0;
+            }
+            sum += num;
+        }
+        return sum;
+    }
+
 } // end of anonymous namespace
 
-// ASSET_TODO
 class attenuation_model::impl
 {
 public:
@@ -74,6 +88,11 @@ public:
     // LP  total locked period
     uint64_t get_locked_period() const {
         return getnumber("LP");
+    }
+
+    // UN  total unlock numbers
+    uint64_t get_unlock_number() const {
+        return getnumber("UN");
     }
 
     // UCt size()==1 means fixed cycle
@@ -159,7 +178,7 @@ private:
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
     // example of fixed quantity model param:
-    // "PN=0;LH=20000;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
+    // "PN=0;LH=20000;TYPE=1;IQ=10000;LQ=9000;LP=60000;UN=3;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
 
     // auxilary data
@@ -209,6 +228,11 @@ uint64_t attenuation_model::get_locked_period() const
     return pimpl->get_locked_period();
 }
 
+uint64_t attenuation_model::get_unlock_number() const
+{
+    return pimpl->get_unlock_number();
+}
+
 const std::vector<uint64_t>& attenuation_model::get_unlock_cycles() const
 {
     return pimpl->get_unlock_cycles();
@@ -245,28 +269,66 @@ bool attenuation_model::check_model_index(uint32_t index)
     return index < get_first_unused_index();
 }
 
-bool attenuation_model::check_model_param(uint32_t index, const data_chunk& param)
+bool attenuation_model::check_model_param(const data_chunk& param)
 {
-    const model_type model = from_index(index);
+    if (param.empty()) {
+        return true;
+    }
 
+    attenuation_model parser(std::string(param.begin(), param.end()));
+
+    const auto model = parser.get_model_type();
     if (model == model_type::none) {
         return true;
     }
 
-    else if (model == model_type::fixed_quantity) {
-        // ASSET_TODO
-        return true;
-    }
+    auto&& LQ = parser.get_locked_quantity();
+    auto&& LP = parser.get_locked_period();
 
-    else if (model == model_type::fixed_rate) {
-        // ASSET_TODO
-        return true;
-    }
-    else {
-        log::info(LOG_HEADER) << "Unsupported attenuation model: " << index;
+    // common condition : LQ > 0, LP > 0
+    if (!is_positive_number(LQ) || !is_positive_number(LP)) {
         return false;
     }
 
+    if (model == model_type::fixed_quantity) {
+        // given LQ, LP, UN, then
+        // LP >= UN
+        // LQ >= UN
+        auto&& UN = parser.get_unlock_number();
+        if (LP < UN) {
+            log::info(LOG_HEADER) << "fixed_quantity param error: LP < UN";
+            return false;
+        }
+        if (LQ < UN) {
+            log::info(LOG_HEADER) << "fixed_quantity param error: LQ < UN";
+            return false;
+        }
+        return true;
+    }
+
+    if (model == model_type::custom) {
+        // given LQ, LP, UC, UQ, then
+        // LQ = sum(UQ) and all UQ > 0
+        // LP = sum(UC) and all UC > 0
+        auto&& UC = parser.get_unlock_cycles();
+        if (sum_and_check_numbers(UC, is_positive_number) != LP) {
+            log::info(LOG_HEADER) << "custom param error: LP != sum(UC) or exist UC <= 0";
+            return false;
+        }
+        auto&& UQ = parser.get_unlocked_quantities();
+        if (sum_and_check_numbers(UQ, is_positive_number) != LQ) {
+            log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
+            return false;
+        }
+        return true;
+    }
+
+    if (model == model_type::fixed_rate) {
+        // ASSET_TODO
+        return false;
+    }
+
+    log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
     return false;
 }
 

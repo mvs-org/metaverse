@@ -384,18 +384,13 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         break;
                     }
 
-                    if (stack.size() < 2)
+                    if (stack.size() < 1)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
-                    int nModelIndex = CScriptNum(stacktop(-2), fRequireMinimal).getint();
-                    if (!attenuation_model::check_model_index(nModelIndex))
-                        return set_error(serror, SCRIPT_ERR_INVALID_MODEL_INDEX);
-
                     valtype& sModelParam = stacktop(-1);
-                    if (!attenuation_model::check_model_param(nModelIndex, sModelParam))
+                    if (!attenuation_model::check_model_param(sModelParam))
                         return set_error(serror, SCRIPT_ERR_INVALID_MODEL_PARAM);
 
-                    popstack(stack);
                     popstack(stack);
                 }
                 break;
