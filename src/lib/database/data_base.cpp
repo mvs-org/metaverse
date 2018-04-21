@@ -1090,7 +1090,7 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 	const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
 	//dids.store(hash, sp_detail);
-	auto bc_did = blockchain_did(0, outpoint,output_height, sp_detail);
+	auto bc_did = blockchain_did(0, outpoint,output_height, blockchain_did::address_current,sp_detail);
 	dids.store(hash, bc_did);
 	address_dids.store_output(key, outpoint, output_height, value, 
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue), timestamp_, sp_detail);

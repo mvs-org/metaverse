@@ -35,10 +35,16 @@ namespace chain {
 class BC_API blockchain_did
 {
 public:
+    enum did_address_type: uint32_t
+    {
+        address_invalid,
+        address_current,
+        address_old
+    };
 	typedef std::vector<blockchain_did> list;
 	blockchain_did();
-	blockchain_did(uint32_t version, const output_point& tx_point,
-			uint64_t height, const did_detail& did);
+	blockchain_did( uint32_t version, const output_point& tx_point,
+			uint64_t height, uint32_t status, const did_detail& did);
     static blockchain_did factory_from_data(const data_chunk& data);
     static blockchain_did factory_from_data(std::istream& stream);
     static blockchain_did factory_from_data(reader& source);
@@ -66,11 +72,14 @@ public:
 	void set_height(const uint64_t& height_);
 	const did_detail& get_did() const;
 	void set_did(const did_detail& did_);
-
-private:    
+    void set_status(const uint32_t & status);
+	const uint32_t& get_status() const;
+    std::string get_status_string() const;
+private:
     uint32_t version_;
     output_point tx_point_;
 	uint64_t height_;
+    uint32_t status_;    
 	did_detail did_;
 };
 

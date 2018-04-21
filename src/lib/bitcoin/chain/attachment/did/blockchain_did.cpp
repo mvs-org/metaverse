@@ -34,8 +34,8 @@ blockchain_did::blockchain_did()
 	reset();
 }
 blockchain_did::blockchain_did(uint32_t version, const output_point& tx_point,
-			uint64_t height, const did_detail& did):
-    version_(version), tx_point_(tx_point), height_(height), did_(did)
+			uint64_t height, uint32_t status, const did_detail& did):
+    version_(version), tx_point_(tx_point), height_(height), status_(status), did_(did)
 {
 }
 
@@ -69,6 +69,7 @@ void blockchain_did::reset()
     version_ = 0;
     tx_point_ = output_point();
 	height_ = 0;
+    status_ = address_invalid;
 	did_ = did_detail();
 }
 
@@ -91,6 +92,7 @@ bool blockchain_did::from_data(reader& source)
     version_ = source.read_4_bytes_little_endian();
 	tx_point_.from_data(source);
     height_ = source.read_8_bytes_little_endian();
+    status_ = source.read_4_bytes_little_endian();
 	did_.from_data(source);
 
     return true;	
@@ -117,12 +119,13 @@ void blockchain_did::to_data(writer& sink) const
     sink.write_4_bytes_little_endian(version_);
 	tx_point_.to_data(sink);
     sink.write_8_bytes_little_endian(height_);
+    sink.write_4_bytes_little_endian(status_);
 	did_.to_data(sink);
 }
 
 uint64_t blockchain_did::serialized_size() const
 {
-    return 4 + tx_point_.serialized_size() + 8 + did_.serialized_size();
+    return 4 + tx_point_.serialized_size() + 8 + 4 + did_.serialized_size();
 }
 
 #ifdef MVS_DEBUG
@@ -133,6 +136,7 @@ std::string blockchain_did::to_string() const
     ss << "\t version = " << version_ << "\n"
 		<< "\t tx_point = " << tx_point_.to_string() << "\n"
 		<< "\t height = " << height_ << "\n"
+		<< "\t status = " << get_status_string().c_str() << "\n"
 		<< "\t did = " << did_.to_string() << "\n";
 
     return ss.str();
@@ -175,7 +179,32 @@ void blockchain_did::set_did(const did_detail& did_)
      this->did_ = did_;
 }
 
+void blockchain_did::set_status(const uint32_t &status)
+{
+    this->status_ = status;
+}
+const uint32_t &blockchain_did::get_status() const
+{
+    return this->status_;
+}
 
+std::string blockchain_did::get_status_string() const
+{
+    std::string strStatus;
+    switch (this->status_)
+    {
+    case address_invalid:
+        strStatus = "invalid";
+        break;
+    case address_current:
+        strStatus = "current";
+        break;
+    case address_old:
+        strStatus = "old";
+        break;
+    }
 
+    return strStatus;
+}
 } // namspace chain
 } // namspace libbitcoin

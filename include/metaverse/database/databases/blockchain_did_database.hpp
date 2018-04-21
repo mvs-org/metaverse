@@ -62,8 +62,10 @@ public:
 
 	std::shared_ptr<blockchain_did> get(const hash_digest& hash) const;
 	
+    ///
+    std::shared_ptr<std::vector<blockchain_did> > get_history_dids(const hash_digest& hash) const;
 	/// 
-	std::shared_ptr<std::vector<blockchain_did>> get_blockchain_dids() const;
+	std::shared_ptr<std::vector<blockchain_did> > get_blockchain_dids() const;
 	
 	void store(const hash_digest& hash, const blockchain_did& sp_detail);
 
@@ -73,7 +75,9 @@ public:
     /// Synchronise storage with disk so things are consistent.
     /// Should be done at the end of every block write.
     void sync();
-
+protected:
+    ///get old address and update status to old
+    void update_old_address(const hash_digest& hash);
 private:
     typedef slab_hash_table<hash_digest> slab_map;
 

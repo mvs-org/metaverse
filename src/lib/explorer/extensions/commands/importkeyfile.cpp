@@ -49,19 +49,23 @@ console_result importkeyfile::invoke (Json::Value& jv_output,
     acc->set_name(auth_.name);
     acc->set_passwd(auth_.auth);
 
+    std::string file_content;
+    if (option_.content != "") {
+        file_content = option_.content;
+    } else {
+        fs::file_status status = fs::status(option_.file);
+        if (!fs::exists(status)) // not process filesystem exception here
+            throw argument_legality_exception{option_.file.string() + std::string(" not exist.")};
+        if (fs::is_directory(status)) // directory not allowed
+            throw argument_legality_exception{option_.file.string() + std::string(" is directory not a file.")};
+        if (!fs::is_regular_file(status))
+            throw argument_legality_exception{option_.file.string() + std::string(" not a regular file.")};
 
-    fs::file_status status = fs::status(option_.file); 
-    if(!fs::exists(status)) // not process filesystem exception here
-        throw argument_legality_exception{option_.file.string() + std::string(" not exist.")};
-    if(fs::is_directory(status)) // directory not allowed
-        throw argument_legality_exception{option_.file.string() + std::string(" is directory not a file.")};
-    if(!fs::is_regular_file(status)) 
-        throw argument_legality_exception{option_.file.string() + std::string(" not a regular file.")};
-
-    std::ifstream file_input(option_.file.string(), std::ofstream::in);
-    std::string file_content((std::istreambuf_iterator<char>(file_input)),
-                    std::istreambuf_iterator<char>());
-    file_input.close();
+        std::ifstream file_input(option_.file.string(), std::ofstream::in);
+        file_content.assign(std::istreambuf_iterator<char>(file_input),
+                            std::istreambuf_iterator<char>());
+        file_input.close();
+    }
 
     Json::Reader reader;
     Json::Value file_root;

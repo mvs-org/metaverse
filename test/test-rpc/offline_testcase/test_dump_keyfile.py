@@ -119,5 +119,18 @@ class TestDumpKeyfile(unittest.TestCase):
         self.assertEqual(multisig[0]['n'], '3')
 
 
+    def testImportKeyFileContent(self):
+        self.tearDown()
 
+        f = open(self.light_wallet_keystore)
+        content = f.read()
+        f.close()
+
+        result, message = mvs_rpc.import_keyfile(
+            self.account,
+            self.password,
+            "",
+            content
+        )
+        self.assertEqual(result, True, message)
 

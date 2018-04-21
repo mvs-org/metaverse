@@ -29,23 +29,22 @@ namespace explorer {
 namespace commands {
 
 
-/************************ importkeyfile *************************/
+/************************ didlistaddress *************************/
 
-class importkeyfile: public command_extension
+class listdidaddresses: public command_extension
 {
 public:
-    static const char* symbol(){ return "importkeyfile";}
+    static const char* symbol(){ return "listdidaddresses";}
     const char* name() override { return symbol();} 
-    bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
-    const char* description() override { return "importkeyfile "; }
+    bool category(int bs) override { return (ex_online & bs ) == bs; }
+    const char* description() override { return "listdidaddresses "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FILE", 1)
-            .add("FILECONTENT", 1);
+            .add("DIDSYMBOL", 1);
     }
 
     void load_fallbacks (std::istream& input, 
@@ -54,8 +53,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(option_.file, "FILE", variables, input, raw);
-        load_input(option_.content, "FILECONTENT", variables, input, raw);
+        load_input(argument_.symbol, "DIDSYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -68,26 +66,21 @@ public:
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-        (
+	    (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-        )
+	    )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-        )
-        (
-            "FILE",
-            value<boost::filesystem::path>(&option_.file)->required(),
-            "key file path."
-        )
-        (
-            "FILECONTENT",
-            value<std::string>(&option_.content),
-            "key file content. this will omit the FILE argument if specified."
-        );
+	    )
+		(
+			"DIDSYMBOL",
+			value<std::string>(&argument_.symbol)->required(),
+			"Did symbol"
+		);
 
         return options;
     }
@@ -101,22 +94,14 @@ public:
 
     struct argument
     {
+		std::string symbol;
     } argument_;
 
     struct option
     {
-        option()
-          : file(""), content("")
-        {
-        }
-
-        boost::filesystem::path file;
-        std::string content;
     } option_;
 
 };
-
-
 
 } // namespace commands
 } // namespace explorer
