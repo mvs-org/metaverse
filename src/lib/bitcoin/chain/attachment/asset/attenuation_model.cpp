@@ -25,7 +25,10 @@
 namespace libbitcoin {
 namespace chain {
 
-const char* LOG_HEADER{"attenuation_model"};
+namespace {
+    const char* LOG_HEADER{"attenuation_model"};
+
+} // end of anonymous namespace
 
 // ASSET_TODO
 class attenuation_model::impl
@@ -34,7 +37,9 @@ public:
     impl(const std::string& param)
         : model_param_(param)
     {
-        parse_param();
+        if (!parse_param()) {
+            map_.clear();
+        }
     }
 
     const std::string& get_model_param() const {
@@ -49,6 +54,11 @@ public:
     // PN  current period number
     uint64_t get_period_number() const {
         return getnumber("PN");
+    }
+
+    // LH  latest lock height
+    uint64_t get_latest_lock_height() const {
+        return getnumber("LH");
     }
 
     // IQ  total issued quantity
@@ -67,81 +77,81 @@ public:
     }
 
     // UCt size()==1 means fixed cycle
-    std::vector<uint64_t> get_unlock_cycles() const {
+    const std::vector<uint64_t>& get_unlock_cycles() const {
         return get_numbers("UC");
     }
 
     // IRt size()==1 means fixed rate
-    std::vector<uint8_t> get_issue_rates() const {
-        return get_numbers<uint8_t>("IR");
+    const std::vector<uint64_t>& get_issue_rates() const {
+        return get_numbers("IR");
     }
 
     // UQt size()==1 means fixed quantity
-    std::vector<uint64_t> get_unlocked_quantities() const {
+    const std::vector<uint64_t>& get_unlocked_quantities() const {
         return get_numbers("UQ");
     }
 
 private:
-    void parse_param() {
+    bool parse_param() {
+        auto is_illegal_char = [](auto c){ return ! (std::isalnum(c) || (c == ',') || (c == ';') || (c == '=')); };
+        auto iter = std::find_if(model_param_.begin(), model_param_.end(), is_illegal_char);
+        if (iter != model_param_.end()) {
+            log::info(LOG_HEADER) << "illegal char found at pos "
+                << std::distance(model_param_.begin(), iter) << " : " << *iter;
+            return false;
+        }
+
+        if (model_param_.find(",,") != std::string::npos) {
+            log::info(LOG_HEADER) << "',,' is not allowed.";
+            return false;
+        }
+
         auto kv_vec = bc::split(model_param_, ";");
         for (const auto& kv : kv_vec) {
             auto vec = bc::split(kv, "=");
             if (vec.size() == 2) {
-                map_[vec[0]] = vec[1];
+                if (vec[0].empty()) {
+                    log::info(LOG_HEADER) << "key-value format is wrong, key is empty in " << kv;
+                    return false;
+                }
+                if (vec[1].empty()) {
+                    continue; // empty value as unset.
+                }
+                try {
+                    std::vector<uint64_t> num_vec;
+                    auto str_vec = bc::split(vec[1], ",");
+                    for (const auto& item : str_vec) {
+                        auto num = std::stoull(item);
+                        num_vec.emplace_back(num);
+                    }
+                    map_[vec[0]] = std::move(num_vec);
+                } catch (const std::exception& e) {
+                    log::info(LOG_HEADER) << "exception caught: " << e.what();
+                    return false;
+                }
             } else {
-                set_wrong_format();
-                log::info(LOG_HEADER) << "key-value format is wrong";
-                break;
+                log::info(LOG_HEADER) << "key-value format is wrong, should be key=value format.";
+                return false;
             }
         }
+        return true;
     }
 
     template<typename T = uint64_t>
     T getnumber(const char* key) const {
-        if (is_wrong_format()) {
+        auto iter = map_.find(key);
+        if (iter == map_.end()) {
             return 0;
         }
-        auto iter = map_.find(key);
-        if (iter != map_.end()) {
-            try {
-                auto num = std::stoull(iter->second);
-                return num;
-            } catch (...) {
-                set_wrong_format();
-                log::info(LOG_HEADER) << "caught exception in getnumber()";
-            }
-        }
-        return 0;
+        return iter->second[0];
     }
 
-    template<typename T = uint64_t>
-    std::vector<T> get_numbers(const char* key) const {
-        std::vector<T> ret_vec;
-        if (is_wrong_format()) {
-            return ret_vec;
-        }
+    const std::vector<uint64_t>& get_numbers(const char* key) const {
         auto iter = map_.find(key);
-        if (iter != map_.end()) {
-            try {
-                auto num_vec = bc::split(iter->second, ",");
-                for (const auto& item : num_vec) {
-                    auto num = std::stoull(item);
-                    ret_vec.emplace_back(num);
-                }
-            } catch (...) {
-                set_wrong_format();
-                ret_vec.clear();
-                log::info(LOG_HEADER) << "caught exception in getnumbers()";
-            }
+        if (iter == map_.end()) {
+            return empty_num_vec;
         }
-        return ret_vec;
-    }
-
-    bool is_wrong_format() const {
-        return is_wrong_foramt;
-    }
-    void set_wrong_format() const {
-        const_cast<attenuation_model::impl*>(this)->is_wrong_foramt = true;
+        return iter->second;
     }
 
 private:
@@ -149,11 +159,15 @@ private:
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
     // example of fixed quantity model param:
-    // "PN=0;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
+    // "PN=0;LH=20000;TYPE=1;IQ=10000;LQ=9000;LP=60000;UC=20000;IR=0;UQ=3000"
     std::string model_param_;
-    std::unordered_map<std::string, std::string> map_;
-    bool is_wrong_foramt{false};
+
+    // auxilary data
+    std::unordered_map<std::string, std::vector<uint64_t>> map_;
+    static const std::vector<uint64_t> empty_num_vec;
 };
+
+const std::vector<uint64_t> attenuation_model::impl::empty_num_vec;
 
 attenuation_model::attenuation_model(std::string&& param)
     : pimpl(std::make_unique<impl>(param))
@@ -175,6 +189,11 @@ uint64_t attenuation_model::get_period_number() const
     return pimpl->get_period_number();
 }
 
+uint64_t attenuation_model::get_latest_lock_height() const
+{
+    return pimpl->get_latest_lock_height();
+}
+
 uint64_t attenuation_model::get_issued_quantity() const
 {
     return pimpl->get_issued_quantity();
@@ -190,17 +209,17 @@ uint64_t attenuation_model::get_locked_period() const
     return pimpl->get_locked_period();
 }
 
-std::vector<uint64_t> attenuation_model::get_unlock_cycles() const
+const std::vector<uint64_t>& attenuation_model::get_unlock_cycles() const
 {
     return pimpl->get_unlock_cycles();
 }
 
-std::vector<uint8_t> attenuation_model::get_issue_rates() const
+const std::vector<uint64_t>& attenuation_model::get_issue_rates() const
 {
     return pimpl->get_issue_rates();
 }
 
-std::vector<uint64_t> attenuation_model::get_unlocked_quantities() const
+const std::vector<uint64_t>& attenuation_model::get_unlocked_quantities() const
 {
     return pimpl->get_unlocked_quantities();
 }

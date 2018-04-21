@@ -59,15 +59,16 @@ public:
     const std::string& get_model_param() const;
 
     // mutable params of the model
-    uint64_t get_period_number() const;                    // PN  current period number
+    uint64_t get_period_number() const;      // PN  current period number
+    uint64_t get_latest_lock_height() const; // LH  latest lock height
 
     // immutable params of the model
-    uint64_t get_issued_quantity() const;                  // IQ  total issued quantity
-    uint64_t get_locked_quantity() const;                  // LQ  total locked quantity
-    uint64_t get_locked_period() const;                    // LP  total locked period
-    std::vector<uint64_t> get_unlock_cycles() const;       // UCt size()==1 means fixed cycle
-    std::vector<uint8_t> get_issue_rates() const;          // IRt size()==1 means fixed rate
-    std::vector<uint64_t> get_unlocked_quantities() const; // UQt size()==1 means fixed quantity
+    uint64_t get_issued_quantity() const;    // IQ  total issued quantity
+    uint64_t get_locked_quantity() const;    // LQ  total locked quantity
+    uint64_t get_locked_period() const;      // LP  total locked period
+    const std::vector<uint64_t>& get_unlock_cycles() const;        // UCt size()==1 means fixed cycle
+    const std::vector<uint64_t>& get_issue_rates() const;          // IRt size()==1 means fixed rate
+    const std::vector<uint64_t>& get_unlocked_quantities() const;  // UQt size()==1 means fixed quantity
 
 private:
     class impl;
