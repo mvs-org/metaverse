@@ -1440,14 +1440,20 @@ bool op_checklocktimeverify(evaluation_context& context, const script& script,
     return is_locktime_type_match(stack, transaction);
 }
 
-// ASSET_TODO
 bool op_checkattenuationverify(evaluation_context& context, const script& script,
     const transaction& parent_tx, uint32_t input_index)
 {
     if (input_index >= parent_tx.inputs.size())
         return false;
 
-    return false;
+    if (context.stack.empty())
+        return false;
+
+    auto&& model_param = context.pop_stack();
+    if (!attenuation_model::check_model_param(model_param))
+        return false;
+
+    return true;
 }
 
 // Test flags for a given context.

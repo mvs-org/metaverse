@@ -55,15 +55,14 @@ public:
     static bool check_model_index(uint32_t index);
     static bool check_model_param(const data_chunk& param);
 
-    model_type get_model_type() const;
     const std::string& get_model_param() const;
 
     // mutable params of the model
-    uint64_t get_period_number() const;      // PN  current period number
-    uint64_t get_latest_lock_height() const; // LH  latest lock height
+    uint64_t get_current_period_number() const; // PN  current period number
+    uint64_t get_latest_lock_height() const;    // LH  latest lock height
 
     // immutable params of the model
-    uint64_t get_issued_quantity() const;    // IQ  total issued quantity
+    model_type get_model_type() const;       // TYPE attenuation model type
     uint64_t get_locked_quantity() const;    // LQ  total locked quantity
     uint64_t get_locked_period() const;      // LP  total locked period
     uint64_t get_unlock_number() const;      // UN  total unlock numbers

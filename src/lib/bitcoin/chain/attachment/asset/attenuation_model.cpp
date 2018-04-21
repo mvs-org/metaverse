@@ -66,18 +66,13 @@ public:
     }
 
     // PN  current period number
-    uint64_t get_period_number() const {
+    uint64_t get_current_period_number() const {
         return getnumber("PN");
     }
 
     // LH  latest lock height
     uint64_t get_latest_lock_height() const {
         return getnumber("LH");
-    }
-
-    // IQ  total issued quantity
-    uint64_t get_issued_quantity() const {
-        return getnumber("IQ");
     }
 
     // LQ  total locked quantity
@@ -177,8 +172,12 @@ private:
     // semicolon separates outer key-value entries.
     // comma separates inner container items of value.
     // empty value or non-exist entry means the key is unset.
-    // example of fixed quantity model param:
-    // "PN=0;LH=20000;TYPE=1;IQ=10000;LQ=9000;LP=60000;UN=3;UC=20000;IR=0;UQ=3000"
+    // * example of fixed quantity model param:
+    // "PN=0;LH=20000;TYPE=1;LQ=9000;LP=60000;UN=3"
+    // * example of fixed rate model param:
+    // "PN=0;LH=20000;TYPE=2;LQ=9000;LP=60000;UN=3,IR=8;UC=...;UQ=..."
+    // * example of custom model param:
+    // "PN=0;LH=20000;TYPE=3;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
     std::string model_param_;
 
     // auxilary data
@@ -203,19 +202,14 @@ const std::string& attenuation_model::get_model_param() const
     return pimpl->get_model_param();
 }
 
-uint64_t attenuation_model::get_period_number() const
+uint64_t attenuation_model::get_current_period_number() const
 {
-    return pimpl->get_period_number();
+    return pimpl->get_current_period_number();
 }
 
 uint64_t attenuation_model::get_latest_lock_height() const
 {
     return pimpl->get_latest_lock_height();
-}
-
-uint64_t attenuation_model::get_issued_quantity() const
-{
-    return pimpl->get_issued_quantity();
 }
 
 uint64_t attenuation_model::get_locked_quantity() const
@@ -284,17 +278,27 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 
     auto&& LQ = parser.get_locked_quantity();
     auto&& LP = parser.get_locked_period();
+    auto&& UN = parser.get_unlock_number();
 
-    // common condition : LQ > 0, LP > 0
-    if (!is_positive_number(LQ) || !is_positive_number(LP)) {
+    // common condition : LQ > 0
+    if (!is_positive_number(LQ)) {
+        log::info(LOG_HEADER) << "commono param error: LQ <= 0";
+        return false;
+    }
+    // common condition : LP > 0
+    if (!is_positive_number(LP)) {
+        log::info(LOG_HEADER) << "commono param error: LP <= 0";
+        return false;
+    }
+    // common condition : UN > 0
+    if (!is_positive_number(UN)) {
+        log::info(LOG_HEADER) << "commono param error: UN <= 0";
         return false;
     }
 
     if (model == model_type::fixed_quantity) {
         // given LQ, LP, UN, then
-        // LP >= UN
-        // LQ >= UN
-        auto&& UN = parser.get_unlock_number();
+        // LP >= UN and LQ >= UN
         if (LP < UN) {
             log::info(LOG_HEADER) << "fixed_quantity param error: LP < UN";
             return false;
@@ -306,26 +310,46 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         return true;
     }
 
+    // Why convert to custom model is needed?
+    // Because the computing of float's exponential
+    // or other complex expression is 'inaccurate',
+    // you may get different results of multiple computing.
+    auto is_convert_to_custom = false;
+
+    if (model == model_type::fixed_rate) {
+        // given LQ, LP, UN, IR, UC, UQ, then IR > 0
+        // and satisfy custom param conditions.
+        is_convert_to_custom = true;
+        auto&& IR = parser.get_unlock_number();
+        if (!is_positive_number(IR)) {
+            log::info(LOG_HEADER) << "fixed_rate param error: IR <= 0";
+            return false;
+        }
+    }
+
     if (model == model_type::custom) {
-        // given LQ, LP, UC, UQ, then
-        // LQ = sum(UQ) and all UQ > 0
-        // LP = sum(UC) and all UC > 0
+        // given LQ, LP, UN, UC, UQ, then
+        // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
+        // LP = sum(UC) and all UC > 0 and UC.size == UN
         auto&& UC = parser.get_unlock_cycles();
+        auto&& UQ = parser.get_unlocked_quantities();
+        if (UC.size() != UN) {
+            log::info(LOG_HEADER) << "custom param error: UC.size() != UN";
+            return false;
+        }
+        if (UQ.size() != UN) {
+            log::info(LOG_HEADER) << "custom param error: UQ.size() != UN";
+            return false;
+        }
         if (sum_and_check_numbers(UC, is_positive_number) != LP) {
             log::info(LOG_HEADER) << "custom param error: LP != sum(UC) or exist UC <= 0";
             return false;
         }
-        auto&& UQ = parser.get_unlocked_quantities();
         if (sum_and_check_numbers(UQ, is_positive_number) != LQ) {
             log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
             return false;
         }
         return true;
-    }
-
-    if (model == model_type::fixed_rate) {
-        // ASSET_TODO
-        return false;
     }
 
     log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
