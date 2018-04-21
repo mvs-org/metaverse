@@ -32,7 +32,9 @@ namespace {
         return num > 0;
     };
 
-    uint64_t sum_and_check_numbers(auto&& container, std::function<bool(uint64_t)> predicate) {
+    template<typename T>
+    uint64_t sum_and_check_numbers(const std::vector<T>& container,
+            std::function<bool(uint64_t)> predicate) {
         uint64_t sum = 0;
         for (const auto& num : container) {
             if (!predicate(num)) {
@@ -317,17 +319,22 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     auto is_convert_to_custom = false;
 
     if (model == model_type::fixed_rate) {
-        // given LQ, LP, UN, IR, UC, UQ, then IR > 0
+        // given LQ, LP, UN, IR, UC, UQ,
+        // then IR.size == 1 and IR > 0
         // and satisfy custom param conditions.
         is_convert_to_custom = true;
-        auto&& IR = parser.get_unlock_number();
-        if (!is_positive_number(IR)) {
+        auto&& IR = parser.get_issue_rates();
+        if (IR.size() != 1) {
+            log::info(LOG_HEADER) << "fixed_rate param error: IR.size() != 1";
+            return false;
+        }
+        if (!is_positive_number(IR[0])) {
             log::info(LOG_HEADER) << "fixed_rate param error: IR <= 0";
             return false;
         }
     }
 
-    if (model == model_type::custom) {
+    if ((model == model_type::custom) || is_convert_to_custom) {
         // given LQ, LP, UN, UC, UQ, then
         // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
         // LP = sum(UC) and all UC > 0 and UC.size == UN
