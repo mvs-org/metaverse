@@ -24,7 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
-#include <metaverse/bitcoin/config/authority.hpp>
+#include <metaverse/bitcoin.hpp>
 #include <metaverse/network/channel.hpp>
 
 namespace libbitcoin {

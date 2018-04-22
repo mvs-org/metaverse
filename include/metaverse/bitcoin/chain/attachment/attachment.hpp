@@ -28,10 +28,14 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/blockchain_asset.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+#include <metaverse/bitcoin/chain/attachment/did/blockchain_did.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
 
 using namespace libbitcoin::chain;
 #define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))

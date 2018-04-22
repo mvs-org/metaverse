@@ -24,7 +24,6 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 
 namespace libbitcoin {
 namespace explorer {

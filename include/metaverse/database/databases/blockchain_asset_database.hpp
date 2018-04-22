@@ -28,7 +28,6 @@
 #include <metaverse/database/result/transaction_result.hpp>
 #include <metaverse/database/primitives/slab_hash_table.hpp>
 #include <metaverse/database/primitives/slab_manager.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/blockchain_asset.hpp>
 
 namespace libbitcoin {
 namespace database {

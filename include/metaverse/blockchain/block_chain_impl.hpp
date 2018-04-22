@@ -34,8 +34,6 @@
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
 using namespace libbitcoin::message;

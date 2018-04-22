@@ -34,7 +34,6 @@
 #include <metaverse/network/define.hpp>
 #include <metaverse/network/message_subscriber.hpp>
 #include <metaverse/network/socket.hpp>
-#include <metaverse/bitcoin/utility/dispatcher.hpp>
 #include <boost/thread.hpp>
 
 namespace libbitcoin {

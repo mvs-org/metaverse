@@ -31,8 +31,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <metaverse/server.hpp>
-#include <metaverse/bitcoin/utility/backtrace.hpp>
-#include <metaverse/bitcoin/utility/path.hpp>
+#include <metaverse/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace server {

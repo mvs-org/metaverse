@@ -33,10 +33,7 @@
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/validate_block_impl.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/node/protocols/protocol_block_out.hpp>
-#include <metaverse/bitcoin/wallet/payment_address.hpp>
-#include <metaverse/bitcoin/formats/base_16.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

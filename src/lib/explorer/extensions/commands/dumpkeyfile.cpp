@@ -22,7 +22,7 @@
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/account_info.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <metaverse/bitcoin/formats/base_64.hpp>
+#include <metaverse/bitcoin.hpp>
 #include <cryptojs/cryptojs_impl.h>
 
 namespace libbitcoin {

@@ -31,7 +31,6 @@
 #include <metaverse/blockchain/orphan_pool.hpp>
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/simple_chain.hpp>
-#include <metaverse/bitcoin/math/hash.hpp>
 #include <boost/thread.hpp>
 
 namespace libbitcoin {
