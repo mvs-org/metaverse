@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/bitcoin/utility/path.hpp>
 #include <metaverse/network/settings.hpp>
 
 namespace libbitcoin {

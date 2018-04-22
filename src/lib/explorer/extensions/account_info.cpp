@@ -21,15 +21,7 @@
 
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
-#include <metaverse/bitcoin/utility/container_sink.hpp>
-#include <metaverse/bitcoin/utility/container_source.hpp>
-#include <metaverse/bitcoin/utility/istream_reader.hpp>
-#include <metaverse/bitcoin/utility/ostream_writer.hpp>
-
-#include <metaverse/bitcoin/math/crypto.hpp>
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/bitcoin/config/base16.hpp>
-#include <metaverse/bitcoin/math/checksum.hpp>
 
 using namespace libbitcoin::wallet;
 using namespace libbitcoin::config;

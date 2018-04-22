@@ -18,12 +18,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <metaverse/bitcoin/utility/path.hpp>
-#include <metaverse/bitcoin/unicode/ifstream.hpp>
+#include <metaverse/bitcoin.hpp>
 #include <boost/program_options.hpp>
 #include <jsoncpp/json/json.h>
 #include <metaverse/mgbubble/MongooseCli.hpp>
-#include <metaverse/bitcoin/unicode/unicode.hpp>
 
 BC_USE_MVS_MAIN
 

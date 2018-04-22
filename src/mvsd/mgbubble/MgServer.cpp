@@ -18,8 +18,7 @@
 #include <thread>
 #include <functional>
 #include <metaverse/mgbubble/MgServer.hpp>
-#include <metaverse/bitcoin/utility/log.hpp>
-#include <metaverse/bitcoin/version.hpp>
+#include <metaverse/bitcoin.hpp>
 
 namespace mgbubble {
 using namespace std::placeholders;

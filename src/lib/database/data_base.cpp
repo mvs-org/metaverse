@@ -28,10 +28,8 @@
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/database/memory/memory_map.hpp>
 #include <metaverse/database/settings.hpp>
-#include <metaverse/bitcoin/utility/path.hpp>
 
 #include <algorithm> 
-#include <metaverse/bitcoin/config/base16.hpp>  // used by db_metadata and push_attachment
 #include <metaverse/database/version.hpp>
 namespace libbitcoin {
 namespace database {
@@ -1000,7 +998,6 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 }
 /* begin store asset related info into database */
 
-#include <metaverse/bitcoin/config/base16.hpp>
 using namespace libbitcoin::config;
 void data_base::push_attachemnt(const attachment& attach, const payment_address& address,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)

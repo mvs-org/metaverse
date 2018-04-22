@@ -26,8 +26,6 @@
 #include <metaverse/database/define.hpp>
 #include <metaverse/database/memory/memory_map.hpp>
 #include <metaverse/database/primitives/record_multimap.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
-#include <metaverse/bitcoin/chain/business_data.hpp>
 
 using namespace libbitcoin::chain;
 

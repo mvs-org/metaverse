@@ -1420,7 +1420,6 @@ void sending_multisig_etp::populate_unspent_list() {
     // change
     populate_change();
 }
-//#include <metaverse/bitcoin/config/base16.hpp>
 
 void sending_multisig_etp::sign_tx_inputs() {
     uint32_t index = 0;

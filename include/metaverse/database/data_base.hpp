@@ -36,13 +36,6 @@
 #include <metaverse/database/settings.hpp>
 
 #include <boost/variant.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
-#include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
-#include <metaverse/bitcoin/chain/attachment/message/message.hpp>
-#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
-#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
 
 #include <metaverse/database/databases/account_database.hpp>
 #include <metaverse/database/databases/account_address_database.hpp>
@@ -50,7 +43,6 @@
 #include <metaverse/database/databases/blockchain_asset_database.hpp>
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
-#include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 #include <metaverse/database/databases/address_did_database.hpp>
 

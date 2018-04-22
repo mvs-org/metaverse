@@ -23,7 +23,6 @@
 #include <cstdint>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/define.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

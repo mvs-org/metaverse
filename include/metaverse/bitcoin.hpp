@@ -32,9 +32,11 @@
 #include <metaverse/bitcoin/chain/spend.hpp>
 #include <metaverse/bitcoin/chain/stealth.hpp>
 #include <metaverse/bitcoin/chain/transaction.hpp>
+#include <metaverse/bitcoin/chain/business_data.hpp>
 #include <metaverse/bitcoin/chain/script/opcode.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
+#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
 #include <metaverse/bitcoin/config/authority.hpp>
 #include <metaverse/bitcoin/config/base16.hpp>
 #include <metaverse/bitcoin/config/base2.hpp>
@@ -144,6 +146,10 @@
 #include <metaverse/bitcoin/utility/variable_uint_size.hpp>
 #include <metaverse/bitcoin/utility/work.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
+#include <metaverse/bitcoin/utility/time.hpp>
+#include <metaverse/bitcoin/utility/backtrace.hpp>
+#include <metaverse/bitcoin/utility/daemon.hpp>
 #include <metaverse/bitcoin/wallet/bitcoin_uri.hpp>
 #include <metaverse/bitcoin/wallet/dictionary.hpp>
 #include <metaverse/bitcoin/wallet/ec_private.hpp>

@@ -20,8 +20,7 @@
  */
 #include <iostream>
 #include <metaverse/server.hpp>
-#include <metaverse/bitcoin/utility/backtrace.hpp>
-#include <metaverse/bitcoin/utility/daemon.hpp>
+#include <metaverse/bitcoin.hpp>
 #include "executor.hpp"
 #include <metaverse/server/utility/coredump.hpp>
 
