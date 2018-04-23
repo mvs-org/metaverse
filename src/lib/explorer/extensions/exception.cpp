@@ -6,7 +6,7 @@
  */
 
 #include <jsoncpp/json/json.h>
-#include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/error.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {

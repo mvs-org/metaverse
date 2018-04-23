@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/database/databases/address_did_database.hpp>
+//#include <metaverse/bitcoin/chain/attachment/account/address_did.hpp>
 
 #include <cstdint>
 #include <cstddef>

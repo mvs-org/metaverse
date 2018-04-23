@@ -29,6 +29,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/database.hpp>
 #include <metaverse/blockchain/block.hpp>
 #include <metaverse/blockchain/block_fetcher.hpp>

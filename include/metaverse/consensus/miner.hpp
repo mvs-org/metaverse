@@ -26,6 +26,9 @@
 
 #include "metaverse/blockchain/block_chain_impl.hpp"
 #include "metaverse/blockchain/transaction_pool.hpp"
+#include "metaverse/bitcoin/chain/block.hpp"
+#include "metaverse/bitcoin/chain/input.hpp"
+#include <metaverse/bitcoin/wallet/ec_public.hpp>
 #include <metaverse/blockchain/settings.hpp>
 
 namespace libbitcoin{

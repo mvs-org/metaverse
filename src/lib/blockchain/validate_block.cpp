@@ -33,6 +33,7 @@
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/miner.hpp>
+#include <metaverse/bitcoin/chain/output.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

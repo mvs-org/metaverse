@@ -27,7 +27,7 @@
 #include <metaverse/node.hpp>
 #include <metaverse/server/define.hpp>
 #include <metaverse/server/settings.hpp>
-#include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
 
 BC_DECLARE_CONFIG_DEFAULT_PATH(".metaverse" / "mvs.conf")
 

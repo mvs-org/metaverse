@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/database/databases/account_asset_database.hpp>
+//#include <metaverse/bitcoin/chain/attachment/account/account_asset.hpp>
 
 #include <cstdint>
 #include <cstddef>

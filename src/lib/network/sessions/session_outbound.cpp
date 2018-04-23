@@ -26,6 +26,7 @@
 #include <metaverse/network/p2p.hpp>
 #include <metaverse/network/protocols/protocol_address.hpp>
 #include <metaverse/network/protocols/protocol_ping.hpp>
+#include <metaverse/bitcoin/utility/deadline.hpp>
 
 namespace libbitcoin {
 namespace network {

@@ -33,6 +33,7 @@
 #include <metaverse/network/pending_channels.hpp>
 #include <metaverse/network/proxy.hpp>
 #include <metaverse/network/settings.hpp>
+#include <metaverse/bitcoin/message/network_address.hpp>
 
 namespace libbitcoin {
 namespace network {

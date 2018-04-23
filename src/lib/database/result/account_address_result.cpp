@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/database/result/account_address_result.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <metaverse/bitcoin.hpp>

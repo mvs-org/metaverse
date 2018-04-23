@@ -36,9 +36,9 @@
 #include <metaverse/server/services/transaction_service.hpp>
 #include <metaverse/server/utility/authenticator.hpp>
 #include <metaverse/server/workers/notification_worker.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
 #include <metaverse/consensus/miner.hpp>
 
-#include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace mgbubble{

@@ -31,6 +31,7 @@
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/network/channel.hpp>
 #include <metaverse/network/define.hpp>
+#include <metaverse/bitcoin/message/address.hpp>
 
 namespace libbitcoin {
 namespace network {
