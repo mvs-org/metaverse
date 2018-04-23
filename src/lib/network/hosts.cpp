@@ -282,6 +282,27 @@ code hosts::stop()
     return error::success;
 }
 
+code hosts::clear()
+{
+    // Critical Section
+    mutex_.lock_upgrade();
+
+    if (stopped_)
+    {
+        mutex_.unlock_upgrade();
+        //---------------------------------------------------------------------
+        return error::service_stopped;
+    }
+
+
+    mutex_.unlock_upgrade_and_lock();
+    buffer_.clear();
+    mutex_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    return error::success;
+}
+
 code hosts::remove(const address& host)
 {
     ///////////////////////////////////////////////////////////////////////////

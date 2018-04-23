@@ -66,7 +66,8 @@ p2p::p2p(const settings& settings)
     hosts_(std::make_shared<hosts>(threadpool_, settings_)),
     connections_(std::make_shared<connections>()),
     stop_subscriber_(std::make_shared<stop_subscriber>(threadpool_, NAME "_stop_sub")),
-    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub"))
+    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub")),
+    seed(nullptr)
 {
 }
 
@@ -143,7 +144,7 @@ void p2p::handle_hosts_loaded(const code& ec, result_handler handler)
     }
 
     // The instance is retained by the stop handler (until shutdown).
-    const auto seed = attach_seed_session();
+    seed = attach_seed_session();
 
     // This is invoked on a new thread.
     seed->start(
@@ -616,6 +617,22 @@ void p2p::map_port(bool use_upnp)
         upnp_thread->join();
         upnp_thread.reset();
     }
+}
+
+void p2p::restart_seeding()
+{
+    //1. clear the host::buffer_ cache
+    const auto result = hosts_->clear();
+    log::info(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();
+
+    //2. start the session_seed
+    result_handler handler = [](const code& ec) {
+        log::info(LOG_NETWORK) << "restart_seeding result: " << ec.message();
+    };
+
+    seed->restart(handler);
+
+
 }
 
 #else

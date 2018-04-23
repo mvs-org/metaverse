@@ -48,6 +48,8 @@ public:
     /// Start the session.
     void start(result_handler handler) override;
 
+    void restart(result_handler handler);
+
 protected:
     /// Override to attach specialized protocols upon channel start.
     virtual void attach_protocols(channel::ptr channel,
