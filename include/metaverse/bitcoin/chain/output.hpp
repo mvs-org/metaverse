@@ -62,6 +62,7 @@ public:
     uint64_t get_asset_amount() const;
     std::string get_asset_symbol() const;
     std::string get_asset_address() const;
+    std::string get_asset_cert_symbol() const;
     std::string get_asset_cert_owner() const;
     std::string get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const;
     asset_cert_type get_asset_cert_type() const;
