@@ -2,7 +2,7 @@
 #include <metaverse/consensus/libdevcore/Guards.h>
 #include <metaverse/consensus/libdevcore/Log.h>
 #include <metaverse/consensus/libdevcore/SHA3.h>
-#include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/header.hpp>
 #include <boost/detail/endian.hpp>
 #include <boost/filesystem.hpp>
 #include <chrono>
@@ -12,6 +12,7 @@
 #include <random>
 #include <metaverse/consensus/libdevcore/Exceptions.h>
 #include <boost/throw_exception.hpp>
+#include <metaverse/bitcoin/utility/log.hpp>
 
 
 using namespace libbitcoin;

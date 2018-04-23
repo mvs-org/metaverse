@@ -28,6 +28,7 @@
 #include <metaverse/network/protocols/protocol_ping.hpp>
 #include <metaverse/network/protocols/protocol_seed.hpp>
 #include <metaverse/network/proxy.hpp>
+#include <metaverse/bitcoin/config/authority.hpp>
 
 namespace libbitcoin {
 namespace network {

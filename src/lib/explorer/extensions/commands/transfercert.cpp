@@ -42,9 +42,32 @@ console_result transfercert::invoke (Json::Value& jv_output,
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
-    auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
-    if (!sh_asset)
-        throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
+    // check asset cert types
+    std::map <std::string, asset_cert_type> cert_param_value_map = {
+        {"ISSUE", asset_cert_ns::issue},
+        {"DOMAIN", asset_cert_ns::domain}
+    };
+
+    auto certs_send = asset_cert_ns::none;
+    for (auto& cert_param : argument_.certs) {
+        blockchain.uppercase_symbol(cert_param);
+        auto iter = cert_param_value_map.find(cert_param);
+        if (iter == cert_param_value_map.end()) {
+            throw asset_cert_exception("unknown asset cert type " + cert_param);
+        }
+
+        certs_send |= iter->second;
+    }
+
+    if (certs_send == asset_cert_ns::none) {
+        throw asset_cert_exception("no asset cert type is specified to transfer");
+    }
+
+    if (!asset_cert::test_certs(certs_send, asset_cert_ns::domain)) {
+        auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
+        if (!sh_asset)
+            throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
+    }
 
     // check from address
     if (!blockchain.is_valid_address(argument_.from))
@@ -60,14 +83,6 @@ console_result transfercert::invoke (Json::Value& jv_output,
     std::string cert_owner = asset_cert::get_owner_from_address(argument_.to, blockchain);
     if (cert_owner.empty())
         throw did_address_needed_exception("target address is not an did address. " + argument_.to);
-
-    auto certs_send = asset_cert_ns::none;
-    if (option_.is_issue) {
-        certs_send |= asset_cert_ns::issue;
-    }
-    if (certs_send == asset_cert_ns::none) {
-        throw asset_cert_exception("no asset cert is specified to transfer");
-    }
 
     // check issue cert
     auto certs_owned = blockchain.get_address_asset_cert_type(argument_.from, argument_.symbol);

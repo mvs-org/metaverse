@@ -27,6 +27,7 @@
 #include <metaverse/database/define.hpp>
 #include <metaverse/database/memory/memory.hpp>
 #include <metaverse/database/result/base_result.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
 
 using namespace libbitcoin::chain;
 using namespace std;

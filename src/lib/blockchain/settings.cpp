@@ -22,6 +22,7 @@
 
 #include <boost/filesystem.hpp>
 #include <metaverse/consensus/miner.hpp>
+#include <metaverse/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace blockchain {

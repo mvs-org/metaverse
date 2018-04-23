@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/blockchain/validate_transaction.hpp>
+#include <metaverse/bitcoin/chain/script/operation.hpp>
 
 #include <cstddef>
 #include <cstdint>

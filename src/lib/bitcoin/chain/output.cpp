@@ -56,7 +56,7 @@ bool output::is_valid_symbol(const std::string& symbol)
 {
     if (symbol.empty())
         return false;
-    // length check	
+    // length check
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
 		return false;
 	// char check
@@ -108,11 +108,11 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
 
 code output::check_attachment_did_match_address(bc::blockchain::block_chain_impl& chain) const
 {
-   
+
     if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION ) {
         auto todid = attach_data.get_to_did();
         if (!todid.empty()) {
-            auto address = get_script_address();        
+            auto address = get_script_address();
             if ( todid != chain.get_did_from_address(address)) {
                 return error::did_address_not_match;
             }
@@ -149,7 +149,7 @@ bool output::from_data(reader& source)
     auto result = static_cast<bool>(source);
 
     if (result)
-        result = script.from_data(source, true, 
+        result = script.from_data(source, true,
             script::parse_mode::raw_data_fallback);
 
 	/* begin added for asset issue/transfer */
@@ -263,8 +263,8 @@ uint64_t output::get_locked_asset_amount(bc::blockchain::block_chain_impl& chain
 
 bool output::is_asset_transfer() const
 {
-    if(attach_data.get_type() == ASSET_TYPE) {
-        auto asset_info = boost::get<asset>(attach_data.get_attach());
+    if (attach_data.get_type() == ASSET_TYPE) {
+        auto&& asset_info = boost::get<asset>(attach_data.get_attach());
         return (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE);
     }
     return false;
@@ -274,7 +274,7 @@ bool output::is_did_transfer() const
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
-		return (did_info.get_status() == DID_TRANSFERABLE_TYPE); 
+		return (did_info.get_status() == DID_TRANSFERABLE_TYPE);
 	}
 	return false;
 }
@@ -362,6 +362,15 @@ asset_cert output::get_asset_cert() const
     return asset_cert();
 }
 
+std::string output::get_asset_cert_symbol() const
+{
+    if (is_asset_cert()) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        return cert_info.get_symbol();
+    }
+    return std::string("");
+}
+
 std::string output::get_asset_cert_owner() const
 {
     if (is_asset_cert()) {
@@ -393,7 +402,7 @@ bool output::is_did_issue() const
 {
 	if(attach_data.get_type() == DID_TYPE) {
 		auto did_info = boost::get<did>(attach_data.get_attach());
-		return (did_info.get_status() ==  DID_DETAIL_TYPE); 
+		return (did_info.get_status() ==  DID_DETAIL_TYPE);
 	}
 	return false;
 }
@@ -405,7 +414,7 @@ std::string output::get_did_symbol() const // for validate_transaction.cpp to ca
 		auto detail_info = boost::get<did_detail>(did_info.get_data());
 		return detail_info.get_symbol();
 
-	} 
+	}
 	return std::string("");
 }
 

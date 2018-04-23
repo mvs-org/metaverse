@@ -28,6 +28,7 @@
 #include <metaverse/database/primitives/slab_hash_table.hpp>
 #include <metaverse/database/primitives/slab_manager.hpp>
 #include <metaverse/database/databases/base_database.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 
 using namespace libbitcoin::chain;
 

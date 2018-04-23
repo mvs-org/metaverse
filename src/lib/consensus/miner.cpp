@@ -29,7 +29,10 @@
 #include <boost/thread.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
-#include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/script/operation.hpp>
+#include <metaverse/bitcoin/config/hash160.hpp>
+#include <metaverse/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
 
 #define LOG_HEADER "consensus"

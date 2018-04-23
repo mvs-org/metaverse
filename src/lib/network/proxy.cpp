@@ -31,6 +31,7 @@
 #include <metaverse/network/const_buffer.hpp>
 #include <metaverse/network/define.hpp>
 #include <metaverse/network/socket.hpp>
+#include <metaverse/bitcoin/utility/time.hpp>
 
 namespace libbitcoin {
 namespace network {

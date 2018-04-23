@@ -46,7 +46,8 @@ public:
             .add("ACCOUNTAUTH", 1)
             .add("FROMADDRESS", 1)
             .add("TOADDRESS", 1)
-            .add("SYMBOL", 1);
+            .add("SYMBOL", 1)
+            .add("CERTS", 1);
 
     }
 
@@ -59,6 +60,7 @@ public:
         load_input(argument_.from, "FROMADDRESS", variables, input, raw);
         load_input(argument_.to, "TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.certs, "CERTS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -97,9 +99,9 @@ public:
             "asset symbol"
         )
         (
-            "issue",
-            value<bool>(&option_.is_issue)->default_value(false)->zero_tokens(),
-            "If specified, then transfer asset cert of ISSUE. Default is not specified."
+            "CERTS",
+            value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
+            "asset cert"
         )
         (
             "fee,f",
@@ -122,12 +124,12 @@ public:
         std::string from;
         std::string to;
         std::string symbol;
+        std::vector<std::string> certs;
         uint64_t fee;
     } argument_;
 
     struct option
     {
-        bool is_issue;
     } option_;
 
 };

@@ -17,6 +17,7 @@
 #ifndef MVSD_WS_SERVER_HPP
 #define MVSD_WS_SERVER_HPP
 
+#include <metaverse/bitcoin/define.hpp>
 #include <atomic>
 #include <string>
 #include <memory>
