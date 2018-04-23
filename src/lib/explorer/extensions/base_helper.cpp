@@ -461,9 +461,8 @@ void base_transfer_helper::sum_payment_amount(){
 }
 void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
-    auto waddr = wallet::payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& waddr = wallet::payment_address(addr);
+    auto&& rows = get_address_history(waddr, blockchain_);
     log::trace("get_history=")<<rows.size();
 
     chain::transaction tx_temp;
@@ -555,7 +554,9 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
+                        auto asset_total_amount = output.get_asset_amount();
+                        record.asset_amount = attenuation_model::get_available_asset_amount(
+                                asset_total_amount, height - row.output_height, get_attenuation_model_param());
                         record.type = utxo_attach_type::asset_issue;
                         record.output = row.output;
                         record.script = output.script;
@@ -566,12 +567,21 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                             unspent_asset_ += record.asset_amount;
                             unspent_etp_ += record.amount;
                         }
+
+                        // asset_locked_transfer as a special change
+                        if (asset_total_amount > record.asset_amount) {
+                            receiver_list_.push_back({record.addr, record.symbol,
+                                    0, asset_total_amount - record.asset_amount,
+                                    utxo_attach_type::asset_locked_transfer, attachment()});
+                        }
                     } else if (output.is_asset_transfer() && (symbol_ == output.get_asset_symbol())){
                         record.prikey = prikey;
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
+                        auto asset_total_amount = output.get_asset_amount();
+                        record.asset_amount = attenuation_model::get_available_asset_amount(
+                                asset_total_amount, height - row.output_height, get_attenuation_model_param());
                         record.type = utxo_attach_type::asset_transfer;
                         record.output = row.output;
                         record.script = output.script;
@@ -581,6 +591,13 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                             from_list_.push_back(record);
                             unspent_asset_ += record.asset_amount;
                             unspent_etp_ += record.amount;
+                        }
+
+                        // asset_locked_transfer as a special change
+                        if (asset_total_amount > record.asset_amount) {
+                            receiver_list_.push_back({record.addr, record.symbol,
+                                    0, asset_total_amount - record.asset_amount,
+                                    utxo_attach_type::asset_locked_transfer, attachment()});
                         }
                         log::trace("unspent_asset_=")<< unspent_asset_;
                         log::trace("unspent_etp_=")<< unspent_etp_;
@@ -623,7 +640,6 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 
     }
     rows.clear();
-
 }
 
 void base_transfer_helper::populate_unspent_list() {

@@ -223,44 +223,6 @@ uint64_t output::get_asset_amount() const // for validate_transaction.cpp to cal
     return 0;
 }
 
-uint64_t output::get_available_asset_amount(bc::blockchain::block_chain_impl& chain) const
-{
-    if (attach_data.get_type() != ASSET_TYPE) {
-        return 0;
-    }
-    if (script.pattern() != script_pattern::pay_key_hash_with_attenuation_model) {
-        return get_asset_amount();
-    }
-    auto&& asset_info = boost::get<asset>(attach_data.get_attach());
-    switch (asset_info.get_status()) {
-        case ASSET_DETAIL_TYPE:
-        case ASSET_TRANSFERABLE_TYPE:
-            return attenuation_model::get_available_asset_amount(script, chain);
-        default:
-            log::error("output::get_available_asset_amount") << "Unknown Asset type.";
-    }
-    return 0;
-}
-
-uint64_t output::get_locked_asset_amount(bc::blockchain::block_chain_impl& chain) const
-{
-    if (attach_data.get_type() != ASSET_TYPE) {
-        return 0;
-    }
-    if (script.pattern() != script_pattern::pay_key_hash_with_attenuation_model) {
-        return 0;
-    }
-    auto&& asset_info = boost::get<asset>(attach_data.get_attach());
-    switch (asset_info.get_status()) {
-        case ASSET_DETAIL_TYPE:
-        case ASSET_TRANSFERABLE_TYPE:
-            return get_asset_amount() - attenuation_model::get_available_asset_amount(script, chain);
-        default:
-            log::error("output::get_locked_asset_amount") << "Unknown Asset type.";
-    }
-    return 0;
-}
-
 bool output::is_asset_transfer() const
 {
     if (attach_data.get_type() == ASSET_TYPE) {

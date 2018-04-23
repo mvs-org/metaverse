@@ -187,6 +187,8 @@ public:
     tx_type& get_transaction();
     std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
 
+    virtual std::string get_attenuation_model_param() const { return ""; }
+
 protected:
     command&                          cmd_;
     tx_type                           tx_; // target transaction
@@ -391,6 +393,8 @@ public:
     void populate_change() override;
     void populate_tx_outputs() override;
 
+    virtual std::string get_attenuation_model_param() const override { return attenuation_model_param; };
+
 private:
     std::string attenuation_model_param;
 };
@@ -424,6 +428,8 @@ public:
         tx_.version = transaction_version::asset_secondaryissue_and_frozen;
         tx_.locktime = 0;
     };
+
+    virtual std::string get_attenuation_model_param() const override { return attenuation_model_param; };
 
 private:
     uint64_t volume_;

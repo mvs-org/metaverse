@@ -61,7 +61,7 @@ public:
 
     static bool check_model_index(uint32_t index);
     static bool check_model_param(const data_chunk& param);
-    static uint64_t get_available_asset_amount(const script& script, bc::blockchain::block_chain_impl& chain);
+    static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height, const std::string& model_param);
 
     const std::string& get_model_param() const;
 
