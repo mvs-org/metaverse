@@ -142,7 +142,7 @@ public:
     static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
     static stack to_pay_blackhole_pattern(const short_hash& hash);
-    static stack to_pay_key_hash_with_attenuation_model_pattern(const short_hash& hash, uint8_t model_index, const std::string& model_param);
+    static stack to_pay_key_hash_with_attenuation_model_pattern(const short_hash& hash, const std::string& model_param);
 
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);

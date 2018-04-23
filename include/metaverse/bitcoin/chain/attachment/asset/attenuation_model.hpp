@@ -27,6 +27,13 @@
 
 using namespace libbitcoin::chain;
 
+// forward declaration
+namespace libbitcoin {
+namespace blockchain {
+    class block_chain_impl;
+}
+}
+
 namespace libbitcoin {
 namespace chain {
 
@@ -54,6 +61,7 @@ public:
 
     static bool check_model_index(uint32_t index);
     static bool check_model_param(const data_chunk& param);
+    static uint64_t get_available_asset_amount(const script& script, bc::blockchain::block_chain_impl& chain);
 
     const std::string& get_model_param() const;
 

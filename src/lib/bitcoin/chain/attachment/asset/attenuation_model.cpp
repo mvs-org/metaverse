@@ -20,6 +20,7 @@
 
 #include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 #include <metaverse/bitcoin/utility/string.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 #include <unordered_map>
 
 namespace libbitcoin {
@@ -267,15 +268,14 @@ bool attenuation_model::check_model_index(uint32_t index)
 
 bool attenuation_model::check_model_param(const data_chunk& param)
 {
-    if (param.empty()) {
-        return true;
-    }
-
     attenuation_model parser(std::string(param.begin(), param.end()));
 
     const auto model = parser.get_model_type();
+
+    // model_type::none is equivalent to
+    // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
-        return true;
+        return false;
     }
 
     auto&& LQ = parser.get_locked_quantity();
@@ -361,6 +361,13 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 
     log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
     return false;
+}
+
+uint64_t attenuation_model::get_available_asset_amount(
+        const script& script, bc::blockchain::block_chain_impl& chain)
+{
+    // ASSET_TODO
+    return 0;
 }
 
 } // namspace chain

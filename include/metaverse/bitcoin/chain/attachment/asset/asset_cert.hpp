@@ -28,13 +28,14 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 
-namespace libbitcoin {
-
 // forward declaration
+namespace libbitcoin {
 namespace blockchain {
     class block_chain_impl;
 }
+}
 
+namespace libbitcoin {
 namespace chain {
 
 BC_CONSTEXPR size_t ASSET_CERT_SYMBOL_FIX_SIZE = 64;

@@ -29,7 +29,6 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include "asset_cert.hpp"
-#include "attenuation_model.hpp"
 
 namespace libbitcoin {
 namespace chain {

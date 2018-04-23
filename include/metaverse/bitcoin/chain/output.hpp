@@ -33,6 +33,13 @@
 #include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 
+// forward declaration
+namespace libbitcoin {
+namespace blockchain {
+    class block_chain_impl;
+}
+}
+
 namespace libbitcoin {
 namespace chain {
 
@@ -60,8 +67,8 @@ public:
     void reset();
     uint64_t serialized_size() const;
     uint64_t get_asset_amount() const;
-    uint64_t get_available_asset_amount() const;
-    uint64_t get_locked_asset_amount() const;
+    uint64_t get_available_asset_amount(bc::blockchain::block_chain_impl& chain) const;
+    uint64_t get_locked_asset_amount(bc::blockchain::block_chain_impl& chain) const;
     std::string get_asset_symbol() const;
     std::string get_asset_address() const;
     std::string get_asset_cert_owner() const;

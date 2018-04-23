@@ -27,6 +27,7 @@
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/chain/transaction.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
 #include <metaverse/bitcoin/math/elliptic_curve.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>

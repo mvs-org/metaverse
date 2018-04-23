@@ -558,7 +558,7 @@ operation::stack operation::to_pay_blackhole_pattern(const short_hash&)
 }
 
 operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
-    const short_hash& hash, uint8_t model_index, const std::string& model_param)
+    const short_hash& hash, const std::string& model_param)
 {
     return operation::stack
     {
