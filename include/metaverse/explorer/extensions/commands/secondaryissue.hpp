@@ -82,7 +82,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address to check and issue asset"
+            "target address to check and issue asset, and mychange to this address too."
         )
         (
             "SYMBOL",
@@ -95,10 +95,10 @@ public:
            "The volume of asset, with unit of integer bits."
         )
         (
-            "mychange,m",
-            value<std::string>(&argument_.mychange_address),
-            "Mychange to this address"
-	    )
+            "model,m",
+            value<std::string>(&option_.attenuation_model_param),
+            "The asset attenuation model parameter, defaults to empty string."
+        )
         (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -118,7 +118,6 @@ public:
     struct argument
     {
         std::string address;
-        std::string mychange_address;
         std::string symbol;
         uint64_t fee;
         uint64_t volume;
@@ -126,6 +125,7 @@ public:
 
     struct option
     {
+        std::string attenuation_model_param;
     } option_;
 
 };

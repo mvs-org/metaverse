@@ -401,11 +401,14 @@ public:
     secondary_issuing_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
+        std::string&& model_param,
         std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
         base_transfer_helper(cmd, blockchain,
                 std::move(name), std::move(passwd),
                 std::move(from), std::move(receiver_list),
-                fee, std::move(symbol)), volume_(volume)
+                fee, std::move(symbol)),
+        volume_(volume),
+        attenuation_model_param(std::move(model_param))
     {};
 
     ~secondary_issuing_asset(){};
@@ -423,6 +426,7 @@ public:
 private:
     uint64_t volume_;
     std::shared_ptr<asset_detail> issued_asset_;
+    std::string attenuation_model_param;
 };
 
 class BCX_API sending_asset : public base_transfer_helper
