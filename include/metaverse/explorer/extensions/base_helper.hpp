@@ -388,8 +388,8 @@ public:
     ~issuing_asset(){};
 
     void sum_payment_amount() override;
-
     void populate_change() override;
+    void populate_tx_outputs() override;
 
 private:
     std::string attenuation_model_param;
@@ -417,6 +417,8 @@ public:
     void populate_unspent_list() override;
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
     attachment populate_output_attachment(receiver_record& record) override;
+    void populate_tx_outputs() override;
+
     uint64_t get_volume() { return volume_; };
     void populate_tx_header(){
         tx_.version = transaction_version::asset_secondaryissue_and_frozen;

@@ -1420,7 +1420,6 @@ void sending_multisig_etp::populate_unspent_list() {
     // change
     populate_change();
 }
-//#include <metaverse/bitcoin/config/base16.hpp>
 
 void sending_multisig_etp::sign_tx_inputs() {
     uint32_t index = 0;
@@ -1494,6 +1493,10 @@ void issuing_asset::sum_payment_amount() {
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
     }
+
+    if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    }
 }
 
 void issuing_asset::populate_change() {
@@ -1502,6 +1505,84 @@ void issuing_asset::populate_change() {
     if (unspent_etp_ > payment_etp_) {
         receiver_list_.push_back({from_addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
+void issuing_asset::populate_tx_outputs()
+{
+    if (attenuation_model_param.empty()) {
+        return base_transfer_helper::populate_tx_outputs();
+    }
+
+    chain::operation::stack payment_ops;
+
+    for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
+        if (tx_item_idx_ >= (tx_limit + 10)) {
+            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
+        tx_item_idx_++;
+
+        const wallet::payment_address payment(iter.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        auto hash = payment.hash();
+        if (utxo_attach_type::asset_issue == iter.type) {
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+        }
+
+        auto payment_script = chain::script{ payment_ops };
+        auto&& output_att = populate_output_attachment(iter);
+        if (!output_att.is_valid()) {
+            throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
+        }
+        tx_.outputs.push_back({ iter.amount, payment_script, output_att });
+    }
+}
+
+void secondary_issuing_asset::populate_tx_outputs()
+{
+    if (attenuation_model_param.empty()) {
+        return base_transfer_helper::populate_tx_outputs();
+    }
+
+    chain::operation::stack payment_ops;
+
+    for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
+        if (tx_item_idx_ >= (tx_limit + 10)) {
+            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
+        tx_item_idx_++;
+
+        const wallet::payment_address payment(iter.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        auto hash = payment.hash();
+        if (utxo_attach_type::asset_secondaryissue == iter.type) {
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+        }
+
+        auto payment_script = chain::script{ payment_ops };
+        auto&& output_att = populate_output_attachment(iter);
+        if (!output_att.is_valid()) {
+            throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
+        }
+        tx_.outputs.push_back({ iter.amount, payment_script, output_att });
     }
 }
 
@@ -1523,6 +1604,10 @@ void secondary_issuing_asset::sum_payment_amount() {
 
     if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue))
         throw asset_cert_exception("no asset cert of issue right is provided.");
+
+    if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    }
 }
 
 void secondary_issuing_asset::populate_unspent_list()

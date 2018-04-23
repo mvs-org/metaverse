@@ -275,6 +275,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     // model_type::none is equivalent to
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
+        log::info(LOG_HEADER) << "model_type::none should not has pay_key_hash_with_attenuation_model script pattern.";
         return false;
     }
 
@@ -284,17 +285,17 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
-        log::info(LOG_HEADER) << "commono param error: LQ <= 0";
+        log::info(LOG_HEADER) << "common param error: LQ <= 0";
         return false;
     }
     // common condition : LP > 0
     if (!is_positive_number(LP)) {
-        log::info(LOG_HEADER) << "commono param error: LP <= 0";
+        log::info(LOG_HEADER) << "common param error: LP <= 0";
         return false;
     }
     // common condition : UN > 0
     if (!is_positive_number(UN)) {
-        log::info(LOG_HEADER) << "commono param error: UN <= 0";
+        log::info(LOG_HEADER) << "common param error: UN <= 0";
         return false;
     }
 
