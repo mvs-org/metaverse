@@ -108,6 +108,21 @@ public:
         return get_numbers("UQ");
     }
 
+    data_chunk get_new_model_param(uint64_t PN, uint64_t LH) const {
+        data_chunk ret;
+        auto pos = model_param_.find(';');
+        if ((pos == std::string::npos) || (pos + 1 == model_param_.size())) {
+            return ret;
+        }
+        pos = model_param_.find(';', pos + 1);
+        if (pos == std::string::npos) {
+            return ret;
+        }
+        auto prefix = "PN=" + std::to_string(PN) + ";LH=" + std::to_string(LH);
+        auto suffix = model_param_.substr(pos);
+        return to_chunk(prefix + suffix);
+    }
+
 private:
     bool parse_param() {
         auto is_illegal_char = [](auto c){ return ! (std::isalnum(c) || (c == ',') || (c == ';') || (c == '=')); };
@@ -205,6 +220,11 @@ const std::string& attenuation_model::get_model_param() const
     return pimpl->get_model_param();
 }
 
+data_chunk attenuation_model::get_new_model_param(uint64_t PN, uint64_t LH) const
+{
+    return pimpl->get_new_model_param(PN, LH);
+}
+
 uint64_t attenuation_model::get_current_period_number() const
 {
     return pimpl->get_current_period_number();
@@ -257,7 +277,10 @@ uint8_t attenuation_model::to_index(attenuation_model::model_type model)
 
 attenuation_model::model_type attenuation_model::from_index(uint32_t index)
 {
-    BITCOIN_ASSERT(check_model_index(index));
+    if (!check_model_index(index)) {
+        log::info(LOG_HEADER) << "model index is wrong: index = " << index;
+        return model_type::none;
+    }
     return (model_type)index;
 }
 
@@ -364,10 +387,74 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     return false;
 }
 
+// ASSET_TODO
 uint64_t attenuation_model::get_available_asset_amount(
-        uint64_t asset_amount, uint64_t diff_height, const data_chunk& model_param)
+        uint64_t asset_amount, uint64_t diff_height,
+        const data_chunk& param, std::shared_ptr<data_chunk> new_param_ptr)
 {
-    // ASSET_TODO
+    attenuation_model parser(std::string(param.begin(), param.end()));
+
+    const auto model = parser.get_model_type();
+
+    // model_type::none is equivalent to
+    // the scrpit pattern is not pay_key_hash_with_attenuation_model
+    if (model == model_type::none) {
+        log::info(LOG_HEADER) << "model_type::none should not has pay_key_hash_with_attenuation_model script pattern.";
+        return 0;
+    }
+
+    auto&& LH = parser.get_latest_lock_height();
+    if (diff_height < LH) { // no maturity, still all locked
+        return 0;
+    }
+
+    auto&& PN = parser.get_current_period_number();
+    auto&& UN = parser.get_unlock_number();
+    auto&& LQ = parser.get_locked_quantity();
+    auto&& LP = parser.get_locked_period();
+
+    if (model == model_type::fixed_quantity) {
+        auto UC = LP / UN;
+        auto locked_height = (diff_height - LH) + ((PN + 1) * UC);
+        if (locked_height >= LP) { // include the last unlock cycle, release all
+            return asset_amount;
+        }
+        auto new_cycles = std::min((locked_height / UC - PN), (LP - PN - 1));
+        auto UQ = LQ / UN;
+        if (new_param_ptr) {
+            // update PN, LH
+            PN = LP + new_cycles;
+            if ((PN + 1) == LP) {
+                LH = LP - locked_height;
+            } else {
+                LH = (PN + 1) * UC - locked_height;
+            }
+            *new_param_ptr = parser.get_new_model_param(PN, LH);
+        }
+        return new_cycles * UQ;
+    }
+
+    auto is_convert_to_custom = false;
+    switch (model) {
+        case model_type::fixed_rate:
+            is_convert_to_custom = true;
+            break;
+        default:
+            break;
+    }
+
+    if ((model == model_type::custom) || is_convert_to_custom) {
+        auto&& UC = parser.get_unlock_cycles();
+        auto&& UQ = parser.get_unlocked_quantities();
+        if (new_param_ptr) {
+            // update PN, LH
+
+            *new_param_ptr = parser.get_new_model_param(PN, LH);
+        }
+        return 0;
+    }
+
+    log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
     return 0;
 }
 

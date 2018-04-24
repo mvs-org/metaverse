@@ -555,12 +555,14 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
                         auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
                         auto asset_total_amount = output.get_asset_amount();
                         if (attenuation_model_param.empty()) {
                             record.asset_amount = asset_total_amount;
                         } else {
                             record.asset_amount = attenuation_model::get_available_asset_amount(
-                                    asset_total_amount, height - row.output_height, attenuation_model_param);
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
                         }
                         record.type = utxo_attach_type::asset_issue;
                         record.output = row.output;
@@ -574,7 +576,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 
                             // asset_locked_transfer as a special change
                             if (asset_total_amount > record.asset_amount) {
-                                std::string model_param(attenuation_model_param.begin(), attenuation_model_param.end());
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
                                 receiver_list_.push_back({record.addr, record.symbol,
                                         0, asset_total_amount - record.asset_amount,
                                         utxo_attach_type::asset_locked_transfer,
@@ -587,12 +589,14 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
                         auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
                         auto asset_total_amount = output.get_asset_amount();
                         if (attenuation_model_param.empty()) {
                             record.asset_amount = asset_total_amount;
                         } else {
                             record.asset_amount = attenuation_model::get_available_asset_amount(
-                                    asset_total_amount, height - row.output_height, attenuation_model_param);
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
                         }
                         record.type = utxo_attach_type::asset_transfer;
                         record.output = row.output;
@@ -606,7 +610,7 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 
                             // asset_locked_transfer as a special change
                             if (asset_total_amount > record.asset_amount) {
-                                std::string model_param(attenuation_model_param.begin(), attenuation_model_param.end());
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
                                 receiver_list_.push_back({record.addr, record.symbol,
                                         0, asset_total_amount - record.asset_amount,
                                         utxo_attach_type::asset_locked_transfer,
@@ -1074,12 +1078,14 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
                         auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
                         auto asset_total_amount = output.get_asset_amount();
                         if (attenuation_model_param.empty()) {
                             record.asset_amount = asset_total_amount;
                         } else {
                             record.asset_amount = attenuation_model::get_available_asset_amount(
-                                    asset_total_amount, height - row.output_height, attenuation_model_param);
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
                         }
                         record.type = utxo_attach_type::asset_issue;
                         record.output = row.output;
@@ -1093,7 +1099,7 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
 
                             // asset_locked_transfer as a special change
                             if (asset_total_amount > record.asset_amount) {
-                                std::string model_param(attenuation_model_param.begin(), attenuation_model_param.end());
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
                                 receiver_list_.push_back({record.addr, record.symbol,
                                         0, asset_total_amount - record.asset_amount,
                                         utxo_attach_type::asset_locked_transfer,
@@ -1106,12 +1112,14 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
                         auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
                         auto asset_total_amount = output.get_asset_amount();
                         if (attenuation_model_param.empty()) {
                             record.asset_amount = asset_total_amount;
                         } else {
                             record.asset_amount = attenuation_model::get_available_asset_amount(
-                                    asset_total_amount, height - row.output_height, attenuation_model_param);
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
                         }
                         record.type = utxo_attach_type::asset_transfer;
                         record.output = row.output;
@@ -1125,7 +1133,7 @@ void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
 
                             // asset_locked_transfer as a special change
                             if (asset_total_amount > record.asset_amount) {
-                                std::string model_param(attenuation_model_param.begin(), attenuation_model_param.end());
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
                                 receiver_list_.push_back({record.addr, record.symbol,
                                         0, asset_total_amount - record.asset_amount,
                                         utxo_attach_type::asset_locked_transfer,
@@ -1792,11 +1800,13 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 
         auto output = tx_temp.outputs.at(row.output.index);
         auto&& attenuation_model_param = output.get_attenuation_model_param();
+        auto new_model_param_ptr = std::make_shared<data_chunk>();
         auto asset_total_amount = output.get_asset_amount();
         auto asset_amount = asset_total_amount;
         if (!attenuation_model_param.empty()) {
             asset_amount = attenuation_model::get_available_asset_amount(
-                    asset_total_amount, height - row.output_height, attenuation_model_param);
+                    asset_total_amount, height - row.output_height,
+                    attenuation_model_param, new_model_param_ptr);
         }
         auto asset_symbol = output.get_asset_symbol();
         auto asset_certs = output.get_asset_cert_type();
@@ -1866,7 +1876,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 
         // asset_locked_transfer as a special change
         if (asset_total_amount > record.asset_amount) {
-            std::string model_param(attenuation_model_param.begin(), attenuation_model_param.end());
+            std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                     0, asset_total_amount - record.asset_amount,
                     utxo_attach_type::asset_locked_transfer,

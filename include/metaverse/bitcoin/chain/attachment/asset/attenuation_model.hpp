@@ -61,9 +61,11 @@ public:
 
     static bool check_model_index(uint32_t index);
     static bool check_model_param(const data_chunk& param);
-    static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height, const data_chunk& model_param);
+    static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height,
+            const data_chunk& model_param, std::shared_ptr<data_chunk> new_param_ptr = nullptr);
 
     const std::string& get_model_param() const;
+    data_chunk get_new_model_param(uint64_t PN, uint64_t LH) const;
 
     // mutable params of the model
     uint64_t get_current_period_number() const; // PN  current period number
