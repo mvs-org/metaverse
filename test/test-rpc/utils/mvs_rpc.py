@@ -145,19 +145,6 @@ def modify_did(account, password, from_address, to_address, did_symbol):
 
     return handle_rpc_rsp(rpc_rsp)
 
-def didsend(account, password, amount, to_, from_=None):
-    if not from_:
-        cmd_args = ('didsend', [account, password, to_, amount])
-    else:
-        cmd_args = ('didsendfrom', [account, password, from_, to_, amount])
-    rpc_cmd = RPC(cmd_args[0])
-    rpc_rsp = rpc_cmd.post(
-        cmd_args[1],
-        {}
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
 def didsendasset(account, password, asset_symbol, amount, to_, from_=None):
     if not from_:
         cmd_args = ('didsendasset', [account, password, to_, asset_symbol, amount])
@@ -380,3 +367,42 @@ def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None,
         return result, message["hex"]
     return result, message
 
+def send(account, password, to_, amount, fee=None, desc=None):
+    rpc_cmd = RPC('send')
+    rpc_rsp = rpc_cmd.post(
+        [account, password, to_, amount],
+        {
+            '-f': fee,
+            '-m': desc,
+        }
+    )
+
+    return handle_rpc_rsp(rpc_rsp)
+
+def sendfrom(account, password, from_, to_, amount, fee=None, desc=None):
+    rpc_cmd = RPC('sendfrom')
+    rpc_rsp = rpc_cmd.post(
+        [account, password, from_, to_, amount],
+        {
+            '-f': fee,
+            '-m': desc,
+        }
+    )
+
+    return handle_rpc_rsp(rpc_rsp)
+
+def didsend(account, password, amount, to_, from_=None, fee=None, desc=None):
+    if not from_:
+        cmd_args = ('didsend', [account, password, to_, amount])
+    else:
+        cmd_args = ('didsendfrom', [account, password, from_, to_, amount])
+    rpc_cmd = RPC(cmd_args[0])
+    rpc_rsp = rpc_cmd.post(
+        cmd_args[1],
+        {
+            '-f': fee,
+            '-m': desc,
+        }
+    )
+
+    return handle_rpc_rsp(rpc_rsp)
