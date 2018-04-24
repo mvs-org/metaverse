@@ -51,11 +51,12 @@
 #include <metaverse/database/databases/address_asset_database.hpp>
 #include <metaverse/database/databases/account_asset_database.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+#include <metaverse/database/databases/blockchain_asset_cert_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 #include <metaverse/database/databases/address_did_database.hpp>
 
-using namespace libbitcoin::wallet;                                         
-using namespace libbitcoin::chain;   
+using namespace libbitcoin::wallet;
+using namespace libbitcoin::chain;
 
 namespace libbitcoin {
 namespace database {
@@ -74,7 +75,7 @@ public:
         bool touch_all() const;
         bool touch_dids() const;
         bool dids_exist() const;
-		
+
         path database_lock;
         path blocks_lookup;
         path blocks_index;
@@ -86,6 +87,7 @@ public:
 		/* begin database for account, asset, address_asset, did relationship */
         path accounts_lookup;
         path assets_lookup;
+        path certs_lookup;
         path address_assets_lookup;
         path address_assets_rows;
         path account_assets_lookup;
@@ -106,7 +108,7 @@ public:
     public:
         blockchain_store(const path& prefix);
         bool touch_all() const;
-		
+
         path database_lock;
         path blocks_lookup;
         path blocks_index;
@@ -117,6 +119,7 @@ public:
         path transactions_lookup;
 		/* begin database for account, asset, address_asset, did relationship */
         path assets_lookup;
+        path certs_lookup;
         path address_assets_lookup;
         path address_assets_rows;
         path dids_lookup;
@@ -158,7 +161,7 @@ public:
 		void to_data(std::ostream& stream) const;
 		void to_data(writer& sink) const;
 		uint64_t serialized_size() const;
-		
+
 #ifdef MVS_DEBUG
 		std::string to_string() const;
 #endif
@@ -166,7 +169,7 @@ public:
 		friend std::ostream& operator<<(std::ostream& output, const db_metadata& metadata);
 		static const std::string current_version;
 		static const std::string file_name;
-		
+
 		std::string version_;
 	};
 
@@ -181,7 +184,7 @@ public:
 
     /// Stop all databases (threads must be joined).
     ~data_base();
-	bool clear_block_db(); 
+	bool clear_block_db();
     // Startup and shutdown.
     // ------------------------------------------------------------------------
 
@@ -191,7 +194,7 @@ public:
 	bool blockchain_create();
 	bool blockchain_asset_create();
 	bool blockchain_did_create();
- 
+
 	bool account_db_start();
     /// Start all databases.
     bool start();
@@ -237,16 +240,16 @@ public:
 
 	void push_message(const chain::blockchain_message& msg, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value);
-	
+
 	void push_asset(const asset& sp, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
-	
+
 	void push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 
 	void push_asset_detail(const asset_detail& sp_detail, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
-	
+
 	void push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
 				const output_point& outpoint, uint32_t output_height, uint64_t value);
 
@@ -259,7 +262,7 @@ public:
    class attachment_visitor : public boost::static_visitor<void>
 	{
 	public:
-		attachment_visitor(data_base* db, const short_hash& sh_hash,  const output_point& outpoint, 
+		attachment_visitor(data_base* db, const short_hash& sh_hash,  const output_point& outpoint,
 			uint32_t output_height, uint64_t value):
 			db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value)
 		{
@@ -400,7 +403,8 @@ public:
     blockchain_asset_database assets;
     address_asset_database address_assets;
     account_asset_database account_assets;
-    //did_database dids;    
+    blockchain_asset_cert_database certs;
+    //did_database dids;
     blockchain_did_database dids;
     address_did_database address_dids;
     account_address_database account_addresses;

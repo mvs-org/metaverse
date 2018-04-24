@@ -557,7 +557,7 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
-    if ((tx.outputs.size() > max_outputs_size) || (cert_type != cert_mask)) {
+    if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
         return error::asset_issue_error;
     }
 

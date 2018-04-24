@@ -40,28 +40,42 @@ console_result issue::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if(argument_.fee < 1000000000)
+    if (argument_.fee < 1000000000)
         throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
     // fail if asset is already in blockchain
-    if(blockchain.is_asset_exist(argument_.symbol, false))
+    if (blockchain.is_asset_exist(argument_.symbol, false))
         throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
     // local database asset check
     auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
-    if(!sh_asset)
+    if (!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty())
+    if (!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
 
     // domain cert check
+    bool issue_domain_cert = false;
     auto&& domain = asset_detail::get_domain(argument_.symbol);
     if (asset_detail::is_domain_valid(domain)) {
-        if (!blockchain.is_cert_domain_not_exist_or_belong_to_account(domain, auth_.name)) {
-            throw asset_cert_domain_exception{
-                "Domain " + domain + " exists in blockchain and does not belong to " + auth_.name};
+        if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
+            issue_domain_cert = true;
+        }
+        else {
+            // if domain cert exists then check whether it belongs to the account.
+            const auto match_belong_to = [](const business_address_asset_cert& item)
+            {
+                return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
+            };
+
+            auto business_certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
+            const auto it = std::find_if(business_certs_vec->begin(), business_certs_vec->end(), match_belong_to);
+            if (it == business_certs_vec->end()) {
+                throw asset_cert_domain_exception{
+                    "Domain " + domain + " exists in blockchain and does not belong to " + auth_.name};
+            }
         }
     }
 
@@ -77,27 +91,25 @@ console_result issue::invoke (Json::Value& jv_output,
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
     if (certs != asset_cert_ns::none) {
-        // asset issue cert
-        if (asset_cert::test_certs(certs, asset_cert_ns::issue)) {
-            receiver.push_back({addr, argument_.symbol, 0, 0,
-                asset_cert_ns::issue, utxo_attach_type::asset_cert, attachment()});
-        }
-
-        // asset domain cert
-        if (asset_cert::test_certs(certs, asset_cert_ns::domain)) {
-            receiver.push_back({addr, domain, 0, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
-        }
+        receiver.push_back({addr, argument_.symbol, 0, 0,
+            certs, utxo_attach_type::asset_cert, attachment()});
     }
 
-    auto issue_helper = issuing_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    // domain cert
+    if (issue_domain_cert) {
+        receiver.push_back({addr, domain, 0, 0,
+            asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+    }
+
+    auto issue_helper = issuing_asset(
+        *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 
     // json output
     auto tx = issue_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

@@ -24,15 +24,15 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <algorithm>
 #include <boost/filesystem.hpp>
 #include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/utility/path.hpp>
+#include <metaverse/bitcoin/config/base16.hpp>  // used by db_metadata and push_attachment
 #include <metaverse/database/memory/memory_map.hpp>
 #include <metaverse/database/settings.hpp>
-#include <metaverse/bitcoin/utility/path.hpp>
-
-#include <algorithm> 
-#include <metaverse/bitcoin/config/base16.hpp>  // used by db_metadata and push_attachment
 #include <metaverse/database/version.hpp>
+
 namespace libbitcoin {
 namespace database {
 
@@ -115,13 +115,14 @@ data_base::store::store(const path& prefix)
 	/* begin database for account, asset, address_asset relationship */
 	accounts_lookup = prefix / "account_table";
 	assets_lookup = prefix / "asset_table";  // for blockchain assets
-	address_assets_lookup = prefix / "address_asset_table"; // for blockchain 
-	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
+    certs_lookup = prefix / "cert_table";   // for blockchain certs
+	address_assets_lookup = prefix / "address_asset_table"; // for blockchain
+	address_assets_rows = prefix / "address_asset_row"; // for blockchain
 	account_assets_lookup = prefix / "account_asset_table";
 	account_assets_rows = prefix / "account_asset_row";
-    dids_lookup = prefix / "did_table"; 
-    address_dids_lookup = prefix / "address_did_table"; // for blockchain 
-	address_dids_rows = prefix / "address_did_row"; // for blockchain 
+    dids_lookup = prefix / "did_table";
+    address_dids_lookup = prefix / "address_did_table"; // for blockchain
+	address_dids_rows = prefix / "address_did_row"; // for blockchain
 	account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
 	/* end database for account, asset, address_asset relationship */
@@ -151,6 +152,7 @@ bool data_base::store::touch_all() const
 		/* begin database for account, asset, address_asset relationship */
         touch_file(accounts_lookup)&&
         touch_file(assets_lookup)&&
+        touch_file(certs_lookup)&&
         touch_file(address_assets_lookup)&&
         touch_file(address_assets_rows)&&
         touch_file(account_assets_lookup)&&
@@ -188,10 +190,11 @@ data_base::blockchain_store::blockchain_store(const path& prefix)
     transactions_lookup = prefix / "transaction_table";
 	/* begin database for account, asset, address_asset, did relationship */
 	assets_lookup = prefix / "asset_table";  // for blockchain assets
-	address_assets_lookup = prefix / "address_asset_table"; // for blockchain 
-	address_assets_rows = prefix / "address_asset_row"; // for blockchain 
-    address_dids_lookup = prefix / "address_did_table"; // for blockchain 
-	address_dids_rows = prefix / "address_did_row"; // for blockchain 
+    certs_lookup = prefix / "cert_table";   // for blockchain certs
+	address_assets_lookup = prefix / "address_asset_table"; // for blockchain
+	address_assets_rows = prefix / "address_asset_row"; // for blockchain
+    address_dids_lookup = prefix / "address_did_table"; // for blockchain
+	address_dids_rows = prefix / "address_did_row"; // for blockchain
     dids_lookup = prefix / "did_table";  // for blockchain dids
 
 	/* end database for account, asset, address_asset, did relationship */
@@ -217,12 +220,13 @@ bool data_base::blockchain_store::touch_all() const
         touch_file(transactions_lookup)&&
 		/* begin database for account, asset, address_asset, did relationship */
         touch_file(assets_lookup) &&
+        touch_file(certs_lookup) &&
         touch_file(address_assets_lookup) &&
         touch_file(address_assets_rows) &&
 
-        touch_file(dids_lookup) && 
+        touch_file(dids_lookup) &&
         touch_file(address_dids_lookup) &&
-        touch_file(address_dids_rows)      
+        touch_file(address_dids_rows)
 		/* end database for account, asset, address_asset, did relationship */
 		;
 }
@@ -262,10 +266,10 @@ bool data_base::blockchain_did_store::touch_all() const
 }
 
 data_base::db_metadata::db_metadata():version_("")
-{	
+{
 }
 data_base::db_metadata::db_metadata(std::string version):version_(version)
-{	
+{
 }
 void data_base::db_metadata::reset()
 {
@@ -284,11 +288,11 @@ bool data_base::db_metadata::from_data(std::istream& stream)
 }
 
 bool data_base::db_metadata::from_data(reader& source)
-{	
+{
 	reset();
 	version_ = source.read_string();
 	//auto result = static_cast<bool>(source);
-	return true;	
+	return true;
 }
 
 data_chunk data_base::db_metadata::to_data() const
@@ -323,7 +327,7 @@ std::string data_base::db_metadata::to_string() const
 	std::ostringstream ss;
 
 	ss << "\t version = " << version_ << "\n"
-		;		
+		;
 	return ss.str();
 }
 #endif
@@ -366,7 +370,7 @@ data_base::file_lock data_base::initialize_lock(const path& lock)
     std::string path_str = f(lock.wstring());
 #else
     std::string path_str = lock_file_path;
-#endif 
+#endif
     // BOOST:
     // Opens a file lock. Throws interprocess_exception if the file does not
     // exist or there are no operating system resources. The file lock is
@@ -409,8 +413,9 @@ data_base::data_base(const store& paths, size_t history_height,
 	assets(paths.assets_lookup, mutex_),
 	address_assets(paths.address_assets_lookup, paths.address_assets_rows, mutex_),
 	account_assets(paths.account_assets_lookup, paths.account_assets_rows, mutex_),
+    certs(paths.certs_lookup, mutex_),
     dids(paths.dids_lookup, mutex_),
-	address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),    
+	address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
 	/* end database for account, asset, address_asset, did relationship */
 {
@@ -422,7 +427,7 @@ data_base::~data_base()
     close();
 }
 
-bool data_base::clear_block_db() 
+bool data_base::clear_block_db()
 {
     size_t current_height;
     auto empty_chain = blocks.top(current_height);
@@ -436,7 +441,7 @@ void data_base::write_metadata(const path& metadata_path, data_base::db_metadata
 {
 	bc::ofstream file_output(metadata_path.string(), std::ofstream::out);
 	file_output << metadata;
-	file_output << std::flush;		
+	file_output << std::flush;
 	file_output.close();
 }
 void data_base::read_metadata(const path& metadata_path, data_base::db_metadata& metadata)
@@ -460,7 +465,7 @@ void data_base::read_metadata(const path& metadata_path, data_base::db_metadata&
 bool data_base::create()
 {
     // Return the result of the database create.
-    return 
+    return
         blocks.create() &&
         history.create() &&
         spends.create() &&
@@ -471,8 +476,9 @@ bool data_base::create()
 		assets.create()&&
 		address_assets.create()&&
 		account_assets.create()&&
+        certs.create()&&
         dids.create()&&
-		address_dids.create()&&        
+		address_dids.create()&&
 		account_addresses.create()
 		/* end database for account, asset, address_asset relationship */
 		;
@@ -480,7 +486,7 @@ bool data_base::create()
 bool data_base::blockchain_create()
 {
     // Return the result of the database create.
-    return 
+    return
         blocks.create() &&
         history.create() &&
         spends.create() &&
@@ -489,15 +495,16 @@ bool data_base::blockchain_create()
 		/* begin database for account, asset, address_asset relationship */
 		assets.create() &&
 		address_assets.create() &&
+        certs.create()&&
         dids.create() &&
-		address_dids.create()       
+		address_dids.create()
 		/* end database for account, asset, address_asset relationship */
 		;
 }
 bool data_base::blockchain_asset_create()
 {
     // Return the result of the database create.
-    return 
+    return
 		/* begin database for account, asset, address_asset relationship */
 		assets.create();
 		/* end database for account, asset, address_asset relationship */
@@ -506,7 +513,7 @@ bool data_base::blockchain_asset_create()
 bool data_base::blockchain_did_create()
 {
     // Return the result of the database create.
-    return 
+    return
 		/* begin database for account, asset, address_asset relationship */
 		dids.create();
 		/* end database for account, asset, address_asset relationship */
@@ -521,7 +528,7 @@ bool data_base::create_dids()
 
 bool data_base::account_db_start()
 {
-	return 
+	return
 		accounts.start()&&
 		account_assets.start()&&
 		account_addresses.start();
@@ -557,6 +564,7 @@ bool data_base::start()
 		assets.start()&&
 		address_assets.start()&&
 		account_assets.start()&&
+        certs.start()&&
         dids.start()&&
 		address_dids.start()&&
 		account_addresses.start()
@@ -582,8 +590,9 @@ bool data_base::stop()
 	const auto assets_stop = assets.stop();
 	const auto address_assets_stop = address_assets.stop();
 	const auto account_assets_stop = account_assets.stop();
+    const auto certs_stop = certs.stop();
 	const auto dids_stop = dids.stop();
-	const auto address_dids_stop = address_dids.stop();  
+	const auto address_dids_stop = address_dids.stop();
 	const auto account_addresses_stop = account_addresses.stop();
 	/* end database for account, asset, address_asset relationship */
     const auto end_exclusive = end_write();
@@ -606,8 +615,9 @@ bool data_base::stop()
 		assets_stop &&
 		address_assets_stop &&
 		account_assets_stop &&
+        certs_stop &&
         dids_stop &&
-		address_dids_stop &&        
+		address_dids_stop &&
 		account_addresses_stop &&
 		/* end database for account, asset, address_asset relationship */
         end_exclusive;
@@ -625,10 +635,11 @@ bool data_base::close()
 	const auto accounts_close = accounts.close();
 	const auto assets_close = assets.close();
 	const auto address_assets_close = address_assets.close();
-	const auto address_dids_close = address_dids.close();    
+	const auto address_dids_close = address_dids.close();
 	const auto account_assets_close = account_assets.close();
+    const auto certs_close = certs.close();
 	const auto dids_close = dids.close();
-    
+
 	const auto account_addresses_close = account_addresses.close();
 	/* end database for account, asset, address_asset relationship */
 
@@ -644,8 +655,9 @@ bool data_base::close()
 		assets_close &&
 		address_assets_close&&
 		account_assets_close&&
+        certs_close &&
 		dids_close &&
-        
+
 		account_addresses_close
 		/* end database for account, asset, address_asset relationship */
         ;
@@ -713,8 +725,9 @@ void data_base::synchronize()
 	assets.sync();
 	address_assets.sync();
 	account_assets.sync();
+    certs.sync();
 	dids.sync();
-	address_dids.sync();    
+	address_dids.sync();
 	account_addresses.sync();
 	/* end database for account, asset, address_asset relationship */
     blocks.sync();
@@ -743,7 +756,7 @@ void data_base::push(const block& block, uint64_t height)
 
         const auto& tx = block.transactions[index];
         const auto tx_hash = tx.hash();
-		
+
 		timestamp_ = block.header.timestamp; // for address_asset_database store_input/store_output used only
         // Add inputs
         if (!tx.is_coinbase())
@@ -826,7 +839,7 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
 
         const auto value = output.value;
         history.add_output(address.hash(), point, height, value);
-		
+
 		/* begin added for asset issue/transfer */
 		// add for coin reward
 		/* not store etp award record into database
@@ -1017,25 +1030,25 @@ void data_base::push_attachemnt(const attachment& attach, const payment_address&
 void data_base::push_etp(const etp& etp, const short_hash& key,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	address_assets.store_output(key, outpoint, output_height, value, 
+	address_assets.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp), timestamp_, etp);
 	address_assets.sync();
-		
+
 }
 void data_base::push_etp_award(const etp_award& award, const short_hash& key,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	address_assets.store_output(key, outpoint, output_height, value, 
+	address_assets.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp_award), timestamp_, award);
 	address_assets.sync();
 }
 void data_base::push_message(const chain::blockchain_message& msg, const short_hash& key,
 		const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	address_assets.store_output(key, outpoint, output_height, value, 
+	address_assets.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::message), timestamp_, msg);
 	address_assets.sync();
-		
+
 }
 void data_base::push_asset(const asset& sp, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value) // sp = smart property
@@ -1047,6 +1060,8 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
 void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
             const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
+    certs.store(sp_cert);
+    certs.sync();
     address_assets.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(
             business_kind::asset_cert), timestamp_, sp_cert);
@@ -1062,14 +1077,14 @@ void data_base::push_asset_detail(const asset_detail& sp_detail, const short_has
 	//assets.store(hash, sp_detail);
 	auto bc_asset = blockchain_asset(0, outpoint,output_height, sp_detail);
 	assets.store(hash, bc_asset);
-	address_assets.store_output(key, outpoint, output_height, value, 
+	address_assets.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue), timestamp_, sp_detail);
 	address_assets.sync();
 }
 void data_base::push_asset_transfer(const asset_transfer& sp_transfer, const short_hash& key,
 			const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-	address_assets.store_output(key, outpoint, output_height, value, 
+	address_assets.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_transfer), timestamp_, sp_transfer);
 	address_assets.sync();
 }
@@ -1092,7 +1107,7 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 	//dids.store(hash, sp_detail);
 	auto bc_did = blockchain_did(0, outpoint,output_height, blockchain_did::address_current,sp_detail);
 	dids.store(hash, bc_did);
-	address_dids.store_output(key, outpoint, output_height, value, 
+	address_dids.store_output(key, outpoint, output_height, value,
 		static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue), timestamp_, sp_detail);
 	address_dids.sync();
 }

@@ -31,7 +31,7 @@ namespace commands {
 
 
 console_result transfercert::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -63,7 +63,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
         throw asset_cert_exception("no asset cert type is specified to transfer");
     }
 
-    if (!asset_cert::test_certs(certs_send, asset_cert_ns::domain)) {
+    if (certs_send & ~asset_cert_ns::domain) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
         if (!sh_asset)
             throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
