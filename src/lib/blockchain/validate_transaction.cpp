@@ -436,7 +436,7 @@ code validate_transaction::check_secondaryissue_transaction(
     for (const auto& input: tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -646,7 +646,7 @@ bool validate_transaction::connect_did_input(
     for (const auto& input: tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
             return false;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -689,7 +689,7 @@ bool validate_transaction::connect_input_address_match_did(
 
     chain::transaction prev_tx;
     uint64_t prev_height{0};
-    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, true)) {
+    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
         return false;
     }
     auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -1028,7 +1028,8 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
 
 bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
 {
-    if (chain.chain_settings().use_testnet_rules)
+    /// test-private-chain
+    // if (chain.chain_settings().use_testnet_rules)
     {
         return true;
     }
