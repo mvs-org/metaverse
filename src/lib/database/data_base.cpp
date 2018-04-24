@@ -101,6 +101,28 @@ bool data_base::initialize_dids(const path& prefix)
     return instance.stop();
 }
 
+bool data_base::initialize_certs(const path& prefix)
+{
+    auto metadata_path = prefix / db_metadata::file_name;
+    if (!boost::filesystem::exists(metadata_path))
+        return false;
+
+    const store paths(prefix);
+    if (paths.certs_exist())
+        return true;
+    if (!paths.touch_certs())
+        return false;
+
+    data_base instance(prefix, 0, 0);
+    if (!instance.create_certs())
+        return false;
+
+    instance.stop();
+    instance.start();
+    instance.synchronize_certs();
+    return instance.stop();
+}
+
 void data_base::set_admin(const std::string& name, const std::string& passwd)
 {
 	accounts.set_admin(name, passwd);
@@ -179,6 +201,16 @@ bool data_base::store::touch_dids() const
         touch_file(dids_lookup) &&
         touch_file(address_dids_lookup) &&
         touch_file(address_dids_rows);
+}
+
+bool data_base::store::certs_exist() const
+{
+    return boost::filesystem::exists(certs_lookup);
+}
+
+bool data_base::store::touch_certs() const
+{
+    return touch_file(certs_lookup);
 }
 
 data_base::blockchain_store::blockchain_store(const path& prefix)
@@ -526,6 +558,12 @@ bool data_base::create_dids()
         address_dids.create();
 }
 
+bool data_base::create_certs()
+{
+    return
+        certs.create();
+}
+
 bool data_base::account_db_start()
 {
 	return
@@ -736,7 +774,12 @@ void data_base::synchronize()
 void data_base::synchronize_dids()
 {
     dids.sync();
-    address_dids.sync();;
+    address_dids.sync();
+}
+
+void data_base::synchronize_certs()
+{
+    certs.sync();
 }
 
 void data_base::push(const block& block)

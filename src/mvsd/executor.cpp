@@ -106,7 +106,7 @@ void executor::set_admin()
 bool executor::do_initchain()
 {
     initialize_output();
-    
+
     boost::system::error_code ec;
 
     const auto& directory = metadata_.configured.database.directory;
@@ -134,9 +134,12 @@ bool executor::do_initchain()
     }
     else if (MVS_DATABASE_VERSION_NUMBER >= 63)
     {
-        const auto result = data_base::initialize_dids(data_path);
-        if (!result) {
+        if (!data_base::initialize_dids(data_path)) {
             throw std::runtime_error{ " initialize did database failed!" };
+        }
+
+        if (!data_base::initialize_certs(data_path)) {
+            throw std::runtime_error{ " initialize cert database failed!" };
         }
     }
 
