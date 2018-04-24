@@ -63,6 +63,7 @@ enum class utxo_attach_type : uint32_t
     asset_secondaryissue = 8,
     did_issue = 9,
     did_transfer = 10,
+    invalid = 0xffffffff
 };
 
 extern utxo_attach_type get_utxo_attach_type(const chain::output&);
@@ -70,14 +71,14 @@ extern utxo_attach_type get_utxo_attach_type(const chain::output&);
 struct address_asset_record{
     std::string prikey;
     std::string addr;
-    uint64_t    amount; // spendable etp amount
+    uint64_t    amount{0}; // spendable etp amount
     std::string symbol;
-    uint64_t    asset_amount; // spendable asset amount
+    uint64_t    asset_amount{0}; // spendable asset amount
     asset_cert_type asset_cert{asset_cert_ns::none};
-    utxo_attach_type type; // only used for non-etp asset
+    utxo_attach_type type{utxo_attach_type::invalid};
     output_point output;
     chain::script script;
-    uint32_t hd_index; // only used for multisig tx
+    uint32_t hd_index{0}; // only used for multisig tx
 };
 
 
@@ -88,13 +89,13 @@ struct receiver_record {
     uint64_t    asset_amount;
     asset_cert_type asset_cert;
 
-    utxo_attach_type type; // only used for non-etp asset
-    attachment attach_elem;  // only used for message , maybe used for "digital identity" later
+    utxo_attach_type type;
+    attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
 
     receiver_record()
         : target(), symbol()
         , amount(0), asset_amount(0), asset_cert(asset_cert_ns::none)
-        , type(utxo_attach_type::etp), attach_elem()
+        , type(utxo_attach_type::invalid), attach_elem()
     {}
 
     receiver_record(std::string target_, std::string symbol_,
@@ -118,10 +119,10 @@ struct receiver_record {
 };
 
 struct balances {
-    uint64_t total_received;
-    uint64_t confirmed_balance;
-    uint64_t unspent_balance;
-    uint64_t frozen_balance;
+    uint64_t total_received{0};
+    uint64_t confirmed_balance{0};
+    uint64_t unspent_balance{0};
+    uint64_t frozen_balance{0};
 };
 // helper function
 std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys);
@@ -186,8 +187,6 @@ public:
     virtual void exec();
     tx_type& get_transaction();
     std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
-
-    virtual std::string get_attenuation_model_param() const { return ""; }
 
 protected:
     command&                          cmd_;
@@ -259,7 +258,7 @@ public:
 protected:
     tx_type                           tx_; // target transaction
     bc::blockchain::block_chain_impl& blockchain_;
-    utxo_attach_type                  type_;
+    utxo_attach_type                  type_{utxo_attach_type::invalid};
     uint64_t                          payment_etp_{0};
     uint64_t                          payment_asset_{0};
     uint64_t                          unspent_etp_{0};
@@ -393,8 +392,6 @@ public:
     void populate_change() override;
     void populate_tx_outputs() override;
 
-    virtual std::string get_attenuation_model_param() const override { return attenuation_model_param; };
-
 private:
     std::string attenuation_model_param;
 };
@@ -428,8 +425,6 @@ public:
         tx_.version = transaction_version::asset_secondaryissue_and_frozen;
         tx_.locktime = 0;
     };
-
-    virtual std::string get_attenuation_model_param() const override { return attenuation_model_param; };
 
 private:
     uint64_t volume_;

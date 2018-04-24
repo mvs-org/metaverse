@@ -423,5 +423,10 @@ asset_detail output::get_asset_detail() const
     return asset_detail();
 }
 
+data_chunk output::get_attenuation_model_param() const
+{
+    return operation::get_model_param_from_pay_key_hash_with_attenuation_model(script.operations);
+}
+
 } // namspace chain
 } // namspace libbitcoin

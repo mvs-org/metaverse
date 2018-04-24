@@ -365,7 +365,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 }
 
 uint64_t attenuation_model::get_available_asset_amount(
-        uint64_t asset_amount, uint64_t diff_height, const std::string& model_param)
+        uint64_t asset_amount, uint64_t diff_height, const data_chunk& model_param)
 {
     // ASSET_TODO
     return 0;
