@@ -1419,36 +1419,28 @@ block_chain_impl::get_account_asset_certs(const std::string& account, const std:
     return ret_vector;
 }
 
-bool block_chain_impl::is_cert_domain_not_exist_or_belong_to_account(const std::string& domain, const std::string& name)
+std::shared_ptr<std::vector<asset_cert>> block_chain_impl::get_issued_asset_certs()
 {
-    BITCOIN_ASSERT(!domain.empty());
+    auto sp_vec = std::make_shared<std::vector<asset_cert>>();
+    auto sp_asset_certs_vec = database_.certs.get_blockchain_asset_certs();
+    for (const auto& each : *sp_asset_certs_vec)
+        sp_vec->emplace_back(std::move(each));
+    return sp_vec;
+}
 
-    auto address_vec = get_account_addresses(name);
+bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_mask)
+{
+    BITCOIN_ASSERT(!symbol.empty());
 
-    // get issued assets in blockchain
-    auto issued_asset_vec = get_issued_assets();
-    if (issued_asset_vec->size() == 0) // no asset found
-        return true;
-
-    // if domain cert exists then check whether it belongs to the account.
-    for (auto& asset : *issued_asset_vec) {
-        auto&& cur_domain = asset_detail::get_domain(asset.get_symbol());
-        if (domain == cur_domain) {
-            auto& address = asset.get_address();
-            const auto match = [&address](const account_address& elem) {
-                return elem.get_address() == address;
-            };
-
-            auto business_certs = database_.address_assets.get_asset_certs(address, domain, 0);
-            for (const auto& cert : business_certs) {
-                if (cert.certs.test_certs(asset_cert_ns::domain)) {
-                    if (!address_vec) {
-                        return false;
-                    }
-
-                    auto iter = std::find_if(address_vec->begin(), address_vec->end(), match);
-                    return iter != address_vec->end();
-                }
+    for (int i = 0; i < 64; ++i) {
+        const asset_cert_type target_type = (1 << i);
+        if (asset_cert::test_certs(cert_mask, target_type)) {
+            std::string key_str(symbol + std::to_string(target_type));
+            const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+            const auto key = sha256_hash(data);
+            auto exist = database_.certs.get(key);
+            if (exist == nullptr) {
+                return false;
             }
         }
     }

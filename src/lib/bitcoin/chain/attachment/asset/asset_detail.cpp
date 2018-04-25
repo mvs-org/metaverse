@@ -265,9 +265,6 @@ asset_cert_type asset_detail::get_asset_cert_mask() const
         certs |= asset_cert_ns::issue;
     }
 
-    if (is_domain_valid()) {
-        certs |= asset_cert_ns::domain;
-    }
     return certs;
 }
 

@@ -69,6 +69,9 @@ public:
     // Save hosts to file.
     virtual code stop();
 
+    // Clear hosts buffer
+    virtual code clear();
+
     virtual size_t count() const;
     virtual code fetch(address& out, const config::authority::list& excluded_list);
     virtual code remove(const address& host);

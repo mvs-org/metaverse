@@ -152,14 +152,14 @@
     <ClInclude Include="..\..\..\src\lib\database\mman-win32\mman.h">
       <Filter>Source Files\mman-win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\database\databases\account_did_database.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\database\databases\address_did_database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_did_database.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\database\databases\blockchain_asset_cert_database.hpp">
+      <Filter>Header Files\databases</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +278,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_did_database.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\database\databases\blockchain_asset_cert_database.cpp">
+      <Filter>Source Files\databases</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

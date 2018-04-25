@@ -202,6 +202,9 @@ public:
     config::authority::ptr get_out_address();
 #endif
 
+    //restart the seeding session
+    void restart_seeding();
+
 protected:
 
     /// Attach a session to the network, caller must start the session.
@@ -239,7 +242,7 @@ private:
     connections::ptr connections_;
     stop_subscriber::ptr stop_subscriber_;
     channel_subscriber::ptr channel_subscriber_;
-
+    session_seed::ptr seed;
 };
 } // namespace network
 } // namespace libbitcoin

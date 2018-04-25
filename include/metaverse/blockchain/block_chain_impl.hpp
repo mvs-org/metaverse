@@ -258,7 +258,8 @@ public:
     std::shared_ptr<std::vector<business_address_asset_cert>> get_address_asset_certs(const std::string& address, const std::string& asset);
     std::shared_ptr<std::vector<business_address_asset_cert>> get_account_asset_certs(const std::string& account, const std::string& asset);
 
-    bool is_cert_domain_not_exist_or_belong_to_account(const std::string& domain, const std::string& name);
+    std::shared_ptr<std::vector<asset_cert>> get_issued_asset_certs();
+    bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_mask);
 
 	bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
 	bool get_asset_height(const std::string& asset_name, uint64_t& height);
