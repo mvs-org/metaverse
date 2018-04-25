@@ -556,6 +556,37 @@ code validate_transaction::check_asset_issue_transaction(
         }
     }
 
+    // check domain cert for transactions after check_nova_feature version.
+    auto&& domain = asset_detail::get_domain(asset_symbol);
+    if (tx.version >= transaction_version::check_nova_feature
+        && asset_detail::is_valid_domain(domain)) {
+        bool exist = chain.is_asset_cert_exist(domain, asset_cert_ns::domain);
+
+        // if issue domain cert then make sure domain cert do not exists.
+        if (asset_cert::test_certs(cert_type, asset_cert_ns::domain)) {
+            if (exist) {
+                return error::asset_issue_error;
+            }
+        }
+        else {
+            // if not issue domain cert then check whether it exists and belongs to the address.
+            if (!exist) {
+                return error::asset_issue_error;
+            }
+
+            const auto match = [](const business_address_asset_cert& item)
+            {
+                return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
+            };
+
+            auto certs_vec = chain.get_address_asset_certs(asset_address, domain);
+            const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
+            if (it == certs_vec->end()) {
+                return error::asset_issue_error;
+            }
+        }
+    }
+
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
     if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
         return error::asset_issue_error;

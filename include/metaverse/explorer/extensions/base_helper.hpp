@@ -172,7 +172,7 @@ public:
     virtual void populate_unspent_list();
     virtual void populate_change() = 0;
 
-    virtual void populate_tx_header(){
+    virtual void populate_tx_header() {
         tx_.version = transaction_version::check_output_script;
         tx_.locktime = 0;
     };
@@ -241,7 +241,7 @@ public:
     virtual void populate_unspent_list();
     virtual void populate_change();
 
-    virtual void populate_tx_header(){
+    virtual void populate_tx_header() {
         tx_.version = transaction_version::check_output_script;
         tx_.locktime = 0;
     };
@@ -384,6 +384,11 @@ public:
     void sum_payment_amount() override;
 
     void populate_change() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 class BCX_API secondary_issuing_asset : public base_transfer_helper
@@ -406,8 +411,8 @@ public:
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
     attachment populate_output_attachment(receiver_record& record) override;
     uint64_t get_volume() { return volume_; };
-    void populate_tx_header(){
-        tx_.version = transaction_version::asset_secondaryissue_and_frozen;
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     };
 

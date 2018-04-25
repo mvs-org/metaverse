@@ -53,44 +53,48 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     if (!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
+    std::string addr(argument_.address);
+
     // domain cert check
     bool issue_domain_cert = false;
     auto&& domain = asset_detail::get_domain(argument_.symbol);
-    if (asset_detail::is_domain_valid(domain)) {
+    if (asset_detail::is_valid_domain(domain)) {
         if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
             issue_domain_cert = true;
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
-            const auto match_belong_to = [](const business_address_asset_cert& item)
+            const auto match = [](const business_address_asset_cert& item)
             {
                 return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
             };
 
-            auto business_certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
-            const auto it = std::find_if(business_certs_vec->begin(), business_certs_vec->end(), match_belong_to);
-            if (it == business_certs_vec->end()) {
+            auto certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
+            const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
+            if (it == certs_vec->end()) {
                 throw asset_cert_domain_exception{
-                    "Domain " + domain + " exists in blockchain and does not belong to " + auth_.name};
+                    "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
             }
+
+            addr = (*it).address;
         }
     }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
+        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
     };
 
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
     if (certs != asset_cert_ns::none) {
-        receiver.push_back({argument_.address, argument_.symbol, 0, 0,
+        receiver.push_back({addr, argument_.symbol, 0, 0,
             certs, utxo_attach_type::asset_cert, attachment()});
     }
 
     // domain cert
     if (issue_domain_cert) {
-        receiver.push_back({argument_.address, domain, 0, 0,
+        receiver.push_back({addr, domain, 0, 0,
             asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
     }
 
