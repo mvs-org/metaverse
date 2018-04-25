@@ -1361,7 +1361,20 @@ static history::list expand_history(history_compact::list& compact)
         }
     }
 
-    // TODO: sort by height and index of output, spend or both in order.
+    // sort by height and index of output, spend or both in order.
+    std::sort(result.begin(), result.end(),
+        [](const history& elem1, const history& elem2){
+            if (elem1.spend_height > elem2.spend_height) { // unspent first, spent time decresely
+                return true;
+            } else if (elem1.spend_height == elem2.spend_height) {
+                if (elem1.output_height < elem2.output_height) { // output time increasely
+                    return true;
+                } else if (elem1.output_height == elem2.output_height) {
+                    return elem1.output.index <= elem2.output.index;
+                }
+            }
+            return false;
+        });
     return result;
 }
 
