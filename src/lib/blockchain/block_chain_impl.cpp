@@ -1455,7 +1455,7 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return true;
 }
 
-uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)
 {
 	uint64_t asset_volume = 0;
 	auto address = payment_address(addr);
@@ -1468,7 +1468,7 @@ uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, con
 	{
 		// spend unconfirmed (or no spend attempted)
 		if ((row.spend.hash == null_hash)
-				&& get_transaction(tx_temp, tx_height, row.output.hash, is_use_transactionpool, is_safe))
+				&& get_transaction(tx_temp, tx_height, row.output.hash))
 		{
 			auto output = tx_temp.outputs.at(row.output.index);
 
@@ -1484,7 +1484,7 @@ uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, con
 	return asset_volume;
 }
 
-uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, const std::string& asset)
 {
 	uint64_t volume = 0;
 	auto pvaddr = get_account_addresses(account);
@@ -1493,7 +1493,7 @@ uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, 
 	{
 		for (auto& each : *pvaddr)
 		{
-			volume += get_address_asset_volume(each.get_address(), asset, is_use_transactionpool, is_safe);
+			volume += get_address_asset_volume(each.get_address(), asset);
 		}
 	}
 
@@ -2175,59 +2175,6 @@ bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
 
 	return ret;
 
-}
-
-bool block_chain_impl::get_transaction(chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash, bool is_use_transactionpool, bool is_safe)
-{
-	bool ret = false;
-	if (stopped())
-    {
-        return ret;
-    }
-
-    const auto result = database_.transactions.get(hash);
-	if(result)
-	{
-		tx = result.transaction();
-		tx_height = result.height();
-		ret = true;
-	}
-	else if(is_use_transactionpool)
-	{
-		boost::mutex mutex;
-		transaction_message::ptr tx_ptr = nullptr;
-
-		mutex.lock();
-		auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
-		{
-			if((code)error::success == ec)
-				tx_ptr = tx_;
-			mutex.unlock();
-		};
-
-		if(is_safe)
-		{
-			pool().fetch(hash, f);
-			boost::unique_lock<boost::mutex> lock(mutex);
-		}
-		else
-		{
-			pool().sync_fetch(hash, f);
-		}
-
-		if(tx_ptr)
-		{
-			tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
-			tx_height = 0;
-			ret = true;
-		}
-	}
-
-	#ifdef MVS_DEBUG
-	log::debug("get_transaction=")<<tx.to_string(1);
-	#endif
-
-	return ret;
 }
 
 bool block_chain_impl::get_history_callback(const payment_address& address,

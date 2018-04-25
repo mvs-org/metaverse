@@ -436,7 +436,7 @@ code validate_transaction::check_secondaryissue_transaction(
     for (const auto& input: tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
+        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -677,7 +677,7 @@ bool validate_transaction::connect_did_input(
     for (const auto& input: tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
+        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
             return false;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -720,7 +720,7 @@ bool validate_transaction::connect_input_address_match_did(
 
     chain::transaction prev_tx;
     uint64_t prev_height{0};
-    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash, true, false)) {
+    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
         return false;
     }
     auto prev_output = prev_tx.outputs.at(input.previous_output.index);
