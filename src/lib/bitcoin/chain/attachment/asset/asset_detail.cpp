@@ -197,15 +197,15 @@ std::string asset_detail::get_domain() const
     return get_domain(symbol);
 }
 
-bool asset_detail::is_domain_valid(const std::string& domain)
+bool asset_detail::is_valid_domain(const std::string& domain)
 {
     return !domain.empty();
 }
 
-bool asset_detail::is_domain_valid() const
+bool asset_detail::is_valid_domain() const
 {
     auto&& domain = get_domain();
-    return is_domain_valid(domain);
+    return is_valid_domain(domain);
 }
 
 uint64_t asset_detail::get_maximum_supply() const

@@ -122,16 +122,16 @@ bool data_base::upgrade_version_63(const path& prefix)
         return false;
 
     if (!initialize_dids(prefix)) {
-        log::error("database")
+        log::error(LOG_DATABASE)
             << "Failed to upgrade did database.";
     }
 
     if (!initialize_certs(prefix)) {
-        log::error("database")
+        log::error(LOG_DATABASE)
             << "Failed to upgrade cert database.";
     }
 
-    log::info("database")
+    log::info(LOG_DATABASE)
         << "Upgrading is complete.";
     return true;
 }

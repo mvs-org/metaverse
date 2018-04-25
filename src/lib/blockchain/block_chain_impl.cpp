@@ -1981,6 +1981,7 @@ void block_chain_impl::fired()
 {
 	organizer_.fired();
 }
+
 /* find asset symbol exist or not
 *  find steps:
 *  1. find from blockchain
@@ -1989,15 +1990,15 @@ void block_chain_impl::fired()
 bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_local_db)
 {
 	// 1. find from blockchain database
-	if(get_issued_asset(const_cast<std::string&>(asset_name)))
+	if (get_issued_asset(asset_name))
 		return true;
 
 	// 2. find from local database asset
-	if(add_local_db) {
+	if (add_local_db) {
 		auto sh_acc_vec = get_local_assets();
 		// scan all account asset
-		for(auto& acc : *sh_acc_vec) {
-			if(asset_name.compare(acc.get_symbol())==0)
+		for (auto& acc : *sh_acc_vec) {
+			if (asset_name.compare(acc.get_symbol())==0)
 				return true;
 		}
 	}
