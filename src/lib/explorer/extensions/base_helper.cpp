@@ -63,86 +63,11 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
-history::list expand_history(history_compact::list& compact)
-{
-    history::list result;
-    result.reserve(compact.size());
-
-    std::unordered_map<uint64_t, history*> map_output;
-    // Process and remove all outputs.
-    for (auto output = compact.begin(); output != compact.end(); ++output)
-    {
-        if (output->kind == point_kind::output)
-        {
-            history row;
-            row.output = output->point;
-            row.output_height = output->height;
-            row.value = output->value;
-            row.spend = { null_hash, max_uint32 };
-            row.temporary_checksum = output->point.checksum();
-            result.emplace_back(row);
-            map_output[row.temporary_checksum] = &result.back();
-        }
-    }
-
-    //process the spends.
-    for (const auto& spend: compact)
-    {
-        auto found = false;
-
-        if (spend.kind == point_kind::output)
-            continue;
-
-        auto r = map_output.find(spend.previous_checksum);
-        if(r != map_output.end() && r->second->spend.hash == null_hash)
-        {
-             r->second->spend = spend.point;
-             r->second->spend_height = spend.height;
-             found = true;
-        }
-
-        // This will only happen if the history height cutoff comes between
-        // an output and its spend. In this case we return just the spend.
-        if (!found)
-        {
-            history row;
-            row.output = { null_hash, max_uint32 };
-            row.output_height = max_uint64;
-            row.value = max_uint64;
-            row.spend = spend.point;
-            row.spend_height = spend.height;
-            result.emplace_back(row);
-        }
-    }
-
-    compact.clear();
-
-    // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.hash == null_hash)
-            row.spend_height = max_uint64;
-
-    // TODO: sort by height and index of output, spend or both in order.
-    return result;
-}
-
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
-{
-    history_compact::list cmp_history;
-    history::list history_vec;
-    if(blockchain.get_history(addr, 0, 0, cmp_history)) {
-
-        history_vec = expand_history(cmp_history);
-    }
-    return history_vec;
-}
-
 void sync_fetch_asset_balance (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
     auto address = payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -174,8 +99,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
     auto address = payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -209,8 +133,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
 void sync_fetchbalance (wallet::payment_address& address,
     std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount)
 {
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
     log::trace("get_history=")<<rows.size();
 
     uint64_t total_received = 0;
@@ -292,8 +215,7 @@ void base_transfer_helper::sum_payment_amount(){
 void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
     chain::transaction tx_temp;
@@ -774,8 +696,7 @@ void base_transaction_constructor::sum_payment_amount() {
 void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
     chain::transaction tx_temp;
@@ -1446,7 +1367,7 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
 void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     auto target_addr = receiver_list_.at(0).target;
 
@@ -1611,7 +1532,7 @@ void sending_did::populate_change() {
 void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);
@@ -1682,7 +1603,7 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
 
 
     waddr = wallet::payment_address(fromfee);
-    rows = get_address_history(waddr, blockchain_);
+    rows = blockchain_.get_address_history(waddr);
     std::string feeprikey = "";
 
     auto pvaddr = blockchain_.get_account_addresses(name_);
@@ -1819,7 +1740,7 @@ void transferring_asset_cert::populate_change()
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);

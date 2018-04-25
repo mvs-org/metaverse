@@ -1303,13 +1303,13 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 	return ret_vector;
 }
 
-history::list expand_history(history_compact::list& compact)
+static history::list expand_history(history_compact::list& compact)
 {
     history::list result;
     result.reserve(compact.size());
 
     std::unordered_map<uint64_t, history*> map_output;
-    // Process and remove all outputs.
+    // Process all outputs.
     for (auto output = compact.begin(); output != compact.end(); ++output)
     {
         if (output->kind == point_kind::output)
@@ -1328,22 +1328,19 @@ history::list expand_history(history_compact::list& compact)
     //process the spends.
     for (const auto& spend: compact)
     {
-        auto found = false;
-
-        if (spend.kind == point_kind::output)
+        if (spend.kind != point_kind::spend)
             continue;
 
         auto r = map_output.find(spend.previous_checksum);
-        if(r != map_output.end() && r->second->spend.hash == null_hash)
+        if (r != map_output.end() && r->second->spend.hash == null_hash)
         {
              r->second->spend = spend.point;
              r->second->spend_height = spend.height;
-             found = true;
+             continue;
         }
 
         // This will only happen if the history height cutoff comes between
         // an output and its spend. In this case we return just the spend.
-        if (!found)
         {
             history row;
             row.output = { null_hash, max_uint32 };
@@ -1358,26 +1355,23 @@ history::list expand_history(history_compact::list& compact)
     compact.clear();
 
     // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.hash == null_hash)
+    for (auto& row: result) {
+        if (row.spend.hash == null_hash) {
             row.spend_height = max_uint64;
+        }
+    }
 
     // TODO: sort by height and index of output, spend or both in order.
     return result;
 }
 
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
+history::list block_chain_impl::get_address_history(wallet::payment_address& addr)
 {
-	history_compact::list cmp_history;
-
-	if(blockchain.fetch_history(addr, 0, 0, cmp_history))
-	{
-		return expand_history(cmp_history);
-	}
-	else
-	{
-		return history::list();
-	}
+    history_compact::list cmp_history;
+    if (!fetch_history(addr, 0, 0, cmp_history)) {
+        return history::list();
+    }
+    return expand_history(cmp_history);
 }
 
 asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& asset)
@@ -1452,8 +1446,7 @@ uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, con
 {
 	uint64_t asset_volume = 0;
 	auto address = payment_address(addr);
-	// history::list rows
-	auto rows = get_address_history(address, *this);
+    auto&& rows = get_address_history(address);
 
 	chain::transaction tx_temp;
 	uint64_t tx_height;

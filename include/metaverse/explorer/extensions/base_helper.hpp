@@ -125,8 +125,6 @@ struct balances {
 };
 
 // helper function
-history::list expand_history(history_compact::list& compact);
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain);
 void sync_fetchbalance (wallet::payment_address& address,
     std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount);
 void sync_fetch_asset_balance (std::string& addr,
