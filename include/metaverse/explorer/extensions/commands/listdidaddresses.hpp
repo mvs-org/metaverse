@@ -29,7 +29,7 @@ namespace explorer {
 namespace commands {
 
 
-/************************ didlistaddress *************************/
+/************************ listdidaddresses *************************/
 
 class listdidaddresses: public command_extension
 {
