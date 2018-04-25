@@ -46,18 +46,12 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
 
-    if (!argument_.mychange_address.empty() && !blockchain.is_valid_address(argument_.mychange_address))
-        throw address_invalid_exception{"invalid mychange address!"};
-
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr || pvaddr->empty())
         throw std::logic_error{"nullptr for address list"};
 
     if (!blockchain.get_account_address(auth_.name, argument_.address))
         throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
-
-    if (!argument_.mychange_address.empty() && !blockchain.get_account_address(auth_.name, argument_.mychange_address))
-        throw address_dismatch_account_exception{"mychange address does not match account." + argument_.mychange_address};
 
     auto asset = blockchain.get_issued_asset(argument_.symbol);
     if(!asset)
@@ -91,7 +85,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.mychange_address), std::move(argument_.symbol),
+            std::move(argument_.address), std::move(argument_.symbol),
             std::move(receiver), argument_.fee, argument_.volume);
 
     issue_helper.exec();

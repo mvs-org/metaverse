@@ -82,7 +82,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address to check and issue asset"
+            "target address to check and issue asset, fee from and mychange to this address too."
         )
         (
             "SYMBOL",
@@ -94,11 +94,6 @@ public:
            value<uint64_t>(&argument_.volume)->required(),
            "The volume of asset, with unit of integer bits."
         )
-        (
-            "mychange,m",
-            value<std::string>(&argument_.mychange_address),
-            "Mychange to this address"
-	    )
         (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -118,7 +113,6 @@ public:
     struct argument
     {
         std::string address;
-        std::string mychange_address;
         std::string symbol;
         uint64_t fee;
         uint64_t volume;
