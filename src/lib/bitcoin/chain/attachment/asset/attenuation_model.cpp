@@ -156,6 +156,10 @@ private:
                         auto num = std::stoull(item);
                         num_vec.emplace_back(num);
                     }
+                    if (map_.find(vec[0]) != map_.end()) {
+                        log::info(LOG_HEADER) << "key-value format is wrong, duplicate key : " << vec[0];
+                        return false;
+                    }
                     map_[vec[0]] = std::move(num_vec);
                 } catch (const std::exception& e) {
                     log::info(LOG_HEADER) << "exception caught: " << e.what();
@@ -411,7 +415,6 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     return false;
 }
 
-// ASSET_TODO
 uint64_t attenuation_model::get_available_asset_amount(
         uint64_t asset_amount, uint64_t diff_height,
         const data_chunk& param, std::shared_ptr<data_chunk> new_param_ptr)
@@ -451,7 +454,6 @@ uint64_t attenuation_model::get_available_asset_amount(
             return asset_amount;
         }
         auto new_cycles = std::min((locked_height / UC - PN), (LP - PN - 1));
-        auto UQ = LQ / UN;
         if (new_param_ptr) {
             // update PN, LH
             PN = LP + new_cycles;
@@ -462,7 +464,9 @@ uint64_t attenuation_model::get_available_asset_amount(
             }
             *new_param_ptr = parser.get_new_model_param(PN, LH);
         }
-        return new_cycles * UQ;
+        auto UQ = LQ / UN;
+        available += new_cycles * UQ;
+        return available;
     }
 
     auto is_convert_to_custom = false;
@@ -477,16 +481,27 @@ uint64_t attenuation_model::get_available_asset_amount(
     if ((model == model_type::custom) || is_convert_to_custom) {
         auto&& UC = parser.get_unlock_cycles();
         auto&& UQ = parser.get_unlocked_quantities();
+        available += UQ[PN];
+        diff_height -= LH;
+        ++PN;
+        while ((PN < UN) && (diff_height >= UC[PN])) {
+            available += UQ[PN];
+            diff_height -= UC[PN];
+            ++PN;
+        }
+        if (PN == UN) { // include the last unlock cycle, release all
+            return asset_amount;
+        }
         if (new_param_ptr) {
             // update PN, LH
-
+            LH = UC[PN] - diff_height;
             *new_param_ptr = parser.get_new_model_param(PN, LH);
         }
-        return 0;
+        return available;
     }
 
     log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
-    return 0;
+    return asset_amount;
 }
 
 } // namspace chain
