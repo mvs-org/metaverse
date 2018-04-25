@@ -134,12 +134,8 @@ bool executor::do_initchain()
     }
     else if (MVS_DATABASE_VERSION_NUMBER >= 63)
     {
-        if (!data_base::initialize_dids(data_path)) {
-            throw std::runtime_error{ " initialize did database failed!" };
-        }
-
-        if (!data_base::initialize_certs(data_path)) {
-            throw std::runtime_error{ " initialize cert database failed!" };
+        if (!data_base::upgrade_version_63(data_path)) {
+            throw std::runtime_error{ " upgrade database to version 63 failed!" };
         }
     }
 

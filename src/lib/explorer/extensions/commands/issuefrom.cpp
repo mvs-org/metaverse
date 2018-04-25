@@ -59,8 +59,6 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     if (asset_detail::is_domain_valid(domain)) {
         if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
             issue_domain_cert = true;
-            log::info("issuefrom")
-                << "Domain " + domain + " does not exist.";
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
