@@ -37,10 +37,10 @@
 namespace libbitcoin {
 namespace chain {
 
-enum transaction_version{
+enum transaction_version {
     first = 1,   //the frist version
-    check_output_script,   //add check output script 
-    asset_secondaryissue_and_frozen,	//add secondaryissue asset and frozen asset
+    check_output_script,   //add check output script
+    check_nova_feature,
     max_version
 };
 

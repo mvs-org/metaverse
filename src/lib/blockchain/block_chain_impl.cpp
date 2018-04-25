@@ -1303,13 +1303,13 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 	return ret_vector;
 }
 
-history::list expand_history(history_compact::list& compact)
+static history::list expand_history(history_compact::list& compact)
 {
     history::list result;
     result.reserve(compact.size());
 
     std::unordered_map<uint64_t, history*> map_output;
-    // Process and remove all outputs.
+    // Process all outputs.
     for (auto output = compact.begin(); output != compact.end(); ++output)
     {
         if (output->kind == point_kind::output)
@@ -1328,22 +1328,19 @@ history::list expand_history(history_compact::list& compact)
     //process the spends.
     for (const auto& spend: compact)
     {
-        auto found = false;
-
-        if (spend.kind == point_kind::output)
+        if (spend.kind != point_kind::spend)
             continue;
 
         auto r = map_output.find(spend.previous_checksum);
-        if(r != map_output.end() && r->second->spend.hash == null_hash)
+        if (r != map_output.end() && r->second->spend.hash == null_hash)
         {
              r->second->spend = spend.point;
              r->second->spend_height = spend.height;
-             found = true;
+             continue;
         }
 
         // This will only happen if the history height cutoff comes between
         // an output and its spend. In this case we return just the spend.
-        if (!found)
         {
             history row;
             row.output = { null_hash, max_uint32 };
@@ -1358,26 +1355,36 @@ history::list expand_history(history_compact::list& compact)
     compact.clear();
 
     // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.hash == null_hash)
+    for (auto& row: result) {
+        if (row.spend.hash == null_hash) {
             row.spend_height = max_uint64;
+        }
+    }
 
-    // TODO: sort by height and index of output, spend or both in order.
+    // sort by height and index of output, spend or both in order.
+    std::sort(result.begin(), result.end(),
+        [](const history& elem1, const history& elem2){
+            if (elem1.spend_height > elem2.spend_height) { // unspent first, spent time decresely
+                return true;
+            } else if (elem1.spend_height == elem2.spend_height) {
+                if (elem1.output_height < elem2.output_height) { // output time increasely
+                    return true;
+                } else if (elem1.output_height == elem2.output_height) {
+                    return elem1.output.index <= elem2.output.index;
+                }
+            }
+            return false;
+        });
     return result;
 }
 
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
+history::list block_chain_impl::get_address_history(wallet::payment_address& addr)
 {
-	history_compact::list cmp_history;
-
-	if(blockchain.fetch_history(addr, 0, 0, cmp_history))
-	{
-		return expand_history(cmp_history);
-	}
-	else
-	{
-		return history::list();
-	}
+    history_compact::list cmp_history;
+    if (!fetch_history(addr, 0, 0, cmp_history)) {
+        return history::list();
+    }
+    return expand_history(cmp_history);
 }
 
 asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& asset)
@@ -1448,12 +1455,11 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return true;
 }
 
-uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)
 {
 	uint64_t asset_volume = 0;
 	auto address = payment_address(addr);
-	// history::list rows
-	auto rows = get_address_history(address, *this);
+    auto&& rows = get_address_history(address);
 
 	chain::transaction tx_temp;
 	uint64_t tx_height;
@@ -1462,7 +1468,7 @@ uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, con
 	{
 		// spend unconfirmed (or no spend attempted)
 		if ((row.spend.hash == null_hash)
-				&& get_transaction(tx_temp, tx_height, row.output.hash, is_use_transactionpool, is_safe))
+				&& get_transaction(tx_temp, tx_height, row.output.hash))
 		{
 			auto output = tx_temp.outputs.at(row.output.index);
 
@@ -1478,7 +1484,7 @@ uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, con
 	return asset_volume;
 }
 
-uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe)
+uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, const std::string& asset)
 {
 	uint64_t volume = 0;
 	auto pvaddr = get_account_addresses(account);
@@ -1487,7 +1493,7 @@ uint64_t block_chain_impl::get_account_asset_volume(const std::string& account, 
 	{
 		for (auto& each : *pvaddr)
 		{
-			volume += get_address_asset_volume(each.get_address(), asset, is_use_transactionpool, is_safe);
+			volume += get_address_asset_volume(each.get_address(), asset);
 		}
 	}
 
@@ -1975,6 +1981,7 @@ void block_chain_impl::fired()
 {
 	organizer_.fired();
 }
+
 /* find asset symbol exist or not
 *  find steps:
 *  1. find from blockchain
@@ -1983,15 +1990,15 @@ void block_chain_impl::fired()
 bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_local_db)
 {
 	// 1. find from blockchain database
-	if(get_issued_asset(const_cast<std::string&>(asset_name)))
+	if (get_issued_asset(asset_name))
 		return true;
 
 	// 2. find from local database asset
-	if(add_local_db) {
+	if (add_local_db) {
 		auto sh_acc_vec = get_local_assets();
 		// scan all account asset
-		for(auto& acc : *sh_acc_vec) {
-			if(asset_name.compare(acc.get_symbol())==0)
+		for (auto& acc : *sh_acc_vec) {
+			if (asset_name.compare(acc.get_symbol())==0)
 				return true;
 		}
 	}
@@ -2168,59 +2175,6 @@ bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
 
 	return ret;
 
-}
-
-bool block_chain_impl::get_transaction(chain::transaction& tx, uint64_t& tx_height, const hash_digest& hash, bool is_use_transactionpool, bool is_safe)
-{
-	bool ret = false;
-	if (stopped())
-    {
-        return ret;
-    }
-
-    const auto result = database_.transactions.get(hash);
-	if(result)
-	{
-		tx = result.transaction();
-		tx_height = result.height();
-		ret = true;
-	}
-	else if(is_use_transactionpool)
-	{
-		boost::mutex mutex;
-		transaction_message::ptr tx_ptr = nullptr;
-
-		mutex.lock();
-		auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
-		{
-			if((code)error::success == ec)
-				tx_ptr = tx_;
-			mutex.unlock();
-		};
-
-		if(is_safe)
-		{
-			pool().fetch(hash, f);
-			boost::unique_lock<boost::mutex> lock(mutex);
-		}
-		else
-		{
-			pool().sync_fetch(hash, f);
-		}
-
-		if(tx_ptr)
-		{
-			tx = *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr));
-			tx_height = 0;
-			ret = true;
-		}
-	}
-
-	#ifdef MVS_DEBUG
-	log::debug("get_transaction=")<<tx.to_string(1);
-	#endif
-
-	return ret;
 }
 
 bool block_chain_impl::get_history_callback(const payment_address& address,

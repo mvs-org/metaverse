@@ -124,24 +124,15 @@ struct balances {
     uint64_t unspent_balance;
     uint64_t frozen_balance;
 };
+
 // helper function
-std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys);
-void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::string& seed, uint32_t hd_index);
-history::list expand_history(history_compact::list& compact);
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain);
-void expand_history(history_compact::list& compact, history::list& result);
-void get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain,
-    history::list& history_vec);
-chain::points_info sync_fetchutxo(uint64_t amount, wallet::payment_address& addr,
-    std::string& type, bc::blockchain::block_chain_impl& blockchain);
 void sync_fetchbalance (wallet::payment_address& address,
     std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount);
 void sync_fetch_asset_balance (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
 void sync_fetch_asset_balance_record (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
-code sync_fetchbalance (command& cmd, std::string& address,
-    std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
+
 class BCX_API base_transfer_helper
 {
 public:
@@ -173,7 +164,7 @@ public:
     virtual void populate_unspent_list();
     virtual void populate_change() = 0;
 
-    virtual void populate_tx_header(){
+    virtual void populate_tx_header() {
         tx_.version = transaction_version::check_output_script;
         tx_.locktime = 0;
     };
@@ -242,7 +233,7 @@ public:
     virtual void populate_unspent_list();
     virtual void populate_change();
 
-    virtual void populate_tx_header(){
+    virtual void populate_tx_header() {
         tx_.version = transaction_version::check_output_script;
         tx_.locktime = 0;
     };
@@ -392,6 +383,11 @@ public:
     void populate_change() override;
     void populate_tx_outputs() override;
 
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
 private:
     std::string attenuation_model_param;
 };
@@ -421,8 +417,8 @@ public:
     void populate_tx_outputs() override;
 
     uint64_t get_volume() { return volume_; };
-    void populate_tx_header(){
-        tx_.version = transaction_version::asset_secondaryissue_and_frozen;
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     };
 

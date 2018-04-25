@@ -111,9 +111,6 @@ public:
     bool get_transaction(chain::transaction& out_transaction,
         uint64_t& out_block_height, const hash_digest& transaction_hash) const;
 
-    bool get_transaction(chain::transaction& out_transaction,
-        uint64_t& out_block_height, const hash_digest& transaction_hash, bool is_use_transactionpool, bool is_safe);
-
     /// Import a block to the blockchain.
     bool import(chain::block::ptr block, uint64_t height);
 
@@ -199,6 +196,8 @@ public:
     bool fetch_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_compact::list& history);
 
+    history::list get_address_history(wallet::payment_address& addr);
+
     /// fetch stealth results.
     void fetch_stealth(const binary& filter, uint64_t from_height,
         stealth_fetch_handler handler);
@@ -251,8 +250,8 @@ public:
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name);
 	std::shared_ptr<std::vector<business_address_asset>> get_account_assets(const std::string& name,
 					business_kind kind);
-    uint64_t get_address_asset_volume(const std::string& address, const std::string& asset, bool is_use_transactionpool, bool is_safe);
-    uint64_t get_account_asset_volume(const std::string& account, const std::string& asset, bool is_use_transactionpool, bool is_safe);
+    uint64_t get_address_asset_volume(const std::string& address, const std::string& asset);
+    uint64_t get_account_asset_volume(const std::string& account, const std::string& asset);
     uint64_t get_asset_volume(const std::string& asset);
     asset_cert_type get_address_asset_cert_type(const std::string& address, const std::string& asset);
     std::shared_ptr<std::vector<business_address_asset_cert>> get_address_asset_certs(const std::string& address, const std::string& asset);

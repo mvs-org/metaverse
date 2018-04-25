@@ -122,16 +122,16 @@ bool data_base::upgrade_version_63(const path& prefix)
         return false;
 
     if (!initialize_dids(prefix)) {
-        log::error("database")
+        log::error(LOG_DATABASE)
             << "Failed to upgrade did database.";
     }
 
     if (!initialize_certs(prefix)) {
-        log::error("database")
+        log::error(LOG_DATABASE)
             << "Failed to upgrade cert database.";
     }
 
-    log::info("database")
+    log::info(LOG_DATABASE)
         << "Upgrading is complete.";
     return true;
 }
@@ -908,19 +908,7 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
         const auto value = output.value;
         history.add_output(address.hash(), point, height, value);
 
-        /* begin added for asset issue/transfer */
-        // add for coin reward
-        /* not store etp award record into database
-        if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                output.script.operations);
-            push_attachemnt(attachment(ETP_AWARD_TYPE, 1, etp_award(lock_height)), address, point, height, value);
-        } else {
-            push_attachemnt(output.attach_data, address, point, height, value);
-        }
-        */
         push_attachemnt(output.attach_data, address, point, height, value);
-        /* end added for asset issue/transfer */
     }
 }
 

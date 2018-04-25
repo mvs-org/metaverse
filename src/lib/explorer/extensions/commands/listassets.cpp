@@ -69,10 +69,8 @@ console_result listassets::invoke (Json::Value& jv_output,
             sync_fetch_asset_balance(addr, blockchain, sh_vec);
         }
         
-        std::string symbol;
         for (auto& elem: *sh_vec) {
-            symbol = elem.get_symbol();
-            auto issued_asset = blockchain.get_issued_asset(symbol);
+            auto issued_asset = blockchain.get_issued_asset(elem.get_symbol());
             if (!issued_asset) {
                 continue;
             }

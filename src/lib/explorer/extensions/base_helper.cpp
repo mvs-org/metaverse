@@ -63,179 +63,11 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
-std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys){
-    std::sort(public_keys.begin(), public_keys.end());
-    std::ostringstream ss;
-    ss << std::to_string(m);
-    for(auto& each : public_keys)
-        ss << " [ " << each << " ] ";
-    ss << std::to_string(n) << " checkmultisig";
-    return ss.str();
-}
-void get_multisig_pri_pub_key(std::string& prikey, std::string& pubkey, std::string& seed, uint32_t hd_index)
-{
-    // TO TEST . CHENHAO
-    bc::config::base16 base16_seed{seed};
-
-    const auto& dc_seed = base16_seed;
-    auto&& hd_pri_key = get_hd_new(dc_seed);
-    auto&& hd_pub_key = hd_pri_key.derive_public(hd_index);
-
-    prikey = hd_pri_key.encoded();
-    pubkey = hd_pub_key.encoded();
-}
-
-history::list expand_history(history_compact::list& compact)
-{
-    history::list result;
-    result.reserve(compact.size());
-
-    std::unordered_map<uint64_t, history*> map_output;
-    // Process and remove all outputs.
-    for (auto output = compact.begin(); output != compact.end(); ++output)
-    {
-        if (output->kind == point_kind::output)
-        {
-            history row;
-            row.output = output->point;
-            row.output_height = output->height;
-            row.value = output->value;
-            row.spend = { null_hash, max_uint32 };
-            row.temporary_checksum = output->point.checksum();
-            result.emplace_back(row);
-            map_output[row.temporary_checksum] = &result.back();
-        }
-    }
-
-    //process the spends.
-    for (const auto& spend: compact)
-    {
-        auto found = false;
-
-        if (spend.kind == point_kind::output)
-            continue;
-
-        auto r = map_output.find(spend.previous_checksum);
-        if(r != map_output.end() && r->second->spend.hash == null_hash)
-        {
-             r->second->spend = spend.point;
-             r->second->spend_height = spend.height;
-             found = true;
-        }
-
-        // This will only happen if the history height cutoff comes between
-        // an output and its spend. In this case we return just the spend.
-        if (!found)
-        {
-            history row;
-            row.output = { null_hash, max_uint32 };
-            row.output_height = max_uint64;
-            row.value = max_uint64;
-            row.spend = spend.point;
-            row.spend_height = spend.height;
-            result.emplace_back(row);
-        }
-    }
-
-    compact.clear();
-
-    // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.hash == null_hash)
-            row.spend_height = max_uint64;
-
-    // TODO: sort by height and index of output, spend or both in order.
-    return result;
-}
-
-history::list get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain)
-{
-    history_compact::list cmp_history;
-    history::list history_vec;
-    if(blockchain.get_history(addr, 0, 0, cmp_history)) {
-
-        history_vec = expand_history(cmp_history);
-    }
-    return history_vec;
-}
-
-
-void expand_history(history_compact::list& compact, history::list& result)
-{
-    // Process and remove all outputs.
-    for (auto output = compact.begin(); output != compact.end();)
-    {
-        if (output->kind == point_kind::output)
-        {
-            history row;
-            row.output = output->point;
-            row.output_height = output->height;
-            row.value = output->value;
-            row.spend = { null_hash, max_uint32 };
-            row.temporary_checksum = output->point.checksum();
-            result.emplace_back(row);
-            output = compact.erase(output);
-            continue;
-        }
-
-        ++output;
-    }
-
-    // All outputs have been removed, process the spends.
-    for (const auto& spend: compact)
-    {
-        auto found = false;
-
-        // Update outputs with the corresponding spends.
-        for (auto& row: result)
-        {
-            if (row.temporary_checksum == spend.previous_checksum &&
-                row.spend.hash == null_hash)
-            {
-                row.spend = spend.point;
-                row.spend_height = spend.height;
-                found = true;
-                break;
-            }
-        }
-
-        // This will only happen if the history height cutoff comes between
-        // an output and its spend. In this case we return just the spend.
-        if (!found)
-        {
-            history row;
-            row.output = { null_hash, max_uint32 };
-            row.output_height = max_uint64;
-            row.value = max_uint64;
-            row.spend = spend.point;
-            row.spend_height = spend.height;
-            result.emplace_back(row);
-        }
-    }
-
-    compact.clear();
-
-    // Clear all remaining checksums from unspent rows.
-    for (auto& row: result)
-        if (row.spend.hash == null_hash)
-            row.spend_height = max_uint64;
-}
-
-void get_address_history(wallet::payment_address& addr, bc::blockchain::block_chain_impl& blockchain,
-    history::list& history_vec)
-{
-    history_compact::list cmp_history;
-    if(blockchain.get_history(addr, 0, 0, cmp_history)) {
-
-        expand_history(cmp_history, history_vec);
-    }
-}
 void sync_fetch_asset_balance (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
     auto address = payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -267,8 +99,7 @@ void sync_fetch_asset_balance_record (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
     auto address = payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -296,13 +127,13 @@ void sync_fetch_asset_balance_record (std::string& addr,
 
     }
 }
+
 /// amount == 0 -- get all address balances
 /// amount != 0 -- get some address balances which bigger than amount
 void sync_fetchbalance (wallet::payment_address& address,
     std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount)
 {
-    // history::list rows
-    auto rows = get_address_history(address, blockchain);
+    auto&& rows = blockchain.get_address_history(address);
     log::trace("get_history=")<<rows.size();
 
     uint64_t total_received = 0;
@@ -370,84 +201,6 @@ void sync_fetchbalance (wallet::payment_address& address,
 
 }
 
-code sync_fetchbalance (command& cmd, std::string& addr,
-    std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
-{
-    using namespace bc::client;
-
-    code ec = error::success;
-    auto address = payment_address(addr);
-    const auto connection = get_connection(cmd);
-    obelisk_client client(connection);
-    if (!client.connect(connection))
-    {
-        throw connection_exception{"failure connection to " + connection.server.to_string()} ;
-    }
-
-    uint64_t height = 0;
-    blockchain.get_last_height(height);
-
-    auto on_done = [&addr_balance, &type, &blockchain, height](const history::list& rows)
-    {
-        for (auto& row: rows) {
-
-            addr_balance.total_received += row.value;
-            //std::function<void(chain::transaction& tx, uint64_t& tx_height)>
-            auto sum_balance = [&row, &addr_balance, &type, height](const code& ec, const chain::transaction& tx)-> void
-            {
-                auto output = tx.outputs.at(row.output.index);
-                // deposit utxo in transaction pool
-                if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                            && !row.output_height) {
-                    addr_balance.frozen_balance += row.value;
-                }
-
-                // deposit utxo in block
-                if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-                    && row.output_height) {
-                    uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                    if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                        addr_balance.frozen_balance += row.value;
-                    }
-                }
-
-                // coin base etp maturity etp check
-                if(tx.is_coinbase()
-                    && !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
-                    // add not coinbase_maturity etp into frozen
-                    if((!row.output_height ||
-                                (row.output_height && (height - row.output_height) < coinbase_maturity))) {
-                        addr_balance.frozen_balance += row.value;
-                    }
-                }
-
-                if((type == "all")
-                    || ((type == "etp") && output.is_etp()))
-                    addr_balance.unspent_balance += row.value;
-
-            };
-            // spend unconfirmed (or no spend attempted)
-            if (row.spend.hash == null_hash)
-                    blockchain.get_transaction_callback(row.output.hash, sum_balance);
-
-            if (row.output_height != 0 &&
-                (row.spend.hash == null_hash || row.spend_height == 0))
-                addr_balance.confirmed_balance += row.value;
-        }
-    };
-
-    auto on_error = [&ec](const code& error)
-    {
-        ec = error;
-    };
-
-    // The v3 client API works with and normalizes either server API.
-    //// client.address_fetch_history(on_error, on_done, address);
-    client.address_fetch_history2(on_error, on_done, address);
-    client.wait();
-
-    return ec;
-}
 void base_transfer_helper::sum_payment_amount(){
     if(receiver_list_.empty())
         throw toaddress_empty_exception{"empty target address"};
@@ -462,7 +215,7 @@ void base_transfer_helper::sum_payment_amount(){
 void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
     chain::transaction tx_temp;
@@ -987,8 +740,7 @@ void base_transaction_constructor::sum_payment_amount() {
 void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    // history::list rows
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
     chain::transaction tx_temp;
@@ -1786,7 +1538,7 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
 void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     auto target_addr = receiver_list_.at(0).target;
 
@@ -1960,7 +1712,7 @@ void sending_did::populate_change() {
 void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);
@@ -2031,7 +1783,7 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
 
 
     waddr = wallet::payment_address(fromfee);
-    rows = get_address_history(waddr, blockchain_);
+    rows = blockchain_.get_address_history(waddr);
     std::string feeprikey = "";
 
     auto pvaddr = blockchain_.get_account_addresses(name_);
@@ -2168,7 +1920,7 @@ void transferring_asset_cert::populate_change()
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto waddr = wallet::payment_address(addr);
-    auto rows = get_address_history(waddr, blockchain_);
+    auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);

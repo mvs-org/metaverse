@@ -39,6 +39,8 @@ console_result didsend::invoke (Json::Value& jv_output,
 
     std::string tempaddress = "";
 
+    attachment attach; 
+
     //support address as well as did
     if (blockchain.is_valid_address(argument_.did)) 
     {
@@ -54,12 +56,11 @@ console_result didsend::invoke (Json::Value& jv_output,
         auto diddetail=blockchain.get_issued_did(argument_.did);
         tempaddress = diddetail->get_address();
         
+        attach.set_to_did(argument_.did); 
+        attach.set_version(DID_ATTACH_VERIFY_VERSION); 
     }
 
     // receiver
-    attachment attach;
-    attach.set_to_did(argument_.did);
-    attach.set_version(DID_ATTACH_VERIFY_VERSION);
     std::vector<receiver_record> receiver{
         {tempaddress, "", argument_.amount, 0, utxo_attach_type::etp, attach}  
     };

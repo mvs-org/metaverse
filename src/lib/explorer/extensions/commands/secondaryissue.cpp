@@ -70,7 +70,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if(total_volume > ULLONG_MAX - argument_.volume)
         throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
-    auto asset_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol, true, true);
+    auto asset_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol);
     if (!asset_detail::is_secondaryissue_owns_enough(asset_volume, total_volume, secondaryissue_threshold)) {
         throw asset_lack_exception{"asset volum is not enought to secondaryissue"};
     }
