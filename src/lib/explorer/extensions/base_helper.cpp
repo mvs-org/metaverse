@@ -832,6 +832,9 @@ void base_transfer_helper::populate_tx_outputs(){
         else if (iter.type == utxo_attach_type::asset_locked_transfer)
         {
             auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+                throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
+            }
             payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
         }
         else if (payment.version() == wallet::payment_address::mainnet_p2kh)
@@ -1282,6 +1285,9 @@ void base_transaction_constructor::populate_tx_outputs(){
         auto&& hash = payment.hash();
         if (iter.type == utxo_attach_type::asset_locked_transfer) {
             auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+                throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
+            }
             payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
         } else if (payment.version() == wallet::payment_address::mainnet_p2kh) {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash);

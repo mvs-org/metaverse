@@ -119,10 +119,10 @@ struct receiver_record {
 };
 
 struct balances {
-    uint64_t total_received{0};
-    uint64_t confirmed_balance{0};
-    uint64_t unspent_balance{0};
-    uint64_t frozen_balance{0};
+    uint64_t total_received;
+    uint64_t confirmed_balance;
+    uint64_t unspent_balance;
+    uint64_t frozen_balance;
 };
 // helper function
 std::string get_multisig_script(uint8_t m, uint8_t n, std::vector<std::string>& public_keys);

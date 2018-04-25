@@ -338,6 +338,31 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         return false;
     }
 
+    auto is_fixed_cycle = false;
+    switch (model) {
+        case model_type::fixed_quantity:
+        case model_type::fixed_rate:
+            is_fixed_cycle = true;
+            break;
+        default:
+            break;
+    }
+
+    if (is_fixed_cycle) {
+        auto UC = LP / UN;
+        if (PN + 1 == UN) { // last cycle
+            if (PN * UC + LH > LP) {
+                log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
+                return false;
+            }
+        } else {
+            if (LH > UC) {
+                log::info(LOG_HEADER) << "fixed cycle param error: LH > UC";
+                return false;
+            }
+        }
+    }
+
     if (model == model_type::fixed_quantity) {
         // given LQ, LP, UN, then
         // LP >= UN and LQ >= UN
@@ -348,18 +373,6 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         if (LQ < UN) {
             log::info(LOG_HEADER) << "fixed_quantity param error: LQ < UN";
             return false;
-        }
-        auto UC = LP / UN;
-        if (PN + 1 == UN) { // last cycle
-            if (PN * UC + LH > LP) {
-                log::info(LOG_HEADER) << "fixed_quantity param error: last cycle PN * UC + LH > LP";
-                return false;
-            }
-        } else {
-            if (LH > UC) {
-                log::info(LOG_HEADER) << "fixed_quantity param error: LH > UC";
-                return false;
-            }
         }
         return true;
     }
@@ -406,6 +419,10 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         }
         if (sum_and_check_numbers(UQ, is_positive_number) != LQ) {
             log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
+            return false;
+        }
+        if (LH > UC[PN]) {
+            log::info(LOG_HEADER) << "custom param error: LH > UC";
             return false;
         }
         return true;
