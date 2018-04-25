@@ -302,10 +302,22 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         return false;
     }
 
+    auto&& PN = parser.get_current_period_number();
+    auto&& LH = parser.get_latest_lock_height();
     auto&& LQ = parser.get_locked_quantity();
     auto&& LP = parser.get_locked_period();
     auto&& UN = parser.get_unlock_number();
 
+    // common condition : PN < UN
+    if (PN >= UN) {
+        log::info(LOG_HEADER) << "common param error: PN >= UN";
+        return false;
+    }
+    // common condition : LH > 0
+    if (!is_positive_number(LH)) {
+        log::info(LOG_HEADER) << "common param error: LH <= 0";
+        return false;
+    }
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
         log::info(LOG_HEADER) << "common param error: LQ <= 0";
@@ -332,6 +344,18 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         if (LQ < UN) {
             log::info(LOG_HEADER) << "fixed_quantity param error: LQ < UN";
             return false;
+        }
+        auto UC = LP / UN;
+        if (PN + 1 == UN) { // last cycle
+            if (PN * UC + LH > LP) {
+                log::info(LOG_HEADER) << "fixed_quantity param error: last cycle PN * UC + LH > LP";
+                return false;
+            }
+        } else {
+            if (LH > UC) {
+                log::info(LOG_HEADER) << "fixed_quantity param error: LH > UC";
+                return false;
+            }
         }
         return true;
     }
@@ -400,18 +424,25 @@ uint64_t attenuation_model::get_available_asset_amount(
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
         log::info(LOG_HEADER) << "model_type::none should not has pay_key_hash_with_attenuation_model script pattern.";
-        return 0;
-    }
-
-    auto&& LH = parser.get_latest_lock_height();
-    if (diff_height < LH) { // no maturity, still all locked
-        return 0;
+        return asset_amount;
     }
 
     auto&& PN = parser.get_current_period_number();
-    auto&& UN = parser.get_unlock_number();
+    auto&& LH = parser.get_latest_lock_height();
     auto&& LQ = parser.get_locked_quantity();
     auto&& LP = parser.get_locked_period();
+    auto&& UN = parser.get_unlock_number();
+
+    auto available = asset_amount - LQ;
+
+    if (diff_height < LH) { // no maturity, still all locked
+        if (new_param_ptr) {
+            // update PN, LH
+            LH -= diff_height;
+            *new_param_ptr = parser.get_new_model_param(PN, LH);
+        }
+        return available;
+    }
 
     if (model == model_type::fixed_quantity) {
         auto UC = LP / UN;
