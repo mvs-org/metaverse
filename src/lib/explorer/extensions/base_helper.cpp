@@ -1272,6 +1272,10 @@ void secondary_issuing_asset::sum_payment_amount() {
         payment_asset_cert_ |= iter.asset_cert;
     }
 
+    auto total_volume = blockchain_.get_asset_volume(symbol_);
+    if (total_volume > max_uint64 - volume_)
+        throw asset_amount_exception{"secondaryissue, volume cannot exceed maximum value"};
+
     if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue))
         throw asset_cert_exception("no asset cert of issue right is provided.");
 }
