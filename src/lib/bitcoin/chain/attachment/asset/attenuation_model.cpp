@@ -29,6 +29,12 @@ namespace chain {
 namespace {
     const char* LOG_HEADER{"attenuation_model"};
 
+    std::map<attenuation_model::model_type, std::vector<std::string>> model_keys_map {
+        {attenuation_model::model_type::fixed_quantity, {"PN","LH","TYPE","LQ","LP","UN"}},
+        {attenuation_model::model_type::fixed_rate,     {"PN","LH","TYPE","LQ","LP","UN","IR","UC","UQ"}},
+        {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}}
+    };
+
     bool is_positive_number(uint64_t num) {
         return num > 0;
     };
@@ -45,6 +51,24 @@ namespace {
         }
         return sum;
     }
+
+    template<typename ForwardIterator>
+    ForwardIterator find_nth_element(
+            ForwardIterator first,
+            ForwardIterator last,
+            size_t nth,
+            uint8_t elem)
+    {
+        if (nth == 0) {
+            return last;
+        }
+        auto iter = std::find(first, last, elem);
+        while ((--nth > 0) && (iter != last)) {
+            iter = std::find(++iter, last, elem);
+        }
+        return iter;
+    }
+
 
 } // end of anonymous namespace
 
@@ -109,22 +133,40 @@ public:
     }
 
     data_chunk get_new_model_param(uint64_t PN, uint64_t LH) const {
-        data_chunk ret;
-        auto pos = model_param_.find(';');
-        if ((pos == std::string::npos) || (pos + 1 == model_param_.size())) {
-            return ret;
-        }
-        pos = model_param_.find(';', pos + 1);
-        if (pos == std::string::npos) {
-            return ret;
+        auto iter = find_nth_element(model_param_.begin(), model_param_.end(), 2, ';');
+        if (iter == model_param_.end()) {
+            return data_chunk();
         }
         auto prefix = "PN=" + std::to_string(PN) + ";LH=" + std::to_string(LH);
-        auto suffix = model_param_.substr(pos);
+        auto suffix = model_param_.substr(iter - model_param_.begin());
         return to_chunk(prefix + suffix);
     }
 
 private:
+    bool check_keys() {
+        auto model = get_model_type();
+        if (model == model_type::none) {
+            return true;
+        }
+        auto&& keys = model_keys_map[model];
+        if (map_.size() != keys.size()) {
+            log::info(LOG_HEADER) << "keys number for model type " << to_index(model)
+                << " is not exactly to " << keys.size();
+            return false;
+        }
+        for (size_t i = 0; i < keys.size(); ++i) {
+            if (map_.find(keys[i]) == map_.end()) {
+                log::info(LOG_HEADER) << "model type " << to_index(model) << "needs key " << keys[i] << " but missed.";
+                return false;
+            }
+        }
+        return true;
+    }
+
     bool parse_param() {
+        if (model_param_.empty()) {
+            return true;
+        }
         auto is_illegal_char = [](auto c){ return ! (std::isalnum(c) || (c == ',') || (c == ';') || (c == '=')); };
         auto iter = std::find_if(model_param_.begin(), model_param_.end(), is_illegal_char);
         if (iter != model_param_.end()) {
@@ -138,7 +180,20 @@ private:
             return false;
         }
 
-        auto kv_vec = bc::split(model_param_, ";");
+        const auto& kv_vec = bc::split(model_param_, ";");
+        if (kv_vec.size() < 6) {
+            log::info(LOG_HEADER) << "the model param should at least contain keys of PN, LH, TYPE, LQ, LP, UN";
+            return false;
+        }
+        if (kv_vec[0].find("PN=") != 0) {
+            log::info(LOG_HEADER) << "the model param first key must be PN";
+            return false;
+        }
+        if (kv_vec[1].find("LH=") != 0) {
+            log::info(LOG_HEADER) << "the model param second key must be LH";
+            return false;
+        }
+
         for (const auto& kv : kv_vec) {
             auto vec = bc::split(kv, "=");
             if (vec.size() == 2) {
@@ -169,6 +224,12 @@ private:
                 log::info(LOG_HEADER) << "key-value format is wrong, should be key=value format.";
                 return false;
             }
+        }
+
+        // check keys after map is constructed
+        if (!check_keys()) {
+            log::info(LOG_HEADER) << "check keys of model param failed ";
+            return false;
         }
         return true;
     }
@@ -291,6 +352,18 @@ attenuation_model::model_type attenuation_model::from_index(uint32_t index)
 bool attenuation_model::check_model_index(uint32_t index)
 {
     return index < get_first_unused_index();
+}
+
+bool attenuation_model::check_model_param_immutable(const data_chunk& previous, const data_chunk& current)
+{
+    if (previous.empty() || current.empty()) {
+        return false;
+    }
+
+    auto iter1 = find_nth_element(previous.begin(), previous.end(), 2, ';');
+    auto iter2 = find_nth_element(current.begin(), current.end(), 2, ';');
+
+    return std::equal(iter1, previous.end(), iter2);
 }
 
 bool attenuation_model::check_model_param(const data_chunk& param)
