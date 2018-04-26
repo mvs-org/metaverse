@@ -67,7 +67,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw asset_cert_exception("no secondaryissue asset cert owned");
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
-    if(total_volume > ULLONG_MAX - argument_.volume)
+    if (total_volume > max_uint64 - argument_.volume)
         throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
     auto asset_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol);

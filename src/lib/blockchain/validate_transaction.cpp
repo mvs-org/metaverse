@@ -364,9 +364,7 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
             secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
-            if (!in_transaction_pool) {
-                secondaryissue_asset_amount = asset_detail.get_maximum_supply();
-            }
+            secondaryissue_asset_amount = asset_detail.get_maximum_supply();
         }
         else if (output.is_asset_transfer())
         {
@@ -427,7 +425,15 @@ code validate_transaction::check_secondaryissue_transaction(
         return error::asset_cert_error;
     }
 
-    auto total_volume = blockchain.get_asset_volume(asset_symbol) - secondaryissue_asset_amount;
+    auto total_volume = blockchain.get_asset_volume(asset_symbol);
+    if (!in_transaction_pool) {
+        total_volume -= secondaryissue_asset_amount; // as get_asset_volume has summed myself
+    } else {
+        if (total_volume > max_uint64 - secondaryissue_asset_amount) {
+            log::error(LOG_BLOCKCHAIN) << "secondaryissue: total asset volume cannot exceed maximum value";
+            return error::asset_secondaryissue_error;
+        }
+    }
     if (!asset_detail::is_secondaryissue_owns_enough(asset_transfer_volume, total_volume, secondaryissue_threshold)) {
         return error::asset_secondaryissue_share_not_enough;
     }
