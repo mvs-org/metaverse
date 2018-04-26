@@ -364,7 +364,7 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
             auto&& model_param = output.get_attenuation_model_param();
-            if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+            if (!model_param.empty() && !attenuation_model::check_model_param(model_param, true)) {
                 return error::attenuation_model_param_error;
             }
             secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
@@ -514,7 +514,7 @@ code validate_transaction::check_asset_issue_transaction(
                 return error::asset_issue_error;
             }
             auto&& model_param = output.get_attenuation_model_param();
-            if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+            if (!model_param.empty() && !attenuation_model::check_model_param(model_param, true)) {
                 return error::attenuation_model_param_error;
             }
             cert_mask = detail.get_asset_cert_mask();
@@ -867,6 +867,12 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 if((int)lock_height < 0
                     || consensus::miner::get_lock_heights_index(lock_height) < 0){
                     return error::invalid_output_script_lock_height;
+                }
+            }
+            else if (output.is_asset_transfer()) {
+                auto&& model_param = output.get_attenuation_model_param();
+                if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+                    return error::attenuation_model_param_error;
                 }
             }
         }

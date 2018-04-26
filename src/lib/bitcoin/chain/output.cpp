@@ -431,6 +431,9 @@ asset_detail output::get_asset_detail() const
 
 data_chunk output::get_attenuation_model_param() const
 {
+    if (!operation::is_pay_key_hash_with_attenuation_model_pattern(script.operations)) {
+        return data_chunk();
+    }
     return operation::get_model_param_from_pay_key_hash_with_attenuation_model(script.operations);
 }
 
