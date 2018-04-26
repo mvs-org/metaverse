@@ -625,6 +625,11 @@ code validate_transaction::check_did_transaction(
         }
 
         if(output.is_did_issue()) {
+
+            if (chain.is_valid_address(output.get_did_symbol())) {
+                return error::did_symbol_invalid;
+            }
+
             if (chain.is_did_exist(output.get_did_symbol())) {
                 return error::did_exist;
             }
