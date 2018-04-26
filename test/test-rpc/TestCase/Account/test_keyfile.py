@@ -57,6 +57,20 @@ class TestKeyfile(unittest.TestCase):
         self.assertEqual(multisig[0]['m'], '2')
         self.assertEqual(multisig[0]['n'], '3')
 
+    def test_importKeyFileContent(self):
+        Alice.delete()
+
+        f = open(Alice.keystore_file)
+        content = f.read()
+        f.close()
+
+        result, message = mvs_rpc.import_keyfile(
+            Alice.name,
+            Alice.password,
+            "",
+            content
+        )
+        self.assertEqual(result, True, message)
 
 
 

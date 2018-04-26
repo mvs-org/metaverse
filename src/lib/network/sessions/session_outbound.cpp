@@ -40,6 +40,8 @@ session_outbound::session_outbound(p2p& network)
     network__(network),
     CONSTRUCT_TRACK(session_outbound)
 {
+    outbound_counter = 0;
+    in_reseeding = false;
 }
 
 // Start sequence.
@@ -67,6 +69,7 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     }
 
     outbound_counter = 0;
+    in_reseeding = false;
 
     const auto connect = create_connector();
     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
@@ -114,7 +117,11 @@ void session_outbound::delay_new_connect(connector::ptr connect)
 
 void session_outbound::delay_reseeding()
 {
-    log::error(LOG_NETWORK) << "outbound channel counter decreased, trigger the re-seeding timer!";
+    if (in_reseeding) {
+        return;
+    }
+    in_reseeding = true;
+    log::info(LOG_NETWORK) << "outbound channel counter decreased, the re-seeding will be triggered 60s later!";
     auto timer = std::make_shared<deadline>(pool_, asio::seconds(60));
     auto self = shared_from_this();
     timer->start([this, timer, self](const code& ec){
@@ -125,11 +132,12 @@ void session_outbound::delay_reseeding()
         auto pThis = shared_from_this();
         auto action = [this, pThis](){
             const int counter = outbound_counter;
+            in_reseeding = false;
             if (counter > 1) {
                 log::info(LOG_NETWORK) << "outbound channel counter recovered to [" << counter << "], re-seeding is canceled!";
                 return;
             }
-            log::error(LOG_NETWORK) << "execute re-seeding!";
+            log::info(LOG_NETWORK) << "start re-seeding!";
             network__.restart_seeding();
         };
         pool_.service().post(action);
@@ -190,7 +198,7 @@ void session_outbound::handle_channel_stop(const code& ec,
     {
         delay_new_connect(connect);
         //restart the seeding procedure with in 1 minutes when outbound session count reduce to 1.
-        if (counter == 1) {
+        if (counter <= 1) {
             delay_reseeding();
         }
     }

@@ -296,7 +296,31 @@ code hosts::clear()
 
 
     mutex_.unlock_upgrade_and_lock();
-    buffer_.clear();
+    backup_ = std::move( buffer_ );
+    mutex_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    return error::success;
+}
+
+code hosts::after_reseeding()
+{
+    mutex_.lock_upgrade();
+
+    if (stopped_)
+    {
+        mutex_.unlock_upgrade();
+        //---------------------------------------------------------------------
+        return error::service_stopped;
+    }
+
+
+    mutex_.unlock_upgrade_and_lock();
+    //re-seeding failed and recover the buffer with backup one
+    if (buffer_.empty()) {
+        buffer_ = std::move( backup_ );
+    }
+
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 

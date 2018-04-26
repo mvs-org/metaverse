@@ -66,6 +66,7 @@ private:
         channel::ptr channel);
 
     std::atomic_int outbound_counter;
+    std::atomic_bool in_reseeding; //to mark if the re-seeding timer is active
     p2p& network__;
 };
 
