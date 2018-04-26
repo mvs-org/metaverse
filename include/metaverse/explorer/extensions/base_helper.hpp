@@ -391,9 +391,11 @@ public:
         {};
 
     ~issuing_asset(){};
-
     void sum_payment_amount() override;
     void populate_tx_outputs() override;
+    void populate_change() override;
+    void populate_unspent_list() override;
+    void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;

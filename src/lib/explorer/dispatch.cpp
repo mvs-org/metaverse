@@ -169,7 +169,6 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (command->category(ctgy_extension))
     {
-
         // fixme. is_blockchain_sync has some problem.
         // if (command->category(ctgy_online) && node.is_blockchain_sync()) {
         if (command->category(ctgy_online) &&
@@ -182,8 +181,8 @@ console_result dispatch_command(int argc, const char* argv[],
         }
 
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
-
-    }else{
+    }
+    else {
         command->set_api_version(1); // only compatible for v1
         auto retcode = command->invoke(output, output);
         jv_output = output.str();
