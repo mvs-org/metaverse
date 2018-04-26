@@ -82,7 +82,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "target address to check and issue asset, and mychange to this address too."
+            "target address to check and issue asset, fee from and mychange to this address too."
         )
         (
             "SYMBOL",

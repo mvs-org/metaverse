@@ -85,11 +85,19 @@ def get_account(account, password, lastword):
 
     return handle_rpc_rsp(rpc_rsp)
 
+def get_publickey(account, password, address):
+    rpc_cmd = RPC('getpublickey')
+    rpc_rsp = rpc_cmd.post(
+        [account, password, address],
+        {}
+    )
+
+    return handle_rpc_rsp(rpc_rsp)
+
 def getnew_multisig(account, password, description, my_publickey, others_publickeys, required_key_num):
     assert(my_publickey not in others_publickeys)
     n = len(others_publickeys) + 1
     m = required_key_num
-
     rpc_cmd = RPC('getnewmultisig')
     rpc_rsp = rpc_cmd.post(
         [account, password],
@@ -210,6 +218,14 @@ def create_asset(account, password, symbol, volume, description=None, issuer=Non
 
     return handle_rpc_rsp(rpc_rsp)
 
+def issue_asset(account, password, symbol):
+    rpc_cmd = RPC('issue')
+    rpc_rsp = rpc_cmd.post(
+        [account, password, symbol],
+        {}
+    )
+    return handle_rpc_rsp(rpc_rsp)
+
 def delete_localasset(account, password, symbol):
     rpc_cmd = RPC('deletelocalasset')
     rpc_rsp = rpc_cmd.post(
@@ -221,11 +237,22 @@ def delete_localasset(account, password, symbol):
 
     return handle_rpc_rsp(rpc_rsp)
 
-def send_asset(account, password, to_, symbol, amount, from_=None, fee=None):
-    if not from_:
-        cmd_args = ('sendasset', [account, password, to_, symbol, amount])
-    else:
-        cmd_args = ('sendassetfrom', [account, password, from_, to_, symbol, amount])
+def send_asset(account, password, to_, symbol, amount, fee=None):
+    cmd_args = ('sendasset', [account, password, to_, symbol, amount])
+
+    rpc_cmd = RPC(cmd_args[0])
+    rpc_rsp = rpc_cmd.post(
+        cmd_args[1],
+        {
+            '--fee': fee,
+        }
+    )
+
+    return handle_rpc_rsp(rpc_rsp)
+
+def send_asset_from(account, password, from_, to_, symbol, amount, fee=None):
+    cmd_args = ('sendassetfrom', [account, password, from_, to_, symbol, amount])
+
     rpc_cmd = RPC(cmd_args[0])
     rpc_rsp = rpc_cmd.post(
         cmd_args[1],
@@ -391,11 +418,8 @@ def sendfrom(account, password, from_, to_, amount, fee=None, desc=None):
 
     return handle_rpc_rsp(rpc_rsp)
 
-def didsend(account, password, amount, to_, from_=None, fee=None, desc=None):
-    if not from_:
-        cmd_args = ('didsend', [account, password, to_, amount])
-    else:
-        cmd_args = ('didsendfrom', [account, password, from_, to_, amount])
+def didsendfrom(account, password, amount, to_, from_, fee=None, desc=None):
+    cmd_args = ('didsendfrom', [account, password, from_, to_, amount])
     rpc_cmd = RPC(cmd_args[0])
     rpc_rsp = rpc_cmd.post(
         cmd_args[1],
@@ -404,5 +428,16 @@ def didsend(account, password, amount, to_, from_=None, fee=None, desc=None):
             '-m': desc,
         }
     )
-
     return handle_rpc_rsp(rpc_rsp)
+
+def didsend(account, password, amount, to_, fee=None, desc=None):
+    rpc_cmd = RPC( 'didsend' )
+    rpc_rsp = rpc_cmd.post(
+        [account, password, to_, amount],
+        {
+            '-f': fee,
+            '-m': desc,
+        }
+    )
+    return handle_rpc_rsp(rpc_rsp)
+

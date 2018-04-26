@@ -971,9 +971,10 @@ chain::block data_base::pop()
         const auto tx_hash = block_result.transaction_hash(tx);
         const auto tx_result = transactions.get(tx_hash);
 
-        if (!tx_result) {
+        //fix a bug ,synchronize block may destroy the database
+        /*if (!tx_result) {
             continue;
-        }
+        }*/
 
         BITCOIN_ASSERT(tx_result);
         BITCOIN_ASSERT(tx_result.height() == height);

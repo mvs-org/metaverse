@@ -376,6 +376,12 @@ void block_chain_impl::start_write()
     BITCOIN_ASSERT(result);
 }
 
+void block_chain_impl::stop_write()
+{
+    DEBUG_ONLY(const auto result =) database_.end_write();
+    BITCOIN_ASSERT(result);
+}
+
 // This call is sequential, but we are preserving the callback model for now.
 void block_chain_impl::store(message::block_message::ptr block,
     block_store_handler handler)

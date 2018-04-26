@@ -74,6 +74,16 @@ uint64_t block_detail::height() const
     return height_.load();
 }
 
+void block_detail::set_is_checked_work_proof(bool is_checked)
+{
+    is_checked_work_proof_.store(is_checked);
+}
+
+bool block_detail::get_is_checked_work_proof() const
+{
+    return is_checked_work_proof_.load();
+}
+
 void block_detail::set_error(const code& code)
 {
     code_.store(code);
