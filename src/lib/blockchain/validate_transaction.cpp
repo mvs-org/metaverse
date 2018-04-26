@@ -363,6 +363,10 @@ code validate_transaction::check_secondaryissue_transaction(
             } else if (asset_address != asset_address_out) {
                 return error::asset_secondaryissue_error;
             }
+            auto&& model_param = output.get_attenuation_model_param();
+            if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+                return error::attenuation_model_param_error;
+            }
             secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
             secondaryissue_asset_amount = asset_detail.get_maximum_supply();
         }
@@ -508,6 +512,10 @@ code validate_transaction::check_asset_issue_transaction(
                 asset_address = detail.get_address();
             } else if (asset_address != detail.get_address()) {
                 return error::asset_issue_error;
+            }
+            auto&& model_param = output.get_attenuation_model_param();
+            if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+                return error::attenuation_model_param_error;
             }
             cert_mask = detail.get_asset_cert_mask();
         }

@@ -366,7 +366,7 @@ bool attenuation_model::check_model_param_immutable(const data_chunk& previous, 
     return std::equal(iter1, previous.end(), iter2);
 }
 
-bool attenuation_model::check_model_param(const data_chunk& param)
+bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
 {
     attenuation_model parser(std::string(param.begin(), param.end()));
 
@@ -384,6 +384,14 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     auto&& LQ = parser.get_locked_quantity();
     auto&& LP = parser.get_locked_period();
     auto&& UN = parser.get_unlock_number();
+
+    // common condition : initial PN == 0
+    if (initial) {
+        if (PN != 0) {
+            log::info(LOG_HEADER) << "common param error: initial PN != 0";
+            return false;
+        }
+    }
 
     // common condition : PN < UN
     if (PN >= UN) {
@@ -423,7 +431,12 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 
     if (is_fixed_cycle) {
         auto UC = LP / UN;
-        if (PN + 1 == UN) { // last cycle
+        if (initial) { // initial cycle
+            if (LH != UC) {
+                log::info(LOG_HEADER) << "fixed cycle param error: initial LH != UC";
+                return false;
+            }
+        } else if (PN + 1 == UN) { // last cycle
             if (PN * UC + LH > LP) {
                 log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
                 return false;
@@ -494,7 +507,12 @@ bool attenuation_model::check_model_param(const data_chunk& param)
             log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
             return false;
         }
-        if (LH > UC[PN]) {
+        if (initial) {
+            if (LH != UC[0]) {
+                log::info(LOG_HEADER) << "custom param error: initial LH != UC[0]";
+                return false;
+            }
+        } else if (LH > UC[PN]) {
             log::info(LOG_HEADER) << "custom param error: LH > UC";
             return false;
         }

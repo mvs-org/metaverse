@@ -156,7 +156,8 @@ enum error_code_t
     did_address_needed,
     did_not_exist,
     did_multi_type_exist,           // 75
-    did_input_error
+    did_input_error,
+    attenuation_model_param_error
 };
 
 enum error_condition_t

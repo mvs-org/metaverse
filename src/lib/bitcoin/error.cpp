@@ -228,6 +228,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "did input error";
         case error::did_multi_type_exist:
             return "did attchment type can not be with some others";
+        case error::attenuation_model_param_error:
+            return "attenuation model parameter is wrong";
     
 
         // unknown errors

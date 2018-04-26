@@ -60,9 +60,15 @@ bool output::is_valid_symbol(const std::string& symbol)
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
 		return false;
 	// char check
-    for (auto& i : symbol){
+    for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'))
             return false;
+        if (i != std::toupper(i))
+            return false;
+    }
+    // sensitive check
+    if (bc::wallet::symbol::is_sensitive(symbol)) {
+        return false;
     }
 	return true;
 }

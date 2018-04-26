@@ -18,11 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <metaverse/explorer/commands/offline_commands_impl.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <unordered_map>
 
 
 namespace libbitcoin {

@@ -60,7 +60,7 @@ public:
     static model_type from_index(uint32_t index);
 
     static bool check_model_index(uint32_t index);
-    static bool check_model_param(const data_chunk& param);
+    static bool check_model_param(const data_chunk& param, bool initial = false);
     static bool check_model_param_immutable(const data_chunk& previous, const data_chunk& current);
     static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height,
             const data_chunk& model_param, std::shared_ptr<data_chunk> new_param_ptr = nullptr);
