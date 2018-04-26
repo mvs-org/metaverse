@@ -350,11 +350,7 @@ private:
         handler(std::forward<Args>(args)...);
     }
 
-    void stop_write()
-    {
-        database_.end_write();
-    }
-
+    void stop_write();
     void start_write();
     void do_store(message::block_message::ptr block,
         block_store_handler handler);
