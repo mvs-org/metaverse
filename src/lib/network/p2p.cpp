@@ -626,8 +626,9 @@ void p2p::restart_seeding()
     log::info(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();
 
     //2. start the session_seed
-    result_handler handler = [](const code& ec) {
+    result_handler handler = [this](const code& ec) {
         log::info(LOG_NETWORK) << "restart_seeding result: " << ec.message();
+        hosts_->after_reseeding();
     };
 
     seed->restart(handler);

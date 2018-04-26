@@ -71,6 +71,7 @@ public:
 
     // Clear hosts buffer
     virtual code clear();
+    virtual code after_reseeding();
 
     virtual size_t count() const;
     virtual code fetch(address& out, const config::authority::list& excluded_list);
@@ -79,8 +80,9 @@ public:
     virtual void store(const address::list& hosts, result_handler handler);
     address::list copy();
 private:
-//    typedef boost::circular_buffer<address> list;
+    //    typedef boost::circular_buffer<address> list;
     using list = std::set<address, address_compare >;
+
     typedef list::iterator iterator;
 
     iterator find(const address& host);
@@ -89,6 +91,7 @@ private:
 
     // These are protected by a mutex.
     list buffer_;
+    list backup_;
     list inactive_;
     std::atomic<bool> stopped_;
     mutable upgrade_mutex mutex_;
