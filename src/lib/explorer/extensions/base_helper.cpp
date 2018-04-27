@@ -1160,8 +1160,8 @@ void issuing_asset::sum_payment_amount()
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 
-    bool issue_domain_cert = (asset_cert::test_certs(payment_asset_, asset_cert_ns::domain));
-    payment_asset_ = asset_cert_ns::none;
+    bool issue_domain_cert = asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain);
+    payment_asset_cert_ = asset_cert_ns::none;
     if (!issue_domain_cert) {
         auto&& domain = asset_detail::get_domain(symbol_);
         if (asset_detail::is_valid_domain(domain)) {
