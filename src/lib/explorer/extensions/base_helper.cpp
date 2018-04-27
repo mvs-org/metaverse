@@ -1129,10 +1129,10 @@ void sending_multisig_etp::sign_tx_inputs() {
         tx_.inputs[index].script = ss;
         index++;
     }
-
 }
 
-void sending_multisig_etp::exec(){
+void sending_multisig_etp::exec()
+{
     // prepare
     sum_payment_amount();
     populate_unspent_list();
@@ -1148,8 +1148,10 @@ void sending_multisig_etp::exec(){
     //send_tx();
 }
 
-void issuing_asset::sum_payment_amount() {
+void issuing_asset::sum_payment_amount()
+{
     base_transfer_common::sum_payment_amount();
+
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
@@ -1157,17 +1159,8 @@ void issuing_asset::sum_payment_amount() {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 
-    // TODO
-bool issue_domain_cert = false;
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
-
-        if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain)) {
-            issue_domain_cert = true;
-        }
-    }
-
+    bool issue_domain_cert = (asset_cert::test_certs(payment_asset_, asset_cert_ns::domain));
+    payment_asset_ = asset_cert_ns::none;
     if (!issue_domain_cert) {
         auto&& domain = asset_detail::get_domain(symbol_);
         if (asset_detail::is_valid_domain(domain)) {
@@ -1175,7 +1168,6 @@ bool issue_domain_cert = false;
             payment_asset_cert_ = asset_cert_ns::domain;
         }
     }
-//
 }
 
 void issuing_asset::populate_unspent_list()
