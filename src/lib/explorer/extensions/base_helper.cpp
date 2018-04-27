@@ -1017,10 +1017,10 @@ void sending_etp::populate_change() {
 
 void sending_etp_more::populate_change() {
     if(unspent_etp_ - payment_etp_) {
-        if(mychange_address_.empty())
+        if(mychange_.empty())
             receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
         else
-            receiver_list_.push_back({mychange_address_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+            receiver_list_.push_back({mychange_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 void sending_multisig_etp::populate_change() {
