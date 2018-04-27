@@ -172,6 +172,8 @@ public:
     void populate_etp_change(const std::string& addr = std::string(""));
     void populate_asset_change(const std::string& addr);
     void populate_asset_cert_change(const std::string& addr);
+    bool is_payment_satisfied();
+    void check_payment_satisfied();
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;

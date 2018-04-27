@@ -189,7 +189,7 @@ bool asset_cert::test_certs(asset_cert_type bits) const
 
 bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
 {
-    return (bits == asset_cert_ns::none) || ((certs & bits) == bits);
+    return (certs & bits) == bits;
 }
 
 std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const

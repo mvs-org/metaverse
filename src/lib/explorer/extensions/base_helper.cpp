@@ -450,6 +450,25 @@ void base_transfer_common::sum_payment_amount()
     sum_payments();
 }
 
+bool base_transfer_common::is_payment_satisfied()
+{
+    return (unspent_etp_ >= payment_etp_
+        && unspent_asset_ >= payment_asset_
+        && asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_));
+}
+
+void base_transfer_common::check_payment_satisfied()
+{
+    if (unspent_etp_ < payment_etp_)
+        throw account_balance_lack_exception{"no enough balance"};
+
+    if (unspent_asset_ < payment_asset_)
+        throw asset_lack_exception{"no enough asset amount"};
+
+    if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
+        throw asset_cert_exception{"no enough asset cert right"};
+}
+
 void base_transfer_common::populate_change()
 {
     // only etp utxo. if you want more, override this in child class.
@@ -487,50 +506,55 @@ void base_transfer_common::populate_asset_cert_change(const std::string& addr)
     // asset cert utxo
     auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
     if (cert_left != asset_cert_ns::none) {
-        receiver_list_.push_back({addr, symbol_,
-                0, cert_left,
-                utxo_attach_type::asset_cert, attachment()});
+        // separate domain cert
+        if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
+            receiver_list_.push_back({addr, symbol_, 0,
+                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+            cert_left &= ~asset_cert_ns::domain;
+        }
+
+        if (cert_left != asset_cert_ns::none) {
+            receiver_list_.push_back({addr, symbol_, 0,
+                cert_left, utxo_attach_type::asset_cert, attachment()});
+        }
     }
 }
 
-void base_transfer_helper::populate_unspent_list() {
+void base_transfer_helper::populate_unspent_list()
+{
     // get address list
     auto pvaddr = blockchain_.get_account_addresses(name_);
-    if(!pvaddr)
+    if (!pvaddr) {
         throw address_list_nullptr_exception{"nullptr for address list"};
+    }
 
     // get from address balances
-    for (auto& each : *pvaddr){
+    for (auto& each : *pvaddr) {
         // filter script address
-        if(blockchain_.is_script_address(each.get_address()))
+        if (blockchain_.is_script_address(each.get_address()))
             continue;
-        if(from_.empty()) { // select utxo in all account addresses
+
+        if (from_.empty()) { // select utxo in all account addresses
             sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
-            if((unspent_etp_ >= payment_etp_)
-                && (unspent_asset_ >= payment_asset_))
-                break;
-        } else { // select utxo only in from_ address
-            if ( from_ == each.get_address() ) { // find address
+        }
+        else { // select utxo only in from_ address
+            if (from_ == each.get_address() ) { // find address
                 sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
-                if((unspent_etp_ >= payment_etp_)
-                    && (unspent_asset_ >= payment_asset_))
-                    break;
             }
+        }
+
+        // performance improve
+        if (is_payment_satisfied()) {
+            break;
         }
     }
 
-    if(from_list_.empty())
+    if (from_list_.empty()) {
         throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
+    }
 
-    // addresses balances check
-    if(unspent_etp_ < payment_etp_)
-        throw account_balance_lack_exception{"no enough balance"};
-    if(unspent_asset_ < payment_asset_)
-        throw asset_lack_exception{"no enough asset amount"};
-    if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
-        throw asset_cert_exception{"no enough asset cert"};
+    check_payment_satisfied();
 
-    // change
     populate_change();
 }
 
@@ -554,8 +578,9 @@ void base_transfer_helper::populate_tx_inputs()
         tx_.inputs.push_back(input);
     }
 }
-attachment base_transfer_helper::populate_output_attachment(receiver_record& record){
 
+attachment base_transfer_helper::populate_output_attachment(receiver_record& record)
+{
     if((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
@@ -639,7 +664,8 @@ bool receiver_record::is_empty() const
     return false;
 }
 
-void base_transfer_helper::populate_tx_outputs(){
+void base_transfer_helper::populate_tx_outputs()
+{
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
@@ -694,7 +720,8 @@ void base_transfer_helper::populate_tx_outputs(){
     }
 }
 
-void base_transfer_helper::check_tx(){
+void base_transfer_helper::check_tx()
+{
     if (tx_.is_locktime_conflict())
     {
         throw tx_locktime_exception{"The specified lock time is ineffective because all sequences are set to the maximum value."};
@@ -707,7 +734,8 @@ void base_transfer_helper::check_tx(){
     }
 }
 
-void base_transfer_helper::sign_tx_inputs(){
+void base_transfer_helper::sign_tx_inputs()
+{
     uint32_t index = 0;
     for (auto& fromeach : from_list_){
         // paramaters
@@ -747,10 +775,10 @@ void base_transfer_helper::sign_tx_inputs(){
         tx_.inputs[index].script = ss;
         index++;
     }
-
 }
 
-void base_transfer_helper::send_tx(){
+void base_transfer_helper::send_tx()
+{
     if(blockchain_.validate_transaction(tx_)) {
 #ifdef MVS_DEBUG
         throw tx_validate_exception{"validate transaction failure. " + tx_.to_string(1)};
@@ -760,7 +788,9 @@ void base_transfer_helper::send_tx(){
     if(blockchain_.broadcast_transaction(tx_))
         throw tx_broadcast_exception{"broadcast transaction failure"};
 }
-void base_transfer_helper::exec(){
+
+void base_transfer_helper::exec()
+{
     // prepare
     sum_payment_amount();
     populate_unspent_list();
@@ -775,7 +805,9 @@ void base_transfer_helper::exec(){
     // send tx
     send_tx();
 }
-tx_type& base_transfer_helper::get_transaction(){
+
+tx_type& base_transfer_helper::get_transaction()
+{
     return tx_;
 }
 
@@ -803,14 +835,16 @@ std::vector<unsigned char> base_transfer_helper::satoshi_to_chunk(const int64_t&
     return result;
 }
 
-void base_transaction_constructor::sum_payment_amount() {
+void base_transaction_constructor::sum_payment_amount()
+{
     base_transfer_common::sum_payment_amount();
     if (from_vec_.empty()) {
         throw fromaddress_empty_exception{"empty from address"};
     }
 }
 
-void base_transaction_constructor::populate_change() {
+void base_transaction_constructor::populate_change()
+{
     auto addr = !mychange_.empty() ? mychange_ : from_list_.at(0).addr;
 
     // etp utxo
@@ -824,7 +858,8 @@ void base_transaction_constructor::populate_change() {
     }
 }
 
-void base_transaction_constructor::populate_unspent_list() {
+void base_transaction_constructor::populate_unspent_list()
+{
     // get from address balances
     for (auto& each : from_vec_) {
         base_transaction_constructor::sync_fetchutxo("", each);
@@ -846,7 +881,8 @@ void base_transaction_constructor::populate_unspent_list() {
     populate_change();
 }
 
-void base_transaction_constructor::populate_tx_inputs(){
+void base_transaction_constructor::populate_tx_inputs()
+{
     // input args
     uint64_t adjust_amount = 0;
     tx_input_type input;
@@ -865,8 +901,9 @@ void base_transaction_constructor::populate_tx_inputs(){
         tx_.inputs.push_back(input);
     }
 }
-attachment base_transaction_constructor::populate_output_attachment(receiver_record& record){
 
+attachment base_transaction_constructor::populate_output_attachment(receiver_record& record)
+{
     if((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
@@ -886,7 +923,8 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
     throw tx_attachment_value_exception{"base_transaction_constructor : invalid attachment value in receiver_record"};
 }
 
-void base_transaction_constructor::populate_tx_outputs(){
+void base_transaction_constructor::populate_tx_outputs()
+{
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
@@ -932,14 +970,16 @@ void base_transaction_constructor::populate_tx_outputs(){
     }
 }
 
-void base_transaction_constructor::check_tx(){
+void base_transaction_constructor::check_tx()
+{
     if (tx_.is_locktime_conflict())
     {
         throw tx_locktime_exception{"The specified lock time is ineffective because all sequences are set to the maximum value."};
     }
 }
 
-void base_transaction_constructor::exec(){
+void base_transaction_constructor::exec()
+{
     // prepare
     sum_payment_amount();
     populate_unspent_list();
@@ -950,13 +990,16 @@ void base_transaction_constructor::exec(){
     // check tx
     check_tx();
 }
-tx_type& base_transaction_constructor::get_transaction(){
+
+tx_type& base_transaction_constructor::get_transaction()
+{
     return tx_;
 }
 
 const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
 
-uint32_t depositing_etp::get_reward_lock_height() {
+uint32_t depositing_etp::get_reward_lock_height()
+{
     int index = 0;
     auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_cycle_);
     if (it != vec_cycle.end()) { // found cycle
@@ -965,8 +1008,10 @@ uint32_t depositing_etp::get_reward_lock_height() {
 
     return (uint32_t)bc::consensus::lock_heights[index];
 }
+
 // modify lock script
-void depositing_etp::populate_tx_outputs() {
+void depositing_etp::populate_tx_outputs()
+{
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
@@ -1004,7 +1049,8 @@ void depositing_etp::populate_tx_outputs() {
 
 const std::vector<uint16_t> depositing_etp_transaction::vec_cycle{7, 30, 90, 182, 365};
 
-uint32_t depositing_etp_transaction::get_reward_lock_height() {
+uint32_t depositing_etp_transaction::get_reward_lock_height()
+{
     int index = 0;
     auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_);
     if (it != vec_cycle.end()) { // found cycle
@@ -1013,8 +1059,10 @@ uint32_t depositing_etp_transaction::get_reward_lock_height() {
 
     return (uint32_t)bc::consensus::lock_heights[index];
 }
+
 // modify lock script
-void depositing_etp_transaction::populate_tx_outputs() {
+void depositing_etp_transaction::populate_tx_outputs()
+{
     chain::operation::stack payment_ops;
 
     for (auto& iter: receiver_list_) {
@@ -1053,7 +1101,8 @@ void depositing_etp_transaction::populate_tx_outputs() {
     }
 }
 
-void sending_multisig_etp::populate_unspent_list() {
+void sending_multisig_etp::populate_unspent_list()
+{
     // get address list
     auto pvaddr = blockchain_.get_account_addresses(name_);
     if(!pvaddr)
@@ -1092,7 +1141,8 @@ void sending_multisig_etp::populate_unspent_list() {
     populate_change();
 }
 
-void sending_multisig_etp::sign_tx_inputs() {
+void sending_multisig_etp::sign_tx_inputs()
+{
     uint32_t index = 0;
     std::string prikey, pubkey, multisig_script;
 
@@ -1193,9 +1243,8 @@ void issuing_asset::populate_unspent_list()
         // select utxo in all account addresses
         sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
 
-        if (unspent_etp_ >= payment_etp_
-            && unspent_asset_ >= payment_asset_
-            && asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
+        // performance improve
+        if (is_payment_satisfied()) {
             break;
         }
     }
@@ -1203,13 +1252,7 @@ void issuing_asset::populate_unspent_list()
     if (from_list_.empty())
         throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
 
-    // addresses balances check
-    if (unspent_etp_ < payment_etp_)
-        throw account_balance_lack_exception{"no enough balance"};
-    if (unspent_asset_ < payment_asset_)
-        throw asset_lack_exception{"no enough asset amount"};
-    if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
-        throw asset_cert_exception{"no enough domain cert right"};
+    check_payment_satisfied();
 
     // change
     populate_change();
@@ -1226,9 +1269,8 @@ void issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string
 
     for (auto& row: rows)
     {
-        if (unspent_etp_ >= payment_etp_
-            && unspent_asset_ >= payment_asset_
-            && asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
+        // performance improve
+        if (is_payment_satisfied()) {
             break;
         }
 
@@ -1411,7 +1453,8 @@ void secondary_issuing_asset::populate_tx_outputs()
     }
 }
 
-void secondary_issuing_asset::sum_payment_amount() {
+void secondary_issuing_asset::sum_payment_amount()
+{
     base_transfer_common::sum_payment_amount();
     if (receiver_list_.size() > 2) {
         throw toaddress_invalid_exception{"too many target address"};
@@ -1468,16 +1511,7 @@ void secondary_issuing_asset::populate_unspent_list()
     if (from_list_.empty())
         throw tx_source_exception{"not enough etp in from address or you are't own from address!"};
 
-    // addresses balances check
-    if (unspent_etp_ < payment_etp_)
-        throw account_balance_lack_exception{"no enough balance"};
-
-    // asset amount check
-    if (unspent_asset_ == 0)
-        throw asset_lack_exception{"no enough asset amount"};
-
-    if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
-        throw asset_cert_exception{"no enough asset cert right"};
+    check_payment_satisfied();
 
     // change
     populate_change();
@@ -1535,6 +1569,11 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
     bool is_target_address_processed{false};
     for (auto& row: rows)
     {
+        // performance improve
+        if (is_payment_satisfied()) {
+            break;
+        }
+
         chain::output output;
         if (!get_spendable_output(output, row, height)) {
             continue;
@@ -1599,6 +1638,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 
         // asset_locked_transfer as a special change
         if (asset_total_amount > record.asset_amount) {
+            log::info("LZH") << "asset_locked_transfer pushback...";
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                     0, asset_total_amount - record.asset_amount,
@@ -1707,9 +1747,8 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
 
     // get fromfee address prikey
     for (auto& each : *pvaddr) {
-
         if ( fromfee == each.get_address() ) { // find address
-               feeprikey = each.get_prv_key(passwd_);
+            feeprikey = each.get_prv_key(passwd_);
         }
 
     }
@@ -1761,8 +1800,8 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
     }
-    rows.clear();
 
+    rows.clear();
 
     // if specified from address but no enough etp to pay fees,
     // the tx will fail.
@@ -1793,22 +1832,9 @@ void transferring_asset_cert::populate_change()
 {
     // etp utxo
     populate_etp_change(from_);
-    // asset cert utxo
-    //populate_asset_cert_change(from_);
-    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
-    if (cert_left != asset_cert_ns::none) {
-        // separate domain cert
-        if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
-            receiver_list_.push_back({from_, symbol_, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
-            cert_left &= ~asset_cert_ns::domain;
-        }
 
-        if (cert_left != asset_cert_ns::none) {
-            receiver_list_.push_back({from_, symbol_, 0,
-                cert_left, utxo_attach_type::asset_cert, attachment()});
-        }
-    }
+    // asset cert utxo
+    populate_asset_cert_change(from_);
 }
 
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
@@ -1822,9 +1848,7 @@ void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const s
     for (auto& row: rows)
     {
         // performance improve
-        if (unspent_etp_ >= payment_etp_
-            && unspent_asset_ >= payment_asset_
-            && asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
+        if (is_payment_satisfied()) {
             break;
         }
 
