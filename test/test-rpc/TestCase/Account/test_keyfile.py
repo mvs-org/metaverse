@@ -11,12 +11,12 @@ class TestKeyfile(unittest.TestCase):
     def setUp(self):
         for role in self.roles:
             result, message = role.create()
-            self.assertEqual(result, True, message)
+            self.assertEqual(result, 0, message)
 
     def tearDown(self):
         for role in self.roles:
             result, message = role.delete()
-            self.assertEqual(result, True, message)
+            self.assertEqual(result, 0, message)
 
     def test_dumpkeyfile(self):
         description = "Alice & Bob & Cindy's multi-sig address"
@@ -26,7 +26,7 @@ class TestKeyfile(unittest.TestCase):
         keyfile = os.path.abspath("./fullwallet_keystore.json")
         common.remove_file(keyfile)
         result, message = Alice.dump_keyfile(keyfile)
-        self.assertEqual(result, True, message)
+        self.assertEqual(result, 0, message)
         self.assertEqual(os.path.exists(keyfile), True, keyfile + " not exists!")
 
         f = open(keyfile)
@@ -41,14 +41,21 @@ class TestKeyfile(unittest.TestCase):
 
         #delete account
         Alice.delete()
+        # ensure the account has been deleted
+        result, message = mvs_rpc.get_account(
+            Alice.name,
+            Alice.password,
+            Alice.mnemonic[-1])
+        self.assertEqual(result, 1000, message)
+
         #recover the account by FullWalletKeyfile
         result, message = mvs_rpc.import_keyfile(Alice.name, Alice.password, keyfile)
-        self.assertEqual(result, True, message)
+        self.assertEqual(result, 0, message)
 
         common.remove_file(keyfile)
 
         result, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
-        self.assertEqual(result, True, message)
+        self.assertEqual(result, 0, message)
         multisig = message['multisig']
         self.assertEqual(len(multisig), 1, message)
         self.assertEqual(multisig[0]['self-publickey'], Alice.get_publickey(Alice.mainaddress()))
@@ -57,7 +64,7 @@ class TestKeyfile(unittest.TestCase):
         self.assertEqual(multisig[0]['m'], '2')
         self.assertEqual(multisig[0]['n'], '3')
 
-    def test_importKeyFileContent(self):
+    def test_importKeyFile_by_Content(self):
         Alice.delete()
 
         f = open(Alice.keystore_file)
@@ -70,7 +77,7 @@ class TestKeyfile(unittest.TestCase):
             "",
             content
         )
-        self.assertEqual(result, True, message)
+        self.assertEqual(result, 0, message)
 
 
 

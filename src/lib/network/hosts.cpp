@@ -319,7 +319,10 @@ code hosts::after_reseeding()
     //re-seeding failed and recover the buffer with backup one
     if (buffer_.empty()) {
         buffer_ = std::move( backup_ );
+        log::error(LOG_NETWORK) << "Reseeding finished, but got empty address list!";
     }
+
+    log::debug(LOG_NETWORK) << "Reseeding finished, and got addresses of count: " << buffer_.size();
 
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////

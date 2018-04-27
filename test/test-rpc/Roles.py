@@ -50,9 +50,26 @@ class Role:
         '''
         issue asset to the main address.
         '''
-        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 100)
+        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, description="%s's Asset" % self.name)
         assert (result == True)
         result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
+        assert (result == True)
+
+    def get_asset(self, asset_symbol=None):
+        ret = []
+        if not asset_symbol:
+            asset_symbol = self.asset_symbols[0]
+
+        result, message = mvs_rpc.get_asset(asset_symbol)
+        assert (result == True)
+        ret += message["assets"]
+
+        return ret
+
+    def send_asset(self, to_, amount, asset_symbol=None):
+        if not asset_symbol:
+            asset_symbol = self.asset_symbols[0]
+        result, message = mvs_rpc.send_asset(self.name, self.password, to_, asset_symbol, amount)
         assert (result == True)
 
     def mining(self, times=1):
@@ -66,16 +83,18 @@ class Role:
             self.password,
             self.mainaddress()
         )
-        assert(result == True)
+        assert(result == 0)
 
         def __mine__():
-            header_hash, seed_hash, boundary = mvs_rpc.eth_get_work()
-            height, difficulty = mvs_rpc.get_info()
+            result, (header_hash, seed_hash, boundary) = mvs_rpc.eth_get_work()
+            assert (result == 0)
+            result, (height, difficulty) = mvs_rpc.get_info()
+            assert (result == 0)
 
             rounds = 100
             nonce = 0
             while True:
-                bin_nonce, mixhash = mine(block_number=height + 1, difficulty=difficulty, mining_hash=header_hash,
+                bin_nonce, mixhash = mine(block_number=height, difficulty=difficulty, mining_hash=header_hash,
                                           rounds=rounds, start_nonce=nonce)
                 if bin_nonce:
                     break
@@ -85,7 +104,7 @@ class Role:
         for i in xrange(times):
             bin_nonce, header_hash, mix_hash = __mine__()
             result, message = mvs_rpc.eth_submit_work('0x' + common.toString(bin_nonce), header_hash, mix_hash)
-            assert (result == True)
+            assert (result == 0)
 
     def new_multisigaddress(self, description, others, required_key_num):
         '''
@@ -98,15 +117,15 @@ class Role:
             self.get_publickey( self.mainaddress() ),
             [i.get_publickey( i.mainaddress() ) for i in others],
             required_key_num)
-        assert (result == True)
+        assert (result == 0)
         assert(message["description"] == description)
         self.multisig_addresses[description] = message["address"]
         return message["address"]
 
     def get_publickey(self, address):
-        result, message = mvs_rpc.get_publickey(self.name, self.password, address)
-        assert (result == True)
-        return message["public-key"]
+        result, publickey = mvs_rpc.get_publickey(self.name, self.password, address)
+        assert (result == 0)
+        return publickey
 
     def get_multisigaddress(self, description):
         return self.multisig_addresses[description]

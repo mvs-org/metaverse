@@ -117,11 +117,15 @@ void session_outbound::delay_new_connect(connector::ptr connect)
 
 void session_outbound::delay_reseeding()
 {
+    if (!network__.network_settings().enable_re_seeding) {
+        return;
+    }
+    
     if (in_reseeding) {
         return;
     }
     in_reseeding = true;
-    log::info(LOG_NETWORK) << "outbound channel counter decreased, the re-seeding will be triggered 60s later!";
+    log::debug(LOG_NETWORK) << "outbound channel counter decreased, the re-seeding will be triggered 60s later!";
     auto timer = std::make_shared<deadline>(pool_, asio::seconds(60));
     auto self = shared_from_this();
     timer->start([this, timer, self](const code& ec){
@@ -134,10 +138,10 @@ void session_outbound::delay_reseeding()
             const int counter = outbound_counter;
             in_reseeding = false;
             if (counter > 1) {
-                log::info(LOG_NETWORK) << "outbound channel counter recovered to [" << counter << "], re-seeding is canceled!";
+                log::debug(LOG_NETWORK) << "outbound channel counter recovered to [" << counter << "], re-seeding is canceled!";
                 return;
             }
-            log::info(LOG_NETWORK) << "start re-seeding!";
+            log::debug(LOG_NETWORK) << "start re-seeding!";
             network__.restart_seeding();
         };
         pool_.service().post(action);

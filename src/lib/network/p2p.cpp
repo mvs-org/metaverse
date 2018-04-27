@@ -623,11 +623,11 @@ void p2p::restart_seeding()
 {
     //1. clear the host::buffer_ cache
     const auto result = hosts_->clear();
-    log::info(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();
+    log::debug(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();
 
     //2. start the session_seed
     result_handler handler = [this](const code& ec) {
-        log::info(LOG_NETWORK) << "restart_seeding result: " << ec.message();
+        log::debug(LOG_NETWORK) << "restart_seeding result: " << ec.message();
         hosts_->after_reseeding();
     };
 

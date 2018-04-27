@@ -39,153 +39,109 @@ class RPC:
         assert (rpc_rsp.json()['id'] == self.id)
         return rpc_rsp
 
-def handle_rpc_rsp(rpc_rsp):
-    if "error" in rpc_rsp.json():
-        return False, rpc_rsp.json()['error']
-    return True, rpc_rsp.json()['result']
+def mvs_api(func):
+    def wrapper(*args, **kwargs):
+        cmd, positional, optional, result_handler = func(*args, **kwargs)
+        rpc_cmd = RPC(cmd)
+        rpc_rsp = rpc_cmd.post(positional, optional)
+        if "error" in rpc_rsp.json():
+            return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
+        if result_handler:
+            return 0, result_handler(rpc_rsp.json()['result'])
+        return 0, rpc_rsp.json()['result']
+    return wrapper
 
+def mvs_api_v3(func):
+    def wrapper(*args, **kwargs):
+        cmd, positional, optional, result_handler = func(*args, **kwargs)
+        rpc_cmd = RPC(cmd)
+        rpc_cmd.url = RPC.url.replace('/v2', '/v3')
+        rpc_rsp = rpc_cmd.post(positional, optional)
+        if "error" in rpc_rsp.json():
+            return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
+        if result_handler:
+            return 0, result_handler(rpc_rsp.json()['result'])
+        return 0, rpc_rsp.json()['result']
+    return wrapper
+
+@mvs_api
+def getpeerinfo():
+    '''
+    {
+        "peers" :  <-- return
+        [
+            "10.10.10.184:52644"
+        ]
+    }
+    '''
+    return "getpeerinfo", [], {}, lambda result: result["peers"]
+
+@mvs_api
 def dump_keyfile(account, password, lastword, keyfile=""):
-    rpc_cmd = RPC('dumpkeyfile')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, lastword, keyfile],
-        {}
-    )
-    return handle_rpc_rsp(rpc_rsp)
+    return "dumpkeyfile", [account, password, lastword, keyfile], {}, None
 
+@mvs_api
 def import_keyfile(account, password, keystore_file, keyfile_content=None):
-    rpc_cmd = RPC('importkeyfile')
-
     if keyfile_content:
         args = [account, password, "omitted", keyfile_content]
     else:
         args = [account, password, keystore_file]
+    return "importkeyfile", args, {}, None
 
-    rpc_rsp = rpc_cmd.post(
-        args,
-        {}
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def delete_account(account, password, lastword):
-    rpc_cmd = RPC('deleteaccount')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, lastword],
-        {}
-    )
+    return "deleteaccount", [account, password, lastword], {}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def get_account(account, password, lastword):
-    rpc_cmd = RPC('getaccount')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, lastword],
-        {}
-    )
+    return "getaccount", [account, password, lastword], {}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def get_publickey(account, password, address):
-    rpc_cmd = RPC('getpublickey')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, address],
-        {}
-    )
+    return "getpublickey", [account, password, address], {}, lambda result: result["public-key"]
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def getnew_multisig(account, password, description, my_publickey, others_publickeys, required_key_num):
     assert(my_publickey not in others_publickeys)
     n = len(others_publickeys) + 1
     m = required_key_num
-    rpc_cmd = RPC('getnewmultisig')
-    rpc_rsp = rpc_cmd.post(
-        [account, password],
-        {
+
+    return "getnewmultisig", \
+           [account, password], \
+           {
             '-d': description,
             '-s': my_publickey,
             '-k': others_publickeys,
             '-m' : m,
             '-n' : n
-        }
-    )
+           }, \
+           None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def list_multisig(account, password):
-    rpc_cmd = RPC('listmultisig')
-    rpc_rsp = rpc_cmd.post(
-        [account, password],
-        {}
-    )
+    return "listmultisig", [account, password], {}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def issue_did(account, password, address, did_symbol, fee=None):
-    rpc_cmd = RPC('issuedid')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, address, did_symbol],
-        {
-            '--fee' : fee,
-        }
-    )
+    return "issuedid", [account, password, address, did_symbol], {'--fee' : fee}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def list_dids(account=None, password=None):
-    rpc_cmd = RPC('listdids')
+    return "listdids", [account, password], {}, None
 
-    args = filter(None, [account, password])
-
-    rpc_rsp = rpc_cmd.post(
-        args,
-        {}
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def modify_did(account, password, from_address, to_address, did_symbol):
-    rpc_cmd = RPC('didmodifyaddress')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, from_address, to_address, did_symbol],
-        {}
-    )
+    return "didmodifyaddress", [account, password, from_address, to_address, did_symbol], {}, None
 
-    return handle_rpc_rsp(rpc_rsp)
+@mvs_api
+def get_asset(asset_symbol=None):
+    return "getasset", filter(None, [asset_symbol]), {}, None
 
-def didsendasset(account, password, asset_symbol, amount, to_, from_=None):
-    if not from_:
-        cmd_args = ('didsendasset', [account, password, to_, asset_symbol, amount])
-    else:
-        cmd_args = ('didsendassetfrom', [account, password, from_, to_, asset_symbol, amount])
-    rpc_cmd = RPC(cmd_args[0])
-    rpc_rsp = rpc_cmd.post(
-        cmd_args[1],
-        {}
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
-def get_asset(asset_symbol):
-    rpc_cmd = RPC('getasset')
-    rpc_rsp = rpc_cmd.post(
-        [asset_symbol],
-        {}
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def get_addressasset(address, cert=None):
-    rpc_cmd = RPC('getaddressasset')
-    rpc_rsp = rpc_cmd.post(
-        [address],
-        {
-            '--cert': cert,
-        }
-    )
+    return "getaddressasset", [address], {'--cert': cert}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def get_accountasset(account, password, cert=None, asset_symbol=None):
     rpc_cmd = RPC('getaccountasset')
 
@@ -193,85 +149,42 @@ def get_accountasset(account, password, cert=None, asset_symbol=None):
     if asset_symbol <> None:
         args.append(asset_symbol)
 
-    rpc_rsp = rpc_cmd.post(
-        args,
-        {
-            '--cert': cert,
-        }
-    )
+    return "getaccountasset", args, {'--cert': cert}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def create_asset(account, password, symbol, volume, description=None, issuer=None, decimalnumber=None, rate=None):
-    rpc_cmd = RPC('createasset')
-    rpc_rsp = rpc_cmd.post(
-        [account, password],
-        {
-            '--symbol' : symbol,
-            '--volume': volume,
-            '--description': description,
-            '--issuer': issuer,
-            '--decimalnumber': decimalnumber,
-            '--rate': rate
-        }
-    )
+    optionals = {
+        '--symbol' : symbol,
+        '--volume': volume,
+        '--description': description,
+        '--issuer': issuer,
+        '--decimalnumber': decimalnumber,
+        '--rate': rate
+    }
 
-    return handle_rpc_rsp(rpc_rsp)
+    return "createasset", [account, password], optionals, None
 
+@mvs_api
 def issue_asset(account, password, symbol):
-    rpc_cmd = RPC('issue')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, symbol],
-        {}
-    )
-    return handle_rpc_rsp(rpc_rsp)
+    return "issue", [account, password, symbol], {}, None
 
+@mvs_api
 def delete_localasset(account, password, symbol):
-    rpc_cmd = RPC('deletelocalasset')
-    rpc_rsp = rpc_cmd.post(
-        [account, password],
-        {
-            '--symbol': symbol,
-        }
-    )
+    return "deletelocalasset", [account, password], {'--symbol': symbol}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def send_asset(account, password, to_, symbol, amount, fee=None):
-    cmd_args = ('sendasset', [account, password, to_, symbol, amount])
+    return "sendasset", [account, password, to_, symbol, amount], {'--fee': fee}, None
 
-    rpc_cmd = RPC(cmd_args[0])
-    rpc_rsp = rpc_cmd.post(
-        cmd_args[1],
-        {
-            '--fee': fee,
-        }
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def send_asset_from(account, password, from_, to_, symbol, amount, fee=None):
-    cmd_args = ('sendassetfrom', [account, password, from_, to_, symbol, amount])
+    return "sendassetfrom", [account, password, from_, to_, symbol, amount], {'--fee': fee}, None
 
-    rpc_cmd = RPC(cmd_args[0])
-    rpc_rsp = rpc_cmd.post(
-        cmd_args[1],
-        {
-            '--fee': fee,
-        }
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def set_miningaccount(account, password, address):
-    rpc_cmd = RPC('setminingaccount')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, address],
-        {}
-    )
+    return "setminingaccount", [account, password, address], {}, None
 
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api_v3
 def eth_submit_work(nonce, header_hash, mix_hash):
     '''
     https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_submitwork
@@ -307,137 +220,52 @@ def eth_submit_work(nonce, header_hash, mix_hash):
     }
 
     '''
-    rpc_cmd = RPC('eth_submitWork')
-    rpc_cmd.url = "http://127.0.0.1:8820/rpc/v3"
-    rpc_rsp = rpc_cmd.post(
-        [nonce, header_hash, mix_hash],
-        {
+    return "eth_submitWork", [nonce, header_hash, mix_hash], {}, None
 
-        }
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api
 def submit_work(nonce, header_hash, mix_hash):
-    rpc_cmd = RPC('submitwork')
-    rpc_rsp = rpc_cmd.post(
-        [nonce, header_hash, mix_hash],
-        {
+    return "submitwork", [nonce, header_hash, mix_hash], {}, None
 
-        }
-    )
-
-    return handle_rpc_rsp(rpc_rsp)
-
+@mvs_api_v3
 def eth_get_work():
     '''
     {"jsonrpc": "2.0", "method": method, "params": params, "id": 0}
     '''
-    rpc_cmd = RPC('eth_getWork')
-    rpc_cmd.url = "http://127.0.0.1:8820/rpc/v3"
-    rpc_rsp = rpc_cmd.post(
-        [],
-        {}
-    )
+    def result_handler(result):
+        header_hash, seed_hash, boundary = result
+        return common.toHex(header_hash), seed_hash, boundary
 
-    result, message = handle_rpc_rsp(rpc_rsp)
-    assert(result)
-    header_hash, seed_hash, boundary = message
-    return common.toHex(header_hash), seed_hash, boundary
+    return "eth_getWork", [], {}, result_handler
 
+@mvs_api
 def get_info():
-    rpc_cmd = RPC('getinfo')
-    rpc_rsp = rpc_cmd.post(
-        [],
-        {}
-    )
+    return "getinfo", [], {}, lambda result: (int(result['height']), int(result['difficulty']))
 
-    result, message = handle_rpc_rsp(rpc_rsp)
-    assert (result)
-    height = message['height']
-    difficulty = message['difficulty']
-    return int(height), int(difficulty)
-
-def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None, mychange=None, symbol=None):
-    '''
-    :param receivers: [address:amount, ...]
-    :param senders: [address, ...]
-    :param type:
-        0 -- transfer etp,
-        1 -- deposit etp,
-        3 -- transfer asset,
-        6 -- just only send message
-    :param deposit: support [7, 30, 90, 182, 365] days
-    :param fee:
-    :param message:
-    :param mychange: address
-    :param symbol: asset name, not specify this option for etp tx
-    :return:
-    '''
-    rpc_cmd = RPC('createrawtx')
-    rpc_rsp = rpc_cmd.post(
-        [],
-        {
-            '--receivers': receivers,
-            '--senders': senders,
-            '--type': type,
-            '--deposit': deposit,
-            '--fee': fee,
-            '--message': message,
-            '--mychange': mychange,
-            '--symbol': symbol,
-        }
-    )
-
-    result, message = handle_rpc_rsp(rpc_rsp)
-    if result:
-        return result, message["hex"]
-    return result, message
-
+@mvs_api
 def send(account, password, to_, amount, fee=None, desc=None):
-    rpc_cmd = RPC('send')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, to_, amount],
-        {
+    positional = [account, password, to_, amount],
+    optional =   {
             '-f': fee,
             '-m': desc,
         }
-    )
 
-    return handle_rpc_rsp(rpc_rsp)
+    return "send", positional, optional, None
 
+@mvs_api
 def sendfrom(account, password, from_, to_, amount, fee=None, desc=None):
-    rpc_cmd = RPC('sendfrom')
-    rpc_rsp = rpc_cmd.post(
-        [account, password, from_, to_, amount],
-        {
-            '-f': fee,
-            '-m': desc,
-        }
-    )
+    positional = [account, password, from_, to_, amount],
+    optional = {
+        '-f': fee,
+        '-m': desc,
+    }
 
-    return handle_rpc_rsp(rpc_rsp)
+    return "sendfrom", positional, optional, None
 
+@mvs_api
 def didsendfrom(account, password, amount, to_, from_, fee=None, desc=None):
-    cmd_args = ('didsendfrom', [account, password, from_, to_, amount])
-    rpc_cmd = RPC(cmd_args[0])
-    rpc_rsp = rpc_cmd.post(
-        cmd_args[1],
-        {
-            '-f': fee,
-            '-m': desc,
-        }
-    )
-    return handle_rpc_rsp(rpc_rsp)
+    return "didsendfrom", [account, password, from_, to_, amount], {'-f': fee, '-m': desc}, None
 
+@mvs_api
 def didsend(account, password, amount, to_, fee=None, desc=None):
-    rpc_cmd = RPC( 'didsend' )
-    rpc_rsp = rpc_cmd.post(
-        [account, password, to_, amount],
-        {
-            '-f': fee,
-            '-m': desc,
-        }
-    )
-    return handle_rpc_rsp(rpc_rsp)
+    return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
 
