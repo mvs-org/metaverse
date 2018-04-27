@@ -138,14 +138,14 @@ class BCX_API base_transfer_common
 public:
     base_transfer_common(
         bc::blockchain::block_chain_impl& blockchain,
-        std::vector<receiver_record>&& receiver_list,
-        uint64_t fee, std::string&& symbol = std::string(""),
-        std::string&& mychange = std::string(""))
+        std::vector<receiver_record>&& receiver_list, uint64_t fee,
+        std::string&& symbol, std::string&& from, std::string&& mychange)
         : blockchain_{blockchain}
         , symbol_{symbol}
+        , from_{from}
         , mychange_{mychange}
-        , receiver_list_{receiver_list}
         , payment_etp_{fee}
+        , receiver_list_{receiver_list}
     {
     };
 
@@ -162,16 +162,21 @@ public:
 
     virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
     virtual void sum_payment_amount();
+    virtual void populate_change();
 
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
     void sum_payments();
     void check_receiver_list_not_empty() const;
+    void populate_etp_change(const std::string& addr = std::string(""));
+    void populate_asset_change(const std::string& addr);
+    void populate_asset_cert_change(const std::string& addr);
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
     std::string                       symbol_;
+    std::string                       from_;
     std::string                       mychange_;
     uint64_t                          tx_item_idx_{0};
     uint64_t                          payment_etp_{0};
@@ -193,11 +198,10 @@ public:
         uint64_t fee, std::string&& symbol = std::string(""),
         std::string&& mychange = std::string("")):
         base_transfer_common(blockchain, std::move(receiver_list), fee,
-                std::move(symbol), std::move(mychange)),
+                std::move(symbol), std::move(from), std::move(mychange)),
         cmd_{cmd},
         name_{name},
-        passwd_{passwd},
-        from_{from}
+        passwd_{passwd}
     {
     };
 
@@ -206,7 +210,6 @@ public:
     }
 
     virtual void populate_unspent_list();
-    virtual void populate_change() = 0;
 
     virtual void populate_tx_header() {
         tx_.version = transaction_version::check_output_script;
@@ -227,7 +230,6 @@ protected:
     command&                          cmd_;
     std::string                       name_;
     std::string                       passwd_;
-    std::string                       from_;
 };
 
 class BCX_API base_transaction_constructor : public base_transfer_common
@@ -238,7 +240,7 @@ public:
         std::string&& symbol, std::string&& mychange,
         std::string&& message, uint64_t fee):
         base_transfer_common(blockchain, std::move(receiver_list), fee,
-                std::move(symbol), std::move(mychange)),
+                std::move(symbol), "", std::move(mychange)),
         type_{type},
         message_{message},
         from_vec_{from_vec}
@@ -290,8 +292,6 @@ public:
 
     static const std::vector<uint16_t> vec_cycle;
 
-    void populate_change() override;
-
     uint32_t get_reward_lock_height();
     // modify lock script
     void populate_tx_outputs() override ;
@@ -338,8 +338,6 @@ public:
         {};
 
     ~sending_etp(){};
-
-    void populate_change() override ;
 };
 
 class BCX_API sending_etp_more : public base_transfer_helper
@@ -354,8 +352,6 @@ public:
         {};
 
     ~sending_etp_more(){};
-
-    void populate_change() override ;
 };
 
 class BCX_API sending_multisig_etp : public base_transfer_helper
@@ -372,7 +368,6 @@ public:
 
     ~sending_multisig_etp(){};
 
-    void populate_change() override ;
     void populate_unspent_list() override;
     void sign_tx_inputs() override ;
     void exec() override;
@@ -398,7 +393,6 @@ public:
     ~issuing_asset(){};
 
     void sum_payment_amount() override;
-    void populate_change() override;
     void populate_tx_outputs() override;
 
     void populate_tx_header() override {
@@ -472,8 +466,6 @@ public:
     ~issuing_did(){};
 
     void sum_payment_amount() override;
-
-    void populate_change() override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;

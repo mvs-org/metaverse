@@ -437,10 +437,54 @@ void base_transfer_common::check_receiver_list_not_empty() const
     }
 }
 
-void base_transfer_common::sum_payment_amount(){
+void base_transfer_common::sum_payment_amount()
+{
     check_receiver_list_not_empty();
     check_fee_in_valid_range(payment_etp_);
     sum_payments();
+}
+
+void base_transfer_common::populate_change()
+{
+    // only etp utxo. if you want more, override this in child class.
+    populate_etp_change();
+}
+
+void base_transfer_common::populate_etp_change(const std::string& address)
+{
+    // etp utxo
+    if (unspent_etp_ > payment_etp_) {
+        auto addr = address;
+        if (addr.empty()) {
+            addr = mychange_;
+            if (addr.empty()) {
+                addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+            }
+        }
+        receiver_list_.push_back({addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
+void base_transfer_common::populate_asset_change(const std::string& addr)
+{
+    // asset utxo
+    if (unspent_asset_ > payment_asset_) {
+        receiver_list_.push_back({addr, symbol_,
+                0, unspent_asset_ - payment_asset_,
+                utxo_attach_type::asset_transfer, attachment()});
+    }
+}
+
+void base_transfer_common::populate_asset_cert_change(const std::string& addr)
+{
+    // asset cert utxo
+    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
+    if (cert_left != asset_cert_ns::none) {
+        receiver_list_.push_back({addr, symbol_,
+                0, cert_left,
+                utxo_attach_type::asset_cert, attachment()});
+    }
 }
 
 void base_transfer_helper::populate_unspent_list() {
@@ -760,20 +804,17 @@ void base_transaction_constructor::sum_payment_amount() {
 }
 
 void base_transaction_constructor::populate_change() {
-    if(mychange_.empty())
-        mychange_ = from_list_.at(0).addr;
+    auto&& addr = !mychange_.empty() ? mychange_ : from_list_.at(0).addr;
 
-    if(unspent_etp_ - payment_etp_)
-        receiver_list_.push_back({mychange_, "", unspent_etp_ - payment_etp_, 0,
-    utxo_attach_type::etp, attachment()});
+    // etp utxo
+    populate_etp_change(addr);
+    // asset utxo
+    populate_asset_change(addr);
 
-    if(unspent_asset_ - payment_asset_)
-        receiver_list_.push_back({mychange_, symbol_, 0, unspent_asset_ - payment_asset_,
-    utxo_attach_type::asset_transfer, attachment()});
-
-    if(!message_.empty()) // etp transfer/asset transfer  -- with message
-        receiver_list_.push_back({mychange_, "", 0, 0,
-        utxo_attach_type::message, attachment()});
+    if (!message_.empty()) { // etp transfer/asset transfer  -- with message
+        receiver_list_.push_back({addr, "", 0, 0,
+                utxo_attach_type::message, attachment()});
+    }
 }
 
 void base_transaction_constructor::populate_unspent_list() {
@@ -908,15 +949,6 @@ tx_type& base_transaction_constructor::get_transaction(){
 
 const std::vector<uint16_t> depositing_etp::vec_cycle{7, 30, 90, 182, 365};
 
-void depositing_etp::populate_change() {
-    if(unspent_etp_ - payment_etp_) { // etp change value != 0
-        if(from_.empty())
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        else
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
-}
-
 uint32_t depositing_etp::get_reward_lock_height() {
     int index = 0;
     auto it = std::find(vec_cycle.begin(), vec_cycle.end(), deposit_cycle_);
@@ -1011,33 +1043,6 @@ void depositing_etp_transaction::populate_tx_outputs() {
 
         // fill output
         tx_.outputs.push_back({ iter.amount, payment_script, output_att });
-    }
-}
-
-
-void sending_etp::populate_change() {
-    if(unspent_etp_ - payment_etp_) {
-        if(from_.empty())
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        else
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
-}
-
-void sending_etp_more::populate_change() {
-    if(unspent_etp_ - payment_etp_) {
-        if(mychange_.empty())
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        else
-            receiver_list_.push_back({mychange_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
-}
-void sending_multisig_etp::populate_change() {
-    if(unspent_etp_ - payment_etp_) {
-        if(from_.empty())
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        else
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
@@ -1149,15 +1154,6 @@ void issuing_asset::sum_payment_amount() {
     }
     if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
-    }
-}
-
-void issuing_asset::populate_change() {
-    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
-    // etp utxo
-    if (unspent_etp_ > payment_etp_) {
-        receiver_list_.push_back({from_addr, "",
-                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
@@ -1299,28 +1295,20 @@ void secondary_issuing_asset::populate_unspent_list()
     populate_change();
 }
 
-void secondary_issuing_asset::populate_change() {
-    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+void secondary_issuing_asset::populate_change()
+{
     // etp utxo
-    if (unspent_etp_ > payment_etp_) {
-        receiver_list_.push_back({from_addr, "",
-                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
+    populate_etp_change();
+
+    auto&& target_addr = receiver_list_.at(0).target;
     // asset utxo
-    auto target_addr = receiver_list_.at(0).target;
-    if (unspent_asset_ > payment_asset_) {
-        receiver_list_.push_back({target_addr, symbol_,
-                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
-    }
+    populate_asset_change(target_addr);
     // asset cert utxo
-    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
-    if (cert_left != asset_cert_ns::none) {
-        receiver_list_.push_back({target_addr, symbol_,
-                0, cert_left, utxo_attach_type::asset_cert, attachment()});
-    }
+    populate_asset_cert_change(target_addr);
 }
 
-attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record){
+attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record)
+{
     if (record.type == utxo_attach_type::etp) {
         return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
     } else if(record.type == utxo_attach_type::asset_transfer
@@ -1483,37 +1471,18 @@ void issuing_did::sum_payment_amount() {
     }
 }
 
-void issuing_did::populate_change() {
-    if(from_.empty()) {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    } else {
-        if(unspent_etp_ - payment_etp_) // etp value != 0
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
-}
-
 void sending_asset::populate_change() {
     auto&& from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
     // etp utxo
-    if (unspent_etp_ > payment_etp_) {
-        receiver_list_.push_back({from_addr, "",
-                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
+    populate_etp_change(from_addr);
     // asset utxo
-    if (unspent_asset_ > payment_asset_) {
-        receiver_list_.push_back({from_addr, symbol_,
-                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
-    }
+    populate_asset_change(from_addr);
 }
 
 void sending_did::populate_change() {
-    if(unspent_etp_ - payment_etp_) {
-        if(fromfee.empty())
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-        else
-            receiver_list_.push_back({fromfee, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
+    auto&& from_addr = !fromfee.empty() ? fromfee : from_list_.at(0).addr;
+    // etp utxo
+    populate_etp_change(from_addr);
 }
 
 void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& addr)
@@ -1702,16 +1671,9 @@ void transferring_asset_cert::sum_payment_amount()
 void transferring_asset_cert::populate_change()
 {
     // etp utxo
-    if (unspent_etp_ > payment_etp_) {
-        receiver_list_.push_back({from_, "",
-                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
-    }
+    populate_etp_change(from_);
     // asset cert utxo
-    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
-    if (cert_left != asset_cert_ns::none) {
-        receiver_list_.push_back({from_, symbol_,
-                0, cert_left, utxo_attach_type::asset_cert, attachment()});
-    }
+    populate_asset_cert_change(from_);
 }
 
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
