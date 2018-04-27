@@ -33,6 +33,13 @@
 #include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 
+// forward declaration
+namespace libbitcoin {
+namespace blockchain {
+    class block_chain_impl;
+}
+}
+
 namespace libbitcoin {
 namespace chain {
 
@@ -66,6 +73,7 @@ public:
     std::string get_asset_cert_owner() const;
     std::string get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const;
     asset_cert_type get_asset_cert_type() const;
+    data_chunk get_attenuation_model_param() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
     bool is_asset_cert() const;

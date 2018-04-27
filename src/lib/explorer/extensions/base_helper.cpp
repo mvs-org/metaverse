@@ -18,11 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <metaverse/explorer/commands/offline_commands_impl.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-#include <unordered_map>
 
 
 namespace libbitcoin {
@@ -201,20 +199,10 @@ void sync_fetchbalance (wallet::payment_address& address,
 
 }
 
-void base_transfer_helper::sum_payment_amount(){
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
-        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
-    }
-}
-void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std::string& addr)
+void base_transfer_common::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
-    auto waddr = wallet::payment_address(addr);
+    const bool has_prikey = !prikey.empty();
+    auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
@@ -273,14 +261,16 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
             if(!frozen_flag){
                 // etp -> etp tx
                 if(!payment_asset_ && output.is_etp()){
-                    record.prikey = prikey;
+                    if (has_prikey) {
+                        record.prikey = prikey;
+                        record.script = output.script;
+                    }
                     record.addr = addr;
                     record.amount = row.value;
                     record.symbol = "";
                     record.asset_amount = 0;
                     record.type = utxo_attach_type::etp;
                     record.output = row.output;
-                    record.script = output.script;
 
                     if(unspent_etp_ < payment_etp_) {
                         from_list_.push_back(record);
@@ -289,62 +279,106 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                 // asset issue/transfer /secondary issue
                 } else {
                     if(output.is_etp()){
-                        record.prikey = prikey;
+                        if (has_prikey) {
+                            record.prikey = prikey;
+                            record.script = output.script;
+                        }
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = "";
                         record.asset_amount = 0;
                         record.type = utxo_attach_type::etp;
                         record.output = row.output;
-                        record.script = output.script;
 
                         if(unspent_etp_ < payment_etp_) {
                             from_list_.push_back(record);
                             unspent_etp_ += record.amount;
                         }
                     } else if ((output.is_asset_issue() || output.is_asset_secondaryissue()) && (symbol_ == output.get_asset_symbol())){
-                        record.prikey = prikey;
+                        if (has_prikey) {
+                            record.prikey = prikey;
+                            record.script = output.script;
+                        }
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
+                        auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
+                        auto asset_total_amount = output.get_asset_amount();
+                        if (attenuation_model_param.empty()) {
+                            record.asset_amount = asset_total_amount;
+                        } else {
+                            record.asset_amount = attenuation_model::get_available_asset_amount(
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
+                        }
                         record.type = utxo_attach_type::asset_issue;
                         record.output = row.output;
-                        record.script = output.script;
 
-                        if((unspent_asset_ < payment_asset_)
-                            || (unspent_etp_ < payment_etp_)) {
+                        if (((record.amount != 0) || (record.asset_amount != 0))
+                            && ((unspent_asset_ < payment_asset_) || (unspent_etp_ < payment_etp_))) {
                             from_list_.push_back(record);
                             unspent_asset_ += record.asset_amount;
                             unspent_etp_ += record.amount;
+
+                            // asset_locked_transfer as a special change
+                            if (asset_total_amount > record.asset_amount) {
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
+                                receiver_list_.push_back({record.addr, record.symbol,
+                                        0, asset_total_amount - record.asset_amount,
+                                        utxo_attach_type::asset_locked_transfer,
+                                        attachment(0, 0, blockchain_message(std::move(model_param)))});
+                            }
                         }
                     } else if (output.is_asset_transfer() && (symbol_ == output.get_asset_symbol())){
-                        record.prikey = prikey;
+                        if (has_prikey) {
+                            record.prikey = prikey;
+                            record.script = output.script;
+                        }
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
+                        auto&& attenuation_model_param = output.get_attenuation_model_param();
+                        auto new_model_param_ptr = std::make_shared<data_chunk>();
+                        auto asset_total_amount = output.get_asset_amount();
+                        if (attenuation_model_param.empty()) {
+                            record.asset_amount = asset_total_amount;
+                        } else {
+                            record.asset_amount = attenuation_model::get_available_asset_amount(
+                                    asset_total_amount, height - row.output_height,
+                                    attenuation_model_param, new_model_param_ptr);
+                        }
                         record.type = utxo_attach_type::asset_transfer;
                         record.output = row.output;
-                        record.script = output.script;
 
-                        if((unspent_asset_ < payment_asset_)
-                            || (unspent_etp_ < payment_etp_)){
+                        if (((record.amount != 0) || (record.asset_amount != 0))
+                            && ((unspent_asset_ < payment_asset_) || (unspent_etp_ < payment_etp_))) {
                             from_list_.push_back(record);
                             unspent_asset_ += record.asset_amount;
                             unspent_etp_ += record.amount;
+
+                            // asset_locked_transfer as a special change
+                            if (asset_total_amount > record.asset_amount) {
+                                std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
+                                receiver_list_.push_back({record.addr, record.symbol,
+                                        0, asset_total_amount - record.asset_amount,
+                                        utxo_attach_type::asset_locked_transfer,
+                                        attachment(0, 0, blockchain_message(std::move(model_param)))});
+                            }
                         }
                         log::trace("unspent_asset_=")<< unspent_asset_;
                         log::trace("unspent_etp_=")<< unspent_etp_;
                     }else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
-                        record.prikey = prikey;
+                        if (has_prikey) {
+                            record.prikey = prikey;
+                            record.script = output.script;
+                        }
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_did_symbol();
                         record.asset_amount = 0;
                         record.type = utxo_attach_type::did_issue;
                         record.output = row.output;
-                        record.script = output.script;
 
                         if((unspent_asset_ < payment_asset_)
                             || (unspent_etp_ < payment_etp_)) {
@@ -353,14 +387,16 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
                             unspent_etp_ += record.amount;
                         }
                     }else if (output.is_did_transfer() && (symbol_ == output.get_did_symbol())){
-                        record.prikey = prikey;
+                        if (has_prikey) {
+                            record.prikey = prikey;
+                            record.script = output.script;
+                        }
                         record.addr = addr;
                         record.amount = row.value;
                         record.symbol = output.get_did_symbol();
                         record.asset_amount = 0;
                         record.type = utxo_attach_type::did_transfer;
                         record.output = row.output;
-                        record.script = output.script;
 
                         if(unspent_etp_ < payment_etp_) {
                             from_list_.push_back(record);
@@ -375,7 +411,18 @@ void base_transfer_helper::sync_fetchutxo (const std::string& prikey, const std:
 
     }
     rows.clear();
+}
 
+void base_transfer_helper::sum_payment_amount(){
+    if(receiver_list_.empty())
+        throw toaddress_empty_exception{"empty target address"};
+    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
+        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
+
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+    }
 }
 
 void base_transfer_helper::populate_unspent_list() {
@@ -463,7 +510,8 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         return attachment(ASSET_TYPE, attach_version, ass);
     } else if(record.type == utxo_attach_type::asset_secondaryissue) {
         throw tx_attachment_value_exception("secondaryissue must be processed by secondary_issuing_asset");
-    } else if(record.type == utxo_attach_type::asset_transfer) {
+    } else if(record.type == utxo_attach_type::asset_transfer
+            || record.type == utxo_attach_type::asset_locked_transfer) {
         auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
@@ -491,7 +539,7 @@ attachment base_transfer_helper::populate_output_attachment(receiver_record& rec
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
 
-    throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
+    throw tx_attachment_value_exception{"base_transfer_helper : invalid attachment value in receiver_record"};
 }
 
 bool receiver_record::is_empty() const
@@ -531,7 +579,7 @@ void base_transfer_helper::populate_tx_outputs(){
         }
 
         if (tx_item_idx_ >= (tx_limit + 10)) {
-                throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
 
@@ -545,6 +593,14 @@ void base_transfer_helper::populate_tx_outputs(){
         if (blockchain_.is_blackhole_address(iter.target))
         {
             payment_ops = chain::operation::to_pay_blackhole_pattern(hash);
+        }
+        else if (iter.type == utxo_attach_type::asset_locked_transfer)
+        {
+            auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+                throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
+            }
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
         }
         else if (payment.version() == wallet::payment_address::mainnet_p2kh)
         {
@@ -693,168 +749,6 @@ void base_transaction_constructor::sum_payment_amount() {
     }
 
 }
-void base_transaction_constructor::sync_fetchutxo (const std::string& addr)
-{
-    auto waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr);
-    log::trace("get_history=")<<rows.size();
-
-    chain::transaction tx_temp;
-    uint64_t tx_height;
-    uint64_t height = 0;
-    auto frozen_flag = false;
-    address_asset_record record;
-
-    blockchain_.get_last_height(height);
-
-    for (auto& row: rows)
-    {
-        frozen_flag = false;
-        if((unspent_etp_ >= payment_etp_) && (unspent_asset_ >= payment_asset_)) // performance improve
-            break;
-
-        // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
-            auto output = tx_temp.outputs.at(row.output.index);
-
-            // deposit utxo in transaction pool
-            if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                        && !row.output_height) {
-                frozen_flag = true;
-            }
-
-            // deposit utxo in block
-            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-                && row.output_height) {
-                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                    frozen_flag = true;
-                }
-            }
-
-            // coin base etp maturity etp check
-            if(tx_temp.is_coinbase()
-                && !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
-                // add not coinbase_maturity etp into frozen
-                if((!row.output_height ||
-                            (row.output_height && (height - row.output_height) < coinbase_maturity))) {
-                    frozen_flag = true;
-                }
-            }
-            log::trace("frozen_flag=")<< frozen_flag;
-            log::trace("payment_asset_=")<< payment_asset_;
-            log::trace("is_etp=")<< output.is_etp();
-            log::trace("value=")<< row.value;
-            log::trace("is_trans=")<< output.is_asset_transfer();
-            log::trace("is_issue=")<< output.is_asset_issue();
-            log::trace("symbol=")<< symbol_;
-            log::trace("outpuy symbol=")<< output.get_asset_symbol();
-            // add to from list
-            if(!frozen_flag){
-                // etp -> etp tx
-                if(!payment_asset_ && output.is_etp()){
-                    //record.prikey = prikey;
-                    record.addr = addr;
-                    record.amount = row.value;
-                    record.symbol = "";
-                    record.asset_amount = 0;
-                    record.type = utxo_attach_type::etp;
-                    record.output = row.output;
-                    //record.script = output.script;
-
-                    if(unspent_etp_ < payment_etp_) {
-                        from_list_.push_back(record);
-                        unspent_etp_ += record.amount;
-                    }
-                // asset issue/transfer
-                } else {
-                    if(output.is_etp()){
-                        //record.prikey = prikey;
-                        record.addr = addr;
-                        record.amount = row.value;
-                        record.symbol = "";
-                        record.asset_amount = 0;
-                        record.type = utxo_attach_type::etp;
-                        record.output = row.output;
-                        //record.script = output.script;
-
-                        if(unspent_etp_ < payment_etp_) {
-                            from_list_.push_back(record);
-                            unspent_etp_ += record.amount;
-                        }
-                    } else if (output.is_asset_issue() && (symbol_ == output.get_asset_symbol())){
-                        //record.prikey = prikey;
-                        record.addr = addr;
-                        record.amount = row.value;
-                        record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
-                        record.type = utxo_attach_type::asset_issue;
-                        record.output = row.output;
-                        //record.script = output.script;
-
-                        if((unspent_asset_ < payment_asset_)
-                            || (unspent_etp_ < payment_etp_)) {
-                            from_list_.push_back(record);
-                            unspent_asset_ += record.asset_amount;
-                            unspent_etp_ += record.amount;
-                        }
-                    } else if (output.is_asset_transfer() && (symbol_ == output.get_asset_symbol())){
-                        //record.prikey = prikey;
-                        record.addr = addr;
-                        record.amount = row.value;
-                        record.symbol = output.get_asset_symbol();
-                        record.asset_amount = output.get_asset_amount();
-                        record.type = utxo_attach_type::asset_transfer;
-                        record.output = row.output;
-                        //record.script = output.script;
-
-                        if((unspent_asset_ < payment_asset_)
-                            || (unspent_etp_ < payment_etp_)){
-                            from_list_.push_back(record);
-                            unspent_asset_ += record.asset_amount;
-                            unspent_etp_ += record.amount;
-                        }
-                        log::trace("unspent_asset_=")<< unspent_asset_;
-                        log::trace("unspent_etp_=")<< unspent_etp_;
-                    } else if (output.is_did_issue() && (symbol_ == output.get_did_symbol())){
-                        //record.prikey = prikey;
-                        record.addr = addr;
-                        record.amount = row.value;
-                        record.symbol = output.get_did_symbol();
-                        record.asset_amount = 0;
-                        record.type = utxo_attach_type::did_issue;
-                        record.output = row.output;
-                        //record.script = output.script;
-
-                        if(unspent_etp_ < payment_etp_) {
-                            from_list_.push_back(record);
-                            unspent_etp_ += record.amount;
-                        }
-                    } else if (output.is_did_transfer() && (symbol_ == output.get_did_symbol())){
-                        //record.prikey = prikey;
-                        record.addr = addr;
-                        record.amount = row.value;
-                        record.symbol = output.get_did_symbol();
-                        record.asset_amount = 0;
-                        record.type = utxo_attach_type::did_transfer;
-                        record.output = row.output;
-                        //record.script = output.script;
-
-                        if(unspent_etp_ < payment_etp_) {
-                            from_list_.push_back(record);
-                            unspent_etp_ += record.amount;
-                        }
-                    }
-                    // not add message process here, because message utxo have no etp value
-                }
-            }
-        }
-
-    }
-    rows.clear();
-
-}
 
 void base_transaction_constructor::populate_change() {
     if(mychange_.empty())
@@ -876,7 +770,7 @@ void base_transaction_constructor::populate_change() {
 void base_transaction_constructor::populate_unspent_list() {
     // get from address balances
     for (auto& each : from_vec_) {
-        base_transaction_constructor::sync_fetchutxo (each);
+        base_transaction_constructor::sync_fetchutxo("", each);
         if((unspent_etp_ >= payment_etp_)
             && (unspent_asset_ >= payment_asset_))
             break;
@@ -923,9 +817,8 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
         return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
     }
 
-    if(record.type == utxo_attach_type::asset_issue) {
-        throw tx_attachment_value_exception{"not support this utxo type"};
-    } else if(record.type == utxo_attach_type::asset_transfer) {
+    if(record.type == utxo_attach_type::asset_transfer
+            || record.type == utxo_attach_type::asset_locked_transfer) {
         auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
@@ -933,7 +826,7 @@ attachment base_transaction_constructor::populate_output_attachment(receiver_rec
         return attachment(MESSAGE_TYPE, attach_version, bc::chain::blockchain_message(message_));
     }
 
-    throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
+    throw tx_attachment_value_exception{"base_transaction_constructor : invalid attachment value in receiver_record"};
 }
 
 void base_transaction_constructor::populate_tx_outputs(){
@@ -956,7 +849,13 @@ void base_transaction_constructor::populate_tx_outputs(){
             throw toaddress_invalid_exception{"invalid target address"};
 
         auto&& hash = payment.hash();
-        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+        if (iter.type == utxo_attach_type::asset_locked_transfer) {
+            auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+                throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
+            }
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+        } else if (payment.version() == wallet::payment_address::mainnet_p2kh) {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
 
         } else if(payment.version() == wallet::payment_address::mainnet_p2sh) {
@@ -1171,7 +1070,6 @@ void sending_multisig_etp::populate_unspent_list() {
     // change
     populate_change();
 }
-//#include <metaverse/bitcoin/config/base16.hpp>
 
 void sending_multisig_etp::sign_tx_inputs() {
     uint32_t index = 0;
@@ -1245,6 +1143,10 @@ void issuing_asset::sum_payment_amount() {
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
     }
+
+    if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    }
 }
 
 void issuing_asset::populate_change() {
@@ -1253,6 +1155,84 @@ void issuing_asset::populate_change() {
     if (unspent_etp_ > payment_etp_) {
         receiver_list_.push_back({from_addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+}
+
+void issuing_asset::populate_tx_outputs()
+{
+    if (attenuation_model_param.empty()) {
+        return base_transfer_helper::populate_tx_outputs();
+    }
+
+    chain::operation::stack payment_ops;
+
+    for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
+        if (tx_item_idx_ >= (tx_limit + 10)) {
+            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
+        tx_item_idx_++;
+
+        const wallet::payment_address payment(iter.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        auto hash = payment.hash();
+        if (utxo_attach_type::asset_issue == iter.type) {
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+        }
+
+        auto payment_script = chain::script{ payment_ops };
+        auto&& output_att = populate_output_attachment(iter);
+        if (!output_att.is_valid()) {
+            throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
+        }
+        tx_.outputs.push_back({ iter.amount, payment_script, output_att });
+    }
+}
+
+void secondary_issuing_asset::populate_tx_outputs()
+{
+    if (attenuation_model_param.empty()) {
+        return base_transfer_helper::populate_tx_outputs();
+    }
+
+    chain::operation::stack payment_ops;
+
+    for (auto& iter: receiver_list_) {
+        if (iter.is_empty()) {
+            continue;
+        }
+
+        if (tx_item_idx_ >= (tx_limit + 10)) {
+            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+        }
+        tx_item_idx_++;
+
+        const wallet::payment_address payment(iter.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        auto hash = payment.hash();
+        if (utxo_attach_type::asset_secondaryissue == iter.type) {
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+        }
+
+        auto payment_script = chain::script{ payment_ops };
+        auto&& output_att = populate_output_attachment(iter);
+        if (!output_att.is_valid()) {
+            throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
+        }
+        tx_.outputs.push_back({ iter.amount, payment_script, output_att });
     }
 }
 
@@ -1278,6 +1258,10 @@ void secondary_issuing_asset::sum_payment_amount() {
 
     if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue))
         throw asset_cert_exception("no asset cert of issue right is provided.");
+
+    if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
+        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    }
 }
 
 void secondary_issuing_asset::populate_unspent_list()
@@ -1344,7 +1328,8 @@ void secondary_issuing_asset::populate_change() {
 attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record){
     if (record.type == utxo_attach_type::etp) {
         return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
-    } else if (record.type == utxo_attach_type::asset_transfer) {
+    } else if(record.type == utxo_attach_type::asset_transfer
+            || record.type == utxo_attach_type::asset_locked_transfer) {
         auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         return attachment(ASSET_TYPE, attach_version, ass);
@@ -1365,7 +1350,7 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
         return attachment(ASSET_TYPE, attach_version, ass);
     }
 
-    throw tx_attachment_value_exception{"invalid attachment value in receiver_record"};
+    throw tx_attachment_value_exception{"secondary_issuing_asset : invalid attachment value in receiver_record"};
 }
 
 void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
@@ -1390,7 +1375,15 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             continue;
 
         auto output = tx_temp.outputs.at(row.output.index);
-        auto asset_amount = output.get_asset_amount();
+        auto&& attenuation_model_param = output.get_attenuation_model_param();
+        auto new_model_param_ptr = std::make_shared<data_chunk>();
+        auto asset_total_amount = output.get_asset_amount();
+        auto asset_amount = asset_total_amount;
+        if (!attenuation_model_param.empty()) {
+            asset_amount = attenuation_model::get_available_asset_amount(
+                    asset_total_amount, height - row.output_height,
+                    attenuation_model_param, new_model_param_ptr);
+        }
         auto asset_symbol = output.get_asset_symbol();
         auto asset_certs = output.get_asset_cert_type();
         auto etp_amount = row.value;
@@ -1456,6 +1449,15 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
         unspent_etp_ += record.amount;
         unspent_asset_ += record.asset_amount;
         unspent_asset_cert_ |= record.asset_cert;
+
+        // asset_locked_transfer as a special change
+        if (asset_total_amount > record.asset_amount) {
+            std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
+            receiver_list_.push_back({record.addr, record.symbol,
+                    0, asset_total_amount - record.asset_amount,
+                    utxo_attach_type::asset_locked_transfer,
+                    attachment(0, 0, blockchain_message(std::move(model_param)))});
+        }
     }
     rows.clear();
 
@@ -1503,24 +1505,16 @@ void issuing_did::populate_change() {
 }
 
 void sending_asset::populate_change() {
-    if(from_.empty()) {
-        // etp utxo
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_list_.at(0).addr, "", unspent_etp_ - payment_etp_, 0,
-        utxo_attach_type::etp, attachment()});
-        // asset utxo
-        if(unspent_asset_ - payment_asset_)
-            receiver_list_.push_back({from_list_.at(0).addr, symbol_, 0, unspent_asset_ - payment_asset_,
-        utxo_attach_type::asset_transfer, attachment()});
-    } else {
-        // etp utxo
-        if(unspent_etp_ - payment_etp_)
-            receiver_list_.push_back({from_, "", unspent_etp_ - payment_etp_, 0,
-        utxo_attach_type::etp, attachment()});
-        // asset utxo
-        if(unspent_asset_ - payment_asset_)
-            receiver_list_.push_back({from_, symbol_, 0, unspent_asset_ - payment_asset_,
-        utxo_attach_type::asset_transfer, attachment()});
+    auto&& from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+    // etp utxo
+    if (unspent_etp_ > payment_etp_) {
+        receiver_list_.push_back({from_addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+    }
+    // asset utxo
+    if (unspent_asset_ > payment_asset_) {
+        receiver_list_.push_back({from_addr, symbol_,
+                0, unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
     }
 }
 

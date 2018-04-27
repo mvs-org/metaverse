@@ -77,6 +77,7 @@ public:
     void set_data(const asset_detail& detail);
     void set_data(const asset_transfer& detail);
     asset_data_type& get_data();
+    const asset_data_type& get_data() const;
 
 private:
     uint32_t status;

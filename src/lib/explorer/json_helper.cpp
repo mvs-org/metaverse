@@ -336,7 +336,7 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
         }
     }
 
-    if (version_ == 1) { 
+    if (version_ == 1) {
         tree["locked_height_range"] += lock_height;
         tree["value"] += tx_output.value;
         tree["index"] += index;
@@ -450,7 +450,7 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
 Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
-    
+
     if(attach_data.get_type() == ETP_TYPE) {
         tree["type"] = "etp";
 
@@ -517,7 +517,7 @@ Json::Value json_helper::prop_tree(const tx_output_type::list& tx_outputs, bool 
 
     if (version_ == 1 && list.isNull()) { //compatible for v1
         list = "";
-    } 
+    }
 
     return list;
 }

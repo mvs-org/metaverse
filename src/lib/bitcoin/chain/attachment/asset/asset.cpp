@@ -187,6 +187,10 @@ asset::asset_data_type& asset::get_data()
 {
     return this->data;
 }
+const asset::asset_data_type& asset::get_data() const
+{
+    return this->data;
+}
 
 } // namspace chain
 } // namspace libbitcoin

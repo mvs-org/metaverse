@@ -173,6 +173,8 @@ unsigned int verify_flags_to_script_flags(unsigned int flags)
         script_flags |= SCRIPT_VERIFY_CLEANSTACK;
     if ((flags & verify_flags_checklocktimeverify) != 0)
         script_flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+    if ((flags & verify_flags_checkattenuationverify) != 0)
+        script_flags |= SCRIPT_VERIFY_CHECKATTENUATIONVERIFY;
 
     return script_flags;
 }

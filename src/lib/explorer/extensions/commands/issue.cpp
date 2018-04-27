@@ -107,9 +107,11 @@ console_result issue::invoke (Json::Value& jv_output,
             asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
     }
 
-    auto issue_helper = issuing_asset(
-        *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto issue_helper = issuing_asset(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 

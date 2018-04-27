@@ -358,6 +358,19 @@ bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
         && ops[0].code == opcode::return_;
 }
 
+bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
+{
+    return ops.size() == 7
+        && ops[0].code == opcode::special
+        && ops[1].code == opcode::checkattenuationverify
+        && ops[2].code == opcode::dup
+        && ops[3].code == opcode::hash160
+        && ops[4].code == opcode::special
+        && ops[4].data.size() == short_hash_size
+        && ops[5].code == opcode::equalverify
+        && ops[6].code == opcode::checksig;
+}
+
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
 {
     if (ops.size() < 2 || !is_push_only(ops))
@@ -420,6 +433,11 @@ bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
         || redeem_script_pattern == script_pattern::pay_key_hash
         || redeem_script_pattern == script_pattern::pay_script_hash
         || redeem_script_pattern == script_pattern::null_data;
+}
+
+data_chunk operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+{
+    return ops[0].data;
 }
 
 // pattern templates
@@ -536,6 +554,21 @@ operation::stack operation::to_pay_blackhole_pattern(const short_hash&)
     return operation::stack
     {
         { opcode::return_, {} }
+    };
+}
+
+operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
+    const short_hash& hash, const std::string& model_param)
+{
+    return operation::stack
+    {
+        { opcode::special, to_chunk(model_param) },
+        { opcode::checkattenuationverify, {} },
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(hash) },
+        { opcode::equalverify, {} },
+        { opcode::checksig, {} }
     };
 }
 

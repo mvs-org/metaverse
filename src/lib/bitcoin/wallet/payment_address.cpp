@@ -267,6 +267,9 @@ payment_address payment_address::extract(const chain::script& script,
             BITCOIN_ASSERT(ops.size() == 3);
             BITCOIN_ASSERT(ops[1].data.size() == short_hash_size);
             break;
+        case chain::script_pattern::pay_blackhole_address:
+            BITCOIN_ASSERT(ops.size() == 1);
+            break;
 
         // sign
         // --------------------------------------------------------------------
@@ -289,8 +292,9 @@ payment_address payment_address::extract(const chain::script& script,
         case chain::script_pattern::sign_script_hash:
             BITCOIN_ASSERT(ops.size() > 1);
             break;
-        case chain::script_pattern::pay_blackhole_address:
-            BITCOIN_ASSERT(ops.size() == 1);
+        case chain::script_pattern::pay_key_hash_with_attenuation_model:
+            BITCOIN_ASSERT(ops.size() == 7);
+            BITCOIN_ASSERT(ops[4].data.size() == short_hash_size);
             break;
         case chain::script_pattern::non_standard:
         default:;
@@ -329,7 +333,14 @@ payment_address payment_address::extract(const chain::script& script,
         case chain::script_pattern::pay_script_hash:
             hash = to_array<short_hash_size>(ops[1].data);
             return payment_address(hash, p2sh_version);
-            
+
+        case chain::script_pattern::pay_blackhole_address:
+            return payment_address(blackhole_address);
+
+        case chain::script_pattern::pay_key_hash_with_attenuation_model:
+            hash = to_array<short_hash_size>(ops[4].data);
+            return payment_address(hash, p2kh_version);
+
         // sign
         // --------------------------------------------------------------------
 
@@ -378,9 +389,6 @@ payment_address payment_address::extract(const chain::script& script,
         case chain::script_pattern::sign_script_hash:
             hash = bitcoin_short_hash(ops.back().data);
             return payment_address(hash, p2sh_version);
-
-        case chain::script_pattern::pay_blackhole_address:
-            return payment_address(blackhole_address);
 
         case chain::script_pattern::non_standard:
         default:

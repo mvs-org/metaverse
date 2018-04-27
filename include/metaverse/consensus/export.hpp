@@ -169,7 +169,12 @@ typedef enum verify_flags_type
     /**
      * Verify CHECKLOCKTIMEVERIFY, see BIP65 for details.
      */
-    verify_flags_checklocktimeverify = (1U << 9)
+    verify_flags_checklocktimeverify = (1U << 9),
+
+    /**
+     * Verify CHECKATTENUATIONVERIFY
+     */
+    verify_flags_checkattenuationverify = (1U << 10)
 } verify_flags;
 
 /**

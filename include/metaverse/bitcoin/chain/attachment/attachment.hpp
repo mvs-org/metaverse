@@ -28,6 +28,7 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>

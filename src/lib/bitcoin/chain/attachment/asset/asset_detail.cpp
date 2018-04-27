@@ -37,6 +37,7 @@ asset_detail::asset_detail()
 {
     reset();
 }
+
 asset_detail::asset_detail(
     std::string symbol, uint64_t maximum_supply,
     uint8_t decimal_number, uint8_t threshold, std::string issuer,
@@ -69,6 +70,7 @@ asset_detail asset_detail::factory_from_data(reader& source)
     instance.from_data(source);
     return instance;
 }
+
 bool asset_detail::is_valid() const
 {
     return !(symbol.empty()

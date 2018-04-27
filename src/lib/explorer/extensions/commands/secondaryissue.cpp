@@ -86,6 +86,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     auto issue_helper = secondary_issuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.address), std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
             std::move(receiver), argument_.fee, argument_.volume);
 
     issue_helper.exec();

@@ -236,10 +236,6 @@ std::string opcode_to_string(opcode value, uint32_t flags)
             return "checkmultisigverify";
         case opcode::op_nop1:
             return "nop1";
-        case opcode::op_nop2:
-            return "nop2";
-        case opcode::op_nop3:
-            return "nop3";
         case opcode::op_nop4:
             return "nop4";
         case opcode::op_nop5:
@@ -472,14 +468,13 @@ opcode string_to_opcode(const std::string& value)
     else if (value == "checkmultisigverify")
         return opcode::checkmultisigverify;
     // Replaces nop2 with BIP65 activation.
-    else if (value == "checklocktimeverify")
+    else if (value == "nop2" || value == "checklocktimeverify")
         return opcode::checklocktimeverify;
+    // Replaces nop3 with attenuation, see MIP7 and MIP8.
+    else if (value == "nop3" || value == "checkattenuationverify")
+        return opcode::checkattenuationverify;
     else if (value == "nop1")
         return opcode::op_nop1;
-    else if (value == "nop2")
-        return opcode::op_nop2;
-    else if (value == "nop3")
-        return opcode::op_nop3;
     else if (value == "nop4")
         return opcode::op_nop4;
     else if (value == "nop5")
