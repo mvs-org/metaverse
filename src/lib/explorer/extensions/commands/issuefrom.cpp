@@ -53,8 +53,6 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     if (!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
-    std::string addr(argument_.address);
-
     // domain cert check
     bool issue_domain_cert = false;
     auto&& domain = asset_detail::get_domain(argument_.symbol);
@@ -64,8 +62,7 @@ console_result issuefrom::invoke (Json::Value& jv_output,
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
-            const auto match = [](const business_address_asset_cert& item)
-            {
+            const auto match = [](const business_address_asset_cert& item) {
                 return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
             };
 
@@ -75,11 +72,10 @@ console_result issuefrom::invoke (Json::Value& jv_output,
                 throw asset_cert_domain_exception{
                     "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
             }
-
-            addr = (*it).address;
         }
     }
 
+    std::string addr(argument_.address);
     // receiver
     std::vector<receiver_record> receiver{
         {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}

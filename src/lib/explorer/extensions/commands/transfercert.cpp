@@ -91,9 +91,19 @@ console_result transfercert::invoke (Json::Value& jv_output,
     }
 
     // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, 0, certs_send, utxo_attach_type::asset_cert, attachment()}
-    };
+    std::vector<receiver_record> receiver;
+
+    // separate domain cert
+    if (asset_cert::test_certs(certs_send, asset_cert_ns::domain)) {
+        receiver.push_back({argument_.to, argument_.symbol, 0, 0,
+            asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+        certs_send &= ~asset_cert_ns::domain;
+    }
+
+    if (certs_send != asset_cert_ns::none) {
+        receiver.push_back({argument_.to, argument_.symbol, 0, 0,
+            certs_send, utxo_attach_type::asset_cert, attachment()});
+    }
 
     auto helper = transferring_asset_cert(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.from), std::move(argument_.symbol), std::move(receiver), argument_.fee);

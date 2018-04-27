@@ -33,7 +33,7 @@ namespace commands {
 
 
 console_result issue::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 
@@ -56,8 +56,6 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
 
-    std::string addr("");
-
     // domain cert check
     bool issue_domain_cert = false;
     auto&& domain = asset_detail::get_domain(argument_.symbol);
@@ -67,8 +65,7 @@ console_result issue::invoke (Json::Value& jv_output,
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
-            const auto match = [](const business_address_asset_cert& item)
-            {
+            const auto match = [](const business_address_asset_cert& item) {
                 return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
             };
 
@@ -78,16 +75,12 @@ console_result issue::invoke (Json::Value& jv_output,
                 throw asset_cert_domain_exception{
                     "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
             }
-
-            addr = (*it).address;
         }
     }
 
-    if (addr.empty()) {
-        // get random address
-        auto index = bc::pseudo_random() % pvaddr->size();
-        addr = pvaddr->at(index).get_address();
-    }
+    // get random address
+    auto index = bc::pseudo_random() % pvaddr->size();
+    auto addr = pvaddr->at(index).get_address();
 
     // receiver
     std::vector<receiver_record> receiver{
