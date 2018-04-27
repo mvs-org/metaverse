@@ -461,10 +461,8 @@ void base_transfer_common::populate_etp_change(const std::string& address)
                 addr = !from_.empty() ? from_ : from_list_.at(0).addr;
             }
         }
-
-        BITCOIN_ASSERT(!addr.empty());
-        receiver_list_.push_back({addr, "", unspent_etp_ - payment_etp_,
-            0, utxo_attach_type::etp, attachment()});
+        receiver_list_.push_back({addr, "",
+                unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
@@ -472,8 +470,9 @@ void base_transfer_common::populate_asset_change(const std::string& addr)
 {
     // asset utxo
     if (unspent_asset_ > payment_asset_) {
-        receiver_list_.push_back({addr, symbol_, 0,
-            unspent_asset_ - payment_asset_, utxo_attach_type::asset_transfer, attachment()});
+        receiver_list_.push_back({addr, symbol_,
+                0, unspent_asset_ - payment_asset_,
+                utxo_attach_type::asset_transfer, attachment()});
     }
 }
 
@@ -482,18 +481,9 @@ void base_transfer_common::populate_asset_cert_change(const std::string& addr)
     // asset cert utxo
     auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
     if (cert_left != asset_cert_ns::none) {
-        // separate domain cert
-        if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
-            auto&& domain = asset_detail::get_domain(symbol_);
-            receiver_list_.push_back({addr, domain, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
-            cert_left &= ~asset_cert_ns::domain;
-        }
-
-        if (cert_left != asset_cert_ns::none) {
-            receiver_list_.push_back({addr, symbol_, 0,
-                cert_left, utxo_attach_type::asset_cert, attachment()});
-        }
+        receiver_list_.push_back({addr, symbol_,
+                0, cert_left,
+                utxo_attach_type::asset_cert, attachment()});
     }
 }
 
@@ -1139,10 +1129,10 @@ void sending_multisig_etp::sign_tx_inputs() {
         tx_.inputs[index].script = ss;
         index++;
     }
+
 }
 
-void sending_multisig_etp::exec()
-{
+void sending_multisig_etp::exec(){
     // prepare
     sum_payment_amount();
     populate_unspent_list();
@@ -1158,20 +1148,26 @@ void sending_multisig_etp::exec()
     //send_tx();
 }
 
-void issuing_asset::sum_payment_amount()
-{
+void issuing_asset::sum_payment_amount() {
     base_transfer_common::sum_payment_amount();
-
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
-
     if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 
-    bool issue_domain_cert = asset_cert::test_certs(payment_asset_, asset_cert_ns::domain);
-    payment_asset_cert_ = asset_cert_ns::none;
+    // TODO
+bool issue_domain_cert = false;
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+
+        if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain)) {
+            issue_domain_cert = true;
+        }
+    }
+
     if (!issue_domain_cert) {
         auto&& domain = asset_detail::get_domain(symbol_);
         if (asset_detail::is_valid_domain(domain)) {
@@ -1179,6 +1175,7 @@ void issuing_asset::sum_payment_amount()
             payment_asset_cert_ = asset_cert_ns::domain;
         }
     }
+//
 }
 
 void issuing_asset::populate_unspent_list()
@@ -1890,9 +1887,22 @@ void transferring_asset_cert::populate_change()
 {
     // etp utxo
     populate_etp_change(from_);
-
     // asset cert utxo
-    populate_asset_cert_change(from_);
+    //populate_asset_cert_change(from_);
+    auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
+    if (cert_left != asset_cert_ns::none) {
+        // separate domain cert
+        if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
+            receiver_list_.push_back({from_, symbol_, 0,
+                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+            cert_left &= ~asset_cert_ns::domain;
+        }
+
+        if (cert_left != asset_cert_ns::none) {
+            receiver_list_.push_back({from_, symbol_, 0,
+                cert_left, utxo_attach_type::asset_cert, attachment()});
+        }
+    }
 }
 
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)

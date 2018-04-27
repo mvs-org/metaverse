@@ -96,12 +96,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "asset symbol"
+            "Asset symbol"
         )
         (
-            "CERTS",
+            "cert,c",
             value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
-            "asset cert"
+            "Asset cert name"
         )
         (
             "fee,f",

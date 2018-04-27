@@ -1090,14 +1090,15 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
                 return false;
             }
 
-            if (asset_cert::test_certs(asset_certs, asset_cert_ns::domain)) {
-                auto&& domain = asset_detail::get_domain(old_symbol_in_);
-                if (domain != asset_cert.get_symbol()) { // check asset symbol
+            // check asset cert symbol
+            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
+                auto&& domain = asset_detail::get_domain(asset_cert.get_symbol());
+                if (domain != old_symbol_in_) {
                     return false;
                 }
             }
             else {
-                if (old_symbol_in_ != asset_cert.get_symbol()) { // check asset symbol
+                if (old_symbol_in_ != asset_cert.get_symbol()) {
                     return false;
                 }
             }
