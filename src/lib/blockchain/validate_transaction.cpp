@@ -807,7 +807,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
 
     for (auto& output : tx.outputs) {
         if(output.is_asset_issue()) {
-            if (!chain::output::is_valid_symbol(output.get_asset_symbol())) {
+            if (!chain::output::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
                return error::asset_symbol_invalid;
             }
         }
@@ -817,8 +817,8 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 return error::did_address_needed;
             }
         }
-        else if (output.is_did_issue() || output.is_did_transfer()) {
-            if (!chain::output::is_valid_symbol(output.get_did_symbol())) {
+        else if (output.is_did_issue()) {
+            if (!chain::output::is_valid_symbol(output.get_did_symbol(), tx.version)) {
                return error::did_symbol_invalid;
             }
 

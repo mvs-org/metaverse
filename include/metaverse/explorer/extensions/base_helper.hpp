@@ -463,6 +463,11 @@ public:
     void sum_payment_amount() override;
 
     void populate_change() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 class BCX_API sending_did : public base_transfer_helper

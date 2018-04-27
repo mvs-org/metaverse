@@ -52,7 +52,7 @@ output output::factory_from_data(reader& source)
     instance.from_data(source);
     return instance;
 }
-bool output::is_valid_symbol(const std::string& symbol)
+bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
 {
     if (symbol.empty())
         return false;
@@ -63,11 +63,14 @@ bool output::is_valid_symbol(const std::string& symbol)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'))
             return false;
-        if (i != std::toupper(i))
+        if ((tx_version >= transaction_version::check_nova_feature)
+                && (i != std::toupper(i))) {
             return false;
+        }
     }
     // sensitive check
-    if (bc::wallet::symbol::is_sensitive(symbol)) {
+    if ((tx_version >= transaction_version::check_nova_feature)
+            && bc::wallet::symbol::is_sensitive(symbol)) {
         return false;
     }
 	return true;
