@@ -413,16 +413,34 @@ void base_transfer_common::sync_fetchutxo (const std::string& prikey, const std:
     rows.clear();
 }
 
-void base_transfer_helper::sum_payment_amount(){
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
-        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
+void base_transfer_common::check_fee_in_valid_range(uint64_t fee)
+{
+    if ((fee < minimum_fee) || (fee > maximum_fee)) {
+        throw asset_exchange_poundage_exception{"fee must in ["
+            + std::to_string(minimum_fee) + ", " + std::to_string(maximum_fee) + "]"};
+    }
+}
 
+void base_transfer_common::sum_payments()
+{
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
+        payment_asset_cert_ |= iter.asset_cert;
     }
+}
+
+void base_transfer_common::check_receiver_list_not_empty() const
+{
+    if (receiver_list_.empty()) {
+        throw toaddress_empty_exception{"empty target address"};
+    }
+}
+
+void base_transfer_common::sum_payment_amount(){
+    check_receiver_list_not_empty();
+    check_fee_in_valid_range(payment_etp_);
+    sum_payments();
 }
 
 void base_transfer_helper::populate_unspent_list() {
@@ -735,19 +753,10 @@ std::vector<unsigned char> base_transfer_helper::satoshi_to_chunk(const int64_t&
 }
 
 void base_transaction_constructor::sum_payment_amount() {
-    if(from_vec_.empty())
+    base_transfer_common::sum_payment_amount();
+    if (from_vec_.empty()) {
         throw fromaddress_empty_exception{"empty from address"};
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
-        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
-
-    for( auto& each : receiver_list_){
-        // sum etp and asset amount
-        payment_etp_ += each.amount;
-        payment_asset_ += each.asset_amount;
     }
-
 }
 
 void base_transaction_constructor::populate_change() {
@@ -1134,16 +1143,10 @@ void sending_multisig_etp::exec(){
 }
 
 void issuing_asset::sum_payment_amount() {
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    if (payment_etp_ < 1000000000) // 10 etp now
+    base_transfer_common::sum_payment_amount();
+    if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
     }
-
     if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
@@ -1237,27 +1240,19 @@ void secondary_issuing_asset::populate_tx_outputs()
 }
 
 void secondary_issuing_asset::sum_payment_amount() {
-    if (receiver_list_.empty())
-        throw std::logic_error{"empty target address"};
-    if (receiver_list_.size() > 2)
+    base_transfer_common::sum_payment_amount();
+    if (receiver_list_.size() > 2) {
         throw toaddress_invalid_exception{"too many target address"};
-    if (payment_etp_ < 10000) // 10000 ETP bits now
-        throw asset_exchange_poundage_exception{"fee must more than 10000 satoshi == 0.0001 etp"};
-    if (payment_etp_ > maximum_fee)
-        throw asset_exchange_poundage_exception{"fee must be less than 10000000000 satoshi == 100 etp"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
-        payment_asset_cert_ |= iter.asset_cert;
     }
 
     auto total_volume = blockchain_.get_asset_volume(symbol_);
-    if (total_volume > max_uint64 - volume_)
+    if (total_volume > max_uint64 - volume_) {
         throw asset_amount_exception{"secondaryissue, volume cannot exceed maximum value"};
+    }
 
-    if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue))
+    if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue)) {
         throw asset_cert_exception("no asset cert of issue right is provided.");
+    }
 
     if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
@@ -1482,15 +1477,9 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 }
 
 void issuing_did::sum_payment_amount() {
-    if(receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-    //if (payment_etp_ < maximum_fee)
-    if (payment_etp_ < 100000000) // test code 10 etp now
-        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 100 etp"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
+    base_transfer_common::sum_payment_amount();
+    if (payment_etp_ < 100000000) {
+        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 1 etp"};
     }
 }
 
@@ -1701,22 +1690,12 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
 
 void transferring_asset_cert::sum_payment_amount()
 {
-    if (from_.empty())
+    base_transfer_common::sum_payment_amount();
+    if (from_.empty()) {
         throw fromaddress_empty_exception{"empty from address"};
-
-    if (receiver_list_.empty())
-        throw toaddress_empty_exception{"empty target address"};
-
-    if (receiver_list_.size() > 1)
+    }
+    if (receiver_list_.size() > 1) {
         throw toaddress_invalid_exception{"multiple target address"};
-
-    if (payment_etp_ > maximum_fee || payment_etp_ < minimum_fee)
-        throw asset_exchange_poundage_exception{"fee must in [10000, 10000000000]"};
-
-    for (auto& iter : receiver_list_) {
-        payment_etp_ += iter.amount;
-        payment_asset_ += iter.asset_amount;
-        payment_asset_cert_ |= iter.asset_cert;
     }
 }
 

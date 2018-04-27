@@ -161,6 +161,12 @@ public:
     static const uint64_t attach_version{1};
 
     virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
+    virtual void sum_payment_amount();
+
+    // common functions, single responsibility.
+    static void check_fee_in_valid_range(uint64_t fee);
+    void sum_payments();
+    void check_receiver_list_not_empty() const;
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
@@ -195,7 +201,10 @@ public:
     {
     };
 
-    virtual void sum_payment_amount();
+    ~base_transfer_helper()
+    {
+    }
+
     virtual void populate_unspent_list();
     virtual void populate_change() = 0;
 
