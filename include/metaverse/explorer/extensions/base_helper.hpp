@@ -160,6 +160,7 @@ public:
     static const uint64_t tx_limit{677};
     static const uint64_t attach_version{1};
 
+    virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
     virtual void sum_payment_amount();
     virtual void populate_change();

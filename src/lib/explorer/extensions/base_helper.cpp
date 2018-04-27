@@ -128,11 +128,10 @@ void sync_fetch_asset_balance_record (std::string& addr,
 
 /// amount == 0 -- get all address balances
 /// amount != 0 -- get some address balances which bigger than amount
-void sync_fetchbalance (wallet::payment_address& address,
+void sync_fetchbalance(wallet::payment_address& address,
     std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount)
 {
     auto&& rows = blockchain.get_address_history(address);
-    log::trace("get_history=")<<rows.size();
 
     uint64_t total_received = 0;
     uint64_t confirmed_balance = 0;
@@ -146,7 +145,7 @@ void sync_fetchbalance (wallet::payment_address& address,
 
     for (auto& row: rows)
     {
-        if(amount && ((unspent_balance - frozen_balance) >= amount)) // performance improve
+        if (amount && ((unspent_balance - frozen_balance) >= amount)) // performance improve
             break;
 
         total_received += row.value;
@@ -154,36 +153,29 @@ void sync_fetchbalance (wallet::payment_address& address,
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
-            //log::debug("get_tx=")<<blockchain.get_transaction(row.output.hash, tx_temp); // todo -- return value check
             auto output = tx_temp.outputs.at(row.output.index);
 
-            // deposit utxo in transaction pool
-            if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                        && !row.output_height) {
-                frozen_balance += row.value;
-            }
-
-            // deposit utxo in block
-            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-                && row.output_height) {
-                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
+            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                if (row.output_height == 0) {
+                    // deposit utxo in transaction pool
                     frozen_balance += row.value;
+                } else {
+                    // deposit utxo in block
+                    uint64_t lock_height = chain::operation::
+                        get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                    if((row.output_height + lock_height) > height) {
+                        // utxo already in block but deposit not expire
+                        frozen_balance += row.value;
+                    }
                 }
-            }
-
-            // coin base etp maturity etp check
-            if(tx_temp.is_coinbase()
-                && !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
+            } else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
                 // add not coinbase_maturity etp into frozen
-                if((!row.output_height ||
-                            (row.output_height && (height - row.output_height) < coinbase_maturity))) {
+                if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
                     frozen_balance += row.value;
                 }
             }
 
-            if((type == "all")
-                || ((type == "etp") && output.is_etp()))
+            if ((type == "all") || ((type == "etp") && output.is_etp()))
                 unspent_balance += row.value;
         }
 
@@ -199,6 +191,47 @@ void sync_fetchbalance (wallet::payment_address& address,
 
 }
 
+bool base_transfer_common::get_spendable_output(
+        chain::output& output, const chain::history& row, uint64_t height) const
+{
+    // spended
+    if (row.spend.hash != null_hash) {
+        return false;
+    }
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
+        return false;
+    }
+
+    output = tx_temp.outputs.at(row.output.index);
+
+    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+        if (row.output_height == 0) {
+            // deposit utxo in transaction pool
+            return false;
+        } else {
+            // deposit utxo in block
+            auto lock_height = chain::operation::
+                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+            if ((row.output_height + lock_height) > height) {
+                // utxo already in block but deposit not expire
+                return false;
+            }
+        }
+    } else if (tx_temp.is_coinbase()) { // incase readd deposit
+        // coin base etp maturity etp check
+        // coinbase_maturity etp check
+        if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// only consider etp and asset. if others needed, like cert, then override this in child class.
 void base_transfer_common::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     const bool has_prikey = !prikey.empty();
@@ -206,50 +239,23 @@ void base_transfer_common::sync_fetchutxo (const std::string& prikey, const std:
     auto&& rows = blockchain_.get_address_history(waddr);
     log::trace("get_history=")<<rows.size();
 
-    chain::transaction tx_temp;
-    uint64_t tx_height;
     uint64_t height = 0;
-    auto frozen_flag = false;
     address_asset_record record;
-
     blockchain_.get_last_height(height);
 
     for (auto& row: rows)
     {
-        frozen_flag = false;
-        if((unspent_etp_ >= payment_etp_) && (unspent_asset_ >= payment_asset_)) // performance improve
+        if ((unspent_etp_ >= payment_etp_) && (unspent_asset_ >= payment_asset_)) { // performance improve
             break;
+        }
+
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
+            continue;
+        }
 
         // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain_.get_transaction(row.output.hash, tx_temp, tx_height)) {
-            auto output = tx_temp.outputs.at(row.output.index);
-
-            // deposit utxo in transaction pool
-            if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                        && !row.output_height) {
-                frozen_flag = true;
-            }
-
-            // deposit utxo in block
-            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-                && row.output_height) {
-                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                    frozen_flag = true;
-                }
-            }
-
-            // coin base etp maturity etp check
-            if(tx_temp.is_coinbase()
-                && !(output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)) { // incase readd deposit
-                // add not coinbase_maturity etp into frozen
-                if((!row.output_height ||
-                            (row.output_height && (height - row.output_height) < coinbase_maturity))) {
-                    frozen_flag = true;
-                }
-            }
-            log::trace("frozen_flag=")<< frozen_flag;
+        {
             log::trace("payment_asset_=")<< payment_asset_;
             log::trace("is_etp=")<< output.is_etp();
             log::trace("value=")<< row.value;
@@ -258,7 +264,7 @@ void base_transfer_common::sync_fetchutxo (const std::string& prikey, const std:
             log::trace("symbol=")<< symbol_;
             log::trace("outpuy symbol=")<< output.get_asset_symbol();
             // add to from list
-            if(!frozen_flag){
+            {
                 // etp -> etp tx
                 if(!payment_asset_ && output.is_etp()){
                     if (has_prikey) {
@@ -1160,7 +1166,7 @@ void issuing_asset::sum_payment_amount()
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 
-    bool issue_domain_cert = asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain);
+    bool issue_domain_cert = (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain));
     payment_asset_cert_ = asset_cert_ns::none;
     if (!issue_domain_cert) {
         auto&& domain = asset_detail::get_domain(symbol_);
@@ -1226,16 +1232,11 @@ void issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string
             break;
         }
 
-        // spended
-        if (row.spend.hash != null_hash)
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
             continue;
+        }
 
-        chain::transaction tx_temp;
-        uint64_t tx_height;
-        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
-            continue;
-
-        auto output = tx_temp.outputs.at(row.output.index);
         auto asset_amount = output.get_asset_amount();
         auto asset_symbol = output.get_asset_symbol();
         auto asset_certs = output.get_asset_cert_type();
@@ -1266,29 +1267,6 @@ void issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string
         }
         else {
             continue;
-        }
-
-        // deposit utxo in transaction pool
-        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-            && (row.output_height == 0)) {
-            continue;
-        }
-        else if (tx_temp.is_coinbase()) { // incase readd deposit
-            // coin base etp maturity etp check
-            // coinbase_maturity etp check
-            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
-                continue;
-            }
-        }
-
-        // deposit utxo in block
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-            && (row.output_height != 0)) {
-            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                output.script.operations);
-            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                continue;
-            }
         }
 
         // add to from list
@@ -1549,16 +1527,11 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
 
     for (auto& row: rows)
     {
-        // spended
-        if (row.spend.hash != null_hash)
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
             continue;
+        }
 
-        chain::transaction tx_temp;
-        uint64_t tx_height;
-        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
-            continue;
-
-        auto output = tx_temp.outputs.at(row.output.index);
         auto&& attenuation_model_param = output.get_attenuation_model_param();
         auto new_model_param_ptr = std::make_shared<data_chunk>();
         auto asset_total_amount = output.get_asset_amount();
@@ -1592,27 +1565,6 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             // only get asset from specified address
             if (addr != target_addr)
                 continue;
-        }
-
-        // deposit utxo in transaction pool
-        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                    && (row.output_height == 0)) {
-            continue;
-        } else if (tx_temp.is_coinbase()) { // incase readd deposit
-            // coin base etp maturity etp check
-            // coinbase_maturity etp check
-            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
-                continue;
-            }
-        }
-
-        // deposit utxo in block
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-            && (row.output_height != 0)) {
-            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                continue;
-            }
         }
 
         // add to from list
@@ -1697,16 +1649,11 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
     //fetch did utxo
     for (auto& row: rows)
     {
-        // spended
-        if (row.spend.hash != null_hash)
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
             continue;
+        }
 
-        chain::transaction tx_temp;
-        uint64_t tx_height;
-        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
-            continue;
-
-        auto output = tx_temp.outputs.at(row.output.index);
         auto did_symbol = output.get_did_symbol();
         auto etp_amount = row.value;
 
@@ -1716,27 +1663,6 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
                 continue;
         }else{
             continue;
-        }
-
-        // deposit utxo in transaction pool
-        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                    && (row.output_height == 0)) {
-            continue;
-        } else if (tx_temp.is_coinbase()) { // incase readd deposit
-            // coin base etp maturity etp check
-            // coinbase_maturity etp check
-            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
-                continue;
-            }
-        }
-
-        // deposit utxo in block
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-            && (row.output_height != 0)) {
-            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                continue;
-            }
         }
 
         // add to from list
@@ -1783,16 +1709,11 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
      //fetch fee utxo
     for (auto& row: rows)
     {
-        // spended
-        if (row.spend.hash != null_hash)
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
             continue;
+        }
 
-        chain::transaction tx_temp;
-        uint64_t tx_height;
-        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
-            continue;
-
-        auto output = tx_temp.outputs.at(row.output.index);
         auto did_symbol = output.get_did_symbol();
         auto etp_amount = row.value;
 
@@ -1809,27 +1730,6 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
                 continue;
         } else {
             continue;
-        }
-
-        // deposit utxo in transaction pool
-        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                    && (row.output_height == 0)) {
-            continue;
-        } else if (tx_temp.is_coinbase()) { // incase readd deposit
-            // coin base etp maturity etp check
-            // coinbase_maturity etp check
-            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
-                continue;
-            }
-        }
-
-        // deposit utxo in block
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-            && (row.output_height != 0)) {
-            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                continue;
-            }
         }
 
         // add to from list
@@ -1916,16 +1816,11 @@ void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const s
             break;
         }
 
-        // spended
-        if (row.spend.hash != null_hash)
+        chain::output output;
+        if (!get_spendable_output(output, row, height)) {
             continue;
+        }
 
-        chain::transaction tx_temp;
-        uint64_t tx_height;
-        if (!blockchain_.get_transaction(row.output.hash, tx_temp, tx_height))
-            continue;
-
-        auto output = tx_temp.outputs.at(row.output.index);
         auto asset_amount = output.get_asset_amount();
         auto asset_symbol = output.get_asset_symbol();
         auto asset_certs = output.get_asset_cert_type();
@@ -1955,28 +1850,6 @@ void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const s
         }
         else {
             continue;
-        }
-
-        // deposit utxo in transaction pool
-        if ((output.script.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-                    && (row.output_height == 0)) {
-            continue;
-        }
-        else if (tx_temp.is_coinbase()) { // incase readd deposit
-            // coin base etp maturity etp check
-            // coinbase_maturity etp check
-            if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
-                continue;
-            }
-        }
-
-        // deposit utxo in block
-        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)
-            && (row.output_height != 0)) {
-            auto lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if ((row.output_height + lock_height) > height) { // utxo already in block but deposit not expire
-                continue;
-            }
         }
 
         // add to from list
