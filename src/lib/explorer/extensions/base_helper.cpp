@@ -64,7 +64,7 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 void sync_fetch_asset_balance (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
-    auto address = payment_address(addr);
+    auto&& address = payment_address(addr);
     auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
@@ -96,7 +96,7 @@ void sync_fetch_asset_balance (std::string& addr,
 void sync_fetch_asset_balance_record (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {
-    auto address = payment_address(addr);
+    auto&& address = payment_address(addr);
     auto&& rows = blockchain.get_address_history(address);
 
     chain::transaction tx_temp;
@@ -658,7 +658,7 @@ void base_transfer_helper::populate_tx_outputs(){
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
 
-        auto&& hash = payment.hash();
+        const auto& hash = payment.hash();
         if (blockchain_.is_blackhole_address(iter.target))
         {
             payment_ops = chain::operation::to_pay_blackhole_pattern(hash);
@@ -680,7 +680,7 @@ void base_transfer_helper::populate_tx_outputs(){
             payment_ops = chain::operation::to_pay_script_hash_pattern(hash);
         }
 
-        auto payment_script = chain::script{ payment_ops };
+        auto&& payment_script = chain::script{ payment_ops };
 
         // generate asset info
         auto&& output_att = populate_output_attachment(iter);
@@ -811,7 +811,7 @@ void base_transaction_constructor::sum_payment_amount() {
 }
 
 void base_transaction_constructor::populate_change() {
-    auto&& addr = !mychange_.empty() ? mychange_ : from_list_.at(0).addr;
+    auto addr = !mychange_.empty() ? mychange_ : from_list_.at(0).addr;
 
     // etp utxo
     populate_etp_change(addr);
@@ -905,7 +905,7 @@ void base_transaction_constructor::populate_tx_outputs(){
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
 
-        auto&& hash = payment.hash();
+        const auto& hash = payment.hash();
         if (iter.type == utxo_attach_type::asset_locked_transfer) {
             auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
             if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
@@ -984,7 +984,7 @@ void depositing_etp::populate_tx_outputs() {
         const wallet::payment_address payment(iter.target);
         if (!payment)
             throw toaddress_invalid_exception{"invalid target address"};
-        auto hash = payment.hash();
+        const auto& hash = payment.hash();
         if((to_ == iter.target)
             && (utxo_attach_type::deposit == iter.type)) {
             payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
@@ -992,7 +992,7 @@ void depositing_etp::populate_tx_outputs() {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
 
-        auto payment_script = chain::script{ payment_ops };
+        auto&& payment_script = chain::script{ payment_ops };
 
         // generate asset info
         auto&& output_att = populate_output_attachment(iter);
@@ -1034,7 +1034,7 @@ void depositing_etp_transaction::populate_tx_outputs() {
             throw toaddress_invalid_exception{"invalid target address"};
 
         if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-            auto&& hash = payment.hash();
+            const auto& hash = payment.hash();
             if((utxo_attach_type::deposit == iter.type)) {
                 payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
             } else {
@@ -1043,7 +1043,7 @@ void depositing_etp_transaction::populate_tx_outputs() {
         } else {
             throw toaddress_invalid_exception{std::string("not supported version target address ") + iter.target};
         }
-        auto payment_script = chain::script{ payment_ops };
+        auto&& payment_script = chain::script{ payment_ops };
 
         // generate asset info
         auto&& output_att = populate_output_attachment(iter);
@@ -1218,7 +1218,7 @@ void issuing_asset::populate_unspent_list()
 void issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
     auto&& domain = asset_detail::get_domain(symbol_);
-    auto waddr = wallet::payment_address(addr);
+    auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
@@ -1356,14 +1356,14 @@ void issuing_asset::populate_tx_outputs()
             throw toaddress_invalid_exception{"invalid target address"};
         }
 
-        auto hash = payment.hash();
+        const auto& hash = payment.hash();
         if (utxo_attach_type::asset_issue == iter.type) {
             payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
         } else {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
 
-        auto payment_script = chain::script{ payment_ops };
+        auto&& payment_script = chain::script{ payment_ops };
         auto&& output_att = populate_output_attachment(iter);
         if (!output_att.is_valid()) {
             throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
@@ -1395,14 +1395,14 @@ void secondary_issuing_asset::populate_tx_outputs()
             throw toaddress_invalid_exception{"invalid target address"};
         }
 
-        auto hash = payment.hash();
+        const auto& hash = payment.hash();
         if (utxo_attach_type::asset_secondaryissue == iter.type) {
             payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
         } else {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
 
-        auto payment_script = chain::script{ payment_ops };
+        auto&& payment_script = chain::script{ payment_ops };
         auto&& output_att = populate_output_attachment(iter);
         if (!output_att.is_valid()) {
             throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
@@ -1474,7 +1474,7 @@ void secondary_issuing_asset::populate_unspent_list()
 
 void secondary_issuing_asset::populate_change()
 {
-    auto&& target_addr = receiver_list_.at(0).target;
+    auto target_addr = receiver_list_.at(0).target;
 
     // etp utxo
     populate_etp_change();
@@ -1517,7 +1517,7 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
 
 void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
-    auto waddr = wallet::payment_address(addr);
+    auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
 
     auto target_addr = receiver_list_.at(0).target;
@@ -1625,7 +1625,7 @@ void issuing_did::sum_payment_amount() {
 }
 
 void sending_asset::populate_change() {
-    auto&& from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
+    auto from_addr = !from_.empty() ? from_ : from_list_.at(0).addr;
     // etp utxo
     populate_etp_change(from_addr);
     // asset utxo
@@ -1633,14 +1633,14 @@ void sending_asset::populate_change() {
 }
 
 void sending_did::populate_change() {
-    auto&& from_addr = !fromfee.empty() ? fromfee : from_list_.at(0).addr;
+    auto from_addr = !fromfee.empty() ? fromfee : from_list_.at(0).addr;
     // etp utxo
     populate_etp_change(from_addr);
 }
 
 void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
-    auto waddr = wallet::payment_address(addr);
+    auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
@@ -1801,7 +1801,7 @@ void transferring_asset_cert::populate_change()
 
 void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
 {
-    auto waddr = wallet::payment_address(addr);
+    auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
 
     uint64_t height = 0;
