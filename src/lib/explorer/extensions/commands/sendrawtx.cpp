@@ -40,8 +40,8 @@ console_result sendrawtx::invoke (Json::Value& jv_output,
     uint64_t inputs_etp_val = 0, outputs_etp_val = tx_.total_output_value();
     if(!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
         throw tx_validate_exception{std::string("get transaction inputs etp value error!")};
-    if((inputs_etp_val - outputs_etp_val) > argument_.fee) //  fee more than max limit etp
-        throw tx_validate_exception{std::string("invalid tx fee")};
+    if((inputs_etp_val <= outputs_etp_val) || ((inputs_etp_val - outputs_etp_val) < argument_.fee))
+        throw tx_validate_exception{std::string("no enough transaction fee")};
     if(blockchain.validate_transaction(tx_))
         throw tx_validate_exception{std::string("validate transaction failure")};
     if(blockchain.broadcast_transaction(tx_)) 
