@@ -456,35 +456,35 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 
     } else if(attach_data.get_type() == ASSET_TYPE) {
 
-        auto&& asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
+        auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
         if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
-            auto&& detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
+            auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
             tree = prop_list(detail_info, false);
             tree["type"] = "asset-issue";
         }
         if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
-            auto&& trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
+            auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
             tree = prop_list(trans_info);
             tree["type"] = "asset-transfer";
         }
 
     } else if (attach_data.get_type() == ASSET_CERT_TYPE) {
-        auto&& cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
+        auto cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
         tree = prop_list(cert_info);
         tree["type"] = "asset-cert";
 
     } else if(attach_data.get_type() == DID_TYPE) {
 
-        auto&& did_info = boost::get<bc::chain::did>(attach_data.get_attach());
+        auto did_info = boost::get<bc::chain::did>(attach_data.get_attach());
         if(did_info.get_status() == DID_DETAIL_TYPE) {
             tree["type"] = "did-issue";
-            auto&& detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
+            auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
             tree["address"] = detail_info.get_address();
         }
         if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
             tree["type"] = "did-transfer";
-            auto&& detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
+            auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
             tree["address"] = detail_info.get_address();
         }

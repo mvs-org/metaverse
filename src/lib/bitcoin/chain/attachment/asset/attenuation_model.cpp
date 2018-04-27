@@ -148,7 +148,7 @@ private:
         if (model == model_type::none) {
             return true;
         }
-        auto&& keys = model_keys_map[model];
+        const auto& keys = model_keys_map[model];
         if (map_.size() != keys.size()) {
             log::info(LOG_HEADER) << "keys number for model type " << to_index(model)
                 << " is not exactly to " << keys.size();
@@ -379,11 +379,11 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         return false;
     }
 
-    auto&& PN = parser.get_current_period_number();
-    auto&& LH = parser.get_latest_lock_height();
-    auto&& LQ = parser.get_locked_quantity();
-    auto&& LP = parser.get_locked_period();
-    auto&& UN = parser.get_unlock_number();
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
 
     // common condition : initial PN == 0
     if (initial) {
@@ -474,7 +474,7 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         // then IR.size == 1 and IR > 0
         // and satisfy custom param conditions.
         is_convert_to_custom = true;
-        auto&& IR = parser.get_issue_rates();
+        const auto& IR = parser.get_issue_rates();
         if (IR.size() != 1) {
             log::info(LOG_HEADER) << "fixed_rate param error: IR.size() != 1";
             return false;
@@ -489,8 +489,8 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         // given LQ, LP, UN, UC, UQ, then
         // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
         // LP = sum(UC) and all UC > 0 and UC.size == UN
-        auto&& UC = parser.get_unlock_cycles();
-        auto&& UQ = parser.get_unlocked_quantities();
+        const auto& UC = parser.get_unlock_cycles();
+        const auto& UQ = parser.get_unlocked_quantities();
         if (UC.size() != UN) {
             log::info(LOG_HEADER) << "custom param error: UC.size() != UN";
             return false;
@@ -538,11 +538,11 @@ uint64_t attenuation_model::get_available_asset_amount(
         return asset_amount;
     }
 
-    auto&& PN = parser.get_current_period_number();
-    auto&& LH = parser.get_latest_lock_height();
-    auto&& LQ = parser.get_locked_quantity();
-    auto&& LP = parser.get_locked_period();
-    auto&& UN = parser.get_unlock_number();
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
 
     auto available = asset_amount - LQ;
 
@@ -587,8 +587,8 @@ uint64_t attenuation_model::get_available_asset_amount(
     }
 
     if ((model == model_type::custom) || is_convert_to_custom) {
-        auto&& UC = parser.get_unlock_cycles();
-        auto&& UQ = parser.get_unlocked_quantities();
+        const auto& UC = parser.get_unlock_cycles();
+        const auto& UQ = parser.get_unlocked_quantities();
         available += UQ[PN];
         diff_height -= LH;
         ++PN;

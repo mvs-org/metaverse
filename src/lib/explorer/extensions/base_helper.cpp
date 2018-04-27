@@ -665,7 +665,7 @@ void base_transfer_helper::populate_tx_outputs(){
         }
         else if (iter.type == utxo_attach_type::asset_locked_transfer)
         {
-            auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            const auto& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
             if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
                 throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
             }
@@ -907,7 +907,7 @@ void base_transaction_constructor::populate_tx_outputs(){
 
         const auto& hash = payment.hash();
         if (iter.type == utxo_attach_type::asset_locked_transfer) {
-            auto&& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
+            const auto& attenuation_model_param = boost::get<bc::chain::blockchain_message>(iter.attach_elem.get_attach()).get_content();
             if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
                 throw asset_attenuation_model_exception("check asset attenuation model param failed: " + attenuation_model_param);
             }

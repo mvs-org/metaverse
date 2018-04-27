@@ -1450,7 +1450,7 @@ bool op_checkattenuationverify(evaluation_context& context, const script& script
     if (context.stack.empty())
         return false;
 
-    auto&& model_param = context.pop_stack();
+    auto model_param = context.pop_stack();
     if (!attenuation_model::check_model_param(model_param))
         return false;
 
