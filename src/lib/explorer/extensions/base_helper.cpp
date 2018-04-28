@@ -1161,8 +1161,8 @@ void issuing_asset::sum_payment_amount()
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
-    if (!attenuation_model_param.empty()
-            && !attenuation_model::check_model_param(to_chunk(attenuation_model_param), true)) {
+    if (!attenuation_model_param_.empty()
+            && !attenuation_model::check_model_param(to_chunk(attenuation_model_param_), true)) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 
@@ -1335,7 +1335,7 @@ void issuing_asset::populate_change()
 
 void issuing_asset::populate_tx_outputs()
 {
-    if (attenuation_model_param.empty()) {
+    if (attenuation_model_param_.empty()) {
         return base_transfer_helper::populate_tx_outputs();
     }
 
@@ -1358,7 +1358,7 @@ void issuing_asset::populate_tx_outputs()
 
         const auto& hash = payment.hash();
         if (utxo_attach_type::asset_issue == iter.type) {
-            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param_);
         } else {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
@@ -1374,7 +1374,7 @@ void issuing_asset::populate_tx_outputs()
 
 void secondary_issuing_asset::populate_tx_outputs()
 {
-    if (attenuation_model_param.empty()) {
+    if (attenuation_model_param_.empty()) {
         return base_transfer_helper::populate_tx_outputs();
     }
 
@@ -1397,7 +1397,7 @@ void secondary_issuing_asset::populate_tx_outputs()
 
         const auto& hash = payment.hash();
         if (utxo_attach_type::asset_secondaryissue == iter.type) {
-            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param);
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(hash, attenuation_model_param_);
         } else {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
@@ -1417,6 +1417,8 @@ void secondary_issuing_asset::sum_payment_amount() {
         throw toaddress_invalid_exception{"too many target address"};
     }
 
+    target_address_ = receiver_list_.at(0).target;
+
     auto total_volume = blockchain_.get_asset_volume(symbol_);
     if (total_volume > max_uint64 - volume_) {
         throw asset_amount_exception{"secondaryissue, volume cannot exceed maximum value"};
@@ -1426,8 +1428,8 @@ void secondary_issuing_asset::sum_payment_amount() {
         throw asset_cert_exception("no asset cert of issue right is provided.");
     }
 
-    if (!attenuation_model_param.empty()
-            && !attenuation_model::check_model_param(to_chunk(attenuation_model_param), true)) {
+    if (!attenuation_model_param_.empty()
+            && !attenuation_model::check_model_param(to_chunk(attenuation_model_param_), true)) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 }
@@ -1445,6 +1447,7 @@ void secondary_issuing_asset::populate_unspent_list()
         throw address_list_nullptr_exception{"nullptr for address list"};
 
     // get from address balances
+    bool is_target_address_processed{false};
     for (const auto& each : *pvaddr) {
         // filter script address
         if (blockchain_.is_script_address(each.get_address()))
@@ -1452,6 +1455,14 @@ void secondary_issuing_asset::populate_unspent_list()
 
         // select utxo in all account addresses
         sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+
+        if (each.get_address() == target_address_) {
+            is_target_address_processed = true;
+        }
+
+        if (is_target_address_processed && (unspent_etp_ >= payment_etp_)) {
+            break;
+        }
     }
 
     if (from_list_.empty())
@@ -1474,16 +1485,14 @@ void secondary_issuing_asset::populate_unspent_list()
 
 void secondary_issuing_asset::populate_change()
 {
-    auto target_addr = receiver_list_.at(0).target;
-
     // etp utxo
     populate_etp_change();
 
     // asset utxo
-    populate_asset_change(target_addr);
+    populate_asset_change(target_address_);
 
     // asset cert utxo
-    populate_asset_cert_change(target_addr);
+    populate_asset_cert_change(target_address_);
 }
 
 attachment secondary_issuing_asset::populate_output_attachment(receiver_record& record)
@@ -1520,11 +1529,10 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
     auto&& waddr = wallet::payment_address(addr);
     auto&& rows = blockchain_.get_address_history(waddr);
 
-    auto target_addr = receiver_list_.at(0).target;
-
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
+    bool is_target_address_processed{false};
     for (auto& row: rows)
     {
         chain::output output;
@@ -1532,22 +1540,14 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             continue;
         }
 
-        auto&& attenuation_model_param = output.get_attenuation_model_param();
-        auto new_model_param_ptr = std::make_shared<data_chunk>();
         auto asset_total_amount = output.get_asset_amount();
-        auto asset_amount = asset_total_amount;
-        if (!attenuation_model_param.empty()) {
-            asset_amount = attenuation_model::get_available_asset_amount(
-                    asset_total_amount, height - row.output_height,
-                    attenuation_model_param, new_model_param_ptr);
-        }
         auto asset_symbol = output.get_asset_symbol();
         auto asset_certs = output.get_asset_cert_type();
         auto etp_amount = row.value;
 
         // filter output
         if (output.is_etp()) {
-            BITCOIN_ASSERT(asset_amount == 0);
+            BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(asset_symbol.empty());
             if (etp_amount == 0)
                 continue;
@@ -1558,13 +1558,24 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
             if (!from_.empty() && (from_ != addr))
                 continue;
         } else {
-            if ((asset_amount == 0) && ((asset_certs & payment_asset_cert_) == asset_cert_ns::none))
+            if (is_target_address_processed)
+                continue;
+            if ((asset_total_amount == 0) && ((asset_certs & payment_asset_cert_) == asset_cert_ns::none))
                 continue;
             if (symbol_ != asset_symbol)
                 continue;
             // only get asset from specified address
-            if (addr != target_addr)
+            if (addr != target_address_)
                 continue;
+        }
+
+        auto&& attenuation_model_param = output.get_attenuation_model_param();
+        auto new_model_param_ptr = std::make_shared<data_chunk>();
+        auto asset_amount = asset_total_amount;
+        if (!attenuation_model_param.empty()) {
+            asset_amount = attenuation_model::get_available_asset_amount(
+                    asset_total_amount, height - row.output_height,
+                    attenuation_model_param, new_model_param_ptr);
         }
 
         // add to from list
@@ -1602,7 +1613,8 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
     if ((from_ == addr) && (unspent_etp_ < payment_etp_))
         throw tx_source_exception{"not enough etp in from address!"};
 
-    if (addr == target_addr) {
+    if (addr == target_address_) {
+        is_target_address_processed = true;
         // verify if the threshhold is satisfied
         auto total_volume = blockchain_.get_asset_volume(symbol_);
         auto threshold = issued_asset_->get_secondaryissue_threshold();

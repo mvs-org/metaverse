@@ -388,7 +388,7 @@ public:
                 std::move(name), std::move(passwd),
                 std::move(from), std::move(receiver_list),
                 fee, std::move(symbol)),
-        attenuation_model_param(std::move(model_param))
+        attenuation_model_param_(std::move(model_param))
         {};
 
     ~issuing_asset(){};
@@ -404,7 +404,7 @@ public:
     };
 
 private:
-    std::string attenuation_model_param;
+    std::string attenuation_model_param_;
 };
 
 class BCX_API secondary_issuing_asset : public base_transfer_helper
@@ -420,7 +420,7 @@ public:
                 std::move(from), std::move(receiver_list),
                 fee, std::move(symbol)),
         volume_(volume),
-        attenuation_model_param(std::move(model_param))
+        attenuation_model_param_(std::move(model_param))
     {};
 
     ~secondary_issuing_asset(){};
@@ -438,9 +438,10 @@ public:
     };
 
 private:
-    uint64_t volume_;
+    uint64_t volume_{0};
+    std::string target_address_;
     std::shared_ptr<asset_detail> issued_asset_;
-    std::string attenuation_model_param;
+    std::string attenuation_model_param_;
 };
 
 class BCX_API sending_asset : public base_transfer_helper
