@@ -1,6 +1,6 @@
 import requests
 import json
-import common
+from utils import common
 
 class RPC:
     version = "2.0"
@@ -45,7 +45,7 @@ def mvs_api(func):
         rpc_cmd = RPC(cmd)
         rpc_rsp = rpc_cmd.post(positional, optional)
         if "error" in rpc_rsp.json():
-            print rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
+            print(rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message'])
             return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
         if result_handler:
             return 0, result_handler(rpc_rsp.json()['result'])
