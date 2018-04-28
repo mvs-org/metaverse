@@ -435,7 +435,7 @@ bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
         || redeem_script_pattern == script_pattern::null_data;
 }
 
-data_chunk operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+const data_chunk& operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
     return ops[0].data;
 }

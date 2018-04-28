@@ -129,7 +129,7 @@ public:
 
     static uint64_t get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops);
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
-    static data_chunk get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static const data_chunk& get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);

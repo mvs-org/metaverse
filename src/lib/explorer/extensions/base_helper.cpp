@@ -1608,10 +1608,11 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
                 continue;
         }
 
-        auto&& attenuation_model_param = output.get_attenuation_model_param();
-        auto new_model_param_ptr = std::make_shared<data_chunk>();
         auto asset_amount = asset_total_amount;
-        if (!attenuation_model_param.empty()) {
+        std::shared_ptr<data_chunk> new_model_param_ptr;
+        if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+            const auto& attenuation_model_param = output.get_attenuation_model_param();
+            new_model_param_ptr = std::make_shared<data_chunk>();
             asset_amount = attenuation_model::get_available_asset_amount(
                     asset_total_amount, height - row.output_height,
                     attenuation_model_param, new_model_param_ptr);
@@ -1637,8 +1638,7 @@ void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const s
         unspent_asset_cert_ |= record.asset_cert;
 
         // asset_locked_transfer as a special change
-        if (asset_total_amount > record.asset_amount) {
-            log::info("LZH") << "asset_locked_transfer pushback...";
+        if (new_model_param_ptr && (asset_total_amount > record.asset_amount)) {
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                     0, asset_total_amount - record.asset_amount,

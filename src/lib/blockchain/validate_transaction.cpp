@@ -363,9 +363,11 @@ code validate_transaction::check_secondaryissue_transaction(
             } else if (asset_address != asset_address_out) {
                 return error::asset_secondaryissue_error;
             }
-            auto&& model_param = output.get_attenuation_model_param();
-            if (!model_param.empty() && !attenuation_model::check_model_param(model_param, true)) {
-                return error::attenuation_model_param_error;
+            if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                const auto& model_param = output.get_attenuation_model_param();
+                if (!attenuation_model::check_model_param(model_param, true)) {
+                    return error::attenuation_model_param_error;
+                }
             }
             secondaryissue_threshold = asset_detail.get_secondaryissue_threshold();
             secondaryissue_asset_amount = asset_detail.get_maximum_supply();
@@ -514,9 +516,11 @@ code validate_transaction::check_asset_issue_transaction(
             } else if (asset_address != detail.get_address()) {
                 return error::asset_issue_error;
             }
-            auto&& model_param = output.get_attenuation_model_param();
-            if (!model_param.empty() && !attenuation_model::check_model_param(model_param, true)) {
-                return error::attenuation_model_param_error;
+            if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                const auto& model_param = output.get_attenuation_model_param();
+                if (!attenuation_model::check_model_param(model_param, true)) {
+                    return error::attenuation_model_param_error;
+                }
             }
             cert_mask = detail.get_asset_cert_mask();
         }
@@ -868,9 +872,9 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                     return error::invalid_output_script_lock_height;
                 }
             }
-            else if (output.is_asset_transfer()) {
-                auto&& model_param = output.get_attenuation_model_param();
-                if (!model_param.empty() && !attenuation_model::check_model_param(model_param)) {
+            else if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                const auto& model_param = output.get_attenuation_model_param();
+                if (!attenuation_model::check_model_param(model_param)) {
                     return error::attenuation_model_param_error;
                 }
             }
