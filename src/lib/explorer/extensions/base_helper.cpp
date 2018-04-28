@@ -274,10 +274,16 @@ void base_transfer_common::sync_fetchutxo(const std::string& prikey, const std::
                 || output.is_asset_secondaryissue()
                 || output.is_asset_cert()) { // asset related
             BITCOIN_ASSERT(etp_amount == 0);
-            if (symbol_ != output.get_asset_symbol())
-                continue;
             if (output.is_asset_cert()) {
                 BITCOIN_ASSERT(asset_total_amount == 0);
+                if (asset_cert::test_certs(asset_certs, asset_cert_ns::domain)) {
+                    auto&& domain = asset_detail::get_domain(symbol_);
+                    if (domain != output.get_asset_symbol())
+                        continue;
+                } else {
+                    if (symbol_ != output.get_asset_symbol())
+                        continue;
+                }
                 // asset cert has already found
                 if (asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
                     continue;
@@ -286,16 +292,19 @@ void base_transfer_common::sync_fetchutxo(const std::string& prikey, const std::
                     continue;
             } else {
                 BITCOIN_ASSERT(asset_certs == asset_cert_ns::none);
+                if (symbol_ != output.get_asset_symbol())
+                    continue;
                 if (asset_total_amount == 0)
                     continue;
                 // enough asset to pay
                 if (unspent_asset_ >= payment_asset_)
                     continue;
             }
-        } else if (output.is_did_issue()
-                || output.is_did_transfer()) { // did related
-            if (symbol_ != output.get_did_symbol())
-                continue;
+        } else {
+            BITCOIN_ASSERT(etp_amount == 0);
+            BITCOIN_ASSERT(asset_total_amount == 0);
+            BITCOIN_ASSERT(asset_certs == asset_cert_ns::none);
+            continue;
         }
 
         auto asset_amount = asset_total_amount;
@@ -404,37 +413,77 @@ void base_transfer_common::populate_change()
     populate_etp_change();
 }
 
+std::string base_transfer_common::get_mychange_address(const std::string& type) const
+{
+    if (!mychange_.empty()) {
+        return mychange_;
+    }
+
+    if (!from_.empty()) {
+        return from_;
+    }
+
+    const auto match = [&type](const address_asset_record& record) {
+        if (type == "etp") {
+            return (record.type == utxo_attach_type::etp);
+        }
+        if (type == "asset") {
+            return (record.type == utxo_attach_type::asset_transfer)
+                || (record.type == utxo_attach_type::asset_issue);
+        }
+        if (type == "asset_cert") {
+            return (record.type == utxo_attach_type::asset_cert);
+        }
+        // others
+        return (record.type == utxo_attach_type::etp);
+    };
+
+    const auto it = std::find_if(from_list_.begin(), from_list_.end(), match);
+    BITCOIN_ASSERT(it != from_list_.end());
+    if (it != from_list_.end()) {
+        return it->addr;
+    }
+
+    return from_list_.at(0).addr;
+}
+
 void base_transfer_common::populate_etp_change(const std::string& address)
 {
     // etp utxo
     if (unspent_etp_ > payment_etp_) {
         auto addr = address;
         if (addr.empty()) {
-            addr = mychange_;
-            if (addr.empty()) {
-                addr = !from_.empty() ? from_ : from_list_.at(0).addr;
-            }
+            addr = get_mychange_address("etp");
         }
         receiver_list_.push_back({addr, "",
                 unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
     }
 }
 
-void base_transfer_common::populate_asset_change(const std::string& addr)
+void base_transfer_common::populate_asset_change(const std::string& address)
 {
     // asset utxo
     if (unspent_asset_ > payment_asset_) {
+        auto addr = address;
+        if (addr.empty()) {
+            addr = get_mychange_address("asset");
+        }
         receiver_list_.push_back({addr, symbol_,
                 0, unspent_asset_ - payment_asset_,
                 utxo_attach_type::asset_transfer, attachment()});
     }
 }
 
-void base_transfer_common::populate_asset_cert_change(const std::string& addr)
+void base_transfer_common::populate_asset_cert_change(const std::string& address)
 {
     // asset cert utxo
     auto cert_left = unspent_asset_cert_ & (~payment_asset_cert_);
     if (cert_left != asset_cert_ns::none) {
+        auto addr = address;
+        if (addr.empty()) {
+            addr = get_mychange_address("asset_cert");
+        }
+
         // separate domain cert
         if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
             receiver_list_.push_back({addr, symbol_, 0,
@@ -1141,9 +1190,11 @@ void issuing_asset::sum_payments()
 
         if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain)) {
             auto&& domain = asset_detail::get_domain(symbol_);
-            if (asset_detail::is_valid_domain(domain)
-                && blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-                payment_asset_cert_ = asset_cert_ns::domain;
+            if (!asset_detail::is_valid_domain(domain)) {
+                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
+            }
+            if (blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
+                payment_asset_cert_ = asset_cert_ns::domain; // will verify by input
             }
         }
     }
@@ -1196,37 +1247,10 @@ void issuing_asset::populate_unspent_list()
 void issuing_asset::populate_change()
 {
     // populate etp change
-    auto etp_change = unspent_etp_ - payment_etp_;
-    if (etp_change > 0) {
-        std::string addr(from_);
-        if (addr.empty()) {
-            const auto match = [](const address_asset_record& record) {
-                return (record.type == utxo_attach_type::etp);
-            };
-            const auto it = std::find_if(from_list_.begin(), from_list_.end(), match);
-            BITCOIN_ASSERT(it != from_list_.end());
-            addr = it->addr;
-        }
+    populate_etp_change();
 
-        receiver_list_.push_back(
-            {addr, "", etp_change, 0, utxo_attach_type::etp, attachment()}
-        );
-    }
-
-    // populate asset domain cert if it exist and will be verified in transation.
-    if (asset_cert::test_certs(unspent_asset_cert_, asset_cert_ns::domain)) {
-        auto&& domain = asset_detail::get_domain(symbol_);
-        const auto match = [&domain](const address_asset_record& record) {
-            return (record.type == utxo_attach_type::asset_cert
-                && record.symbol == domain);
-        };
-        const auto it = std::find_if(from_list_.begin(), from_list_.end(), match);
-        BITCOIN_ASSERT(it != from_list_.end());
-
-        receiver_list_.push_back(
-            {it->addr, it->symbol, 0, 0, it->asset_cert, it->type, attachment()}
-        );
-    }
+    // asset cert utxo
+    populate_asset_cert_change();
 }
 
 void issuing_asset::populate_tx_outputs()

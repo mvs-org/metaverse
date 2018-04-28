@@ -169,11 +169,13 @@ public:
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
     void check_receiver_list_not_empty() const;
-    void populate_etp_change(const std::string& addr = std::string(""));
-    void populate_asset_change(const std::string& addr);
-    void populate_asset_cert_change(const std::string& addr);
+    void populate_etp_change(const std::string& address = std::string(""));
+    void populate_asset_change(const std::string& address = std::string(""));
+    void populate_asset_cert_change(const std::string& address = std::string(""));
     bool is_payment_satisfied();
     void check_payment_satisfied();
+
+    std::string get_mychange_address(const std::string& type) const;
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
