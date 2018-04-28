@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, time
 from utils import mvs_rpc, common
+import MOCs
 
 def get_timestamp():
     return time.strftime('%Y%m%d.%H%M%S', time.localtime(time.time()))
@@ -15,8 +16,8 @@ class Role:
         self.keystore_file = keystore_file
 
         self.addresslist.reverse()
-        self.did_symbol = name+".DID"
-        self.asset_symbol = name+".ASSET." + get_timestamp()
+        self.did_symbol = (name+".DID").upper()
+        self.asset_symbol = (name+".ASSET." + get_timestamp()).upper()
         self.multisig_addresses = {} # desc : multisig-addr
 
     def lastword(self):
@@ -46,25 +47,42 @@ class Role:
         '''
         return mvs_rpc.issue_did(self.name, self.password, self.mainaddress(), self.did_symbol)
 
-    def issue_asset(self):
+    def create_asset(self, is_issue=True):
         '''
         issue asset to the main address.
         '''
         result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, description="%s's Asset" % self.name)
-        assert (result == True)
-        result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
-        assert (result == True)
+        assert (result == 0)
+        if is_issue:
+            result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
+            assert (result == 0)
 
-    def get_asset(self, asset_symbol=None):
-        ret = []
-        if not asset_symbol:
-            asset_symbol = self.asset_symbols[0]
+    def issue_asset(self, from_):
+        result, message = mvs_rpc.issue_asset_from(self.name, self.password, self.asset_symbol, from_)
+        assert (result == 0)
 
+    def delete_localasset(self):
+        result, message = mvs_rpc.delete_localasset(self.name, self.password, self.asset_symbol)
+        assert (result == 0)
+
+    @classmethod
+    def get_asset(cls, asset_symbol=None):
         result, message = mvs_rpc.get_asset(asset_symbol)
-        assert (result == True)
-        ret += message["assets"]
+        assert (result == 0)
+        return [MOCs.Asset.init(i) for i in message["assets"]]
 
-        return ret
+    def get_accountasset(self):
+        result, message = mvs_rpc.get_accountasset(self.name, self.password, self.asset_symbol)
+        assert (result == 0)
+        if message["assets"]:
+            return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        return []
+
+    @classmethod
+    def get_addressasset(cls, address, cert=None):
+        result, message = mvs_rpc.get_addressasset(address, cert)
+        assert (result == 0)
+        return [MOCs.Asset.init(i) for i in message["assets"] if i]
 
     def send_asset(self, to_, amount, asset_symbol=None):
         if not asset_symbol:
@@ -129,6 +147,33 @@ class Role:
 
     def get_multisigaddress(self, description):
         return self.multisig_addresses[description]
+
+class NewGuy(Role):
+    '''
+    New guy means:
+         1. account is newly created by getnewaccount each time create() is called;
+         2. this new guy always have no money after created.
+         3. the most effient way to get money is some other(Alice/Bob/...) send etp to him
+    '''
+
+    def __init__(self, name):
+        Role.__init__(self, name, "", [], "")
+
+
+    def create(self):
+        '''
+        create account by getnewaccount
+        '''
+        result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
+        assert (result == 0)
+        print "Account created:", self.name, self.password, self.lastword()
+        result, _ = mvs_rpc.new_address(self.name, self.password, 9)
+        assert (result == 0)
+        result, self.addresslist = mvs_rpc.list_addresses(self.name, self.password)
+        assert (result == 0)
+        assert (len(self.addresslist) == 10)
+        self.addresslist.reverse()
+        return 0, "success"
 
 
 homedir = os.path.dirname( os.path.realpath(__file__) )
@@ -227,4 +272,6 @@ Frank = Role("Frank", "angle toddler glow message cart tired scissors violin wis
         os.path.join(homedir, keystoredir, "Frank.json"),
      )
 
-__all__ = ["Alice", "Bob", "Cindy", "Dale", "Eric", "Frank"]
+Zac = NewGuy("Zac")
+
+__all__ = ["Alice", "Bob", "Cindy", "Dale", "Eric", "Frank", "Zac"]

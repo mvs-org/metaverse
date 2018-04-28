@@ -45,6 +45,7 @@ def mvs_api(func):
         rpc_cmd = RPC(cmd)
         rpc_rsp = rpc_cmd.post(positional, optional)
         if "error" in rpc_rsp.json():
+            print rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
             return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
         if result_handler:
             return 0, result_handler(rpc_rsp.json()['result'])
@@ -87,6 +88,18 @@ def import_keyfile(account, password, keystore_file, keyfile_content=None):
     else:
         args = [account, password, keystore_file]
     return "importkeyfile", args, {}, None
+
+@mvs_api
+def new_account(account, password):
+    return "getnewaccount", [account, password], {}, lambda result: result["mnemonic"].split()
+
+@mvs_api
+def new_address(account, password, address_count=1):
+    return "getnewaddress", [account, password], {'--number' : address_count}, lambda result: result["addresses"]
+
+@mvs_api
+def list_addresses(account, password):
+    return "listaddresses", [account, password], {}, lambda result: result["addresses"]
 
 @mvs_api
 def delete_account(account, password, lastword):
@@ -142,14 +155,9 @@ def get_addressasset(address, cert=None):
     return "getaddressasset", [address], {'--cert': cert}, None
 
 @mvs_api
-def get_accountasset(account, password, cert=None, asset_symbol=None):
-    rpc_cmd = RPC('getaccountasset')
-
-    args = [account, password]
-    if asset_symbol <> None:
-        args.append(asset_symbol)
-
-    return "getaccountasset", args, {'--cert': cert}, None
+def get_accountasset(account, password, asset_symbol=None, cert=None):
+    args = [account, password, asset_symbol]
+    return "getaccountasset", filter(None, args), {'--cert': cert}, None
 
 @mvs_api
 def create_asset(account, password, symbol, volume, description=None, issuer=None, decimalnumber=None, rate=None):
@@ -165,12 +173,24 @@ def create_asset(account, password, symbol, volume, description=None, issuer=Non
     return "createasset", [account, password], optionals, None
 
 @mvs_api
+def delete_localasset(account, password, symbol):
+    return "deletelocalasset", [account, password], {'--symbol' : symbol}, None
+
+@mvs_api
 def issue_asset(account, password, symbol):
     return "issue", [account, password, symbol], {}, None
 
 @mvs_api
+def issue_asset_from(account, password, symbol, from_):
+    return "issuefrom", [account, password, from_, symbol], {}, None
+
+@mvs_api
 def delete_localasset(account, password, symbol):
     return "deletelocalasset", [account, password], {'--symbol': symbol}, None
+
+@mvs_api
+def list_assets(account=None, password=None):
+    return "listassets", filter(None, [account, password]), {}, None
 
 @mvs_api
 def send_asset(account, password, to_, symbol, amount, fee=None):
