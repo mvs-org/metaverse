@@ -266,6 +266,9 @@ void base_transfer_common::sync_fetchutxo(const std::string& prikey, const std::
             // enough etp to pay
             if (unspent_etp_ >= payment_etp_)
                 continue;
+            // if secified from address, then ignore others
+            if (!from_.empty() && (from_ != addr))
+                continue;
         } else if (output.is_asset_transfer()
                 || output.is_asset_issue()
                 || output.is_asset_secondaryissue()
@@ -788,7 +791,7 @@ void base_transaction_constructor::populate_unspent_list()
 {
     // get from address balances
     for (auto& each : from_vec_) {
-        base_transaction_constructor::sync_fetchutxo("", each);
+        sync_fetchutxo("", each);
         if((unspent_etp_ >= payment_etp_)
             && (unspent_asset_ >= payment_asset_))
             break;
@@ -1040,13 +1043,13 @@ void sending_multisig_etp::populate_unspent_list()
         if(!blockchain_.is_script_address(each.get_address()))
             continue;
         if(from_.empty()) { // select utxo in all account addresses
-            base_transfer_helper::sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
+            sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
             if((unspent_etp_ >= payment_etp_)
                 && (unspent_asset_ >= payment_asset_))
                 break;
         } else { // select utxo only in from_ address
             if ( from_ == each.get_address() ) { // find address
-                base_transfer_helper::sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
+                sync_fetchutxo (each.get_prv_key(passwd_), each.get_address());
                 if((unspent_etp_ >= payment_etp_)
                     && (unspent_asset_ >= payment_asset_))
                     break;
@@ -1184,87 +1187,6 @@ void issuing_asset::populate_unspent_list()
     populate_change();
 }
 
-void issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
-{
-    auto&& domain = asset_detail::get_domain(symbol_);
-    auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr);
-
-    uint64_t height = 0;
-    blockchain_.get_last_height(height);
-
-    for (auto& row: rows)
-    {
-        // performance improve
-        if (is_payment_satisfied()) {
-            break;
-        }
-
-        chain::output output;
-        if (!get_spendable_output(output, row, height)) {
-            continue;
-        }
-
-        auto asset_amount = output.get_asset_amount();
-        auto asset_symbol = output.get_asset_symbol();
-        auto asset_certs = output.get_asset_cert_type();
-        auto etp_amount = row.value;
-
-        // filter output
-        if (output.is_etp()) {
-            BITCOIN_ASSERT(asset_amount == 0);
-            BITCOIN_ASSERT(asset_symbol.empty());
-            if (etp_amount == 0)
-                continue;
-            // enough to pay tx fees, and no asset to connect
-            if (unspent_etp_ >= payment_etp_)
-                continue;
-            // if secified from address, then ignore others
-            if (!from_.empty() && (from_ != addr))
-                continue;
-        }
-        else if (output.is_asset_cert()) {
-            if (asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
-                continue;
-            }
-
-            if ((asset_certs & payment_asset_cert_) == asset_cert_ns::none
-                || asset_symbol != domain) {
-                continue;
-            }
-        }
-        else {
-            continue;
-        }
-
-        // add to from list
-        address_asset_record record;
-
-        record.prikey = prikey;
-        record.addr = addr;
-        record.amount = etp_amount;
-        record.symbol = asset_symbol;
-        record.asset_amount = asset_amount;
-        record.asset_cert = asset_certs;
-        record.output = row.output;
-        record.script = output.script;
-        record.type = get_utxo_attach_type(output);
-
-        from_list_.push_back(record);
-
-        unspent_etp_ += record.amount;
-        unspent_asset_ += record.asset_amount;
-        unspent_asset_cert_ |= asset_certs;
-    }
-
-    rows.clear();
-
-    // if specified from address but no enough etp to pay fees,
-    // the tx will fail.
-    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-        throw tx_source_exception{"not enough etp in from address!"};
-}
-
 void issuing_asset::populate_change()
 {
     // populate etp change
@@ -1388,6 +1310,11 @@ void secondary_issuing_asset::sum_payment_amount()
 
     target_address_ = receiver_list_.at(0).target;
 
+    issued_asset_ = blockchain_.get_issued_asset(symbol_);
+    if (!issued_asset_) {
+        throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
+    }
+
     auto total_volume = blockchain_.get_asset_volume(symbol_);
     if (total_volume > max_uint64 - volume_) {
         throw asset_amount_exception{"secondaryissue, volume cannot exceed maximum value"};
@@ -1405,31 +1332,38 @@ void secondary_issuing_asset::sum_payment_amount()
 
 void secondary_issuing_asset::populate_unspent_list()
 {
-    if (!issued_asset_)
-        issued_asset_ = blockchain_.get_issued_asset(symbol_);
-    if (!issued_asset_)
-        throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
-
     // get address list
     auto pvaddr = blockchain_.get_account_addresses(name_);
     if (!pvaddr)
         throw address_list_nullptr_exception{"nullptr for address list"};
 
     // get from address balances
-    bool is_target_address_processed{false};
     for (const auto& each : *pvaddr) {
         // filter script address
         if (blockchain_.is_script_address(each.get_address()))
             continue;
 
-        // select utxo in all account addresses
-        sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
-
         if (each.get_address() == target_address_) {
-            is_target_address_processed = true;
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+            // verify if the threshhold is satisfied
+            auto total_volume = blockchain_.get_asset_volume(symbol_);
+            auto threshold = issued_asset_->get_secondaryissue_threshold();
+            if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
+                throw asset_lack_exception{"asset volum is not enought to secondaryissue on address "
+                    + target_address_ + ", unspent = " + std::to_string(unspent_asset_)
+                    + ", total_volume = " + std::to_string(total_volume)};
+            }
+            // verify if asset cert right is satisfied
+            if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
+                throw asset_cert_exception{"no enough asset cert on address " + target_address_};
+            }
+        } else if (unspent_etp_ < payment_etp_) {
+            if (!from_.empty() || (from_ == each.get_address())) {
+                sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+            }
         }
 
-        if (is_target_address_processed && (unspent_etp_ >= payment_etp_)) {
+        if (is_payment_satisfied()) {
             break;
         }
     }
@@ -1482,119 +1416,6 @@ attachment secondary_issuing_asset::populate_output_attachment(receiver_record& 
     }
 
     throw tx_attachment_value_exception{"secondary_issuing_asset : invalid attachment value in receiver_record"};
-}
-
-void secondary_issuing_asset::sync_fetchutxo (const std::string& prikey, const std::string& addr)
-{
-    auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr);
-
-    uint64_t height = 0;
-    blockchain_.get_last_height(height);
-
-    bool is_target_address_processed{false};
-    for (auto& row: rows)
-    {
-        // performance improve
-        if (is_payment_satisfied()) {
-            break;
-        }
-
-        chain::output output;
-        if (!get_spendable_output(output, row, height)) {
-            continue;
-        }
-
-        auto asset_total_amount = output.get_asset_amount();
-        auto asset_symbol = output.get_asset_symbol();
-        auto asset_certs = output.get_asset_cert_type();
-        auto etp_amount = row.value;
-
-        // filter output
-        if (output.is_etp()) {
-            BITCOIN_ASSERT(asset_total_amount == 0);
-            BITCOIN_ASSERT(asset_symbol.empty());
-            if (etp_amount == 0)
-                continue;
-            // enough to pay tx fees, and no asset to connect
-            if (unspent_etp_ >= payment_etp_)
-                continue;
-            // if secified from address, then ignore others
-            if (!from_.empty() && (from_ != addr))
-                continue;
-        } else {
-            if (is_target_address_processed)
-                continue;
-            if ((asset_total_amount == 0) && ((asset_certs & payment_asset_cert_) == asset_cert_ns::none))
-                continue;
-            if (symbol_ != asset_symbol)
-                continue;
-            // only get asset from specified address
-            if (addr != target_address_)
-                continue;
-        }
-
-        auto asset_amount = asset_total_amount;
-        std::shared_ptr<data_chunk> new_model_param_ptr;
-        if (asset_total_amount
-            && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
-            const auto& attenuation_model_param = output.get_attenuation_model_param();
-            new_model_param_ptr = std::make_shared<data_chunk>();
-            asset_amount = attenuation_model::get_available_asset_amount(
-                    asset_total_amount, height - row.output_height,
-                    attenuation_model_param, new_model_param_ptr);
-        }
-
-        // add to from list
-        address_asset_record record;
-
-        record.prikey = prikey;
-        record.addr = addr;
-        record.amount = etp_amount;
-        record.symbol = symbol_;
-        record.asset_amount = asset_amount;
-        record.asset_cert = asset_certs;
-        record.output = row.output;
-        record.script = output.script;
-        record.type = get_utxo_attach_type(output);
-
-        from_list_.push_back(record);
-
-        unspent_etp_ += record.amount;
-        unspent_asset_ += record.asset_amount;
-        unspent_asset_cert_ |= record.asset_cert;
-
-        // asset_locked_transfer as a special change
-        if (new_model_param_ptr && (asset_total_amount > record.asset_amount)) {
-            std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
-            receiver_list_.push_back({record.addr, record.symbol,
-                    0, asset_total_amount - record.asset_amount,
-                    utxo_attach_type::asset_locked_transfer,
-                    attachment(0, 0, blockchain_message(std::move(model_param)))});
-        }
-    }
-
-    rows.clear();
-
-    // if specified from address but no enough etp to pay fees,
-    // the tx will fail.
-    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-        throw tx_source_exception{"not enough etp in from address!"};
-
-    if (addr == target_address_) {
-        is_target_address_processed = true;
-        // verify if the threshhold is satisfied
-        auto total_volume = blockchain_.get_asset_volume(symbol_);
-        auto threshold = issued_asset_->get_secondaryissue_threshold();
-        if (!asset_detail::is_secondaryissue_owns_enough(unspent_asset_, total_volume, threshold)) {
-            throw asset_lack_exception{"asset volum is not enought to secondaryissue on address " + addr + ", unspent = "
-                + std::to_string(unspent_asset_) + ", total_volume = " + std::to_string(total_volume)};
-        }
-        // verify if asset cert right is satisfied
-        if (!asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
-            throw asset_cert_exception{"no enough asset cert right"};
-        }
-    }
 }
 
 void issuing_did::sum_payment_amount() {
@@ -1763,84 +1584,6 @@ void transferring_asset_cert::populate_change()
 
     // asset cert utxo
     populate_asset_cert_change(from_);
-}
-
-void transferring_asset_cert::sync_fetchutxo (const std::string& prikey, const std::string& addr)
-{
-    auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr);
-
-    uint64_t height = 0;
-    blockchain_.get_last_height(height);
-
-    for (auto& row: rows)
-    {
-        // performance improve
-        if (is_payment_satisfied()) {
-            break;
-        }
-
-        chain::output output;
-        if (!get_spendable_output(output, row, height)) {
-            continue;
-        }
-
-        auto asset_amount = output.get_asset_amount();
-        auto asset_symbol = output.get_asset_symbol();
-        auto asset_certs = output.get_asset_cert_type();
-        auto etp_amount = row.value;
-
-        // filter output
-        if (output.is_etp()) {
-            BITCOIN_ASSERT(asset_amount == 0);
-            BITCOIN_ASSERT(asset_symbol.empty());
-            if (etp_amount == 0)
-                continue;
-            // enough to pay tx fees, and no asset to connect
-            if (unspent_etp_ >= payment_etp_)
-                continue;
-            // if secified from address, then ignore others
-            if (!from_.empty() && (from_ != addr))
-                continue;
-        }
-        else if (output.is_asset_cert()) {
-            BITCOIN_ASSERT(asset_amount == 0);
-            if (asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
-                continue;
-            if ((asset_certs & payment_asset_cert_) == asset_cert_ns::none)
-                continue;
-            if (symbol_ != asset_symbol)
-                continue;
-        }
-        else {
-            continue;
-        }
-
-        // add to from list
-        address_asset_record record;
-
-        record.prikey = prikey;
-        record.addr = addr;
-        record.amount = etp_amount;
-        record.symbol = symbol_;
-        record.asset_amount = asset_amount;
-        record.asset_cert = asset_certs;
-        record.output = row.output;
-        record.script = output.script;
-        record.type = get_utxo_attach_type(output);
-
-        from_list_.push_back(record);
-
-        unspent_etp_ += record.amount;
-        unspent_asset_ += record.asset_amount;
-        unspent_asset_cert_ |= record.asset_cert;
-    }
-    rows.clear();
-
-    // if specified from address but no enough etp to pay fees,
-    // the tx will fail.
-    if ((from_ == addr) && (unspent_etp_ < payment_etp_))
-        throw tx_source_exception{"not enough etp in from address!"};
 }
 
 } //commands
