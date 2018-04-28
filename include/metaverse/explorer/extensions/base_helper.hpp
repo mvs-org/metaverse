@@ -98,17 +98,17 @@ struct receiver_record {
         , type(utxo_attach_type::invalid), attach_elem()
     {}
 
-    receiver_record(std::string target_, std::string symbol_,
+    receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
-        utxo_attach_type type_, attachment attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_)
         : target(target_), symbol(symbol_)
         , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_ns::none)
         , type(type_), attach_elem(attach_elem_)
     {}
 
-    receiver_record(std::string target_, std::string symbol_,
+    receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
-        utxo_attach_type type_, attachment attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_)
         : target(target_), symbol(symbol_)
         , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_)
         , type(type_), attach_elem(attach_elem_)

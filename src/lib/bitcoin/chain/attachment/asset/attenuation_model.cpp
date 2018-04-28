@@ -527,6 +527,10 @@ uint64_t attenuation_model::get_available_asset_amount(
         uint64_t asset_amount, uint64_t diff_height,
         const data_chunk& param, std::shared_ptr<data_chunk> new_param_ptr)
 {
+    if (asset_amount == 0) {
+        return 0;
+    }
+
     attenuation_model parser(std::string(param.begin(), param.end()));
 
     const auto model = parser.get_model_type();
@@ -544,7 +548,7 @@ uint64_t attenuation_model::get_available_asset_amount(
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
 
-    auto available = asset_amount - LQ;
+    auto available = (asset_amount > LQ) ? (asset_amount - LQ) : 0;
 
     if (diff_height < LH) { // no maturity, still all locked
         if (new_param_ptr) {
