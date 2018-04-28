@@ -68,7 +68,8 @@ enum class utxo_attach_type : uint32_t
 
 extern utxo_attach_type get_utxo_attach_type(const chain::output&);
 
-struct address_asset_record{
+struct address_asset_record
+{
     std::string prikey;
     std::string addr;
     uint64_t    amount{0}; // spendable etp amount
@@ -81,8 +82,10 @@ struct address_asset_record{
     uint32_t hd_index{0}; // only used for multisig tx
 };
 
+struct receiver_record
+{
+    typedef std::vector<receiver_record> list;
 
-struct receiver_record {
     std::string target;
     std::string symbol;
     uint64_t    amount; // etp value
@@ -93,29 +96,35 @@ struct receiver_record {
     attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
 
     receiver_record()
-        : target(), symbol()
-        , amount(0), asset_amount(0), asset_cert(asset_cert_ns::none)
-        , type(utxo_attach_type::invalid), attach_elem()
+        : target()
+        , symbol()
+        , amount(0)
+        , asset_amount(0)
+        , asset_cert(asset_cert_ns::none)
+        , type(utxo_attach_type::invalid)
+        , attach_elem()
     {}
 
-    receiver_record(std::string target_, std::string symbol_,
+    receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
-        utxo_attach_type type_, attachment attach_elem_)
-        : target(target_), symbol(symbol_)
-        , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_ns::none)
-        , type(type_), attach_elem(attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_)
+        : receiver_record(target_, symbol_, amount_, asset_amount_,
+            asset_cert_ns::none, type_, attach_elem_)
     {}
 
-    receiver_record(std::string target_, std::string symbol_,
+    receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
-        utxo_attach_type type_, attachment attach_elem_)
-        : target(target_), symbol(symbol_)
-        , amount(amount_), asset_amount(asset_amount_), asset_cert(asset_cert_)
-        , type(type_), attach_elem(attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_)
+        : target(target_)
+        , symbol(symbol_)
+        , amount(amount_)
+        , asset_amount(asset_amount_)
+        , asset_cert(asset_cert_)
+        , type(type_)
+        , attach_elem(attach_elem_)
     {}
 
     bool is_empty() const;
-
 };
 
 struct balances {
@@ -138,14 +147,14 @@ class BCX_API base_transfer_common
 public:
     base_transfer_common(
         bc::blockchain::block_chain_impl& blockchain,
-        std::vector<receiver_record>&& receiver_list, uint64_t fee,
+        receiver_record::list&& receiver_list, uint64_t fee,
         std::string&& symbol, std::string&& from, std::string&& mychange)
         : blockchain_{blockchain}
-        , symbol_{symbol}
-        , from_{from}
-        , mychange_{mychange}
+        , symbol_{std::move(symbol)}
+        , from_{std::move(from)}
+        , mychange_{std::move(mychange)}
         , payment_etp_{fee}
-        , receiver_list_{receiver_list}
+        , receiver_list_{std::move(receiver_list)}
     {
     };
 
@@ -197,20 +206,19 @@ class BCX_API base_transfer_helper : public base_transfer_common
 public:
     base_transfer_helper(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::vector<receiver_record>&& receiver_list,
+        std::string&& from, receiver_record::list&& receiver_list,
         uint64_t fee, std::string&& symbol = std::string(""),
-        std::string&& mychange = std::string("")):
-        base_transfer_common(blockchain, std::move(receiver_list), fee,
-                std::move(symbol), std::move(from), std::move(mychange)),
-        cmd_{cmd},
-        name_{name},
-        passwd_{passwd}
-    {
-    };
+        std::string&& mychange = std::string(""))
+        : base_transfer_common(blockchain, std::move(receiver_list), fee,
+            std::move(symbol), std::move(from),
+            std::move(mychange))
+        , cmd_{cmd}
+        , name_{std::move(name)}
+        , passwd_{std::move(passwd)}
+    {};
 
     ~base_transfer_helper()
-    {
-    }
+    {}
 
     virtual void populate_unspent_list();
 
@@ -239,16 +247,15 @@ class BCX_API base_transaction_constructor : public base_transfer_common
 {
 public:
     base_transaction_constructor(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type,
-        std::vector<std::string>&& from_vec, std::vector<receiver_record>&& receiver_list,
+        std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
         std::string&& symbol, std::string&& mychange,
-        std::string&& message, uint64_t fee):
-        base_transfer_common(blockchain, std::move(receiver_list), fee,
-                std::move(symbol), "", std::move(mychange)),
-        type_{type},
-        message_{message},
-        from_vec_{from_vec}
-    {
-    };
+        std::string&& message, uint64_t fee)
+        : base_transfer_common(blockchain, std::move(receiver_list), fee,
+            std::move(symbol), "", std::move(mychange))
+        , type_{type}
+        , message_{std::move(message)}
+        , from_vec_{std::move(from_vec)}
+    {};
 
     virtual ~base_transaction_constructor()
     {
@@ -278,18 +285,18 @@ protected:
     std::vector<std::string>          from_vec_; // from address vector
 };
 
-
 class BCX_API depositing_etp : public base_transfer_helper
 {
 public:
     depositing_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& to, std::vector<receiver_record>&& receiver_list,
-        uint16_t deposit_cycle = 7, uint64_t fee = 10000):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-                std::string(""), std::move(receiver_list), fee),
-        to_{to}, deposit_cycle_{deposit_cycle}
-        {};
+        std::string&& to, receiver_record::list&& receiver_list,
+        uint16_t deposit_cycle = 7, uint64_t fee = 10000)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::string(""), std::move(receiver_list), fee)
+        , to_{std::move(to)}
+        , deposit_cycle_{deposit_cycle}
+    {};
 
     ~depositing_etp(){};
 
@@ -308,14 +315,14 @@ class BCX_API depositing_etp_transaction : public base_transaction_constructor
 {
 public:
     depositing_etp_transaction(bc::blockchain::block_chain_impl& blockchain, utxo_attach_type type,
-        std::vector<std::string>&& from_vec, std::vector<receiver_record>&& receiver_list,
+        std::vector<std::string>&& from_vec, receiver_record::list&& receiver_list,
         uint16_t deposit, std::string&& mychange,
-        std::string&& message, uint64_t fee):
-        base_transaction_constructor(blockchain, type, std::move(from_vec),
+        std::string&& message, uint64_t fee)
+        : base_transaction_constructor(blockchain, type, std::forward<std::vector<std::string>>(from_vec),
             std::move(receiver_list), std::string(""),
-            std::move(mychange), std::move(message), fee),
-            deposit_{deposit}
-        {};
+            std::move(mychange), std::move(message), fee)
+        , deposit_{deposit}
+    {};
 
     ~depositing_etp_transaction(){};
 
@@ -329,16 +336,15 @@ private:
     uint16_t                          deposit_{7}; // 7 days
 };
 
-
 class BCX_API sending_etp : public base_transfer_helper
 {
 public:
     sending_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-                std::move(from), std::move(receiver_list), fee)
-        {};
+        std::string&& from, receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee)
+    {};
 
     ~sending_etp(){};
 };
@@ -348,11 +354,11 @@ class BCX_API sending_etp_more : public base_transfer_helper
 public:
     sending_etp_more(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::vector<receiver_record>&& receiver_list,
-        std::string&& mychange, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-                std::move(from), std::move(receiver_list), fee, "", std::move(mychange))
-        {};
+        std::string&& from, receiver_record::list&& receiver_list,
+        std::string&& mychange, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, "", std::move(mychange))
+    {};
 
     ~sending_etp_more(){};
 };
@@ -362,12 +368,12 @@ class BCX_API sending_multisig_etp : public base_transfer_helper
 public:
     sending_multisig_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::vector<receiver_record>&& receiver_list, uint64_t fee,
-        account_multisig& multisig):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-                std::move(from), std::move(receiver_list), fee),
-        multisig_{multisig}
-        {};
+        std::string&& from, receiver_record::list&& receiver_list, uint64_t fee,
+        account_multisig& multisig)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee)
+        , multisig_{multisig}
+    {};
 
     ~sending_multisig_etp(){};
 
@@ -385,13 +391,11 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain,
-                std::move(name), std::move(passwd),
-                std::move(from), std::move(receiver_list),
-                fee, std::move(symbol)),
-        attenuation_model_param_(std::move(model_param))
-        {};
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , attenuation_model_param_{std::move(model_param)}
+    {};
 
     ~issuing_asset(){};
     void sum_payment_amount() override;
@@ -416,13 +420,11 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        std::vector<receiver_record>&& receiver_list, uint64_t fee, uint64_t volume):
-        base_transfer_helper(cmd, blockchain,
-                std::move(name), std::move(passwd),
-                std::move(from), std::move(receiver_list),
-                fee, std::move(symbol)),
-        volume_(volume),
-        attenuation_model_param_(std::move(model_param))
+        receiver_record::list&& receiver_list, uint64_t fee, uint64_t volume)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , volume_(volume)
+        , attenuation_model_param_{std::move(model_param)}
     {};
 
     ~secondary_issuing_asset(){};
@@ -449,13 +451,16 @@ private:
 class BCX_API sending_asset : public base_transfer_helper
 {
 public:
-    sending_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
-            fee, std::move(symbol))
-        {};
+    sending_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+    {};
 
-    ~sending_asset(){};
+    ~sending_asset()
+    {};
 
     void populate_change() override;
 };
@@ -463,13 +468,16 @@ public:
 class BCX_API issuing_did : public base_transfer_helper
 {
 public:
-    issuing_did(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
-            fee, std::move(symbol))
-        {};
+    issuing_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+    {};
 
-    ~issuing_did(){};
+    ~issuing_did()
+    {};
 
     void sum_payment_amount() override;
 
@@ -482,15 +490,17 @@ public:
 class BCX_API sending_did : public base_transfer_helper
 {
 public:
-    sending_did(command& cmd, bc::blockchain::block_chain_impl& blockchain, std::string&& name, std::string&& passwd,
-        std::string&& from,std::string&& feefrom, std::string&& symbol, std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd), std::move(from), std::move(receiver_list),
-            fee, std::move(symbol)),fromfee(feefrom)
-        {
+    sending_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& feefrom, std::string&& symbol,
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol)),fromfee(feefrom)
+    {};
 
-        };
+    ~sending_did()
+    {};
 
-    ~sending_did(){};
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
     void populate_change() override;
     std::string fromfee ;
@@ -502,14 +512,13 @@ public:
     transferring_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
-        std::vector<receiver_record>&& receiver_list, uint64_t fee):
-        base_transfer_helper(cmd, blockchain,
-            std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list),
-            fee, std::move(symbol))
-        {};
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+    {};
 
-    ~transferring_asset_cert(){};
+    ~transferring_asset_cert()
+    {};
 
     void sum_payment_amount() override;
     void populate_change() override;
