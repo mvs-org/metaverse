@@ -1133,6 +1133,22 @@ void sending_multisig_etp::exec()
     //send_tx();
 }
 
+void issuing_asset::sum_payments()
+{
+    for (auto& iter : receiver_list_) {
+        payment_etp_ += iter.amount;
+        payment_asset_ += iter.asset_amount;
+
+        if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain)) {
+            auto&& domain = asset_detail::get_domain(symbol_);
+            if (asset_detail::is_valid_domain(domain)
+                && blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
+                payment_asset_cert_ = asset_cert_ns::domain;
+            }
+        }
+    }
+}
+
 void issuing_asset::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
@@ -1143,16 +1159,6 @@ void issuing_asset::sum_payment_amount()
     if (!attenuation_model_param_.empty()
             && !attenuation_model::check_model_param(to_chunk(attenuation_model_param_), true)) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
-    }
-
-    bool issue_domain_cert = (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain));
-    payment_asset_cert_ = asset_cert_ns::none;
-    if (!issue_domain_cert) {
-        auto&& domain = asset_detail::get_domain(symbol_);
-        if (asset_detail::is_valid_domain(domain)) {
-            // put domain cert on tx.input for verification.
-            payment_asset_cert_ = asset_cert_ns::domain;
-        }
     }
 }
 

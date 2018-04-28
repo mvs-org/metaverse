@@ -162,12 +162,12 @@ public:
 
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
+    virtual void sum_payments();
     virtual void sum_payment_amount();
     virtual void populate_change();
 
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
-    void sum_payments();
     void check_receiver_list_not_empty() const;
     void populate_etp_change(const std::string& addr = std::string(""));
     void populate_asset_change(const std::string& addr);
@@ -394,6 +394,8 @@ public:
         {};
 
     ~issuing_asset(){};
+
+    void sum_payments() override;
     void sum_payment_amount() override;
     void populate_tx_outputs() override;
     void populate_change() override;
@@ -405,6 +407,7 @@ public:
     };
 
 private:
+    std::string domain_cert_address_;
     std::string attenuation_model_param_;
 };
 
