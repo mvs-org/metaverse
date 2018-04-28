@@ -1,6 +1,6 @@
 import requests
 import json
-import common
+from utils import common
 
 class RPC:
     version = "2.0"
@@ -45,7 +45,7 @@ def mvs_api(func):
         rpc_cmd = RPC(cmd)
         rpc_rsp = rpc_cmd.post(positional, optional)
         if "error" in rpc_rsp.json():
-            print rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
+            print(rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message'])
             return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
         if result_handler:
             return 0, result_handler(rpc_rsp.json()['result'])
@@ -151,13 +151,18 @@ def get_asset(asset_symbol=None):
     return "getasset", filter(None, [asset_symbol]), {}, None
 
 @mvs_api
-def get_addressasset(address, cert=None):
-    return "getaddressasset", [address], {'--cert': cert}, None
+def get_addressasset(address, cert=False):
+    args = [address]
+    if cert:
+        args.append('--cert')
+    return "getaddressasset", args, {}, None
 
 @mvs_api
-def get_accountasset(account, password, asset_symbol=None, cert=None):
+def get_accountasset(account, password, asset_symbol=None, cert=False):
     args = [account, password, asset_symbol]
-    return "getaccountasset", filter(None, args), {'--cert': cert}, None
+    if cert:
+        args.append('--cert')
+    return "getaccountasset", filter(None, args), {}, None
 
 @mvs_api
 def create_asset(account, password, symbol, volume, description=None, issuer=None, decimalnumber=None, rate=None):
@@ -177,8 +182,8 @@ def delete_localasset(account, password, symbol):
     return "deletelocalasset", [account, password], {'--symbol' : symbol}, None
 
 @mvs_api
-def issue_asset(account, password, symbol):
-    return "issue", [account, password, symbol], {}, None
+def issue_asset(account, password, symbol, fee=None, model=None):
+    return "issue", [account, password, symbol], {"--fee":fee, "--model":model}, None
 
 @mvs_api
 def issue_asset_from(account, password, symbol, from_):

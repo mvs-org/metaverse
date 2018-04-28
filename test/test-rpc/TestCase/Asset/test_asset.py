@@ -1,10 +1,10 @@
 import unittest
 import utils.mvs_rpc as mvs_rpc
 
-from Roles import Alice, Bob, Cindy
+from Roles import Alice, Zac
 
 class TestAsset(unittest.TestCase):
-    roles = [Alice, Bob, Cindy]
+    roles = [Alice, Zac]
     def setUp(self):
         for role in self.roles:
             result, message = role.create()
