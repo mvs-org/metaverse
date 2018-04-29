@@ -44,7 +44,6 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
             .add("TOADDRESS", 1)
             .add("SYMBOL", 1);
 
@@ -56,7 +55,6 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
         load_input(argument_.to, "TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
     }
@@ -82,11 +80,6 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "FROMADDRESS",
-            value<std::string>(&argument_.from)->required(),
-            "From address, cert and fee come from this address, and mychange to this address too."
-        )
-        (
             "TOADDRESS",
             value<std::string>(&argument_.to)->required(),
             "Target address"
@@ -99,7 +92,7 @@ public:
         (
             "cert,c",
             value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
-            "Asset cert name"
+            "Asset cert name, eg. ISSUE, DOMAIN, etc."
         )
         (
             "fee,f",
@@ -119,7 +112,6 @@ public:
 
     struct argument
     {
-        std::string from;
         std::string to;
         std::string symbol;
         std::vector<std::string> certs;

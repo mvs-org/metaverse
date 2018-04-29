@@ -69,13 +69,6 @@ console_result transfercert::invoke (Json::Value& jv_output,
             throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
     }
 
-    // check from address
-    if (!blockchain.is_valid_address(argument_.from))
-        throw address_invalid_exception{"invalid from address! " + argument_.from};
-
-    if (!blockchain.get_account_address(auth_.name, argument_.from))
-        throw address_dismatch_account_exception{"from address does not match account. " + argument_.from};
-
     // check target address
     if (!blockchain.is_valid_address(argument_.to))
         throw address_invalid_exception{"invalid address parameter! " + argument_.to};
@@ -83,12 +76,6 @@ console_result transfercert::invoke (Json::Value& jv_output,
     std::string cert_owner = asset_cert::get_owner_from_address(argument_.to, blockchain);
     if (cert_owner.empty())
         throw did_address_needed_exception("target address is not an did address. " + argument_.to);
-
-    // check issue cert
-    auto certs_owned = blockchain.get_address_asset_cert_type(argument_.from, argument_.symbol);
-    if (!asset_cert::test_certs(certs_owned, certs_send)) {
-        throw asset_cert_exception("do not have enough asset cert to transfer");
-    }
 
     // receiver
     std::vector<receiver_record> receiver;
@@ -105,8 +92,9 @@ console_result transfercert::invoke (Json::Value& jv_output,
             certs_send, utxo_attach_type::asset_cert, attachment()});
     }
 
-    auto helper = transferring_asset_cert(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.from), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto helper = transferring_asset_cert(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
     helper.exec();
 

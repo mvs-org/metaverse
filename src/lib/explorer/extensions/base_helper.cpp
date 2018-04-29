@@ -1387,15 +1387,6 @@ void issuing_did::sum_payment_amount()
     }
 }
 
-void sending_asset::populate_change()
-{
-    auto from_addr = !from_.empty() ? from_ : from_list_.begin()->addr;
-    // etp utxo
-    populate_etp_change(from_addr);
-    // asset utxo
-    populate_asset_change(from_addr);
-}
-
 void sending_did::populate_change()
 {
     auto from_addr = !fromfee.empty() ? fromfee : from_list_.begin()->addr;
@@ -1519,34 +1510,6 @@ void sending_did::sync_fetchutxo (const std::string& prikey, const std::string& 
     // the tx will fail.
     if ((from_ == addr) && (unspent_etp_ < payment_etp_))
         throw tx_source_exception{"not enough etp in to address to pay fee!"};
-}
-
-void transferring_asset_cert::sum_payment_amount()
-{
-    base_transfer_common::sum_payment_amount();
-    if (from_.empty()) {
-        throw fromaddress_empty_exception{"empty from address"};
-    }
-
-    size_t max_size = 1;
-    if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain)) {
-        auto cert_left = (payment_asset_cert_ & ~asset_cert_ns::domain);
-        if (cert_left != asset_cert_ns::none) {
-            max_size = 2;
-        }
-    }
-
-    if (receiver_list_.size() > max_size)
-        throw toaddress_invalid_exception{"multiple target address"};
-}
-
-void transferring_asset_cert::populate_change()
-{
-    // etp utxo
-    populate_etp_change(from_);
-
-    // asset cert utxo
-    populate_asset_cert_change(from_);
 }
 
 } //commands

@@ -217,7 +217,7 @@ public:
         , cmd_{cmd}
         , name_{std::move(name)}
         , passwd_{std::move(passwd)}
-    {};
+    {}
 
     ~base_transfer_helper()
     {}
@@ -257,7 +257,7 @@ public:
         , type_{type}
         , message_{std::move(message)}
         , from_vec_{std::move(from_vec)}
-    {};
+    {}
 
     virtual ~base_transaction_constructor()
     {
@@ -298,9 +298,9 @@ public:
             std::string(""), std::move(receiver_list), fee)
         , to_{std::move(to)}
         , deposit_cycle_{deposit_cycle}
-    {};
+    {}
 
-    ~depositing_etp(){};
+    ~depositing_etp(){}
 
     static const std::vector<uint16_t> vec_cycle;
 
@@ -324,9 +324,9 @@ public:
             std::move(receiver_list), std::string(""),
             std::move(mychange), std::move(message), fee)
         , deposit_{deposit}
-    {};
+    {}
 
-    ~depositing_etp_transaction(){};
+    ~depositing_etp_transaction(){}
 
     static const std::vector<uint16_t> vec_cycle;
 
@@ -346,9 +346,9 @@ public:
         std::string&& from, receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee)
-    {};
+    {}
 
-    ~sending_etp(){};
+    ~sending_etp(){}
 };
 
 class BCX_API sending_etp_more : public base_transfer_helper
@@ -360,9 +360,9 @@ public:
         std::string&& mychange, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, "", std::move(mychange))
-    {};
+    {}
 
-    ~sending_etp_more(){};
+    ~sending_etp_more(){}
 };
 
 class BCX_API sending_multisig_etp : public base_transfer_helper
@@ -375,9 +375,9 @@ public:
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee)
         , multisig_{multisig}
-    {};
+    {}
 
-    ~sending_multisig_etp(){};
+    ~sending_multisig_etp(){}
 
     void sign_tx_inputs() override ;
     void exec() override;
@@ -396,9 +396,9 @@ public:
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , attenuation_model_param_{std::move(model_param)}
-    {};
+    {}
 
-    ~issuing_asset(){};
+    ~issuing_asset(){}
 
     void sum_payments() override;
     void sum_payment_amount() override;
@@ -427,9 +427,9 @@ public:
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , volume_(volume)
         , attenuation_model_param_{std::move(model_param)}
-    {};
+    {}
 
-    ~secondary_issuing_asset(){};
+    ~secondary_issuing_asset(){}
 
     void sum_payment_amount() override;
     void populate_change() override;
@@ -458,12 +458,10 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-    {};
+    {}
 
     ~sending_asset()
-    {};
-
-    void populate_change() override;
+    {}
 };
 
 class BCX_API issuing_did : public base_transfer_helper
@@ -475,10 +473,10 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-    {};
+    {}
 
     ~issuing_did()
-    {};
+    {}
 
     void sum_payment_amount() override;
 
@@ -497,10 +495,10 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol)),fromfee(feefrom)
-    {};
+    {}
 
     ~sending_did()
-    {};
+    {}
 
     void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
     void populate_change() override;
@@ -516,13 +514,10 @@ public:
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-    {};
+    {}
 
     ~transferring_asset_cert()
-    {};
-
-    void sum_payment_amount() override;
-    void populate_change() override;
+    {}
 };
 
 
