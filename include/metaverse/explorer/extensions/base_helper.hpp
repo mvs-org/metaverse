@@ -145,6 +145,16 @@ void sync_fetch_asset_balance_record (std::string& addr,
 class BCX_API base_transfer_common
 {
 public:
+    enum filter : uint8_t {
+        ETP = 1 << 0,
+        ASSET = 1 << 1,
+        ASSETCERT = 1 << 2,
+        DID = 1 << 3,
+        ETP_AND_ASSET = ETP | ASSET,
+        DEFAULT = ETP | ASSET | ASSETCERT,
+        DEFAULT_AND_DID = DEFAULT | DID
+    };
+
     base_transfer_common(
         bc::blockchain::block_chain_impl& blockchain,
         receiver_record::list&& receiver_list, uint64_t fee,
@@ -171,7 +181,8 @@ public:
 
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
-    virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
+    virtual void sync_fetchutxo(
+            const std::string& prikey, const std::string& addr, filter filter = filter::DEFAULT);
     virtual attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();
@@ -192,17 +203,19 @@ public:
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_asset_cert_change(const std::string& address = std::string(""));
-    bool is_payment_satisfied(bool consider_asset_cert = true);
-    void check_payment_satisfied(bool consider_asset_cert = true);
+    bool is_payment_satisfied(filter filter = filter::DEFAULT) const;
+    void check_payment_satisfied(filter filter = filter::DEFAULT) const;
     void populate_tx_inputs();
     void check_tx();
     void exec();
-
 
     std::string get_mychange_address(const std::string& type) const;
 
     tx_type& get_transaction() { return tx_; }
     const tx_type& get_transaction() const { return tx_; }
+
+    virtual bool is_did_found() const {return false;}
+    virtual void set_did_found(bool) {}
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
@@ -400,7 +413,6 @@ public:
 
     void sum_payments() override;
     void sum_payment_amount() override;
-    void populate_change() override;
 
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
@@ -499,9 +511,16 @@ public:
     ~sending_did()
     {}
 
-    void sync_fetchutxo (const std::string& prikey, const std::string& addr) override;
+    void sum_payment_amount() override;
+    void populate_unspent_list() override;
     void populate_change() override;
-    std::string fromfee ;
+
+    bool is_did_found() const override {return did_found;}
+    void set_did_found(bool found) override {did_found = found;}
+
+private:
+    std::string fromfee;
+    bool did_found{false};
 };
 
 class BCX_API transferring_asset_cert : public base_transfer_helper
