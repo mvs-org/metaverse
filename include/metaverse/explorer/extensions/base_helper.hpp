@@ -170,10 +170,21 @@ public:
     static const uint64_t attach_version{1};
 
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
+    virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
     virtual void sync_fetchutxo(const std::string& prikey, const std::string& addr);
+    virtual attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();
     virtual void populate_change();
+    virtual void populate_tx_outputs();
+    virtual void populate_unspent_list() = 0;
+    virtual void sign_tx_inputs();
+    virtual void send_tx();
+
+    virtual void populate_tx_header() {
+        tx_.version = transaction_version::check_output_script;
+        tx_.locktime = 0;
+    }
 
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
@@ -181,10 +192,17 @@ public:
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_asset_cert_change(const std::string& address = std::string(""));
-    bool is_payment_satisfied();
-    void check_payment_satisfied();
+    bool is_payment_satisfied(bool consider_asset_cert = true);
+    void check_payment_satisfied(bool consider_asset_cert = true);
+    void populate_tx_inputs();
+    void check_tx();
+    void exec();
+
 
     std::string get_mychange_address(const std::string& type) const;
+
+    tx_type& get_transaction() { return tx_; }
+    const tx_type& get_transaction() const { return tx_; }
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
@@ -222,22 +240,8 @@ public:
     ~base_transfer_helper()
     {}
 
-    virtual void populate_unspent_list();
-
-    virtual void populate_tx_header() {
-        tx_.version = transaction_version::check_output_script;
-        tx_.locktime = 0;
-    };
-
-    virtual void populate_tx_inputs();
-    virtual attachment populate_output_attachment(receiver_record& record);
-    virtual void populate_tx_outputs();
-    virtual void check_tx();
-    virtual void sign_tx_inputs();
-    void send_tx();
-    virtual void exec();
-    tx_type& get_transaction();
-    std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
+    void populate_unspent_list() override;
+    attachment populate_output_attachment(const receiver_record& record) override;
 
 protected:
     command&                          cmd_;
@@ -264,22 +268,13 @@ public:
         from_vec_.clear();
     };
 
-    virtual void sum_payment_amount();
-    virtual void populate_unspent_list();
-    virtual void populate_change();
+    void sum_payment_amount() override;
+    void populate_unspent_list() override;
+    void populate_change() override;
 
-    virtual void populate_tx_header() {
-        tx_.version = transaction_version::check_output_script;
-        tx_.locktime = 0;
-    };
-
-    virtual void populate_tx_inputs();
-    virtual attachment populate_output_attachment(receiver_record& record);
-    virtual void populate_tx_outputs();
-    virtual void check_tx();
-    virtual void exec();
-    tx_type& get_transaction();
-    std::vector<unsigned char> satoshi_to_chunk(const int64_t& value);
+    // no operation in exec
+    void sign_tx_inputs() override {}
+    void send_tx() override {}
 
 protected:
     utxo_attach_type                  type_{utxo_attach_type::invalid};
@@ -304,9 +299,9 @@ public:
 
     static const std::vector<uint16_t> vec_cycle;
 
-    uint32_t get_reward_lock_height();
-    // modify lock script
-    void populate_tx_outputs() override ;
+    uint32_t get_reward_lock_height() const;
+
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
     std::string                       to_;
@@ -330,9 +325,9 @@ public:
 
     static const std::vector<uint16_t> vec_cycle;
 
-    uint32_t get_reward_lock_height();
-    // modify lock script
-    void populate_tx_outputs() override ;
+    uint32_t get_reward_lock_height() const;
+
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
     uint16_t                          deposit_{7}; // 7 days
@@ -380,7 +375,10 @@ public:
     ~sending_multisig_etp(){}
 
     void sign_tx_inputs() override ;
-    void exec() override;
+
+    // no operation in exec
+    void send_tx() override {}
+
 private:
     account_multisig multisig_;
 };
@@ -402,8 +400,9 @@ public:
 
     void sum_payments() override;
     void sum_payment_amount() override;
-    void populate_tx_outputs() override;
     void populate_change() override;
+
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;
@@ -433,8 +432,8 @@ public:
 
     void sum_payment_amount() override;
     void populate_change() override;
-    attachment populate_output_attachment(receiver_record& record) override;
-    void populate_tx_outputs() override;
+    attachment populate_output_attachment(const receiver_record& record) override;
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
     uint64_t get_volume() { return volume_; };
     void populate_tx_header() override {
