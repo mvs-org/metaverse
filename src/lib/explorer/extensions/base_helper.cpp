@@ -460,7 +460,7 @@ std::string base_transfer_common::get_mychange_address(const std::string& type) 
         return it->addr;
     }
 
-    return from_list_.at(0).addr;
+    return from_list_.begin()->addr;
 }
 
 void base_transfer_common::populate_etp_change(const std::string& address)
@@ -858,7 +858,8 @@ void base_transaction_constructor::populate_change()
 
     if (!message_.empty()) { // etp transfer/asset transfer  -- with message
         receiver_list_.push_back({addr, "", 0, 0,
-            utxo_attach_type::message, attachment()});
+            utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(message_))});
     }
 }
 
