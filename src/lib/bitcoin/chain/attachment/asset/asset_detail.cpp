@@ -330,7 +330,8 @@ bool asset_detail::is_secondaryissue_owns_enough(uint64_t own, uint64_t total, u
         return true;
     if (!is_secondaryissue_legal(threshold))
         return false;
-    return own >= (uint64_t)(((double)total) / 100 * threshold);
+    uint64_t value_needed = (uint64_t)(((double)total) / 100 * threshold);
+    return (value_needed == 0) || (own >= value_needed -1); // allow 1 inaccurate
 }
 
 } // namspace chain

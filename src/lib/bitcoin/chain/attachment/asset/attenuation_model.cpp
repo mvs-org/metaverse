@@ -182,7 +182,8 @@ private:
 
         const auto& kv_vec = bc::split(model_param_, ";");
         if (kv_vec.size() < 6) {
-            log::info(LOG_HEADER) << "the model param should at least contain keys of PN, LH, TYPE, LQ, LP, UN";
+            log::info(LOG_HEADER) << "model param is " << model_param_
+                << ", the model param should at least contain keys of PN, LH, TYPE, LQ, LP, UN";
             return false;
         }
         if (kv_vec[0].find("PN=") != 0) {

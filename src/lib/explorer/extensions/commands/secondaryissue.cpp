@@ -61,27 +61,38 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to secondary issue, or the threshold is illegal."};
 
-    auto certs_send = asset_cert_ns::issue;
-    auto certs_owned = blockchain.get_address_asset_cert_type(argument_.address, argument_.symbol);
-    if (!asset_cert::test_certs(certs_owned, certs_send))
-        throw asset_cert_exception("no secondaryissue asset cert owned");
+    if (!blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::issue)) {
+        throw asset_cert_exception{"no issue asset cert exist in blockchain for symbol " + argument_.symbol};
+    }
+
+    // if issue cert exists then check whether it belongs to the account.
+    const auto match = [](const business_address_asset_cert& item) {
+        return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::issue);
+    };
+
+    auto certs_vec = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
+    const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
+    if (it == certs_vec->end()) {
+        throw asset_cert_exception{"no issue asset cert owned for symbol " + argument_.symbol};
+    }
+    std::string existed_issue_cert_address = it->address;
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if (total_volume > max_uint64 - argument_.volume)
         throw asset_amount_exception{"secondaryissue volume cannot exceed maximum value"};
 
-    auto asset_volume = blockchain.get_address_asset_volume(argument_.address, argument_.symbol);
-    if (!asset_detail::is_secondaryissue_owns_enough(asset_volume, total_volume, secondaryissue_threshold)) {
-        throw asset_lack_exception{"asset volum is not enought to secondaryissue"};
+    uint64_t asset_volume_of_threshold = 0;
+    if (!asset_detail::is_secondaryissue_freely(secondaryissue_threshold)) {
+        asset_volume_of_threshold = (uint64_t)(((double)total_volume) / 100 * secondaryissue_threshold);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::asset_secondaryissue, attachment()}
+        {argument_.address, argument_.symbol, 0, asset_volume_of_threshold,
+            utxo_attach_type::asset_secondaryissue, attachment()},
+        {existed_issue_cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
+            utxo_attach_type::asset_cert, attachment()}
     };
-    // asset_cert utxo
-    receiver.push_back({argument_.address, argument_.symbol,
-            0, 0, certs_send, utxo_attach_type::asset_cert, attachment()});
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,
             std::move(auth_.name), std::move(auth_.auth),

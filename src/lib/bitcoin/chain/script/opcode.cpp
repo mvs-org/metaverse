@@ -234,6 +234,10 @@ std::string opcode_to_string(opcode value, uint32_t flags)
             return "checkmultisig";
         case opcode::checkmultisigverify:
             return "checkmultisigverify";
+        case opcode::checklocktimeverify:
+            return "checklocktimeverify";
+        case opcode::checkattenuationverify:
+            return "checkattenuationverify";
         case opcode::op_nop1:
             return "nop1";
         case opcode::op_nop4:

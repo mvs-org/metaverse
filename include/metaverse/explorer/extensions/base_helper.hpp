@@ -379,7 +379,6 @@ public:
 
     ~sending_multisig_etp(){};
 
-    void populate_unspent_list() override;
     void sign_tx_inputs() override ;
     void exec() override;
 private:
@@ -405,7 +404,6 @@ public:
     void sum_payment_amount() override;
     void populate_tx_outputs() override;
     void populate_change() override;
-    void populate_unspent_list() override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;
@@ -435,7 +433,6 @@ public:
 
     void sum_payment_amount() override;
     void populate_change() override;
-    void populate_unspent_list() override;
     attachment populate_output_attachment(receiver_record& record) override;
     void populate_tx_outputs() override;
 

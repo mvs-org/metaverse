@@ -332,40 +332,46 @@ code validate_transaction::check_secondaryissue_transaction(
     is_asset_secondaryissue = false;
     std::string asset_symbol;
     std::string asset_address;
+    std::string asset_cert_address;
     uint8_t secondaryissue_threshold{0};
     uint64_t secondaryissue_asset_amount{0};
     uint64_t asset_transfer_volume{0};
     int num_asset_transfer{0};
-    int num_asset_cert_issue{0};
+    int num_asset_cert{0};
     asset_cert_type certs_out{asset_cert_ns::none};
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_secondaryissue())
         {
             if (is_asset_secondaryissue) {
-                // can not secondary issue multiple assets at the same transaction
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: num of secondaryissue output > 1, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             is_asset_secondaryissue = true;
             auto && asset_detail = output.get_asset_detail();
             if (!asset_detail.is_asset_secondaryissue()
                 || !asset_detail.is_secondaryissue_threshold_value_ok()) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: threshold value invalid, " << asset_symbol;
                 return error::asset_secondaryissue_threshold_invalid;
             }
             if (asset_symbol.empty()) {
                 asset_symbol = asset_detail.get_symbol();
             } else if (asset_symbol != asset_detail.get_symbol()) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: detail symbol invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             auto asset_address_out = asset_detail.get_address();
             if (asset_address.empty()) {
                 asset_address = asset_address_out;
             } else if (asset_address != asset_address_out) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: detail address invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                 const auto& model_param = output.get_attenuation_model_param();
                 if (!attenuation_model::check_model_param(model_param, true)) {
+                    log::debug(LOG_BLOCKCHAIN) << "secondaryissue: model param invalid, "
+                        << asset_symbol << " " << model_param;
                     return error::attenuation_model_param_error;
                 }
             }
@@ -375,35 +381,36 @@ code validate_transaction::check_secondaryissue_transaction(
         else if (output.is_asset_transfer())
         {
             ++num_asset_transfer;
-            if (num_asset_transfer > 1) {
-                return error::asset_secondaryissue_error;
-            }
             auto && asset_transfer = output.get_asset_transfer();
             if (asset_symbol.empty()) {
                 asset_symbol = asset_transfer.get_symbol();
             } else if (asset_symbol != asset_transfer.get_symbol()) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: transfer symbol invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             auto asset_address_out = output.get_script_address();
             if (asset_address.empty()) {
                 asset_address = asset_address_out;
             } else if (asset_address != asset_address_out) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: transfer address invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
             asset_transfer_volume += asset_transfer.get_quantity();
         }
         else if (output.is_asset_cert())
         {
-            ++num_asset_cert_issue;
-            if (num_asset_cert_issue > 2) {
+            ++num_asset_cert;
+            if (num_asset_cert > 2) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert numbers > 2, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
 
             // check address
             auto asset_address_out = output.get_script_address();
-            if (asset_address.empty()) {
-                asset_address = asset_address_out;
-            } else if (asset_address != asset_address_out) {
+            if (asset_cert_address.empty()) {
+                asset_cert_address = asset_address_out;
+            } else if (asset_cert_address != asset_address_out) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert address invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
 
@@ -411,6 +418,7 @@ code validate_transaction::check_secondaryissue_transaction(
             if (asset_symbol.empty()) {
                 asset_symbol = cert_info.get_symbol();
             } else if (asset_symbol != cert_info.get_symbol()) {
+                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert symbol invalid, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
 
@@ -418,16 +426,32 @@ code validate_transaction::check_secondaryissue_transaction(
         }
         else if (!output.is_etp())
         {
+            log::debug(LOG_BLOCKCHAIN) << "secondaryissue: illega output, "
+                << asset_symbol << " : " << output.to_string(1);
             return error::asset_secondaryissue_error;
         }
     }
 
-    if ((tx.outputs.size() > 5) || (asset_transfer_volume == 0)
-        || asset_symbol.empty() || asset_address.empty()) {
+    size_t max_outputs_size = 2 + num_asset_transfer + num_asset_cert;
+    if (tx.outputs.size() > max_outputs_size) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: too many outputs, " << asset_symbol;
+        return error::asset_secondaryissue_error;
+    }
+    if (asset_transfer_volume == 0) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: zero number asset tranfer, " << asset_symbol;
+        return error::asset_secondaryissue_error;
+    }
+    if (asset_symbol.empty()) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: empty asset symbol, " << asset_symbol;
+        return error::asset_secondaryissue_error;
+    }
+    if (asset_address.empty()) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: empty asset address, " << asset_symbol;
         return error::asset_secondaryissue_error;
     }
 
     if (!asset_cert::test_certs(certs_out, asset_cert_ns::issue)) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: no issue asset cert, " << asset_symbol;
         return error::asset_cert_error;
     }
 
@@ -436,11 +460,14 @@ code validate_transaction::check_secondaryissue_transaction(
         total_volume -= secondaryissue_asset_amount; // as get_asset_volume has summed myself
     } else {
         if (total_volume > max_uint64 - secondaryissue_asset_amount) {
-            log::error(LOG_BLOCKCHAIN) << "secondaryissue: total asset volume cannot exceed maximum value";
+            log::debug(LOG_BLOCKCHAIN)
+                << "secondaryissue: total asset volume cannot exceed maximum value, "
+                << asset_symbol;
             return error::asset_secondaryissue_error;
         }
     }
     if (!asset_detail::is_secondaryissue_owns_enough(asset_transfer_volume, total_volume, secondaryissue_threshold)) {
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: no enough asset volume, " << asset_symbol;
         return error::asset_secondaryissue_share_not_enough;
     }
 
@@ -457,11 +484,15 @@ code validate_transaction::check_secondaryissue_transaction(
             || prev_output.is_asset_transfer()
             || prev_output.is_asset_cert()) {
             auto asset_address_in = prev_output.get_script_address();
-            if (asset_address != asset_address_in) {
+            if (prev_output.is_asset_cert()) {
+                if (asset_cert_address != asset_address_in) {
+                    log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid cert input, " << asset_symbol;
+                    return error::validate_inputs_failed;
+                }
+            } else if (asset_address != asset_address_in) {
+                    log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid asset input, " << asset_symbol;
                 return error::validate_inputs_failed;
             }
-        } else if (!prev_output.is_etp()) {
-            return error::validate_inputs_failed;
         }
     }
 

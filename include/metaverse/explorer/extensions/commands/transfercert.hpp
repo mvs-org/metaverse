@@ -46,8 +46,7 @@ public:
             .add("ACCOUNTAUTH", 1)
             .add("FROMADDRESS", 1)
             .add("TOADDRESS", 1)
-            .add("SYMBOL", 1)
-            .add("CERTS", 1);
+            .add("SYMBOL", 1);
 
     }
 
@@ -60,7 +59,6 @@ public:
         load_input(argument_.from, "FROMADDRESS", variables, input, raw);
         load_input(argument_.to, "TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
-        load_input(argument_.certs, "CERTS", variables, input, raw);
     }
 
     options_metadata& load_options() override
