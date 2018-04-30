@@ -367,7 +367,27 @@ bool attenuation_model::check_model_param_immutable(const data_chunk& previous, 
     return std::equal(iter1, previous.end(), iter2);
 }
 
-bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
+bool attenuation_model::check_model_param_format(const data_chunk& param)
+{
+    attenuation_model parser(std::string(param.begin(), param.end()));
+
+    const auto model = parser.get_model_type();
+
+    // model_type::none is equivalent to
+    // the scrpit pattern is not pay_key_hash_with_attenuation_model
+    if (model == model_type::none) {
+        if (!param.empty()) {
+            log::info(LOG_HEADER)
+                << "check_model_param, wrong model param format : "
+                << parser.get_model_param();
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool attenuation_model::check_model_param_initial(const data_chunk& param)
 {
     attenuation_model parser(std::string(param.begin(), param.end()));
 
@@ -390,14 +410,6 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
 
-    // common condition : initial PN == 0
-    if (initial) {
-        if (PN != 0) {
-            log::info(LOG_HEADER) << "common param error: initial PN != 0";
-            return false;
-        }
-    }
-
     // common condition : PN < UN
     if (PN >= UN) {
         log::info(LOG_HEADER) << "common param error: PN >= UN";
@@ -408,6 +420,37 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         log::info(LOG_HEADER) << "common param error: LH <= 0";
         return false;
     }
+
+    auto is_fixed_cycle = false;
+    switch (model) {
+        case model_type::fixed_quantity:
+        case model_type::fixed_rate:
+            is_fixed_cycle = true;
+            break;
+        default:
+            break;
+    }
+
+    if (is_fixed_cycle) {
+        auto UC = LP / UN;
+        if (LH != UC) {
+            log::info(LOG_HEADER) << "fixed cycle param error: initial LH != UC";
+            return false;
+        }
+    }
+
+    // Why convert to custom model is needed?
+    // Because the computing of float's exponential
+    // or other complex expression is 'inaccurate',
+    // you may get different results of multiple computing.
+    auto is_convert_to_custom = false;
+
+    // common condition : initial PN == 0
+    if (PN != 0) {
+        log::info(LOG_HEADER) << "common param error: initial PN != 0";
+        return false;
+    }
+
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
         log::info(LOG_HEADER) << "common param error: LQ <= 0";
@@ -424,36 +467,6 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         return false;
     }
 
-    auto is_fixed_cycle = false;
-    switch (model) {
-        case model_type::fixed_quantity:
-        case model_type::fixed_rate:
-            is_fixed_cycle = true;
-            break;
-        default:
-            break;
-    }
-
-    if (is_fixed_cycle) {
-        auto UC = LP / UN;
-        if (initial) { // initial cycle
-            if (LH != UC) {
-                log::info(LOG_HEADER) << "fixed cycle param error: initial LH != UC";
-                return false;
-            }
-        } else if (PN + 1 == UN) { // last cycle
-            if (PN * UC + LH > LP) {
-                log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
-                return false;
-            }
-        } else {
-            if (LH > UC) {
-                log::info(LOG_HEADER) << "fixed cycle param error: LH > UC";
-                return false;
-            }
-        }
-    }
-
     if (model == model_type::fixed_quantity) {
         // given LQ, LP, UN, then
         // LP >= UN and LQ >= UN
@@ -468,17 +481,10 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
         return true;
     }
 
-    // Why convert to custom model is needed?
-    // Because the computing of float's exponential
-    // or other complex expression is 'inaccurate',
-    // you may get different results of multiple computing.
-    auto is_convert_to_custom = false;
-
     if (model == model_type::fixed_rate) {
         // given LQ, LP, UN, IR, UC, UQ,
         // then IR.size == 1 and IR > 0
         // and satisfy custom param conditions.
-        is_convert_to_custom = true;
         const auto& IR = parser.get_issue_rates();
         if (IR.size() != 1) {
             log::info(LOG_HEADER) << "fixed_rate param error: IR.size() != 1";
@@ -512,19 +518,94 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
             log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
             return false;
         }
-        if (initial) {
-            if (LH != UC[0]) {
-                log::info(LOG_HEADER) << "custom param error: initial LH != UC[0]";
-                return false;
-            }
-        } else if (LH > UC[PN]) {
-            log::info(LOG_HEADER) << "custom param error: LH > UC";
+        if (LH != UC[0]) {
+            log::info(LOG_HEADER) << "custom param error: initial LH != UC[0]";
             return false;
         }
         return true;
     }
 
     log::info(LOG_HEADER) << "Unsupported attenuation model: " << std::to_string(to_index(model));
+    return false;
+}
+
+bool attenuation_model::check_model_param(const data_chunk& param, const transaction& tx)
+{
+    attenuation_model parser(std::string(param.begin(), param.end()));
+
+    const auto model = parser.get_model_type();
+
+    // model_type::none is equivalent to
+    // the scrpit pattern is not pay_key_hash_with_attenuation_model
+    if (model == model_type::none) {
+        if (!param.empty()) {
+            log::info(LOG_HEADER)
+                << "check_model_param, wrong model param : "
+                << parser.get_model_param();
+        }
+        return false;
+    }
+
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+
+    // common condition : PN < UN
+    if (PN >= UN) {
+        log::info(LOG_HEADER) << "common param error: PN >= UN";
+        return false;
+    }
+    // common condition : LH > 0
+    if (!is_positive_number(LH)) {
+        log::info(LOG_HEADER) << "common param error: LH <= 0";
+        return false;
+    }
+
+    auto is_fixed_cycle = false;
+    switch (model) {
+        case model_type::fixed_quantity:
+        case model_type::fixed_rate:
+            is_fixed_cycle = true;
+            break;
+        default:
+            break;
+    }
+
+    if (is_fixed_cycle) {
+        auto UC = LP / UN;
+        if (PN + 1 == UN) { // last cycle
+            if (PN * UC + LH > LP) {
+                log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
+                return false;
+            }
+        } else {
+            if (LH > UC) {
+                log::info(LOG_HEADER) << "fixed cycle param error: LH > UC";
+                return false;
+            }
+        }
+    }
+
+    // Why convert to custom model is needed?
+    // Because the computing of float's exponential
+    // or other complex expression is 'inaccurate',
+    // you may get different results of multiple computing.
+    auto is_convert_to_custom = false;
+
+    if (model == model_type::fixed_rate) {
+        is_convert_to_custom = true;
+    }
+
+    if ((model == model_type::custom) || is_convert_to_custom) {
+        const auto& UC = parser.get_unlock_cycles();
+        if (LH > UC[PN]) {
+            log::info(LOG_HEADER) << "custom param error: LH > UC";
+            return false;
+        }
+    }
+
     return false;
 }
 

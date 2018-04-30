@@ -565,8 +565,8 @@ base_transfer_common::get_script_operations(const receiver_record& record) const
     else if (record.type == utxo_attach_type::asset_locked_transfer) {
         const auto& attenuation_model_param =
             boost::get<blockchain_message>(record.attach_elem.get_attach()).get_content();
-        if (!attenuation_model::check_model_param(to_chunk(attenuation_model_param))) {
-            throw asset_attenuation_model_exception("check asset attenuation model param failed: "
+        if (attenuation_model_param.empty()) {
+            throw asset_attenuation_model_exception("check asset locked transfer attenuation model param failed: "
                 + attenuation_model_param);
         }
         payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
@@ -699,7 +699,9 @@ void base_transfer_helper::populate_unspent_list()
         if (blockchain_.is_script_address(each.get_address()))
             continue;
 
-        if (from_ == each.get_address()) {
+        if (from_.empty()) {
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+        } else if (from_ == each.get_address()) {
             sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
             // select etp/asset utxo only in from_ address
             check_payment_satisfied(FILTER_ETP_AND_ASSET);
@@ -714,7 +716,7 @@ void base_transfer_helper::populate_unspent_list()
     }
 
     if (from_list_.empty()) {
-        throw tx_source_exception{"not enough etp or asset in from address"
+        throw tx_source_exception{"no enough etp or asset in from address"
             ", or you are't own from address!"};
     }
 
@@ -1045,7 +1047,7 @@ void issuing_asset::sum_payment_amount()
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()
-        && !attenuation_model::check_model_param(to_chunk(attenuation_model_param_), true)) {
+        && !attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 }
@@ -1109,7 +1111,7 @@ void secondary_issuing_asset::sum_payment_amount()
     }
 
     if (!attenuation_model_param_.empty()
-            && !attenuation_model::check_model_param(to_chunk(attenuation_model_param_), true)) {
+            && !attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
         throw asset_attenuation_model_exception("check asset attenuation model param failed");
     }
 }

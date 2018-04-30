@@ -388,7 +388,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     valtype& sModelParam = stacktop(-1);
-                    if (!attenuation_model::check_model_param(sModelParam))
+                    if (!attenuation_model::check_model_param_format(sModelParam))
                         return set_error(serror, SCRIPT_ERR_INVALID_MODEL_PARAM);
 
                     popstack(stack);

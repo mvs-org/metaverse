@@ -369,7 +369,7 @@ code validate_transaction::check_secondaryissue_transaction(
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                 const auto& model_param = output.get_attenuation_model_param();
-                if (!attenuation_model::check_model_param(model_param, true)) {
+                if (!attenuation_model::check_model_param_initial(model_param)) {
                     log::debug(LOG_BLOCKCHAIN) << "secondaryissue: model param invalid, "
                         << asset_symbol << " " << model_param;
                     return error::attenuation_model_param_error;
@@ -549,7 +549,7 @@ code validate_transaction::check_asset_issue_transaction(
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                 const auto& model_param = output.get_attenuation_model_param();
-                if (!attenuation_model::check_model_param(model_param, true)) {
+                if (!attenuation_model::check_model_param_initial(model_param)) {
                     return error::attenuation_model_param_error;
                 }
             }
@@ -905,7 +905,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
             else if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                 const auto& model_param = output.get_attenuation_model_param();
-                if (!attenuation_model::check_model_param(model_param)) {
+                if (!attenuation_model::check_model_param(model_param, tx)) {
                     return error::attenuation_model_param_error;
                 }
             }
