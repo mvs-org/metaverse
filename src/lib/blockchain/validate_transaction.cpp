@@ -313,6 +313,17 @@ void validate_transaction::check_fees()
     handle_validate_(error::success, tx_, unconfirmed_);
 }
 
+static bool check_same(std::string& dest, const std::string& src)
+{
+    if (dest.empty()) {
+        dest = src;
+    } else if (dest != src) {
+        log::debug(LOG_BLOCKCHAIN) << "check_same: " << dest << " != " << src;
+        return false;
+    }
+    return true;
+}
+
 code validate_transaction::check_secondaryissue_transaction(
         const chain::transaction& tx,
         blockchain::block_chain_impl& blockchain,
@@ -348,23 +359,16 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
             is_asset_secondaryissue = true;
-            auto && asset_detail = output.get_asset_detail();
+            auto&& asset_detail = output.get_asset_detail();
             if (!asset_detail.is_asset_secondaryissue()
                 || !asset_detail.is_secondaryissue_threshold_value_ok()) {
                 log::debug(LOG_BLOCKCHAIN) << "secondaryissue: threshold value invalid, " << asset_symbol;
                 return error::asset_secondaryissue_threshold_invalid;
             }
-            if (asset_symbol.empty()) {
-                asset_symbol = asset_detail.get_symbol();
-            } else if (asset_symbol != asset_detail.get_symbol()) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: detail symbol invalid, " << asset_symbol;
+            if (!check_same(asset_symbol, asset_detail.get_symbol())) {
                 return error::asset_secondaryissue_error;
             }
-            auto asset_address_out = asset_detail.get_address();
-            if (asset_address.empty()) {
-                asset_address = asset_address_out;
-            } else if (asset_address != asset_address_out) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: detail address invalid, " << asset_symbol;
+            if (!check_same(asset_address, asset_detail.get_address())) {
                 return error::asset_secondaryissue_error;
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
@@ -381,18 +385,11 @@ code validate_transaction::check_secondaryissue_transaction(
         else if (output.is_asset_transfer())
         {
             ++num_asset_transfer;
-            auto && asset_transfer = output.get_asset_transfer();
-            if (asset_symbol.empty()) {
-                asset_symbol = asset_transfer.get_symbol();
-            } else if (asset_symbol != asset_transfer.get_symbol()) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: transfer symbol invalid, " << asset_symbol;
+            auto&& asset_transfer = output.get_asset_transfer();
+            if (!check_same(asset_symbol, asset_transfer.get_symbol())) {
                 return error::asset_secondaryissue_error;
             }
-            auto asset_address_out = output.get_script_address();
-            if (asset_address.empty()) {
-                asset_address = asset_address_out;
-            } else if (asset_address != asset_address_out) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: transfer address invalid, " << asset_symbol;
+            if (!check_same(asset_address, output.get_script_address())) {
                 return error::asset_secondaryissue_error;
             }
             asset_transfer_volume += asset_transfer.get_quantity();
@@ -404,25 +401,14 @@ code validate_transaction::check_secondaryissue_transaction(
                 log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert numbers > 2, " << asset_symbol;
                 return error::asset_secondaryissue_error;
             }
-
-            // check address
-            auto asset_address_out = output.get_script_address();
-            if (asset_cert_address.empty()) {
-                asset_cert_address = asset_address_out;
-            } else if (asset_cert_address != asset_address_out) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert address invalid, " << asset_symbol;
+            auto&& asset_cert = output.get_asset_cert();
+            if (!check_same(asset_symbol, asset_cert.get_symbol())) {
                 return error::asset_secondaryissue_error;
             }
-
-            asset_cert&& cert_info = output.get_asset_cert();
-            if (asset_symbol.empty()) {
-                asset_symbol = cert_info.get_symbol();
-            } else if (asset_symbol != cert_info.get_symbol()) {
-                log::debug(LOG_BLOCKCHAIN) << "secondaryissue: cert symbol invalid, " << asset_symbol;
+            if (!check_same(asset_cert_address, output.get_script_address())) {
                 return error::asset_secondaryissue_error;
             }
-
-            certs_out |= cert_info.get_certs();
+            certs_out |= asset_cert.get_certs();
         }
         else if (!output.is_etp())
         {
@@ -483,7 +469,7 @@ code validate_transaction::check_secondaryissue_transaction(
             || prev_output.is_asset_secondaryissue()
             || prev_output.is_asset_transfer()
             || prev_output.is_asset_cert()) {
-            auto asset_address_in = prev_output.get_script_address();
+            auto&& asset_address_in = prev_output.get_script_address();
             if (prev_output.is_asset_cert()) {
                 if (asset_cert_address != asset_address_in) {
                     log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid cert input, " << asset_symbol;
@@ -534,22 +520,20 @@ code validate_transaction::check_asset_issue_transaction(
             if (!detail.is_secondaryissue_threshold_value_ok()) {
                 return error::asset_secondaryissue_threshold_invalid;
             }
-            if (asset_symbol.empty()) {
-                asset_symbol = detail.get_symbol();
-            } else if (asset_symbol != detail.get_symbol()) {
+            if (!check_same(asset_symbol, detail.get_symbol())) {
+                return error::asset_issue_error;
+            }
+            if (!check_same(asset_address, detail.get_address())) {
                 return error::asset_issue_error;
             }
             if (chain.is_asset_exist(asset_symbol, false)) {
                 return error::asset_exist;
             }
-            if (asset_address.empty()) {
-                asset_address = detail.get_address();
-            } else if (asset_address != detail.get_address()) {
-                return error::asset_issue_error;
-            }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                 const auto& model_param = output.get_attenuation_model_param();
                 if (!attenuation_model::check_model_param_initial(model_param)) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue: model param invalid, "
+                        << asset_symbol << " " << model_param;
                     return error::attenuation_model_param_error;
                 }
             }
@@ -557,11 +541,6 @@ code validate_transaction::check_asset_issue_transaction(
         }
         else if (output.is_asset_cert()) {
             asset_cert&& cert_info = output.get_asset_cert();
-
-            // check address
-            if (asset_address.empty()) {
-                asset_address = cert_info.get_address(chain);
-            }
 
             // check cert
             asset_cert_type cur_cert_type = cert_info.get_certs();
@@ -571,13 +550,11 @@ code validate_transaction::check_asset_issue_transaction(
                     return error::asset_issue_error;
                 }
 
-                if (asset_address != cert_info.get_address(chain)) {
+                if (!check_same(asset_symbol, cert_info.get_symbol())) {
                     return error::asset_issue_error;
                 }
 
-                if (asset_symbol.empty()) {
-                    asset_symbol = cert_info.get_symbol();
-                } else if (asset_symbol != cert_info.get_symbol()) {
+                if (!check_same(asset_address, output.get_script_address())) {
                     return error::asset_issue_error;
                 }
             }
@@ -594,7 +571,9 @@ code validate_transaction::check_asset_issue_transaction(
                     }
                 }
 
-                domain_cert_address = output.get_script_address();
+                if (!check_same(domain_cert_address, output.get_script_address())) {
+                    return error::asset_issue_error;
+                }
             }
             else {
                 log::error(LOG_BLOCKCHAIN)
@@ -608,6 +587,11 @@ code validate_transaction::check_asset_issue_transaction(
         {
             return error::asset_issue_error;
         }
+    }
+
+    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
+    if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
+        return error::asset_issue_error;
     }
 
     // check domain cert for transactions after check_nova_feature version.
@@ -632,11 +616,6 @@ code validate_transaction::check_asset_issue_transaction(
         }
     }
 
-    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
-    if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
-        return error::asset_issue_error;
-    }
-
     return error::success;
 }
 
@@ -649,7 +628,7 @@ code validate_transaction::check_did_transaction(
 
     uint8_t type = 255;
 
-     for (auto& output : const_cast<transaction&>(tx).outputs)
+     for (const auto& output : tx.outputs)
     {
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
@@ -882,7 +861,6 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 uint64_t current_blockheight = 0;
 
                 chain.get_last_height(current_blockheight);
-                chain.get_height(prev_output_blockheight, input.previous_output.hash);
                 if(chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash) == false){
                     return error::input_not_found;
                 }
@@ -986,10 +964,10 @@ bool validate_transaction::connect_input(const transaction& tx,
     uint64_t asset_transfer_amount = 0;
     if (previous_output.attach_data.get_type() == ASSET_TYPE) {
         // 1. do asset transfer amount check
-        asset_transfer_amount = const_cast<output&>(previous_output).get_asset_amount();
+        asset_transfer_amount = previous_output.get_asset_amount();
 
         // 2. do asset symbol check
-        new_symbol_in = const_cast<output&>(previous_output).get_asset_symbol();
+        new_symbol_in = previous_output.get_asset_symbol();
         if (!new_symbol_in.empty()) { // asset input
             if (old_symbol_in.empty()) { // init old symbol
                 old_symbol_in = new_symbol_in;
@@ -1033,7 +1011,7 @@ bool validate_transaction::connect_input(const transaction& tx,
     }
     else if (previous_output.attach_data.get_type() == DID_TYPE) {
         // 2. do did symbol check
-        new_symbol_in = const_cast<output&>(previous_output).get_did_symbol();
+        new_symbol_in = previous_output.get_did_symbol();
         if (!new_symbol_in.empty()) { // did input
             if (old_symbol_in.empty()) { // init old symbol
                 old_symbol_in = new_symbol_in;

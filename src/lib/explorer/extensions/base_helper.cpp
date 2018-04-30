@@ -565,8 +565,9 @@ base_transfer_common::get_script_operations(const receiver_record& record) const
     else if (record.type == utxo_attach_type::asset_locked_transfer) {
         const auto& attenuation_model_param =
             boost::get<blockchain_message>(record.attach_elem.get_attach()).get_content();
-        if (attenuation_model_param.empty()) {
-            throw asset_attenuation_model_exception("check asset locked transfer attenuation model param failed: "
+        if (attenuation_model::check_model_param_format(to_chunk(attenuation_model_param))) {
+            throw asset_attenuation_model_exception(
+                "check asset locked transfer attenuation model param failed: "
                 + attenuation_model_param);
         }
         payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
@@ -1046,9 +1047,11 @@ void issuing_asset::sum_payment_amount()
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
-    if (!attenuation_model_param_.empty()
-        && !attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
-        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    if (!attenuation_model_param_.empty()) {
+        attenuation_model_param_ = "PN=0;LH=0;" + attenuation_model_param_;
+        if (!attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
+            throw asset_attenuation_model_exception("check asset attenuation model param failed");
+        }
     }
 }
 
@@ -1110,9 +1113,11 @@ void secondary_issuing_asset::sum_payment_amount()
         throw asset_cert_exception("no asset cert of issue right is provided.");
     }
 
-    if (!attenuation_model_param_.empty()
-            && !attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
-        throw asset_attenuation_model_exception("check asset attenuation model param failed");
+    if (!attenuation_model_param_.empty()) {
+        attenuation_model_param_ = "PN=0;LH=0;" + attenuation_model_param_;
+        if (!attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
+            throw asset_attenuation_model_exception("check asset attenuation model param failed");
+        }
     }
 }
 
