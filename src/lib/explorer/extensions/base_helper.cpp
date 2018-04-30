@@ -275,7 +275,7 @@ void base_transfer_common::sync_fetchutxo(
         auto asset_certs = output.get_asset_cert_type();
 
         // filter output
-        if ((filter & filter::DID) &&
+        if ((filter & FILTER_DID) &&
             (output.is_did_issue() || output.is_did_transfer())) { // did related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
@@ -283,7 +283,7 @@ void base_transfer_common::sync_fetchutxo(
             if (symbol_ != output.get_did_symbol())
                 continue;
             set_did_found(true);
-        } else if ((filter & filter::ETP) && output.is_etp()) { // etp related
+        } else if ((filter & FILTER_ETP) && output.is_etp()) { // etp related
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(output.get_asset_symbol().empty());
             if (etp_amount == 0)
@@ -291,7 +291,7 @@ void base_transfer_common::sync_fetchutxo(
             // enough etp to pay
             if (unspent_etp_ >= payment_etp_)
                 continue;
-        } else if ((filter & filter::ASSET) &&
+        } else if ((filter & FILTER_ASSET) &&
                 (output.is_asset_transfer()
                 || output.is_asset_issue()
                 || output.is_asset_secondaryissue())) { // asset related
@@ -305,7 +305,7 @@ void base_transfer_common::sync_fetchutxo(
             // check asset symbol
             if (symbol_ != output.get_asset_symbol())
                 continue;
-        } else if ((filter & filter::ASSETCERT) && output.is_asset_cert()) { // cert related
+        } else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             // asset cert has already found
@@ -415,17 +415,17 @@ void base_transfer_common::sum_payment_amount()
 
 bool base_transfer_common::is_payment_satisfied(filter filter) const
 {
-    if ((filter & filter::ETP) && (unspent_etp_ < payment_etp_))
+    if ((filter & FILTER_ETP) && (unspent_etp_ < payment_etp_))
         return false;
 
-    if ((filter & filter::ASSET) && (unspent_asset_ < payment_asset_))
+    if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_))
         return false;
 
-    if ((filter & filter::ASSETCERT)
+    if ((filter & FILTER_ASSETCERT)
         && !asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
         return false;
 
-    if ((filter & filter::DID) && !is_did_found())
+    if ((filter & FILTER_DID) && !is_did_found())
         return false;
 
     return true;
@@ -433,23 +433,23 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
 
 void base_transfer_common::check_payment_satisfied(filter filter) const
 {
-    if ((filter & filter::ETP) && (unspent_etp_ < payment_etp_)) {
+    if ((filter & FILTER_ETP) && (unspent_etp_ < payment_etp_)) {
         throw account_balance_lack_exception{"no enough balance, unspent = "
             + std::to_string(unspent_etp_) + ", payment = " + std::to_string(payment_etp_)};
     }
 
-    if ((filter & filter::ASSET) && (unspent_asset_ < payment_asset_)) {
+    if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_)) {
         throw asset_lack_exception{"no enough asset amount, unspent = "
             + std::to_string(unspent_asset_) + ", payment = " + std::to_string(payment_asset_)};
     }
 
-    if ((filter & filter::ASSETCERT)
+    if ((filter & FILTER_ASSETCERT)
         && !asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_)) {
         throw asset_cert_exception{"no enough asset cert, unspent = "
             + std::to_string(unspent_asset_cert_) + ", payment = " + std::to_string(payment_asset_cert_)};
     }
 
-    if ((filter & filter::DID) && !is_did_found()) {
+    if ((filter & FILTER_DID) && !is_did_found()) {
         throw tx_source_exception{"no did of " + symbol_ + " is found"};
     }
 }
@@ -702,9 +702,9 @@ void base_transfer_helper::populate_unspent_list()
         if (from_ == each.get_address()) {
             sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
             // select etp/asset utxo only in from_ address
-            check_payment_satisfied(filter::ETP_AND_ASSET);
+            check_payment_satisfied(FILTER_ETP_AND_ASSET);
         } else {
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), filter::ASSETCERT);
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ASSETCERT);
         }
 
         // performance improve
@@ -1190,8 +1190,8 @@ void sending_did::populate_unspent_list()
 
         if (from_ == each.get_address()) {
             // pay did
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), filter::DID);
-            check_payment_satisfied(filter::DID);
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_DID);
+            check_payment_satisfied(FILTER_DID);
         }
     }
 
@@ -1200,7 +1200,7 @@ void sending_did::populate_unspent_list()
             ", or you are't own from address!"};
     }
 
-    check_payment_satisfied(filter::DEFAULT_AND_DID);
+    check_payment_satisfied(FILTER_DEFAULT_AND_DID);
 
     populate_change();
 }

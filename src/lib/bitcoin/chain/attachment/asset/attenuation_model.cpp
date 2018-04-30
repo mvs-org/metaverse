@@ -222,7 +222,7 @@ private:
                     return false;
                 }
             } else {
-                log::info(LOG_HEADER) << "key-value format is wrong, should be key=value format.";
+                log::info(LOG_HEADER) << "key-value format is wrong, should be key=value format. " << model_param_;
                 return false;
             }
         }
@@ -376,7 +376,11 @@ bool attenuation_model::check_model_param(const data_chunk& param, bool initial)
     // model_type::none is equivalent to
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
-        log::info(LOG_HEADER) << "model_type::none should not has pay_key_hash_with_attenuation_model script pattern.";
+        if (!param.empty()) {
+            log::info(LOG_HEADER)
+                << "check_model_param, wrong model param : "
+                << parser.get_model_param();
+        }
         return false;
     }
 
@@ -539,7 +543,11 @@ uint64_t attenuation_model::get_available_asset_amount(
     // model_type::none is equivalent to
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
-        log::info(LOG_HEADER) << "model_type::none should not has pay_key_hash_with_attenuation_model script pattern.";
+        if (!param.empty()) {
+            log::info(LOG_HEADER)
+                << "get_available_asset_amount, wrong model param : "
+                << parser.get_model_param();
+        }
         return asset_amount;
     }
 

@@ -146,13 +146,13 @@ class BCX_API base_transfer_common
 {
 public:
     enum filter : uint8_t {
-        ETP = 1 << 0,
-        ASSET = 1 << 1,
-        ASSETCERT = 1 << 2,
-        DID = 1 << 3,
-        ETP_AND_ASSET = ETP | ASSET,
-        DEFAULT = ETP | ASSET | ASSETCERT,
-        DEFAULT_AND_DID = DEFAULT | DID
+        FILTER_ETP = 1 << 0,
+        FILTER_ASSET = 1 << 1,
+        FILTER_ASSETCERT = 1 << 2,
+        FILTER_DID = 1 << 3,
+        FILTER_ETP_AND_ASSET = FILTER_ETP | FILTER_ASSET,
+        FILTER_DEFAULT = FILTER_ETP | FILTER_ASSET | FILTER_ASSETCERT,
+        FILTER_DEFAULT_AND_DID = FILTER_DEFAULT | FILTER_DID
     };
 
     base_transfer_common(
@@ -182,7 +182,7 @@ public:
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
     virtual void sync_fetchutxo(
-            const std::string& prikey, const std::string& addr, filter filter = filter::DEFAULT);
+            const std::string& prikey, const std::string& addr, filter filter = FILTER_DEFAULT);
     virtual attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();
@@ -203,8 +203,8 @@ public:
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_asset_cert_change(const std::string& address = std::string(""));
-    bool is_payment_satisfied(filter filter = filter::DEFAULT) const;
-    void check_payment_satisfied(filter filter = filter::DEFAULT) const;
+    bool is_payment_satisfied(filter filter = FILTER_DEFAULT) const;
+    void check_payment_satisfied(filter filter = FILTER_DEFAULT) const;
     void populate_tx_inputs();
     void check_tx();
     void exec();
