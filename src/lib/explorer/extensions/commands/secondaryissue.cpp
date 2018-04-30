@@ -88,10 +88,12 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, asset_volume_of_threshold,
+        {argument_.address, argument_.symbol, 0, 0,
             utxo_attach_type::asset_secondaryissue, attachment()},
         {existed_issue_cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
-            utxo_attach_type::asset_cert, attachment()}
+            utxo_attach_type::asset_cert, attachment()},
+        {argument_.address, argument_.symbol, 0, asset_volume_of_threshold,
+            utxo_attach_type::asset_transfer, attachment()}
     };
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,

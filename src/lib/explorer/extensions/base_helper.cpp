@@ -324,9 +324,6 @@ void base_transfer_common::sync_fetchutxo(
                     continue;
             }
         } else {
-            BITCOIN_ASSERT(etp_amount == 0);
-            BITCOIN_ASSERT(asset_total_amount == 0);
-            BITCOIN_ASSERT(asset_certs == asset_cert_ns::none);
             continue;
         }
 
@@ -1084,9 +1081,6 @@ secondary_issuing_asset::get_script_operations(const receiver_record& record) co
 void secondary_issuing_asset::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
-    if (receiver_list_.size() > 2) {
-        throw toaddress_invalid_exception{"too many target address"};
-    }
 
     target_address_ = receiver_list_.begin()->target;
 
