@@ -336,7 +336,12 @@ void base_transfer_common::sync_fetchutxo(
             asset_amount = attenuation_model::get_available_asset_amount(
                     asset_total_amount, height - row.output_height,
                     attenuation_model_param, new_model_param_ptr);
+            if ((asset_amount == 0) && !is_locked_asset_as_payment()) {
+                continue; // all locked, filter out
+            }
         }
+
+        BITCOIN_ASSERT(asset_total_amount >= asset_amount);
 
         // add to from list
         address_asset_record record;
@@ -361,11 +366,16 @@ void base_transfer_common::sync_fetchutxo(
 
         // asset_locked_transfer as a special change
         if (new_model_param_ptr && (asset_total_amount > record.asset_amount)) {
+            auto locked_asset = asset_total_amount - record.asset_amount;
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
-                    0, asset_total_amount - record.asset_amount,
-                    utxo_attach_type::asset_locked_transfer,
+                    0, locked_asset, utxo_attach_type::asset_locked_transfer,
                     attachment(0, 0, blockchain_message(std::move(model_param)))});
+            // in secondary issue, locked asset can also verify threshold condition
+            if (is_locked_asset_as_payment()) {
+                payment_asset_ = (payment_asset_ > locked_asset)
+                    ? (payment_asset_ - locked_asset) : 0;
+            }
         }
     }
 
@@ -1110,6 +1120,11 @@ void secondary_issuing_asset::populate_change()
     populate_etp_change();
 
     // asset utxo
+    if (payment_asset_ > 0) {
+        receiver_list_.push_back({target_address_, symbol_,
+            0, payment_asset_,
+            utxo_attach_type::asset_transfer, attachment()});
+    }
     populate_asset_change(target_address_);
 
     // asset cert utxo

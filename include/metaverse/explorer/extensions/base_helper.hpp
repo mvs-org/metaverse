@@ -217,6 +217,9 @@ public:
     virtual bool is_did_found() const {return false;}
     virtual void set_did_found(bool) {}
 
+    // in secondary issue, locked asset can also verify threshold condition
+    virtual bool is_locked_asset_as_payment() const {return false;}
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -452,6 +455,8 @@ public:
         tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     };
+
+    bool is_locked_asset_as_payment() const override {return true;}
 
 private:
     uint64_t volume_{0};
