@@ -275,15 +275,7 @@ void base_transfer_common::sync_fetchutxo(
         auto asset_certs = output.get_asset_cert_type();
 
         // filter output
-        if ((filter & FILTER_DID) &&
-            (output.is_did_issue() || output.is_did_transfer())) { // did related
-            BITCOIN_ASSERT(etp_amount == 0);
-            BITCOIN_ASSERT(asset_total_amount == 0);
-            BITCOIN_ASSERT(asset_certs == asset_cert_ns::none);
-            if (symbol_ != output.get_did_symbol())
-                continue;
-            set_did_found(true);
-        } else if ((filter & FILTER_ETP) && output.is_etp()) { // etp related
+        if ((filter & FILTER_ETP) && output.is_etp()) { // etp related
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(output.get_asset_symbol().empty());
             if (etp_amount == 0)
@@ -323,6 +315,14 @@ void base_transfer_common::sync_fetchutxo(
                 if (symbol_ != output.get_asset_symbol())
                     continue;
             }
+        } else if ((filter & FILTER_DID) &&
+            (output.is_did_issue() || output.is_did_transfer())) { // did related
+            BITCOIN_ASSERT(etp_amount == 0);
+            BITCOIN_ASSERT(asset_total_amount == 0);
+            BITCOIN_ASSERT(asset_certs == asset_cert_ns::none);
+            if (symbol_ != output.get_did_symbol())
+                continue;
+            unspent_did_flag = true;
         } else {
             continue;
         }
@@ -396,6 +396,12 @@ void base_transfer_common::sum_payments()
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
         payment_asset_cert_ |= iter.asset_cert;
+        if (iter.type == utxo_attach_type::did_transfer) {
+            if (payment_did_flag) {
+                throw std::logic_error{"at most one DID can be transfered"};
+            }
+            payment_did_flag = true;
+        }
     }
 }
 
@@ -425,7 +431,7 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
         && !asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
         return false;
 
-    if ((filter & FILTER_DID) && !is_did_found())
+    if ((filter & FILTER_DID) && (unspent_did_flag != payment_did_flag))
         return false;
 
     return true;
@@ -449,7 +455,7 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
             + std::to_string(unspent_asset_cert_) + ", payment = " + std::to_string(payment_asset_cert_)};
     }
 
-    if ((filter & FILTER_DID) && !is_did_found()) {
+    if ((filter & FILTER_DID) && (unspent_did_flag != payment_did_flag)) {
         throw tx_source_exception{"no did of " + symbol_ + " is found"};
     }
 }
@@ -460,36 +466,38 @@ void base_transfer_common::populate_change()
     populate_etp_change();
 }
 
-std::string base_transfer_common::get_mychange_address(const std::string& type) const
+std::string base_transfer_common::get_mychange_address(filter filter) const
 {
     if (!mychange_.empty()) {
         return mychange_;
     }
 
-    if (!from_.empty()) {
+    if ((filter & FILTER_PAYFROM) && !from_.empty()) {
         return from_;
     }
 
-    const auto match = [&type](const address_asset_record& record) {
-        if (type == "etp") {
+    const auto match = [&filter](const address_asset_record& record) {
+        if (filter & FILTER_ETP) {
             return (record.type == utxo_attach_type::etp);
         }
-        if (type == "asset") {
+        if (filter & FILTER_ASSET) {
             return (record.type == utxo_attach_type::asset_transfer)
                 || (record.type == utxo_attach_type::asset_issue);
         }
-        if (type == "asset_cert") {
+        if (filter & FILTER_ASSETCERT) {
             return (record.type == utxo_attach_type::asset_cert);
         }
-        // others
-        return (record.type == utxo_attach_type::etp);
+        throw std::logic_error{"get_mychange_address: unknown filter for mychange"};
     };
 
-    const auto it = std::find_if(from_list_.begin(), from_list_.end(), match);
-    BITCOIN_ASSERT(it != from_list_.end());
-    if (it != from_list_.end()) {
-        return it->addr;
+    // reverse find the lates matched unspent
+    auto it = from_list_.crbegin();
+    for (; it != from_list_.crend(); ++it) {
+        if (match(*it)) {
+            return it->addr;
+        }
     }
+    BITCOIN_ASSERT(it != from_list_.crend());
 
     return from_list_.begin()->addr;
 }
@@ -500,7 +508,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
     if (unspent_etp_ > payment_etp_) {
         auto addr = address;
         if (addr.empty()) {
-            addr = get_mychange_address("etp");
+            addr = get_mychange_address(FILTER_ETP);
         }
 
         receiver_list_.push_back(
@@ -515,7 +523,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
     if (unspent_asset_ > payment_asset_) {
         auto addr = address;
         if (addr.empty()) {
-            addr = get_mychange_address("asset");
+            addr = get_mychange_address(FILTER_ASSET);
         }
         receiver_list_.push_back({addr, symbol_,
                 0, unspent_asset_ - payment_asset_,
@@ -530,7 +538,7 @@ void base_transfer_common::populate_asset_cert_change(const std::string& address
     if (cert_left != asset_cert_ns::none) {
         auto addr = address;
         if (addr.empty()) {
-            addr = get_mychange_address("asset_cert");
+            addr = get_mychange_address(FILTER_ASSETCERT);
         }
 
         // separate domain cert
@@ -705,9 +713,9 @@ void base_transfer_helper::populate_unspent_list()
         } else if (from_ == each.get_address()) {
             sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
             // select etp/asset utxo only in from_ address
-            check_payment_satisfied(FILTER_ETP_AND_ASSET);
+            check_payment_satisfied(FILTER_PAYFROM);
         } else {
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ASSETCERT);
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ALL_BUT_PAYFROM);
         }
 
         // performance improve
@@ -1191,14 +1199,18 @@ void sending_did::populate_unspent_list()
 
         if (fromfee == each.get_address()) {
             // pay fee
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
-            check_payment_satisfied();
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ETP);
+            check_payment_satisfied(FILTER_ETP);
         }
 
         if (from_ == each.get_address()) {
             // pay did
             sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_DID);
             check_payment_satisfied(FILTER_DID);
+        }
+
+        if (is_payment_satisfied()) {
+            break;
         }
     }
 
@@ -1207,7 +1219,7 @@ void sending_did::populate_unspent_list()
             ", or you are't own from address!"};
     }
 
-    check_payment_satisfied(FILTER_DEFAULT_AND_DID);
+    check_payment_satisfied();
 
     populate_change();
 }

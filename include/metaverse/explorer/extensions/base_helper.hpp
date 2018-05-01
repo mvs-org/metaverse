@@ -150,9 +150,11 @@ public:
         FILTER_ASSET = 1 << 1,
         FILTER_ASSETCERT = 1 << 2,
         FILTER_DID = 1 << 3,
-        FILTER_ETP_AND_ASSET = FILTER_ETP | FILTER_ASSET,
-        FILTER_DEFAULT = FILTER_ETP | FILTER_ASSET | FILTER_ASSETCERT,
-        FILTER_DEFAULT_AND_DID = FILTER_DEFAULT | FILTER_DID
+        FILTER_ALL = 0xff,
+        // if specify 'from_' address,
+        // then get these types' unspent only from 'from_' address
+        FILTER_PAYFROM = FILTER_ETP | FILTER_ASSET,
+        FILTER_ALL_BUT_PAYFROM = FILTER_ALL & ~FILTER_PAYFROM
     };
 
     base_transfer_common(
@@ -182,7 +184,7 @@ public:
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
     virtual void sync_fetchutxo(
-            const std::string& prikey, const std::string& addr, filter filter = FILTER_DEFAULT);
+            const std::string& prikey, const std::string& addr, filter filter = FILTER_ALL);
     virtual attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();
@@ -203,19 +205,16 @@ public:
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_asset_cert_change(const std::string& address = std::string(""));
-    bool is_payment_satisfied(filter filter = FILTER_DEFAULT) const;
-    void check_payment_satisfied(filter filter = FILTER_DEFAULT) const;
+    bool is_payment_satisfied(filter filter = FILTER_ALL) const;
+    void check_payment_satisfied(filter filter = FILTER_ALL) const;
     void populate_tx_inputs();
     void check_tx();
     void exec();
 
-    std::string get_mychange_address(const std::string& type) const;
+    std::string get_mychange_address(filter filter) const;
 
     tx_type& get_transaction() { return tx_; }
     const tx_type& get_transaction() const { return tx_; }
-
-    virtual bool is_did_found() const {return false;}
-    virtual void set_did_found(bool) {}
 
     // in secondary issue, locked asset can also verify threshold condition
     virtual bool is_locked_asset_as_payment() const {return false;}
@@ -233,6 +232,8 @@ protected:
     uint64_t                          unspent_etp_{0};
     uint64_t                          unspent_asset_{0};
     uint64_t                          unspent_asset_cert_{asset_cert_ns::none};
+    bool                              payment_did_flag{false};
+    bool                              unspent_did_flag{false};
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
 };
@@ -520,12 +521,8 @@ public:
     void populate_unspent_list() override;
     void populate_change() override;
 
-    bool is_did_found() const override {return did_found;}
-    void set_did_found(bool found) override {did_found = found;}
-
 private:
     std::string fromfee;
-    bool did_found{false};
 };
 
 class BCX_API transferring_asset_cert : public base_transfer_helper
