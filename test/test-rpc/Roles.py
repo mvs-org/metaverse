@@ -86,9 +86,13 @@ class Role:
 
     def send_asset(self, to_, amount, asset_symbol=None):
         if not asset_symbol:
-            asset_symbol = self.asset_symbols[0]
+            asset_symbol = self.asset_symbol
         result, message = mvs_rpc.send_asset(self.name, self.password, to_, asset_symbol, amount)
-        assert (result == True)
+        assert (result == 0)
+
+    def burn_asset(self, amount):
+        result, message = mvs_rpc.burn(self.name, self.password, self.asset_symbol, amount)
+        assert (result == 0)
 
     def mining(self, times=1):
         '''

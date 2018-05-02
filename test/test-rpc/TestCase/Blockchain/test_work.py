@@ -5,6 +5,9 @@ sudo apt-get install libssl-dev build-essential automake pkg-config libtool libf
 git clone https://github.com/ethereum/pyethereum/
 cd pyethereum
 python setup.py install
+
+bugfix 2018-05-02:
+sudo pip install rlp=0.6.0    // the latest rlp does not work!
 '''
 import unittest
 from Roles import Alice
