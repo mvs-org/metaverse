@@ -565,7 +565,7 @@ code validate_transaction::check_asset_issue_transaction(
                 }
 
                 if (!asset_symbol.empty()) {
-                    auto&& domain = asset_detail::get_domain(asset_symbol);
+                    auto&& domain = asset_cert::get_domain(asset_symbol);
                     if (domain != cert_info.get_symbol()) {
                         return error::asset_issue_error;
                     }
@@ -595,9 +595,9 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     // check domain cert for transactions after check_nova_feature version.
-    auto&& domain = asset_detail::get_domain(asset_symbol);
+    auto&& domain = asset_cert::get_domain(asset_symbol);
     if (tx.version >= transaction_version::check_nova_feature
-        && asset_detail::is_valid_domain(domain)) {
+        && asset_cert::is_valid_domain(domain)) {
         if (domain_cert_address.empty()) {
             return error::asset_issue_error;
         }
@@ -974,7 +974,7 @@ bool validate_transaction::connect_input(const transaction& tx,
             }
             else {
                 // there are different asset symbol in this transaction
-                if (0 != old_symbol_in.compare(new_symbol_in))
+                if (old_symbol_in != new_symbol_in)
                     return false;
             }
         }
@@ -995,8 +995,8 @@ bool validate_transaction::connect_input(const transaction& tx,
         }
         else {
             if (asset_cert::test_certs(asset_certs_in, asset_cert_ns::domain)) {
-                auto&& domain = asset_detail::get_domain(old_symbol_in);
-                    if (domain != previous_output.get_asset_cert_symbol()) {
+                auto&& domain = asset_cert::get_domain(old_symbol_in);
+                if (domain != previous_output.get_asset_cert_symbol()) {
                     return false;
                 }
             }
@@ -1018,7 +1018,7 @@ bool validate_transaction::connect_input(const transaction& tx,
             }
             else {
                 // there are different did symbol in this transaction
-                if (0 != old_symbol_in.compare(new_symbol_in))
+                if (old_symbol_in != new_symbol_in)
                     return false;
             }
         }
@@ -1081,12 +1081,12 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
 			if(old_symbol.empty()) {
 				old_symbol = new_symbol;
 			} else {
-				if(0 != old_symbol.compare(new_symbol))
+				if(old_symbol != new_symbol)
 					return false; // different asset in outputs
 			}
 		}
 	}
-	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
+	if(old_symbol != old_symbol_in_) // symbol in input and output not match
 		return false;
 	return true;
 }
@@ -1105,7 +1105,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
 
             // check asset cert symbol
             if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
-                auto&& domain = asset_detail::get_domain(asset_cert.get_symbol());
+                auto&& domain = asset_cert::get_domain(asset_cert.get_symbol());
                 if (domain != old_symbol_in_) {
                     return false;
                 }
@@ -1159,12 +1159,12 @@ bool validate_transaction::check_did_symbol(const transaction& tx)
 			if(old_symbol.empty()) {
 				old_symbol = new_symbol;
 			} else {
-				if(0 != old_symbol.compare(new_symbol))
+				if(old_symbol != new_symbol)
 					return false; // different did in outputs
 			}
 		}
 	}
-	if(0 != old_symbol.compare(old_symbol_in_)) // symbol in input and output not match
+	if(old_symbol != old_symbol_in_) // symbol in input and output not match
 		return false;
 	return true;
 }

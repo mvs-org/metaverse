@@ -86,8 +86,6 @@ public:
     void set_address(const std::string& address);
     const std::string& get_description() const;
     void set_description(const std::string& description);
-    std::string get_domain() const;
-    bool is_valid_domain() const;
     asset_cert_type get_asset_cert_mask() const;
 
     bool is_asset_secondaryissue() const;
@@ -98,8 +96,6 @@ public:
     bool is_secondaryissue_threshold_value_ok() const;
     bool is_secondaryissue_legal() const;
 
-    static std::string get_domain(const std::string& symbol);
-    static bool is_valid_domain(const std::string& domain);
     static bool is_secondaryissue_forbidden(uint8_t threshold);
     static bool is_secondaryissue_freely(uint8_t threshold);
     static bool is_secondaryissue_threshold_value_ok(uint8_t threshold);

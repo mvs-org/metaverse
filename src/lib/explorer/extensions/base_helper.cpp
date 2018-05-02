@@ -273,18 +273,20 @@ void base_transfer_common::sync_fetchutxo(
         auto etp_amount = row.value;
         auto asset_total_amount = output.get_asset_amount();
         auto asset_certs = output.get_asset_cert_type();
+        auto asset_symbol = output.get_asset_symbol();
 
         // filter output
         if ((filter & FILTER_ETP) && output.is_etp()) { // etp related
             BITCOIN_ASSERT(asset_total_amount == 0);
-            BITCOIN_ASSERT(output.get_asset_symbol().empty());
+            BITCOIN_ASSERT(asset_symbol.empty());
             if (etp_amount == 0)
                 continue;
             // enough etp to pay
             if (unspent_etp_ >= payment_etp_)
                 continue;
-        } else if ((filter & FILTER_ASSET) &&
-                (output.is_asset_transfer()
+        }
+        else if ((filter & FILTER_ASSET) &&
+            (output.is_asset_transfer()
                 || output.is_asset_issue()
                 || output.is_asset_secondaryissue())) { // asset related
             BITCOIN_ASSERT(etp_amount == 0);
@@ -295,9 +297,10 @@ void base_transfer_common::sync_fetchutxo(
             if (unspent_asset_ >= payment_asset_)
                 continue;
             // check asset symbol
-            if (symbol_ != output.get_asset_symbol())
+            if (symbol_ != asset_symbol)
                 continue;
-        } else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
+        }
+        else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             // asset cert has already found
@@ -308,14 +311,16 @@ void base_transfer_common::sync_fetchutxo(
                 continue;
             // check cert symbol
             if (asset_cert::test_certs(asset_certs, asset_cert_ns::domain)) {
-                auto&& domain = asset_detail::get_domain(symbol_);
-                if (domain != output.get_asset_symbol())
-                    continue;
-            } else {
-                if (symbol_ != output.get_asset_symbol())
+                auto&& domain = asset_cert::get_domain(symbol_);
+                if (domain != asset_symbol)
                     continue;
             }
-        } else if ((filter & FILTER_DID) &&
+            else {
+                if (symbol_ != asset_symbol)
+                    continue;
+            }
+        }
+        else if ((filter & FILTER_DID) &&
             (output.is_did_issue() || output.is_did_transfer())) { // did related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
@@ -323,7 +328,8 @@ void base_transfer_common::sync_fetchutxo(
             if (symbol_ != output.get_did_symbol())
                 continue;
             unspent_did_flag = true;
-        } else {
+        }
+        else {
             continue;
         }
 
@@ -352,7 +358,7 @@ void base_transfer_common::sync_fetchutxo(
         }
         record.addr = addr;
         record.amount = etp_amount;
-        record.symbol = symbol_;
+        record.symbol = asset_symbol;
         record.asset_amount = asset_amount;
         record.asset_cert = asset_certs;
         record.output = row.output;
@@ -525,9 +531,8 @@ void base_transfer_common::populate_asset_change(const std::string& address)
         if (addr.empty()) {
             addr = get_mychange_address(FILTER_ASSET);
         }
-        receiver_list_.push_back({addr, symbol_,
-                0, unspent_asset_ - payment_asset_,
-                utxo_attach_type::asset_transfer, attachment()});
+        receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
+            utxo_attach_type::asset_transfer, attachment()});
     }
 }
 
@@ -543,7 +548,8 @@ void base_transfer_common::populate_asset_cert_change(const std::string& address
 
         // separate domain cert
         if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
-            receiver_list_.push_back({addr, symbol_, 0,
+            auto&& domain = asset_cert::get_domain(symbol_);
+            receiver_list_.push_back({addr, domain, 0,
                 asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
             cert_left &= ~asset_cert_ns::domain;
         }
@@ -1037,8 +1043,8 @@ void issuing_asset::sum_payments()
         payment_asset_ += iter.asset_amount;
 
         if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain)) {
-            auto&& domain = asset_detail::get_domain(symbol_);
-            if (!asset_detail::is_valid_domain(domain)) {
+            auto&& domain = asset_cert::get_domain(symbol_);
+            if (!asset_cert::is_valid_domain(domain)) {
                 throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
             }
             if (blockchain_.is_asset_cert_exist(domain, asset_cert_ns::domain)) {

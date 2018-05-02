@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -36,7 +36,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    if(!blockchain.is_valid_address(argument_.address)) 
+    if(!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
     if (option_.is_cert) { // only get asset certs
@@ -62,7 +62,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
 
         return console_result::okay;
     }
-    
+
     Json::Value assets;
     std::string symbol;
 
@@ -74,7 +74,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     std::vector<business_kind> kind_vec;
     kind_vec.push_back(business_kind::asset_transfer);
     kind_vec.push_back(business_kind::asset_issue);
-    
+
     for (auto kind : kind_vec) {
         // get address unspent asset balance
         auto sh_vec = blockchain.get_address_business_history(argument_.address, kind, business_status::unspent);
@@ -91,7 +91,7 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
                 symbol = asset_info.get_symbol();
                 num = asset_info.get_maximum_supply();
             }
-            
+
             // update asset quantity
             auto r = symbol_set.insert(symbol);
             if(r.second) { // new symbol
@@ -99,15 +99,15 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
             } else { // already exist
                 const auto add_num = [&](asset_detail& elem)
                 {
-                    if( 0 == symbol.compare(elem.get_symbol()) )
+                    if(symbol == elem.get_symbol())
                         elem.set_maximum_supply(elem.get_maximum_supply()+num);
                 };
                 std::for_each(asset_vec.begin(), asset_vec.end(), add_num);
             }
         };
         std::for_each(sh_vec->begin(), sh_vec->end(), sum);
-    } 
-    
+    }
+
     for (auto& elem: asset_vec) {
         auto issued_asset = blockchain.get_issued_asset(elem.get_symbol());
         if (!issued_asset) {

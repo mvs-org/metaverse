@@ -30,6 +30,7 @@ namespace libbitcoin {
 namespace chain {
 
 constexpr bool use_did_address = false;
+#define ASSET_SYMBOL_DELIMITER "."
 
 asset_cert::asset_cert()
 {
@@ -64,6 +65,21 @@ bool asset_cert::operator< (const asset_cert& other) const
 {
     return (symbol_ < other.symbol_)
         || ((symbol_ == other.symbol_) && (certs_ < other.certs_));
+}
+
+std::string asset_cert::get_domain(const std::string& symbol)
+{
+    std::string domain("");
+    auto&& tokens = bc::split(symbol, ASSET_SYMBOL_DELIMITER, true);
+    if (tokens.size() > 0) {
+        domain = tokens[0];
+    }
+    return domain;
+}
+
+bool asset_cert::is_valid_domain(const std::string& domain)
+{
+    return !domain.empty();
 }
 
 asset_cert asset_cert::factory_from_data(const data_chunk& data)

@@ -94,6 +94,8 @@ public:
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
     static std::string get_owner_from_address(const std::string& address,
             bc::blockchain::block_chain_impl& chain);
+    static std::string get_domain(const std::string& symbol);
+    static bool is_valid_domain(const std::string& domain);
 
 private:
     std::string symbol_; // asset name/symbol
