@@ -483,6 +483,10 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
     }
 
     if ((model == model_type::custom) || is_convert_to_custom) {
+        if (UN > 100) {
+            log::info(LOG_HEADER) << "custom param error: UN > 100";
+            return false;
+        }
         // given LQ, LP, UN, UC, UQ, then
         // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
         // LP = sum(UC) and all UC > 0 and UC.size == UN
@@ -722,7 +726,7 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
             break;
     }
 
-    if (PN == 0) {
+    if ((PN == 0) && (LH == 0)) {
         LH = is_fixed_cycle ? (LP / UN) : UCs[0];
     }
 
@@ -815,7 +819,7 @@ uint64_t attenuation_model::get_available_asset_amount(
             break;
     }
 
-    if (PN == 0) {
+    if ((PN == 0) && (LH == 0)) {
         LH = is_fixed_cycle ? (LP / UN) : UCs[0];
     }
 

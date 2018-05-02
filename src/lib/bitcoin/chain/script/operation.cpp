@@ -363,14 +363,14 @@ bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::
 {
     return ops.size() == 8
         && ops[0].code == opcode::special // model param
-        && ops[0].code == opcode::special // input point
-        && ops[1].code == opcode::checkattenuationverify
-        && ops[2].code == opcode::dup
-        && ops[3].code == opcode::hash160
-        && ops[4].code == opcode::special
-        && ops[4].data.size() == short_hash_size
-        && ops[5].code == opcode::equalverify
-        && ops[6].code == opcode::checksig;
+        && ops[1].code == opcode::special // input point
+        && ops[2].code == opcode::checkattenuationverify
+        && ops[3].code == opcode::dup
+        && ops[4].code == opcode::hash160
+        && ops[5].code == opcode::special
+        && ops[5].data.size() == short_hash_size
+        && ops[6].code == opcode::equalverify
+        && ops[7].code == opcode::checksig;
 }
 
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)

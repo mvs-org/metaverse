@@ -256,6 +256,10 @@ console_result listtxs::invoke (Json::Value& jv_output,
                         }
                     }
                 }
+                if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(op.script.operations)) {
+                    const auto& model_param = op.get_attenuation_model_param();
+                    tree["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
+                }
             }
 
             pt_output["attachment"] = tree;

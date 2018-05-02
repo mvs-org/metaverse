@@ -303,6 +303,11 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
         tree["locked_height_range"] = lock_height;
     }
 
+    if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(tx_output.script.operations)) {
+        auto model_param = tx_output.get_attenuation_model_param();
+        tree["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
+    }
+
     tree["attachment"] = prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data));
     return tree;
 }

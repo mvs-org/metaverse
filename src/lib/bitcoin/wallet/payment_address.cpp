@@ -293,8 +293,8 @@ payment_address payment_address::extract(const chain::script& script,
             BITCOIN_ASSERT(ops.size() > 1);
             break;
         case chain::script_pattern::pay_key_hash_with_attenuation_model:
-            BITCOIN_ASSERT(ops.size() == 7);
-            BITCOIN_ASSERT(ops[4].data.size() == short_hash_size);
+            BITCOIN_ASSERT(ops.size() == 8);
+            BITCOIN_ASSERT(ops[5].data.size() == short_hash_size);
             break;
         case chain::script_pattern::non_standard:
         default:;
@@ -338,7 +338,7 @@ payment_address payment_address::extract(const chain::script& script,
             return payment_address(blackhole_address);
 
         case chain::script_pattern::pay_key_hash_with_attenuation_model:
-            hash = to_array<short_hash_size>(ops[4].data);
+            hash = to_array<short_hash_size>(ops[5].data);
             return payment_address(hash, p2kh_version);
 
         // sign
