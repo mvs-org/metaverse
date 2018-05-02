@@ -236,3 +236,11 @@ class TestAssetBoundary(unittest.TestCase):
         ec, message = mvs_rpc.send_asset_from(Zac.name, Zac.password, Zac.mainaddress(), Frank.mainaddress(), Zac.asset_symbol, 0)
         self.assertEqual(ec, 5002, message)
 
+    def test_A_burn(self):
+        # account password match error
+        ec, message = mvs_rpc.burn(Zac.name, Zac.password + '1', Zac.asset_symbol, 100)
+        self.assertEqual(ec, 1000, message)
+
+        # amount = 0
+        ec, message = mvs_rpc.create_asset(Zac.name, Zac.password, Zac.asset_symbol, 0)
+        self.assertEqual(ec, 2003, message)

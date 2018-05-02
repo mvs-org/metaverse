@@ -294,3 +294,6 @@ def didsendfrom(account, password, amount, to_, from_, fee=None, desc=None):
 def didsend(account, password, amount, to_, fee=None, desc=None):
     return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
 
+@mvs_api
+def burn(account, password, symbol, amount):
+    return "burn", [account, password, symbol, amount], {}, None

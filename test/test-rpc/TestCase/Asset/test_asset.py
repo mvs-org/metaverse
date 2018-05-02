@@ -51,7 +51,21 @@ class TestAsset(unittest.TestCase):
         self.assertEqual(addressasset[0].issuer, Alice.name)
         self.assertEqual(addressasset[0].status, 'unspent')
 
+    def test_3_burn_asset(self):
+        #use the asset created in the previous test case
+        addressassets = Alice.get_addressasset(Alice.mainaddress())
+        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        self.assertEqual(len(addressasset), 1)
+        previous_quantity = addressasset[0].quantity
+        previous_decimal = addressasset[0].decimal_number
 
+        #amout > previous_amount
+        amount = previous_quantity * (10 ** previous_decimal)
+        ec, message = mvs_rpc.burn(Alice.name, Alice.password, Alice.asset_symbol, amount + 1)
+        self.assertEqual(ec, 5001, message)
+
+        Alice.burn_asset(amount)
+        
 
 
 
