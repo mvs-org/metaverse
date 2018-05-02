@@ -311,42 +311,14 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output, uint32_t ind
 {
     Json::Value tree;
 
-    const auto address = payment_address::extract(tx_output.script);
-    if (address)
-        tree["address"] += address;
-
-    tree["script"] += script(tx_output.script).to_string();
-    uint64_t lock_height = 0;
-    if(chain::operation::is_pay_key_hash_with_lock_height_pattern(tx_output.script.operations))
-        lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(tx_output.script.operations);
-
-    // TODO: this will eventually change due to privacy problems, see:
-    // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
-
-    if (!address)
-    {
-        uint32_t stealth_prefix;
-        ec_compressed ephemeral_key;
-        tree["stealth"] = Json::objectValue;
-        if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
-            extract_ephemeral_key(ephemeral_key, tx_output.script))
-        {
-            tree["stealth"]["prefix"] += stealth_prefix;
-            tree["stealth"]["ephemeral_public_key"] += ec_public(ephemeral_key);
-        }
-    }
+    tree = prop_list(tx_output);
 
     if (version_ == 1) {
-        tree["locked_height_range"] += lock_height;
-        tree["value"] += tx_output.value;
         tree["index"] += index;
     } else {
-        tree["locked_height_range"] = lock_height;
-        tree["value"] = tx_output.value;
         tree["index"] = index;
     }
 
-    tree["attachment"] = prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data));
     return tree;
 }
 
