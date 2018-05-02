@@ -370,7 +370,7 @@ void base_transfer_common::sync_fetchutxo(
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                     0, locked_asset, utxo_attach_type::asset_locked_transfer,
-                    attachment(0, 0, blockchain_message(std::move(model_param)))});
+                    attachment(0, 0, blockchain_message(std::move(model_param))), record.output});
             // in secondary issue, locked asset can also verify threshold condition
             if (is_locked_asset_as_payment()) {
                 payment_asset_ = (payment_asset_ > locked_asset)
@@ -573,13 +573,13 @@ base_transfer_common::get_script_operations(const receiver_record& record) const
     else if (record.type == utxo_attach_type::asset_locked_transfer) {
         const auto& attenuation_model_param =
             boost::get<blockchain_message>(record.attach_elem.get_attach()).get_content();
-        if (attenuation_model::check_model_param_format(to_chunk(attenuation_model_param))) {
+        if (!attenuation_model::check_model_param_format(to_chunk(attenuation_model_param))) {
             throw asset_attenuation_model_exception(
                 "check asset locked transfer attenuation model param failed: "
                 + attenuation_model_param);
         }
         payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-            hash, attenuation_model_param);
+            hash, attenuation_model_param, record.input_point);
     }
     else if (payment.version() == wallet::payment_address::mainnet_p2kh) {
         payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
@@ -830,6 +830,7 @@ void base_transfer_common::sign_tx_inputs()
                 contract.operations);
             ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
         }
+
         // set input script of this tx
         tx_.inputs[index].script = ss;
         index++;
@@ -1076,7 +1077,7 @@ issuing_asset::get_script_operations(const receiver_record& record) const
 
         const auto& hash = payment.hash();
         return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-                hash, attenuation_model_param_);
+                hash, attenuation_model_param_, record.input_point);
     }
 
     return base_transfer_helper::get_script_operations(record);
@@ -1095,7 +1096,7 @@ secondary_issuing_asset::get_script_operations(const receiver_record& record) co
 
         const auto& hash = payment.hash();
         return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-                hash, attenuation_model_param_);
+                hash, attenuation_model_param_, record.input_point);
     }
 
     return base_transfer_helper::get_script_operations(record);

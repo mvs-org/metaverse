@@ -88,12 +88,13 @@ struct receiver_record
 
     std::string target;
     std::string symbol;
-    uint64_t    amount; // etp value
-    uint64_t    asset_amount;
-    asset_cert_type asset_cert;
+    uint64_t    amount{0}; // etp value
+    uint64_t    asset_amount{0};
+    asset_cert_type asset_cert{asset_cert_ns::none};
 
-    utxo_attach_type type;
+    utxo_attach_type type{utxo_attach_type::invalid};
     attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
+    chain::input_point input_point{null_hash, max_uint32};
 
     receiver_record()
         : target()
@@ -103,18 +104,21 @@ struct receiver_record
         , asset_cert(asset_cert_ns::none)
         , type(utxo_attach_type::invalid)
         , attach_elem()
+        , input_point{null_hash, max_uint32}
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
-        utxo_attach_type type_, const attachment& attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
+        const chain::input_point& input_point_ = {null_hash, max_uint32})
         : receiver_record(target_, symbol_, amount_, asset_amount_,
-            asset_cert_ns::none, type_, attach_elem_)
+            asset_cert_ns::none, type_, attach_elem_, input_point_)
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
-        utxo_attach_type type_, const attachment& attach_elem_)
+        utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
+        const chain::input_point& input_point_ = {null_hash, max_uint32})
         : target(target_)
         , symbol(symbol_)
         , amount(amount_)
@@ -122,6 +126,7 @@ struct receiver_record
         , asset_cert(asset_cert_)
         , type(type_)
         , attach_elem(attach_elem_)
+        , input_point(input_point_)
     {}
 
     bool is_empty() const;

@@ -384,13 +384,15 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         break;
                     }
 
-                    if (stack.size() < 1)
+                    if (stack.size() < 2)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
-                    valtype& sModelParam = stacktop(-1);
-                    if (!attenuation_model::check_model_param_format(sModelParam))
+                    valtype& vcModelParam = stacktop(-2);
+                    //valtype& vcInputPoint = stacktop(-1);
+                    if (!attenuation_model::check_model_param_format(vcModelParam))
                         return set_error(serror, SCRIPT_ERR_INVALID_MODEL_PARAM);
 
+                    popstack(stack);
                     popstack(stack);
                 }
                 break;

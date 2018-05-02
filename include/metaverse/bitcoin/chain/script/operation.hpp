@@ -34,6 +34,9 @@
 namespace libbitcoin {
 namespace chain {
 
+// forward declaration
+class point;
+
 /// Script patterms.
 /// Comments from: bitcoin.org/en/developer-guide#signature-hash-types
 enum class script_pattern
@@ -130,6 +133,7 @@ public:
     static uint64_t get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops);
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
     static const data_chunk& get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static const data_chunk& get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);
@@ -142,7 +146,8 @@ public:
     static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
     static stack to_pay_blackhole_pattern(const short_hash& hash);
-    static stack to_pay_key_hash_with_attenuation_model_pattern(const short_hash& hash, const std::string& model_param);
+    static stack to_pay_key_hash_with_attenuation_model_pattern(
+            const short_hash& hash, const std::string& model_param, const point& input_point);
 
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);

@@ -60,12 +60,14 @@ public:
     static model_type from_index(uint32_t index);
 
     static bool check_model_index(uint32_t index);
-    static bool check_model_param(const data_chunk& param, const transaction& tx);
+    static bool check_model_param(const data_chunk& param);
+    static bool check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
     static bool check_model_param_format(const data_chunk& param);
     static bool check_model_param_initial(const data_chunk& param);
     static bool check_model_param_immutable(const data_chunk& previous, const data_chunk& current);
     static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height,
             const data_chunk& model_param, std::shared_ptr<data_chunk> new_param_ptr = nullptr);
+    static uint64_t get_diff_height(const data_chunk& prev_param, const data_chunk& param);
 
     const std::string& get_model_param() const;
     data_chunk get_new_model_param(uint64_t PN, uint64_t LH) const;

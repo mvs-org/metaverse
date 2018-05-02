@@ -24,6 +24,7 @@
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
+#include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
 #include <metaverse/bitcoin/math/elliptic_curve.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
@@ -360,8 +361,9 @@ bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
 
 bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
 {
-    return ops.size() == 7
-        && ops[0].code == opcode::special
+    return ops.size() == 8
+        && ops[0].code == opcode::special // model param
+        && ops[0].code == opcode::special // input point
         && ops[1].code == opcode::checkattenuationverify
         && ops[2].code == opcode::dup
         && ops[3].code == opcode::hash160
@@ -438,6 +440,11 @@ bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
 const data_chunk& operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
     return ops[0].data;
+}
+
+const data_chunk& operation::get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+{
+    return ops[1].data;
 }
 
 // pattern templates
@@ -558,11 +565,12 @@ operation::stack operation::to_pay_blackhole_pattern(const short_hash&)
 }
 
 operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
-    const short_hash& hash, const std::string& model_param)
+    const short_hash& hash, const std::string& model_param, const point& input_point)
 {
     return operation::stack
     {
         { opcode::special, to_chunk(model_param) },
+        { opcode::special, input_point.to_data() },
         { opcode::checkattenuationverify, {} },
         { opcode::dup, {} },
         { opcode::hash160, {} },

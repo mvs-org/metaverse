@@ -22,6 +22,7 @@
 #include <metaverse/bitcoin/utility/string.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <unordered_map>
+#include <memory>
 
 namespace libbitcoin {
 namespace chain {
@@ -470,12 +471,12 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
         // then IR.size == 1 and IR > 0
         // and satisfy custom param conditions.
         is_convert_to_custom = true;
-        const auto& IR = parser.get_issue_rates();
-        if (IR.size() != 1) {
+        const auto& IRs = parser.get_issue_rates();
+        if (IRs.size() != 1) {
             log::info(LOG_HEADER) << "fixed_rate param error: IR.size() != 1";
             return false;
         }
-        if (!is_positive_number(IR[0])) {
+        if (!is_positive_number(IRs[0])) {
             log::info(LOG_HEADER) << "fixed_rate param error: IR <= 0";
             return false;
         }
@@ -485,21 +486,21 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
         // given LQ, LP, UN, UC, UQ, then
         // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
         // LP = sum(UC) and all UC > 0 and UC.size == UN
-        const auto& UC = parser.get_unlock_cycles();
-        const auto& UQ = parser.get_unlocked_quantities();
-        if (UC.size() != UN) {
+        const auto& UCs = parser.get_unlock_cycles();
+        const auto& UQs = parser.get_unlocked_quantities();
+        if (UCs.size() != UN) {
             log::info(LOG_HEADER) << "custom param error: UC.size() != UN";
             return false;
         }
-        if (UQ.size() != UN) {
+        if (UQs.size() != UN) {
             log::info(LOG_HEADER) << "custom param error: UQ.size() != UN";
             return false;
         }
-        if (sum_and_check_numbers(UC, is_positive_number) != LP) {
+        if (sum_and_check_numbers(UCs, is_positive_number) != LP) {
             log::info(LOG_HEADER) << "custom param error: LP != sum(UC) or exist UC <= 0";
             return false;
         }
-        if (sum_and_check_numbers(UQ, is_positive_number) != LQ) {
+        if (sum_and_check_numbers(UQs, is_positive_number) != LQ) {
             log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
             return false;
         }
@@ -511,7 +512,7 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
     return false;
 }
 
-bool attenuation_model::check_model_param(const data_chunk& param, const transaction& tx)
+bool attenuation_model::check_model_param(const data_chunk& param)
 {
     attenuation_model parser(std::string(param.begin(), param.end()));
 
@@ -575,14 +576,196 @@ bool attenuation_model::check_model_param(const data_chunk& param, const transac
     }
 
     if ((model == model_type::custom) || is_convert_to_custom) {
-        const auto& UC = parser.get_unlock_cycles();
-        if (LH > UC[PN]) {
+        const auto& UCs = parser.get_unlock_cycles();
+        if (LH > UCs[PN]) {
             log::info(LOG_HEADER) << "custom param error: LH > UC";
             return false;
         }
     }
 
     return true;
+}
+
+bool attenuation_model::check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain)
+{
+    struct ext_input_point {
+        const chain::input_point* input_point_;
+        const chain::output* prev_output_;
+        uint64_t prev_blockheight_;
+    };
+
+    std::vector<ext_input_point> vec_prev_input;
+
+    for (const auto& input: tx.inputs) {
+        if (input.previous_output.is_null()) {
+            return false;
+        }
+
+        uint64_t prev_output_blockheight = 0;
+        chain::transaction prev_tx;
+        if (!chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash)) {
+            return false;
+        }
+
+        const auto& prev_output = prev_tx.outputs.at(input.previous_output.index);
+        if (!operation::is_pay_key_hash_with_attenuation_model_pattern(prev_output.script.operations)) {
+            continue;
+        }
+
+        ext_input_point prev{&input.previous_output, &prev_output, prev_output_blockheight};
+        vec_prev_input.emplace_back(prev);
+    }
+
+    if (vec_prev_input.empty()) {
+        return true;
+    }
+
+    uint64_t current_blockheight = 0;
+    chain.get_last_height(current_blockheight);
+
+    for(auto& output : tx.outputs) {
+        if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+            continue;
+        }
+
+        const auto& model_param = output.get_attenuation_model_param();
+
+        if (!attenuation_model::check_model_param(model_param)) {
+            return false;
+        }
+
+        const auto& input_point_data = operation::
+            get_input_point_from_pay_key_hash_with_attenuation_model(output.script.operations);
+        chain::input_point input_point = chain::point::factory_from_data(input_point_data);
+        if (input_point.is_null() ) {
+            continue;
+        }
+
+        auto iter = std::find_if(vec_prev_input.begin(), vec_prev_input.end(),
+            [&input_point](const ext_input_point& elem){
+                return *elem.input_point_ == input_point;
+            });
+
+        if (iter == vec_prev_input.end()) {
+            return false;
+        }
+
+        const auto& prev_model_param = iter->prev_output_->get_attenuation_model_param();
+
+        if (!check_model_param_immutable(prev_model_param, model_param)) {
+            return false;
+        }
+
+        auto curr_diff_height = current_blockheight - iter->prev_blockheight_;
+        auto real_diff_height = get_diff_height(prev_model_param, model_param);
+
+        if (real_diff_height > curr_diff_height) {
+            return false;
+        }
+
+        auto asset_total_amount = iter->prev_output_->get_asset_amount();
+        auto new_model_param_ptr = std::make_shared<data_chunk>();
+        auto asset_amount = attenuation_model::get_available_asset_amount(
+                asset_total_amount, real_diff_height,
+                prev_model_param, new_model_param_ptr);
+
+        if (asset_amount != output.get_asset_amount()) {
+            return false;
+        }
+
+        if (!new_model_param_ptr || (*new_model_param_ptr != model_param)) {
+            return false;
+        }
+
+        // prevent multiple locked outputs connect to the same input
+        vec_prev_input.erase(iter);
+    }
+
+    // check the left is all spendable
+    for (const auto& ext_input : vec_prev_input) {
+        const auto& prev_model_param = ext_input.prev_output_->get_attenuation_model_param();
+        auto curr_diff_height = current_blockheight - ext_input.prev_blockheight_;
+        auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
+        if (real_diff_height > curr_diff_height) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const data_chunk& param)
+{
+    attenuation_model parser(std::string(prev_param.begin(), prev_param.end()));
+    auto model = parser.get_model_type();
+    if (model == model_type::none) {
+        return max_uint64;
+    }
+
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+    const auto& UCs = parser.get_unlock_cycles();
+
+    auto is_fixed_cycle = false;
+    auto is_convert_to_custom = false;
+    switch (model) {
+        case model_type::fixed_quantity:
+            is_fixed_cycle = true;
+            break;
+        case model_type::fixed_rate:
+            is_fixed_cycle = true;
+            is_convert_to_custom = true;
+            break;
+        default:
+            break;
+    }
+
+    if (PN == 0) {
+        LH = is_fixed_cycle ? (LP / UN) : UCs[0];
+    }
+
+    uint64_t PN2 = 0;
+    uint64_t LH2 = 0;
+    if (!param.empty()) {
+        attenuation_model parser2(std::string(param.begin(), param.end()));
+        PN2 = parser2.get_current_period_number();
+        LH2 = parser2.get_latest_lock_height();
+    } else {
+        PN2 = UN - 1;
+        LH2 = 0;
+    }
+
+    if (PN > PN2) {
+        return max_uint64;
+    }
+
+    if (PN == PN2) {
+        if (LH <= LH2) {
+            return max_uint64;
+        }
+        return LH - LH2;
+    }
+
+    if (is_fixed_cycle) {
+        auto UC = LP / UN;
+        if (PN2 + 1 == UN) {
+            return LP - LH2 - ((PN + 1) * UC) + LH;
+        }
+        return LH + ((PN2 - PN) * UC) - LH2;
+    }
+
+    if ((model == model_type::custom) || is_convert_to_custom) {
+        auto diff_height = LH;
+        for (auto i = PN + 1; i <= PN2; ++i) {
+            diff_height += UCs[i];
+        }
+        diff_height -= LH2;
+        return diff_height;
+    }
+
+    return 0;
 }
 
 uint64_t attenuation_model::get_available_asset_amount(
@@ -613,8 +796,8 @@ uint64_t attenuation_model::get_available_asset_amount(
     auto LQ = parser.get_locked_quantity();
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
-    const auto& UC = parser.get_unlock_cycles();
-    const auto& UQ = parser.get_unlocked_quantities();
+    const auto& UCs = parser.get_unlock_cycles();
+    const auto& UQs = parser.get_unlocked_quantities();
 
     auto available = (asset_amount > LQ) ? (asset_amount - LQ) : 0;
 
@@ -633,7 +816,7 @@ uint64_t attenuation_model::get_available_asset_amount(
     }
 
     if (PN == 0) {
-        LH = is_fixed_cycle ? (LP / UN) : UC[0];
+        LH = is_fixed_cycle ? (LP / UN) : UCs[0];
     }
 
     if (diff_height < LH) { // no maturity, still all locked
@@ -668,12 +851,12 @@ uint64_t attenuation_model::get_available_asset_amount(
     }
 
     if ((model == model_type::custom) || is_convert_to_custom) {
-        available += UQ[PN];
+        available += UQs[PN];
         diff_height -= LH;
         ++PN;
-        while ((PN < UN) && (diff_height >= UC[PN])) {
-            available += UQ[PN];
-            diff_height -= UC[PN];
+        while ((PN < UN) && (diff_height >= UCs[PN])) {
+            available += UQs[PN];
+            diff_height -= UCs[PN];
             ++PN;
         }
         if (PN == UN) { // include the last unlock cycle, release all
@@ -681,7 +864,7 @@ uint64_t attenuation_model::get_available_asset_amount(
         }
         if (new_param_ptr) {
             // update PN, LH
-            LH = UC[PN] - diff_height;
+            LH = UCs[PN] - diff_height;
             *new_param_ptr = parser.get_new_model_param(PN, LH);
         }
         return available;

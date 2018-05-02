@@ -1451,7 +1451,7 @@ bool op_checkattenuationverify(evaluation_context& context, const script& script
         return false;
 
     auto model_param = context.pop_stack();
-    if (!attenuation_model::check_model_param(model_param, parent_tx))
+    if (!attenuation_model::check_model_param_format(model_param))
         return false;
 
     return true;

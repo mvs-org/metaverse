@@ -881,12 +881,10 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                     return error::invalid_output_script_lock_height;
                 }
             }
-            else if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
-                const auto& model_param = output.get_attenuation_model_param();
-                if (!attenuation_model::check_model_param(model_param, tx)) {
-                    return error::attenuation_model_param_error;
-                }
-            }
+        }
+
+        if (!attenuation_model::check_model_param(tx, chain)) {
+            return error::attenuation_model_param_error;
         }
     }
 
