@@ -63,6 +63,36 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
+std::string get_random_payment_address(
+        std::shared_ptr<account_address::list> sp_addresses,
+        bc::blockchain::block_chain_impl& blockchain)
+{
+    if (sp_addresses && !sp_addresses->empty()) {
+        // first, let test 10 times of random
+        for (auto i = 0; i < 10; ++i) {
+            auto random = bc::pseudo_random();
+            auto index = random % sp_addresses->size();
+            auto addr = sp_addresses->at(index).get_address();
+            if (blockchain.is_payment_address(addr)) {
+                return addr;
+            }
+        }
+        // then, real bad luck, lets filter only the payment address
+        account_address::list filtered_addresses;
+        std::copy_if(sp_addresses->begin(), sp_addresses->end(),
+                std::back_inserter(filtered_addresses),
+                [&blockchain](const auto& each){
+                   return blockchain.is_payment_address(each.get_address());
+                });
+        if (!filtered_addresses.empty()) {
+            auto random = bc::pseudo_random();
+            auto index = random % filtered_addresses.size();
+            return filtered_addresses.at(index).get_address();
+        }
+    }
+    return "";
+}
+
 void sync_fetch_asset_balance (std::string& addr, bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
 {

@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -48,9 +49,7 @@ console_result getpublickey::invoke (Json::Value& jv_output,
     
     // set random address
     if (argument_.address.empty()) {
-        auto random = bc::pseudo_random();
-        auto index = random % pvaddr->size();
-        argument_.address = pvaddr->at(index).get_address();
+        argument_.address = get_random_payment_address(pvaddr, blockchain);
     }
 
     // get public key

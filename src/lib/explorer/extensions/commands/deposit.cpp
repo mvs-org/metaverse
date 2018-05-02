@@ -51,9 +51,7 @@ console_result deposit::invoke (Json::Value& jv_output,
 
     auto addr = argument_.address;
     if (addr.empty()) {
-        auto random = bc::pseudo_random();
-        auto index = random % pvaddr->size();
-        addr = pvaddr->at(index).get_address();
+        addr = get_random_payment_address(pvaddr, blockchain);
     }
         
     // receiver

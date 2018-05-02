@@ -146,6 +146,8 @@ void sync_fetch_asset_balance (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
 void sync_fetch_asset_balance_record (std::string& addr,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
+std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
+    bc::blockchain::block_chain_impl& blockchain);
 
 class BCX_API base_transfer_common
 {

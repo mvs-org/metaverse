@@ -82,8 +82,7 @@ console_result issue::invoke (Json::Value& jv_output,
     }
 
     // get random address
-    auto index = bc::pseudo_random() % pvaddr->size();
-    auto addr = pvaddr->at(index).get_address();
+    auto addr = get_random_payment_address(pvaddr, blockchain);
 
     // receiver
     std::vector<receiver_record> receiver{
