@@ -94,6 +94,11 @@ class Role:
         result, message = mvs_rpc.burn(self.name, self.password, self.asset_symbol, amount)
         assert (result == 0)
 
+    def send_etp(self, to_, amount):
+        result, message = mvs_rpc.send(self.name, self.password, to_, amount)
+        assert (result == 0)
+        return message["transaction"]["hash"]
+
     def mining(self, times=1):
         '''
         use the mainaddress to mining x times.

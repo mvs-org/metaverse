@@ -268,7 +268,7 @@ def get_info():
 
 @mvs_api
 def send(account, password, to_, amount, fee=None, desc=None):
-    positional = [account, password, to_, amount],
+    positional = [account, password, to_, amount]
     optional =   {
             '-f': fee,
             '-m': desc,
@@ -278,13 +278,32 @@ def send(account, password, to_, amount, fee=None, desc=None):
 
 @mvs_api
 def sendfrom(account, password, from_, to_, amount, fee=None, desc=None):
-    positional = [account, password, from_, to_, amount],
+    positional = [account, password, from_, to_, amount]
     optional = {
         '-f': fee,
         '-m': desc,
     }
 
     return "sendfrom", positional, optional, None
+
+@mvs_api
+def sendmore(account, password, receivers, mychange=None, fee=None):
+    '''
+
+    :param account:
+    :param password:
+    :param receivers: {address1:amount1, address2:amount2, ...} amount in bits
+    :param mychange:
+    :param fee:
+    :return:
+    '''
+    positional = [account, password]
+    optional = {
+        '-f': fee,
+        '-m': mychange,
+        '-r': ["%s:%s" % (i, receivers[i]) for i in receivers]
+    }
+    return "sendmore", positional, optional, None
 
 @mvs_api
 def didsendfrom(account, password, amount, to_, from_, fee=None, desc=None):
@@ -297,3 +316,7 @@ def didsend(account, password, amount, to_, fee=None, desc=None):
 @mvs_api
 def burn(account, password, symbol, amount):
     return "burn", [account, password, symbol, amount], {}, None
+
+@mvs_api
+def gettx(tx_hash):
+    return "gettx", [tx_hash], {}, None

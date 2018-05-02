@@ -65,7 +65,7 @@ class TestAsset(unittest.TestCase):
         self.assertEqual(ec, 5001, message)
 
         Alice.burn_asset(amount)
-        
+
 
 
 
