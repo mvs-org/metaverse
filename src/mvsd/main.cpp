@@ -41,7 +41,8 @@ int bc::main(int argc, char* argv[])
     // core dump catch
     start_unhandled_exception_filter();
 
-    set_utf8_stdio();
+    //libzmq crashes  when differs from main standard IO encoding
+    //set_utf8_stdio();
     server::parser metadata(bc::settings::mainnet);
     const auto& args = const_cast<const char**>(argv);
 

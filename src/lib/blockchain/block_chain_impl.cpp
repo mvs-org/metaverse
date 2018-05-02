@@ -1300,7 +1300,7 @@ std::shared_ptr<std::vector<business_address_asset>> block_chain_impl::get_accou
 
 	const auto action = [&](const business_address_asset& addr_asset)
 	{
-		if(addr_asset.detail.get_symbol().compare(asset_name) == 0)
+		if(addr_asset.detail.get_symbol() == asset_name)
 			ret_vector->emplace_back(std::move(addr_asset));
 	};
 
@@ -1553,7 +1553,7 @@ std::shared_ptr<std::vector<business_history>> block_chain_impl::get_address_bus
 			asset_symbol = cert.get_symbol();
 		}
 
-        if ( 0 == symbol.compare(asset_symbol)){
+        if (symbol == asset_symbol) {
             ret_vector->emplace_back(std::move(*iter));
         }
     }
@@ -2004,7 +2004,7 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool add_lo
 		auto sh_acc_vec = get_local_assets();
 		// scan all account asset
 		for (auto& acc : *sh_acc_vec) {
-			if (asset_name.compare(acc.get_symbol())==0)
+			if (asset_name == acc.get_symbol())
 				return true;
 		}
 	}

@@ -184,32 +184,6 @@ void asset_detail::set_symbol(const std::string& symbol)
     this->symbol = symbol.substr(0, len);
 }
 
-std::string asset_detail::get_domain(const std::string& symbol)
-{
-    std::string domain("");
-    auto&& tokens = bc::split(symbol, ASSET_SYMBOL_DELIMITER, true);
-    if (tokens.size() > 0) {
-        domain = tokens[0];
-    }
-    return domain;
-}
-
-std::string asset_detail::get_domain() const
-{
-    return get_domain(symbol);
-}
-
-bool asset_detail::is_valid_domain(const std::string& domain)
-{
-    return !domain.empty();
-}
-
-bool asset_detail::is_valid_domain() const
-{
-    auto&& domain = get_domain();
-    return is_valid_domain(domain);
-}
-
 uint64_t asset_detail::get_maximum_supply() const
 {
     return maximum_supply;

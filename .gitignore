@@ -67,3 +67,6 @@ cscope.*
 
 # Macosx Desktop Services Store file
 .DS_Store
+
+# python
+*.pyc

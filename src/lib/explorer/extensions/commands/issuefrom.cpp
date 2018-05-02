@@ -56,8 +56,8 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     std::string existed_domain_cert_address;
     // domain cert check
     bool issue_domain_cert = false;
-    auto&& domain = asset_detail::get_domain(argument_.symbol);
-    if (asset_detail::is_valid_domain(domain)) {
+    auto&& domain = asset_cert::get_domain(argument_.symbol);
+    if (asset_cert::is_valid_domain(domain)) {
         if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
             issue_domain_cert = true;
         }
@@ -92,7 +92,7 @@ console_result issuefrom::invoke (Json::Value& jv_output,
     }
 
     // domain cert
-    if (asset_detail::is_valid_domain(domain)) {
+    if (asset_cert::is_valid_domain(domain)) {
         receiver.push_back({(issue_domain_cert ? addr : existed_domain_cert_address), domain, 0, 0,
             asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
     }

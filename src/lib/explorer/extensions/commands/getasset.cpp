@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ console_result getasset::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(argument_.symbol);
-    
+
     if (argument_.symbol.size() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"Illegal asset symbol length."};
 
@@ -46,28 +46,28 @@ console_result getasset::invoke (Json::Value& jv_output,
     Json::Value assets;
     std::set<std::string> symbols;
     for (auto& elem: *sh_vec) {
-
         if (argument_.symbol.empty()) {
             // get rid of duplicate symbols
             if (!symbols.count(elem.get_symbol())) {
                 symbols.insert(elem.get_symbol());
                 assets.append(elem.get_symbol());
             }
-        } else {
-            // find out target from blockchain 
-            if (elem.get_symbol().compare(argument_.symbol) == 0) {
+        }
+        else {
+            // find out target from blockchain
+            if (elem.get_symbol() == argument_.symbol) {
                 Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, true);
                 asset_data["status"] = "issued";
                 assets.append(asset_data);
             }
         }
-
     }
-    
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1        
-        aroot["assets"] = "";                                                   
-    } else {                                                                    
-        aroot["assets"] = assets;                                               
+
+    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
+        aroot["assets"] = "";
+    }
+    else {
+        aroot["assets"] = assets;
     }
 
     return console_result::okay;
