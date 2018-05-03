@@ -157,7 +157,8 @@ void asset_cert::to_data(writer& sink) const
 
 uint64_t asset_cert::serialized_size() const
 {
-    size_t len = (symbol_.size()+1) + (owner_.size()+1) + ASSET_CERT_CERTS_FIX_SIZE;
+    size_t len = (symbol_.size()+1) + (owner_.size()+1)
+        + ASSET_CERT_CERTS_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
     return std::min(len, ASSET_CERT_FIX_SIZE);
 }
 
