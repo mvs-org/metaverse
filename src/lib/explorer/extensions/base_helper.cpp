@@ -499,14 +499,8 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
 
 void base_transfer_common::populate_change()
 {
-    // etp utxo
+    // only etp utxo, others in derived class
     populate_etp_change();
-
-    // asset utxo
-    populate_asset_change();
-
-    // asset cert utxo
-    populate_asset_cert_change();
 }
 
 std::string base_transfer_common::get_mychange_address(filter filter) const
@@ -1147,6 +1141,33 @@ issuing_asset::get_script_operations(const receiver_record& record) const
     return base_transfer_helper::get_script_operations(record);
 }
 
+void issuing_asset::populate_change()
+{
+    // etp utxo
+    populate_etp_change();
+
+    // asset cert utxo
+    populate_asset_cert_change();
+}
+
+void sending_asset::populate_change()
+{
+    // etp utxo
+    populate_etp_change();
+
+    // asset utxo
+    populate_asset_change();
+}
+
+void transferring_asset_cert::populate_change()
+{
+    // etp utxo
+    populate_etp_change();
+
+    // asset cert utxo
+    populate_asset_cert_change();
+}
+
 chain::operation::stack
 secondary_issuing_asset::get_script_operations(const receiver_record& record) const
 {
@@ -1237,6 +1258,15 @@ void issuing_asset_cert::sum_payment_amount()
 
         payment_asset_cert_ = asset_cert_ns::domain;
     }
+}
+
+void issuing_asset_cert::populate_change()
+{
+    // etp utxo
+    populate_etp_change();
+
+    // asset cert utxo
+    populate_asset_cert_change();
 }
 
 void issuing_did::sum_payment_amount()
