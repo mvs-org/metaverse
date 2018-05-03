@@ -35,7 +35,7 @@ console_result issuedid::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    blockchain.uppercase_symbol(argument_.symbol);
+    //blockchain.uppercase_symbol(argument_.symbol);
     if(bc::wallet::symbol::is_sensitive(argument_.symbol)) {
         throw asset_symbol_name_exception{"invalid symbol start with " + argument_.symbol};
     }
