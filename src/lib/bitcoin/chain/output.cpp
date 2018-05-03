@@ -76,6 +76,25 @@ bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
 	return true;
 }
 
+bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
+{
+    if (symbol.empty())
+        return false;
+    // length check
+    if (symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+		return false;
+	// char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.'|| i=='@'))
+            return false;
+    }
+    // sensitive check
+    if (bc::wallet::symbol::is_sensitive(symbol)) {
+        return false;
+    }
+	return true;
+}
+
 bool output::is_valid() const
 {
     return (value != 0) || script.is_valid()
