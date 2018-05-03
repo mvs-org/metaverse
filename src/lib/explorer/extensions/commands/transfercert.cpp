@@ -46,7 +46,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     std::map <std::string, asset_cert_type> cert_param_value_map = {
         {"ISSUE", asset_cert_ns::issue},
         {"DOMAIN", asset_cert_ns::domain},
-        {"DOMAIN_NAMING", asset_cert_ns::domain_naming}
+        {"NAMING", asset_cert_ns::naming}
     };
 
     auto certs_send = asset_cert_ns::none;

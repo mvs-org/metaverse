@@ -57,7 +57,7 @@ namespace asset_cert_ns {
     constexpr asset_cert_type none{0};
     constexpr asset_cert_type issue{1 << 0};
     constexpr asset_cert_type domain{1 << 1};
-    constexpr asset_cert_type domain_naming{1 << 2};
+    constexpr asset_cert_type naming{1 << 2};
     constexpr asset_cert_type all{0xffffffffffffffff};
 }
 

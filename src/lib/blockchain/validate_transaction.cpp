@@ -402,13 +402,16 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
             auto&& asset_cert = output.get_asset_cert();
-            if (!check_same(asset_symbol, asset_cert.get_symbol())) {
-                return error::asset_secondaryissue_error;
+            auto cur_cert_type = asset_cert.get_certs();
+            if (asset_cert::test_certs(cur_cert_type, asset_cert_ns::issue)) {
+                if (!check_same(asset_symbol, asset_cert.get_symbol())) {
+                    return error::asset_secondaryissue_error;
+                }
+                if (!check_same(asset_cert_address, output.get_script_address())) {
+                    return error::asset_secondaryissue_error;
+                }
+                certs_out |= asset_cert.get_certs();
             }
-            if (!check_same(asset_cert_address, output.get_script_address())) {
-                return error::asset_secondaryissue_error;
-            }
-            certs_out |= asset_cert.get_certs();
         }
         else if (!output.is_etp())
         {
@@ -420,11 +423,9 @@ code validate_transaction::check_secondaryissue_transaction(
 
     size_t max_outputs_size = 2 + num_asset_transfer + num_asset_cert;
     if (tx.outputs.size() > max_outputs_size) {
-        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: too many outputs, " << asset_symbol;
-        return error::asset_secondaryissue_error;
-    }
-    if (asset_transfer_volume == 0) {
-        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: zero number asset tranfer, " << asset_symbol;
+        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: "
+            << "too many outputs: " << tx.outputs.size()
+            << ", max_outputs_size: " << max_outputs_size;
         return error::asset_secondaryissue_error;
     }
     if (asset_symbol.empty()) {
@@ -575,7 +576,7 @@ code validate_transaction::check_asset_issue_transaction(
                     return error::asset_issue_error;
                 }
             }
-            else if (cur_cert_type == asset_cert_ns::domain_naming) {
+            else if (cur_cert_type == asset_cert_ns::naming) {
                 ++num_asset_cert_domain;
                 if (num_asset_cert_domain > 1) {
                     return error::asset_issue_error;
@@ -589,11 +590,6 @@ code validate_transaction::check_asset_issue_transaction(
                     return error::asset_issue_error;
                 }
             }
-            else {
-                log::error(LOG_BLOCKCHAIN)
-                    << "asset issue: Invalid asset cert type: " << cur_cert_type;
-                return error::asset_issue_error;
-            }
 
             cert_type |= cur_cert_type;
         }
@@ -605,6 +601,9 @@ code validate_transaction::check_asset_issue_transaction(
 
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
     if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
+        log::debug(LOG_BLOCKCHAIN) << "issue asset: "
+            << "too many outputs: " << tx.outputs.size()
+            << ", max_outputs_size: " << max_outputs_size;
         return error::asset_issue_error;
     }
 
@@ -624,9 +623,9 @@ code validate_transaction::check_asset_issue_transaction(
                 check_symbol = domain;
                 check_type = asset_cert_ns::domain;
             }
-            else if (asset_cert::test_certs(cert_type, asset_cert_ns::domain_naming)) {
+            else if (asset_cert::test_certs(cert_type, asset_cert_ns::naming)) {
                 check_symbol = asset_symbol;
-                check_type = asset_cert_ns::domain_naming;
+                check_type = asset_cert_ns::naming;
             }
             else {
                 // no valid domain cert
@@ -670,8 +669,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
     asset_cert_type cert_mask{asset_cert_ns::none};
     asset_cert_type cert_type{asset_cert_ns::none};
     std::string asset_symbol;
-    std::string asset_address;
-    std::string cert_address;
+    std::string domain_cert_address;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_cert_issue()) {
@@ -685,9 +683,13 @@ code validate_transaction::check_asset_cert_issue_transaction(
             asset_cert_type cur_cert_type = cert_info.get_certs();
 
             if (!check_same(asset_symbol, cert_info.get_symbol())) {
+                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                    << cert_info.get_symbol() << " does not match.";
                 return error::asset_cert_issue_error;
             }
             if (chain.is_asset_cert_exist(asset_symbol, cur_cert_type)) {
+                log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                    << cert_info.get_symbol() << " already exists.";
                 return error::asset_cert_exist;
             }
 
@@ -711,14 +713,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
                     }
                 }
 
-                if (!check_same(cert_address, output.get_script_address())) {
-                    return error::asset_cert_issue_error;
-                }
-            }
-            else {
-                log::error(LOG_BLOCKCHAIN)
-                    << "asset cert issue: Invalid asset cert type: " << cur_cert_type;
-                return error::asset_cert_issue_error;
+                domain_cert_address = output.get_script_address();
             }
 
             cert_type |= cur_cert_type;
@@ -731,6 +726,9 @@ code validate_transaction::check_asset_cert_issue_transaction(
 
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
     if ((tx.outputs.size() > max_outputs_size)) {
+        log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+            << "too many outputs: " << tx.outputs.size()
+            << ", max_outputs_size: " << max_outputs_size;
         return error::asset_cert_issue_error;
     }
 
@@ -738,24 +736,24 @@ code validate_transaction::check_asset_cert_issue_transaction(
         return error::asset_cert_issue_error;
     }
 
-    if (cert_mask == asset_cert_ns::domain_naming) {
-        if (cert_type != asset_cert_ns::domain || cert_address.empty()) {
+    if (cert_mask == asset_cert_ns::naming) {
+        if (!asset_cert::test_certs(cert_type, asset_cert_ns::domain)
+            || domain_cert_address.empty()) {
+            log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                << "no domain cert provided to issue naming cert.";
             return error::asset_cert_issue_error;
         }
-
-        auto&& domain = asset_cert::get_domain(asset_symbol);
-        // // check domain cert exists
-        // if (!chain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-        //     return error::asset_cert_not_exist;
-        // }
 
         // check domain cert belongs to the address
         const auto match = [](const business_address_asset_cert& item) {
             return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
         };
-        auto certs_vec = chain.get_address_asset_certs(cert_address, domain);
+        auto&& domain = asset_cert::get_domain(asset_symbol);
+        auto certs_vec = chain.get_address_asset_certs(domain_cert_address, domain);
         auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
         if (it == certs_vec->end()) {
+            log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                << "no domain cert owned to issue naming cert.";
             return error::asset_cert_issue_error;
         }
     }

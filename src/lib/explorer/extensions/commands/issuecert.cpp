@@ -53,7 +53,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
-        {"DOMAIN_NAMING", asset_cert_ns::domain_naming}
+        {"NAMING", asset_cert_ns::naming}
     };
     auto iter = cert_map.find(argument_.cert);
     if (iter == cert_map.end()) {
@@ -62,7 +62,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     auto certs_create = iter->second;
 
     std::string domain_cert_addr;
-    if (certs_create == asset_cert_ns::domain_naming) {
+    if (certs_create == asset_cert_ns::naming) {
         // check symbol is valid.
         auto pos = argument_.symbol.find(".");
         if (pos == string::npos) {
@@ -77,7 +77,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
         }
 
         // check domain naming cert not exist.
-        if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::domain_naming)) {
+        if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming)) {
             throw asset_cert_exception("domain naming cert '" + argument_.symbol + "'already exists!");
         }
 
@@ -100,7 +100,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
             certs_create, utxo_attach_type::asset_cert_issue, attachment()}
     };
 
-    if (certs_create == asset_cert_ns::domain_naming) {
+    if (certs_create == asset_cert_ns::naming) {
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         receiver.push_back(
             {domain_cert_addr, domain, 0, 0,
