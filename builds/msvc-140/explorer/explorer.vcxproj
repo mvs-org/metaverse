@@ -91,6 +91,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importkeyfile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issue.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuefrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listaddresses.hpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importkeyfile.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issue.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuefrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listaddresses.cpp" />
