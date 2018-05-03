@@ -883,7 +883,9 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
         }
 
-        if (!attenuation_model::check_model_param(tx, chain)) {
+        if ((tx.version >= transaction_version::check_nova_feature)
+            && !attenuation_model::check_model_param(tx, chain)) {
+            log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic: model param check failed" << tx.to_string(1);
             return error::attenuation_model_param_error;
         }
     }

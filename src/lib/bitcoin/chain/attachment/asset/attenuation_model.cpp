@@ -30,6 +30,10 @@ namespace chain {
 namespace {
     const char* LOG_HEADER{"attenuation_model"};
 
+    std::string chunk_to_string(const data_chunk& chunk) {
+        return std::string(chunk.begin(), chunk.end());
+    }
+
     std::map<attenuation_model::model_type, std::vector<std::string>> model_keys_map {
         {attenuation_model::model_type::fixed_quantity, {"PN","LH","TYPE","LQ","LP","UN"}},
         {attenuation_model::model_type::fixed_rate,     {"PN","LH","TYPE","LQ","LP","UN","IR","UC","UQ"}},
@@ -592,6 +596,10 @@ bool attenuation_model::check_model_param(const data_chunk& param)
 
 bool attenuation_model::check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain)
 {
+    if (tx.version < transaction_version::check_nova_feature) {
+        return true;
+    }
+
     struct ext_input_point {
         const chain::input_point* input_point_;
         const chain::output* prev_output_;
@@ -635,6 +643,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         const auto& model_param = output.get_attenuation_model_param();
 
         if (!attenuation_model::check_model_param(model_param)) {
+            log::info(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
             return false;
         }
 
@@ -642,6 +651,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             get_input_point_from_pay_key_hash_with_attenuation_model(output.script.operations);
         chain::input_point input_point = chain::point::factory_from_data(input_point_data);
         if (input_point.is_null() ) {
+            log::info(LOG_HEADER) << "input is null" << input_point.to_string();
             continue;
         }
 
@@ -651,12 +661,16 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             });
 
         if (iter == vec_prev_input.end()) {
+            log::info(LOG_HEADER) << "input not found for " << input_point.to_string();
             return false;
         }
 
         const auto& prev_model_param = iter->prev_output_->get_attenuation_model_param();
 
         if (!check_model_param_immutable(prev_model_param, model_param)) {
+            log::info(LOG_HEADER) << "check immutable failed, "
+                << "prev is " << chunk_to_string(prev_model_param)
+                << ", new is" << chunk_to_string(model_param);
             return false;
         }
 
@@ -664,6 +678,8 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         auto real_diff_height = get_diff_height(prev_model_param, model_param);
 
         if (real_diff_height > curr_diff_height) {
+            log::info(LOG_HEADER) << "check diff height failed, "
+                << real_diff_height << ", curr diff is" << curr_diff_height;
             return false;
         }
 
@@ -674,10 +690,15 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
                 prev_model_param, new_model_param_ptr);
 
         if (asset_amount != output.get_asset_amount()) {
+            log::info(LOG_HEADER) << "check amount failed, "
+                << "availabe = " << asset_amount << ", output = " << output.get_asset_amount();
             return false;
         }
 
         if (!new_model_param_ptr || (*new_model_param_ptr != model_param)) {
+            log::info(LOG_HEADER) << "check model new param failed, "
+                << "prev is " << chunk_to_string(model_param) << ", new is "
+                << (new_model_param_ptr ? chunk_to_string(*new_model_param_ptr) : std::string("empty"));
             return false;
         }
 
@@ -691,6 +712,8 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         auto curr_diff_height = current_blockheight - ext_input.prev_blockheight_;
         auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
         if (real_diff_height > curr_diff_height) {
+            log::info(LOG_HEADER) << "check diff height failed for all spendable, "
+                << real_diff_height << ", curr diff is" << curr_diff_height;
             return false;
         }
     }
