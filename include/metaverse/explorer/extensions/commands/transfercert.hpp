@@ -92,7 +92,7 @@ public:
         (
             "cert,c",
             value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
-            "Asset cert name, eg. ISSUE, DOMAIN, etc."
+            "Asset cert type name, eg. ISSUE, DOMAIN, NAMING"
         )
         (
             "fee,f",

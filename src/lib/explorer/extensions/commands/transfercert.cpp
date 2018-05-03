@@ -64,7 +64,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
         throw asset_cert_exception("no asset cert type is specified to transfer");
     }
 
-    if (certs_send & ~asset_cert_ns::domain) {
+    if (asset_cert::test_certs(certs_send, asset_cert_ns::issue)) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
         if (!sh_asset)
             throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};

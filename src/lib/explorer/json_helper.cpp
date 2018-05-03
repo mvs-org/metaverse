@@ -418,8 +418,10 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["owner"] = cert_info.get_owner();
     if (version_ == 1) {
         tree["certs"] += cert_info.get_certs();
+        tree["status"] += cert_info.get_status();
     } else {
         tree["certs"] = cert_info.get_certs();
+        tree["status"] = cert_info.get_status();
     }
     return tree;
 }
@@ -428,50 +430,48 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
 
-    if(attach_data.get_type() == ETP_TYPE) {
+    if (attach_data.get_type() == ETP_TYPE) {
         tree["type"] = "etp";
-
-    } else if(attach_data.get_type() == ASSET_TYPE) {
-
+    }
+    else if (attach_data.get_type() == ASSET_TYPE) {
         auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
-        if(asset_info.get_status() == ASSET_DETAIL_TYPE) {
+        if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
             tree = prop_list(detail_info, false);
             tree["type"] = "asset-issue";
         }
-        if(asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
+        if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {
             auto trans_info = boost::get<bc::chain::asset_transfer>(asset_info.get_data());
             tree = prop_list(trans_info);
             tree["type"] = "asset-transfer";
         }
-
-    } else if (attach_data.get_type() == ASSET_CERT_TYPE) {
+    }
+    else if (attach_data.get_type() == ASSET_CERT_TYPE) {
         auto cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
         tree = prop_list(cert_info);
         tree["type"] = "asset-cert";
-
-    } else if(attach_data.get_type() == DID_TYPE) {
-
+    }
+    else if (attach_data.get_type() == DID_TYPE) {
         auto did_info = boost::get<bc::chain::did>(attach_data.get_attach());
-        if(did_info.get_status() == DID_DETAIL_TYPE) {
+        if (did_info.get_status() == DID_DETAIL_TYPE) {
             tree["type"] = "did-issue";
             auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
             tree["address"] = detail_info.get_address();
         }
-        if(did_info.get_status() == DID_TRANSFERABLE_TYPE) {
+        if (did_info.get_status() == DID_TRANSFERABLE_TYPE) {
             tree["type"] = "did-transfer";
             auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
             tree["address"] = detail_info.get_address();
         }
-
-    } else if(attach_data.get_type() == MESSAGE_TYPE) {
+    }
+    else if (attach_data.get_type() == MESSAGE_TYPE) {
         tree["type"] = "message";
         auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
         tree["content"] = msg_info.get_content();
-
-    } else {
+    }
+    else {
         tree["type"] = "unknown business";
     }
     return tree;
