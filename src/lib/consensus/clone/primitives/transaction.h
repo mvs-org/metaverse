@@ -103,10 +103,10 @@ public:
     std::string symbol;
     uint64_t maximum_supply;
     uint32_t asset_type;
-    std::string issuer; 
+    std::string issuer;
     std::string address;
     std::string description;
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -124,7 +124,7 @@ class CAssetTransfer
 public:
     std::string address;  // symbol  -- in block
     uint64_t quantity;  // -- in block
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -140,14 +140,14 @@ public:
     uint32_t status;
 	CAssetDetail detail;
 	CAssetTransfer trans;
-	
-    size_t GetSerializeSize(int nType, int nVersion) const {                         
-        CSizeComputer s(nType, nVersion);                                            
+
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
         NCONST_PTR(this)->Serialize(s, nType, nVersion);
-        return s.size();                                                             
-    }                                                                                
-    template<typename Stream>                                                        
-    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
         //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionSerialize()));
 		switch(status) {
@@ -158,9 +158,9 @@ public:
 				(::SerReadWrite(s, (*(CAssetTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
 				break;
 		};
-    }                                                                                
-    template<typename Stream>                                                        
-    void Unserialize(Stream& s, int nType, int nVersion) {                           
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
         //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionUnserialize()));
 		switch(status) {
@@ -177,7 +177,7 @@ class CMessage
 {
 public:
     std::string content;
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -192,6 +192,7 @@ public:
     std::string symbol;
     std::string owner;
     uint64_t certs;
+    uint32_t status;
 
     ADD_SERIALIZE_METHODS;
 
@@ -200,6 +201,7 @@ public:
         READWRITE(symbol);
         READWRITE(owner);
         READWRITE(certs);
+        READWRITE(status);
     }
 };
 
@@ -209,7 +211,7 @@ public:
     std::string symbol;
     std::string address;
 
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -225,7 +227,7 @@ public:
     std::string symbol;
     std::string address;
 
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -241,14 +243,14 @@ public:
     uint32_t status;
 	CDidDetail detail;
 	CDidTransfer trans;
-	
-    size_t GetSerializeSize(int nType, int nVersion) const {                         
-        CSizeComputer s(nType, nVersion);                                            
+
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
         NCONST_PTR(this)->Serialize(s, nType, nVersion);
-        return s.size();                                                             
-    }                                                                                
-    template<typename Stream>                                                        
-    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
         //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionSerialize()));
 		switch(status) {
@@ -259,9 +261,9 @@ public:
 				(::SerReadWrite(s, (*(CDidTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
 				break;
 		};
-    }                                                                                
-    template<typename Stream>                                                        
-    void Unserialize(Stream& s, int nType, int nVersion) {                           
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
         //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionUnserialize()));
 		switch(status) {
@@ -287,12 +289,12 @@ public:
     uint32_t type;
     std::string fromdid;
     std::string todid;
-	
+
 	CAsset asset;
     CAssetCert assetcert;
     CDid did;
 	CMessage message;
-	
+
 	CTxOut()
 	{
 		SetNull();
@@ -301,13 +303,13 @@ public:
 	CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn);
 
     //ADD_SERIALIZE_METHODS;
-    size_t GetSerializeSize(int nType, int nVersion) const {                         
-        CSizeComputer s(nType, nVersion);                                            
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
         NCONST_PTR(this)->Serialize(s, nType, nVersion);
-        return s.size();                                                             
-    }                                                                                
-    template<typename Stream>                                                        
-    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
         //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
         (::SerReadWrite(s, (nValue), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionSerialize()));
@@ -336,9 +338,9 @@ public:
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
                 break;
 		};
-    }                                                                                
-    template<typename Stream>                                                        
-    void Unserialize(Stream& s, int nType, int nVersion) {                           
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
         //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
         (::SerReadWrite(s, (nValue), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionUnserialize()));
