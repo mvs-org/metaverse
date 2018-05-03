@@ -157,7 +157,12 @@ enum error_code_t
     did_not_exist,
     did_multi_type_exist,           // 75
     did_input_error,
-    attenuation_model_param_error
+    attenuation_model_param_error,
+
+    // cert check
+    asset_cert_exist,               // 78
+    asset_cert_not_exist,
+    asset_cert_issue_error,
 };
 
 enum error_condition_t

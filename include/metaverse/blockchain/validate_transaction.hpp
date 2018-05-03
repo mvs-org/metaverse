@@ -56,30 +56,31 @@ public:
         const chain::transaction& current_tx, size_t input_index,
         uint32_t flags);
 
-    static code check_transaction(const chain::transaction& tx, blockchain::block_chain_impl& chain);
-    static code check_transaction_basic(const chain::transaction& tx, blockchain::block_chain_impl& chain);
+    static code check_transaction(
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
+    static code check_transaction_basic(
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
+
     static code check_asset_issue_transaction(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
+
+    static code check_asset_cert_issue_transaction(
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
+
     static code check_secondaryissue_transaction(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain,
-            bool in_transaction_pool);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain,
+        bool in_transaction_pool);
 
     static code check_did_transaction(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain,
-            bool in_transaction_pool);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
     static bool connect_did_input(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain,
-            did info);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain,
+        did info);
 
     static bool connect_input_address_match_did(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain,
-            std::string did);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain,
+        std::string did);
 
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,
@@ -89,9 +90,9 @@ public:
 
     static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
         uint64_t& fees);
-	bool check_asset_amount(const transaction& tx);
-	bool check_asset_symbol(const transaction& tx);
-	bool check_asset_certs(const transaction& tx);
+    bool check_asset_amount(const transaction& tx);
+    bool check_asset_symbol(const transaction& tx);
+    bool check_asset_certs(const transaction& tx);
 
     static bool is_did_validate(blockchain::block_chain_impl& chain);
     bool check_did_symbol(const transaction& tx);
@@ -129,9 +130,9 @@ private:
     uint64_t value_in_;
     uint64_t asset_amount_in_;
     asset_cert_type asset_certs_in_;
-	std::string old_symbol_in_; // just used for check same asset symbol in previous outputs
-	std::string new_symbol_in_;
-	business_kind business_kind_in_;
+    std::string old_symbol_in_; // just used for check same asset symbol in previous outputs
+    std::string new_symbol_in_;
+    business_kind business_kind_in_;
     uint32_t current_input_;
     chain::point::indexes unconfirmed_;
     validate_handler handle_validate_;

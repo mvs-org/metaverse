@@ -33,7 +33,7 @@ class error_category_impl
 public:
     virtual const char* name() const BC_NOEXCEPT;
     virtual std::string message(int ev) const BC_NOEXCEPT;
-    virtual std::error_condition default_error_condition(int ev) 
+    virtual std::error_condition default_error_condition(int ev)
         const BC_NOEXCEPT;
 };
 
@@ -215,11 +215,11 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::did_exist:
             return "did exist";
         case error::address_issued_did:
-            return "address already issued did";  
+            return "address already issued did";
         case error::did_func_not_actived:
-			return "did function has not been actived until block height is larger than 1130000";  
+			return "did function has not been actived until block height is larger than 1130000";
         case error::did_address_not_match:
-			return "attach did address must equal with output address"; 
+			return "attach did address must equal with output address";
         case error::did_address_needed:
 			return "did address is needed but not supplied";
         case error::did_not_exist:
@@ -230,7 +230,14 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "did attchment type can not be with some others";
         case error::attenuation_model_param_error:
             return "attenuation model parameter is wrong";
-    
+
+        // cert errors
+        case error::asset_cert_exist:
+            return "asset cert exist";
+        case error::asset_cert_not_exist:
+            return "asset cert not exist";
+        case error::asset_cert_issue_error:
+            return "asset cert issue error";
 
         // unknown errors
         case error::unknown:

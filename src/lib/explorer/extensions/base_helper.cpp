@@ -251,6 +251,7 @@ bool base_transfer_common::get_spendable_output(
         return false;
     }
 
+    BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
@@ -722,12 +723,16 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         auto ass = did(DID_TRANSFERABLE_TYPE, *sh_did);
         return attachment(DID_TYPE, attach_version, ass);
     }
-    else if (record.type == utxo_attach_type::asset_cert) {
+    else if (record.type == utxo_attach_type::asset_cert
+        || record.type == utxo_attach_type::asset_cert_issue) {
         if (record.asset_cert == asset_cert_ns::none) {
             throw asset_cert_exception("asset cert is none");
         }
         auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
         auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.asset_cert);
+        if (record.type == utxo_attach_type::asset_cert_issue) {
+            cert_info.set_status(ASSET_CERT_ISSUE_TYPE);
+        }
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
 
@@ -896,14 +901,18 @@ void base_transfer_common::exec()
     // prepare
     sum_payment_amount();
     populate_unspent_list();
+
     // construct tx
     populate_tx_header();
     populate_tx_inputs();
     populate_tx_outputs();
+
     // check tx
     check_tx();
+
     // sign tx
     sign_tx_inputs();
+
     // send tx
     send_tx();
 }
@@ -1088,6 +1097,19 @@ void issuing_asset::sum_payments()
                 payment_asset_cert_ = asset_cert_ns::domain; // will verify by input
             }
         }
+        else if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain_naming)) {
+            auto&& domain = asset_cert::get_domain(symbol_);
+            if (!asset_cert::is_valid_domain(domain)) {
+                throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
+            }
+
+            if (blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::domain_naming)) {
+                payment_asset_cert_ = asset_cert_ns::domain_naming; // will verify by input
+            }
+            else {
+                throw asset_cert_domain_exception{"no domain naming cert exists for asset : " + symbol_};
+            }
+        }
     }
 }
 
@@ -1202,6 +1224,19 @@ attachment secondary_issuing_asset::populate_output_attachment(const receiver_re
     }
 
     return base_transfer_common::populate_output_attachment(record);
+}
+
+void issuing_asset_cert::sum_payment_amount()
+{
+    base_transfer_common::sum_payment_amount();
+
+    if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain_naming)) {
+        if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain)) {
+            throw asset_cert_exception("no asset cert of domain right.");
+        }
+
+        payment_asset_cert_ = asset_cert_ns::domain;
+    }
 }
 
 void issuing_did::sum_payment_amount()

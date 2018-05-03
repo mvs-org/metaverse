@@ -279,6 +279,17 @@ bool output::is_asset_cert() const
     return (attach_data.get_type() == ASSET_CERT_TYPE);
 }
 
+bool output::is_asset_cert_issue() const
+{
+    if (attach_data.get_type() == ASSET_CERT_TYPE) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        if (cert_info.get_status() == ASSET_CERT_ISSUE_TYPE) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool output::is_etp() const
 {
     return (attach_data.get_type() == ETP_TYPE);

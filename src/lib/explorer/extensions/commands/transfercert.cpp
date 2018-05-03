@@ -45,7 +45,8 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_param_value_map = {
         {"ISSUE", asset_cert_ns::issue},
-        {"DOMAIN", asset_cert_ns::domain}
+        {"DOMAIN", asset_cert_ns::domain},
+        {"DOMAIN_NAMING", asset_cert_ns::domain_naming}
     };
 
     auto certs_send = asset_cert_ns::none;
@@ -78,23 +79,15 @@ console_result transfercert::invoke (Json::Value& jv_output,
         throw did_address_needed_exception("target address is not an did address. " + argument_.to);
 
     // receiver
-    std::vector<receiver_record> receiver;
-
-    // separate domain cert
-    if (asset_cert::test_certs(certs_send, asset_cert_ns::domain)) {
-        receiver.push_back({argument_.to, argument_.symbol, 0, 0,
-            asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
-        certs_send &= ~asset_cert_ns::domain;
-    }
-
-    if (certs_send != asset_cert_ns::none) {
-        receiver.push_back({argument_.to, argument_.symbol, 0, 0,
-            certs_send, utxo_attach_type::asset_cert, attachment()});
-    }
+    std::vector<receiver_record> receiver{
+        {argument_.to, argument_.symbol, 0, 0,
+            certs_send, utxo_attach_type::asset_cert, attachment()}
+    };
 
     auto helper = transferring_asset_cert(*this, blockchain,
-            std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(argument_.symbol),
+        std::move(receiver), argument_.fee);
 
     helper.exec();
 

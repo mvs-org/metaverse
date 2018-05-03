@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -20,13 +20,13 @@
 
 
 #include <functional>
-#include <memory>    
-#include <string>    
-#include <array>     
+#include <memory>
+#include <string>
+#include <array>
 
-#include <metaverse/explorer/command.hpp>                
+#include <metaverse/explorer/command.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/command_extension.hpp>   
+#include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/commands/shutdown.hpp>
 #include <metaverse/explorer/extensions/commands/stopmining.hpp>
@@ -76,6 +76,7 @@
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
 #include <metaverse/explorer/extensions/commands/burn.hpp>
 #include <metaverse/explorer/extensions/commands/transfercert.hpp>
+#include <metaverse/explorer/extensions/commands/issuecert.hpp>
 #include <metaverse/explorer/extensions/commands/getwork.hpp>
 #include <metaverse/explorer/extensions/commands/submitwork.hpp>
 #include <metaverse/explorer/extensions/commands/setminingaccount.hpp>
@@ -160,6 +161,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<sendassetfrom>());
     func(make_shared<burn>());
     func(make_shared<transfercert>());
+    func(make_shared<issuecert>());
 
     // multi-sig
     func(make_shared<getpublickey>());
@@ -176,14 +178,14 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<sendrawtx>());
 
     //did
-    func(make_shared<issuedid>());    
+    func(make_shared<issuedid>());
     func(make_shared<didsend>());
     func(make_shared<didsendfrom>());
     func(make_shared<didsendasset>());
     func(make_shared<didsendassetfrom>());
     func(make_shared<listdids>());
-    func(make_shared<didmodifyaddress>());    
-    func(make_shared<listdidaddresses>());    
+    func(make_shared<didmodifyaddress>());
+    func(make_shared<listdidaddresses>());
 
 }
 
@@ -279,6 +281,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<burn>();
     if (symbol == transfercert::symbol())
         return make_shared<transfercert>();
+    if (symbol == issuecert::symbol())
+        return make_shared<issuecert>();
     if ((symbol == getwork::symbol()) || (symbol == "eth_getWork"))
         return make_shared<getwork>();
     if ((symbol == submitwork::symbol()) || ( symbol == "eth_submitWork"))
@@ -314,7 +318,7 @@ shared_ptr<command> find_extension(const string& symbol)
     if (symbol == getaddressasset::symbol())
         return make_shared<getaddressasset>();
     if (symbol == issuedid::symbol())
-        return make_shared<issuedid>(); 
+        return make_shared<issuedid>();
     if (symbol == didsend::symbol())
         return make_shared<didsend>();
     if (symbol == didsendasset::symbol())

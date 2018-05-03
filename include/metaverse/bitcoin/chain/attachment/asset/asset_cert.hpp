@@ -28,6 +28,11 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 
+#define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
+
+#define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_normal)
+#define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
+
 // forward declaration
 namespace libbitcoin {
 namespace blockchain {
@@ -41,20 +46,30 @@ namespace chain {
 BC_CONSTEXPR size_t ASSET_CERT_SYMBOL_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_OWNER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_CERTS_FIX_SIZE = 8;
+BC_CONSTEXPR size_t ASSET_CERT_STATUS_FIX_SIZE = 32;
 
-BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = ASSET_CERT_SYMBOL_FIX_SIZE + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_CERTS_FIX_SIZE;
+BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
+    + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_CERTS_FIX_SIZE
+    + ASSET_CERT_STATUS_FIX_SIZE);
 
 using asset_cert_type = uint64_t;
 namespace asset_cert_ns {
     constexpr asset_cert_type none{0};
     constexpr asset_cert_type issue{1 << 0};
     constexpr asset_cert_type domain{1 << 1};
+    constexpr asset_cert_type domain_naming{1 << 2};
     constexpr asset_cert_type all{0xffffffffffffffff};
 }
 
 class BC_API asset_cert
 {
 public:
+    enum class asset_cert_status : uint32_t
+    {
+        asset_cert_normal,
+        asset_cert_issue,
+    };
+
     using asset_cert_container = std::set<asset_cert>;
     asset_cert();
     asset_cert(std::string symbol, std::string owner, asset_cert_type certs);
@@ -79,6 +94,9 @@ public:
     const std::string& get_symbol() const;
     void set_symbol(const std::string& symbol);
 
+    uint32_t get_status() const;
+    void set_status(uint32_t status);
+
     const std::string& get_owner() const;
     std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     void set_owner(const std::string& owner);
@@ -101,6 +119,7 @@ private:
     std::string symbol_; // asset name/symbol
     std::string owner_;  // asset cert owner, an digital identity
     asset_cert_type certs_; // asset certs
+    uint32_t status_;       // asset status
 };
 
 } // namespace chain

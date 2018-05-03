@@ -506,7 +506,7 @@ code validate_transaction::check_asset_issue_transaction(
     asset_cert_type cert_type{asset_cert_ns::none};
     std::string asset_symbol;
     std::string asset_address;
-    std::string domain_cert_address;
+    std::string cert_address;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_issue())
@@ -571,7 +571,21 @@ code validate_transaction::check_asset_issue_transaction(
                     }
                 }
 
-                if (!check_same(domain_cert_address, output.get_script_address())) {
+                if (!check_same(cert_address, output.get_script_address())) {
+                    return error::asset_issue_error;
+                }
+            }
+            else if (cur_cert_type == asset_cert_ns::domain_naming) {
+                ++num_asset_cert_domain;
+                if (num_asset_cert_domain > 1) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(asset_symbol, cert_info.get_symbol())) {
+                    return error::asset_issue_error;
+                }
+
+                if (!check_same(cert_address, output.get_script_address())) {
                     return error::asset_issue_error;
                 }
             }
@@ -598,18 +612,34 @@ code validate_transaction::check_asset_issue_transaction(
     auto&& domain = asset_cert::get_domain(asset_symbol);
     if (tx.version >= transaction_version::check_nova_feature
         && asset_cert::is_valid_domain(domain)) {
-        if (domain_cert_address.empty()) {
+        if (cert_address.empty()) {
             return error::asset_issue_error;
         }
 
-        // if domain cert exists then make sure it belongs to the address
+        // if domain certs exists then make sure it belongs to the address
         if (chain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-            const auto match = [](const business_address_asset_cert& item) {
-                return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
-            };
+            std::string check_symbol;
+            asset_cert_type check_type;
+            if (asset_cert::test_certs(cert_type, asset_cert_ns::domain)) {
+                check_symbol = domain;
+                check_type = asset_cert_ns::domain;
+            }
+            else if (asset_cert::test_certs(cert_type, asset_cert_ns::domain_naming)) {
+                check_symbol = asset_symbol;
+                check_type = asset_cert_ns::domain_naming;
+            }
+            else {
+                // no valid domain cert
+                return error::asset_issue_error;
+            }
 
-            auto certs_vec = chain.get_address_asset_certs(domain_cert_address, domain);
-            const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
+            // check domain certs
+            const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
+                return asset_cert::test_certs(item.certs.get_certs(), cert_type);
+            };
+            auto certs_vec = chain.get_address_asset_certs(cert_address, check_symbol);
+            auto it = std::find_if(certs_vec->begin(), certs_vec->end(),
+                std::bind(match, _1, check_type));
             if (it == certs_vec->end()) {
                 return error::asset_issue_error;
             }
@@ -619,16 +649,129 @@ code validate_transaction::check_asset_issue_transaction(
     return error::success;
 }
 
+code validate_transaction::check_asset_cert_issue_transaction(
+    const transaction& tx, blockchain::block_chain_impl& chain)
+{
+    bool is_cert_issue{false};
+    for (auto& output : tx.outputs) {
+        if (output.is_asset_cert_issue()) {
+            is_cert_issue = true;
+            break;
+        }
+    }
+
+    if (!is_cert_issue) {
+        return error::success;
+    }
+
+    is_cert_issue = false;
+    int num_asset_cert_issue{0};
+    int num_asset_cert_domain{0};
+    asset_cert_type cert_mask{asset_cert_ns::none};
+    asset_cert_type cert_type{asset_cert_ns::none};
+    std::string asset_symbol;
+    std::string asset_address;
+    std::string cert_address;
+    for (auto& output : tx.outputs)
+    {
+        if (output.is_asset_cert_issue()) {
+            if (is_cert_issue) {
+                // can not issue multiple asset cert at the same transaction
+                return error::asset_cert_issue_error;
+            }
+            is_cert_issue = true;
+
+            asset_cert&& cert_info = output.get_asset_cert();
+            asset_cert_type cur_cert_type = cert_info.get_certs();
+
+            if (!check_same(asset_symbol, cert_info.get_symbol())) {
+                return error::asset_cert_issue_error;
+            }
+            if (chain.is_asset_cert_exist(asset_symbol, cur_cert_type)) {
+                return error::asset_cert_exist;
+            }
+
+            cert_mask = cur_cert_type;
+        }
+        else if (output.is_asset_cert()) {
+            asset_cert&& cert_info = output.get_asset_cert();
+
+            // check cert
+            asset_cert_type cur_cert_type = cert_info.get_certs();
+            if (cur_cert_type == asset_cert_ns::domain) {
+                ++num_asset_cert_domain;
+                if (num_asset_cert_domain > 1) {
+                    return error::asset_cert_issue_error;
+                }
+
+                if (!asset_symbol.empty()) {
+                    auto&& domain = asset_cert::get_domain(asset_symbol);
+                    if (domain != cert_info.get_symbol()) {
+                        return error::asset_cert_issue_error;
+                    }
+                }
+
+                if (!check_same(cert_address, output.get_script_address())) {
+                    return error::asset_cert_issue_error;
+                }
+            }
+            else {
+                log::error(LOG_BLOCKCHAIN)
+                    << "asset cert issue: Invalid asset cert type: " << cur_cert_type;
+                return error::asset_cert_issue_error;
+            }
+
+            cert_type |= cur_cert_type;
+        }
+        else if (!output.is_etp())
+        {
+            return error::asset_cert_issue_error;
+        }
+    }
+
+    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
+    if ((tx.outputs.size() > max_outputs_size)) {
+        return error::asset_cert_issue_error;
+    }
+
+    if (cert_mask == asset_cert_ns::none) {
+        return error::asset_cert_issue_error;
+    }
+
+    if (cert_mask == asset_cert_ns::domain_naming) {
+        if (cert_type != asset_cert_ns::domain || cert_address.empty()) {
+            return error::asset_cert_issue_error;
+        }
+
+        auto&& domain = asset_cert::get_domain(asset_symbol);
+        // // check domain cert exists
+        // if (!chain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
+        //     return error::asset_cert_not_exist;
+        // }
+
+        // check domain cert belongs to the address
+        const auto match = [](const business_address_asset_cert& item) {
+            return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
+        };
+        auto certs_vec = chain.get_address_asset_certs(cert_address, domain);
+        auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
+        if (it == certs_vec->end()) {
+            return error::asset_cert_issue_error;
+        }
+    }
+
+    return error::success;
+}
+
 code validate_transaction::check_did_transaction(
         const chain::transaction& tx,
-        blockchain::block_chain_impl& chain,
-        bool in_transaction_pool)
+        blockchain::block_chain_impl& chain)
 {
     code ret = error::success;
 
     uint8_t type = 255;
 
-     for (const auto& output : tx.outputs)
+    for (const auto& output : tx.outputs)
     {
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
@@ -685,8 +828,6 @@ code validate_transaction::check_did_transaction(
             }
         }
     }
-
-
 
     return ret;
 }
@@ -773,11 +914,15 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
         return ret;
     }
 
+    if ((ret = check_asset_cert_issue_transaction(tx, chain)) != error::success) {
+        return ret;
+    }
+
     if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success) {
         return ret;
     }
 
-    if ((ret = check_did_transaction(tx, chain, true)) != error::success) {
+    if ((ret = check_did_transaction(tx, chain)) != error::success) {
         return ret;
     }
 

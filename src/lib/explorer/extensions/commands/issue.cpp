@@ -27,6 +27,8 @@
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 
+using std::placeholders::_1;
+
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
@@ -56,33 +58,49 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
 
-    std::string existed_domain_cert_address;
+    // get random address
+    auto addr = get_random_payment_address(pvaddr, blockchain);
+
+    std::string cert_address;
+    asset_cert_type cert_type = asset_cert_ns::none;
+
     // domain cert check
-    bool issue_domain_cert = false;
     auto&& domain = asset_cert::get_domain(argument_.symbol);
     if (asset_cert::is_valid_domain(domain)) {
         if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
-            issue_domain_cert = true;
+            // domain cert does not exist, issue new domain cert to this address
+            cert_address = addr;
+            cert_type = asset_cert_ns::domain;
         }
         else {
-            // if domain cert exists then check whether it belongs to the account.
-            const auto match = [](const business_address_asset_cert& item) {
-                return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
+            const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
+                return asset_cert::test_certs(item.certs.get_certs(), cert_type);
             };
 
+            // if domain cert exists then check whether it belongs to the account.
             auto certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
-            const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
-            if (it == certs_vec->end()) {
-                throw asset_cert_domain_exception{
-                    "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
-            } else {
-                existed_domain_cert_address = it->address;
+            auto it = std::find_if(certs_vec->begin(), certs_vec->end(),
+                std::bind(match, _1, asset_cert_ns::domain));
+            if (it != certs_vec->end()) {
+                cert_address = it->address;
+                cert_type = asset_cert_ns::domain;
+            }
+            else {
+                // if domain cert does not belong to the account then check domain naming cert
+                certs_vec = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
+                it = std::find_if(certs_vec->begin(), certs_vec->end(),
+                    std::bind(match, _1, asset_cert_ns::domain_naming));
+                if (it != certs_vec->end()) {
+                    cert_address = it->address;
+                    cert_type = asset_cert_ns::domain_naming;
+                }
+                else {
+                    throw asset_cert_domain_exception{
+                        "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
+                }
             }
         }
     }
-
-    // get random address
-    auto addr = get_random_payment_address(pvaddr, blockchain);
 
     // receiver
     std::vector<receiver_record> receiver{
@@ -98,15 +116,15 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // domain cert
     if (asset_cert::is_valid_domain(domain)) {
-        receiver.push_back({(issue_domain_cert ? addr : existed_domain_cert_address), domain, 0, 0,
-            asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+        receiver.push_back({cert_address, domain, 0, 0,
+            cert_type, utxo_attach_type::asset_cert, attachment()});
     }
 
     auto issue_helper = issuing_asset(*this, blockchain,
-            std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(argument_.symbol),
-            std::move(option_.attenuation_model_param),
-            std::move(receiver), argument_.fee);
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(argument_.symbol),
+        std::move(option_.attenuation_model_param),
+        std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 

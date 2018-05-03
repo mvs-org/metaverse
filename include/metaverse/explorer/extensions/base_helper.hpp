@@ -63,6 +63,7 @@ enum class utxo_attach_type : uint32_t
     asset_secondaryissue = 8,
     did_issue = 9,
     did_transfer = 10,
+    asset_cert_issue = 11,
     invalid = 0xffffffff
 };
 
@@ -545,6 +546,28 @@ public:
 
     ~transferring_asset_cert()
     {}
+};
+
+class BCX_API issuing_asset_cert : public base_transfer_helper
+{
+public:
+    issuing_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+    {}
+
+    ~issuing_asset_cert()
+    {}
+
+    void sum_payment_amount() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 
