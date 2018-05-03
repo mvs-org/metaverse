@@ -425,6 +425,7 @@ public:
 
     void sum_payments() override;
     void sum_payment_amount() override;
+    void populate_change() override;
 
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
@@ -487,6 +488,8 @@ public:
 
     ~sending_asset()
     {}
+
+    void populate_change() override;
 };
 
 class BCX_API issuing_did : public base_transfer_helper
@@ -546,6 +549,8 @@ public:
 
     ~transferring_asset_cert()
     {}
+
+    void populate_change() override;
 };
 
 class BCX_API issuing_asset_cert : public base_transfer_helper
@@ -563,6 +568,7 @@ public:
     {}
 
     void sum_payment_amount() override;
+    void populate_change() override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;
