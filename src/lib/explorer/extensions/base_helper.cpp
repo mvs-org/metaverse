@@ -498,8 +498,14 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
 
 void base_transfer_common::populate_change()
 {
-    // only etp utxo. if you want more, override this in child class.
+    // etp utxo
     populate_etp_change();
+
+    // asset utxo
+    populate_asset_change();
+
+    // asset cert utxo
+    populate_asset_cert_change();
 }
 
 std::string base_transfer_common::get_mychange_address(filter filter) const
