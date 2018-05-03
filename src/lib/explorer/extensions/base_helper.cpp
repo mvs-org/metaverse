@@ -580,13 +580,13 @@ void base_transfer_common::populate_asset_cert_change(const std::string& address
         // separate domain cert
         if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
             auto&& domain = asset_cert::get_domain(symbol_);
-            receiver_list_.push_back({addr, domain, 0,
+            receiver_list_.push_back({addr, domain, 0, 0,
                 asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
             cert_left &= ~asset_cert_ns::domain;
         }
 
         if (cert_left != asset_cert_ns::none) {
-            receiver_list_.push_back({addr, symbol_, 0,
+            receiver_list_.push_back({addr, symbol_, 0, 0,
                 cert_left, utxo_attach_type::asset_cert, attachment()});
         }
     }
@@ -1091,14 +1091,14 @@ void issuing_asset::sum_payments()
                 payment_asset_cert_ = asset_cert_ns::domain; // will verify by input
             }
         }
-        else if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::domain_naming)) {
+        else if (asset_cert::test_certs(iter.asset_cert, asset_cert_ns::naming)) {
             auto&& domain = asset_cert::get_domain(symbol_);
             if (!asset_cert::is_valid_domain(domain)) {
                 throw asset_cert_domain_exception{"no valid domain exists for asset : " + symbol_};
             }
 
-            if (blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::domain_naming)) {
-                payment_asset_cert_ = asset_cert_ns::domain_naming; // will verify by input
+            if (blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::naming)) {
+                payment_asset_cert_ = asset_cert_ns::naming; // will verify by input
             }
             else {
                 throw asset_cert_domain_exception{"no domain naming cert exists for asset : " + symbol_};
@@ -1251,7 +1251,7 @@ void issuing_asset_cert::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
 
-    if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain_naming)) {
+    if (asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::naming)) {
         if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::domain)) {
             throw asset_cert_exception("no asset cert of domain right.");
         }

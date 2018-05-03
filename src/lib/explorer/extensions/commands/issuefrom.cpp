@@ -57,6 +57,7 @@ console_result issuefrom::invoke (Json::Value& jv_output,
 
     std::string addr(argument_.address);
     std::string cert_address;
+    std::string cert_symbol;
     asset_cert_type cert_type = asset_cert_ns::none;
 
     // domain cert check
@@ -66,6 +67,7 @@ console_result issuefrom::invoke (Json::Value& jv_output,
             // domain cert does not exist, issue new domain cert to this address
             cert_address = addr;
             cert_type = asset_cert_ns::domain;
+            cert_symbol = domain;
         }
         else {
             const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
@@ -79,15 +81,17 @@ console_result issuefrom::invoke (Json::Value& jv_output,
             if (it != certs_vec->end()) {
                 cert_address = it->address;
                 cert_type = asset_cert_ns::domain;
+                cert_symbol = domain;
             }
             else {
                 // if domain cert does not belong to the account then check domain naming cert
                 certs_vec = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
                 it = std::find_if(certs_vec->begin(), certs_vec->end(),
-                    std::bind(match, _1, asset_cert_ns::domain_naming));
+                    std::bind(match, _1, asset_cert_ns::naming));
                 if (it != certs_vec->end()) {
                     cert_address = it->address;
-                    cert_type = asset_cert_ns::domain_naming;
+                    cert_type = asset_cert_ns::naming;
+                    cert_symbol = argument_.symbol;
                 }
                 else {
                     throw asset_cert_domain_exception{
@@ -109,9 +113,9 @@ console_result issuefrom::invoke (Json::Value& jv_output,
             certs, utxo_attach_type::asset_cert, attachment()});
     }
 
-    // domain cert
+    // domain cert or domain naming cert
     if (asset_cert::is_valid_domain(domain)) {
-        receiver.push_back({cert_address, domain, 0, 0,
+        receiver.push_back({cert_address, cert_symbol, 0, 0,
             cert_type, utxo_attach_type::asset_cert, attachment()});
     }
 
