@@ -93,11 +93,11 @@ std::string get_random_payment_address(
     return "";
 }
 
-void sync_fetch_asset_balance (std::string& addr, bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
+void sync_fetch_asset_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<asset_balances::list> sh_asset_vec)
 {
-    auto&& address = payment_address(addr);
-    auto&& rows = blockchain.get_address_history(address);
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -110,61 +110,30 @@ void sync_fetch_asset_balance (std::string& addr, bc::blockchain::block_chain_im
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
         {
-            auto output = tx_temp.outputs.at(row.output.index);
-            if ((output.is_asset_transfer()
-                || output.is_asset_issue()
-                || output.is_asset_secondaryissue()))
+            const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.is_asset())
             {
-                auto match = [&](const asset_detail& elem) {
-                    return output.get_asset_symbol() == elem.get_symbol();
+                const auto& symbol = output.get_asset_symbol();
+                auto match = [&sum_all, &symbol, &address](const asset_balances& elem) {
+                    return (symbol == elem.symbol) && (sum_all || (address == elem.address));
                 };
                 auto iter = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), match);
 
-                if (iter == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(
-                        asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, 0, "", addr, ""));
+                auto asset_amount = output.get_asset_amount();
+                uint64_t locked_amount = 0;
+                if (asset_amount
+                    && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    const auto& attenuation_model_param = output.get_attenuation_model_param();
+                    auto available_amount = attenuation_model::get_available_asset_amount(
+                            asset_amount, height - row.output_height, attenuation_model_param);
+                    locked_amount = asset_amount - available_amount;
+                }
+                if (iter == sh_asset_vec->end()) { // new item
+                    sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
                 }
                 else { // exist just add amount
-                    iter->set_maximum_supply(iter->get_maximum_supply() + output.get_asset_amount());
-                }
-            }
-        }
-    }
-}
-
-void sync_fetch_asset_balance_record (std::string& addr, bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<std::vector<asset_detail>> sh_asset_vec)
-{
-    auto&& address = payment_address(addr);
-    auto&& rows = blockchain.get_address_history(address);
-
-    chain::transaction tx_temp;
-    uint64_t tx_height;
-    uint64_t height = 0;
-    blockchain.get_last_height(height);
-
-    for (auto& row: rows)
-    {
-        // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
-        {
-            auto output = tx_temp.outputs.at(row.output.index);
-            if ((output.is_asset_transfer() || output.is_asset_issue()
-                || output.is_asset_secondaryissue()))
-            {
-                auto match = [&](const asset_detail& elem) {
-                    return ((output.get_asset_symbol() == elem.get_symbol())
-                        && (addr == elem.get_address()));
-                };
-                auto iter = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), match);
-
-                if (iter == sh_asset_vec->end()){ // new item
-                    sh_asset_vec->push_back(
-                        asset_detail(output.get_asset_symbol(), output.get_asset_amount(), 0, 0, "", addr, ""));
-                }
-                else { // exist just add amount
-                    iter->set_maximum_supply(iter->get_maximum_supply() + output.get_asset_amount());
+                    iter->unspent_asset += asset_amount;
+                    iter->locked_asset += locked_amount;
                 }
             }
         }
@@ -174,7 +143,7 @@ void sync_fetch_asset_balance_record (std::string& addr, bc::blockchain::block_c
 /// amount == 0 -- get all address balances
 /// amount != 0 -- get some address balances which bigger than amount
 void sync_fetchbalance(wallet::payment_address& address,
-    std::string& type, bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount)
+    bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
 {
     auto&& rows = blockchain.get_address_history(address);
 
@@ -190,9 +159,6 @@ void sync_fetchbalance(wallet::payment_address& address,
 
     for (auto& row: rows)
     {
-        if (amount && ((unspent_balance - frozen_balance) >= amount)) // performance improve
-            break;
-
         total_received += row.value;
 
         // spend unconfirmed (or no spend attempted)
@@ -222,8 +188,7 @@ void sync_fetchbalance(wallet::payment_address& address,
                 }
             }
 
-            if ((type == "all") || ((type == "etp") && output.is_etp()))
-                unspent_balance += row.value;
+            unspent_balance += row.value;
         }
 
         if (row.output_height != 0 &&

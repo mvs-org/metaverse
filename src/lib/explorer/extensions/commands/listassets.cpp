@@ -40,10 +40,9 @@ console_result listassets::invoke (Json::Value& jv_output,
     Json::Value assets;
     
     auto& blockchain = node.chain_impl();
-    auto sh_vec = std::make_shared<std::vector<asset_detail>>();
     
-    if(auth_.name.empty()) { // no account -- list whole assets in blockchain
-        sh_vec = blockchain.get_issued_assets();
+    if (auth_.name.empty()) { // no account -- list whole assets in blockchain
+        auto sh_vec = blockchain.get_issued_assets();
         
         if (sh_vec->size() == 0) // no asset found
             throw asset_notfound_exception{"No asset found, please waiting for block synchronizing finish."};
@@ -60,17 +59,19 @@ console_result listassets::invoke (Json::Value& jv_output,
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if(!pvaddr) 
             throw address_list_nullptr_exception{"nullptr for address list"};
+
+        auto sh_vec = std::make_shared<asset_balances::list>();
         
         // 1. get asset in blockchain        
         // get address unspent asset balance
         std::string addr;
-        for (auto& each : *pvaddr){
+        for (auto& each : *pvaddr) {
             addr = each.get_address();
-            sync_fetch_asset_balance(addr, blockchain, sh_vec);
+            sync_fetch_asset_balance(addr, true, blockchain, sh_vec);
         }
         
         for (auto& elem: *sh_vec) {
-            auto issued_asset = blockchain.get_issued_asset(elem.get_symbol());
+            auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset) {
                 continue;
             }

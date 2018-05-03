@@ -309,6 +309,16 @@ bool output::is_asset_cert_issue() const
     return false;
 }
 
+bool output::is_asset() const
+{
+    return (attach_data.get_type() == ASSET_TYPE);
+}
+
+bool output::is_did() const
+{
+	return (attach_data.get_type() == DID_TYPE);
+}
+
 bool output::is_etp() const
 {
     return (attach_data.get_type() == ETP_TYPE);

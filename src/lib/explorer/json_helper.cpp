@@ -360,29 +360,31 @@ Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
     return tree;
 }
 
-// detail_info only "symbol" "address" "quantity" info included in it.
+// balance_info only "symbol" "address" "quantity" info included in it.
 // issued_info include the other info.
 // is_secondaryissue has no meaning for asset quantity summary.
 // don't add address info if show_address is not true.
-Json::Value json_helper::prop_list(const bc::chain::asset_detail& detail_info,
+Json::Value json_helper::prop_list(const bc::chain::asset_balances& balance_info,
         const bc::chain::asset_detail& issued_info, bool show_address)
 {
     Json::Value tree;
-    tree["symbol"] = detail_info.get_symbol();
+    tree["symbol"] = balance_info.symbol;
     if (show_address) {
-        tree["address"] = detail_info.get_address();
+        tree["address"] = balance_info.address;
     }
 
     tree["issuer"] = issued_info.get_issuer();
     tree["description"] = issued_info.get_description();
 
     if (version_ == 1) {
-        tree["quantity"] += detail_info.get_maximum_supply();
+        tree["quantity"] += balance_info.unspent_asset;
+        tree["locked_quantity"] += balance_info.locked_asset;
 
         tree["decimal_number"] += issued_info.get_decimal_number();
         tree["secondaryissue_threshold"] += issued_info.get_secondaryissue_threshold();
     } else {
-        tree["quantity"] = detail_info.get_maximum_supply();
+        tree["quantity"] = balance_info.unspent_asset;
+        tree["locked_quantity"] = balance_info.locked_asset;
 
         tree["decimal_number"] = issued_info.get_decimal_number();
         tree["secondaryissue_threshold"] = issued_info.get_secondaryissue_threshold();

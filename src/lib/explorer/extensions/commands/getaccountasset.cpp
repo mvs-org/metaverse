@@ -72,18 +72,18 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     
     Json::Value assets;
 
-    auto sh_vec = std::make_shared<std::vector<asset_detail>>();
+    auto sh_vec = std::make_shared<asset_balances::list>();
 
     // 1. get asset in blockchain       
     // get address unspent asset balance
     std::string addr;
     for (auto& each : *pvaddr){
         addr = each.get_address();
-        sync_fetch_asset_balance_record (addr, blockchain, sh_vec);
+        sync_fetch_asset_balance(addr, false, blockchain, sh_vec);
     }
 
     for (auto& elem: *sh_vec) {
-        auto& symbol = elem.get_symbol();
+        auto& symbol = elem.symbol;
         if(!argument_.symbol.empty() && argument_.symbol != symbol)
             continue;
         auto issued_asset = blockchain.get_issued_asset(symbol);
@@ -96,7 +96,6 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     }
     // 2. get asset in local database
     // shoudl filter all issued asset which be stored in local account asset database
-    sh_vec->clear();
     auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
     for (auto& elem: *sh_unissued) {
         auto& symbol = elem.detail.get_symbol();

@@ -75,6 +75,7 @@ public:
     std::string get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const;
     asset_cert_type get_asset_cert_type() const;
     const data_chunk& get_attenuation_model_param() const;
+    bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
     bool is_asset_cert() const;
@@ -82,6 +83,7 @@ public:
     bool is_etp() const;
     bool is_etp_award() const;
     bool is_message() const;
+    bool is_did() const;
     bool is_did_issue() const;
     bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;

@@ -47,13 +47,11 @@ console_result listbalances::invoke (Json::Value& jv_output,
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
-    std::string type("all");
-    
     for (auto& i: *vaddr){
         Json::Value address_balance;
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
-        sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        sync_fetchbalance(waddr, blockchain, addr_balance);
         address_balance["address"] = i.get_address();
 
         if (get_api_version() == 1) {

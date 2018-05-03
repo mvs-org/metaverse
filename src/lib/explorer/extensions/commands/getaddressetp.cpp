@@ -38,8 +38,7 @@ console_result getaddressetp::invoke (Json::Value& jv_output,
     auto& addr = argument_.address;
     bc::explorer::commands::balances addr_balance{0, 0, 0, 0};
 
-    std::string type{"all"};
-    sync_fetchbalance(addr, type, blockchain, addr_balance, 0);
+    sync_fetchbalance(addr, blockchain, addr_balance);
 
     Json::Value jv;
     jv["address"] = addr.encoded();

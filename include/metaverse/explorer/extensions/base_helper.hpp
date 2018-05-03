@@ -141,14 +141,16 @@ struct balances {
 };
 
 // helper function
-void sync_fetchbalance (wallet::payment_address& address, std::string& type,
-    bc::blockchain::block_chain_impl& blockchain, balances& addr_balance, uint64_t amount);
-void sync_fetch_asset_balance (std::string& addr,
-    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
-void sync_fetch_asset_balance_record (std::string& addr,
-    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<std::vector<asset_detail>> sh_asset_vec);
+void sync_fetchbalance(wallet::payment_address& address,
+    bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
+
+void sync_fetch_asset_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<asset_balances::list> sh_asset_vec);
+
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
+
 
 class BCX_API base_transfer_common
 {

@@ -1384,7 +1384,7 @@ static history::list expand_history(history_compact::list& compact)
     return result;
 }
 
-history::list block_chain_impl::get_address_history(wallet::payment_address& addr)
+history::list block_chain_impl::get_address_history(const wallet::payment_address& addr)
 {
     history_compact::list cmp_history;
     if (!fetch_history(addr, 0, 0, cmp_history)) {

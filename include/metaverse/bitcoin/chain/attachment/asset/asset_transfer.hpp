@@ -38,6 +38,14 @@ BC_CONSTEXPR size_t ASSET_TRANSFER_QUANTITY_FIX_SIZE = 8;
 
 BC_CONSTEXPR size_t ASSET_TRANSFER_FIX_SIZE = ASSET_TRANSFER_SYMBOL_FIX_SIZE + ASSET_TRANSFER_QUANTITY_FIX_SIZE;
 
+struct asset_balances {
+    typedef std::vector<asset_balances> list;
+    std::string symbol;
+    std::string address;
+    uint64_t unspent_asset;
+    uint64_t locked_asset;
+};
+
 class BC_API asset_transfer
 {
 public:

@@ -49,13 +49,10 @@ console_result getbalance::invoke (Json::Value& jv_output,
     uint64_t total_unspent = 0;
     uint64_t total_frozen = 0;
 
-    //balances addr_balance;
-    std::string type("all");
-
     for (auto& i: *vaddr) {
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
-        sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        sync_fetchbalance(waddr, blockchain, addr_balance);
 
         total_confirmed += addr_balance.confirmed_balance;
         total_received += addr_balance.total_received;

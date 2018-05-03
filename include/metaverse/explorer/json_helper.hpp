@@ -418,12 +418,12 @@ BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool i
 
 /**
  * Generate a property list for a asset transfer with detail.
- * @param[in]  detail_info  The asset detail. only "symbol" "address" "quantity" info included in it.
+ * @param[in]  balance_info The asset balance info.
  * @param[in]  issued_info  The issued asset detail. include the other info.
  * @param[in]  show_address A boolean value indicate whether show address.
  * @return             A property list.
  */
-BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
+BCX_API Json::Value prop_list(const bc::chain::asset_balances& balance_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
 
 /**
  * Generate a property list for a asset transfer.

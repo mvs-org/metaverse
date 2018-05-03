@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -64,52 +65,11 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     }
 
     Json::Value assets;
-    std::string symbol;
+    auto sh_vec = std::make_shared<asset_balances::list>();
+    sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
 
-    // 1. get asset in blockchain
-    std::set<std::string> symbol_set;
-    std::vector<asset_detail> asset_vec; // just used asset_detail class
-
-    // make all asset kind vector
-    std::vector<business_kind> kind_vec;
-    kind_vec.push_back(business_kind::asset_transfer);
-    kind_vec.push_back(business_kind::asset_issue);
-
-    for (auto kind : kind_vec) {
-        // get address unspent asset balance
-        auto sh_vec = blockchain.get_address_business_history(argument_.address, kind, business_status::unspent);
-        const auto sum = [&](const business_history& bh)
-        {
-            // get asset info
-            uint64_t num;
-            if(kind == business_kind::asset_transfer) {
-                auto transfer_info = boost::get<chain::asset_transfer>(bh.data.get_data());
-                symbol = transfer_info.get_symbol();
-                num = transfer_info.get_quantity();
-            } else { // asset issued
-                auto asset_info = boost::get<asset_detail>(bh.data.get_data());
-                symbol = asset_info.get_symbol();
-                num = asset_info.get_maximum_supply();
-            }
-
-            // update asset quantity
-            auto r = symbol_set.insert(symbol);
-            if(r.second) { // new symbol
-                asset_vec.push_back(asset_detail(symbol, num, 0, 0, "", argument_.address, ""));
-            } else { // already exist
-                const auto add_num = [&](asset_detail& elem)
-                {
-                    if(symbol == elem.get_symbol())
-                        elem.set_maximum_supply(elem.get_maximum_supply()+num);
-                };
-                std::for_each(asset_vec.begin(), asset_vec.end(), add_num);
-            }
-        };
-        std::for_each(sh_vec->begin(), sh_vec->end(), sum);
-    }
-
-    for (auto& elem: asset_vec) {
-        auto issued_asset = blockchain.get_issued_asset(elem.get_symbol());
+    for (auto& elem: *sh_vec) {
+        auto issued_asset = blockchain.get_issued_asset(elem.symbol);
         if (!issued_asset) {
             continue;
         }

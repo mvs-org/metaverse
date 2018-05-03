@@ -196,7 +196,7 @@ public:
     bool fetch_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_compact::list& history);
 
-    history::list get_address_history(wallet::payment_address& addr);
+    history::list get_address_history(const wallet::payment_address& addr);
 
     /// fetch stealth results.
     void fetch_stealth(const binary& filter, uint64_t from_height,
