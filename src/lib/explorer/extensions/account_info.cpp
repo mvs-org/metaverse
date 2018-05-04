@@ -62,7 +62,7 @@ bool account_info::from_data(std::istream& stream)
 bool account_info::from_data(reader& source)
 {
     meta_.from_data(source);
-    
+
     account_address addr;
 	uint32_t addr_size = source.read_4_bytes_little_endian();
 	while(addr_size--) {
@@ -78,8 +78,8 @@ bool account_info::from_data(reader& source)
 		detail.from_data(source);
 		asset_vec_.push_back(detail);
 	}
-    
-    return true;	
+
+    return true;
 }
 
 data_chunk account_info::to_data() const
@@ -107,20 +107,20 @@ void account_info::to_data(writer& sink) const
 		for(auto& each : addr_vec_) {
 			each.to_data(sink);
 		}
-	} 
+	}
     // account asset vector
 	sink.write_4_bytes_little_endian(asset_vec_.size());
 	if(asset_vec_.size()) {
 		for(auto& each : asset_vec_) {
 			each.to_data(sink);
 		}
-	} 
+	}
 }
 account account_info::get_account() const
 {
     return meta_;
 }
-std::vector<account_address>& account_info::get_account_address() 
+std::vector<account_address>& account_info::get_account_address()
 {
     return addr_vec_;
 }
@@ -137,7 +137,7 @@ void account_info::store(std::string& name, std::string& passwd)
     acc->set_mnemonic(mnemonic, passwd);
     acc->set_passwd(passwd);
     blockchain_.store_account(acc);
-    
+
     // restore account addresses
     std::string prv_key;
     for(auto& each : addr_vec_) {
@@ -147,12 +147,12 @@ void account_info::store(std::string& name, std::string& passwd)
         auto addr = std::make_shared<account_address>(each);
         blockchain_.store_account_address(addr);
     }
-    
+
     // restore account asset
     for(auto& each : asset_vec_) {
         each.set_issuer(name);
         auto acc = std::make_shared<asset_detail>(each);
-        blockchain_.store_account_asset(acc);
+        blockchain_.store_account_asset(acc, name);
     }
 }
 void account_info::encrypt()
@@ -175,7 +175,7 @@ std::istream& operator>>(std::istream& input, account_info& self_ref)
     std::string hexcode;
     input >> hexcode;
     self_ref.decrypt(hexcode);
-    
+
     data_chunk body(self_ref.data_.begin(), self_ref.data_.end() - libbitcoin::checksum_size);
     self_ref.from_data(body);
 

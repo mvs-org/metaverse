@@ -136,12 +136,11 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
 
 code output::check_attachment_did_match_address(bc::blockchain::block_chain_impl& chain) const
 {
-
     if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION ) {
         auto todid = attach_data.get_to_did();
         if (!todid.empty()) {
             auto address = get_script_address();
-            if ( todid != chain.get_did_from_address(address)) {
+            if (todid != chain.get_did_from_address(address)) {
                 return error::did_address_not_match;
             }
         }
@@ -361,7 +360,7 @@ std::string output::get_asset_issuer() const // for validate_transaction.cpp to 
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
             return detail_info.get_issuer();
         }
-    } 
+    }
     return std::string("");
 }
 

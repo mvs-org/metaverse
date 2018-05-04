@@ -774,22 +774,14 @@ code validate_transaction::check_did_transaction(
     {
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
-        if(output.is_asset_issue()) {
-            if (output.get_asset_issuer() != output.attach_data.get_from_did()) {
-               return error::asset_did_issuer_not_match;
-            }
-        }
 
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
 
-        if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION && !output.attach_data.get_from_did().empty()) {
-            if (!connect_input_address_match_did(tx,chain,output.attach_data.get_from_did())){
+        if (output.is_did_issue()) {
+            if (!connect_input_address_match_did(tx, chain, output.attach_data)) {
                 return error::did_address_not_match;
             }
-        }
-
-        if(output.is_did_issue()) {
 
             if (chain.is_valid_address(output.get_did_symbol())) {
                 return error::did_symbol_invalid;
@@ -813,6 +805,10 @@ code validate_transaction::check_did_transaction(
             }
         }
         else if (output.is_did_transfer()) {
+            if (!connect_input_address_match_did(tx, chain, output.attach_data)) {
+                return error::did_address_not_match;
+            }
+
             //did transfer only for did is exist
             if (!chain.is_did_exist(output.get_did_symbol())) {
                 return error::did_not_exist;
@@ -829,6 +825,16 @@ code validate_transaction::check_did_transaction(
 
             if (!connect_did_input(tx,chain,boost::get<did>(output.get_did()))) {
                 return error::did_input_error;
+            }
+        }
+        else if (output.is_asset_issue()) {
+            if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION
+                && output.get_asset_issuer() != output.attach_data.get_from_did()) {
+                log::debug(LOG_BLOCKCHAIN)
+                    << "asset issuer " << output.get_asset_issuer()
+                    << " , does not match did " << output.attach_data.get_from_did()
+                    << " , attach_data: " << output.attach_data.to_string();
+                return error::asset_did_issuer_not_match;
             }
         }
     }
@@ -878,30 +884,28 @@ bool validate_transaction::connect_did_input(
 }
 
 bool validate_transaction::connect_input_address_match_did(
-            const chain::transaction& tx,
-            blockchain::block_chain_impl& chain,
-            std::string did) {
-
-    if (did.empty()) {
-        return false;
+    const chain::transaction& tx,
+    blockchain::block_chain_impl& chain,
+    const attachment& attach)
+{
+    if (attach.get_version() != DID_ATTACH_VERIFY_VERSION || attach.get_from_did().empty()) {
+        return true;
     }
 
-    if (tx.inputs.size() >1) {
+    if (tx.inputs.size() > 1) {
         return false;
     }
 
     const auto& input = tx.inputs[0];
-
     chain::transaction prev_tx;
     uint64_t prev_height{0};
     if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
         return false;
     }
+
     auto prev_output = prev_tx.outputs.at(input.previous_output.index);
-
-
     auto address = prev_output.get_script_address();
-    if ( did != chain.get_did_from_address(address)) {
+    if (attach.get_from_did() != chain.get_did_from_address(address)) {
         return false;
     }
 

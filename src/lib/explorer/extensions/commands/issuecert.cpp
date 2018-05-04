@@ -46,8 +46,8 @@ console_result issuecert::invoke (Json::Value& jv_output,
     // check target did
     if (argument_.to.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"todid symbol length must be less than 64."};
-    if(!blockchain.is_did_exist(argument_.to))
-        throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};  
+    if (!blockchain.is_did_exist(argument_.to))
+        throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
@@ -93,11 +93,11 @@ console_result issuecert::invoke (Json::Value& jv_output,
     }
 
     attachment attach;
-    auto diddetail = blockchain.get_issued_did(argument_.to); 
+    auto diddetail = blockchain.get_issued_did(argument_.to);
     auto&& toaddress = diddetail->get_address();
     attach.set_from_did(argument_.to);
     attach.set_to_did(argument_.to);
-    attach.set_version(DID_ATTACH_VERIFY_VERSION); 
+    attach.set_version(DID_ATTACH_VERIFY_VERSION);
 
     // receiver
     std::vector<receiver_record> receiver{
