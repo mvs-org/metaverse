@@ -91,118 +91,6 @@ bool organizer::strict(uint64_t fork_point) const
     return checkpoints_.empty() || fork_point >= checkpoints_.back().height();
 }
 
-/*code organizer::verify_asset_exist(uint64_t fork_point,
-    const block_detail::list& orphan_chain, uint64_t orphan_index)
-{
-    block_chain_impl& chain = (block_chain_impl&)chain_;
-    auto& block = *orphan_chain[orphan_index]->actual();
-    std::set<string> assets;
-    for(auto& tx : block.transactions)
-    {
-        for(auto& output : tx.outputs)
-        {
-            if(output.is_asset_issue())
-            {
-                auto result = assets.insert(output.get_asset_symbol());
-                if(result.second == false)
-                {
-                    return error::asset_exist;
-                }
-            }
-        }
-    }
-
-    if(assets.empty())
-    {
-        return error::success;
-    }
-
-    for(auto& i: assets)
-    {
-        uint64_t height = 0;
-        if(chain.get_asset_height(i, height) && height <= fork_point)
-        {
-            return error::asset_exist;
-        }
-    }
-
-    for(uint64_t i = 0; i < orphan_index; ++i)
-    {
-        auto& block = *orphan_chain[orphan_index - 1]->actual();
-        for(auto& tx : block.transactions)
-        {
-            for(auto& output : tx.outputs)
-            {
-                if(output.is_asset_issue())
-                {
-                    if(assets.find(output.get_asset_symbol()) != assets.end())
-                    {
-                        return error::asset_exist;
-                    }
-                }
-            }
-        }
-    }
-
-    return error::success;
-}
-
-code organizer::verify_did_exist(uint64_t fork_point,
-    const block_detail::list& orphan_chain, uint64_t orphan_index)
-{
-    block_chain_impl& chain = (block_chain_impl&)chain_;
-    auto& block = *orphan_chain[orphan_index]->actual();
-    std::set<string> dids;
-    for(auto& tx : block.transactions)
-    {
-        for(auto& output : tx.outputs)
-        {
-            if(output.is_did_issue())
-            {
-                auto result = dids.insert(output.get_asset_symbol());
-                if(result.second == false)
-                {
-                    return error::did_exist;
-                }
-            }
-        }
-    }
-
-    if(dids.empty())
-    {
-        return error::success;
-    }
-
-    for(auto& i: dids)
-    {
-        uint64_t height = 0;
-        if(chain.get_did_height(i, height) && height <= fork_point)
-        {
-            return error::did_exist;
-        }
-    }
-
-    for(uint64_t i = 0; i < orphan_index; ++i)
-    {
-        auto& block = *orphan_chain[i]->actual();
-        for(auto& tx : block.transactions)
-        {
-            for(auto& output : tx.outputs)
-            {
-                if(output.is_did_issue())
-                {
-                    if(dids.find(output.get_did_symbol()) != dids.end())
-                    {
-                        return error::did_exist;
-                    }
-                }
-            }
-        }
-    }
-
-    return error::success;
-}*/
-
 // This verifies the block at orphan_chain[orphan_index]->actual()
 code organizer::verify(uint64_t fork_point,
     const block_detail::list& orphan_chain, uint64_t orphan_index)
@@ -261,15 +149,6 @@ code organizer::verify(uint64_t fork_point,
         }
 
     };
-
-    //orphan_chain has nothing todo with asset and did by yangguanglu
-    /*if(ec == error::success) {
-        ec = verify_asset_exist(fork_point, orphan_chain, orphan_index);
-    }
-
-    if(ec == error::success) {
-        ec = verify_did_exist(fork_point, orphan_chain, orphan_index);
-    }*/
 
     // Execute the timed validation.
     const auto elapsed = timer<std::chrono::milliseconds>::duration(timed);
