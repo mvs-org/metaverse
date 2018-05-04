@@ -36,64 +36,112 @@ using namespace bc::explorer::config;
 console_result listassets::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
-    auto& aroot = jv_output;
-    Json::Value assets;
-
     auto& blockchain = node.chain_impl();
 
-    if (auth_.name.empty()) { // no account -- list whole assets in blockchain
-        auto sh_vec = blockchain.get_issued_assets();
+    std::string json_key;
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
 
-        if (sh_vec->size() == 0) // no asset found
-            throw asset_notfound_exception{"No asset found, please waiting for block synchronizing finish."};
+    if (option_.is_cert) { // only get asset certs
+        json_key = "assetcerts";
 
-        // add blockchain assets
-        for (auto& elem: *sh_vec) {
-            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, true);
-            asset_data["status"] = "issued";
-            assets.append(asset_data);
-        }
-    }
-    else { // list asset owned by account
-        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-        auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if(!pvaddr)
-            throw address_list_nullptr_exception{"nullptr for address list"};
+        if (auth_.name.empty()) { // no account -- list whole asset certs in blockchain
+            auto result_vec = std::make_shared<asset_cert::list>();
+            auto sh_vec = blockchain.get_issued_asset_certs();
+            for (auto& cert : *sh_vec) {
+                auto match = [&cert](const asset_cert& elem) {
+                    return cert.get_symbol() == elem.get_symbol()
+                        && cert.get_address() == elem.get_address();
+                };
 
-        auto sh_vec = std::make_shared<asset_balances::list>();
-
-        // 1. get asset in blockchain
-        // get address unspent asset balance
-        std::string addr;
-        for (auto& each : *pvaddr) {
-            addr = each.get_address();
-            sync_fetch_asset_balance(addr, true, blockchain, sh_vec);
-        }
-
-        for (auto& elem: *sh_vec) {
-            auto issued_asset = blockchain.get_issued_asset(elem.symbol);
-            if (!issued_asset) {
-                continue;
+                auto iter = std::find_if(result_vec->begin(), result_vec->end(), match);
+                if (iter == result_vec->end()) { // new item
+                    result_vec->push_back(cert);
+                }
+                else { // exist just merge cert type
+                    auto cert_type = iter->get_certs() | cert.get_certs();
+                    iter->set_certs(cert_type);
+                }
             }
-            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset, false);
-            asset_data["status"] = "unspent";
-            assets.append(asset_data);
+
+            std::sort(result_vec->begin(), result_vec->end());
+            for (auto& elem : *result_vec) {
+                Json::Value asset_data = json_helper.prop_list(elem);
+                json_value.append(asset_data);
+            }
         }
-        // 2. get asset in local database
-        // shoudl filter all issued asset which be stored in local account asset database
-        sh_vec->clear();
-        auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);
-        for (auto& elem: *sh_unissued) {
-            Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false, false);
-            asset_data["status"] = "unissued";
-            assets.append(asset_data);
+        else { // list asset certs owned by account
+            blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+            auto pvaddr = blockchain.get_account_addresses(auth_.name);
+            if (!pvaddr)
+                throw address_list_nullptr_exception{"nullptr for address list"};
+
+            auto sh_vec = std::make_shared<asset_cert::list>();
+            for (auto& each : *pvaddr) {
+                sync_fetch_asset_cert_balance(each.get_address(), false, blockchain, sh_vec);
+            }
+
+            std::sort(sh_vec->begin(), sh_vec->end());
+            for (auto& elem: *sh_vec) {
+                Json::Value asset_cert = json_helper.prop_list(elem);
+                json_value.append(asset_cert);
+            }
+        }
+    }
+    else {
+        json_key = "assets";
+
+        if (auth_.name.empty()) { // no account -- list whole assets in blockchain
+            auto sh_vec = blockchain.get_issued_assets();
+            std::sort(sh_vec->begin(), sh_vec->end());
+            for (auto& elem: *sh_vec) {
+                Json::Value asset_data = json_helper.prop_list(elem, true);
+                asset_data["status"] = "issued";
+                json_value.append(asset_data);
+            }
+        }
+        else { // list asset owned by account
+            blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+            auto pvaddr = blockchain.get_account_addresses(auth_.name);
+            if (!pvaddr)
+                throw address_list_nullptr_exception{"nullptr for address list"};
+
+            auto sh_vec = std::make_shared<asset_balances::list>();
+
+            // 1. get asset in blockchain
+            // get address unspent asset balance
+            for (auto& each : *pvaddr) {
+                sync_fetch_asset_balance(each.get_address(), true, blockchain, sh_vec);
+            }
+
+            std::sort(sh_vec->begin(), sh_vec->end());
+            for (auto& elem: *sh_vec) {
+                auto issued_asset = blockchain.get_issued_asset(elem.symbol);
+                if (!issued_asset) {
+                    continue;
+                }
+                Json::Value asset_data = json_helper.prop_list(elem, *issued_asset, false);
+                asset_data["status"] = "unspent";
+                json_value.append(asset_data);
+            }
+
+            // 2. get asset in local database
+            // shoudl filter all issued asset which be stored in local account asset database
+            sh_vec->clear();
+            auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);
+            for (auto& elem: *sh_unissued) {
+                Json::Value asset_data = json_helper.prop_list(elem.detail, false, false);
+                asset_data["status"] = "unissued";
+                json_value.append(asset_data);
+            }
         }
     }
 
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        aroot["assets"] = "";
-    } else {
-        aroot["assets"] = assets;
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
+    }
+    else {
+        jv_output[json_key] = json_value;
     }
 
     return console_result::okay;

@@ -69,6 +69,7 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
 
+    bool operator< (const asset_detail& other) const;
     std::string to_string() const;
 
     bool is_valid() const;

@@ -57,6 +57,7 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
             sync_fetch_asset_cert_balance(each.get_address(), false, blockchain, sh_vec);
         }
 
+        std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
             if (!argument_.symbol.empty() && argument_.symbol != elem.get_symbol())
                 continue;
@@ -76,6 +77,7 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
             sync_fetch_asset_balance(each.get_address(), false, blockchain, sh_vec);
         }
 
+        std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
             auto& symbol = elem.symbol;
             if (!argument_.symbol.empty() && argument_.symbol != symbol)

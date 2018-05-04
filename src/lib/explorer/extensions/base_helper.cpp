@@ -103,7 +103,7 @@ void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
 
         auto match = [sum_all, &cert](const asset_cert& elem) {
             return (cert.get_symbol() == elem.get_symbol())
-                && (sum_all || (cert.get_address() == cert.get_address()));
+                && (sum_all || (cert.get_address() == elem.get_address()));
         };
         auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
         if (iter == sh_vec->end()) { // new item

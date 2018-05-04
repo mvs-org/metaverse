@@ -68,8 +68,20 @@ bool asset_cert::is_valid() const
 
 bool asset_cert::operator< (const asset_cert& other) const
 {
-    return (symbol_ < other.symbol_)
-        || ((symbol_ == other.symbol_) && (certs_ < other.certs_));
+    auto ret = symbol_.compare(other.symbol_);
+    if (ret < 0) {
+        return true;
+    }
+    else if (ret == 0) {
+        if (certs_ < other.certs_) {
+            return true;
+        }
+        else if (certs_ == other.certs_) {
+            return address_.compare(other.address_) <= 0;
+        }
+    }
+
+    return false;
 }
 
 std::string asset_cert::get_domain(const std::string& symbol)
