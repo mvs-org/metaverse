@@ -295,8 +295,7 @@ bool network_address::is_local() const
 
 bool network_address::is_routable() const
 {
-    return true;
-    // return is_valid() && !(is_RFC1918() || is_RFC3927() || is_RFC4862() || (is_RFC4193() && !is_tor()) || is_RFC4843() || is_local());
+    return is_valid() && !(is_RFC1918() || is_RFC3927() || is_RFC4862() || (is_RFC4193() && !is_tor()) || is_RFC4843() || is_local());
 }
 
 bool network_address::is_ulticast() const

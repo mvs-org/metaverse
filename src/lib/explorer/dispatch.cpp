@@ -175,9 +175,9 @@ console_result dispatch_command(int argc, const char* argv[],
             !node.chain_impl().chain_settings().use_testnet_rules) {
             uint64_t height{0};
             node.chain_impl().get_last_height(height);
-            // if (!command->is_block_height_fullfilled(height)) {
-            //     throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
-            // }
+            if (!command->is_block_height_fullfilled(height)) {
+                throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
+            }
         }
 
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
