@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -38,12 +38,12 @@ console_result listassets::invoke (Json::Value& jv_output,
 {
     auto& aroot = jv_output;
     Json::Value assets;
-    
+
     auto& blockchain = node.chain_impl();
-    
+
     if (auth_.name.empty()) { // no account -- list whole assets in blockchain
         auto sh_vec = blockchain.get_issued_assets();
-        
+
         if (sh_vec->size() == 0) // no asset found
             throw asset_notfound_exception{"No asset found, please waiting for block synchronizing finish."};
 
@@ -53,23 +53,23 @@ console_result listassets::invoke (Json::Value& jv_output,
             asset_data["status"] = "issued";
             assets.append(asset_data);
         }
-        
-    } else { // list asset owned by account
+    }
+    else { // list asset owned by account
         blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if(!pvaddr) 
+        if(!pvaddr)
             throw address_list_nullptr_exception{"nullptr for address list"};
 
         auto sh_vec = std::make_shared<asset_balances::list>();
-        
-        // 1. get asset in blockchain        
+
+        // 1. get asset in blockchain
         // get address unspent asset balance
         std::string addr;
         for (auto& each : *pvaddr) {
             addr = each.get_address();
             sync_fetch_asset_balance(addr, true, blockchain, sh_vec);
         }
-        
+
         for (auto& elem: *sh_vec) {
             auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset) {
@@ -82,7 +82,7 @@ console_result listassets::invoke (Json::Value& jv_output,
         // 2. get asset in local database
         // shoudl filter all issued asset which be stored in local account asset database
         sh_vec->clear();
-        auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);          
+        auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);
         for (auto& elem: *sh_unissued) {
             Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem.detail, false, false);
             asset_data["status"] = "unissued";
@@ -90,11 +90,11 @@ console_result listassets::invoke (Json::Value& jv_output,
         }
     }
 
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1        
-        aroot["assets"] = "";                                                   
-    } else {                                                                    
-        aroot["assets"] = assets;                                               
-    }    
+    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
+        aroot["assets"] = "";
+    } else {
+        aroot["assets"] = assets;
+    }
 
     return console_result::okay;
 }
