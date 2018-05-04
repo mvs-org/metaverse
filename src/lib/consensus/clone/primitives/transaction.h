@@ -193,7 +193,7 @@ public:
     std::string owner;
     std::string address;
     uint64_t certs;
-    uint32_t status;
+    uint8_t status;
 
     ADD_SERIALIZE_METHODS;
 
