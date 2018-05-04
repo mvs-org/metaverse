@@ -40,7 +40,7 @@ console_result getpublickey::invoke (Json::Value& jv_output,
         throw address_invalid_exception{"invalid address parameter!"};
 
     auto addr = bc::wallet::payment_address(argument_.address);
-    if(addr.version() == 0x05) // for multisig address
+    if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
         throw argument_legality_exception{"script address parameter not allowed!"};
     
     auto pvaddr = blockchain.get_account_addresses(auth_.name);

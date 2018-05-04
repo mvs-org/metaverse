@@ -42,7 +42,7 @@ console_result createmultisigtx::invoke (Json::Value& jv_output,
         throw fromaddress_invalid_exception{"invalid from address!"};
     
     auto addr = bc::wallet::payment_address(argument_.from);
-    if(addr.version() != 0x05) // for multisig address
+    if(addr.version() != bc::wallet::payment_address::mainnet_p2sh) // for multisig address
         throw fromaddress_invalid_exception{"from address is not script address."};
     if(!blockchain.is_valid_address(argument_.to)) 
         throw toaddress_invalid_exception{"invalid to address!"};

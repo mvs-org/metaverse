@@ -572,19 +572,20 @@ base_transfer_common::get_script_operations(const receiver_record& record) const
     if (blockchain_.is_blackhole_address(record.target)) {
         payment_ops = chain::operation::to_pay_blackhole_pattern(hash);
     }
-    else if (record.type == utxo_attach_type::asset_locked_transfer) {
-        const auto& attenuation_model_param =
-            boost::get<blockchain_message>(record.attach_elem.get_attach()).get_content();
-        if (!attenuation_model::check_model_param_format(to_chunk(attenuation_model_param))) {
-            throw asset_attenuation_model_exception(
-                "check asset locked transfer attenuation model param failed: "
-                + attenuation_model_param);
-        }
-        payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-            hash, attenuation_model_param, record.input_point);
-    }
     else if (payment.version() == wallet::payment_address::mainnet_p2kh) {
-        payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
+        if (record.type == utxo_attach_type::asset_locked_transfer) {
+            const auto& attenuation_model_param =
+                boost::get<blockchain_message>(record.attach_elem.get_attach()).get_content();
+            if (!attenuation_model::check_model_param_format(to_chunk(attenuation_model_param))) {
+                throw asset_attenuation_model_exception(
+                    "check asset locked transfer attenuation model param failed: "
+                    + attenuation_model_param);
+            }
+            payment_ops = chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
+                hash, attenuation_model_param, record.input_point);
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash);
+        }
     }
     else if (payment.version() == wallet::payment_address::mainnet_p2sh) {
         payment_ops = chain::operation::to_pay_script_hash_pattern(hash);
@@ -943,12 +944,18 @@ depositing_etp::get_script_operations(const receiver_record& record) const
     const wallet::payment_address payment(record.target);
     if (!payment)
         throw toaddress_invalid_exception{"invalid target address"};
-    const auto& hash = payment.hash();
-    if((to_ == record.target)
-        && (utxo_attach_type::deposit == record.type)) {
-        payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
-    } else {
-        payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+
+    if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+        const auto& hash = payment.hash();
+        if((to_ == record.target)
+            && (utxo_attach_type::deposit == record.type)) {
+            payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(hash, get_reward_lock_height());
+        } else {
+            payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
+        }
+    }
+    else {
+        throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
     }
 
     return payment_ops;
@@ -983,8 +990,7 @@ depositing_etp_transaction::get_script_operations(const receiver_record& record)
         if((utxo_attach_type::deposit == record.type)) {
             payment_ops = chain::operation::to_pay_key_hash_with_lock_height_pattern(
                 hash, get_reward_lock_height());
-        }
-        else {
+        } else {
             payment_ops = chain::operation::to_pay_key_hash_pattern(hash); // common payment script
         }
     }
@@ -1098,9 +1104,13 @@ issuing_asset::get_script_operations(const receiver_record& record) const
             throw toaddress_invalid_exception{"invalid target address"};
         }
 
-        const auto& hash = payment.hash();
-        return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-                hash, attenuation_model_param_, record.input_point);
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            const auto& hash = payment.hash();
+            return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
+                    hash, attenuation_model_param_, record.input_point);
+        } else {
+            throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
+        }
     }
 
     return base_transfer_helper::get_script_operations(record);
@@ -1144,9 +1154,13 @@ secondary_issuing_asset::get_script_operations(const receiver_record& record) co
             throw toaddress_invalid_exception{"invalid target address"};
         }
 
-        const auto& hash = payment.hash();
-        return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
-                hash, attenuation_model_param_, record.input_point);
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            const auto& hash = payment.hash();
+            return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
+                    hash, attenuation_model_param_, record.input_point);
+        } else {
+            throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
+        }
     }
 
     return base_transfer_helper::get_script_operations(record);
