@@ -44,12 +44,12 @@ public:
     {
         none = 0,
         fixed_quantity = 1,
-        fixed_rate = 2,
-        custom = 3,
-        unused1 = 4,
-        unused2 = 5,
-        unused3 = 6,
-        unused4 = 7,
+        custom = 2,
+        unused1 = 3,
+        unused2 = 4,
+        unused3 = 5,
+        unused4 = 6,
+        unused5 = 7,
         invalid = 8
     };
 
@@ -64,6 +64,7 @@ public:
     static bool check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
     static bool check_model_param_format(const data_chunk& param);
     static bool check_model_param_initial(const data_chunk& param);
+    static bool check_model_param_initial(std::string& param);
     static bool check_model_param_immutable(const data_chunk& previous, const data_chunk& current);
     static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height,
             const data_chunk& model_param, std::shared_ptr<data_chunk> new_param_ptr = nullptr);

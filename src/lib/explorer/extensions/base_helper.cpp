@@ -1130,8 +1130,7 @@ void issuing_asset::sum_payment_amount()
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()) {
-        attenuation_model_param_ = "PN=0;LH=0;" + attenuation_model_param_;
-        if (!attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
+        if (!attenuation_model::check_model_param_initial(attenuation_model_param_)) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
         }
     }
@@ -1231,8 +1230,7 @@ void secondary_issuing_asset::sum_payment_amount()
     }
 
     if (!attenuation_model_param_.empty()) {
-        attenuation_model_param_ = "PN=0;LH=0;" + attenuation_model_param_;
-        if (!attenuation_model::check_model_param_initial(to_chunk(attenuation_model_param_))) {
+        if (!attenuation_model::check_model_param_initial(attenuation_model_param_)) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
         }
     }

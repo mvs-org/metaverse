@@ -36,7 +36,6 @@ namespace {
 
     std::map<attenuation_model::model_type, std::vector<std::string>> model_keys_map {
         {attenuation_model::model_type::fixed_quantity, {"PN","LH","TYPE","LQ","LP","UN"}},
-        {attenuation_model::model_type::fixed_rate,     {"PN","LH","TYPE","LQ","LP","UN","IR","UC","UQ"}},
         {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}}
     };
 
@@ -395,7 +394,13 @@ bool attenuation_model::check_model_param_format(const data_chunk& param)
 
 bool attenuation_model::check_model_param_initial(const data_chunk& param)
 {
-    attenuation_model parser(std::string(param.begin(), param.end()));
+    std::string model_param(param.begin(), param.end());
+    return check_model_param_initial(model_param);
+}
+
+bool attenuation_model::check_model_param_initial(std::string& param)
+{
+    attenuation_model parser({"PN=0;LH=0;" + param});
 
     const auto model = parser.get_model_type();
 
@@ -410,23 +415,14 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
         return false;
     }
 
-    auto PN = parser.get_current_period_number();
-    auto LH = parser.get_latest_lock_height();
     auto LQ = parser.get_locked_quantity();
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
+    const auto& UCs = parser.get_unlock_cycles();
+    auto LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
 
-    // common condition : initial PN == 0
-    if (PN != 0) {
-        log::info(LOG_HEADER) << "common param error: initial PN != 0";
-        return false;
-    }
-
-    // common condition : initail LH == 0
-    if (LH != 0) {
-        log::info(LOG_HEADER) << "common param error: LH != 0";
-        return false;
-    }
+    // add prefix of PN,LH
+    param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
 
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
@@ -444,12 +440,6 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
         return false;
     }
 
-    // common condition : PN < UN
-    if (PN >= UN) {
-        log::info(LOG_HEADER) << "common param error: PN >= UN";
-        return false;
-    }
-
     if (model == model_type::fixed_quantity) {
         // given LQ, LP, UN, then
         // LP >= UN and LQ >= UN
@@ -464,29 +454,7 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
         return true;
     }
 
-    // Why convert to custom model is needed?
-    // Because the computing of float's exponential
-    // or other complex expression is 'inaccurate',
-    // you may get different results of multiple computing.
-    auto is_convert_to_custom = false;
-
-    if (model == model_type::fixed_rate) {
-        // given LQ, LP, UN, IR, UC, UQ,
-        // then IR.size == 1 and IR > 0
-        // and satisfy custom param conditions.
-        is_convert_to_custom = true;
-        const auto& IRs = parser.get_issue_rates();
-        if (IRs.size() != 1) {
-            log::info(LOG_HEADER) << "fixed_rate param error: IR.size() != 1";
-            return false;
-        }
-        if (!is_positive_number(IRs[0])) {
-            log::info(LOG_HEADER) << "fixed_rate param error: IR <= 0";
-            return false;
-        }
-    }
-
-    if ((model == model_type::custom) || is_convert_to_custom) {
+    if (model == model_type::custom) {
         if (UN > 100) {
             log::info(LOG_HEADER) << "custom param error: UN > 100";
             return false;
@@ -554,21 +522,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         return false;
     }
 
-    auto is_fixed_cycle = false;
-    auto is_convert_to_custom = false;
-    switch (model) {
-        case model_type::fixed_quantity:
-            is_fixed_cycle = true;
-            break;
-        case model_type::fixed_rate:
-            is_fixed_cycle = true;
-            is_convert_to_custom = true;
-            break;
-        default:
-            break;
-    }
-
-    if (is_fixed_cycle) {
+    if (model == model_type::fixed_quantity) {
         auto UC = LP / UN;
         if (PN + 1 == UN) { // last cycle
             if (PN * UC + LH > LP) {
@@ -583,7 +537,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         }
     }
 
-    if ((model == model_type::custom) || is_convert_to_custom) {
+    if (model == model_type::custom) {
         const auto& UCs = parser.get_unlock_cycles();
         if (LH > UCs[PN]) {
             log::info(LOG_HEADER) << "custom param error: LH > UC";
@@ -735,22 +689,8 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
     auto UN = parser.get_unlock_number();
     const auto& UCs = parser.get_unlock_cycles();
 
-    auto is_fixed_cycle = false;
-    auto is_convert_to_custom = false;
-    switch (model) {
-        case model_type::fixed_quantity:
-            is_fixed_cycle = true;
-            break;
-        case model_type::fixed_rate:
-            is_fixed_cycle = true;
-            is_convert_to_custom = true;
-            break;
-        default:
-            break;
-    }
-
     if ((PN == 0) && (LH == 0)) {
-        LH = is_fixed_cycle ? (LP / UN) : UCs[0];
+        LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
     }
 
     uint64_t PN2 = 0;
@@ -775,7 +715,7 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
         return LH - LH2;
     }
 
-    if (is_fixed_cycle) {
+    if (model == model_type::fixed_quantity) {
         auto UC = LP / UN;
         if (PN2 + 1 == UN) {
             return LP - LH2 - ((PN + 1) * UC) + LH;
@@ -783,7 +723,7 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
         return LH + ((PN2 - PN) * UC) - LH2;
     }
 
-    if ((model == model_type::custom) || is_convert_to_custom) {
+    if (model == model_type::custom) {
         auto diff_height = LH;
         for (auto i = PN + 1; i <= PN2; ++i) {
             diff_height += UCs[i];
@@ -828,22 +768,8 @@ uint64_t attenuation_model::get_available_asset_amount(
 
     auto available = (asset_amount > LQ) ? (asset_amount - LQ) : 0;
 
-    auto is_fixed_cycle = false;
-    auto is_convert_to_custom = false;
-    switch (model) {
-        case model_type::fixed_quantity:
-            is_fixed_cycle = true;
-            break;
-        case model_type::fixed_rate:
-            is_fixed_cycle = true;
-            is_convert_to_custom = true;
-            break;
-        default:
-            break;
-    }
-
     if ((PN == 0) && (LH == 0)) {
-        LH = is_fixed_cycle ? (LP / UN) : UCs[0];
+        LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
     }
 
     if (diff_height < LH) { // no maturity, still all locked
@@ -877,7 +803,7 @@ uint64_t attenuation_model::get_available_asset_amount(
         return available;
     }
 
-    if ((model == model_type::custom) || is_convert_to_custom) {
+    if (model == model_type::custom) {
         available += UQs[PN];
         diff_height -= LH;
         ++PN;
