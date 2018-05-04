@@ -43,11 +43,13 @@ console_result issuecert::invoke (Json::Value& jv_output,
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
-    // check target did
-    if (argument_.to.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"todid symbol length must be less than 64."};
-    if (!blockchain.is_did_exist(argument_.to))
-        throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};
+    // check target address
+    if (!blockchain.is_valid_address(argument_.to))
+        throw address_invalid_exception{"invalid address parameter! " + argument_.to};
+
+    std::string cert_owner = asset_cert::get_owner_from_address(argument_.to, blockchain);
+    if (cert_owner.empty())
+        throw did_address_needed_exception("target address is not an did address. " + argument_.to);
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
@@ -92,24 +94,17 @@ console_result issuecert::invoke (Json::Value& jv_output,
         domain_cert_addr = it->address;
     }
 
-    attachment attach;
-    auto diddetail = blockchain.get_issued_did(argument_.to);
-    auto&& toaddress = diddetail->get_address();
-    attach.set_from_did(argument_.to);
-    attach.set_to_did(argument_.to);
-    attach.set_version(DID_ATTACH_VERIFY_VERSION);
-
     // receiver
     std::vector<receiver_record> receiver{
-        {toaddress, argument_.symbol, 0, 0,
-            certs_create, utxo_attach_type::asset_cert_issue, attach}
+        {argument_.to, argument_.symbol, 0, 0,
+            certs_create, utxo_attach_type::asset_cert_issue, attachment()}
     };
 
     if (certs_create == asset_cert_ns::naming) {
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         receiver.push_back(
             {domain_cert_addr, domain, 0, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attach}
+                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()}
         );
     }
 
