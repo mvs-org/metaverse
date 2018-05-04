@@ -94,6 +94,11 @@ public:
             "The asset symbol/name. Global unique."
         )
         (
+            "issuer,i",
+            value<std::string>(&option_.issuer)->required(),
+            "The asset did specified its issuer, defaults to account name(it must be issuued as a did)"
+        )
+        (
             "volume,v",
             value<non_negative_uint64>(&option_.maximum_supply)->required(),
             "The asset maximum supply volume, with unit of integer bits."
@@ -102,11 +107,6 @@ public:
             "decimalnumber,n",
             value<uint32_t>(&option_.decimal_number),
             "The asset amount decimal number, defaults to 0."
-        )
-		(
-            "issuer,i",
-            value<std::string>(&option_.issuer),
-            "The asset issuer, defaults to account name."
         )
         (
             "description,d",

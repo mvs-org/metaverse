@@ -157,7 +157,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
     func(make_shared<secondaryissue>());
-    func(make_shared<issuefrom>());
+    //asset issue change to did,not need
+    //func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
     func(make_shared<burn>());

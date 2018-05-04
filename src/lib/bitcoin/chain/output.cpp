@@ -353,6 +353,18 @@ std::string output::get_asset_symbol() const // for validate_transaction.cpp to 
     return std::string("");
 }
 
+std::string output::get_asset_issuer() const // for validate_transaction.cpp to calculate asset transfer amount
+{
+    if (attach_data.get_type() == ASSET_TYPE) {
+        auto asset_info = boost::get<asset>(attach_data.get_attach());
+        if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
+            auto detail_info = boost::get<asset_detail>(asset_info.get_data());
+            return detail_info.get_issuer();
+        }
+    } 
+    return std::string("");
+}
+
 std::string output::get_asset_address() const // for validate_transaction.cpp to verify asset address
 {
     if (attach_data.get_type() == ASSET_TYPE) {

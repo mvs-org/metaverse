@@ -69,6 +69,7 @@ public:
     uint64_t serialized_size() const;
     uint64_t get_asset_amount() const;
     std::string get_asset_symbol() const;
+    std::string get_asset_issuer() const;
     std::string get_asset_address() const;
     std::string get_asset_cert_symbol() const;
     std::string get_asset_cert_owner() const;

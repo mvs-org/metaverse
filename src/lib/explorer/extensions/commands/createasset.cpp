@@ -56,6 +56,14 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol can not be empty."};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    // check did
+    if (option_.issuer.empty())
+        throw did_symbol_length_exception{"issuer can not be empty."};
+    if (option_.issuer.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+        throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
+    if(!blockchain.is_did_exist(option_.issuer))
+        throw did_symbol_existed_exception{"the did for issuer is not exist in blockchain,maybe you should issuedid first"};  
+    
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
     auto threshold = option_.secondaryissue_threshold;

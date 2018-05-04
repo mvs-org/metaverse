@@ -174,6 +174,31 @@ std::string asset_detail::to_string() const
     return ss.str();
 }
 
+bool asset_detail::operator< (const asset_detail& other) const
+{
+    auto ret = symbol.compare(other.symbol);
+    if (ret < 0) {
+        return true;
+    }
+    else if (ret == 0) {
+        ret = issuer.compare(other.issuer);
+        if (ret < 0) {
+            return true;
+        }
+        else if (ret == 0) {
+            ret = maximum_supply - other.maximum_supply;
+            if (ret < 0) {
+                return true;
+            }
+            else if (ret == 0) {
+                return address.compare(other.address) <= 0;
+            }
+        }
+    }
+
+    return false;
+}
+
 const std::string& asset_detail::get_symbol() const
 {
     return symbol;
