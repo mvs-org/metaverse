@@ -40,49 +40,45 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     if(!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
+    std::string json_key;
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
+
     if (option_.is_cert) { // only get asset certs
-        Json::Value assetcerts;
+        json_key = "assetcerts";
 
         // get asset certs
         auto sp_asset_certs = blockchain.get_address_asset_certs(argument_.address, "");
         if (sp_asset_certs) {
             for (const auto& business_cert : *sp_asset_certs) {
                 if (business_cert.certs.get_certs() != asset_cert_ns::none) {
-                    Json::Value asset_cert = config::json_helper(get_api_version()).prop_list(business_cert.certs);
-                    asset_cert["address"] = business_cert.address;
-                    assetcerts.append(asset_cert);
+                    Json::Value asset_cert = json_helper.prop_list(business_cert.certs);
+                    json_value.append(asset_cert);
                 }
             }
         }
-
-        if (get_api_version() == 1 && assetcerts.isNull()) { //compatible for v1
-            jv_output["assetcerts"] = "";
-        } else {
-            jv_output["assetcerts"] = assetcerts;
-        }
-
-        return console_result::okay;
-    }
-
-    Json::Value assets;
-    auto sh_vec = std::make_shared<asset_balances::list>();
-    sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
-
-    for (auto& elem: *sh_vec) {
-        auto issued_asset = blockchain.get_issued_asset(elem.symbol);
-        if (!issued_asset) {
-            continue;
-        }
-        Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, *issued_asset);
-        asset_data["status"] = "unspent";
-        assets.append(asset_data);
-    }
-
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        jv_output["assets"] = "";
     }
     else {
-        jv_output["assets"] = assets;
+        json_key = "assets";
+
+        auto sh_vec = std::make_shared<asset_balances::list>();
+        sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
+        for (auto& elem: *sh_vec) {
+            auto issued_asset = blockchain.get_issued_asset(elem.symbol);
+            if (!issued_asset) {
+                continue;
+            }
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
+        }
+    }
+
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
+    }
+    else {
+        jv_output[json_key] = json_value;
     }
 
     return console_result::okay;

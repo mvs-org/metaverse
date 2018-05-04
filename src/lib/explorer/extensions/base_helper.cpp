@@ -114,7 +114,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
             if (output.is_asset())
             {
                 const auto& symbol = output.get_asset_symbol();
-                auto match = [&sum_all, &symbol, &address](const asset_balances& elem) {
+                auto match = [sum_all, &symbol, &address](const asset_balances& elem) {
                     return (symbol == elem.symbol) && (sum_all || (address == elem.address));
                 };
                 auto iter = std::find_if(sh_asset_vec->begin(), sh_asset_vec->end(), match);
@@ -140,8 +140,6 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     }
 }
 
-/// amount == 0 -- get all address balances
-/// amount != 0 -- get some address balances which bigger than amount
 void sync_fetchbalance(wallet::payment_address& address,
     bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
 {
@@ -689,7 +687,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
             throw asset_cert_exception("asset cert is none");
         }
         auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
-        auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.asset_cert);
+        auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.target, record.asset_cert);
         if (record.type == utxo_attach_type::asset_cert_issue) {
             cert_info.set_status(ASSET_CERT_ISSUE_TYPE);
         }

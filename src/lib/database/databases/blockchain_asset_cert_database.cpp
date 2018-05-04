@@ -116,7 +116,7 @@ std::shared_ptr<asset_cert> blockchain_asset_cert_database::get(const hash_diges
 {
     std::shared_ptr<asset_cert> detail(nullptr);
 
-    const auto raw_memory = lookup_map_.rfind(hash);
+    const auto raw_memory = lookup_map_.find(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
         detail = std::make_shared<asset_cert>();
@@ -134,13 +134,10 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
     for( i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
-            const auto action = [&](memory_ptr elem)
-            {
-                const auto memory = REMAP_ADDRESS(elem);
-                auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(asset_cert::factory_from_data(deserial));
-            };
-            std::for_each(memo->begin(), memo->end(), action);
+            auto iter = memo->begin();
+            const auto memory = REMAP_ADDRESS(*iter);
+            auto deserial = make_deserializer_unsafe(memory);
+            vec_acc->push_back(asset_cert::factory_from_data(deserial));
         }
     }
     return vec_acc;
@@ -149,29 +146,34 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
 void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
 {
     const auto& symbol = sp_cert.get_symbol();
-    for (int i = 0; i < 64; ++i) {
+    const auto& owner = sp_cert.get_owner();
+    const auto& address = sp_cert.get_address();
+    for (int i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
         const asset_cert_type target_type = (1 << i);
         if (sp_cert.test_certs(target_type)) {
             std::string key_str(symbol + std::to_string(target_type));
             const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
             const auto key = sha256_hash(data);
             auto exist = get(key);
-            if (exist != nullptr) {
+            if (exist != nullptr && exist->get_owner() == owner
+                && exist->get_address() == address) {
                 continue;
             }
 
             // Write block data.
-            const auto sp_size = sp_cert.serialized_size();
+            asset_cert cert{symbol, owner, address, target_type};
+            cert.set_status(sp_cert.get_status());
+            const auto sp_size = cert.serialized_size();
 #ifdef MVS_DEBUG
-            log::debug("blockchain_asset_cert_database::store") << sp_cert.to_string();
+            log::debug("blockchain_asset_cert_database::store") << cert.to_string();
 #endif
             BITCOIN_ASSERT(sp_size <= max_size_t);
             const auto value_size = static_cast<size_t>(sp_size);
 
-            auto write = [&sp_cert](memory_ptr data)
+            auto write = [&cert](memory_ptr data)
             {
                 auto serial = make_serializer(REMAP_ADDRESS(data));
-                serial.write_data(sp_cert.to_data());
+                serial.write_data(cert.to_data());
             };
             lookup_map_.store(key, write, value_size);
         }

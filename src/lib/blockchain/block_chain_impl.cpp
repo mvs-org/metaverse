@@ -1445,7 +1445,7 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
         const asset_cert_type target_type = (1 << i);
         if (asset_cert::test_certs(cert_mask, target_type)) {
             std::string key_str(symbol + std::to_string(target_type));

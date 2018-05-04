@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class getasset: public command_extension
 {
 public:
     static const char* symbol(){ return "getasset";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "Show existed assets details from MVS blockchain."; }
 
@@ -45,7 +45,7 @@ public:
             .add("SYMBOL", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -66,6 +66,11 @@ public:
             "SYMBOL",
             value<std::string>(&argument_.symbol),
             "Asset symbol. If not specified, will show whole network asset symbols."
+        )
+        (
+            "cert",
+            value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
+            "If specified, then only get related asset cert. Default is not specified."
         );
 
         return options;
@@ -90,6 +95,7 @@ public:
 
     struct option
     {
+        bool is_cert;
     } option_;
 
 };

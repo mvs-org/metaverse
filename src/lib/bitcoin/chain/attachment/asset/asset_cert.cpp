@@ -37,9 +37,11 @@ asset_cert::asset_cert()
     reset();
 }
 
-asset_cert::asset_cert(std::string symbol, std::string owner, asset_cert_type certs)
+asset_cert::asset_cert(const std::string& symbol, const std::string& owner,
+    const std::string& address, asset_cert_type certs)
     : symbol_(symbol)
     , owner_(owner)
+    , address_(address)
     , certs_(certs)
     , status_(ASSET_CERT_NORMAL_TYPE)
 {
@@ -60,6 +62,7 @@ bool asset_cert::is_valid() const
             || (certs_ == asset_cert_ns::none)
             || ((symbol_.size()+1) > ASSET_CERT_SYMBOL_FIX_SIZE)
             || ((owner_.size()+1) > ASSET_CERT_OWNER_FIX_SIZE)
+            || ((address_.size()+1) > ASSET_CERT_ADDRESS_FIX_SIZE)
             );
 }
 
@@ -122,6 +125,7 @@ bool asset_cert::from_data(reader& source)
     reset();
     symbol_ = source.read_string();
     owner_ = source.read_string();
+    address_ = source.read_string();
     certs_ = source.read_8_bytes_little_endian();
     status_ = source.read_4_bytes_little_endian();
 
@@ -151,13 +155,14 @@ void asset_cert::to_data(writer& sink) const
 {
     sink.write_string(symbol_);
     sink.write_string(owner_);
+    sink.write_string(address_);
     sink.write_8_bytes_little_endian(certs_);
     sink.write_4_bytes_little_endian(status_);
 }
 
 uint64_t asset_cert::serialized_size() const
 {
-    size_t len = (symbol_.size()+1) + (owner_.size()+1)
+    size_t len = (symbol_.size()+1) + (owner_.size()+1) + (address_.size()+1)
         + ASSET_CERT_CERTS_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
     return std::min(len, ASSET_CERT_FIX_SIZE);
 }
@@ -167,6 +172,7 @@ std::string asset_cert::to_string() const
     std::ostringstream ss;
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t owner = " << owner_ << "\n";
+    ss << "\t address = " << address_ << "\n";
     ss << "\t certs = " << std::to_string(get_certs()) << "\n";
     ss << "\t status = " << std::to_string(status_) << "\n";
     return ss.str();
@@ -183,12 +189,12 @@ void asset_cert::set_symbol(const std::string& symbol)
     symbol_ = symbol.substr(0, len);
 }
 
-uint32_t asset_cert::get_status() const
+uint8_t asset_cert::get_status() const
 {
     return status_;
 }
 
-void asset_cert::set_status(uint32_t status)
+void asset_cert::set_status(uint8_t status)
 {
     status_ = status;
 }
@@ -202,6 +208,17 @@ void asset_cert::set_owner(const std::string& owner)
 {
     size_t len = std::min((owner.size()+1), ASSET_CERT_OWNER_FIX_SIZE);
     owner_ = owner.substr(0, len);
+}
+
+const std::string& asset_cert::get_address() const
+{
+    return address_;
+}
+
+void asset_cert::set_address(const std::string& address)
+{
+    size_t len = std::min((address.size()+1), ASSET_CERT_ADDRESS_FIX_SIZE);
+    address_ = address.substr(0, len);
 }
 
 asset_cert_type asset_cert::get_certs() const

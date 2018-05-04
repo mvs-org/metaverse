@@ -39,35 +39,65 @@ console_result getasset::invoke (Json::Value& jv_output,
     if (argument_.symbol.size() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"Illegal asset symbol length."};
 
-    // 1. first search asset in blockchain
-    auto sh_vec = blockchain.get_issued_assets();
+    std::string json_key;
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
 
-    auto& aroot = jv_output;
-    Json::Value assets;
-    std::set<std::string> symbols;
-    for (auto& elem: *sh_vec) {
-        if (argument_.symbol.empty()) {
-            // get rid of duplicate symbols
-            if (!symbols.count(elem.get_symbol())) {
-                symbols.insert(elem.get_symbol());
-                assets.append(elem.get_symbol());
+    if (option_.is_cert) { // only get asset certs
+        json_key = "assetcerts";
+        // get asset cert in blockchain
+        auto sh_vec = blockchain.get_issued_asset_certs();
+
+        std::set<std::string> symbols;
+        if (sh_vec) {
+            for (auto& elem : *sh_vec) {
+                if (argument_.symbol.empty()) {
+                    // get rid of duplicate symbols
+                    if (!symbols.count(elem.get_symbol())) {
+                        symbols.insert(elem.get_symbol());
+                        json_value.append(elem.get_symbol());
+                    }
+                }
+                else {
+                    // find out target from blockchain
+                    if (elem.get_symbol() == argument_.symbol) {
+                        Json::Value asset_data = json_helper.prop_list(elem);
+                        json_value.append(asset_data);
+                    }
+                }
             }
         }
-        else {
-            // find out target from blockchain
-            if (elem.get_symbol() == argument_.symbol) {
-                Json::Value asset_data = config::json_helper(get_api_version()).prop_list(elem, true);
-                asset_data["status"] = "issued";
-                assets.append(asset_data);
-            }
-        }
-    }
-
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        aroot["assets"] = "";
     }
     else {
-        aroot["assets"] = assets;
+        json_key = "assets";
+        // get asset in blockchain
+        auto sh_vec = blockchain.get_issued_assets();
+
+        std::set<std::string> symbols;
+        for (auto& elem: *sh_vec) {
+            if (argument_.symbol.empty()) {
+                // get rid of duplicate symbols
+                if (!symbols.count(elem.get_symbol())) {
+                    symbols.insert(elem.get_symbol());
+                    json_value.append(elem.get_symbol());
+                }
+            }
+            else {
+                // find out target from blockchain
+                if (elem.get_symbol() == argument_.symbol) {
+                    Json::Value asset_data = json_helper.prop_list(elem, true);
+                    asset_data["status"] = "issued";
+                    json_value.append(asset_data);
+                }
+            }
+        }
+    }
+
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
+    }
+    else {
+        jv_output[json_key] = json_value;
     }
 
     return console_result::okay;
