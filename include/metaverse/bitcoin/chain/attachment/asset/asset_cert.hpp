@@ -67,13 +67,13 @@ namespace asset_cert_ns {
 class BC_API asset_cert
 {
 public:
+    typedef std::vector<asset_cert> list;
+
     enum class asset_cert_status : uint8_t
     {
         asset_cert_normal,
         asset_cert_issue,
     };
-
-    using asset_cert_container = std::set<asset_cert>;
 
     asset_cert();
     asset_cert(const std::string& symbol, const std::string& owner,

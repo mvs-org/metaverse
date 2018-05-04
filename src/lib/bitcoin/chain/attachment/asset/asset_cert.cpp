@@ -127,7 +127,7 @@ bool asset_cert::from_data(reader& source)
     owner_ = source.read_string();
     address_ = source.read_string();
     certs_ = source.read_8_bytes_little_endian();
-    status_ = source.read_4_bytes_little_endian();
+    status_ = source.read_byte();
 
     auto result = static_cast<bool>(source);
     if (!result)
@@ -157,7 +157,7 @@ void asset_cert::to_data(writer& sink) const
     sink.write_string(owner_);
     sink.write_string(address_);
     sink.write_8_bytes_little_endian(certs_);
-    sink.write_4_bytes_little_endian(status_);
+    sink.write_byte(status_);
 }
 
 uint64_t asset_cert::serialized_size() const

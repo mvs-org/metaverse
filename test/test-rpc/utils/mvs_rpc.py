@@ -78,6 +78,10 @@ def getpeerinfo():
     return "getpeerinfo", [], {}, lambda result: result["peers"]
 
 @mvs_api
+def getblockheader(hash=None, height=None):
+    return "getblockheader", [], {"-s":hash, "-t":height}, lambda result: (result['hash'], result['number'])
+
+@mvs_api
 def dump_keyfile(account, password, lastword, keyfile=""):
     return "dumpkeyfile", [account, password, lastword, keyfile], {}, None
 
@@ -306,12 +310,27 @@ def sendmore(account, password, receivers, mychange=None, fee=None):
     return "sendmore", positional, optional, None
 
 @mvs_api
-def didsendfrom(account, password, amount, to_, from_, fee=None, desc=None):
+def didsend(account, password, to_, amount, fee=None, desc=None):
+    return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
+
+@mvs_api
+def didsend_from(account, password, from_, to_, amount, fee=None, desc=None):
     return "didsendfrom", [account, password, from_, to_, amount], {'-f': fee, '-m': desc}, None
 
 @mvs_api
-def didsend(account, password, amount, to_, fee=None, desc=None):
-    return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
+def didsend_asset(account, password, to_, symbol, amount, fee=None):
+    '''
+    :param to_: did or address
+    '''
+    return "didsendasset", [account, password, to_, symbol, amount], {'--fee': fee}, None
+
+@mvs_api
+def didsend_asset_from(account, password, from_, to_, symbol, amount, fee=None):
+    '''
+    :param from_: did or address
+    :param to_: did or address
+    '''
+    return "didsendassetfrom", [account, password, from_, to_, symbol, amount], {'--fee': fee}, None
 
 @mvs_api
 def burn(account, password, symbol, amount):

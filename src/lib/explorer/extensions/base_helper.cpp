@@ -93,6 +93,29 @@ std::string get_random_payment_address(
     return "";
 }
 
+void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<asset_cert::list> sh_vec)
+{
+    auto business_cert_vec = blockchain.get_address_asset_certs(address, "");
+    for (auto& business_cert : *business_cert_vec) {
+        auto& cert = business_cert.certs;
+
+        auto match = [sum_all, &cert](const asset_cert& elem) {
+            return (cert.get_symbol() == elem.get_symbol())
+                && (sum_all || (cert.get_address() == cert.get_address()));
+        };
+        auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
+        if (iter == sh_vec->end()) { // new item
+            sh_vec->push_back(cert);
+        }
+        else { // exist just merge cert type
+            auto cert_type = iter->get_certs() | cert.get_certs();
+            iter->set_certs(cert_type);
+        }
+    }
+}
+
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_balances::list> sh_asset_vec)

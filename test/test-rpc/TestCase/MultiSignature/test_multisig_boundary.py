@@ -1,20 +1,6 @@
-import unittest
-import utils.mvs_rpc as mvs_rpc
+from TestCase.MVSTestCase import *
 
-from Roles import Alice, Bob, Cindy
-
-class TestMultiSig(unittest.TestCase):
-    roles = [Alice, Bob, Cindy]
-    def setUp(self):
-        for role in self.roles:
-            result, message = role.create()
-            self.assertEqual(result, 0, message)
-
-    def tearDown(self):
-        for role in self.roles:
-            result, message = role.delete()
-            self.assertEqual(result, 0, message)
-
+class TestMultiSig(MVSTestCaseBase):
     def test_getnew(self):
         # account password match error
         ec, message = mvs_rpc.getnew_multisig(Alice.name, Alice.password + '1', "test", Alice.mainaddress(), [Bob.mainaddress(), Cindy.mainaddress()], 2)

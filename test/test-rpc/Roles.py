@@ -1,11 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, time
+import os
 from utils import mvs_rpc, common
 import MOCs
-
-def get_timestamp():
-    return time.strftime('%Y%m%d.%H%M%S', time.localtime(time.time()))
 
 class Role:
     def __init__(self, name, mnemonic, addresslist, keystore_file):
@@ -17,7 +14,7 @@ class Role:
 
         self.addresslist.reverse()
         self.did_symbol = (name+".DID").upper()
-        self.asset_symbol = (name+".ASSET." + get_timestamp()).upper()
+        self.asset_symbol = (name+".ASSET." + common.get_timestamp()).upper()
         self.multisig_addresses = {} # desc : multisig-addr
 
     def lastword(self):
@@ -90,12 +87,45 @@ class Role:
         result, message = mvs_rpc.send_asset(self.name, self.password, to_, asset_symbol, amount)
         assert (result == 0)
 
+    def send_asset_from(self, from_, to_, amount, asset_symbol=None):
+        if not asset_symbol:
+            asset_symbol = self.asset_symbol
+        result, message = mvs_rpc.send_asset_from(self.name, self.password, from_, to_, asset_symbol, amount)
+        assert (result == 0)
+
     def burn_asset(self, amount):
         result, message = mvs_rpc.burn(self.name, self.password, self.asset_symbol, amount)
         assert (result == 0)
 
     def send_etp(self, to_, amount):
         result, message = mvs_rpc.send(self.name, self.password, to_, amount)
+        assert (result == 0)
+        return message["transaction"]["hash"]
+
+    def didsend_etp(self, to_, amount):
+        '''
+        :param to_: to did/address
+        '''
+        result, message = mvs_rpc.didsend(self.name, self.password, to_, amount)
+        assert (result == 0)
+        return message["transaction"]["hash"]
+
+    def didsend_etp_from(self, from_, to_, amount):
+        '''
+        :param from_: did/address
+        :param to_: did/address
+        '''
+        result, message = mvs_rpc.didsend_from(self.name, self.password, from_, to_, amount)
+        assert (result == 0)
+        return message["transaction"]["hash"]
+
+    def didsend_asset(self, to_, amount, symbol):
+        result, message = mvs_rpc.didsend_asset(self.name, self.password, to_, symbol, amount)
+        assert (result == 0)
+        return message["transaction"]["hash"]
+
+    def didsend_asset_from(self, from_, to_, amount, symbol):
+        result, message = mvs_rpc.didsend_asset_from(self.name, self.password, from_, to_, symbol, amount)
         assert (result == 0)
         return message["transaction"]["hash"]
 
