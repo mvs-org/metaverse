@@ -323,12 +323,6 @@ public:
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
     void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
 
-    //return value:
-    //0, success
-    //-1, operate database fail
-    //>0, validate error, return error block index
-    int replace_chain(uint64_t begin_height, const block_detail::list& new_blocks, block_detail::list& released_blocks);
-
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

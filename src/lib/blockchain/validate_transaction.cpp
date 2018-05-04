@@ -326,8 +326,7 @@ static bool check_same(std::string& dest, const std::string& src)
 
 code validate_transaction::check_secondaryissue_transaction(
         const chain::transaction& tx,
-        blockchain::block_chain_impl& blockchain,
-        bool in_transaction_pool)
+        blockchain::block_chain_impl& blockchain)
 {
     bool is_asset_secondaryissue{false};
     for (auto& output : tx.outputs) {
@@ -443,16 +442,13 @@ code validate_transaction::check_secondaryissue_transaction(
     }
 
     auto total_volume = blockchain.get_asset_volume(asset_symbol);
-    if (!in_transaction_pool) {
-        total_volume -= secondaryissue_asset_amount; // as get_asset_volume has summed myself
-    } else {
-        if (total_volume > max_uint64 - secondaryissue_asset_amount) {
-            log::debug(LOG_BLOCKCHAIN)
-                << "secondaryissue: total asset volume cannot exceed maximum value, "
-                << asset_symbol;
-            return error::asset_secondaryissue_error;
-        }
+    if (total_volume > max_uint64 - secondaryissue_asset_amount) {
+        log::debug(LOG_BLOCKCHAIN)
+            << "secondaryissue: total asset volume cannot exceed maximum value, "
+            << asset_symbol;
+        return error::asset_secondaryissue_error;
     }
+
     if (!asset_detail::is_secondaryissue_owns_enough(asset_transfer_volume, total_volume, secondaryissue_threshold)) {
         log::debug(LOG_BLOCKCHAIN) << "secondaryissue: no enough asset volume, " << asset_symbol;
         return error::asset_secondaryissue_share_not_enough;
@@ -466,10 +462,7 @@ code validate_transaction::check_secondaryissue_transaction(
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
-        if (prev_output.is_asset_issue()
-            || prev_output.is_asset_secondaryissue()
-            || prev_output.is_asset_transfer()
-            || prev_output.is_asset_cert()) {
+        if (prev_output.is_asset() || prev_output.is_asset_cert()) {
             auto&& asset_address_in = prev_output.get_script_address();
             if (prev_output.is_asset_cert()) {
                 if (asset_cert_address != asset_address_in) {
@@ -916,7 +909,7 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
         return ret;
     }
 
-    if ((ret = check_secondaryissue_transaction(tx, chain, true)) != error::success) {
+    if ((ret = check_secondaryissue_transaction(tx, chain)) != error::success) {
         return ret;
     }
 

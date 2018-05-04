@@ -68,8 +68,7 @@ public:
         const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
     static code check_secondaryissue_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain,
-        bool in_transaction_pool);
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
     static code check_did_transaction(
         const chain::transaction& tx, blockchain::block_chain_impl& chain);
