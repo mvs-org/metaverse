@@ -1,24 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import random
-import unittest
-import utils.mvs_rpc as mvs_rpc
+from TestCase.MVSTestCase import *
 
-from Roles import Zac, Frank
-
-class TestAssetBoundary(unittest.TestCase):
-    roles = [ Zac, Frank ]
-
-    def setUp(self):
-        for role in self.roles:
-            result, message = role.create()
-            self.assertEqual(result, 0, message)
-
-    def tearDown(self):
-        for role in self.roles:
-            result, message = role.delete()
-            self.assertEqual(result, 0, message)
-
+class TestAssetBoundary(MVSTestCaseBase):
     def getExistAssetSymbol(self):
         # symbol is already used.
         ec, message = mvs_rpc.get_asset()
@@ -36,7 +21,7 @@ class TestAssetBoundary(unittest.TestCase):
         for char in spec_char_lst:
             ec, message = mvs_rpc.create_asset(Zac.name, Zac.password, Zac.asset_symbol + char, 100)
             self.assertEqual(ec, 1000, message)
-            self.assertEqual(message, "symbol must be alpha or number or point.", message)
+            self.assertEqual(message, "symbol must be alpha or number or dot", message)
 
     def test_1_create_asset(self):
         #account password match error

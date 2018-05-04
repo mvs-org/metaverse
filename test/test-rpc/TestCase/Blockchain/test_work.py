@@ -9,18 +9,12 @@ python setup.py install
 bugfix 2018-05-02:
 sudo pip install rlp=0.6.0    // the latest rlp does not work!
 '''
-import unittest
-from Roles import Alice
-from utils.mvs_rpc import set_miningaccount, eth_get_work, eth_submit_work
+from TestCase.MVSTestCase import *
 
-class TestWork(unittest.TestCase):
-    def setUp(self):
-        result, message = Alice.create()
-        self.assertEqual(result, 0, message)
-
-    def tearDown(self):
-        result, message = Alice.delete()
-        self.assertEqual(result, 0, message)
-
+class TestWork(MVSTestCaseBase):
     def test_1_no_mining_account(self):
-        Alice.mining()
+        _, prev = mvs_rpc.getblockheader()
+        round_to_mine = 1050
+        Alice.mining(round_to_mine)
+        _, curr = mvs_rpc.getblockheader()
+        self.assertEqual(prev[1] + round_to_mine, curr[1])
