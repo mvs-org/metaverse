@@ -299,14 +299,19 @@ void organizer::replace_chain(uint64_t fork_index,
 
     // Replace! Switch!
     block_detail::list released_blocks;
-    DEBUG_ONLY(auto success =) chain_.pop_from(released_blocks, begin_index);
-    BITCOIN_ASSERT(success);
+    auto success = chain_.pop_from(released_blocks, begin_index);
 
     if (!released_blocks.empty())
         log::warning(LOG_BLOCKCHAIN) 
             << " blockchain fork at height:" << released_blocks.front()->actual()->header.number 
             << " begin_index:"  << encode_hash(released_blocks.front()->actual()->header.hash())
             << " size:"  << released_blocks.size();
+
+    // if pop blocks failed, stop replace
+    if (!success) {
+        log::warning(LOG_BLOCKCHAIN) << " pop_from begin_height:" << begin_index << "failed";
+        return;
+    }
 
     // We add the arriving blocks first to the main chain because if
     // we add the blocks being replaced back to the pool first then
@@ -332,6 +337,8 @@ void organizer::replace_chain(uint64_t fork_index,
                 << " push block height:" << arrival_block->actual()->header.number
                 << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
                 << "failed";
+            // if push block failed, stop replace
+            return;
         }
         else
         {

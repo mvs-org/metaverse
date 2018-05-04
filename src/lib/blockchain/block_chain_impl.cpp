@@ -363,12 +363,11 @@ void block_chain_impl::do_store(message::block_message::ptr block,
         return;
     }
 
-    stop_write();
     // Otherwise organize the chain...
     organizer_.organize();
 
     //...and then get the particular block's status.
-    handler(detail->error(), detail->height());
+    stop_write(handler, detail->error(), detail->height());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
