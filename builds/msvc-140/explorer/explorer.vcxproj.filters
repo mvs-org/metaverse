@@ -188,6 +188,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+        <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -514,6 +517,9 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendmore.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp">

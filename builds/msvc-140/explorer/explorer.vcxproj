@@ -67,6 +67,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaccount.hpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendmore.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp" />

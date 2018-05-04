@@ -96,6 +96,7 @@
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didmodifyaddress.hpp>
 #include <metaverse/explorer/extensions/commands/listdidaddresses.hpp>
+#include <metaverse/explorer/extensions/commands/didsendmore.hpp>
 
 
 namespace libbitcoin {
@@ -186,6 +187,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<listdids>());
     func(make_shared<didmodifyaddress>());
     func(make_shared<listdidaddresses>());
+    func(make_shared<didsendmore>());
 
 }
 
@@ -333,6 +335,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<didmodifyaddress>();
     if (symbol == listdidaddresses::symbol())
         return make_shared<listdidaddresses>();
+    if (symbol == didsendmore::symbol())
+        return make_shared<didsendmore>();
     return nullptr;
 }
 

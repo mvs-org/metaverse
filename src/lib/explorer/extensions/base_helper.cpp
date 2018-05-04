@@ -534,9 +534,28 @@ void base_transfer_common::populate_etp_change(const std::string& address)
             addr = get_mychange_address(FILTER_ETP);
         }
 
-        receiver_list_.push_back(
-            {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()}
-        );
+        if (blockchain_.is_valid_address(addr))
+        {
+            receiver_list_.push_back(
+                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+        }
+        else
+        {
+
+            if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+                throw did_symbol_length_exception{std::string("mychange did symbol [") + addr + ("] length must be less than 64.")};
+
+            auto diddetail = blockchain_.get_issued_did(addr);
+            if (!diddetail)
+                throw did_symbol_existed_exception{std::string("mychange did symbol [") + addr + ("is not exist in blockchain")};
+
+            attachment attach;
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_to_did(addr);
+            receiver_list_.push_back(
+                { diddetail->get_address(),"", unspent_asset_ - payment_asset_, 0, utxo_attach_type::etp,attach });
+                
+        }
     }
 }
 
