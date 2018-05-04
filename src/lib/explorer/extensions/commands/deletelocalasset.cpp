@@ -40,42 +40,41 @@ console_result deletelocalasset::invoke (Json::Value& jv_output,
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-    if(blockchain.get_issued_asset(option_.symbol))
+    if (blockchain.get_issued_asset(option_.symbol))
         throw asset_issued_not_delete{"Cannot delete asset " + option_.symbol + " which has been issued."};
 
     std::promise<code> p;
     std::vector<libbitcoin::blockchain::transaction_pool::transaction_ptr> txs;
-    blockchain.pool().fetch([&txs, &p](const code& ec, const std::vector<libbitcoin::blockchain::transaction_pool::transaction_ptr>& tx){
-        if (!ec)
-        {
+    blockchain.pool().fetch([&txs, &p](const code& ec,
+        const std::vector<libbitcoin::blockchain::transaction_pool::transaction_ptr>& tx)
+    {
+        if (!ec) {
             txs = tx;
         }
+
         p.set_value(ec);
     });
     p.get_future().get();
 
-    for(auto& tx : txs)
-    {
-        for(auto& output : tx->outputs)
-        {
-            if(output.is_asset_issue() && output.get_asset_symbol() == option_.symbol)    
+    for(auto& tx : txs) {
+        for(auto& output : tx->outputs) {
+            if (output.is_asset_issue() && output.get_asset_symbol() == option_.symbol) {
                 throw asset_issued_not_delete{"Cannot delete asset " + option_.symbol + " which has been issued."};
+            }
         }
     }
 
     std::vector<business_address_asset> assets = *blockchain.get_account_unissued_assets(auth_.name);
     bool found = false;
-    for(auto it = assets.begin(); it != assets.end(); ++it)
-    {
-        if(it->detail.get_symbol() == option_.symbol)
-        {
-            if(blockchain.delete_account_asset(auth_.name) == console_result::failure)
+    for (auto it = assets.begin(); it != assets.end(); ++it) {
+        if (it->detail.get_symbol() == option_.symbol) {
+            if (blockchain.delete_account_asset(auth_.name) == console_result::failure) {
                 throw asset_delete_fail{"asset " + option_.symbol + " delete fail."};
+            }
 
             assets.erase(it);
-            for(auto asset : assets)
-            {
-                blockchain.store_account_asset(asset.detail);
+            for (auto asset : assets) {
+                blockchain.store_account_asset(asset.detail, auth_.name);
             }
 
             found = true;
@@ -83,8 +82,7 @@ console_result deletelocalasset::invoke (Json::Value& jv_output,
         }
     }
 
-    if(!found)
-    {
+    if (!found) {
         throw asset_notfound_exception{"asset " + option_.symbol + " is not existed or is not belong to " + auth_.name + "."};
     }
 
@@ -92,7 +90,7 @@ console_result deletelocalasset::invoke (Json::Value& jv_output,
     result["symbol"] = option_.symbol;
     result["operate"] = "delete";
     result["result"] = "success";
-    
+
     jv_output = result;
 
     return console_result::okay;

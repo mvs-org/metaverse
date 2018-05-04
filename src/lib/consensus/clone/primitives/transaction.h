@@ -10,6 +10,7 @@
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
+#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
 
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
@@ -317,7 +318,7 @@ public:
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionSerialize()));
-        if (version == 207) {
+        if (version == DID_ATTACH_VERIFY_VERSION) {
             (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionSerialize()));
             (::SerReadWrite(s, (todid), nType, nVersion, CSerActionSerialize()));
         }
@@ -348,7 +349,7 @@ public:
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionUnserialize()));
-        if (version == 207) {
+        if (version == DID_ATTACH_VERIFY_VERSION) {
             (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionUnserialize()));
             (::SerReadWrite(s, (todid), nType, nVersion, CSerActionUnserialize()));
         }

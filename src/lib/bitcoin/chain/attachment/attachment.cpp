@@ -31,7 +31,7 @@ namespace chain {
 
 attachment::attachment()
 {
-	reset();
+    reset();
 }
 attachment attachment::factory_from_data(const data_chunk& data)
 {
@@ -56,12 +56,12 @@ attachment attachment::factory_from_data(reader& source)
 
 void attachment::reset()
 {
-	version = 0;
+    version = 0;
     type = 0; //attachment_type::attach_none;
     auto visitor = reset_visitor();
-	boost::apply_visitor(visitor, attach);
-	todid = "";
-	fromdid = "";
+    boost::apply_visitor(visitor, attach);
+    todid = "";
+    fromdid = "";
 }
 
 bool attachment::is_valid() const
@@ -73,11 +73,11 @@ bool attachment::is_valid() const
 bool attachment::is_valid_type() const
 {
     return ((ETP_TYPE == type)
-		|| (ASSET_TYPE == type)
-		|| (ASSET_CERT_TYPE == type)
-		|| (MESSAGE_TYPE == type)
-		|| (ETP_AWARD_TYPE == type)
-		|| (DID_TYPE == type));
+        || (ASSET_TYPE == type)
+        || (ASSET_CERT_TYPE == type)
+        || (MESSAGE_TYPE == type)
+        || (ETP_AWARD_TYPE == type)
+        || (DID_TYPE == type));
 }
 
 
@@ -99,61 +99,59 @@ bool attachment::from_data(reader& source)
 
     version = source.read_4_bytes_little_endian();
     auto result = static_cast<bool>(source);
-	
-    if (result)        
-		type = source.read_4_bytes_little_endian();
 
-	if (result && version == DID_ATTACH_VERIFY_VERSION) {
-			todid = source.read_string();
-			fromdid = source.read_string();
-	} 
+    if (result)
+        type = source.read_4_bytes_little_endian();
 
-	result = static_cast<bool>(source);
-    if (result && is_valid_type()) {
-		switch(type) {
-			case ETP_TYPE:
-			{
-				attach = etp();
-				break;
-			}
-			case ETP_AWARD_TYPE:
-			{
-				attach = etp_award();
-				break;
-			}
-			case ASSET_TYPE:
-			{
-				attach = asset();
-				break;
-			}
-			case ASSET_CERT_TYPE:
-			{
-				attach = asset_cert();
-				break;
-			}
-			case MESSAGE_TYPE:
-			{
-				attach = blockchain_message();
-				break;
-			}
-			case DID_TYPE:
-			{
-				attach = did();
-				break;
-			}
-		}
-		auto visitor = from_data_visitor(source);
-		result = boost::apply_visitor(visitor, attach);
-
-		
+    if (result && version == DID_ATTACH_VERIFY_VERSION) {
+            todid = source.read_string();
+            fromdid = source.read_string();
     }
-	else {
-		result = false;
+
+    result = static_cast<bool>(source);
+    if (result && is_valid_type()) {
+        switch(type) {
+            case ETP_TYPE:
+            {
+                attach = etp();
+                break;
+            }
+            case ETP_AWARD_TYPE:
+            {
+                attach = etp_award();
+                break;
+            }
+            case ASSET_TYPE:
+            {
+                attach = asset();
+                break;
+            }
+            case ASSET_CERT_TYPE:
+            {
+                attach = asset_cert();
+                break;
+            }
+            case MESSAGE_TYPE:
+            {
+                attach = blockchain_message();
+                break;
+            }
+            case DID_TYPE:
+            {
+                attach = did();
+                break;
+            }
+        }
+
+        auto visitor = from_data_visitor(source);
+        result = boost::apply_visitor(visitor, attach);
+    }
+    else {
+        result = false;
         reset();
-	}
+    }
 
     return result;
-	
 }
 
 data_chunk attachment::to_data() const
@@ -174,88 +172,89 @@ void attachment::to_data(std::ostream& stream) const
 
 void attachment::to_data(writer& sink) const
 {
-	
     sink.write_4_bytes_little_endian(version);
     sink.write_4_bytes_little_endian(type);
-	if (version == DID_ATTACH_VERIFY_VERSION) {
-		sink.write_string(todid);
-		sink.write_string(fromdid);
-	} 
-	auto visitor = to_data_visitor(sink);
-	boost::apply_visitor(visitor, attach);
+    if (version == DID_ATTACH_VERIFY_VERSION) {
+        sink.write_string(todid);
+        sink.write_string(fromdid);
+    }
+    auto visitor = to_data_visitor(sink);
+    boost::apply_visitor(visitor, attach);
 }
 
 uint64_t attachment::serialized_size() const
 {
-	uint64_t size = 0;
-	if(version == DID_ATTACH_VERIFY_VERSION) {
-		size = 4 + 4 + todid.size() + 1 + fromdid.size() + 1;
-	}
-	else {
-		size = 4 + 4;
-	}
-    
-	auto visitor = serialized_size_visitor();
-	size += boost::apply_visitor(visitor, attach);
+    uint64_t size = 0;
+    if(version == DID_ATTACH_VERIFY_VERSION) {
+        size = 4 + 4 + (todid.size() + 1) + (fromdid.size() + 1);
+    }
+    else {
+        size = 4 + 4;
+    }
 
-	return size;
+    auto visitor = serialized_size_visitor();
+    size += boost::apply_visitor(visitor, attach);
+
+    return size;
 }
 
 std::string attachment::to_string() const
 {
     std::ostringstream ss;
 
-	ss << "\t version = " << version << "\n"
-		<< "\t type = " << type << "\n";
-	auto visitor = to_string_visitor();
-	ss << boost::apply_visitor(visitor, attach);
+    ss << "\t version = " << version << "\n"
+        << "\t type = " << type << "\n"
+        << "\t fromdid = " << fromdid << "\n"
+        << "\t todid = " << todid << "\n";
+    auto visitor = to_string_visitor();
+    ss << boost::apply_visitor(visitor, attach);
 
     return ss.str();
 }
 
 uint32_t attachment::get_version() const
-{ 
+{
     return version;
 }
 void attachment::set_version(uint32_t version)
-{ 
+{
      this->version = version;
 }
 
 uint32_t attachment::get_type() const
-{ 
+{
     return type;
 }
 void attachment::set_type(uint32_t type)
-{ 
+{
      this->type = type;
 }
 
 std::string attachment::get_to_did() const
-{ 
+{
     return todid;
 }
 void attachment::set_to_did(const std::string& did)
-{ 
-     this->todid = did;
+{
+    this->todid = did;
 }
 
 std::string attachment::get_from_did() const
-{ 
+{
     return fromdid;
 }
 void attachment::set_from_did(const std::string& did)
-{ 
+{
      this->fromdid = did;
 }
 
 attachment::attachment_data_type& attachment::get_attach()
 {
-	return this->attach;
+    return this->attach;
 }
 const attachment::attachment_data_type& attachment::get_attach() const
 {
-	return this->attach;
+    return this->attach;
 }
 
 } // namspace chain

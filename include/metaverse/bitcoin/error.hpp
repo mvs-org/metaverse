@@ -163,6 +163,7 @@ enum error_code_t
     asset_cert_exist,               // 78
     asset_cert_not_exist,
     asset_cert_issue_error,
+    asset_did_issuer_not_match,
 };
 
 enum error_condition_t

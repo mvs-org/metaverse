@@ -96,6 +96,7 @@
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didmodifyaddress.hpp>
 #include <metaverse/explorer/extensions/commands/listdidaddresses.hpp>
+#include <metaverse/explorer/extensions/commands/didsendmore.hpp>
 
 
 namespace libbitcoin {
@@ -156,7 +157,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
     func(make_shared<secondaryissue>());
-    func(make_shared<issuefrom>());
+    //asset issue change to did,not need
+    //func(make_shared<issuefrom>());
     func(make_shared<sendasset>());
     func(make_shared<sendassetfrom>());
     func(make_shared<burn>());
@@ -183,8 +185,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<didsendfrom>());
     func(make_shared<didsendasset>());
     func(make_shared<didsendassetfrom>());
-    func(make_shared<listdids>());
+    func(make_shared<didsendmore>());
     func(make_shared<didmodifyaddress>());
+    func(make_shared<listdids>());
     func(make_shared<listdidaddresses>());
 
 }
@@ -325,14 +328,17 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<didsendasset>();
     if (symbol == didsendfrom::symbol())
         return make_shared<didsendfrom>();
+    if (symbol == didsendmore::symbol())
+        return make_shared<didsendmore>();
     if (symbol == didsendassetfrom::symbol())
         return make_shared<didsendassetfrom>();
-    if (symbol == listdids::symbol())
-        return make_shared<listdids>();
     if (symbol == didmodifyaddress::symbol())
         return make_shared<didmodifyaddress>();
+    if (symbol == listdids::symbol())
+        return make_shared<listdids>();
     if (symbol == listdidaddresses::symbol())
         return make_shared<listdidaddresses>();
+
     return nullptr;
 }
 

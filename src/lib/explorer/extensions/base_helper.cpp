@@ -103,7 +103,7 @@ void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
 
         auto match = [sum_all, &cert](const asset_cert& elem) {
             return (cert.get_symbol() == elem.get_symbol())
-                && (sum_all || (cert.get_address() == cert.get_address()));
+                && (sum_all || (cert.get_address() == elem.get_address()));
         };
         auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
         if (iter == sh_vec->end()) { // new item
@@ -534,9 +534,24 @@ void base_transfer_common::populate_etp_change(const std::string& address)
             addr = get_mychange_address(FILTER_ETP);
         }
 
-        receiver_list_.push_back(
-            {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()}
-        );
+        if (blockchain_.is_valid_address(addr)) {
+            receiver_list_.push_back(
+                {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
+        }
+        else {
+            if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+                throw did_symbol_length_exception{std::string("mychange did symbol [") + addr + ("] length must be less than 64.")};
+
+            auto diddetail = blockchain_.get_issued_did(addr);
+            if (!diddetail)
+                throw did_symbol_existed_exception{std::string("mychange did symbol [") + addr + ("is not exist in blockchain")};
+
+            attachment attach;
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_to_did(addr);
+            receiver_list_.push_back(
+                {diddetail->get_address(), "", unspent_asset_ - payment_asset_, 0, utxo_attach_type::etp, attach});
+        }
     }
 }
 
@@ -771,7 +786,15 @@ attachment base_transfer_helper::populate_output_attachment(const receiver_recor
 
         sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
         auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
-        return attachment(ASSET_TYPE, attach_version, ass);
+
+        attachment attach(ASSET_TYPE, attach_version, ass);
+        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_from_did(record.attach_elem.get_from_did());
+            attach.set_to_did(record.attach_elem.get_to_did());
+        }
+
+        return attach;
     }
 
     return base_transfer_common::populate_output_attachment(record);

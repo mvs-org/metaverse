@@ -79,7 +79,7 @@ public:
 
     static bool connect_input_address_match_did(
         const chain::transaction& tx, blockchain::block_chain_impl& chain,
-        std::string did);
+        const attachment& attach);
 
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,

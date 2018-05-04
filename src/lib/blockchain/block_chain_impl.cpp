@@ -1160,30 +1160,33 @@ std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addr
 	return sp_addr;
 }
 
-operation_result block_chain_impl::store_account_asset(const asset_detail& detail)
+operation_result block_chain_impl::store_account_asset(
+    const asset_detail& detail,
+    const string& name)
 {
-	if (stopped())
-	{
-		return operation_result::failure;
-	}
-	///////////////////////////////////////////////////////////////////////////
-	// Critical Section.
-	unique_lock lock(mutex_);
+    if (stopped()) {
+        return operation_result::failure;
+    }
 
-	const auto hash = get_short_hash(detail.get_issuer());
-	database_.account_assets.store(hash, detail);
-	database_.account_assets.sync();
-	///////////////////////////////////////////////////////////////////////////
-	return operation_result::okay;
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section.
+    unique_lock lock(mutex_);
+
+    const auto hash = get_short_hash(name);
+    database_.account_assets.store(hash, detail);
+    database_.account_assets.sync();
+    ///////////////////////////////////////////////////////////////////////////
+    return operation_result::okay;
 }
 
-operation_result block_chain_impl::store_account_asset(std::shared_ptr<asset_detail> detail)
+operation_result block_chain_impl::store_account_asset(
+    std::shared_ptr<asset_detail> detail,
+    const string& name)
 {
-	if (!(detail))
-	{
+    if (!(detail)) {
         throw std::runtime_error{"nullptr for asset"};
-	}
-	return store_account_asset(*detail);
+    }
+    return store_account_asset(*detail, name);
 }
 
 /// delete account asset by account name

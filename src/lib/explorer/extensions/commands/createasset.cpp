@@ -56,6 +56,14 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol can not be empty."};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    // check did
+    if (option_.issuer.empty())
+        throw did_symbol_length_exception{"issuer can not be empty."};
+    if (option_.issuer.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+        throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
+    if (!blockchain.is_did_exist(option_.issuer))
+        throw did_symbol_existed_exception{"the did for issuer is not exist in blockchain,maybe you should issuedid first"};
+
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
     auto threshold = option_.secondaryissue_threshold;
@@ -81,13 +89,13 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    acc->set_issuer(auth_.name);
+    acc->set_issuer(option_.issuer);
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?
         asset_detail::freely_secondaryissue_threshold : static_cast<uint8_t>(threshold));
 
-    blockchain.store_account_asset(acc);
+    blockchain.store_account_asset(acc, auth_.name);
 
     auto& aroot = jv_output;
     Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
