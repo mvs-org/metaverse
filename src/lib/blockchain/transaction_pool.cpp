@@ -153,6 +153,12 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
             return;
          }
 
+        if (output.is_asset_cert_issue()
+            && is_in_pool(output.get_asset_cert_symbol())){
+            handler(error::asset_cert_exist, tx, {});
+            return;
+         }
+
          if ((output.is_did_issue() || output.is_did_transfer())
             && is_in_pool(output.get_did_symbol())){
             handler(error::did_exist, tx, {});
@@ -601,6 +607,11 @@ transaction_pool::const_iterator transaction_pool::find(
 				&& output.get_asset_symbol() == symbol_name){
                 return true;
             } 
+
+            if (output.is_asset_cert_issue()
+                && (output.get_asset_cert_symbol() == symbol_name)){
+                return true;
+            }
 
             if ((output.is_did_issue() || output.is_did_transfer())
 				&& output.get_did_symbol() == symbol_name){
