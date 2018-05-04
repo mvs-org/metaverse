@@ -54,12 +54,19 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if (!pvaddr || pvaddr->empty())
-        throw address_list_nullptr_exception{"nullptr for address list"};
+    auto did = sh_asset->get_issuer();
 
-    // get random address
-    auto addr = get_random_payment_address(pvaddr, blockchain);
+    if (did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+        throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
+    if(!blockchain.is_did_exist(did))
+        throw did_symbol_existed_exception{"issuer symbol is not exist in blockchain"};  
+
+    attachment attach;
+    auto diddetail = blockchain.get_issued_did(did); 
+    auto&& addr = diddetail->get_address();
+    attach.set_from_did(did);
+    attach.set_to_did(did);
+    attach.set_version(DID_ATTACH_VERIFY_VERSION); 
 
     std::string cert_address;
     std::string cert_symbol;
@@ -108,20 +115,20 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment()}
+        {addr, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attach}
     };
 
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
     if (certs != asset_cert_ns::none) {
         receiver.push_back({addr, argument_.symbol, 0, 0,
-            certs, utxo_attach_type::asset_cert, attachment()});
+            certs, utxo_attach_type::asset_cert, attach});
     }
 
     // domain cert or domain naming cert
     if (asset_cert::is_valid_domain(domain)) {
         receiver.push_back({cert_address, cert_symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert, attachment()});
+            cert_type, utxo_attach_type::asset_cert, attach});
     }
 
     auto issue_helper = issuing_asset(*this, blockchain,

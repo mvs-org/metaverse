@@ -238,6 +238,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "asset cert not exist";
         case error::asset_cert_issue_error:
             return "asset cert issue error";
+        case error::asset_did_issuer_not_match:
+			return "attach fromdid must equal with asset issuer";
 
         // unknown errors
         case error::unknown:

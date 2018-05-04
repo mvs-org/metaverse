@@ -773,6 +773,11 @@ code validate_transaction::check_did_transaction(
     {
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
+        if(output.is_asset_issue()) {
+            if (output.get_asset_issuer() != output.attach_data.get_from_did()) {
+               return error::asset_did_issuer_not_match;
+            }
+        }
 
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
