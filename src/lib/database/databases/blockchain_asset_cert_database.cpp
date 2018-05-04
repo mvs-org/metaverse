@@ -148,7 +148,7 @@ void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
     const auto& symbol = sp_cert.get_symbol();
     const auto& owner = sp_cert.get_owner();
     const auto& address = sp_cert.get_address();
-    for (int i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
+    for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
         const asset_cert_type target_type = (1 << i);
         if (sp_cert.test_certs(target_type)) {
             std::string key_str(symbol + std::to_string(target_type));

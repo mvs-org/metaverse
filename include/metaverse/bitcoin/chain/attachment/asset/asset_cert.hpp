@@ -61,7 +61,7 @@ namespace asset_cert_ns {
     constexpr asset_cert_type naming{1 << 2};
     constexpr asset_cert_type all{0xffffffffffffffff};
 
-    constexpr uint32_t asset_cert_type_bits{64};
+    constexpr size_t asset_cert_type_bits{64};
 }
 
 class BC_API asset_cert
