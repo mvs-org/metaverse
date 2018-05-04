@@ -45,34 +45,32 @@ console_result getasset::invoke (Json::Value& jv_output,
 
     if (option_.is_cert) { // only get asset certs
         json_key = "assetcerts";
+
         // get asset cert in blockchain
         auto sh_vec = blockchain.get_issued_asset_certs();
-
         std::set<std::string> symbols;
-        if (sh_vec) {
-            for (auto& elem : *sh_vec) {
-                if (argument_.symbol.empty()) {
-                    // get rid of duplicate symbols
-                    if (!symbols.count(elem.get_symbol())) {
-                        symbols.insert(elem.get_symbol());
-                        json_value.append(elem.get_symbol());
-                    }
+        for (auto& elem : *sh_vec) {
+            if (argument_.symbol.empty()) {
+                // get rid of duplicate symbols
+                if (!symbols.count(elem.get_symbol())) {
+                    symbols.insert(elem.get_symbol());
+                    json_value.append(elem.get_symbol());
                 }
-                else {
-                    // find out target from blockchain
-                    if (elem.get_symbol() == argument_.symbol) {
-                        Json::Value asset_data = json_helper.prop_list(elem);
-                        json_value.append(asset_data);
-                    }
+            }
+            else {
+                // find out target from blockchain
+                if (elem.get_symbol() == argument_.symbol) {
+                    Json::Value asset_data = json_helper.prop_list(elem);
+                    json_value.append(asset_data);
                 }
             }
         }
     }
     else {
         json_key = "assets";
+
         // get asset in blockchain
         auto sh_vec = blockchain.get_issued_assets();
-
         std::set<std::string> symbols;
         for (auto& elem: *sh_vec) {
             if (argument_.symbol.empty()) {

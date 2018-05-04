@@ -68,14 +68,13 @@ void validate_transaction::start(validate_handler handler)
     handle_validate_ = handler;
     const auto ec = basic_checks(static_cast<blockchain::block_chain_impl&>(this->blockchain_));
 
-    if (ec)
-    {
-    	if (ec == error::input_not_found)
-    	{
-    		handle_validate_(ec, tx_, {current_input_});
-    		return;
-    	}
-    	handle_validate_(ec, tx_, {});
+    if (ec) {
+        if (ec == error::input_not_found) {
+            handle_validate_(ec, tx_, {current_input_});
+            return;
+        }
+
+        handle_validate_(ec, tx_, {});
         return;
     }
 
@@ -279,7 +278,8 @@ void validate_transaction::check_fees()
         return;
     }
 
-    auto is_asset_type = (business_kind_in_ == business_kind::asset_issue) || (business_kind_in_ == business_kind::asset_transfer);
+    auto is_asset_type = (business_kind_in_ == business_kind::asset_issue)
+        || (business_kind_in_ == business_kind::asset_transfer);
     if (is_asset_type) {
         if (tx_->has_asset_transfer()) {
             if (!check_asset_amount(*tx_)) {
@@ -299,7 +299,8 @@ void validate_transaction::check_fees()
         }
     }
 
-    auto is_did_type = (business_kind_in_ == business_kind::did_issue) || (business_kind_in_ == business_kind::did_transfer);
+    auto is_did_type = (business_kind_in_ == business_kind::did_issue)
+        || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
         if (!check_did_symbol(*tx_)) {
             handle_validate_(error::did_symbol_not_match, tx_, {});
@@ -910,8 +911,9 @@ bool validate_transaction::connect_input_address_match_did(
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
 {
     code ret = error::success;
-    if ((ret = check_transaction_basic(tx, chain)) != error::success)
+    if ((ret = check_transaction_basic(tx, chain)) != error::success) {
         return ret;
+    }
 
     if ((ret = check_asset_issue_transaction(tx, chain)) != error::success) {
         return ret;

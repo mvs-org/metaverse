@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from utils import mvs_rpc
 
 class Asset:
     def __init__(self, symbol):
@@ -126,3 +127,9 @@ class Transaction:
         tx.version = json_report['version']
 
         return tx
+
+    @classmethod
+    def from_hash(cls, hash):
+        ec, message = mvs_rpc.gettx(hash)
+        assert(ec == 0)
+        return cls.from_json(message)

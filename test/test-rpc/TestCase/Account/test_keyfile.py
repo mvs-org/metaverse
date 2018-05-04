@@ -1,23 +1,11 @@
 import os
-import unittest
-import utils.mvs_rpc as mvs_rpc
 import utils.common as common
 import utils.cryptojs as cryptojs
 import json
-from Roles import Alice, Bob, Cindy
 
-class TestKeyfile(unittest.TestCase):
-    roles = [Alice, Bob, Cindy]
-    def setUp(self):
-        for role in self.roles:
-            result, message = role.create()
-            self.assertEqual(result, 0, message)
+from TestCase.MVSTestCase import *
 
-    def tearDown(self):
-        for role in self.roles:
-            result, message = role.delete()
-            self.assertEqual(result, 0, message)
-
+class TestKeyfile(MVSTestCaseBase):
     def test_dumpkeyfile(self):
         description = "Alice & Bob & Cindy's multi-sig address"
 

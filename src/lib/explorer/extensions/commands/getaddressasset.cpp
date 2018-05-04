@@ -47,15 +47,11 @@ console_result getaddressasset::invoke (Json::Value& jv_output,
     if (option_.is_cert) { // only get asset certs
         json_key = "assetcerts";
 
-        // get asset certs
-        auto sp_asset_certs = blockchain.get_address_asset_certs(argument_.address, "");
-        if (sp_asset_certs) {
-            for (const auto& business_cert : *sp_asset_certs) {
-                if (business_cert.certs.get_certs() != asset_cert_ns::none) {
-                    Json::Value asset_cert = json_helper.prop_list(business_cert.certs);
-                    json_value.append(asset_cert);
-                }
-            }
+        auto sh_vec = std::make_shared<asset_cert::list>();
+        sync_fetch_asset_cert_balance(argument_.address, true, blockchain, sh_vec);
+        for (auto& elem: *sh_vec) {
+            Json::Value asset_cert = json_helper.prop_list(elem);
+            json_value.append(asset_cert);
         }
     }
     else {

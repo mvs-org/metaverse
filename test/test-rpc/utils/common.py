@@ -1,4 +1,4 @@
-import os
+import os, time
 
 def remove_file(file_path):
     if os.path.exists(file_path):
@@ -12,3 +12,5 @@ def toHex(s):
 def toString(h):
     return ''.join(['%02x' % ord(i) for i in h])
 
+def get_timestamp():
+    return time.strftime('%Y%m%d.%H%M%S', time.localtime(time.time()))

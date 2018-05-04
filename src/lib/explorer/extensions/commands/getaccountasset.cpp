@@ -51,31 +51,34 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
     auto json_helper = config::json_helper(get_api_version());
 
     if (option_.is_cert) { // only get asset certs
-        // get asset certs
-        auto sp_asset_certs = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
-        if (sp_asset_certs) {
-            for (const auto& business_cert : *sp_asset_certs) {
-                if (business_cert.certs.get_certs() != asset_cert_ns::none) {
-                    Json::Value asset_cert = json_helper.prop_list(business_cert.certs);
-                    json_value.append(asset_cert);
-                }
-            }
+        json_key = "assetcerts";
+        auto sh_vec = std::make_shared<asset_cert::list>();
+        for (auto& each : *pvaddr){
+            sync_fetch_asset_cert_balance(each.get_address(), false, blockchain, sh_vec);
+        }
+
+        for (auto& elem: *sh_vec) {
+            if (!argument_.symbol.empty() && argument_.symbol != elem.get_symbol())
+                continue;
+
+            Json::Value asset_cert = json_helper.prop_list(elem);
+            json_value.append(asset_cert);
         }
     }
     else {
+        json_key = "assets";
         auto sh_vec = std::make_shared<asset_balances::list>();
 
         // 1. get asset in blockchain
         // get address unspent asset balance
         std::string addr;
         for (auto& each : *pvaddr){
-            addr = each.get_address();
-            sync_fetch_asset_balance(addr, false, blockchain, sh_vec);
+            sync_fetch_asset_balance(each.get_address(), false, blockchain, sh_vec);
         }
 
         for (auto& elem: *sh_vec) {
             auto& symbol = elem.symbol;
-            if(!argument_.symbol.empty() && argument_.symbol != symbol)
+            if (!argument_.symbol.empty() && argument_.symbol != symbol)
                 continue;
             auto issued_asset = blockchain.get_issued_asset(symbol);
             if (!issued_asset) {
@@ -102,7 +105,8 @@ console_result getaccountasset::invoke (Json::Value& jv_output,
 
     if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
         jv_output[json_key] = "";
-    } else {
+    }
+    else {
         jv_output[json_key] = json_value;
     }
 
