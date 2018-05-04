@@ -553,7 +553,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
             receiver_list_.push_back(
-                { diddetail->get_address(),"", unspent_asset_ - payment_asset_, 0, utxo_attach_type::etp,attach });
+                { diddetail->get_address(),"", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp,attach });
                 
         }
     }

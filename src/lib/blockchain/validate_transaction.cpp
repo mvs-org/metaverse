@@ -1281,6 +1281,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
 
 bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
 {
+    return true;
     if (chain.chain_settings().use_testnet_rules)
     {
         return true;
