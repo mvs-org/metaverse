@@ -89,7 +89,7 @@ console_result createasset::invoke (Json::Value& jv_output,
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    acc->set_issuer(auth_.name);
+    acc->set_issuer(option_.issuer);
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?
