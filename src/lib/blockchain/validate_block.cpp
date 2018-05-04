@@ -271,6 +271,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     }
 
     std::set<string> assets;
+    std::set<string> assetcerts;
     std::set<string> dids;
     for (const auto& tx: transactions)
     {
@@ -285,6 +286,12 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                auto r = assets.insert(output.get_asset_symbol());
                if(r.second == false) {
                    return error::asset_exist;
+               }
+           }
+           else if (output.is_asset_cert_issue()) {
+               auto r = assetcerts.insert(output.get_asset_cert_symbol());
+               if(r.second == false) {
+                   return error::asset_cert_exist;
                }
            }
            else if (output.is_did_issue() || output.is_did_transfer()) {
