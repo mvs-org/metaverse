@@ -29,30 +29,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-// copy from src/lib/consensus/clone/script/script.h
-static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
-{
-    if(value == 0)
-        return std::vector<unsigned char>();
-
-    std::vector<unsigned char> result;
-    const bool neg = value < 0;
-    uint64_t absvalue = neg ? -value : value;
-
-    while(absvalue)
-    {
-        result.push_back(absvalue & 0xff);
-        absvalue >>= 8;
-    }
-
-    if (result.back() & 0x80)
-        result.push_back(neg ? 0x80 : 0);
-    else if (neg)
-        result.back() |= 0x80;
-
-    return result;
-}
-
 console_result signrawtx::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
@@ -66,7 +42,6 @@ console_result signrawtx::invoke (Json::Value& jv_output,
         chain::transaction tx_temp;
         uint64_t tx_height;  
         
-        //for (auto& fromeach : from_list_){
         for (auto& fromeach : tx_.inputs){
             
             if(!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height)))
@@ -114,13 +89,12 @@ console_result signrawtx::invoke (Json::Value& jv_output,
             if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
                 uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
                     contract.operations);
-                ss.operations.push_back({bc::chain::opcode::special, satoshi_to_chunk(lock_height)});
+                ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
             }
             // set input script of this tx
             tx_.inputs[index].script = ss;
-            //fromeach.script = ss;
             index++;
-        }
+        } // end for
 
     }
 

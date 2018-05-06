@@ -133,6 +133,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
         {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
             if (output.is_asset())
             {
@@ -185,6 +186,7 @@ void sync_fetchbalance(wallet::payment_address& address,
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
