@@ -146,43 +146,82 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
         return;
     }
 
+    code error = check_symbol_repeat(tx);
+    if (error != error::success) {
+        handler(error, tx, {});
+        return;
+    }
+
+    handler(error::success, tx, unconfirmed);
+}
+
+code transaction_pool::check_symbol_repeat(transaction_ptr tx) {
     std::set<string> assets;
     std::set<string> assetcerts;
     std::set<string> dids;
     std::set<string> didaddreses;
+
+    for(auto& item : buffer_)
+	{
+		if (!item.tx)
+			continue;	
+
+        for (auto& output : item.tx->outputs)
+        {
+           if (output.is_asset_issue()) {
+               auto r = assets.insert(output.get_asset_symbol());
+               if(r.second == false) {
+                    return error::asset_exist;
+               }
+           }
+           else if (output.is_asset_cert_issue()) {
+               auto r = assetcerts.insert(output.get_asset_cert_symbol());
+               if(r.second == false) {
+                    return error::asset_cert_exist;
+               }
+           }
+           else if (output.is_did_issue() || output.is_did_transfer()) {
+               auto didexist = dids.insert(output.get_did_symbol());
+               if(didexist.second == false) {
+                    return error::did_exist;
+               }
+
+               auto didaddress = didaddreses.insert(output.get_did_address());
+               if(didaddress.second == false ) {
+                    return error::address_issued_did;
+               }
+           }
+        }
+    }
 
     for (auto& output : tx->outputs)
     {
            if (output.is_asset_issue()) {
                auto r = assets.insert(output.get_asset_symbol());
                if(r.second == false) {
-                    handler(error::asset_exist, tx, {});
-                    return;
+                    return error::asset_exist;
                }
            }
            else if (output.is_asset_cert_issue()) {
                auto r = assetcerts.insert(output.get_asset_cert_symbol());
                if(r.second == false) {
-                    handler(error::asset_cert_exist, tx, {});
-                    return;
+                    return error::asset_cert_exist;
                }
            }
            else if (output.is_did_issue() || output.is_did_transfer()) {
                auto didexist = dids.insert(output.get_did_symbol());
                if(didexist.second == false) {
-                    handler(error::did_exist, tx, {});
-                    return;
+                    return error::did_exist;
                }
 
                auto didaddress = didaddreses.insert(output.get_did_address());
                if(didaddress.second == false ) {
-                    handler(error::address_issued_did, tx, {});
-                    return;
+                    return error::address_issued_did;
                }
            }
     }
 
-    handler(error::success, tx, unconfirmed);
+    return error::success;
 }
 
 // handle_confirm will never fire if handle_validate returns a failure code.
@@ -608,35 +647,6 @@ transaction_pool::const_iterator transaction_pool::find(
     const auto found = [&tx_hash](const entry& entry)
     {
         return entry.tx->hash() == tx_hash;
-    };
-
-    return std::find_if(buffer_.begin(), buffer_.end(), found);
-}
-
-transaction_pool::const_iterator transaction_pool::find(
-    const std::string& symbol_name) const
-{
-    const auto found = [&symbol_name](const entry& entry)
-    {
-        for(auto& output : entry.tx->outputs) {
-            if (output.is_asset_issue() 
-				&& output.get_asset_symbol() == symbol_name){
-                return true;
-            } 
-
-            if (output.is_asset_cert_issue()
-                && (output.get_asset_cert_symbol() == symbol_name)){
-                return true;
-            }
-
-            if ((output.is_did_issue() || output.is_did_transfer())
-				&& output.get_did_symbol() == symbol_name){
-                return true;
-            } 
-        }
-            
-
-        return false;
     };
 
     return std::find_if(buffer_.begin(), buffer_.end(), found);
