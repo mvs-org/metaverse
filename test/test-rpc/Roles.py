@@ -14,7 +14,7 @@ class Role:
 
         self.addresslist.reverse()
         self.did_symbol = (name+".DID").upper()
-        self.asset_symbol = (name+".ASSET." + common.get_timestamp()).upper()
+        self.asset_symbol = ""
         self.multisig_addresses = {} # desc : multisig-addr
 
     def lastword(self):
@@ -48,7 +48,10 @@ class Role:
         '''
         issue asset to the main address.
         '''
-        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, description="%s's Asset" % self.name)
+        #auto create a new asset name for each time create_asset is called
+        self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
+
+        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, self.did_symbol, description="%s's Asset" % self.name)
         assert (result == 0)
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
@@ -79,7 +82,9 @@ class Role:
     def get_addressasset(cls, address, cert=None):
         result, message = mvs_rpc.get_addressasset(address, cert)
         assert (result == 0)
-        return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        if message["assets"]:
+            return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        return []
 
     def send_asset(self, to_, amount, asset_symbol=None):
         if not asset_symbol:

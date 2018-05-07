@@ -59,12 +59,43 @@ class TestDIDSendAsset(MVSTestCaseBase):
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)
 
+    def get_asset_amount(self, role):
+        addressassets = role.get_addressasset(role.mainaddress())
+
+        #we only consider Alice's Asset
+        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        self.assertEqual(len(addressasset), 1)
+        previous_quantity = addressasset[0].quantity
+        previous_decimal = addressasset[0].decimal_number
+        return previous_quantity * (10 ** previous_decimal)
+
     def test_2_didsend_asset(self):
+        Alice.create_asset()
+        Alice.mining()
         # send to did
+        import pdb; pdb.set_trace()
+        pA = self.get_asset_amount(Alice)
+        pB = self.get_asset_amount(Bob)
         tx_hash = Alice.didsend_asset(Bob.did_symbol, 1, Alice.asset_symbol)
         Alice.mining()
-        validate.validate_tx(self, Alice.asset_symbol, tx_hash, Alice, Bob, 1, 10 ** 4)
+        cA = self.get_asset_amount(Alice)
+        cB = self.get_asset_amount(Bob)
+
+        self.assertEqual(pA, cA + 1)
+        self.assertEqual(pB, cB - 1)
 
     def test_3_didsend_asset_from(self):
-        pass
+        Alice.create_asset()
+        Alice.mining()
+        # send to did
+        pA = self.get_asset_amount(Alice)
+        pB = self.get_asset_amount(Bob)
+
+        tx_hash = Alice.didsend_asset_from(Alice.did_symbol, Bob.did_symbol, 1, Alice.asset_symbol)
+        Alice.mining()
+        cA = self.get_asset_amount(Alice)
+        cB = self.get_asset_amount(Bob)
+
+        self.assertEqual(pA, cA + 1)
+        self.assertEqual(pB, cB - 1)
 

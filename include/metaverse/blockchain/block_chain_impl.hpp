@@ -222,6 +222,7 @@ public:
 
     // account related api
     std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
+    std::string is_account_lastwd_valid(const account& acc, std::string& auth, const std::string& lastwd);
     void set_account_passwd(const std::string& name, const std::string& passwd);
     bool is_account_exist(const std::string& name);
     bool is_admin_account(const std::string& name);

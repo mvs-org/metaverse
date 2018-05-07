@@ -169,7 +169,7 @@ def get_accountasset(account, password, asset_symbol=None, cert=False):
     return "getaccountasset", filter(None, args), {}, None
 
 @mvs_api
-def create_asset(account, password, symbol, volume, description=None, issuer=None, decimalnumber=None, rate=None):
+def create_asset(account, password, symbol, volume, issuer, description=None, decimalnumber=None, rate=None):
     optionals = {
         '--symbol' : symbol,
         '--volume': volume,

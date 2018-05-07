@@ -37,7 +37,7 @@
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
-
+#include <metaverse/blockchain/account_security_strategy.hpp>
 namespace libbitcoin {
 namespace blockchain {
 
@@ -108,6 +108,10 @@ bool block_chain_impl::start()
     stopped_ = false;
     organizer_.start();
     transaction_pool_.start();
+
+    //init the single instance here, to avoid multi-thread init confilict
+    auto* temp = account_security_strategy::get_instance();
+
     return true;
 }
 
@@ -1015,15 +1019,40 @@ inline short_hash block_chain_impl::get_short_hash(const std::string& str)
 std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
         (const std::string& name, const std::string& passwd)
 {
+    //added by chengzhiping to protect accounts from brute force password attacks.
+    auto *ass = account_security_strategy::get_instance();
+    ass->check_locked(name);
+
 	auto account = get_account(name);
 	if(account && account->get_passwd() == get_hash(passwd)) // account exist
 	{
+        ass->on_auth_passwd(name, true);
         return account;
 	}else{
+        ass->on_auth_passwd(name, false);
         throw std::logic_error{"account not found or incorrect password"};
         return nullptr;
     }
 }
+
+std::string block_chain_impl::is_account_lastwd_valid(const account& acc, std::string& auth, const std::string& lastwd)
+{
+    //added by chengzhiping to protect accounts from brute force password attacks.
+    auto *ass = account_security_strategy::get_instance();
+
+    std::string mnemonic;
+    acc.get_mnemonic(auth, mnemonic);
+    auto&& results = bc::split(mnemonic, " ", true); // with trim
+    if (*results.rbegin() != lastwd){
+        ass->on_auth_lastwd(acc.get_name(), false);
+        throw std::logic_error{"last word not matching."};
+    }
+
+    ass->on_auth_lastwd(acc.get_name(), true);
+
+    return mnemonic;
+}
+
 void block_chain_impl::set_account_passwd
         (const std::string& name, const std::string& passwd)
 {

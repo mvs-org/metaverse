@@ -39,13 +39,7 @@ console_result getaccount::invoke(Json::Value& jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     //auto&& mnemonic = acc->get_mnemonic(auth_.auth);
-    std::string mnemonic;
-    acc->get_mnemonic(auth_.auth, mnemonic);
-    auto&& results = bc::split(mnemonic, " ", true); // with trim
-
-    if (*results.rbegin() != argument_.last_word){
-        throw argument_dismatch_exception{"last word not matching."};
-    }
+    std::string&& mnemonic = blockchain.is_account_lastwd_valid(*acc, auth_.auth, argument_.last_word);
 
     auto& root = jv_output;
     root["name"] = acc->get_name();
