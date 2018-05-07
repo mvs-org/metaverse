@@ -1116,7 +1116,7 @@ void issuing_asset::sum_payments()
                 payment_asset_cert_ = asset_cert_ns::naming; // will verify by input
             }
             else {
-                throw asset_cert_domain_exception{"no domain naming cert exists for asset : " + symbol_};
+                throw asset_cert_notfound_exception{"no naming cert exists for asset : " + symbol_};
             }
         }
     }

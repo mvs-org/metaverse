@@ -66,19 +66,26 @@ console_result issuecert::invoke (Json::Value& jv_output,
         // check symbol is valid.
         auto pos = argument_.symbol.find(".");
         if (pos == string::npos) {
-            throw asset_symbol_name_exception("invalid asset cert symbol " + argument_.symbol
+            throw asset_symbol_name_exception("invalid naming cert symbol " + argument_.symbol
                 + ", it should contain a dot '.'");
         }
 
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         if (!asset_cert::is_valid_domain(domain)) {
-            throw asset_symbol_name_exception("invalid asset cert symbol " + argument_.symbol
+            throw asset_symbol_name_exception("invalid naming cert symbol " + argument_.symbol
                 + ", it should contain a valid domain!");
         }
 
         // check domain naming cert not exist.
         if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming)) {
-            throw asset_cert_exception("domain naming cert '" + argument_.symbol + "'already exists!");
+            throw asset_cert_existed_exception(
+                "domain naming cert '" + argument_.symbol + "' already exists in blockchain!");
+        }
+
+        // check asset not exist.
+        if (blockchain.is_asset_exist(argument_.symbol, false)) {
+            throw asset_symbol_existed_exception(
+                "asset symbol '" + argument_.symbol + "' already exists in blockchain!");
         }
 
         // check domain cert belong to this account.
@@ -88,7 +95,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
         };
         auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
         if (it == certs_vec->end()) {
-            throw asset_cert_domain_exception("no domain cert owned!");
+            throw asset_cert_notowned_exception("no domain cert owned!");
         }
 
         domain_cert_addr = it->address;

@@ -125,13 +125,13 @@ enum error_code_t
     // network errors (more)
     address_blocked,
     channel_stopped,                // 50
-	not_satisfied,
-	mock,
+    not_satisfied,
+    mock,
 
-	// asset check
+    // asset check
     asset_amount_overflow,
-	asset_amount_not_equal,
-	asset_symbol_not_match,         // 55
+    asset_amount_not_equal,
+    asset_symbol_not_match,         // 55
     asset_symbol_invalid,
     asset_address_not_match,
     asset_exist,
@@ -140,28 +140,30 @@ enum error_code_t
     asset_secondaryissue_error,
     asset_secondaryissue_share_not_enough,
     asset_secondaryissue_threshold_invalid,
-    asset_cert_error,
 
-	//syn block
-	fetch_more_block,               // 65
-	bad_magic,
+    //syn block
+    fetch_more_block,
+    bad_magic,                      // 65
 
     // did check
-	did_symbol_not_match,
+    did_symbol_not_match,
     did_symbol_invalid,
     did_exist,
-    address_issued_did,             // 70
-    did_func_not_actived,
+    address_issued_did,
+    did_func_not_actived,           // 70
     did_address_not_match,
     did_address_needed,
     did_not_exist,
-    did_multi_type_exist,           // 75
-    did_input_error,
+    did_multi_type_exist,
+    did_input_error,                // 75
     attenuation_model_param_error,
 
     // cert check
-    asset_cert_exist,               // 78
+    asset_cert_error,
+    asset_cert_exist,
     asset_cert_not_exist,
+    asset_cert_not_owned,           // 80
+    asset_cert_not_provided,
     asset_cert_issue_error,
     asset_did_issuer_not_match,
 };

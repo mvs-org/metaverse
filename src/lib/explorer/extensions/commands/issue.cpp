@@ -105,8 +105,8 @@ console_result issue::invoke (Json::Value& jv_output,
                     cert_symbol = argument_.symbol;
                 }
                 else {
-                    throw asset_cert_domain_exception{
-                        "Domain cert " + domain + " exists in blockchain and does not belong to " + auth_.name};
+                    throw asset_cert_notowned_exception{
+                        "Domain cert " + domain + " exists in blockchain and is not owned by " + auth_.name};
                 }
             }
         }
