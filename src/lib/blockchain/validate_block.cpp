@@ -46,7 +46,6 @@ if (stopped()) \
 using namespace chain;
 
 // Consensus rule change activation and enforcement parameters.
-static constexpr uint8_t version_5 = 5;
 static constexpr uint8_t version_4 = 4;
 static constexpr uint8_t version_3 = 3;
 static constexpr uint8_t version_2 = 2;
@@ -128,12 +127,10 @@ void validate_block::initialize_context()
     // Continue even if this is too small or empty (fast and simpler).
     const auto versions = preceding_block_versions(sample);
 
-    const auto ge_5 = [](uint8_t version) { return version >= version_5; };
     const auto ge_4 = [](uint8_t version) { return version >= version_4; };
     const auto ge_3 = [](uint8_t version) { return version >= version_3; };
     const auto ge_2 = [](uint8_t version) { return version >= version_2; };
 
-    const auto count_5 = std::count_if(versions.begin(), versions.end(), ge_5);
     const auto count_4 = std::count_if(versions.begin(), versions.end(), ge_4);
     const auto count_3 = std::count_if(versions.begin(), versions.end(), ge_3);
     const auto count_2 = std::count_if(versions.begin(), versions.end(), ge_2);
@@ -141,10 +138,8 @@ void validate_block::initialize_context()
     const auto activate = [active](size_t count) { return count >= active; };
     const auto enforced = [enforce](size_t count) { return count >= enforce; };
 
-    // version 5/4/3/2 enforced based on 95% of preceding 1000 mainnet blocks.
-    if (enforced(count_5))
-        minimum_version_ = version_5;
-    else if (enforced(count_4))
+    // version 4/3/2 enforced based on 95% of preceding 1000 mainnet blocks.
+    if (enforced(count_4))
         minimum_version_ = version_4;
     else if (enforced(count_3))
         minimum_version_ = version_3;
@@ -153,8 +148,8 @@ void validate_block::initialize_context()
     else
         minimum_version_ = version_1;
 
-    if (activate(count_5))
-        activations_ |= script_context::attenuation_enabled;
+    // good for all, no votes is needed.
+    activations_ |= script_context::attenuation_enabled;
 
     // bip65 is activated based on 75% of preceding 1000 mainnet blocks.
     if (activate(count_4))
@@ -186,7 +181,7 @@ bool validate_block::is_active(script_context flag) const
 
     const auto version = current_block_.header.version;
     return
-        (flag == script_context::attenuation_enabled && version >= version_5) ||
+        (flag == script_context::attenuation_enabled) ||
         (flag == script_context::bip65_enabled && version >= version_4) ||
         (flag == script_context::bip66_enabled && version >= version_3) ||
         (flag == script_context::bip34_enabled && version >= version_2);
