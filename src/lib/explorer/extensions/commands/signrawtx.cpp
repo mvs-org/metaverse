@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,8 +29,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result signrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result signrawtx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -40,13 +40,13 @@ console_result signrawtx::invoke (Json::Value& jv_output,
     {
         uint32_t index = 0;
         chain::transaction tx_temp;
-        uint64_t tx_height;  
-        
+        uint64_t tx_height;
+
         for (auto& fromeach : tx_.inputs){
-            
+
             if(!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height)))
                 throw argument_legality_exception{std::string("invalid transaction hash ") + encode_hash(fromeach.previous_output.hash)};
-            
+
             auto output = tx_temp.outputs.at(fromeach.previous_output.index);
             // get address private key
             auto address = payment_address::extract(output.script);
@@ -63,7 +63,7 @@ console_result signrawtx::invoke (Json::Value& jv_output,
             uint8_t hash_type = (signature_hash_algorithm)sign_type;
 
             bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(auth_.auth)); // address private key
-            const ec_secret& private_key =    config_private_key;    
+            const ec_secret& private_key =    config_private_key;
             bc::wallet::ec_private ec_private_key(private_key, 0u, true);
 
             bc::explorer::config::script config_contract(output.script); // previous output script
@@ -84,7 +84,7 @@ console_result signrawtx::invoke (Json::Value& jv_output,
             bc::chain::script ss;
             ss.operations.push_back({bc::chain::opcode::special, endorse});
             ss.operations.push_back({bc::chain::opcode::special, public_key_data});
-            
+
             // if pre-output script is deposit tx.
             if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
                 uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
@@ -107,8 +107,8 @@ console_result signrawtx::invoke (Json::Value& jv_output,
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
     aroot["hex"] = tx_buf.str();
-    
-    
+
+
     return console_result::okay;
 }
 

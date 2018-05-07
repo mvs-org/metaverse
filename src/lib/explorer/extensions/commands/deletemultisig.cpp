@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,18 +29,18 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
-console_result deletemultisig::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result deletemultisig::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     //auto acc_multisig = acc->get_multisig();
     account_multisig acc_multisig;
-        
+
     if(!(acc->get_multisig_by_address(acc_multisig, option_.address)))
         throw multisig_notfound_exception{option_.address + std::string(" multisig record not found.")};
-    
+
     acc->remove_multisig(acc_multisig);
 
     // change account type
@@ -74,7 +74,7 @@ console_result deletemultisig::invoke (Json::Value& jv_output,
     }
     jv_output["multisig-script"] = acc_multisig.get_multisig_script();
     jv_output["address"] = acc_multisig.get_address();
-    
+
     // delete account address
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_empty_exception{"empty address list for this account"};
@@ -93,8 +93,8 @@ console_result deletemultisig::invoke (Json::Value& jv_output,
         auto addr = std::make_shared<bc::chain::account_address>(each);
         blockchain.store_account_address(addr);
     }
-    
-    
+
+
     return console_result::okay;
 }
 

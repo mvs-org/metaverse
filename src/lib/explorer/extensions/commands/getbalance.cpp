@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,8 +33,8 @@ using namespace bc::explorer::config;
 
 /************************ getbalance *************************/
 
-console_result getbalance::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getbalance::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -59,7 +59,7 @@ console_result getbalance::invoke (Json::Value& jv_output,
         total_unspent += addr_balance.unspent_balance;
         total_frozen += addr_balance.frozen_balance;
     }
-    
+
     if (get_api_version() == 1){
         aroot["total-confirmed"] += total_confirmed;
         aroot["total-received"] += total_received;

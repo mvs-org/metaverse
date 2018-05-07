@@ -32,7 +32,7 @@ namespace chain {
 
 did_detail::did_detail()
 {
-	reset();
+    reset();
 }
 did_detail::did_detail(
     std::string symbol, std::string address):
@@ -62,12 +62,12 @@ did_detail did_detail::factory_from_data(reader& source)
 }
 bool did_detail::is_valid() const
 {
-    return !(symbol.empty() 
-			|| count_size()>DID_DETAIL_FIX_SIZE);
+    return !(symbol.empty()
+            || count_size()>DID_DETAIL_FIX_SIZE);
 }
 
 void did_detail::reset()
-{	
+{
     symbol = "";
     address = "";
 }
@@ -95,7 +95,7 @@ bool did_detail::from_data(reader& source)
     if (!result)
         reset();
 
-    return result;	
+    return result;
 }
 
 data_chunk did_detail::to_data() const
@@ -117,7 +117,7 @@ void did_detail::to_data(std::ostream& stream) const
 void did_detail::to_data(writer& sink) const
 {
     sink.write_string(symbol);
-	sink.write_string(address);
+    sink.write_string(address);
 }
 
 uint64_t did_detail::serialized_size() const
@@ -126,9 +126,22 @@ uint64_t did_detail::serialized_size() const
     return std::min(DID_DETAIL_FIX_SIZE, len);
 }
 
-uint32_t did_detail::count_size() const 
+uint32_t did_detail::count_size() const
 {
     return symbol.size()  + address.size() + 2;
+}
+
+bool did_detail::operator< (const did_detail& other) const
+{
+    auto ret = symbol.compare(other.symbol);
+    if (ret < 0) {
+        return true;
+    }
+    else if (ret == 0) {
+        return address.compare(other.address) <= 0;
+    }
+
+    return false;
 }
 
 std::string did_detail::to_string() const
@@ -136,37 +149,37 @@ std::string did_detail::to_string() const
     std::ostringstream ss;
 
     ss << "\t symbol = " << symbol << "\n"
-		<< "\t address = " << address << "\n";
+        << "\t address = " << address << "\n";
 
     return ss.str();
 }
 
-void did_detail::to_json(std::ostream& output) 
+void did_detail::to_json(std::ostream& output)
 {
-	minijson::object_writer json_writer(output);
-	json_writer.write("symbol", symbol);
-	json_writer.write("address", address);
-	json_writer.close();
+    minijson::object_writer json_writer(output);
+    json_writer.write("symbol", symbol);
+    json_writer.write("address", address);
+    json_writer.close();
 }
 
 const std::string& did_detail::get_symbol() const
-{ 
+{
     return symbol;
 }
 void did_detail::set_symbol(const std::string& symbol)
-{ 
+{
     size_t len = std::min(symbol.size()+1 , DID_DETAIL_SYMBOL_FIX_SIZE);
     this->symbol = symbol.substr(0, len);
 }
 
 const std::string& did_detail::get_address() const
-{ 
+{
     return address;
 }
 void did_detail::set_address(const std::string& address)
-{ 
+{
      size_t len = std::min(address.size()+1 , DID_DETAIL_ADDRESS_FIX_SIZE);
-	 this->address = address.substr(0, len);
+     this->address = address.substr(0, len);
 }
 
 } // namspace chain

@@ -606,7 +606,7 @@ code validate_transaction::check_asset_issue_transaction(
     if (tx.version >= transaction_version::check_nova_feature
         && asset_cert::is_valid_domain(domain)) {
         if (cert_address.empty()) {
-            return error::asset_issue_error;
+            return error::asset_cert_error;
         }
 
         // if domain certs exists then make sure it belongs to the address
@@ -623,7 +623,7 @@ code validate_transaction::check_asset_issue_transaction(
             }
             else {
                 // no valid domain cert
-                return error::asset_issue_error;
+                return error::asset_cert_not_provided;
             }
 
             // check domain certs
@@ -634,7 +634,7 @@ code validate_transaction::check_asset_issue_transaction(
             auto it = std::find_if(certs_vec->begin(), certs_vec->end(),
                 std::bind(match, _1, check_type));
             if (it == certs_vec->end()) {
-                return error::asset_issue_error;
+                return error::asset_cert_not_owned;
             }
         }
     }
@@ -662,7 +662,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
     int num_asset_cert_domain{0};
     asset_cert_type cert_mask{asset_cert_ns::none};
     asset_cert_type cert_type{asset_cert_ns::none};
-    std::string asset_symbol;
+    std::string cert_symbol;
     std::string domain_cert_address;
     for (auto& output : tx.outputs)
     {
@@ -676,12 +676,14 @@ code validate_transaction::check_asset_cert_issue_transaction(
             asset_cert&& cert_info = output.get_asset_cert();
             asset_cert_type cur_cert_type = cert_info.get_certs();
 
-            if (!check_same(asset_symbol, cert_info.get_symbol())) {
+            if (!check_same(cert_symbol, cert_info.get_symbol())) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                     << cert_info.get_symbol() << " does not match.";
                 return error::asset_cert_issue_error;
             }
-            if (chain.is_asset_cert_exist(asset_symbol, cur_cert_type)) {
+
+            // check cert not exists
+            if (chain.is_asset_cert_exist(cert_symbol, cur_cert_type)) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                     << cert_info.get_symbol() << " already exists.";
                 return error::asset_cert_exist;
@@ -700,8 +702,8 @@ code validate_transaction::check_asset_cert_issue_transaction(
                     return error::asset_cert_issue_error;
                 }
 
-                if (!asset_symbol.empty()) {
-                    auto&& domain = asset_cert::get_domain(asset_symbol);
+                if (!cert_symbol.empty()) {
+                    auto&& domain = asset_cert::get_domain(cert_symbol);
                     if (domain != cert_info.get_symbol()) {
                         return error::asset_cert_issue_error;
                     }
@@ -738,17 +740,24 @@ code validate_transaction::check_asset_cert_issue_transaction(
             return error::asset_cert_issue_error;
         }
 
-        // check domain cert belongs to the address
+        // check asset not exist.
+        if (chain.is_asset_exist(cert_symbol, false)) {
+            log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
+            return error::asset_exist;
+        }
+
+        // check domain cert is owned by the address
         const auto match = [](const business_address_asset_cert& item) {
             return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
         };
-        auto&& domain = asset_cert::get_domain(asset_symbol);
+        auto&& domain = asset_cert::get_domain(cert_symbol);
         auto certs_vec = chain.get_address_asset_certs(domain_cert_address, domain);
         auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
         if (it == certs_vec->end()) {
             log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                 << "no domain cert owned to issue naming cert.";
-            return error::asset_cert_issue_error;
+            return error::asset_cert_not_owned;
         }
     }
 

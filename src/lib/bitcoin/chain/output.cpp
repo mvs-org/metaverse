@@ -58,8 +58,8 @@ bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
         return false;
     // length check
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-		return false;
-	// char check
+        return false;
+    // char check
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'))
             return false;
@@ -73,7 +73,7 @@ bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
             && bc::wallet::symbol::is_sensitive(symbol)) {
         return false;
     }
-	return true;
+    return true;
 }
 
 bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
@@ -82,8 +82,8 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
         return false;
     // length check
     if (symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-		return false;
-	// char check
+        return false;
+    // char check
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'|| i=='@'))
             return false;
@@ -92,13 +92,13 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
     if (bc::wallet::symbol::is_sensitive(symbol)) {
         return false;
     }
-	return true;
+    return true;
 }
 
 bool output::is_valid() const
 {
     return (value != 0) || script.is_valid()
-		|| attach_data.is_valid(); // added for asset issue/transfer
+        || attach_data.is_valid(); // added for asset issue/transfer
 }
 
 std::string output::get_script_address() const
@@ -153,7 +153,7 @@ void output::reset()
 {
     value = 0;
     script.reset();
-	attach_data.reset(); // added for asset issue/transfer
+    attach_data.reset(); // added for asset issue/transfer
 }
 
 bool output::from_data(const data_chunk& data)
@@ -179,10 +179,10 @@ bool output::from_data(reader& source)
         result = script.from_data(source, true,
             script::parse_mode::raw_data_fallback);
 
-	/* begin added for asset issue/transfer */
+    /* begin added for asset issue/transfer */
     if (result)
         result = attach_data.from_data(source);
-	/* end added for asset issue/transfer */
+    /* end added for asset issue/transfer */
 
     if (!result)
         reset();
@@ -196,8 +196,8 @@ data_chunk output::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-	log::debug("output::to_data") << "data.size=" << data.size();
-	log::debug("output::to_data") << "serialized_size=" << serialized_size();
+    log::debug("output::to_data") << "data.size=" << data.size();
+    log::debug("output::to_data") << "serialized_size=" << serialized_size();
     //BITCOIN_ASSERT(data.size() == serialized_size());
     return data;
 }
@@ -212,15 +212,15 @@ void output::to_data(writer& sink) const
 {
     sink.write_8_bytes_little_endian(value);
     script.to_data(sink, true);
-	/* begin added for asset issue/transfer */
-	attach_data.to_data(sink);
-	/* end added for asset issue/transfer */
+    /* begin added for asset issue/transfer */
+    attach_data.to_data(sink);
+    /* end added for asset issue/transfer */
 }
 
 uint64_t output::serialized_size() const
 {
     return 8 + script.serialized_size(true)
-		+ attach_data.serialized_size(); // added for asset issue/transfer
+        + attach_data.serialized_size(); // added for asset issue/transfer
 }
 
 std::string output::to_string(uint32_t flags) const
@@ -261,11 +261,11 @@ bool output::is_asset_transfer() const
 
 bool output::is_did_transfer() const
 {
-	if(attach_data.get_type() == DID_TYPE) {
-		auto did_info = boost::get<did>(attach_data.get_attach());
-		return (did_info.get_status() == DID_TRANSFERABLE_TYPE);
-	}
-	return false;
+    if(attach_data.get_type() == DID_TYPE) {
+        auto did_info = boost::get<did>(attach_data.get_attach());
+        return (did_info.get_status() == DID_TRANSFERABLE_TYPE);
+    }
+    return false;
 }
 
 bool output::is_asset_issue() const
@@ -315,7 +315,7 @@ bool output::is_asset() const
 
 bool output::is_did() const
 {
-	return (attach_data.get_type() == DID_TYPE);
+    return (attach_data.get_type() == DID_TYPE);
 }
 
 bool output::is_etp() const
@@ -422,41 +422,41 @@ asset_cert_type output::get_asset_cert_type() const
 
 bool output::is_did_issue() const
 {
-	if(attach_data.get_type() == DID_TYPE) {
-		auto did_info = boost::get<did>(attach_data.get_attach());
-		return (did_info.get_status() ==  DID_DETAIL_TYPE);
-	}
-	return false;
+    if(attach_data.get_type() == DID_TYPE) {
+        auto did_info = boost::get<did>(attach_data.get_attach());
+        return (did_info.get_status() ==  DID_DETAIL_TYPE);
+    }
+    return false;
 }
 
 std::string output::get_did_symbol() const // for validate_transaction.cpp to calculate did transfer amount
 {
-	if (attach_data.get_type() == DID_TYPE) {
-		auto did_info = boost::get<did>(attach_data.get_attach());
-		auto detail_info = boost::get<did_detail>(did_info.get_data());
-		return detail_info.get_symbol();
+    if (attach_data.get_type() == DID_TYPE) {
+        auto did_info = boost::get<did>(attach_data.get_attach());
+        auto detail_info = boost::get<did_detail>(did_info.get_data());
+        return detail_info.get_symbol();
 
-	}
-	return std::string("");
+    }
+    return std::string("");
 }
 
 std::string output::get_did_address() const // for validate_transaction.cpp to calculate did transfer amount
 {
-	if(attach_data.get_type() == DID_TYPE) {
-		auto did_info = boost::get<did>(attach_data.get_attach());
-		auto detail_info = boost::get<did_detail>(did_info.get_data());
-		return detail_info.get_address();
+    if(attach_data.get_type() == DID_TYPE) {
+        auto did_info = boost::get<did>(attach_data.get_attach());
+        auto detail_info = boost::get<did_detail>(did_info.get_data());
+        return detail_info.get_address();
 
-	}
-	return std::string("");
+    }
+    return std::string("");
 }
 
 did output::get_did() const
 {
     if(attach_data.get_type() == DID_TYPE) {
-		return boost::get<did>(attach_data.get_attach());
-	}
-	return did();
+        return boost::get<did>(attach_data.get_attach());
+    }
+    return did();
 }
 
 asset_transfer output::get_asset_transfer() const

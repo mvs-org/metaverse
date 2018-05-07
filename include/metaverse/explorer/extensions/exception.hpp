@@ -124,10 +124,13 @@ DEFINE_EXPLORER_EXCEPTION(asset_symbol_length_exception, 5011);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_name_exception, 5012);
 DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
 DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
-DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5015);
-DEFINE_EXPLORER_EXCEPTION(asset_secondaryissue_threshold_exception, 5016);
-DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5017);
-DEFINE_EXPLORER_EXCEPTION(asset_attenuation_model_exception, 5018);
+DEFINE_EXPLORER_EXCEPTION(asset_secondaryissue_threshold_exception, 5015);
+DEFINE_EXPLORER_EXCEPTION(asset_attenuation_model_exception, 5016);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5017);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_existed_exception, 5018);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_notfound_exception, 5019);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5020);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5021);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

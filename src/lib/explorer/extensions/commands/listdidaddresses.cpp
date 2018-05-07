@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,36 +31,36 @@ namespace explorer {
 namespace commands {
 
 console_result listdidaddresses::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+    libbitcoin::server::server_node& node)
 {
     Json::Value addresses;
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     //blockchain.uppercase_symbol(argument_.symbol);
-    
+
     if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
 
     // fail if did is already in blockchain
     if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};
-    
+        throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
+
     auto blockchain_dids = blockchain.get_did_history_addresses(argument_.symbol);
-    if(blockchain_dids){
+    if (blockchain_dids) {
         Json::Value did_data;
         for (auto &did : *blockchain_dids){
             did_data["address"] = did.get_did().get_address();
             did_data["status"] = did.get_status_string();
             addresses.append(did_data);
         }
-        
     }
 
-    if (get_api_version() == 1 && addresses.isNull()) { //compatible for v1        
-        jv_output["addresses"] = "";                                                   
-    } else {                                                                    
-        jv_output["addresses"] = addresses;                                               
-    } 
+    if (get_api_version() == 1 && addresses.isNull()) { //compatible for v1
+        jv_output["addresses"] = "";
+    }
+    else {
+        jv_output["addresses"] = addresses;
+    }
 
     return console_result::okay;
 }

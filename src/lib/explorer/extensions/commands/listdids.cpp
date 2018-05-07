@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,64 +33,55 @@ using namespace bc::explorer::config;
 
 /************************ listdids *************************/
 
-console_result listdids::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result listdids::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    auto& aroot = jv_output;
     Json::Value dids;
-    
-    std::string symbol;
+
     auto& blockchain = node.chain_impl();
-    auto sh_vec = std::make_shared<std::vector<did_detail>>();
+    auto sh_vec = blockchain.get_issued_dids();
+    std::sort(sh_vec->begin(), sh_vec->end());
 
-    sh_vec = blockchain.get_issued_dids();
-        
-    if (sh_vec->size() == 0) // no did found
-        throw did_symbol_notfound_exception{"No did found, please waiting for block synchronizing finish."};
-    
-    if(auth_.name.empty()) { // no account -- list whole dids in blockchain
-
+    if (auth_.name.empty()) { // no account -- list whole dids in blockchain
         // add blockchain dids
         for (auto& elem: *sh_vec) {
             Json::Value did_data;
-            
             did_data["symbol"] = elem.get_symbol();
             did_data["address"] = elem.get_address();
             did_data["status"] = "issued";
             dids.append(did_data);
         }
-        
-    } else { // list did owned by account
+    }
+    else { // list did owned by account
         blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if(!pvaddr) 
+        if (!pvaddr)
             throw address_list_nullptr_exception{"nullptr for address list"};
-        
-        for (auto& elem: *sh_vec) {
 
-            auto address = elem.get_address();            
+        for (auto& elem: *sh_vec) {
+            auto address = elem.get_address();
             auto pos = std::find_if(pvaddr->begin(), pvaddr->end(), [&](const account_address& elem){
-                    return address == elem.get_address();
-                    });
-            
-            if (pos == pvaddr->end()){ // did is not yours
+                return address == elem.get_address();
+            });
+
+            if (pos == pvaddr->end()) { // did is not yours
                 continue;
-            } 
+            }
 
             Json::Value did_data;
             did_data["symbol"] = elem.get_symbol();
-            symbol = elem.get_symbol();
             did_data["address"] = elem.get_address();
             did_data["status"] = "issued";
             dids.append(did_data);
         }
     }
 
-    if (get_api_version() == 1 && dids.isNull()) { //compatible for v1        
-        aroot["dids"] = "";                                                   
-    } else {                                                                    
-        aroot["dids"] = dids;                                               
-    }    
+    if (get_api_version() == 1 && dids.isNull()) { //compatible for v1
+        jv_output["dids"] = "";
+    }
+    else {
+        jv_output["dids"] = dids;
+    }
 
     return console_result::okay;
 }

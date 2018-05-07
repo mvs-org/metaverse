@@ -32,8 +32,7 @@ using namespace bc::explorer::config;
 /************************ createasset *************************/
 
 void validate(boost::any& v,
-              const std::vector<std::string>& values,
-              non_negative_uint64*, int)
+    const std::vector<std::string>& values, non_negative_uint64*, int)
 {
     using namespace boost::program_options;
     validators::check_first_occurrence(v);
@@ -45,8 +44,8 @@ void validate(boost::any& v,
     v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
 
-console_result createasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result createasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -61,14 +60,17 @@ console_result createasset::invoke (Json::Value& jv_output,
         throw did_symbol_length_exception{"issuer can not be empty."};
     if (option_.issuer.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
-    if (!blockchain.is_did_exist(option_.issuer))
-        throw did_symbol_existed_exception{"the did for issuer is not exist in blockchain,maybe you should issuedid first"};
+    if (!blockchain.is_did_exist(option_.issuer)) {
+        throw did_symbol_notfound_exception{
+            "the did for issuer is not exist in blockchain, maybe you should issuedid first"};
+    }
 
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
     auto threshold = option_.secondaryissue_threshold;
     if ((threshold < -1) || (threshold > 100)) {
-        throw asset_secondaryissue_threshold_exception{"secondaryissue threshold value error, is must be -1 or in range of 0 to 100."};
+        throw asset_secondaryissue_threshold_exception{
+            "secondaryissue threshold value error, is must be -1 or in range of 0 to 100."};
     }
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};

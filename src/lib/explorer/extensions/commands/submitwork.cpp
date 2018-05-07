@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,8 +35,8 @@ inline bool startswith(const string &str, const char *prefix) {
     return str.find(prefix) == 0;
 }
 
-console_result submitwork::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result submitwork::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& miner = node.miner();
 

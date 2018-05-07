@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,8 +30,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result sendrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendrawtx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     tx_type tx_ = argument_.transaction;
@@ -54,7 +54,7 @@ console_result sendrawtx::invoke (Json::Value& jv_output,
 
     auto& aroot = jv_output;
     aroot["hash"] = encode_hash(tx_.hash());
-    
+
     return console_result::okay;
 }
 

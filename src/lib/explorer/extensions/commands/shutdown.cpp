@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,8 +29,8 @@ namespace explorer {
 namespace commands {
 
 /************************ shutdown *************************/
-console_result shutdown::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result shutdown::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,8 +31,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result getpublickey::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getpublickey::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -42,11 +42,11 @@ console_result getpublickey::invoke (Json::Value& jv_output,
     auto addr = bc::wallet::payment_address(argument_.address);
     if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
         throw argument_legality_exception{"script address parameter not allowed!"};
-    
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
+    if(!pvaddr)
         throw address_list_nullptr_exception{"nullptr for address list"};
-    
+
     // set random address
     if (argument_.address.empty()) {
         argument_.address = get_random_payment_address(pvaddr, blockchain);
@@ -71,11 +71,11 @@ console_result getpublickey::invoke (Json::Value& jv_output,
     if(!found) {
         throw account_address_get_exception{pub_key};
     }
-    
+
     auto& root = jv_output;
     root["public-key"] = pub_key;
     root["address"] = argument_.address;
-    
+
     return console_result::okay;
 }
 

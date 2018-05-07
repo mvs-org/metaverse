@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -23,31 +23,31 @@
 #include <metaverse/explorer/extensions/commands/changepasswd.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
-#include <metaverse/explorer/extensions/exception.hpp> 
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result changepasswd::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result changepasswd::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    
+
     acc->set_passwd(option_.passwd);
     acc->set_mnemonic(mnemonic, option_.passwd);
 
     blockchain.store_account(acc);
-    
+
     // reencry address
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
+    if(!pvaddr)
         throw address_list_nullptr_exception{"empty address list"};
-    
+
     std::string prv_key;
     for (auto& each : *pvaddr){
         prv_key = each.get_prv_key(auth_.auth);

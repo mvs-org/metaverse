@@ -33,8 +33,8 @@ using namespace bc::explorer::config;
 
 /************************ listassets *************************/
 
-console_result listassets::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result listassets::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 

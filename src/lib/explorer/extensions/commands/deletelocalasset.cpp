@@ -32,8 +32,8 @@ namespace commands {
 using namespace bc::explorer::config;
 /************************ deletelocalasset *************************/
 
-console_result deletelocalasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result deletelocalasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,45 +31,45 @@ namespace explorer {
 namespace commands {
 
 
-console_result didsend::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result didsend::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     std::string tempaddress = "";
-
-    attachment attach; 
+    attachment attach;
 
     //support address as well as did
-    if (blockchain.is_valid_address(argument_.did)) 
-    {
+    if (blockchain.is_valid_address(argument_.did)) {
         tempaddress = argument_.did;
     }
-    else
-    {
+    else {
         //blockchain.uppercase_symbol(argument_.did);
         if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"did symbol length must be less than 64."};
-        if(!blockchain.is_did_exist(argument_.did))
-            throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};   
-        auto diddetail=blockchain.get_issued_did(argument_.did);
+        if (!blockchain.is_did_exist(argument_.did))
+            throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
+
+        auto diddetail = blockchain.get_issued_did(argument_.did);
         tempaddress = diddetail->get_address();
-        
-        attach.set_to_did(argument_.did); 
-        attach.set_version(DID_ATTACH_VERIFY_VERSION); 
+
+        attach.set_to_did(argument_.did);
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {tempaddress, "", argument_.amount, 0, utxo_attach_type::etp, attach}  
+        {tempaddress, "", argument_.amount, 0, utxo_attach_type::etp, attach}
     };
 
-    if(!argument_.memo.empty())
-        receiver.push_back({tempaddress, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
-    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    if (!argument_.memo.empty()) {
+        receiver.push_back({tempaddress, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(argument_.memo))});
+    }
+    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
         "", std::move(receiver), argument_.fee);
-    
+
     send_helper.exec();
 
     // json output

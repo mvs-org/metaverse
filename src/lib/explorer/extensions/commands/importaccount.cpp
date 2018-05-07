@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -24,18 +24,18 @@
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
-#include <metaverse/explorer/extensions/exception.hpp> 
-#include <metaverse/explorer/commands/offline_commands_impl.hpp> 
+#include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/commands/offline_commands_impl.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result importaccount::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result importaccount::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    
+
     // parameter account name check
     auto& blockchain = node.chain_impl();
     if (blockchain.is_account_exist(auth_.name))
@@ -65,7 +65,7 @@ console_result importaccount::invoke (Json::Value& jv_output,
     acc->set_passwd(option_.passwd);
     acc->set_mnemonic(mnemonic, option_.passwd);
     //acc->set_hd_index(option_.hd_index); // hd_index updated in getnewaddress
-    
+
     // flush to db
     blockchain.store_account(acc);
 
@@ -78,18 +78,18 @@ console_result importaccount::invoke (Json::Value& jv_output,
     } else {
         root["hd_index"] = option_.hd_index;
     }
-    
+
     uint32_t idx = 0;
     auto&& str_idx = std::to_string(option_.hd_index);
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-n", str_idx.c_str()};
     Json::Value addresses;
-    
+
     if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
         throw address_generate_exception{"getnewaddress got exception."};
     }
 
     root["addresses"] = addresses["addresses"];
-    
+
     return console_result::okay;
 }
 

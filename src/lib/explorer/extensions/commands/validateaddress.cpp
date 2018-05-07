@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,8 +30,8 @@ namespace commands {
 
 /************************ validateaddress *************************/
 
-console_result validateaddress::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result validateaddress::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     std::string version_info;
     std::string message{"valid address"};

@@ -1799,7 +1799,7 @@ std::shared_ptr<std::vector<blockchain_did>> block_chain_impl::get_did_history_a
     return database_.dids.get_history_dids(hash);
 }
 
-std::shared_ptr<did_detail> block_chain_impl::get_issued_did(std::string& symbol)
+std::shared_ptr<did_detail> block_chain_impl::get_issued_did(const std::string& symbol)
 {
 	std::shared_ptr<did_detail> sp_did(nullptr);
 	const auto hash = get_hash(symbol);

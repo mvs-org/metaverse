@@ -64,8 +64,8 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 }
 
 std::string get_random_payment_address(
-        std::shared_ptr<account_address::list> sp_addresses,
-        bc::blockchain::block_chain_impl& blockchain)
+    std::shared_ptr<account_address::list> sp_addresses,
+    bc::blockchain::block_chain_impl& blockchain)
 {
     if (sp_addresses && !sp_addresses->empty()) {
         // first, let test 10 times of random
@@ -80,10 +80,11 @@ std::string get_random_payment_address(
         // then, real bad luck, lets filter only the payment address
         account_address::list filtered_addresses;
         std::copy_if(sp_addresses->begin(), sp_addresses->end(),
-                std::back_inserter(filtered_addresses),
-                [&blockchain](const auto& each){
-                   return blockchain.is_payment_address(each.get_address());
-                });
+            std::back_inserter(filtered_addresses),
+            [&blockchain](const auto& each){
+               return blockchain.is_payment_address(each.get_address());
+        });
+
         if (!filtered_addresses.empty()) {
             auto random = bc::pseudo_random();
             auto index = random % filtered_addresses.size();
@@ -541,12 +542,16 @@ void base_transfer_common::populate_etp_change(const std::string& address)
                 {addr, "", unspent_etp_ - payment_etp_, 0, utxo_attach_type::etp, attachment()});
         }
         else {
-            if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-                throw did_symbol_length_exception{std::string("mychange did symbol [") + addr + ("] length must be less than 64.")};
+            if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+                throw did_symbol_length_exception{
+                    "mychange did symbol [" + addr + "] length must be less than 64."};
+            }
 
             auto diddetail = blockchain_.get_issued_did(addr);
-            if (!diddetail)
-                throw did_symbol_existed_exception{std::string("mychange did symbol [") + addr + ("is not exist in blockchain")};
+            if (!diddetail) {
+                throw did_symbol_notfound_exception{
+                    "mychange did symbol [" + addr + "is not exist in blockchain"};
+            }
 
             attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
@@ -1118,7 +1123,7 @@ void issuing_asset::sum_payments()
                 payment_asset_cert_ = asset_cert_ns::naming; // will verify by input
             }
             else {
-                throw asset_cert_domain_exception{"no domain naming cert exists for asset : " + symbol_};
+                throw asset_cert_notfound_exception{"no naming cert exists for asset : " + symbol_};
             }
         }
     }
