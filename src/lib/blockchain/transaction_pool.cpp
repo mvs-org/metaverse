@@ -252,12 +252,12 @@ void transaction_pool::fetch(fetch_all_handler handler)
 
 void transaction_pool::delete_tx(const hash_digest& tx_hash)
 {
-    log::debug(LOG_BLOCKCHAIN) << " delete_tx hash:" << libbitcoin::encode_hash(tx_hash);
     if (stopped())
     {
         return;
     }
 
+    log::debug(LOG_BLOCKCHAIN) << " delete_tx hash:" << libbitcoin::encode_hash(tx_hash);
     const auto tx_delete = [this, tx_hash]()
     {
         for(auto item = buffer_.begin(); item != buffer_.end(); ++item)

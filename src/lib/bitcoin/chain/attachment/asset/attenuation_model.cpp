@@ -400,7 +400,9 @@ bool attenuation_model::check_model_param_initial(const data_chunk& param)
 
 bool attenuation_model::check_model_param_initial(std::string& param)
 {
-    attenuation_model parser({"PN=0;LH=0;" + param});
+    bool has_prefix = param.find("PN=") == 0;
+
+    attenuation_model parser(has_prefix ? param : ("PN=0;LH=0;" + param));
 
     const auto model = parser.get_model_type();
 
@@ -409,20 +411,32 @@ bool attenuation_model::check_model_param_initial(std::string& param)
     if (model == model_type::none) {
         if (!param.empty()) {
             log::info(LOG_HEADER)
-                << "check_model_param, wrong model param : "
+                << "check_model_param, wrong model param in intial : "
                 << parser.get_model_param();
         }
         return false;
     }
 
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
     auto LQ = parser.get_locked_quantity();
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
     const auto& UCs = parser.get_unlock_cycles();
-    auto LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
+
+    if (PN != 0) {
+        log::info(LOG_HEADER) << "common initial param error: PN != 0";
+        return false;
+    }
 
     // add prefix of PN,LH
-    param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
+    if (!has_prefix) {
+        LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
+        param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
+    } else if (LH == 0) {
+        log::info(LOG_HEADER) << "common initial param error: LH == 0";
+        return false;
+    }
 
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
@@ -790,7 +804,7 @@ uint64_t attenuation_model::get_available_asset_amount(
         auto new_cycles = std::min((locked_height / UC - PN), (LP - PN - 1));
         if (new_param_ptr) {
             // update PN, LH
-            PN = LP + new_cycles;
+            PN = PN + new_cycles;
             if ((PN + 1) == LP) {
                 LH = LP - locked_height;
             } else {
