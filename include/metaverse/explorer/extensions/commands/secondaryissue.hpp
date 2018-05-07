@@ -43,7 +43,7 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("ADDRESS", 1)
+            .add("TODID", 1)
             .add("SYMBOL", 1)
             .add("VOLUME", 1);
     }
@@ -54,7 +54,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
+        load_input(argument_.to, "TODID", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
         load_input(argument_.volume, "VOLUME", variables, input, raw);
     }
@@ -80,9 +80,9 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "ADDRESS",
-            value<std::string>(&argument_.address)->required(),
-            "target address to check and issue asset, fee from and mychange to this address too."
+            "TODID",
+            value<std::string>(&argument_.to)->required(),
+            "target did to check and issue asset, fee from and mychange to the address of this did too."
         )
         (
             "SYMBOL",
@@ -117,7 +117,7 @@ public:
 
     struct argument
     {
-        std::string address;
+        std::string to;
         std::string symbol;
         uint64_t fee;
         uint64_t volume;

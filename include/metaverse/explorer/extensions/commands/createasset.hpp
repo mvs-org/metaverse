@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -36,15 +36,14 @@ public:
     uint64_t volume;
 };
 
-void validate(boost::any& v,
-			  const std::vector<std::string>& values,
-			  non_negative_uint64*, int);
+void validate(boost::any& v, const std::vector<std::string>& values,
+    non_negative_uint64*, int);
 
 class createasset: public command_extension
 {
 public:
     static const char* symbol(){ return "createasset";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "createasset "; }
 
@@ -55,7 +54,7 @@ public:
             .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -68,27 +67,27 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
-	        "rate,r",
-		    value<int32_t>(&option_.secondaryissue_threshold),
-		    "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than or equal to the rate value."
-		)
-	    (
+            "rate,r",
+            value<int32_t>(&option_.secondaryissue_threshold),
+            "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than or equal to the rate value."
+        )
+        (
             "symbol,s",
             value<std::string>(&option_.symbol)->required(),
             "The asset symbol/name. Global unique."
@@ -96,7 +95,7 @@ public:
         (
             "issuer,i",
             value<std::string>(&option_.issuer)->required(),
-            "The asset did specified its issuer, defaults to account name(it must be issuued as a did)"
+            "The did symbol specified its issuer."
         )
         (
             "volume,v",
@@ -122,7 +121,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+        libbitcoin::server::server_node& node) override;
 
     struct argument
     {
@@ -130,22 +129,22 @@ public:
 
     struct option
     {
-    	option()
-		  : symbol(""),
-			maximum_supply{0},
-			decimal_number(0),
+        option():
+            symbol(""),
+            maximum_supply{0},
+            decimal_number(0),
             secondaryissue_threshold(0),
-			issuer(""),
-			description("")
-    	{
-    	};
-		
-		std::string symbol;
-		non_negative_uint64 maximum_supply;
-		uint32_t decimal_number;
-		int32_t secondaryissue_threshold;
-		std::string issuer; 
-		std::string description;
+            issuer(""),
+            description("")
+        {
+        };
+
+        std::string symbol;
+        non_negative_uint64 maximum_supply;
+        uint32_t decimal_number;
+        int32_t secondaryissue_threshold;
+        std::string issuer;
+        std::string description;
     } option_;
 
 };

@@ -831,12 +831,12 @@ code validate_transaction::check_did_transaction(
                 return error::did_input_error;
             }
         }
-        else if (output.is_asset_issue()) {
+        else if (output.is_asset_issue() || output.is_asset_secondaryissue()) {
             if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION
-                && output.get_asset_issuer() != output.attach_data.get_from_did()) {
+                && output.get_asset_issuer() != output.attach_data.get_to_did()) {
                 log::debug(LOG_BLOCKCHAIN)
                     << "asset issuer " << output.get_asset_issuer()
-                    << " , does not match did " << output.attach_data.get_from_did()
+                    << " , does not match did " << output.attach_data.get_to_did()
                     << " , attach_data: " << output.attach_data.to_string();
                 return error::asset_did_issuer_not_match;
             }

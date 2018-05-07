@@ -33,6 +33,17 @@ attachment::attachment()
 {
     reset();
 }
+
+attachment::attachment(const std::string& from_did, const std::string& to_did)
+    : version(DID_ATTACH_VERIFY_VERSION)
+    , type(0) //attachment_type::attach_none;
+    , todid(to_did)
+    , fromdid(from_did)
+{
+    auto visitor = reset_visitor();
+    boost::apply_visitor(visitor, attach);
+}
+
 attachment attachment::factory_from_data(const data_chunk& data)
 {
     attachment instance;

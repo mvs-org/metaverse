@@ -554,6 +554,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
         if (addr.empty()) {
             addr = get_mychange_address(FILTER_ETP);
         }
+        BITCOIN_ASSERT(!addr.empty());
 
         if (blockchain_.is_valid_address(addr)) {
             receiver_list_.push_back(
@@ -588,6 +589,8 @@ void base_transfer_common::populate_asset_change(const std::string& address)
         if (addr.empty()) {
             addr = get_mychange_address(FILTER_ASSET);
         }
+        BITCOIN_ASSERT(!addr.empty());
+
         receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
             utxo_attach_type::asset_transfer, attachment()});
     }
@@ -602,18 +605,22 @@ void base_transfer_common::populate_asset_cert_change(const std::string& address
         if (addr.empty()) {
             addr = get_mychange_address(FILTER_ASSETCERT);
         }
+        BITCOIN_ASSERT(!addr.empty());
+
+        auto to_did = asset_cert::get_owner_from_address(addr, blockchain_);
+        auto attach = attachment("", to_did);
 
         // separate domain cert
         if (asset_cert::test_certs(cert_left, asset_cert_ns::domain)) {
             auto&& domain = asset_cert::get_domain(symbol_);
             receiver_list_.push_back({addr, domain, 0, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()});
+                asset_cert_ns::domain, utxo_attach_type::asset_cert, attach});
             cert_left &= ~asset_cert_ns::domain;
         }
 
         if (cert_left != asset_cert_ns::none) {
             receiver_list_.push_back({addr, symbol_, 0, 0,
-                cert_left, utxo_attach_type::asset_cert, attachment()});
+                cert_left, utxo_attach_type::asset_cert, attach});
         }
     }
 }
@@ -754,7 +761,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (record.type == utxo_attach_type::asset_cert_issue) {
             cert_info.set_status(ASSET_CERT_ISSUE_TYPE);
         }
-        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+        auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+        attach.set_to_did(cert_owner);
+        return attach;
     }
 
     throw tx_attachment_value_exception{
@@ -1287,9 +1296,17 @@ attachment secondary_issuing_asset::populate_output_attachment(const receiver_re
         asset_detail.set_address(record.target);
         asset_detail.set_asset_secondaryissue();
         asset_detail.set_maximum_supply(volume_);
-        asset_detail.set_issuer(name_);
+        asset_detail.set_issuer(record.attach_elem.get_to_did());
         auto ass = asset(ASSET_DETAIL_TYPE, asset_detail);
-        return attachment(ASSET_TYPE, attach_version, ass);
+
+        attachment attach(ASSET_TYPE, attach_version, ass);
+        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_from_did(record.attach_elem.get_from_did());
+            attach.set_to_did(record.attach_elem.get_to_did());
+        }
+
+        return attach;
     }
 
     return base_transfer_common::populate_output_attachment(record);

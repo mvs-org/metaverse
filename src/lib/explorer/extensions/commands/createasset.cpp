@@ -55,6 +55,7 @@ console_result createasset::invoke(Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol can not be empty."};
     if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+
     // check did
     if (option_.issuer.empty())
         throw did_symbol_length_exception{"issuer can not be empty."};
@@ -80,11 +81,11 @@ console_result createasset::invoke(Json::Value& jv_output,
     // maybe throw
     blockchain.uppercase_symbol(option_.symbol);
 
-    if(bc::wallet::symbol::is_sensitive(option_.symbol)) {
+    if (bc::wallet::symbol::is_sensitive(option_.symbol)) {
         throw asset_symbol_name_exception{"invalid symbol start with " + option_.symbol};
     }
 
-    if(blockchain.is_asset_exist(option_.symbol))
+    if (blockchain.is_asset_exist(option_.symbol))
         throw asset_symbol_existed_exception{"symbol is already used."};
 
     auto acc = std::make_shared<asset_detail>();
@@ -99,13 +100,14 @@ console_result createasset::invoke(Json::Value& jv_output,
 
     blockchain.store_account_asset(acc, auth_.name);
 
-    auto& aroot = jv_output;
     Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
     asset_data["status"] = "unissued";
-    aroot["asset"] = asset_data;
+    jv_output["asset"] = asset_data;
 
     return console_result::okay;
 }
+
+
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin

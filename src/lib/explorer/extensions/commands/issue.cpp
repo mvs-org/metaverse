@@ -54,16 +54,15 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!sh_asset)
         throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
 
-    auto did = sh_asset->get_issuer();
-    auto to_address = get_address_from_did(did, blockchain);
-
-    attachment attach;
-    attach.set_from_did(did);
-    attach.set_to_did(did);
-    attach.set_version(DID_ATTACH_VERIFY_VERSION);
+    auto to_did = sh_asset->get_issuer();
+    auto to_address = get_address_from_did(to_did, blockchain);
+    if (!blockchain.is_valid_address(to_address)) {
+        throw address_invalid_exception{"invalid asset issuer " + to_did};
+    }
 
     std::string cert_address;
     std::string cert_symbol;
+    std::string cert_did;
     asset_cert_type cert_type = asset_cert_ns::none;
 
     // domain cert check
@@ -74,6 +73,7 @@ console_result issue::invoke (Json::Value& jv_output,
             cert_address = to_address;
             cert_type = asset_cert_ns::domain;
             cert_symbol = domain;
+            cert_did = to_did;
         }
         else {
             const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
@@ -88,6 +88,7 @@ console_result issue::invoke (Json::Value& jv_output,
                 cert_address = it->address;
                 cert_type = asset_cert_ns::domain;
                 cert_symbol = domain;
+                cert_did = it->certs.get_owner_from_address(blockchain);
             }
             else {
                 // if domain cert does not belong to the account then check domain naming cert
@@ -98,6 +99,7 @@ console_result issue::invoke (Json::Value& jv_output,
                     cert_address = it->address;
                     cert_type = asset_cert_ns::naming;
                     cert_symbol = argument_.symbol;
+                    cert_did = it->certs.get_owner_from_address(blockchain);
                 }
                 else {
                     throw asset_cert_notowned_exception{
@@ -109,20 +111,20 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attach}
+        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment(to_did, to_did)}
     };
 
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
     if (certs != asset_cert_ns::none) {
         receiver.push_back({to_address, argument_.symbol, 0, 0,
-            certs, utxo_attach_type::asset_cert, attach});
+            certs, utxo_attach_type::asset_cert, attachment(to_did, to_did)});
     }
 
     // domain cert or domain naming cert
     if (asset_cert::is_valid_domain(domain)) {
         receiver.push_back({cert_address, cert_symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert, attach});
+            cert_type, utxo_attach_type::asset_cert, attachment(cert_did, cert_did)});
     }
 
     auto issue_helper = issuing_asset(*this, blockchain,

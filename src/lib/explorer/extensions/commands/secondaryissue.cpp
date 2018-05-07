@@ -43,20 +43,20 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address parameter!"};
+    auto to_did = argument_.to;
+    auto to_address = get_address_from_did(to_did, blockchain);
+    if (!blockchain.is_valid_address(to_address))
+        throw address_invalid_exception{"invalid did parameter! " + to_did};
 
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty())
-        throw std::logic_error{"nullptr for address list"};
-
-    if (!blockchain.get_account_address(auth_.name, argument_.address))
-        throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
+    if (!blockchain.get_account_address(auth_.name, to_address))
+        throw address_dismatch_account_exception{"target address does not match account. " + to_address};
 
     auto asset = blockchain.get_issued_asset(argument_.symbol);
-    if(!asset)
+    if (!asset) {
         throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
+    }
 
+    auto from_did = asset->get_issuer();
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to secondary issue, or the threshold is illegal."};
@@ -75,7 +75,8 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (it == certs_vec->end()) {
         throw asset_cert_exception{"no issue asset cert owned for symbol " + argument_.symbol};
     }
-    std::string existed_issue_cert_address = it->address;
+    auto cert_address = it->address;
+    auto cert_did = it->certs.get_owner_from_address(blockchain);
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if (total_volume > max_uint64 - argument_.volume)
@@ -88,17 +89,17 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, asset_volume_of_threshold,
-            utxo_attach_type::asset_secondaryissue, attachment()},
-        {existed_issue_cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
-            utxo_attach_type::asset_cert, attachment()}
+        {to_address, argument_.symbol, 0, asset_volume_of_threshold,
+            utxo_attach_type::asset_secondaryissue, attachment(from_did, to_did)},
+        {cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
+            utxo_attach_type::asset_cert, attachment(cert_did, cert_did)}
     };
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,
-            std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.address), std::move(argument_.symbol),
-            std::move(option_.attenuation_model_param),
-            std::move(receiver), argument_.fee, argument_.volume);
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(to_address), std::move(argument_.symbol),
+        std::move(option_.attenuation_model_param),
+        std::move(receiver), argument_.fee, argument_.volume);
 
     issue_helper.exec();
 

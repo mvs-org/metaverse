@@ -260,11 +260,6 @@ std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl&
 std::string asset_cert::get_owner_from_address(const std::string& address,
     bc::blockchain::block_chain_impl& chain)
 {
-    // don't convert to did-symbol if did is not enabled.
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
-        return address;
-    }
-
     auto owner = chain.get_did_from_address(address);
     if (owner.empty()) {
         owner = address;
@@ -276,11 +271,6 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
 {
     if (owner_.empty()) {
         return false;
-    }
-
-    // don't check did existence if did is not enabled.
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
-        return true;
     }
 
     if (chain.is_valid_address(owner_)) {

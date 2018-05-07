@@ -74,6 +74,9 @@ public:
         > attachment_data_type;
 
     attachment();
+
+    attachment(const std::string& from_did, const std::string& to_did);
+
     template<class Type>
     attachment(uint32_t type, uint32_t version, const Type& attach_data)
         : type(type), version(version), attach(attach_data)

@@ -43,9 +43,10 @@ console_result issuecert::invoke (Json::Value& jv_output,
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
-    auto to_address = get_address_from_did(argument_.to, blockchain);
+    auto to_did = argument_.to;
+    auto to_address = get_address_from_did(to_did, blockchain);
     if (!blockchain.is_valid_address(to_address))
-        throw address_invalid_exception{"invalid did parameter! " + argument_.to};
+        throw address_invalid_exception{"invalid did parameter! " + to_did};
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
@@ -58,6 +59,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     auto certs_create = iter->second;
 
     std::string domain_cert_addr;
+    std::string domain_cert_did;
     if (certs_create == asset_cert_ns::naming) {
         // check symbol is valid.
         auto pos = argument_.symbol.find(".");
@@ -95,19 +97,21 @@ console_result issuecert::invoke (Json::Value& jv_output,
         }
 
         domain_cert_addr = it->address;
+        domain_cert_did = it->certs.get_owner_from_address(blockchain);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            certs_create, utxo_attach_type::asset_cert_issue, attachment()}
+            certs_create, utxo_attach_type::asset_cert_issue, attachment(to_did, to_did)}
     };
 
     if (certs_create == asset_cert_ns::naming) {
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         receiver.push_back(
             {domain_cert_addr, domain, 0, 0,
-                asset_cert_ns::domain, utxo_attach_type::asset_cert, attachment()}
+                asset_cert_ns::domain, utxo_attach_type::asset_cert,
+                attachment(domain_cert_did, domain_cert_did)}
         );
     }
 

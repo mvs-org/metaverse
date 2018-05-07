@@ -1167,26 +1167,26 @@ operation_result block_chain_impl::delete_account_address(const std::string& nam
 	return operation_result::okay;
 }
 
-std::shared_ptr<account_address> block_chain_impl::get_account_address
-                    (const std::string& name, const std::string& address)
+std::shared_ptr<account_address> block_chain_impl::get_account_address(
+    const std::string& name, const std::string& address)
 {
-	return database_.account_addresses.get(get_short_hash(name), address);
+    return database_.account_addresses.get(get_short_hash(name), address);
 }
 
-std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addresses(const std::string& name)
+std::shared_ptr<std::vector<account_address>> block_chain_impl::get_account_addresses(
+    const std::string& name)
 {
-	auto sp_addr = std::make_shared<std::vector<account_address>>();
-	auto result = database_.account_addresses.get(get_short_hash(name));
-	if(result.size())
-	{
-		//sp_addr = std::make_shared<std::vector<account_address>>();
-	    const auto action = [&sp_addr](const account_address& elem)
-	    {
-	        sp_addr->emplace_back(std::move(elem)); // todo -- add std::move later
-	    };
-	    std::for_each(result.begin(), result.end(), action);
-	}
-	return sp_addr;
+    auto sp_addr = std::make_shared<std::vector<account_address>>();
+    auto result = database_.account_addresses.get(get_short_hash(name));
+    if (result.size()) {
+        //sp_addr = std::make_shared<std::vector<account_address>>();
+        const auto action = [&sp_addr](const account_address& elem)
+        {
+            sp_addr->emplace_back(std::move(elem));
+        };
+        std::for_each(result.begin(), result.end(), action);
+    }
+    return sp_addr;
 }
 
 operation_result block_chain_impl::store_account_asset(
