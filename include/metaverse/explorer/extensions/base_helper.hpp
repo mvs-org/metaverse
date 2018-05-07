@@ -272,7 +272,6 @@ public:
     {}
 
     void populate_unspent_list() override;
-    attachment populate_output_attachment(const receiver_record& record) override;
 
 protected:
     command&                          cmd_;
@@ -432,6 +431,7 @@ public:
     void sum_payments() override;
     void sum_payment_amount() override;
     void populate_change() override;
+    attachment populate_output_attachment(const receiver_record& record) override;
 
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
@@ -441,6 +441,7 @@ public:
     };
 
 private:
+    std::shared_ptr<asset_detail> unissued_asset_;
     std::string domain_cert_address_;
     std::string attenuation_model_param_;
 };
@@ -476,8 +477,8 @@ public:
 
 private:
     uint64_t volume_{0};
-    std::string target_address_;
     std::shared_ptr<asset_detail> issued_asset_;
+    std::string target_address_;
     std::string attenuation_model_param_;
 };
 

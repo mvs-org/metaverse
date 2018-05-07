@@ -63,8 +63,8 @@ public:
     static bool check_model_param(const data_chunk& param);
     static bool check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
     static bool check_model_param_format(const data_chunk& param);
-    static bool check_model_param_initial(const data_chunk& param);
-    static bool check_model_param_initial(std::string& param);
+    static bool check_model_param_initial(const data_chunk& param, uint64_t total_amount);
+    static bool check_model_param_initial(std::string& param, uint64_t total_amount);
     static bool check_model_param_immutable(const data_chunk& previous, const data_chunk& current);
     static uint64_t get_available_asset_amount(uint64_t asset_amount, uint64_t diff_height,
             const data_chunk& model_param, std::shared_ptr<data_chunk> new_param_ptr = nullptr);
@@ -83,7 +83,6 @@ public:
     uint64_t get_locked_period() const;      // LP  total locked period
     uint64_t get_unlock_number() const;      // UN  total unlock numbers
     const std::vector<uint64_t>& get_unlock_cycles() const;        // UCt size()==1 means fixed cycle
-    const std::vector<uint64_t>& get_issue_rates() const;          // IRt size()==1 means fixed rate
     const std::vector<uint64_t>& get_unlocked_quantities() const;  // UQt size()==1 means fixed quantity
 
 private:

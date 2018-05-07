@@ -722,7 +722,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if(!sh_did)
             throw did_symbol_notfound_exception{symbol_ + " not found"};
 
-        sh_did->set_address(record.target); // target is setted in metaverse_output.cpp
+        sh_did->set_address(record.target);
         auto ass = did(DID_TRANSFERABLE_TYPE, *sh_did);
         return attachment(DID_TYPE, attach_version, ass);
     }
@@ -782,29 +782,6 @@ void base_transfer_helper::populate_unspent_list()
     check_payment_satisfied();
 
     populate_change();
-}
-
-attachment base_transfer_helper::populate_output_attachment(const receiver_record& record)
-{
-    if (record.type == utxo_attach_type::asset_issue) {
-        auto sh_asset = blockchain_.get_account_unissued_asset(name_, symbol_);
-        if(!sh_asset)
-            throw asset_symbol_notfound_exception{symbol_ + " not found"};
-
-        sh_asset->set_address(record.target); // target is setted in metaverse_output.cpp
-        auto ass = asset(ASSET_DETAIL_TYPE, *sh_asset);
-
-        attachment attach(ASSET_TYPE, attach_version, ass);
-        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-            attach.set_from_did(record.attach_elem.get_from_did());
-            attach.set_to_did(record.attach_elem.get_to_did());
-        }
-
-        return attach;
-    }
-
-    return base_transfer_common::populate_output_attachment(record);
 }
 
 bool receiver_record::is_empty() const
@@ -1133,11 +1110,17 @@ void issuing_asset::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
 
+    unissued_asset_ = blockchain_.get_account_unissued_asset(name_, symbol_);
+    if (!unissued_asset_) {
+        throw asset_symbol_notfound_exception{symbol_ + " not created"};
+    }
+
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()) {
-        if (!attenuation_model::check_model_param_initial(attenuation_model_param_)) {
+        if (!attenuation_model::check_model_param_initial(
+            attenuation_model_param_, unissued_asset_->get_maximum_supply())) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
         }
     }
@@ -1173,6 +1156,25 @@ void issuing_asset::populate_change()
 
     // asset cert utxo
     populate_asset_cert_change();
+}
+
+attachment issuing_asset::populate_output_attachment(const receiver_record& record)
+{
+    if (record.type == utxo_attach_type::asset_issue) {
+        unissued_asset_->set_address(record.target);
+        auto ass = asset(ASSET_DETAIL_TYPE, *unissued_asset_);
+
+        attachment attach(ASSET_TYPE, attach_version, ass);
+        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_from_did(record.attach_elem.get_from_did());
+            attach.set_to_did(record.attach_elem.get_to_did());
+        }
+
+        return attach;
+    }
+
+    return base_transfer_common::populate_output_attachment(record);
 }
 
 void sending_asset::populate_change()
@@ -1237,7 +1239,7 @@ void secondary_issuing_asset::sum_payment_amount()
     }
 
     if (!attenuation_model_param_.empty()) {
-        if (!attenuation_model::check_model_param_initial(attenuation_model_param_)) {
+        if (!attenuation_model::check_model_param_initial(attenuation_model_param_, volume_)) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
         }
     }
@@ -1264,7 +1266,7 @@ attachment secondary_issuing_asset::populate_output_attachment(const receiver_re
 {
     if (record.type == utxo_attach_type::asset_secondaryissue) {
         auto asset_detail = *issued_asset_;
-        asset_detail.set_address(record.target); // target is setted in metaverse_output.cpp
+        asset_detail.set_address(record.target);
         asset_detail.set_asset_secondaryissue();
         asset_detail.set_maximum_supply(volume_);
         asset_detail.set_issuer(name_);
