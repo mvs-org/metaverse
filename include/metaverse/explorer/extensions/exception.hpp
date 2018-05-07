@@ -129,8 +129,8 @@ DEFINE_EXPLORER_EXCEPTION(asset_attenuation_model_exception, 5016);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5017);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_existed_exception, 5018);
 DEFINE_EXPLORER_EXCEPTION(asset_cert_notfound_exception, 5019);
-DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5019);
-DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5020);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5020);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5021);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,11 +31,11 @@ namespace commands {
 
 /************************ startmining *************************/
 
-console_result startmining::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result startmining::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    
-    // get new address 
+
+    // get new address
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
 
     auto& blockchain = node.chain_impl();
@@ -47,7 +47,7 @@ console_result startmining::invoke (Json::Value& jv_output,
     }
 
     auto&& str_addr = jv_temp["addresses"][0].asString();
-     
+
     bc::wallet::payment_address addr(str_addr);
 
     // start

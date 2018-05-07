@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,8 +30,8 @@ namespace explorer {
 namespace commands {
 
 
-console_result didsendasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result didsendasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -40,42 +40,38 @@ console_result didsendasset::invoke (Json::Value& jv_output,
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
 
     std::string tempaddress;
-    attachment attach; 
+    attachment attach;
 
     //support address as well as did
-    if (blockchain.is_valid_address(argument_.did))
-    {
+    if (blockchain.is_valid_address(argument_.did)) {
         tempaddress = argument_.did;
     }
-    else
-    {
+    else {
         //blockchain.uppercase_symbol(argument_.did);
         if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"did symbol length must be less than 64."};   
-        if(!blockchain.is_did_exist(argument_.did))
-            throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};     
+            throw did_symbol_length_exception{"did symbol length must be less than 64."};
+        if (!blockchain.is_did_exist(argument_.did))
+            throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
         if (!argument_.amount)
             throw asset_amount_exception{"invalid asset amount parameter!"};
 
         auto diddetail = blockchain.get_issued_did(argument_.did);
         tempaddress = diddetail->get_address();
         attach.set_to_did(argument_.did);
-        attach.set_version(DID_ATTACH_VERIFY_VERSION);  
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
-
-    
 
     // receiver
     std::vector<receiver_record> receiver{
-        {tempaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}  
+        {tempaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
 #if 0
-    auto send_helper = sending_locked_asset_to_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_locked_asset_to_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
 #endif
-    
+
     send_helper.exec();
 
     // json output

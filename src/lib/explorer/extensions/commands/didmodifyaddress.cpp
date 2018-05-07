@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,22 +30,20 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result didmodifyaddress::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result didmodifyaddress::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     //blockchain.uppercase_symbol(argument_.symbol);
-    
+
     if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
 
     // fail if did is already in blockchain
     if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_existed_exception{"did symbol is not exist in blockchain"};
-    
-    
-    
+        throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
+
     if (!blockchain.is_valid_address(argument_.from))
         throw fromaddress_invalid_exception{"invalid from address parameter!"};
 
@@ -66,11 +64,11 @@ console_result didmodifyaddress::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}  
+        {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}
     };
-    auto send_helper = sending_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.from),std::move(argument_.to), std::move(argument_.symbol), std::move(receiver), argument_.fee);
-    
+
     send_helper.exec();
 
     // json output

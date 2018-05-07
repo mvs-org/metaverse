@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,20 +31,20 @@ using namespace bc::explorer::config;
 
 /************************ getmininginfo *************************/
 
-console_result getmininginfo::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getmininginfo::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 
     auto& aroot = jv_output;
     Json::Value info;
-    
+
     auto& miner = node.miner();
 
     uint64_t height, rate;
     std::string difficulty;
     bool is_mining;
-    
+
     miner.get_state(height, rate, difficulty, is_mining);
     info["is-mining"] = is_mining;
     info["height"] += height;

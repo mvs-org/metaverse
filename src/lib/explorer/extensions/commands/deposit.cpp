@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -23,44 +23,44 @@
 #include <metaverse/explorer/extensions/commands/deposit.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
-#include <metaverse/explorer/extensions/exception.hpp> 
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result deposit::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result deposit::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address)) 
+    if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
-    if (argument_.deposit != 7 && argument_.deposit != 30 
+    if (argument_.deposit != 7 && argument_.deposit != 30
         && argument_.deposit != 90 && argument_.deposit != 182
         && argument_.deposit != 365)
     {
         throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
     }
-    
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty()) 
+    if(!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
 
     auto addr = argument_.address;
     if (addr.empty()) {
         addr = get_random_payment_address(pvaddr, blockchain);
     }
-        
+
     // receiver
     std::vector<receiver_record> receiver{
-        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()} 
+        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()}
     };
-    auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);
-            
+
     deposit_helper.exec();
 
     // json output

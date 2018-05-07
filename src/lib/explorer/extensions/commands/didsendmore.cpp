@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,7 +32,7 @@ namespace commands {
 
 
 console_result didsendmore::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -40,55 +40,58 @@ console_result didsendmore::invoke (Json::Value& jv_output,
     auto&& changesymbol = argument_.mychange_address;
     if (!changesymbol.empty() && !blockchain.is_valid_address(changesymbol))
     {
-        if (changesymbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{std::string("mychange did symbol [") + changesymbol + ("] length must be less than 64.")};
+        if (changesymbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+            throw did_symbol_length_exception{
+                "mychange did symbol [" + changesymbol + "] length must be less than 64."};
+        }
 
-        if (!blockchain.get_issued_did(changesymbol))
-            throw did_symbol_existed_exception{std::string("mychange did symbol [") + changesymbol + ("is not exist in blockchain")};
+        if (!blockchain.get_issued_did(changesymbol)) {
+            throw did_symbol_notfound_exception{
+                "mychange did symbol [" + changesymbol + "is not exist in blockchain"};
+        }
     }
 
     // receiver
-    std::vector<receiver_record> receiver; 
+    std::vector<receiver_record> receiver;
 
-    for( auto& each : argument_.receivers){
-        attachment attach; 
-        std::string address; 
+    for (auto& each : argument_.receivers) {
+        attachment attach;
+        std::string address;
 
         colon_delimited2_item<std::string, uint64_t> item(each);
         auto && addressordid = item.first();
+
         //did check
-        if(blockchain.is_valid_address(addressordid))
-        {
+        if(blockchain.is_valid_address(addressordid)) {
             address = addressordid;
         }
-        else
-        {
-
-            if (addressordid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-                throw did_symbol_length_exception{std::string("mychange did symbol [")+addressordid + ("] length must be less than 64.")};
+        else {
+            if (addressordid.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+                throw did_symbol_length_exception(
+                    "mychange did symbol [" + addressordid + "] length must be less than 64.");
+            }
 
             auto diddetail = blockchain.get_issued_did(addressordid);
-            if (!diddetail)
-                throw did_symbol_existed_exception{std::string("mychange did symbol [")+addressordid + ("is not exist in blockchain")};
-
+            if (!diddetail) {
+                throw did_symbol_notfound_exception(
+                    "mychange did symbol [" + addressordid + "] is not exist in blockchain");
+            }
 
             attach.set_to_did(addressordid);
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
 
             address = diddetail->get_address();
         }
-         
-
 
         if (!item.second())
-            throw argument_legality_exception{std::string("invalid amount parameter!") + each};
+            throw argument_legality_exception("invalid amount parameter!" + each);
 
         receiver.push_back({address,"", item.second(), 0, utxo_attach_type::etp, attach});
     }
 
-    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(receiver), std::move(changesymbol), argument_.fee);
-    
+
     send_helper.exec();
 
     // json output

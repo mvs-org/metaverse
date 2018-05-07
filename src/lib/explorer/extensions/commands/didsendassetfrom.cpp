@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,73 +30,64 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result didsendassetfrom::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result didsendassetfrom::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     //blockchain.uppercase_symbol(argument_.symbol);
     if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
         throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    
 
     std::string fromaddress = "";
     std::string toaddress = "";
-
     attachment attach;
-    
+
     //support address as well as did
-    if (blockchain.is_valid_address(argument_.fromdid))
-    {
+    if (blockchain.is_valid_address(argument_.fromdid)) {
         fromaddress = argument_.fromdid;
     }
-    else
-    {
+    else {
         //blockchain.uppercase_symbol(argument_.fromdid);
         if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};   
-        if(!blockchain.is_did_exist(argument_.fromdid))
-            throw did_symbol_existed_exception{"fromdid symbol is not exist in blockchain"}; 
-        
+            throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
+        if (!blockchain.is_did_exist(argument_.fromdid))
+            throw did_symbol_notfound_exception{"fromdid symbol is not exist in blockchain"};
 
         auto diddetail = blockchain.get_issued_did(argument_.fromdid);
         fromaddress = diddetail->get_address();
         attach.set_from_did(argument_.fromdid);
-        attach.set_version(DID_ATTACH_VERIFY_VERSION);   
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
 
     //support address as well as did
-    if (blockchain.is_valid_address(argument_.todid))
-    {
+    if (blockchain.is_valid_address(argument_.todid)) {
         toaddress = argument_.todid;
     }
-    else
-    {
+    else {
         //blockchain.uppercase_symbol(argument_.todid);
         if (argument_.todid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"todid symbol length must be less than 64."};
         if(!blockchain.is_did_exist(argument_.todid))
-            throw did_symbol_existed_exception{"todid symbol is not exist in blockchain"};  
+            throw did_symbol_notfound_exception{"todid symbol is not exist in blockchain"};
 
-        auto diddetail=blockchain.get_issued_did(argument_.todid); 
+        auto diddetail=blockchain.get_issued_did(argument_.todid);
         toaddress = diddetail->get_address();
         attach.set_to_did(argument_.todid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
-        
     }
 
-
-    if (!argument_.amount)
-            throw asset_amount_exception{"invalid asset amount parameter!"};
-   
+    if (!argument_.amount) {
+        throw asset_amount_exception{"invalid asset amount parameter!"};
+    }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}  
+        {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(fromaddress), std::move(argument_.symbol), std::move(receiver), argument_.fee);
-    
+    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+        std::move(fromaddress), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+
     send_helper.exec();
 
     // json output

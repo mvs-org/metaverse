@@ -29,7 +29,6 @@
 namespace libbitcoin {
 namespace chain {
 
-constexpr bool use_did_address = false;
 #define ASSET_SYMBOL_DELIMITER "."
 
 asset_cert::asset_cert()
@@ -255,11 +254,11 @@ bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
 
 std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const
 {
-    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return owner_;
     }
-    auto did_symbol = owner_;
-    auto sp_did_detail = chain.get_issued_did(did_symbol);
+
+    auto sp_did_detail = chain.get_issued_did(owner_);
     if (sp_did_detail) {
         return sp_did_detail->get_address();
     }
@@ -275,9 +274,10 @@ std::string asset_cert::get_owner_from_address(const std::string& address,
         bc::blockchain::block_chain_impl& chain)
 {
     // don't convert to did-symbol if did is not enabled.
-    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return address;
     }
+
     return chain.get_did_from_address(address);
 }
 
@@ -286,10 +286,16 @@ bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
     if (owner_.empty()) {
         return false;
     }
+
     // don't check did existence if did is not enabled.
-    if (!use_did_address || !bc::blockchain::validate_transaction::is_did_validate(chain)) {
+    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return true;
     }
+
+    if (chain.is_valid_address(owner_)) {
+        return true;
+    }
+
     return chain.is_did_exist(owner_);
 }
 

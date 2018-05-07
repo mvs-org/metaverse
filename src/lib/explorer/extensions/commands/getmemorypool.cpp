@@ -33,8 +33,8 @@ namespace commands {
 
 /************************ getbalance *************************/
 
-console_result getmemorypool::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getmemorypool::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
 
     administrator_required_checker(node, auth_.name, auth_.auth);

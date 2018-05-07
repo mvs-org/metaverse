@@ -33,8 +33,8 @@ using namespace bc::explorer::config;
 
 /************************ getaddressasset *************************/
 
-console_result getaddressasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getaddressasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     if(!blockchain.is_valid_address(argument_.address))

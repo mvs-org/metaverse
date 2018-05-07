@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,8 +31,8 @@ namespace commands {
 
 using namespace bc::explorer::config;
 
-console_result listmultisig::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result listmultisig::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // parameter account name check
@@ -41,7 +41,7 @@ console_result listmultisig::invoke (Json::Value& jv_output,
     auto& root = jv_output;
 
     auto multisig_vec = acc->get_multisig_vec();
-        
+
     for(auto& acc_multisig : multisig_vec) {
         Json::Value node, pubkeys;
         node["index"] += acc_multisig.get_index();
@@ -59,14 +59,14 @@ console_result listmultisig::invoke (Json::Value& jv_output,
 
         nodes.append(node);
     }
-    
+
     if (get_api_version() == 1 && nodes.isNull()) { // compatible for v1
         root["multisig"] = "";
     }
     else {
         root["multisig"] = nodes;
     }
-    
+
     return console_result::okay;
 }
 

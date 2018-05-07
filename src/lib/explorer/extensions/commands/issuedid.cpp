@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -22,7 +22,7 @@
 #include <metaverse/explorer/extensions/commands/issuedid.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
-#include <metaverse/explorer/extensions/exception.hpp> 
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
@@ -31,7 +31,7 @@ namespace commands {
 
 
 console_result issuedid::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -49,26 +49,25 @@ console_result issuedid::invoke (Json::Value& jv_output,
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
- 
+
     if (!blockchain.get_account_address(auth_.name, argument_.address))
          throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
-        
+
     // fail if did is already in blockchain
-    if(blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_existed_exception{"did symbol is already exist in blockchain"};
+    if (blockchain.is_did_exist(argument_.symbol))
+        throw did_symbol_notfound_exception{"did symbol is already exist in blockchain"};
 
     // fail if address is already binded with did in blockchain
-    if(blockchain.is_address_issued_did(argument_.address))
+    if (blockchain.is_address_issued_did(argument_.address))
         throw did_symbol_existed_exception{"address is already binded with some did in blockchain"};
-
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_issue, attachment()}  
+        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_issue, attachment()}
     };
-    auto issue_helper = issuing_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto issue_helper = issuing_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
-    
+
     issue_helper.exec();
     // json output
     auto tx = issue_helper.get_transaction();

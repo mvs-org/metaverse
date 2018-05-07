@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,31 +33,31 @@ namespace commands {
 
 using namespace bc::explorer::config;
 
-console_result createmultisigtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result createmultisigtx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!blockchain.is_valid_address(argument_.from)) 
+    if(!blockchain.is_valid_address(argument_.from))
         throw fromaddress_invalid_exception{"invalid from address!"};
-    
+
     auto addr = bc::wallet::payment_address(argument_.from);
     if(addr.version() != bc::wallet::payment_address::mainnet_p2sh) // for multisig address
         throw fromaddress_invalid_exception{"from address is not script address."};
-    if(!blockchain.is_valid_address(argument_.to)) 
+    if(!blockchain.is_valid_address(argument_.to))
         throw toaddress_invalid_exception{"invalid to address!"};
-    
+
     account_multisig acc_multisig;
     if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
         throw multisig_notfound_exception{"from address multisig record not found."};
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
+        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}
     };
-    auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.from), std::move(receiver), argument_.fee, 
+    auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+            std::move(argument_.from), std::move(receiver), argument_.fee,
             acc_multisig);
-    
+
     send_helper.exec();
 
     // json output

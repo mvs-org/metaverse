@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,12 +29,12 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result decoderawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result decoderawtx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    tx_type tx_ = argument_.transaction;    
+    tx_type tx_ = argument_.transaction;
      jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
-    
+
     return console_result::okay;
 }
 

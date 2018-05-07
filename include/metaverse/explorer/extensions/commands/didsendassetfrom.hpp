@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class didsendassetfrom: public command_extension
 {
 public:
     static const char* symbol(){ return "didsendassetfrom";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "didsendassetfrom "; }
 
@@ -50,7 +50,7 @@ public:
             .add("AMOUNT", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -67,46 +67,46 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"FROMDID/FROMADDRESS",
-			value<std::string>(&argument_.fromdid)->required(),
-			"From did/address"
-		)
-		(
-			"TODID/TOADDRESS",
-			value<std::string>(&argument_.todid)->required(),
-			"Target did/address"
-		)
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"Asset symbol"
-		)
-		(
-			"AMOUNT",
-			value<uint64_t>(&argument_.amount)->required(),
-			"Asset integer bits. see asset <decimal_number>."
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		);
+        )
+        (
+            "FROMDID/FROMADDRESS",
+            value<std::string>(&argument_.fromdid)->required(),
+            "From did/address"
+        )
+        (
+            "TODID/TOADDRESS",
+            value<std::string>(&argument_.todid)->required(),
+            "Target did/address"
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "Asset symbol"
+        )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "Asset integer bits. see asset <decimal_number>."
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
+        );
 
         return options;
     }
@@ -120,11 +120,11 @@ public:
 
     struct argument
     {
-		std::string fromdid;
-		std::string todid;
-		std::string symbol;
-		uint64_t amount;
-		uint64_t fee;
+        std::string fromdid;
+        std::string todid;
+        std::string symbol;
+        uint64_t amount;
+        uint64_t fee;
     } argument_;
 
     struct option

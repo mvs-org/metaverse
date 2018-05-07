@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,8 +32,8 @@ namespace fs = boost::filesystem;
 using namespace bc::explorer::config;
 /************************ exportaccountasfile *************************/
 
-console_result dumpkeyfile::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result dumpkeyfile::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -68,15 +68,15 @@ console_result dumpkeyfile::invoke (Json::Value& jv_output,
             }
         }
 
-        fs::file_status status = fs::status(argument_.dst); 
+        fs::file_status status = fs::status(argument_.dst);
         if(fs::is_directory(status)) // not process filesystem exception here
             argument_.dst /= keyfile_name;
-        
-        fs::file_status status2 = fs::status(argument_.dst.parent_path()); 
+
+        fs::file_status status2 = fs::status(argument_.dst.parent_path());
         if(!fs::exists(status2))
             throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
     }
-        
+
     //acc->set_mnemonic(mnemonic); // reset mnemonic to plain text
 
     // account address info

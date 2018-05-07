@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -34,8 +34,8 @@ using namespace bc::explorer::config;
 
 /************************ listbalances *************************/
 
-console_result listbalances::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result listbalances::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -43,7 +43,7 @@ console_result listbalances::invoke (Json::Value& jv_output,
     auto& aroot = jv_output;
     Json::Value all_balances;
     Json::Value address_balances;
-    
+
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
 
@@ -67,7 +67,7 @@ console_result listbalances::invoke (Json::Value& jv_output,
             address_balance["available"] = (addr_balance.unspent_balance - addr_balance.frozen_balance);
             address_balance["frozen"] = addr_balance.frozen_balance;
         }
-         
+
         Json::Value target_balance;
 
         if (!option_.greater && option_.non_zero) {
@@ -87,10 +87,10 @@ console_result listbalances::invoke (Json::Value& jv_output,
             }
         }
     }
-    
-    if (get_api_version() == 1 && all_balances.isNull()) { //compatible for v1        
+
+    if (get_api_version() == 1 && all_balances.isNull()) { //compatible for v1
     	aroot["balances"] = "";
-    } else {                                                                    
+    } else {
     	aroot["balances"] = all_balances;
     }
     return console_result::okay;

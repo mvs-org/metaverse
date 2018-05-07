@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -34,9 +34,9 @@ using namespace bc::explorer::config;
 
 /************************ importkeyfile *************************/
 
-console_result importkeyfile::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
-{    
+console_result importkeyfile::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
+{
     auto& blockchain = node.chain_impl();
 
     if (blockchain.is_account_exist(auth_.name)){

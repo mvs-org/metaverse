@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -34,8 +34,8 @@ namespace commands {
 
 /************************ addnode *************************/
 
-console_result addnode::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result addnode::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     //jv_output["message"] = IN_DEVELOPING;
     auto& blockchain = node.chain_impl();

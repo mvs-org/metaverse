@@ -56,9 +56,9 @@ console_result issue::invoke (Json::Value& jv_output,
 
     auto did = sh_asset->get_issuer();
     if (did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
+        throw did_symbol_length_exception{"issuer " + did + " length must be less than 64."};
     if (!blockchain.is_did_exist(did))
-        throw did_symbol_existed_exception{"issuer symbol is not exist in blockchain"};
+        throw did_symbol_notfound_exception{"issuer " + did + " is not exist in blockchain"};
 
     attachment attach;
     auto diddetail = blockchain.get_issued_did(did);

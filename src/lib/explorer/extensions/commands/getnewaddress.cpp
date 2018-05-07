@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ getnewaddress *************************/
 
-console_result getnewaddress::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getnewaddress::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -41,7 +41,7 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
     acc->get_mnemonic(auth_.auth, mnemonic);
     if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
     if (!option_.count || (option_.count & 0xfff00000)) { throw address_amount_exception("invalid address number parameter"); }
-    
+
     //split mnemonic to vector words
     auto&& words = bc::split(mnemonic, " ", true); // with trim
 
@@ -107,7 +107,7 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
         aroot = addresses[0];
     else
         aroot["addresses"] = addresses;
-    
+
     return console_result::okay;
 }
 

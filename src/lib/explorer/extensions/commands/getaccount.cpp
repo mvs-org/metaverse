@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,8 +32,8 @@ using namespace bc::explorer::config;
 
 /************************ getaccount *************************/
 
-console_result getaccount::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getaccount::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);

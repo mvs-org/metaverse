@@ -30,8 +30,8 @@ using namespace bc::explorer::config;
 
 /************************ getasset *************************/
 
-console_result getasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(argument_.symbol);

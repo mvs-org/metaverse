@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,8 +29,8 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result sendrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendrawtx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     // get raw tx
@@ -44,12 +44,12 @@ console_result sendrawtx::invoke (Json::Value& jv_output,
         throw tx_validate_exception{std::string("no enough transaction fee")};
     if(blockchain.validate_transaction(tx_))
         throw tx_validate_exception{std::string("validate transaction failure")};
-    if(blockchain.broadcast_transaction(tx_)) 
+    if(blockchain.broadcast_transaction(tx_))
         throw tx_broadcast_exception{std::string("broadcast transaction failure")};
 
     auto& aroot = jv_output;
     aroot["hash"] = encode_hash(tx_.hash());
-    
+
     return console_result::okay;
 }
 
