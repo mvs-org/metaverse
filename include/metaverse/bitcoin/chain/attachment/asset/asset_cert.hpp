@@ -105,8 +105,6 @@ public:
 
     void set_owner(const std::string& owner);
     const std::string& get_owner() const;
-    std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
-    std::string get_address(bc::blockchain::block_chain_impl& chain) const;
 
     void set_address(const std::string& owner);
     const std::string& get_address() const;
@@ -115,12 +113,13 @@ public:
     void set_certs(asset_cert_type certs);
 
     // auxiliary functions
+    std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     bool test_certs(asset_cert_type bits) const;
 
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
     static std::string get_owner_from_address(const std::string& address,
-            bc::blockchain::block_chain_impl& chain);
+        bc::blockchain::block_chain_impl& chain);
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
 

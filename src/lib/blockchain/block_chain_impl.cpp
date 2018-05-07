@@ -1849,15 +1849,14 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address)
 */
 std::string block_chain_impl::get_did_from_address(const std::string& did_address)
 {
-	// find from blockchain database
-	business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+    // find from blockchain database
+    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
 
-	if (!did_vec.empty())
-	{
-		return did_vec[0].detail.get_symbol();
-	}
+    if (!did_vec.empty()) {
+        return did_vec[0].detail.get_symbol();
+    }
 
-	return "";
+    return "";
 }
 
 /* find history addresses by the did symbol
@@ -1870,12 +1869,13 @@ std::shared_ptr<std::vector<blockchain_did>> block_chain_impl::get_did_history_a
 
 std::shared_ptr<did_detail> block_chain_impl::get_issued_did(const std::string& symbol)
 {
-	std::shared_ptr<did_detail> sp_did(nullptr);
-	const auto hash = get_hash(symbol);
-	auto sh_block_did = database_.dids.get(hash);
-	if(sh_block_did)
-		sp_did = std::make_shared<did_detail>(sh_block_did->get_did());
-	return sp_did;
+    std::shared_ptr<did_detail> sp_did(nullptr);
+    const auto hash = get_hash(symbol);
+    auto sh_block_did = database_.dids.get(hash);
+    if (sh_block_did) {
+        sp_did = std::make_shared<did_detail>(sh_block_did->get_did());
+    }
+    return sp_did;
 }
 
 /// get all the did in blockchain
@@ -1897,30 +1897,30 @@ std::shared_ptr<std::vector<did_detail>> block_chain_impl::get_issued_dids()
 
 std::shared_ptr<asset_detail> block_chain_impl::get_issued_asset(const std::string& symbol)
 {
-	std::shared_ptr<asset_detail> sp_asset(nullptr);
-	const auto hash = get_hash(symbol);
-	auto sh_block_asset = database_.assets.get(hash);
-	if(sh_block_asset)
-		sp_asset = std::make_shared<asset_detail>(sh_block_asset->get_asset());
-	return sp_asset;
+    std::shared_ptr<asset_detail> sp_asset(nullptr);
+    const auto hash = get_hash(symbol);
+    auto sh_block_asset = database_.assets.get(hash);
+    if (sh_block_asset) {
+        sp_asset = std::make_shared<asset_detail>(sh_block_asset->get_asset());
+    }
+    return sp_asset;
 }
 
 // get all addresses
 std::shared_ptr<std::vector<account_address>> block_chain_impl::get_addresses()
 {
-	auto sh_acc_vec = get_accounts();
-	auto ret_vector = std::make_shared<std::vector<account_address>>();
+    auto sh_acc_vec = get_accounts();
+    auto ret_vector = std::make_shared<std::vector<account_address>>();
+    const auto action = [&](const account_address& addr) {
+        ret_vector->emplace_back(std::move(addr));
+    };
 
-	for(auto& acc : *sh_acc_vec) {
-		auto sh_vec = get_account_addresses(acc.get_name());
-		const auto action = [&](const account_address& addr)
-		{
-			ret_vector->emplace_back(std::move(addr));
-		};
-		std::for_each(sh_vec->begin(), sh_vec->end(), action);
-	}
+    for(auto& acc : *sh_acc_vec) {
+        auto sh_vec = get_account_addresses(acc.get_name());
+        std::for_each(sh_vec->begin(), sh_vec->end(), action);
+    }
 
-	return ret_vector;
+    return ret_vector;
 }
 
 std::shared_ptr<std::vector<business_address_message>> block_chain_impl::get_account_messages(const std::string& name)
