@@ -104,6 +104,9 @@ private:
     const boost::filesystem::path file_path_;
     threadpool& pool_;
     deadline::ptr snap_timer_;
+
+    // record the seed count
+    const size_t seed_count;
 };
 
 } // namespace network
