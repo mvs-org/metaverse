@@ -268,6 +268,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     std::set<string> assets;
     std::set<string> assetcerts;
     std::set<string> dids;
+    std::set<string> didaddreses;
     for (const auto& tx: transactions)
     {
         RETURN_IF_STOPPED();
@@ -290,9 +291,14 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                }
            }
            else if (output.is_did_issue() || output.is_did_transfer()) {
-               auto r = dids.insert(output.get_did_symbol());
-               if(r.second == false) {
+               auto didexist = dids.insert(output.get_did_symbol());
+               if(didexist.second == false) {
                    return error::did_exist;
+               }
+
+               auto didaddress = didaddreses.insert(output.get_did_address());
+               if(didaddress.second == false ) {
+                   return error::address_issued_did;
                }
            }
        }

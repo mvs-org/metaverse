@@ -144,7 +144,6 @@ private:
 
     // These methods are NOT thread safe.
     bool is_in_pool(const hash_digest& tx_hash) const;
-    bool is_in_pool(const std::string& assert_name) const;
     bool is_spent_in_pool(transaction_ptr tx) const;
     bool is_spent_in_pool(const chain::transaction& tx) const;
     bool is_spent_in_pool(const chain::output_point& outpoint) const;

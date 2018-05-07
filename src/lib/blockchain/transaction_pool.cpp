@@ -146,24 +146,40 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
         return;
     }
 
-    for(auto& output : tx->outputs){
-        if (output.is_asset_issue()
-            && is_in_pool(output.get_asset_symbol())){
-            handler(error::asset_exist, tx, {});
-            return;
-         }
+    std::set<string> assets;
+    std::set<string> assetcerts;
+    std::set<string> dids;
+    std::set<string> didaddreses;
 
-        if (output.is_asset_cert_issue()
-            && is_in_pool(output.get_asset_cert_symbol())){
-            handler(error::asset_cert_exist, tx, {});
-            return;
-         }
+    for (auto& output : tx->outputs)
+    {
+           if (output.is_asset_issue()) {
+               auto r = assets.insert(output.get_asset_symbol());
+               if(r.second == false) {
+                    handler(error::asset_exist, tx, {});
+                    return;
+               }
+           }
+           else if (output.is_asset_cert_issue()) {
+               auto r = assetcerts.insert(output.get_asset_cert_symbol());
+               if(r.second == false) {
+                    handler(error::asset_cert_exist, tx, {});
+                    return;
+               }
+           }
+           else if (output.is_did_issue() || output.is_did_transfer()) {
+               auto didexist = dids.insert(output.get_did_symbol());
+               if(didexist.second == false) {
+                    handler(error::did_exist, tx, {});
+                    return;
+               }
 
-         if ((output.is_did_issue() || output.is_did_transfer())
-            && is_in_pool(output.get_did_symbol())){
-            handler(error::did_exist, tx, {});
-            return;
-         }
+               auto didaddress = didaddreses.insert(output.get_did_address());
+               if(didaddress.second == false ) {
+                    handler(error::address_issued_did, tx, {});
+                    return;
+               }
+           }
     }
 
     handler(error::success, tx, unconfirmed);
@@ -629,11 +645,6 @@ transaction_pool::const_iterator transaction_pool::find(
 bool transaction_pool::is_in_pool(const hash_digest& tx_hash) const
 {
     return find(tx_hash) != buffer_.end();
-}
-
-bool transaction_pool::is_in_pool(const std::string& assert_name) const
-{
-    return find(assert_name) != buffer_.end();
 }
 
 bool transaction_pool::is_spent_in_pool(transaction_ptr tx) const
