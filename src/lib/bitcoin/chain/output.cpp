@@ -406,7 +406,7 @@ std::string output::get_asset_cert_address(bc::blockchain::block_chain_impl& cha
 {
     if (is_asset_cert()) {
         auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
-        return cert_info.get_address(chain);
+        return cert_info.get_address();
     }
     return std::string("");
 }

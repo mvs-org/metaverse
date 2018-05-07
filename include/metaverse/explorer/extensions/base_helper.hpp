@@ -155,6 +155,8 @@ void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
 
+std::string get_address_from_did(const std::string& did,
+    bc::blockchain::block_chain_impl& blockchain);
 
 class BCX_API base_transfer_common
 {

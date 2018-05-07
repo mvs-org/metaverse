@@ -252,33 +252,24 @@ bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
     return (certs & bits) == bits;
 }
 
-std::string asset_cert::get_address(bc::blockchain::block_chain_impl& chain) const
-{
-    if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
-        return owner_;
-    }
-
-    auto sp_did_detail = chain.get_issued_did(owner_);
-    if (sp_did_detail) {
-        return sp_did_detail->get_address();
-    }
-    return owner_;
-}
-
 std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl& chain) const
 {
-    return get_owner_from_address(owner_, chain);
+    return get_owner_from_address(address_, chain);
 }
 
 std::string asset_cert::get_owner_from_address(const std::string& address,
-        bc::blockchain::block_chain_impl& chain)
+    bc::blockchain::block_chain_impl& chain)
 {
     // don't convert to did-symbol if did is not enabled.
     if (!bc::blockchain::validate_transaction::is_did_validate(chain)) {
         return address;
     }
 
-    return chain.get_did_from_address(address);
+    auto owner = chain.get_did_from_address(address);
+    if (owner.empty()) {
+        owner = address;
+    }
+    return owner;
 }
 
 bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const

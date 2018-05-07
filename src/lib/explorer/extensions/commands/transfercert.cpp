@@ -71,16 +71,13 @@ console_result transfercert::invoke (Json::Value& jv_output,
     }
 
     // check target address
-    if (!blockchain.is_valid_address(argument_.to))
-        throw address_invalid_exception{"invalid address parameter! " + argument_.to};
-
-    std::string cert_owner = asset_cert::get_owner_from_address(argument_.to, blockchain);
-    if (cert_owner.empty())
-        throw did_address_needed_exception("target address is not an did address. " + argument_.to);
+    auto to_address = get_address_from_did(argument_.to, blockchain);
+    if (!blockchain.is_valid_address(to_address))
+        throw address_invalid_exception{"invalid did parameter! " + argument_.to};
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, 0,
+        {to_address, argument_.symbol, 0, 0,
             certs_send, utxo_attach_type::asset_cert, attachment()}
     };
 

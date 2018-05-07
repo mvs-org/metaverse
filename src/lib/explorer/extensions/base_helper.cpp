@@ -63,6 +63,24 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
+std::string get_address_from_did(const std::string& did,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    if (did.empty() || did.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+        throw did_symbol_length_exception{"parameter did " + did + " not valid."};
+    }
+
+    // if (!blockchain.is_did_exist(did)) {
+    //     throw did_symbol_notfound_exception{"did " + did + " is not exist in blockchain"};
+    // }
+
+    auto diddetail = blockchain.get_issued_did(did);
+    if (!diddetail) {
+        throw did_symbol_notfound_exception{"did " + did + " is not exist in blockchain"};
+    }
+    return diddetail->get_address();
+}
+
 std::string get_random_payment_address(
     std::shared_ptr<account_address::list> sp_addresses,
     bc::blockchain::block_chain_impl& blockchain)
