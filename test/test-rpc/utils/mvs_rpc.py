@@ -110,6 +110,10 @@ def list_addresses(account, password):
     return "listaddresses", [account, password], {}, lambda result: result["addresses"]
 
 @mvs_api
+def check_address(address):
+    return "validateaddress", [address], {}, None
+
+@mvs_api
 def delete_account(account, password, lastword):
     return "deleteaccount", [account, password, lastword], {}, None
 

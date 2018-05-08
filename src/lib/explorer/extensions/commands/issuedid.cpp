@@ -55,7 +55,7 @@ console_result issuedid::invoke (Json::Value& jv_output,
 
     // fail if did is already in blockchain
     if (blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_notfound_exception{"did symbol is already exist in blockchain"};
+        throw did_symbol_existed_exception{"did symbol is already exist in blockchain"};
 
     // fail if address is already binded with did in blockchain
     if (blockchain.is_address_issued_did(argument_.address))
