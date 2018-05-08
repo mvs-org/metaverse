@@ -32,10 +32,6 @@ namespace database {
 
 using namespace boost::filesystem;
 
-BC_CONSTEXPR size_t number_buckets = 9997; // source value = 600000. 9997 copy form base_database.cpp file
-//BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
-//BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
-
 asset_database::asset_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)
   : base_database(map_filename, mutex)
@@ -58,9 +54,8 @@ std::shared_ptr<std::vector<asset_detail>> asset_database::get_asset_details() c
 {
 	auto vec_acc = std::make_shared<std::vector<asset_detail>>();
 	uint64_t i = 0;
-	for( i = 0; i < number_buckets; i++ ) {
+	for ( i = 0; i < get_bucket_count(); i++ ) {
 	    auto memo = lookup_map_.find(i);
-		//log::debug("get_accounts size=")<<memo->size();
 		if(memo->size()) 
 		{			
 			const auto action = [&](memory_ptr elem)

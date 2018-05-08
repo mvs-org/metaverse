@@ -31,10 +31,6 @@ namespace database {
 
 using namespace boost::filesystem;
 
-BC_CONSTEXPR size_t number_buckets = 9997; // copy from base_database.cpp
-//BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
-//BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
-
 namespace {
     // copy from block_chain_imp.cpp
     hash_digest get_hash(const std::string& str)
@@ -82,7 +78,7 @@ void account_database::store(const account& account)
             return;
         }
         // account exist -- check hash conflict
-        if (detail && (detail->get_name() != account.get_name())) {
+        if (detail && (detail->get_name() != name)) {
             log::error("account_database") << detail->get_name()
                 << " is already exist and has same hash "
                 << encode_hash(hash) << " with this name "
@@ -110,8 +106,7 @@ void account_database::store(const account& account)
 std::shared_ptr<std::vector<account>> account_database::get_accounts() const
 {
     auto vec_acc = std::make_shared<std::vector<account>>();
-    uint64_t i = 0;
-    for( i = 0; i < number_buckets; i++ ) {
+    for (size_t i = 0; i < get_bucket_count(); i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
             const auto action = [&vec_acc](memory_ptr elem)
