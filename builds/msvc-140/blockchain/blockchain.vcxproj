@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\blockchain\account_security_strategy.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\block.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\block_chain.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\blockchain\block_chain_impl.hpp" />
@@ -29,6 +30,7 @@
     <ClInclude Include="..\..\..\include\metaverse\blockchain\version.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\lib\blockchain\account_security_strategy.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\block.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\block_chain_impl.cpp" />
     <ClCompile Include="..\..\..\src\lib\blockchain\block_detail.cpp" />
