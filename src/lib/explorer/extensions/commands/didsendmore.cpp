@@ -47,7 +47,7 @@ console_result didsendmore::invoke (Json::Value& jv_output,
 
         if (!blockchain.get_issued_did(changesymbol)) {
             throw did_symbol_notfound_exception{
-                "mychange did symbol [" + changesymbol + "is not exist in blockchain"};
+                "mychange did symbol [" + changesymbol + "] is not exist in blockchain"};
         }
     }
 
@@ -68,13 +68,13 @@ console_result didsendmore::invoke (Json::Value& jv_output,
         else {
             if (addressordid.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
                 throw did_symbol_length_exception(
-                    "mychange did symbol [" + addressordid + "] length must be less than 64.");
+                    "receiver did symbol [" + addressordid + "] length must be less than 64.");
             }
 
             auto diddetail = blockchain.get_issued_did(addressordid);
             if (!diddetail) {
                 throw did_symbol_notfound_exception(
-                    "mychange did symbol [" + addressordid + "] is not exist in blockchain");
+                    "receiver did symbol [" + addressordid + "] is not exist in blockchain");
             }
 
             attach.set_to_did(addressordid);
