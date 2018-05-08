@@ -351,8 +351,9 @@ account::operator bool() const
 
 bool account::operator==(const account& other) const
 {
-    return (name == other.get_name());
-            //&& (mnemonic == other.get_mnemonic()); // mnemonic not equal when account change passwd
+    return ((name == other.get_name())
+            && (passwd == other.get_passwd())
+            && (mnemonic == other.get_mnemonic()));
 }
 
 

@@ -28,15 +28,11 @@
 #include <metaverse/database/primitives/slab_hash_table.hpp>
 #include <metaverse/database/primitives/slab_manager.hpp>
 #include <metaverse/database/databases/base_database.hpp>
-//#include <metaverse/bitcoin/chain/attachment/account/account_detail.hpp>
 
 using namespace libbitcoin::chain;
 
 namespace libbitcoin {
 namespace database {
-
-#define  ADMIN_NAME  "admin"
-#define  ADMIN_PASSWD  "admin"
 
 /// This enables lookups of accounts by hash.
 /// An alternative and faster method is lookup from a unique index
@@ -60,10 +56,7 @@ public:
 
     /// Store a account in the database. Returns a unique index
     /// which can be used to reference the account.
-    void store(const hash_digest& hash, const account& account);
-
-private:
-    inline hash_digest get_hash(const std::string& str);
+    void store(const account& account);
 };
 
 } // namespace database

@@ -35,6 +35,15 @@ BC_CONSTEXPR size_t number_buckets = 9997; // copy from base_database.cpp
 //BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
 //BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
 
+namespace {
+    // copy from block_chain_imp.cpp
+    hash_digest get_hash(const std::string& str)
+    {
+        data_chunk data(str.begin(), str.end());
+        return sha256_hash(data);
+    }
+}
+
 account_database::account_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)
   : base_database(map_filename, mutex)
@@ -46,6 +55,7 @@ account_database::~account_database()
 {
     close();
 }
+
 void account_database::set_admin(const std::string& name, const std::string& passwd)
 {
     // create admin account if not exists
@@ -55,69 +65,56 @@ void account_database::set_admin(const std::string& name, const std::string& pas
         acc.set_name(name);
         acc.set_passwd(passwd);
         acc.set_priority(account_priority::administrator);
-        store(hash, acc);
+        store(acc);
         sync();
     }
 }
 
-// todo -- should do all database scan incase hash conflict
-void account_database::store(const hash_digest& hash, const account& account)
+void account_database::store(const account& account)
 {
-    // account exist -- remove old value --> store new value
-    const auto key = hash;
-    const auto acc_size = account.serialized_size();
+    const auto& name = account.get_name();
+    const auto hash = get_hash(name);
+    auto&& result = get_account_result(hash);
+    if (result) {
+        auto detail = result.get_account_detail();
+        // account exist -- check duplicate
+        if (*detail == account) {
+            return;
+        }
+        // account exist -- check hash conflict
+        if (detail && (detail->get_name() != account.get_name())) {
+            log::error("account_database") << detail->get_name()
+                << " is already exist and has same hash "
+                << encode_hash(hash) << " with this name "
+                << name;
+            return;
+        }
+        // account exist -- remove old value
+        remove(hash);
+        sync();
+    }
 
+    const auto acc_size = account.serialized_size();
     BITCOIN_ASSERT(acc_size <= max_size_t);
     const auto value_size = static_cast<size_t>(acc_size);
 
-    auto account_data = account.to_data();
-    auto write = [&account_data](memory_ptr data)
+    auto write = [&account](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_data(account_data);
+        serial.write_data(account.to_data());
     };
 
-    auto account_vec = get_accounts();
-    auto pos = std::find_if(account_vec->begin(), account_vec->end(), [&](const bc::chain::account& elem) {
-        return (elem == account);
-    });
-
-    if (pos == account_vec->end()) { // new item
-        // actually store asset
-        lookup_map_.store(key, write, value_size);
-    }
-    else { // delete all and recreate all
-        *pos = account;
-        for(auto& each : *account_vec) {
-            const auto each_hash = get_hash(each.get_name());
-            remove(each_hash);
-        }
-
-        for (auto& each : *account_vec) {
-            const auto each_hash = get_hash(each.get_name());
-            const auto size = each.serialized_size();
-            BITCOIN_ASSERT(size <= max_size_t);
-            const auto each_size = static_cast<size_t>(size);
-
-            auto each_write = [&each](memory_ptr data)
-            {
-                auto serial = make_serializer(REMAP_ADDRESS(data));
-                serial.write_data(each.to_data());
-            };
-            lookup_map_.store(each_hash, each_write, each_size);
-        }
-    }
+    lookup_map_.store(hash, write, value_size);
 }
-//memory_ptr base_database::get(const hash_digest& hash) const
+
 std::shared_ptr<std::vector<account>> account_database::get_accounts() const
 {
     auto vec_acc = std::make_shared<std::vector<account>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
-        //log::debug("get_accounts size=")<<memo->size();
         if (memo->size()) {
-            const auto action = [&](memory_ptr elem)
+            const auto action = [&vec_acc](memory_ptr elem)
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
@@ -127,13 +124,6 @@ std::shared_ptr<std::vector<account>> account_database::get_accounts() const
         }
     }
     return vec_acc;
-}
-
-// copy from block_chain_imp.cpp
-inline hash_digest account_database::get_hash(const std::string& str)
-{
-    data_chunk data(str.begin(), str.end());
-    return sha256_hash(data);
 }
 
 account_result account_database::get_account_result(const hash_digest& hash) const

@@ -1092,8 +1092,7 @@ operation_result block_chain_impl::store_account(std::shared_ptr<account> acc)
     // Critical Section.
     unique_lock lock(mutex_);
 
-    const auto hash = get_hash(acc->get_name());
-    database_.accounts.store(hash, *acc);
+    database_.accounts.store(*acc);
     database_.accounts.sync();
     ///////////////////////////////////////////////////////////////////////////
     return operation_result::okay;
@@ -2319,10 +2318,9 @@ void block_chain_impl::safe_store_account(account& acc, std::vector<std::shared_
         const auto hash = get_short_hash(address->get_name());
         database_.account_addresses.safe_store(hash, *address);
     }
-
-    const auto hash = get_hash(acc.get_name());
-    database_.accounts.store(hash, acc);
     database_.account_addresses.sync();
+
+    database_.accounts.store(acc);
     database_.accounts.sync();
 }
 
