@@ -362,7 +362,7 @@ bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
 bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
 {
     return ops.size() == 8
-        && ops[0].code == opcode::special // model param
+        && ops[0].code == opcode::pushdata2 // model param
         && ops[1].code == opcode::special // input point
         && ops[2].code == opcode::checkattenuationverify
         && ops[3].code == opcode::dup
@@ -569,7 +569,7 @@ operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
 {
     return operation::stack
     {
-        { opcode::special, to_chunk(model_param) },
+        { opcode::pushdata2, to_chunk(model_param) },
         { opcode::special, input_point.to_data() },
         { opcode::checkattenuationverify, {} },
         { opcode::dup, {} },

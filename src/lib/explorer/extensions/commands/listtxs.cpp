@@ -237,6 +237,11 @@ console_result listtxs::invoke(Json::Value& jv_output,
                 pt_output["etp-value"] = op.value;
             }
 
+            if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(op.script.operations)) {
+                const auto& model_param = op.get_attenuation_model_param();
+                pt_output["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
+            }
+
             auto attach_data = op.attach_data;
             Json::Value tree = config::json_helper(get_api_version()).prop_list(attach_data);
 
@@ -255,10 +260,6 @@ console_result listtxs::invoke(Json::Value& jv_output,
                             tree["decimal_number"] = issued_asset->get_decimal_number();
                         }
                     }
-                }
-                if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(op.script.operations)) {
-                    const auto& model_param = op.get_attenuation_model_param();
-                    tree["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
                 }
             }
 
