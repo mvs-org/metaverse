@@ -70,10 +70,6 @@ std::string get_address_from_did(const std::string& did,
         throw did_symbol_length_exception{"did " + did + " is not valid."};
     }
 
-    // if (!blockchain.is_did_exist(did)) {
-    //     throw did_symbol_notfound_exception{"did " + did + " does not exist in blockchain"};
-    // }
-
     auto diddetail = blockchain.get_issued_did(did);
     if (!diddetail) {
         throw did_symbol_notfound_exception{"did " + did + " does not exist in blockchain"};

@@ -62,25 +62,18 @@ console_result didsendmore::invoke (Json::Value& jv_output,
         auto && addressordid = item.first();
 
         //did check
-        if(blockchain.is_valid_address(addressordid)) {
+        if (blockchain.is_valid_address(addressordid)) {
             address = addressordid;
         }
         else {
-            if (addressordid.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
-                throw did_symbol_length_exception(
-                    "receiver did symbol [" + addressordid + "] length must be less than 64.");
-            }
-
-            auto diddetail = blockchain.get_issued_did(addressordid);
-            if (!diddetail) {
-                throw did_symbol_notfound_exception(
-                    "receiver did symbol [" + addressordid + "] is not exist in blockchain");
-            }
+            auto to_address = get_address_from_did(addressordid, blockchain);
+            if (!blockchain.is_valid_address(to_address))
+                throw address_invalid_exception{"invalid receiver did! " + addressordid};
 
             attach.set_to_did(addressordid);
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
 
-            address = diddetail->get_address();
+            address = to_address;
         }
 
         if (!item.second())
@@ -96,7 +89,7 @@ console_result didsendmore::invoke (Json::Value& jv_output,
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

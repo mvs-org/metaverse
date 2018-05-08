@@ -1748,10 +1748,7 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
 bool block_chain_impl::is_did_exist(const std::string& did_name)
 {
     // find from blockchain database
-    if(get_issued_did(const_cast<std::string&>(did_name)))
-        return true;
-
-    return false;
+    return get_issued_did(did_name) != nullptr;
 }
 
 /* check did address exist or not
@@ -1760,13 +1757,7 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address)
 {
     // find from blockchain database
     business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
-
-    if (!did_vec.empty())
-    {
-        return true;
-    }
-
-    return false;
+    return !did_vec.empty();
 }
 
 /* find did by address
