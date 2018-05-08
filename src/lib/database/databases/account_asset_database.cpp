@@ -42,12 +42,12 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
 BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 + 8 + 2 + ASSET_DETAIL_FIX_SIZE; // ASSET_DETAIL_FIX_SIZE is the biggest one
-//		+ std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
+//      + std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<short_hash>(asset_transfer_record_size);
 
 account_asset_database::account_asset_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(lookup_filename, mutex), 
+    : lookup_file_(lookup_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size, record_size),
     lookup_map_(lookup_header_, lookup_manager_),
@@ -122,33 +122,36 @@ bool account_asset_database::close()
 
 void account_asset_database::store(const short_hash& key, const asset_detail& detail)
 {
-	// find the target asset if exist
-	auto asset_vec = get(key);
-	auto pos = std::find_if(asset_vec.begin(), asset_vec.end(), [&](const asset_detail& elem){
-			return (elem.get_symbol() == detail.get_symbol());
-			});
-	
-	if (pos == asset_vec.end()) { // new item
-		// actually store asset
-		auto write = [&detail](memory_ptr data)
-		{
-			auto serial = make_serializer(REMAP_ADDRESS(data));
-			serial.write_data(detail.to_data());
-		};
-		rows_multimap_.add_row(key, write);
-	} else { // delete all and recreate all
-		*pos = detail;
-		for(auto& each : asset_vec)
-			delete_last_row(key);
-		for(auto& each : asset_vec) {
-			auto each_write = [&each](memory_ptr data)
-			{
-				auto serial = make_serializer(REMAP_ADDRESS(data));
-				serial.write_data(each.to_data());
-			};
-			rows_multimap_.add_row(key, each_write);
-		}
-	}
+    // find the target asset if exist
+    auto asset_vec = get(key);
+    auto pos = std::find_if(asset_vec.begin(), asset_vec.end(), [&](const asset_detail& elem){
+            return (elem.get_symbol() == detail.get_symbol());
+            });
+
+    if (pos == asset_vec.end()) { // new item
+        // actually store asset
+        auto write = [&detail](memory_ptr data)
+        {
+            auto serial = make_serializer(REMAP_ADDRESS(data));
+            serial.write_data(detail.to_data());
+        };
+        rows_multimap_.add_row(key, write);
+    }
+    else { // delete all and recreate all
+        *pos = detail;
+        for (auto& each : asset_vec) {
+            delete_last_row(key);
+        }
+
+        for(auto& each : asset_vec) {
+            auto each_write = [&each](memory_ptr data)
+            {
+                auto serial = make_serializer(REMAP_ADDRESS(data));
+                serial.write_data(each.to_data());
+            };
+            rows_multimap_.add_row(key, each_write);
+        }
+    }
 }
 
 void account_asset_database::delete_last_row(const short_hash& key)
@@ -184,43 +187,41 @@ asset_detail::list account_asset_database::get(const short_hash& key) const
 
 std::shared_ptr<asset_detail> account_asset_database::get(const short_hash& key, const std::string& address) const
 {
-	std::shared_ptr<asset_detail> addr(nullptr);
+    std::shared_ptr<asset_detail> addr(nullptr);
     asset_detail::list result = get(key);
     for (auto element: result)
     {
-		if(element.get_address() == address)
-		{
-			addr = std::make_shared<asset_detail>(element);
-			break;
-		}
-	}
+        if(element.get_address() == address)
+        {
+            addr = std::make_shared<asset_detail>(element);
+            break;
+        }
+    }
 
-	return addr;
+    return addr;
 
 }
 /// get assets whose status is not issued and stored in local database (not in blockchain)
-std::shared_ptr<std::vector<business_address_asset>> account_asset_database::get_unissued_assets(const short_hash& key) const
+std::shared_ptr<business_address_asset::list> account_asset_database::get_unissued_assets(const short_hash& key) const
 {
     auto result = get(key);
-	auto sp_asset_vec = std::make_shared<std::vector<business_address_asset>>();
-	
-		
-	// reconstruct business_address_asset from asset_detail and sotre them in sp_asset_vec
-	const auto action = [&](const asset_detail& elem)
-	{
-		business_address_asset busi_asset;
-		
-		busi_asset.address = elem.get_address();
-		busi_asset.status = 2; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
-		busi_asset.quantity = elem.get_maximum_supply();
-		busi_asset.detail = elem;
+    auto sp_asset_vec = std::make_shared<business_address_asset::list>();
 
-		sp_asset_vec->emplace_back(std::move(busi_asset));
-	};
-	std::for_each(result.begin(), result.end(), action);
-	return sp_asset_vec;
+    // reconstruct business_address_asset from asset_detail and sotre them in sp_asset_vec
+    const auto action = [&](const asset_detail& elem)
+    {
+        business_address_asset busi_asset;
+
+        busi_asset.address = elem.get_address();
+        busi_asset.status = 2; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
+        busi_asset.quantity = elem.get_maximum_supply();
+        busi_asset.detail = elem;
+
+        sp_asset_vec->emplace_back(std::move(busi_asset));
+    };
+    std::for_each(result.begin(), result.end(), action);
+    return sp_asset_vec;
 }
-
 
 void account_asset_database::sync()
 {

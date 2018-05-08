@@ -39,8 +39,12 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
-    if (!option_.count || (option_.count & 0xfff00000)) { throw address_amount_exception("invalid address number parameter"); }
+    if (mnemonic.empty()) {
+        throw mnemonicwords_empty_exception("mnemonic empty");
+    }
+    if (!option_.count || (option_.count & 0xfff00000)) {
+        throw address_amount_exception("invalid address number parameter");
+    }
 
     //split mnemonic to vector words
     auto&& words = bc::split(mnemonic, " ", true); // with trim
@@ -49,8 +53,6 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         throw mnemonicwords_amount_exception{"invliad size of backup words."};
     }
 
-    uint32_t idx = 0;
-    auto& aroot = jv_output;
     Json::Value addresses;
 
     std::vector<std::shared_ptr<account_address>> account_addresses;
@@ -60,15 +62,15 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
     const auto prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);//76066276 is HD private key version
     const bc::wallet::hd_private private_key(ds, prefixes);
+
     // mainnet payment address version
     auto payment_version = 50;
-
-    if (blockchain.chain_settings().use_testnet_rules){
-         // testnetpayment address version
-         payment_version = 127;
+    if (blockchain.chain_settings().use_testnet_rules) {
+        // testnetpayment address version
+        payment_version = 127;
     }
 
-    for ( idx = 0; idx < option_.count; idx++ ) {
+    for (uint32_t idx = 0; idx < option_.count; idx++ ) {
 
         auto addr = std::make_shared<bc::chain::account_address>();
         addr->set_name(auth_.name);
@@ -103,10 +105,12 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     blockchain.safe_store_account(*acc, account_addresses);
 
     // write to output json
-    if (get_api_version() == 1 && option_.count == 1)
-        aroot = addresses[0];
-    else
-        aroot["addresses"] = addresses;
+    if (get_api_version() == 1 && option_.count == 1) {
+        jv_output = addresses[0];
+    }
+    else {
+        jv_output["addresses"] = addresses;
+    }
 
     return console_result::okay;
 }

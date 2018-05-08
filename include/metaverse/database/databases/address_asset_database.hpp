@@ -72,49 +72,51 @@ public:
 
     /// Call to unload the memory map.
     bool close();
-	
-	template <class BusinessDataType>
-	void store_output(const short_hash& key, const output_point& outpoint, 
-		uint32_t output_height, uint64_t value, uint16_t business_kd, uint32_t timestamp, BusinessDataType& business_data)
-	{
-		auto write = [&](memory_ptr data)
-		{
-			auto serial = make_serializer(REMAP_ADDRESS(data));
-			serial.write_byte(static_cast<uint8_t>(point_kind::output)); // 1
-			serial.write_data(outpoint.to_data()); // 36
-			serial.write_4_bytes_little_endian(output_height); // 4
-			serial.write_8_bytes_little_endian(value);  // 8
-			serial.write_2_bytes_little_endian(business_kd); // 2
-			serial.write_4_bytes_little_endian(timestamp); // 4
-			serial.write_data(business_data.to_data());
-		};
-		rows_multimap_.add_row(key, write);
-	}
 
-	void store_input(const short_hash& key,
-		const output_point& inpoint, uint32_t input_height,
-		const input_point& previous, uint32_t timestamp);
-	
-	business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
-	std::shared_ptr<std::vector<business_record>> get(const std::string& address, size_t start, size_t end) const;
-    std::shared_ptr<std::vector<business_record>> get(const std::string& address, const std::string& symbol, 
+    template <class BusinessDataType>
+    void store_output(const short_hash& key, const output_point& outpoint,
+        uint32_t output_height, uint64_t value, uint16_t business_kd,
+        uint32_t timestamp, BusinessDataType& business_data)
+    {
+        auto write = [&](memory_ptr data)
+        {
+            auto serial = make_serializer(REMAP_ADDRESS(data));
+            serial.write_byte(static_cast<uint8_t>(point_kind::output)); // 1
+            serial.write_data(outpoint.to_data()); // 36
+            serial.write_4_bytes_little_endian(output_height); // 4
+            serial.write_8_bytes_little_endian(value);  // 8
+            serial.write_2_bytes_little_endian(business_kd); // 2
+            serial.write_4_bytes_little_endian(timestamp); // 4
+            serial.write_data(business_data.to_data());
+        };
+        rows_multimap_.add_row(key, write);
+    }
+
+    void store_input(const short_hash& key,
+        const output_point& inpoint, uint32_t input_height,
+        const input_point& previous, uint32_t timestamp);
+
+    business_record::list get(const short_hash& key, size_t from_height, size_t limit) const;
+    std::shared_ptr<business_record::list> get(const std::string& address, size_t start, size_t end) const;
+    std::shared_ptr<business_record::list> get(const std::string& address, const std::string& symbol,
         size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const;
-	std::shared_ptr<std::vector<business_record>> get(size_t idx) const;
+    std::shared_ptr<business_record::list> get(size_t idx) const;
     business_record get_record(size_t idx) const;
-	business_history::list get_business_history(const short_hash& key,
-			size_t from_height) const;
-	business_history::list get_business_history(const std::string& address, 
-		size_t from_height, business_kind kind, uint8_t status) const;
-	business_history::list get_business_history(const std::string& address, 
-		size_t from_height, business_kind kind, uint32_t time_begin, uint32_t time_end) const;
-	std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& address, 
-		size_t from_height) const;
-	business_address_asset::list get_assets(const std::string& address, 
-		size_t from_height, business_kind kind) const;
-	business_address_asset::list get_assets(const std::string& address, 
-		size_t from_height) const;
-	business_address_message::list get_messages(const std::string& address, 
-		size_t from_height) const;
+
+    business_history::list get_business_history(const short_hash& key, size_t from_height) const;
+    business_history::list get_business_history(const std::string& address,
+        size_t from_height, business_kind kind, uint8_t status) const;
+    business_history::list get_business_history(const std::string& address,
+        size_t from_height, business_kind kind, uint32_t time_begin, uint32_t time_end) const;
+    std::shared_ptr<std::vector<business_history>> get_address_business_history(const std::string& address,
+        size_t from_height) const;
+
+    business_address_asset::list get_assets(const std::string& address,
+        size_t from_height, business_kind kind) const;
+    business_address_asset::list get_assets(const std::string& address,
+        size_t from_height) const;
+    business_address_message::list get_messages(const std::string& address,
+        size_t from_height) const;
     business_address_asset_cert::list get_asset_certs(const std::string& address, const std::string& symbol,
         size_t from_height) const;
 

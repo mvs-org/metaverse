@@ -85,7 +85,7 @@ console_result createasset::invoke(Json::Value& jv_output,
         throw asset_symbol_name_exception{"invalid symbol start with " + option_.symbol};
     }
 
-    if (blockchain.is_asset_exist(option_.symbol))
+    if (blockchain.is_asset_exist(option_.symbol, true))
         throw asset_symbol_existed_exception{"symbol is already used."};
 
     auto acc = std::make_shared<asset_detail>();

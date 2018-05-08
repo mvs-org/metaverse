@@ -41,9 +41,9 @@ console_result listdidaddresses::invoke (Json::Value& jv_output,
     if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
         throw did_symbol_length_exception{"did symbol length must be less than 64."};
 
-    // fail if did is already in blockchain
+    // fail if did does not exist in blockchain
     if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
+        throw did_symbol_notfound_exception{"did symbol does not exist in blockchain"};
 
     auto blockchain_dids = blockchain.get_did_history_addresses(argument_.symbol);
     if (blockchain_dids) {

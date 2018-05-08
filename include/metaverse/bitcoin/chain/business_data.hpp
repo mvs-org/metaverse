@@ -53,6 +53,7 @@ enum class business_kind : uint16_t
     did_issue = 5,
     did_transfer = 6,
     asset_cert = 7,
+    unknown = 0xffff
 };
 
 // 0 -- unspent  1 -- confirmed  2 -- local asset not issued

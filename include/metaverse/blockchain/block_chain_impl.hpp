@@ -257,7 +257,7 @@ public:
     uint64_t get_account_asset_volume(const std::string& account, const std::string& asset);
     uint64_t get_asset_volume(const std::string& asset);
 
-    bool is_asset_exist(const std::string& asset_name, bool add_local_db=true);
+    bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     bool get_asset_height(const std::string& asset_name, uint64_t& height);
     std::shared_ptr<asset_detail::list> get_local_assets();
     std::shared_ptr<asset_detail::list> get_issued_assets();
@@ -301,7 +301,7 @@ public:
     std::shared_ptr<account_address::list> get_addresses();
 
     // account message api
-    std::shared_ptr<std::vector<business_address_message>> get_account_messages(const std::string& name);
+    std::shared_ptr<business_address_message::list> get_account_messages(const std::string& name);
 
     // account adress related api
     operation_result store_account_address(std::shared_ptr<account_address> address);
@@ -362,6 +362,9 @@ private:
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
 
+    std::string get_asset_symbol_from_business_data(const business_data& data);
+
+private:
     std::atomic<bool> stopped_;
     const settings& settings_;
 

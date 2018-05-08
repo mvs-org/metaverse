@@ -150,6 +150,7 @@ uint64_t account_multisig::serialized_size() const
     size += (address_.size() + 9);
     return size;
 }
+
 bool account_multisig::operator==(account_multisig& other)
 {
     auto field_flag = (hd_index_ == other.get_hd_index())   && (m_ == other.get_m())
@@ -162,7 +163,9 @@ bool account_multisig::operator==(account_multisig& other)
 
     return field_flag && vec_flag;
 }
-void account_multisig::reset(){
+
+void account_multisig::reset()
+{
     hd_index_ = 0;
     index_ = 0;
     m_ = 0;
@@ -172,6 +175,7 @@ void account_multisig::reset(){
     description_ = "";
     address_ = "";
 }
+
 #ifdef MVS_DEBUG
 std::string account_multisig::to_string()
 {
@@ -188,6 +192,7 @@ std::string account_multisig::to_string()
     return ss.str();
 }
 #endif
+
 std::string account_multisig::get_multisig_script(){
     std::sort(cosigner_pubkeys_.begin(), cosigner_pubkeys_.end());
     std::ostringstream ss;
@@ -202,9 +207,11 @@ account::account()
 {
     reset();
 }
-account::account(std::string name, std::string mnemonic, hash_digest passwd,
-        uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type):
-        name(name), mnemonic(mnemonic), passwd(passwd), hd_index(hd_index), priority(priority), status(status), type(type)
+
+account::account(const std::string& name, const std::string& mnemonic, const hash_digest& passwd,
+    uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type)
+    : name(name), mnemonic(mnemonic), passwd(passwd)
+    , hd_index(hd_index), priority(priority), status(status), type(type)
 {
 }
 
@@ -341,6 +348,7 @@ account::operator bool() const
 {
     return (name.empty() || mnemonic.empty());
 }
+
 bool account::operator==(const account& other) const
 {
     return (name == other.get_name());

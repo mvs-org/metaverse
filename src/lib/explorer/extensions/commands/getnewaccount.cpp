@@ -44,7 +44,7 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
 #endif
 
     auto& blockchain = node.chain_impl();
-    if (blockchain.is_account_exist(auth_.name)){
+    if (blockchain.is_account_exist(auth_.name)) {
         throw account_existed_exception{"account already exist"};
     }
 
@@ -73,7 +73,6 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
     if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
-
 
     root["default-address"] = jv_temp["addresses"][0].asString();
 
