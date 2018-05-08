@@ -98,6 +98,10 @@ def new_account(account, password):
     return "getnewaccount", [account, password], {}, lambda result: result["mnemonic"].split()
 
 @mvs_api
+def get_account(account, password, lastword):
+    return "getaccount", [account, password, lastword], {}, lambda result: (result["mnemonic-key"], result["address-count"])
+
+@mvs_api
 def new_address(account, password, address_count=1):
     return "getnewaddress", [account, password], {'--number' : address_count}, lambda result: result["addresses"]
 
@@ -110,8 +114,16 @@ def delete_account(account, password, lastword):
     return "deleteaccount", [account, password, lastword], {}, None
 
 @mvs_api
-def get_account(account, password, lastword):
-    return "getaccount", [account, password, lastword], {}, None
+def import_account(account, password, mnemonic, hd_index=None):
+    return "importaccount", [mnemonic], {
+        '--accountname' : account,
+        '--password' : password,
+        '--hd_index' : hd_index
+    }, None
+
+@mvs_api
+def change_passwd(account, password, new_password):
+    return "changepasswd", [account, password], {'--password':new_password}, None
 
 @mvs_api
 def get_publickey(account, password, address):
