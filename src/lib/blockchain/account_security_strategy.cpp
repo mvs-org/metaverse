@@ -46,7 +46,7 @@ namespace libbitcoin {
 
         account_security_strategy* account_security_strategy::get_instance() {
             if (instance == nullptr) {
-                instance = new account_security_strategy(5, 3, 30*60); // 5 times for password, 3 times for lastword, and 30 minutes for lock period
+                instance = new account_security_strategy(10, 8, 30*60); // 10 times for password, 8 times for lastword, and 30 minutes for lock period
             }
 
             return instance;

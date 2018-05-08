@@ -47,6 +47,19 @@ class TestDIDSend(MVSTestCaseBase):
         Alice.mining()
         validate.validate_tx(self, tx_hash, Alice, Bob, 98765, 10 ** 4)
 
+class TestDIDSendMore(MVSTestCaseBase):
+    def test_0_didsend_more(self):
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Cindy.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        specific_fee = 12421
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.addresslist[1], specific_fee)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
 class TestDIDSendAsset(MVSTestCaseBase):
     @classmethod
     def setUpClass(cls):
@@ -64,16 +77,18 @@ class TestDIDSendAsset(MVSTestCaseBase):
 
         #we only consider Alice's Asset
         addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
-        self.assertEqual(len(addressasset), 1)
-        previous_quantity = addressasset[0].quantity
-        previous_decimal = addressasset[0].decimal_number
-        return previous_quantity * (10 ** previous_decimal)
+        if len(addressasset) == 1:
+            previous_quantity = addressasset[0].quantity
+            previous_decimal = addressasset[0].decimal_number
+            return previous_quantity * (10 ** previous_decimal)
+        elif len(addressasset) == 0:
+            return 0
+        self.assertEqual(0,1,addressasset)
 
     def test_2_didsend_asset(self):
         Alice.create_asset()
         Alice.mining()
         # send to did
-        import pdb; pdb.set_trace()
         pA = self.get_asset_amount(Alice)
         pB = self.get_asset_amount(Bob)
         tx_hash = Alice.didsend_asset(Bob.did_symbol, 1, Alice.asset_symbol)

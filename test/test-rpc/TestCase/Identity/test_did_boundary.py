@@ -4,6 +4,8 @@ from utils import mvs_rpc, validate, common
 from TestCase.MVSTestCase import *
 
 class TestDID(MVSTestCaseBase):
+    need_mine = False
+
     def test_0_boundary(self):
         # account password match error
         ec, message = mvs_rpc.issue_did(Zac.name, Zac.password+'1', Zac.mainaddress(), Zac.did_symbol)
@@ -76,3 +78,43 @@ class TestDID(MVSTestCaseBase):
         # account password match error
         ec, message = mvs_rpc.didsend_asset_from(Alice.name, Alice.password + '1', Alice.mainaddress(), Zac.mainaddress(), Alice.asset_symbol, 10 ** 5, 10 ** 4)
         self.assertEqual(ec, 1000, message)
+
+class TestDIDSendMore(MVSTestCaseBase):
+    need_mine = False
+
+    def test_0_didsend_more(self):
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Zac.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        specific_fee = 12421
+
+        # password error
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password + '1', receivers, Alice.addresslist[1], specific_fee)
+        self.assertEqual(ec, 1000, message)
+
+        # receivers contain not exits did -- Zac' did
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.addresslist[1], specific_fee)
+        self.assertEqual(ec, 7006, message)
+
+        #Zac -> Cindy
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Cindy.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        # mychange -- not exits did
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Zac.did_symbol, specific_fee)
+        self.assertEqual(ec, 7006, message)
+
+    def test_1_didsend_more(self):
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Cindy.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        specific_fee = 12421
