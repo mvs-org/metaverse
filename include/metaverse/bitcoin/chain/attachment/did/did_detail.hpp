@@ -41,15 +41,18 @@ BC_CONSTEXPR size_t DID_DETAIL_FIX_SIZE = DID_DETAIL_SYMBOL_FIX_SIZE
 class BC_API did_detail
 {
 public:
+    typedef std::vector<did_detail> list;
+
     enum did_detail_type : uint32_t
     {
         created,
         issued_not_in_blockchain,
         issued_in_blockchain
     };
-    typedef std::vector<did_detail> list;
+
     did_detail();
-    did_detail(std::string symbol, std::string address);
+    did_detail(const std::string& symbol, const std::string& address);
+
     static did_detail factory_from_data(const data_chunk& data);
     static did_detail factory_from_data(std::istream& stream);
     static did_detail factory_from_data(reader& source);
@@ -77,7 +80,6 @@ public:
 private:
     std::string symbol;
     std::string address;
-
 };
 
 } // namespace chain

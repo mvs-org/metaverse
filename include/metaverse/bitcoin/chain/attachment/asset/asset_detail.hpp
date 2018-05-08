@@ -50,14 +50,17 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
 class BC_API asset_detail
 {
 public:
+    typedef std::vector<asset_detail> list;
+
     static BC_CONSTEXPR uint8_t forbidden_secondaryissue_threshold = 0;
     static BC_CONSTEXPR uint8_t freely_secondaryissue_threshold = 127;
 
-    typedef std::vector<asset_detail> list;
     asset_detail();
-    asset_detail(std::string symbol, uint64_t maximum_supply,
-        uint8_t decimal_number, uint8_t threshold, std::string issuer,
-        std::string address, std::string description);
+    asset_detail(
+        const std::string& symbol, uint64_t maximum_supply,
+        uint8_t decimal_number, uint8_t threshold, const std::string& issuer,
+        const std::string& address, const std::string& description);
+
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
     static asset_detail factory_from_data(reader& source);

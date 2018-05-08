@@ -34,9 +34,10 @@ did_detail::did_detail()
 {
     reset();
 }
+
 did_detail::did_detail(
-    std::string symbol, std::string address):
-    symbol(symbol), address(address)
+    const std::string& symbol, const std::string& address)
+    : symbol(symbol), address(address)
 {
 }
 
@@ -166,6 +167,7 @@ const std::string& did_detail::get_symbol() const
 {
     return symbol;
 }
+
 void did_detail::set_symbol(const std::string& symbol)
 {
     size_t len = std::min(symbol.size()+1 , DID_DETAIL_SYMBOL_FIX_SIZE);
@@ -176,6 +178,7 @@ const std::string& did_detail::get_address() const
 {
     return address;
 }
+
 void did_detail::set_address(const std::string& address)
 {
      size_t len = std::min(address.size()+1 , DID_DETAIL_ADDRESS_FIX_SIZE);

@@ -39,9 +39,9 @@ asset_detail::asset_detail()
 }
 
 asset_detail::asset_detail(
-    std::string symbol, uint64_t maximum_supply,
-    uint8_t decimal_number, uint8_t threshold, std::string issuer,
-    std::string address, std::string description):
+    const std::string& symbol, uint64_t maximum_supply,
+    uint8_t decimal_number, uint8_t threshold, const std::string& issuer,
+    const std::string& address, const std::string& description):
     symbol(symbol), maximum_supply(maximum_supply),
     decimal_number(decimal_number),
     secondaryissue_threshold(threshold),

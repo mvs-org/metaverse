@@ -734,7 +734,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         return attachment(MESSAGE_TYPE, attach_version, msg);
     }
     else if (record.type == utxo_attach_type::did_issue) {
-        did_detail diddetail (symbol_,record.target);
+        did_detail diddetail(symbol_, record.target);
         auto ass = did(DID_DETAIL_TYPE, diddetail);
         return attachment(DID_TYPE, attach_version, ass);
     }
