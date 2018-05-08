@@ -8,7 +8,7 @@ class TestAsset(MVSTestCaseBase):
         self.assertEqual(len(assets), 1)
         self.assertEqual(assets[0].symbol, Alice.asset_symbol)
         self.assertEqual(assets[0].address, "")
-        self.assertEqual(assets[0].issuer, Alice.name)
+        self.assertEqual(assets[0].issuer, Alice.did_symbol)
         self.assertEqual(assets[0].status, 'unissued')
 
         #delete_localasset
@@ -16,16 +16,15 @@ class TestAsset(MVSTestCaseBase):
         assets = Alice.get_accountasset()
         self.assertEqual(len(assets), 0)
 
-    def test_2_issue_asset_from(self):
-        Alice.create_asset(False)
-        Alice.issue_asset(Alice.mainaddress())
+    def test_2_issue_asset(self):
+        Alice.create_asset()
         Alice.mining()
 
         assets = Alice.get_accountasset()
         self.assertEqual(len(assets), 1)
         self.assertEqual(assets[0].symbol, Alice.asset_symbol)
         self.assertEqual(assets[0].address, Alice.mainaddress())
-        self.assertEqual(assets[0].issuer, Alice.name)
+        self.assertEqual(assets[0].issuer, Alice.did_symbol)
         self.assertEqual(assets[0].status, 'unspent')
 
         addressassets = Alice.get_addressasset( Alice.mainaddress() )
@@ -33,7 +32,7 @@ class TestAsset(MVSTestCaseBase):
         self.assertEqual(len(addressasset), 1)
         self.assertEqual(addressasset[0].symbol, Alice.asset_symbol)
         self.assertEqual(addressasset[0].address, Alice.mainaddress())
-        self.assertEqual(addressasset[0].issuer, Alice.name)
+        self.assertEqual(addressasset[0].issuer, Alice.did_symbol)
         self.assertEqual(addressasset[0].status, 'unspent')
 
     def get_asset_amount(self, role):
