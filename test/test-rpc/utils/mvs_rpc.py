@@ -167,8 +167,11 @@ def modify_did(account, password, from_address, to_address, did_symbol):
     return "didmodifyaddress", [account, password, from_address, to_address, did_symbol], {}, None
 
 @mvs_api
-def get_asset(asset_symbol=None):
-    return "getasset", filter(None, [asset_symbol]), {}, None
+def get_asset(asset_symbol=None, cert=False):
+    positional = filter(None, [asset_symbol])
+    if cert:
+        positional.append("--cert")
+    return "getasset", positional, {}, None
 
 @mvs_api
 def get_addressasset(address, cert=False):
@@ -214,8 +217,11 @@ def delete_localasset(account, password, symbol):
     return "deletelocalasset", [account, password], {'--symbol': symbol}, None
 
 @mvs_api
-def list_assets(account=None, password=None):
-    return "listassets", filter(None, [account, password]), {}, None
+def list_assets(account=None, password=None, cert=False):
+    positional = filter(None, [account, password])
+    if cert:
+        positional.append('--cert')
+    return "listassets", positional, {}, None
 
 @mvs_api
 def send_asset(account, password, to_, symbol, amount, fee=None):
@@ -328,6 +334,19 @@ def sendmore(account, password, receivers, mychange=None, fee=None):
 @mvs_api
 def didsend(account, password, to_, amount, fee=None, desc=None):
     return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
+
+@mvs_api
+def didsendmore(account, password, receivers, mychange=None, fee=None):
+    '''
+    :param receivers: {address1/did1:amount1, address2/did2:amount2, ...} amount in bits
+    '''
+    optional = {
+        '-f': fee,
+        '-m': mychange,
+        '-r': ["%s:%s" % (i, receivers[i]) for i in receivers]
+    }
+    return "didsendmore", [account, password], optional, None
+
 
 @mvs_api
 def didsend_from(account, password, from_, to_, amount, fee=None, desc=None):
