@@ -72,7 +72,7 @@ public:
             "address"
         )
         (
-            "cert",
+            "cert,c",
             value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
             "If specified, then only get related asset cert. Default is not specified."
         );
