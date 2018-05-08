@@ -137,12 +137,14 @@ public:
         return false;
     }
 
-    virtual bool is_block_height_fullfilled(uint64_t height){
-    	return true;
+    virtual bool is_block_height_fullfilled(uint64_t height)
+    {
+        return true;
     }
 
-    virtual uint64_t minimum_block_height(){
-    	return 0;
+    virtual uint64_t minimum_block_height()
+    {
+        return 0;
     }
 
     /**
@@ -195,7 +197,7 @@ public:
         definitions.add_options()
         (
             /* This composes with the command line options. */
-            BX_CONFIG_VARIABLE, 
+            BX_CONFIG_VARIABLE,
             value<boost::filesystem::path>()
                 ->composing()->default_value(config_default_path()),
             "The path to the configuration settings file."
@@ -207,7 +209,7 @@ public:
      * @param[in]  input      The input stream for loading the parameters.
      * @param[in]  variables  The loaded variables.
      */
-    BCX_API virtual void load_fallbacks(std::istream& input, 
+    BCX_API virtual void load_fallbacks(std::istream& input,
         po::variables_map& variables)
     {
     }
@@ -359,7 +361,7 @@ public:
     }
 
     /* Properties */
-    
+
     /**
      * Get command line argument metadata.
      */
@@ -693,7 +695,7 @@ public:
 protected:
 
     /**
-     * This base class is abstract but not pure virtual, so prevent direct 
+     * This base class is abstract but not pure virtual, so prevent direct
      * construction here.
      */
     command()
@@ -701,7 +703,7 @@ protected:
     }
 
 private:
-    
+
     /**
      * Command line argument metadata.
      */
@@ -793,7 +795,7 @@ private:
             uint16_t connect_timeout_seconds;
             bc::config::sodium server_public_key;
             bc::config::sodium client_private_key;
-            uint8_t api_version; 
+            uint8_t api_version;
         } server;
 
         setting()

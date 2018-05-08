@@ -67,16 +67,16 @@ std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain)
 {
     if (did.empty() || did.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
-        throw did_symbol_length_exception{"parameter did " + did + " not valid."};
+        throw did_symbol_length_exception{"did " + did + " is not valid."};
     }
 
     // if (!blockchain.is_did_exist(did)) {
-    //     throw did_symbol_notfound_exception{"did " + did + " is not exist in blockchain"};
+    //     throw did_symbol_notfound_exception{"did " + did + " does not exist in blockchain"};
     // }
 
     auto diddetail = blockchain.get_issued_did(did);
     if (!diddetail) {
-        throw did_symbol_notfound_exception{"did " + did + " is not exist in blockchain"};
+        throw did_symbol_notfound_exception{"did " + did + " does not exist in blockchain"};
     }
     return diddetail->get_address();
 }

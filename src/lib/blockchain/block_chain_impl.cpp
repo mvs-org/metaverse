@@ -1017,22 +1017,21 @@ inline short_hash block_chain_impl::get_short_hash(const std::string& str)
 }
 
 std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
-        (const std::string& name, const std::string& passwd)
+    (const std::string& name, const std::string& passwd)
 {
     //added by chengzhiping to protect accounts from brute force password attacks.
     auto *ass = account_security_strategy::get_instance();
     ass->check_locked(name);
 
-	auto account = get_account(name);
-	if(account && account->get_passwd() == get_hash(passwd)) // account exist
-	{
+    auto account = get_account(name);
+    if (account && account->get_passwd() == get_hash(passwd)) { // account exist
         ass->on_auth_passwd(name, true);
         return account;
-	}else{
-        ass->on_auth_passwd(name, false);
-        throw std::logic_error{"account not found or incorrect password"};
-        return nullptr;
     }
+
+    ass->on_auth_passwd(name, false);
+    throw std::logic_error{"account not found or incorrect password"};
+    return nullptr;
 }
 
 std::string block_chain_impl::is_account_lastwd_valid(const account& acc, std::string& auth, const std::string& lastwd)

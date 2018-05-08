@@ -33,7 +33,7 @@
 using namespace po;
 using namespace std;
 using namespace boost::filesystem;
-    
+
 namespace libbitcoin {
 namespace explorer {
 using namespace commands;
@@ -56,8 +56,7 @@ void broadcast(const function<void(shared_ptr<command>)> func, std::ostream& os)
 
     os <<"\r\n== extension commands ==\r\n";
 
-    broadcast_extension(func);
-
+    broadcast_extension(func, os);
 }
 
 shared_ptr<command> find(const string& symbol)
@@ -102,7 +101,6 @@ std::string formerly(const string& former)
         return validate_tx::symbol();
 
     return "";
-
 }
 
 } // namespace explorer
