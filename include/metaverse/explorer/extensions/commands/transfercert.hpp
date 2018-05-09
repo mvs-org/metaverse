@@ -86,12 +86,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "Asset symbol"
+            "Asset cert symbol"
         )
         (
             "cert,c",
             value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
-            "Asset cert type name, eg. ISSUE, DOMAIN, NAMING"
+            "Asset cert type name(s), multi names should be separeted by white-space, eg. ISSUE DOMAIN NAMING"
         )
         (
             "fee,f",
