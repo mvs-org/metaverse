@@ -74,7 +74,7 @@ void account_database::store(const account& account)
     if (result) {
         auto detail = result.get_account_detail();
         // account exist -- check duplicate
-        if (*detail == account) {
+        if (detail && (*detail == account)) {
             return;
         }
         // account exist -- check hash conflict
