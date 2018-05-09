@@ -277,12 +277,14 @@ public:
         const std::string& address, const std::string& asset);
 
     // account did api
-    bool is_did_exist(const std::string& did_name);
-    bool get_did_height(const std::string& did_name, uint64_t& height);
+    bool is_did_exist(const std::string& symbol);
+    bool get_did_height(const std::string& symbol, uint64_t& height);
     bool is_address_issued_did(const std::string& address);
+    bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address);
     std::shared_ptr<did_detail> get_issued_did(const std::string& symbol);
     std::shared_ptr<did_detail::list> get_issued_dids();
+    std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
 
     //get history addresses from did symbol
     std::shared_ptr<blockchain_did::list>  get_did_history_addresses(const std::string & symbol);

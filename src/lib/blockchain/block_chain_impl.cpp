@@ -1755,8 +1755,48 @@ bool block_chain_impl::is_did_exist(const std::string& did_name)
 bool block_chain_impl::is_address_issued_did(const std::string& did_address)
 {
     // find from blockchain database
-    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+    auto&& did_vec = database_.address_dids.get_dids(did_address, 0);
     return !did_vec.empty();
+}
+
+bool block_chain_impl::is_account_owned_did(const std::string& account, const std::string& symbol)
+{
+    auto pvaddr = get_account_addresses(account);
+    if (pvaddr) {
+        const auto match = [&symbol](const business_address_did& item) {
+            return item.detail.get_symbol() == symbol;
+        };
+
+        for (const auto& account_address : *pvaddr) {
+            auto&& did_vec = database_.address_dids.get_dids(account_address.get_address(), 0);
+            if (did_vec.empty()) {
+                continue;
+            }
+
+            auto iter = std::find_if(did_vec.begin(), did_vec.end(), match);
+            if (iter != did_vec.end()) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::string& account)
+{
+    auto sh_vec = std::make_shared<did_detail::list>();
+    auto pvaddr = get_account_addresses(account);
+    if (pvaddr) {
+        for (const auto& account_address : *pvaddr) {
+            auto&& did_vec = database_.address_dids.get_dids(account_address.get_address(), 0);
+            if (!did_vec.empty()) {
+                sh_vec->emplace_back(std::move(did_vec[0].detail));
+            }
+        }
+    }
+
+    return sh_vec;
 }
 
 /* find did by address

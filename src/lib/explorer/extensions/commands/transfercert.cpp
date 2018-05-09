@@ -39,8 +39,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     blockchain.uppercase_symbol(argument_.symbol);
 
     // check asset symbol
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    check_asset_symbol(argument_.symbol);
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_param_value_map = {

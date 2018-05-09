@@ -63,12 +63,46 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
+void check_did_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty()) {
+        throw did_symbol_length_exception{"Did symbol can not be empty."};
+    }
+
+    if (symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+        throw did_symbol_length_exception{"Did symbol length must be less than "
+            + std::to_string(DID_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    if (check_sensitive) {
+        if (bc::wallet::symbol::is_sensitive(symbol)) {
+            throw did_symbol_name_exception{"Did symbol " + symbol + " is forbidden."};
+        }
+    }
+}
+
+void check_asset_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty()) {
+        throw asset_symbol_length_exception{"Symbol can not be empty."};
+    }
+
+    if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
+        throw asset_symbol_length_exception{"Symbol length must be less than "
+            + std::to_string(ASSET_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    if (check_sensitive) {
+        if (bc::wallet::symbol::is_sensitive(symbol)) {
+            throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
+        }
+    }
+}
+
 std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain)
 {
-    if (did.empty() || did.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
-        throw did_symbol_length_exception{"did " + did + " is not valid."};
-    }
+    check_did_symbol(did);
 
     auto diddetail = blockchain.get_issued_did(did);
     if (!diddetail) {

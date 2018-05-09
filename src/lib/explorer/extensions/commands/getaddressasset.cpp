@@ -37,7 +37,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    if(!blockchain.is_valid_address(argument_.address))
+    if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
     std::string json_key;

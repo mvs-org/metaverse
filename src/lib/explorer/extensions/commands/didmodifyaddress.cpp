@@ -35,10 +35,10 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    //blockchain.uppercase_symbol(argument_.symbol);
+    // blockchain.uppercase_symbol(argument_.symbol);
 
-    if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"did symbol length must be less than 64."};
+    // check did symbol
+    check_did_symbol(argument_.symbol);
 
     // fail if did is already in blockchain
     if (!blockchain.is_did_exist(argument_.symbol))

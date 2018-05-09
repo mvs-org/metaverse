@@ -35,18 +35,15 @@ console_result issuedid::invoke (Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    //blockchain.uppercase_symbol(argument_.symbol);
-    if(bc::wallet::symbol::is_sensitive(argument_.symbol)) {
-        throw asset_symbol_name_exception{"invalid symbol start with " + argument_.symbol};
-    }
+
+    // check did symbol
+    check_did_symbol(argument_.symbol, true);
 
     if (blockchain.is_valid_address(argument_.symbol))
         throw address_invalid_exception{"symbol cannot be an address!"};
 
-    if(argument_.fee < 100000000)
+    if (argument_.fee < 100000000)
         throw did_issue_poundage_exception{"issue did fee less than 100000000 satoshi = 1 etp!"};
-    if (argument_.symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"did symbol length must be less than 64."};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
 

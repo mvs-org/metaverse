@@ -46,8 +46,10 @@ console_result didsend::invoke(Json::Value& jv_output,
     }
     else {
         //blockchain.uppercase_symbol(argument_.did);
-        if (argument_.did.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"did symbol length must be less than 64."};
+
+        // check did symbol
+        check_did_symbol(argument_.did);
+
         if (!blockchain.is_did_exist(argument_.did))
             throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
 

@@ -22,6 +22,7 @@
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -36,8 +37,10 @@ console_result getasset::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if (argument_.symbol.size() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"Illegal asset symbol length."};
+    if (!argument_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(argument_.symbol);
+    }
 
     std::string json_key;
     Json::Value json_value;

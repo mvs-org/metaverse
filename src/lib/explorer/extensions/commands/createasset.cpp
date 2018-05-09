@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -49,22 +50,14 @@ console_result createasset::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    blockchain.uppercase_symbol(option_.symbol);
 
-    // check options
-    if (option_.symbol.empty())
-        throw asset_symbol_length_exception{"asset symbol can not be empty."};
-    if (option_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    // check asset symbol
+    check_asset_symbol(option_.symbol, true);
 
-    // check did
-    if (option_.issuer.empty())
-        throw did_symbol_length_exception{"issuer can not be empty."};
-    if (option_.issuer.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-        throw did_symbol_length_exception{"issuer symbol length must be less than 64."};
-    if (!blockchain.is_did_exist(option_.issuer)) {
-        throw did_symbol_notfound_exception{
-            "the did for issuer is not exist in blockchain, maybe you should issuedid first"};
-    }
+    // check did symbol
+    auto issuer_did = option_.issuer;
+    check_did_symbol(issuer_did);
 
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
@@ -73,18 +66,25 @@ console_result createasset::invoke(Json::Value& jv_output,
         throw asset_secondaryissue_threshold_exception{
             "secondaryissue threshold value error, is must be -1 or in range of 0 to 100."};
     }
+
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};
     if (option_.maximum_supply.volume == 0u)
         throw argument_legality_exception{"volume must not be zero."};
 
-    // maybe throw
-    blockchain.uppercase_symbol(option_.symbol);
-
-    if (bc::wallet::symbol::is_sensitive(option_.symbol)) {
-        throw asset_symbol_name_exception{"invalid symbol start with " + option_.symbol};
+    // check did exists
+    if (!blockchain.is_did_exist(issuer_did)) {
+        throw did_symbol_notfound_exception{
+            "The did '" + issuer_did + "' does not exist in blockchain, maybe you should issuedid first"};
     }
 
+    // check did is owned by the account
+    if (!blockchain.is_account_owned_did(auth_.name, issuer_did)) {
+        throw did_symbol_notowned_exception{
+            "The did '" + issuer_did + "' is not owned by " + auth_.name};
+    }
+
+    // check asset exists
     if (blockchain.is_asset_exist(option_.symbol, true))
         throw asset_symbol_existed_exception{"symbol is already used."};
 
@@ -92,7 +92,7 @@ console_result createasset::invoke(Json::Value& jv_output,
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    acc->set_issuer(option_.issuer);
+    acc->set_issuer(issuer_did);
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?

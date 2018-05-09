@@ -35,9 +35,10 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    //blockchain.uppercase_symbol(argument_.symbol);
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    blockchain.uppercase_symbol(argument_.symbol);
+
+    // check asset symbol
+    check_asset_symbol(argument_.symbol);
 
     std::string fromaddress = "";
     std::string toaddress = "";

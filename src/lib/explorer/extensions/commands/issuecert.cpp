@@ -40,8 +40,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     boost::to_upper(argument_.cert);
 
     // check asset symbol
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    check_asset_symbol(argument_.symbol);
 
     auto to_did = argument_.to;
     auto to_address = get_address_from_did(to_did, blockchain);

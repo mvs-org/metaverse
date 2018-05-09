@@ -37,8 +37,9 @@ console_result sendasset::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    // check asset symbol
+    check_asset_symbol(argument_.symbol);
+
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid to address parameter!"};
     if (!argument_.amount)

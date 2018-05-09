@@ -39,8 +39,10 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+    if (!argument_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(argument_.symbol);
+    }
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
     if(!pvaddr)
