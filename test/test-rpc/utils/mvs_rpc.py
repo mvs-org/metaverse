@@ -374,3 +374,37 @@ def burn(account, password, symbol, amount):
 @mvs_api
 def gettx(tx_hash):
     return "gettx", [tx_hash], {}, None
+
+
+@mvs_api
+def issue_cert(account, password, to_did, symbol, type, fee=None):
+    '''
+    account          Account name required.
+    password          Account password(authorization) required.
+    to_did                Target did
+    symbol               Asset cert symbol
+    type                 Asset cert type name. eg. NAMING
+    '''
+    return "issuecert", [account, password, to_did, symbol, type], {'--fee':fee}, None
+
+@mvs_api
+def transfer_cert(account, password, to_did, cert_symbol, certs, fee=None):
+    '''
+    :param certs: type = list,  Asset cert type name, eg. ISSUE, DOMAIN, NAMING
+    '''
+    return "transfercert", [account, password, to_did, cert_symbol], {"-c":certs, "-f":fee}, None
+
+@mvs_api
+def secondary_issue(account, password, to_did, symbol, volume, model=None, fee=None):
+    '''
+    ACCOUNTNAME          Account name required.
+    ACCOUNTAUTH          Account password(authorization) required.
+    TODID                target did to check and issue asset, fee from and
+                         mychange to the address of this did too.
+    SYMBOL               issued asset symbol
+    VOLUME               The volume of asset, with unit of integer bits.
+    -f [--fee]           The fee of tx. default_value 10000 ETP bits
+    -m [--model]         The asset attenuation model parameter, defaults to
+                         empty string.
+    '''
+    return "secondaryissue", [account, password, to_did, symbol, volume], {"-m":model, "-f":fee}, None

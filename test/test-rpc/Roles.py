@@ -44,14 +44,21 @@ class Role:
         '''
         return mvs_rpc.issue_did(self.name, self.password, self.mainaddress(), self.did_symbol)
 
-    def create_asset(self, is_issue=True):
+    def create_asset(self, is_issue=True, secondary=0):
         '''
         issue asset to the main address.
+        secondary:   The rate of secondaryissue. Default to 0, means the
+                     asset is not allowed to secondary issue forever;
+                     otherwise, -1 means the asset can be secondary issue
+                     freely; otherwise, the valid rate is in range of 1
+                     to 100, means the asset can be secondary issue when
+                     own percentage greater than or equal to the rate
+                     value.
         '''
         #auto create a new asset name for each time create_asset is called
         self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
 
-        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, self.did_symbol, description="%s's Asset" % self.name)
+        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
         assert (result == 0)
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
@@ -60,6 +67,12 @@ class Role:
     def issue_asset(self, from_):
         result, message = mvs_rpc.issue_asset_from(self.name, self.password, self.asset_symbol, from_)
         assert (result == 0)
+
+    def issue_cert(self, to_):
+        cert_symbol = (self.name + ".2%s." % to_.name + common.get_timestamp()).upper()
+        result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
+        assert (result == 0)
+        return cert_symbol
 
     def delete_localasset(self):
         result, message = mvs_rpc.delete_localasset(self.name, self.password, self.asset_symbol)

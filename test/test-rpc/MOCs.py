@@ -2,6 +2,25 @@
 # -*- coding: utf-8 -*-
 from utils import mvs_rpc
 
+class CertType:
+    NONE = 0
+    ISSUE = 1 << 0
+    DOMAIN = 1 << 1
+    NAMING = 1 << 2
+    ALL = 0xffffffffffffffff
+
+    @classmethod
+    def get_type_name(cls, type):
+        type2name = {
+            cls.NONE: "NONE",
+            cls.ISSUE: "ISSUE",
+            cls.DOMAIN: "DOMAIN",
+            cls.NAMING: "NAMING",
+            cls.ALL: "ALL"
+        }
+
+
+
 class Asset:
     def __init__(self, symbol):
         self.symbol = symbol
