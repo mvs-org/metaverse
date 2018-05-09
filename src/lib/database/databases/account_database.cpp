@@ -68,39 +68,48 @@ void account_database::set_admin(const std::string& name, const std::string& pas
 
 void account_database::store(const account& account)
 {
-    const auto& name = account.get_name();
-    const auto hash = get_hash(name);
-    auto&& result = get_account_result(hash);
-    if (result) {
-        auto detail = result.get_account_detail();
-        // account exist -- check duplicate
-        if (detail && (*detail == account)) {
-            return;
+    // account exist -- remove old value --> store new value
+    auto account_vec = get_accounts();
+    auto pos = std::find_if(account_vec->begin(), account_vec->end(), [&](const bc::chain::account& elem){
+            return (elem == account);
+            });
+
+    if (pos == account_vec->end()) { // new item
+        const auto hash = get_hash(account.get_name());
+        const auto acc_size = account.serialized_size();
+
+        BITCOIN_ASSERT(acc_size <= max_size_t);
+        const auto value_size = static_cast<size_t>(acc_size);
+
+        auto write = [&account](memory_ptr data)
+        {
+            auto serial = make_serializer(REMAP_ADDRESS(data));
+            serial.write_data(account.to_data());
+        };
+
+        // actually store asset
+        lookup_map_.store(hash, write, value_size);
+    } else { // delete all and recreate all
+        *pos = account;
+        for(auto& each : *account_vec) {
+            const auto each_hash = get_hash(each.get_name());
+            remove(each_hash);
         }
-        // account exist -- check hash conflict
-        if (detail && (detail->get_name() != name)) {
-            log::error("account_database") << detail->get_name()
-                << " is already exist and has same hash "
-                << encode_hash(hash) << " with this name "
-                << name;
-            return;
+        for(auto& each : *account_vec) {
+            const auto each_hash = get_hash(each.get_name());
+
+            const auto size = each.serialized_size();
+
+            BITCOIN_ASSERT(size <= max_size_t);
+            const auto each_size = static_cast<size_t>(size);
+            auto each_write = [&each](memory_ptr data)
+            {
+                auto serial = make_serializer(REMAP_ADDRESS(data));
+                serial.write_data(each.to_data());
+            };
+            lookup_map_.store(each_hash, each_write, each_size);
         }
-        // account exist -- remove old value
-        remove(hash);
-        sync();
     }
-
-    const auto acc_size = account.serialized_size();
-    BITCOIN_ASSERT(acc_size <= max_size_t);
-    const auto value_size = static_cast<size_t>(acc_size);
-
-    auto write = [&account](memory_ptr data)
-    {
-        auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_data(account.to_data());
-    };
-
-    lookup_map_.store(hash, write, value_size);
 }
 
 std::shared_ptr<std::vector<account>> account_database::get_accounts() const
