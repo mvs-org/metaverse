@@ -35,39 +35,48 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    // blockchain.uppercase_symbol(argument_.symbol);
 
     // check did symbol
-    check_did_symbol(argument_.symbol);
+    auto did = argument_.symbol;
 
-    // fail if did is already in blockchain
-    if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
+    check_did_symbol(did);
 
-    if (!blockchain.is_valid_address(argument_.from))
-        throw fromaddress_invalid_exception{"invalid from address parameter!"};
+    // check did exsits
+    auto did_detail = blockchain.get_issued_did(did);
+    if (!did_detail) {
+        throw did_symbol_notfound_exception{"Did '" + did + "' does not exist in blockchain"};
+    }
 
-    // fail if address is not binded with did in blockchain
-    std::string did=blockchain.get_did_from_address(argument_.from);
-    if (did != argument_.symbol)
-        throw did_symbol_existed_exception{"from address is not binded with this did in blockchain"};
+    auto from_address = did_detail->get_address();
 
+    // check did is owned by the account
+    if (!blockchain.get_account_address(auth_.name, from_address)) {
+        throw did_symbol_notowned_exception{
+            "Did '" + did + "' is not owned by " + auth_.name};
+    }
+
+    // check to address is valid
     if (!blockchain.is_valid_address(argument_.to))
-        throw toaddress_invalid_exception{"invalid target address parameter!"};
+        throw toaddress_invalid_exception{"Invalid target address parameter!"};
 
-    if (!blockchain.get_account_address(auth_.name, argument_.to))
-         throw address_dismatch_account_exception{"target address does not match account. " + argument_.to};
+    // check to address is owned by the account
+    if (!blockchain.get_account_address(auth_.name, argument_.to)) {
+        throw address_dismatch_account_exception{"Target address is not owned by account. " + argument_.to};
+    }
 
      // fail if address is already binded with did in blockchain
-    if(blockchain.is_address_issued_did(argument_.to))
-        throw did_symbol_existed_exception{"target address is already binded with some did in blockchain"};
+    if (blockchain.is_address_issued_did(argument_.to)) {
+        throw did_symbol_existed_exception{"Target address is already binded with some did in blockchain"};
+    }
 
     // receiver
     std::vector<receiver_record> receiver{
         {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}
     };
-    auto send_helper = sending_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.from),std::move(argument_.to), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto send_helper = sending_did(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(from_address), std::move(argument_.to),
+        std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
     send_helper.exec();
 

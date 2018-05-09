@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class didmodifyaddress: public command_extension
 {
 public:
     static const char* symbol(){ return "didmodifyaddress";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "didmodifyaddress "; }
 
@@ -44,18 +44,16 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
             .add("TOADDRESS", 1)
             .add("DIDSYMBOL", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.from, "FROMADDRESS", variables, input, raw);
         load_input(argument_.to, "TOADDRESS", variables, input, raw);
         load_input(argument_.symbol, "DIDSYMBOL", variables, input, raw);
     }
@@ -65,41 +63,36 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"From address"
-		)
-		(
-			"TOADDRESS",
-			value<std::string>(&argument_.to)->required(),
-			"Target address"
-		)
-		(
-			"DIDSYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"Did symbol"
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		);
+        )
+        (
+            "TOADDRESS",
+            value<std::string>(&argument_.to)->required(),
+            "Target address"
+        )
+        (
+            "DIDSYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "Did symbol"
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
+        );
 
         return options;
     }
@@ -113,10 +106,9 @@ public:
 
     struct argument
     {
-		std::string from;
-		std::string to;
-		std::string symbol;
-		uint64_t fee;
+        std::string to;
+        std::string symbol;
+        uint64_t fee;
     } argument_;
 
     struct option
