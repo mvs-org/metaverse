@@ -566,8 +566,8 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
     }
 
     struct ext_input_point {
-        const chain::input_point* input_point_;
-        const chain::output* prev_output_;
+        chain::input_point input_point_;
+        chain::output prev_output_;
         uint64_t prev_blockheight_;
     };
 
@@ -589,7 +589,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             continue;
         }
 
-        ext_input_point prev{&input.previous_output, &prev_output, prev_output_blockheight};
+        ext_input_point prev{input.previous_output, prev_output, prev_output_blockheight};
         vec_prev_input.emplace_back(prev);
     }
 
@@ -622,7 +622,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
 
         auto iter = std::find_if(vec_prev_input.begin(), vec_prev_input.end(),
             [&input_point](const ext_input_point& elem){
-                return *elem.input_point_ == input_point;
+                return elem.input_point_ == input_point;
             });
 
         if (iter == vec_prev_input.end()) {
@@ -630,7 +630,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             return false;
         }
 
-        const auto& prev_model_param = iter->prev_output_->get_attenuation_model_param();
+        const auto& prev_model_param = iter->prev_output_.get_attenuation_model_param();
 
         if (!check_model_param_immutable(prev_model_param, model_param)) {
             log::info(LOG_HEADER) << "check immutable failed, "
@@ -648,15 +648,16 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             return false;
         }
 
-        auto asset_total_amount = iter->prev_output_->get_asset_amount();
+        auto asset_total_amount = iter->prev_output_.get_asset_amount();
         auto new_model_param_ptr = std::make_shared<data_chunk>();
         auto asset_amount = attenuation_model::get_available_asset_amount(
                 asset_total_amount, real_diff_height,
                 prev_model_param, new_model_param_ptr);
 
-        if (asset_amount != output.get_asset_amount()) {
+        if (asset_total_amount != (asset_amount + output.get_asset_amount())) {
             log::info(LOG_HEADER) << "check amount failed, "
-                << "availabe = " << asset_amount << ", output = " << output.get_asset_amount();
+                << "locked shoule be " << asset_total_amount - asset_amount
+                << ", but real locked is " << output.get_asset_amount();
             return false;
         }
 
@@ -673,7 +674,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
 
     // check the left is all spendable
     for (const auto& ext_input : vec_prev_input) {
-        const auto& prev_model_param = ext_input.prev_output_->get_attenuation_model_param();
+        const auto& prev_model_param = ext_input.prev_output_.get_attenuation_model_param();
         auto curr_diff_height = current_blockheight - ext_input.prev_blockheight_;
         auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
         if (real_diff_height > curr_diff_height) {
