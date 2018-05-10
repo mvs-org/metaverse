@@ -72,7 +72,7 @@ void account_database::store(const account& account)
     const auto hash = get_hash(name);
     const auto account_data = account.to_data();
 
-    const auto check_store = [this, &name, &hash, &account, &account_data]() {
+    const auto check_store = [this, &name, &hash, &account_data]() {
         auto&& result = get_account_result(hash);
         if (!result) {
             return true;
@@ -107,6 +107,7 @@ void account_database::store(const account& account)
     };
 
     if (check_store()) {
+        // actually store account
         const auto acc_size = account.serialized_size();
         BITCOIN_ASSERT(acc_size <= max_size_t);
         const auto value_size = static_cast<size_t>(acc_size);
