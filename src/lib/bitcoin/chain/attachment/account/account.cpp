@@ -248,6 +248,7 @@ void account::reset()
     //this->passwd = "";
     this->hd_index = 0;
     this->priority = account_priority::common_user; // 0 -- admin user  1 -- common user
+    this->type = account_type::common;
     this->status = account_status::normal;
 }
 
