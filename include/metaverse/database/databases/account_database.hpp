@@ -57,7 +57,6 @@ public:
     /// Store a account in the database. Returns a unique index
     /// which can be used to reference the account.
     void store(const account& account);
-    bool check_store(const account& account);
 };
 
 } // namespace database
