@@ -238,6 +238,9 @@ public:
     // in secondary issue, locked asset can also verify threshold condition
     virtual bool is_locked_asset_as_payment() const {return false;}
 
+    // for multisig, it use only script address. and the others don't use script address.
+    virtual bool is_using_script_address() const {return false;}
+
 protected:
     bc::blockchain::block_chain_impl& blockchain_;
     tx_type                           tx_; // target transaction
@@ -413,6 +416,8 @@ public:
 
     // no operation in exec
     void send_tx() override {}
+
+    bool is_using_script_address() const override {return true;}
 
 private:
     account_multisig multisig_;

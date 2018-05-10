@@ -810,8 +810,9 @@ void base_transfer_helper::populate_unspent_list()
     // get from address balances
     for (auto& each : *pvaddr) {
         // filter script address
-        if (blockchain_.is_script_address(each.get_address()))
+        if (is_using_script_address() != blockchain_.is_script_address(each.get_address())) {
             continue;
+        }
 
         if (from_.empty()) {
             sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
