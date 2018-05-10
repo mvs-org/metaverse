@@ -703,7 +703,7 @@ void base_transfer_common::populate_tx_outputs()
         }
 
         if (tx_item_idx_ >= (tx_limit + 10)) {
-            throw std::runtime_error{"Too many inputs/outputs makes tx too large, canceled."};
+            throw tx_validate_exception{"Too many inputs/outputs makes tx too large, canceled."};
         }
         tx_item_idx_++;
 
@@ -724,17 +724,15 @@ void base_transfer_common::populate_tx_outputs()
 void base_transfer_common::populate_tx_inputs()
 {
     // input args
-    uint64_t adjust_amount = 0;
     tx_input_type input;
 
     for (auto& fromeach : from_list_){
-        adjust_amount += fromeach.amount;
-        if (tx_item_idx_ >= tx_limit) // limit in ~333 inputs
-        {
-            auto&& response = "Too many inputs limit, suggest less than "
-                + std::to_string(adjust_amount) + " satoshi.";
-            throw std::runtime_error(response);
+        if (tx_item_idx_ >= tx_limit) {
+            auto&& response = "Too many inputs, suggest less than "
+                + std::to_string(tx_limit) + " inputs.";
+            throw tx_validate_exception(response);
         }
+
         tx_item_idx_++;
         input.sequence = max_input_sequence;
         input.previous_output.hash = fromeach.output.hash;

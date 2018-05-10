@@ -37,43 +37,28 @@ console_result listdids::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     Json::Value dids;
-
     auto& blockchain = node.chain_impl();
-    auto sh_vec = blockchain.get_issued_dids();
+
+    std::shared_ptr<did_detail::list> sh_vec;
+    if (auth_.name.empty()) {
+        // no account -- list all dids in blockchain
+        sh_vec = blockchain.get_issued_dids();
+    }
+    else {
+        // list dids owned by the account
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+        sh_vec = blockchain.get_account_dids(auth_.name);
+    }
+
     std::sort(sh_vec->begin(), sh_vec->end());
 
-    if (auth_.name.empty()) { // no account -- list whole dids in blockchain
-        // add blockchain dids
-        for (auto& elem: *sh_vec) {
-            Json::Value did_data;
-            did_data["symbol"] = elem.get_symbol();
-            did_data["address"] = elem.get_address();
-            did_data["status"] = "issued";
-            dids.append(did_data);
-        }
-    }
-    else { // list did owned by account
-        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-        auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if (!pvaddr)
-            throw address_list_nullptr_exception{"nullptr for address list"};
-
-        for (auto& elem: *sh_vec) {
-            auto address = elem.get_address();
-            auto pos = std::find_if(pvaddr->begin(), pvaddr->end(), [&](const account_address& elem){
-                return address == elem.get_address();
-            });
-
-            if (pos == pvaddr->end()) { // did is not yours
-                continue;
-            }
-
-            Json::Value did_data;
-            did_data["symbol"] = elem.get_symbol();
-            did_data["address"] = elem.get_address();
-            did_data["status"] = "issued";
-            dids.append(did_data);
-        }
+    // add blockchain dids
+    for (auto& elem: *sh_vec) {
+        Json::Value did_data;
+        did_data["symbol"] = elem.get_symbol();
+        did_data["address"] = elem.get_address();
+        did_data["status"] = "issued";
+        dids.append(did_data);
     }
 
     if (get_api_version() == 1 && dids.isNull()) { //compatible for v1

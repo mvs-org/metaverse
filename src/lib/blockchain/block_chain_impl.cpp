@@ -1356,38 +1356,49 @@ history::list block_chain_impl::get_address_history(const wallet::payment_addres
     return expand_history(cmp_history);
 }
 
-asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& asset)
+asset_cert_type block_chain_impl::get_account_asset_cert_type(const std::string& account, const std::string& symbol)
 {
-    BITCOIN_ASSERT(!asset.empty());
-    auto&& business_certs = database_.address_assets.get_asset_certs(address, asset, 0);
     auto certs = asset_cert_ns::none;
-    for (const auto& cert : business_certs) {
-        certs |= cert.certs.get_certs();
+    auto pvaddr = get_account_addresses(account);
+    if (pvaddr) {
+        for (const auto& account_address : *pvaddr) {
+            certs |= get_address_asset_cert_type(account_address.get_address(), symbol);
+        }
+    }
+    return certs;
+}
+
+asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& symbol)
+{
+    auto&& business_certs = database_.address_assets.get_asset_certs(address, symbol, 0);
+    auto certs = asset_cert_ns::none;
+    for (const auto& business_cert : business_certs) {
+        certs |= business_cert.certs.get_certs();
     }
     return certs;
 }
 
 std::shared_ptr<business_address_asset_cert::list>
-block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& asset)
+block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& symbol)
 {
     auto ret_vector = std::make_shared<business_address_asset_cert::list>();
-    auto&& business_certs = database_.address_assets.get_asset_certs(address, asset, 0);
-    for (auto business_cert : business_certs) {
+    auto&& business_certs = database_.address_assets.get_asset_certs(address, symbol, 0);
+    for (auto& business_cert : business_certs) {
         ret_vector->emplace_back(std::move(business_cert));
     }
     return ret_vector;
 }
 
 std::shared_ptr<business_address_asset_cert::list>
-block_chain_impl::get_account_asset_certs(const std::string& account, const std::string& asset)
+block_chain_impl::get_account_asset_certs(const std::string& account, const std::string& symbol)
 {
     auto ret_vector = std::make_shared<business_address_asset_cert::list>();
     auto pvaddr = get_account_addresses(account);
     if (pvaddr) {
         for (const auto& account_address : *pvaddr) {
             auto&& business_certs = database_.address_assets.
-                get_asset_certs(account_address.get_address(), asset, 0);
-            for (auto business_cert : business_certs) {
+                get_asset_certs(account_address.get_address(), symbol, 0);
+            for (auto& business_cert : business_certs) {
                 ret_vector->emplace_back(std::move(business_cert));
             }
         }
@@ -1761,23 +1772,18 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address)
 
 bool block_chain_impl::is_account_owned_did(const std::string& account, const std::string& symbol)
 {
+    auto did_detail = get_issued_did(symbol);
+    if (!did_detail) {
+        return false;
+    }
+
     auto pvaddr = get_account_addresses(account);
     if (pvaddr) {
-        const auto match = [&symbol](const business_address_did& item) {
-            return item.detail.get_symbol() == symbol;
+        const auto match = [&did_detail](const account_address& item) {
+            return item.get_address() == did_detail->get_address();
         };
-
-        for (const auto& account_address : *pvaddr) {
-            auto&& did_vec = database_.address_dids.get_dids(account_address.get_address(), 0);
-            if (did_vec.empty()) {
-                continue;
-            }
-
-            auto iter = std::find_if(did_vec.begin(), did_vec.end(), match);
-            if (iter != did_vec.end()) {
-                return true;
-            }
-        }
+        auto iter = std::find_if(pvaddr->begin(), pvaddr->end(), match);
+        return iter != pvaddr->end();
     }
 
     return false;

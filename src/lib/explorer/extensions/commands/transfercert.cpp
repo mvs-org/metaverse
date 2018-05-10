@@ -69,6 +69,13 @@ console_result transfercert::invoke (Json::Value& jv_output,
             throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
     }
 
+    // check enough certs is owned by the account
+    auto owned_certs = blockchain.get_account_asset_cert_type(auth_.name, argument_.symbol);
+    if (owned_certs == asset_cert_ns::none || !asset_cert::test_certs(owned_certs, certs_send)) {
+        throw asset_cert_notowned_exception(
+            "no enough '" + argument_.symbol + "' certs owned by " + auth_.name);
+    }
+
     // check target address
     auto to_did = argument_.to;
     auto to_address = get_address_from_did(to_did, blockchain);

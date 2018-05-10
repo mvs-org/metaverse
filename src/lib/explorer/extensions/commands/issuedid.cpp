@@ -47,12 +47,14 @@ console_result issuedid::invoke (Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
 
-    if (!blockchain.get_account_address(auth_.name, argument_.address))
-         throw address_dismatch_account_exception{"target address does not match account. " + argument_.address};
+    if (!blockchain.get_account_address(auth_.name, argument_.address)) {
+         throw address_dismatch_account_exception{
+            "address " + argument_.address + " is not owned by " + auth_.name};
+    }
 
     // fail if did is already in blockchain
     if (blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_existed_exception{"did symbol is already exist in blockchain"};
+        throw did_symbol_existed_exception{"did symbol already exists in blockchain"};
 
     // fail if address is already binded with did in blockchain
     if (blockchain.is_address_issued_did(argument_.address))
