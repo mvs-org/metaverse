@@ -42,13 +42,13 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
 BC_CONSTEXPR size_t address_db_size = ADDRESS_NAME_FIX_SIZE + ADDRESS_PRV_KEY_FIX_SIZE + ADDRESS_PUB_KEY_FIX_SIZE \
-	+ ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE
-	+ ADDRESS_STATUS_FIX_SIZE; // 222 -- refer account_address.hpp
+    + ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE
+    + ADDRESS_STATUS_FIX_SIZE; // 222 -- refer account_address.hpp
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(address_db_size);
 
 account_address_database::account_address_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(lookup_filename, mutex), 
+  : lookup_file_(lookup_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size, record_size),
     lookup_map_(lookup_header_, lookup_manager_),
@@ -202,18 +202,18 @@ account_address::list account_address_database::get(const short_hash& key) const
 
 std::shared_ptr<account_address> account_address_database::get(const short_hash& key, const std::string& address) const
 {
-	std::shared_ptr<account_address> addr(nullptr);
+    std::shared_ptr<account_address> addr(nullptr);
     account_address::list result = get(key);
     for (auto element: result)
     {
-		if(element.get_address() == address)
-		{
-			addr = std::make_shared<account_address>(element);
-			break;
-		}
-	}
+        if(element.get_address() == address)
+        {
+            addr = std::make_shared<account_address>(element);
+            break;
+        }
+    }
 
-	return addr;
+    return addr;
 }
 void account_address_database::sync()
 {
