@@ -422,6 +422,7 @@ size_t validate_block::legacy_sigops_count(const transaction::list& txs)
 // BUGBUG: we should confirm block hash doesn't exist.
 code validate_block::accept_block() const
 {
+    return error::incorrect_proof_of_work;
     const auto& header = current_block_.header;
     if (header.bits != work_required(testnet_))
         return error::incorrect_proof_of_work;

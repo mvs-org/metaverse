@@ -73,7 +73,7 @@ public:
     /// Should be done at the end of every block write.
     void sync();
 	//slab_map& get_lookup_map() ;
-private:
+public:
 
     // Hash table used for looking up txs by hash.
     memory_map lookup_file_;

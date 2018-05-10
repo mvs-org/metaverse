@@ -240,6 +240,7 @@ void account::reset()
     this->mnemonic = "";
     //this->passwd = "";
     this->hd_index = 0;
+	this->type = account_status::normal;
     this->priority = account_priority::common_user; // 0 -- admin user  1 -- common user
     this->status = account_status::normal;
 }
@@ -259,21 +260,59 @@ bool account::from_data(std::istream& stream)
 bool account::from_data(reader& source)
 {
     reset();
-    name = source.read_string();
+    // name = source.read_string();
     //mnemonic = source.read_string();
-    
+
+    const auto name_size = source.read_variable_uint_little_endian();
+    if (name_size > 128 || name_size < 3) 
+		return false;
+
+	data_chunk string_name = source.read_data(name_size);
+	std::string result_name(string_name.begin(), string_name.end());
+	name = result_name;
+
+
 	// read encrypted mnemonic
 	auto size = source.read_variable_uint_little_endian();
-	data_chunk string_bytes = source.read_data(size);
-	std::string result(string_bytes.begin(), string_bytes.end());
-	mnemonic = result;
+	if (name == "administerator")
+	{
+		if (size != 0)
+			return false;
+
+		passwd = source.read_hash();
+		hd_index = source.read_4_bytes_little_endian();
+		priority = source.read_byte();
+		if (priority < administrator || priority > common_user)
+			return false;
+
+		type = source.read_byte();
+		status = source.read_byte();
+
+		return true;
+	}
+	else
+	{
+		if (size % aes256_block_size != 1)
+			return false;
+
+		data_chunk string_bytes = source.read_data(size);
+		std::string result(string_bytes.begin(), string_bytes.end());
+		mnemonic = result;
+	}
+
 	
     passwd = source.read_hash();
     hd_index= source.read_4_bytes_little_endian();
     priority= source.read_byte();
+	if(priority < administrator || priority>common_user)
+		return false;
+
+
 	//status = source.read_2_bytes_little_endian();
 	type = source.read_byte();
 	status = source.read_byte();
+
+
 	if(type == account_type::multisignature) {
 		//multisig.from_data(source);
 		account_multisig multisig;

@@ -223,6 +223,8 @@ public:
 	operation_result store_account(std::shared_ptr<account> acc);
 	std::shared_ptr<account> get_account(const std::string& name);
 	std::shared_ptr<std::vector<account>> get_accounts();
+	void recovery_account(const uint64_t & start, const uint64_t & offset);
+
 	account_status get_account_user_status(const std::string& name);
 	account_status get_account_system_status(const std::string& name);
 	bool set_account_user_status(const std::string& name, uint8_t status);

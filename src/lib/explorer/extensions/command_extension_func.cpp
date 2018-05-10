@@ -85,6 +85,7 @@
 #include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
+#include <metaverse/explorer/extensions/commands/recoveryaccount.hpp>
 
 
 namespace libbitcoin {
@@ -106,6 +107,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func)
     func(make_shared<importkeyfile>());
     func(make_shared<importaccount>());
     func(make_shared<changepasswd>());
+    func(make_shared<recoveryaccount>());
 
     // wallet
     func(make_shared<getheight>());
@@ -199,6 +201,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getnewaccount>();
     if (symbol == getaccount::symbol())
         return make_shared<getaccount>();
+    if (symbol == recoveryaccount::symbol())
+        return make_shared<recoveryaccount>();
     if (symbol == deleteaccount::symbol())
         return make_shared<deleteaccount>();
     if (symbol == listaddresses::symbol())

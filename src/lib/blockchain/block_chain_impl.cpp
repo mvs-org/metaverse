@@ -1045,6 +1045,12 @@ std::shared_ptr<std::vector<account>> block_chain_impl::get_accounts()
 {
 	return database_.accounts.get_accounts();
 }
+
+void block_chain_impl::recovery_account(const uint64_t & start, const uint64_t & offset)
+{
+	database_.accounts.recovery_account(start, offset);
+}
+
 /// delete account according account name
 operation_result block_chain_impl::delete_account(const std::string& name)
 {
@@ -1061,6 +1067,7 @@ operation_result block_chain_impl::delete_account(const std::string& name)
 	///////////////////////////////////////////////////////////////////////////
 	return operation_result::okay;
 }
+
 
 /// just store data into database "not do same address check"  -- todo 
 operation_result block_chain_impl::store_account_address(std::shared_ptr<account_address> address)

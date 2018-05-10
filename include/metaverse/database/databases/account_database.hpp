@@ -58,6 +58,8 @@ public:
     /// Store a account in the database. Returns a unique index
     /// which can be used to reference the account.
     void store(const hash_digest& hash, const account account);
+
+    void recovery_account(const uint64_t & start, const uint64_t & offset);
 private:
 	inline hash_digest get_hash(const std::string& str);
 };
