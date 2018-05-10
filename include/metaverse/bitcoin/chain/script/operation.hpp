@@ -91,7 +91,7 @@ enum class script_pattern
 
     /// Pay to Public Key Hash [P2PKH] with attenuation model
     /// Pubkey script:
-    ///     <model_param> OP_CHECKATTENUATIONVERIFY
+    ///     <model_param> <input_point> OP_CHECKATTENUATIONVERIFY
     ///     OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
     /// Signature script: <sig> <pubkey>
     pay_key_hash_with_attenuation_model,

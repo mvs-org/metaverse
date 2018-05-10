@@ -259,7 +259,7 @@ private:
     // * example of fixed quantity model param:
     // "PN=0;LH=20000;TYPE=1;LQ=9000;LP=60000;UN=3"
     // * example of custom model param:
-    // "PN=0;LH=20000;TYPE=3;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+    // "PN=0;LH=20000;TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
     std::string model_param_;
 
     // auxilary data
@@ -441,11 +441,12 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
     }
 
     // add prefix of PN,LH, check after ensured UN > 0
+    auto initial_lock_height = (!UCs.empty()) ? UCs[0] : (LP / UN);
     if (!has_prefix) {
-        LH = (model == model_type::fixed_quantity) ? (LP / UN) : UCs[0];
+        LH = initial_lock_height;
         param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
-    } else if (LH == 0) {
-        log::info(LOG_HEADER) << "common initial param error: LH == 0";
+    } else if (LH != initial_lock_height) {
+        log::info(LOG_HEADER) << "common initial param error: LH != " << initial_lock_height;
         return false;
     }
 
@@ -614,11 +615,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         const auto& input_point_data = operation::
             get_input_point_from_pay_key_hash_with_attenuation_model(output.script.operations);
         chain::input_point input_point = chain::point::factory_from_data(input_point_data);
-        if (input_point.is_null() ) {
-            bool is_issue = std::string(model_param.begin(), model_param.begin()+5) == "PN=0;";
-            if (is_issue) {
-                continue;
-            }
+        if (input_point.is_null()) {
             log::info(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
             return false;
         }
