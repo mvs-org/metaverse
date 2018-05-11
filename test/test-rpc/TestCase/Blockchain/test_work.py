@@ -14,7 +14,7 @@ from TestCase.MVSTestCase import *
 class TestWork(MVSTestCaseBase):
     def test_1_no_mining_account(self):
         _, prev = mvs_rpc.getblockheader()
-        round_to_mine = 1050
+        round_to_mine = 1
         Alice.mining(round_to_mine)
         _, curr = mvs_rpc.getblockheader()
         self.assertEqual(prev[1] + round_to_mine, curr[1])

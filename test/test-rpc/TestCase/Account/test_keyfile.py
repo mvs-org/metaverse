@@ -8,6 +8,7 @@ from TestCase.MVSTestCase import *
 class TestKeyfile(MVSTestCaseBase):
     roles = MVSTestCaseBase.roles[:-1]  # exclude Zac
     need_mine = False
+
     def test_dumpkeyfile(self):
         description = "Alice & Bob & Cindy's multi-sig address"
 

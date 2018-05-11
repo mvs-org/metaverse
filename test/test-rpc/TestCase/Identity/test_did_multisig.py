@@ -20,11 +20,11 @@ class TestDIDMultiSig(MVSTestCaseBase):
         if ec == 0:
             exist_symbols = [i["symbol"] for i in message['dids']]
 
-        if self.DID_ABC not in exist_symbols:
-            ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, self.ABC, self.DID_ABC)
-            self.assertEqual(ec, 0, message)
-
-        if self.DID_ACD not in exist_symbols:
-            ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, self.ACD, self.DID_ACD)
-            self.assertEqual(ec, 0, message)
+        for did, addr in [(self.DID_ABC, self.ABC), (self.DID_ACD, self.ACD)]:
+            if did not in exist_symbols:
+                Alice.send_etp(addr, 10 * (10 ** 8))
+                Alice.mining()
+                ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, addr, did)
+                import pdb;pdb.set_trace()
+                self.assertEqual(ec, 0, message)
 

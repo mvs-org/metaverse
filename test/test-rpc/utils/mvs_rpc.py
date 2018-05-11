@@ -155,6 +155,44 @@ def list_multisig(account, password):
     return "listmultisig", [account, password], {}, None
 
 @mvs_api
+def delete_multisig(account, password, addr):
+    return "deletemultisig", [account, password, addr], {}, None
+
+@mvs_api
+def create_multisigtx(account, password, from_, to_, amount):
+    '''
+    ACCOUNTNAME          Account name required.
+    ACCOUNTAUTH          Account password(authorization) required.
+    FROMADDRESS          Send from this address
+    TOADDRESS            Send to this address
+    AMOUNT               ETP integer bits.
+    '''
+    return "createmultisigtx", [account, password, from_, to_, amount], {}, None
+
+@mvs_api
+def sign_multisigtx(account, password, tx, broadcast=False):
+    '''
+    ACCOUNTNAME          Account name required.
+    ACCOUNTAUTH          Account password(authorization) required.
+    TRANSACTION          The input Base16 transaction to sign.
+    -b [--broadcast]     Broadcast the tx if it is fullly signed.
+    '''
+    positional = [account, password, tx]
+    if broadcast:
+        positional.append('-b')
+    return "signmultisigtx", positional, {}, None
+
+@mvs_api
+def list_balances(account, password, range_):
+    '''
+    :param range_: (from, to)
+    '''
+    return "listbalances", [account, password], {
+        '-g' : range_[0],
+        '-l' : range_[1]
+    }, None
+
+@mvs_api
 def issue_did(account, password, address, did_symbol, fee=None):
     return "issuedid", [account, password, address, did_symbol], {'--fee' : fee}, None
 

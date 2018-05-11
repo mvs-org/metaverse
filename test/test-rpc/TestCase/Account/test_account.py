@@ -87,6 +87,10 @@ class TestAccount(MVSTestCaseBase):
         ec, message = mvs_rpc.list_addresses(Alice.name, old_password)
         self.assertEqual(ec, 1000, message)
 
+        Alice.delete()
+        Alice.password = old_password
+        Alice.create()
+
 
 
 
