@@ -799,6 +799,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
             + std::to_string((uint32_t)record.type)};
 }
 
+bool base_transfer_common::filter_out_address(const std::string& address) const
+{
+    return blockchain_.is_script_address(address);
+}
+
 void base_transfer_helper::populate_unspent_list()
 {
     // get address list
@@ -810,7 +815,7 @@ void base_transfer_helper::populate_unspent_list()
     // get from address balances
     for (auto& each : *pvaddr) {
         // filter script address
-        if (is_using_script_address() != blockchain_.is_script_address(each.get_address())) {
+        if (filter_out_address(each.get_address())) {
             continue;
         }
 
@@ -1083,6 +1088,11 @@ depositing_etp_transaction::get_script_operations(const receiver_record& record)
     }
 
     return payment_ops;
+}
+
+bool sending_multisig_etp::filter_out_address(const std::string& address) const
+{
+    return !blockchain_.is_script_address(address);
 }
 
 void sending_multisig_etp::sign_tx_inputs()
