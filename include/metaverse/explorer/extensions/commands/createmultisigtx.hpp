@@ -81,7 +81,7 @@ public:
 		(
 			"FROMADDRESS",
 			value<std::string>(&argument_.from)->required(),
-			"Send from this address"
+			"Send from this address, must be a multi-signature script address."
 		)
 		(
 			"TOADDRESS",
