@@ -12,6 +12,7 @@ sudo pip install rlp=0.6.0    // the latest rlp does not work!
 from TestCase.MVSTestCase import *
 
 class TestWork(MVSTestCaseBase):
+    need_mine = False
     def test_1_no_mining_account(self):
         _, prev = mvs_rpc.getblockheader()
         round_to_mine = 1
