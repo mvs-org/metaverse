@@ -95,7 +95,11 @@ void session::connection_count(count_handler handler)
 bool session::blacklisted(const authority& authority) const
 {
     const auto& blocked = settings_.blacklists;
-    const auto it = std::find(blocked.begin(), blocked.end(), authority);
+    // black through IP, does not care port.
+    const auto it = std::find_if(blocked.begin(), blocked.end(),
+        [&authority](const config::authority& elem){
+            return (authority.ip() == elem.ip());
+        });
     auto result = it != blocked.end();
     return result || channel::blacklisted(authority) || channel::manualbanned(authority);
 }
