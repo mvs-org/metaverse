@@ -90,9 +90,9 @@ public:
             "issued asset symbol"
         )
         (
-           "VOLUME",
-           value<uint64_t>(&argument_.volume)->required(),
-           "The volume of asset, with unit of integer bits."
+            "VOLUME",
+            value<uint64_t>(&argument_.volume)->required(),
+            "The volume of asset, with unit of integer bits."
         )
         (
             "model,m",

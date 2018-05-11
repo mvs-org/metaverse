@@ -53,7 +53,7 @@ public:
         invalid = 8
     };
 
-    attenuation_model(std::string&& param);
+    attenuation_model(const std::string& param);
 
     static uint8_t get_first_unused_index();
     static uint8_t to_index(model_type model);

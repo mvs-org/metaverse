@@ -39,6 +39,10 @@ namespace {
         {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}}
     };
 
+    bool is_multi_value_key(const std::string& key) {
+        return key == "UC" || key == "UQ";
+    }
+
     bool is_positive_number(uint64_t num) {
         return num > 0;
     };
@@ -58,19 +62,20 @@ namespace {
 
     template<typename ForwardIterator>
     ForwardIterator find_nth_element(
-            ForwardIterator first,
-            ForwardIterator last,
-            size_t nth,
-            uint8_t elem)
+        ForwardIterator first,
+        ForwardIterator last,
+        size_t nth,
+        uint8_t elem)
     {
         if (nth == 0) {
             return last;
         }
-        auto iter = std::find(first, last, elem);
-        while ((--nth > 0) && (iter != last)) {
-            iter = std::find(++iter, last, elem);
-        }
-        return iter;
+
+        typedef typename std::iterator_traits<ForwardIterator>::reference Tref;
+        return std::find_if(first, last, [&](Tref x) {
+                return (x == elem) && (--nth == 0);
+            }
+        );
     }
 
 
@@ -149,8 +154,8 @@ private:
         }
         const auto& keys = model_keys_map[model];
         if (map_.size() != keys.size()) {
-            log::info(LOG_HEADER) << "keys number for model type " << to_index(model)
-                << " is not exactly to " << keys.size();
+            log::info(LOG_HEADER) << "The size of keys for model type " << to_index(model)
+                << " does not equal " << keys.size();
             return false;
         }
         for (size_t i = 0; i < keys.size(); ++i) {
@@ -179,7 +184,7 @@ private:
             return false;
         }
 
-        const auto& kv_vec = bc::split(model_param_, ";");
+        const auto& kv_vec = bc::split(model_param_, ";", true);
         if (kv_vec.size() < 6) {
             log::info(LOG_HEADER) << "model param is " << model_param_
                 << ", the model param should at least contain keys of PN, LH, TYPE, LQ, LP, UN";
@@ -195,28 +200,40 @@ private:
         }
 
         for (const auto& kv : kv_vec) {
-            auto vec = bc::split(kv, "=");
+            auto vec = bc::split(kv, "=", true);
             if (vec.size() == 2) {
-                if (vec[0].empty()) {
+                auto key = vec[0];
+                auto values = vec[1];
+                if (key.empty()) {
                     log::info(LOG_HEADER) << "key-value format is wrong, key is empty in " << kv;
                     return false;
                 }
-                if (vec[1].empty()) {
+
+                if (map_.find(key) != map_.end()) {
+                    log::info(LOG_HEADER) << "key-value format is wrong, duplicate key : " << key;
+                    return false;
+                }
+
+                if (values.empty()) {
                     continue; // empty value as unset.
                 }
+
                 try {
                     std::vector<uint64_t> num_vec;
-                    auto str_vec = bc::split(vec[1], ",");
-                    for (const auto& item : str_vec) {
-                        auto num = std::stoull(item);
+                    if (is_multi_value_key(key)) {
+                        auto str_vec = bc::split(values, ",", true);
+                        for (const auto& item : str_vec) {
+                            auto num = std::stoull(item);
+                            num_vec.emplace_back(num);
+                        }
+                    }
+                    else {
+                        auto num = std::stoull(values);
                         num_vec.emplace_back(num);
                     }
-                    if (map_.find(vec[0]) != map_.end()) {
-                        log::info(LOG_HEADER) << "key-value format is wrong, duplicate key : " << vec[0];
-                        return false;
-                    }
-                    map_[vec[0]] = std::move(num_vec);
-                } catch (const std::exception& e) {
+                    map_[key] = std::move(num_vec);
+                }
+                catch (const std::exception& e) {
                     log::info(LOG_HEADER) << "exception caught: " << e.what();
                     return false;
                 }
@@ -235,7 +252,8 @@ private:
     }
 
     template<typename T = uint64_t>
-    T getnumber(const char* key) const {
+    T getnumber(const std::string& key) const {
+        BITCOIN_ASSERT(!is_multi_value_key(key));
         auto iter = map_.find(key);
         if (iter == map_.end()) {
             return 0;
@@ -243,7 +261,8 @@ private:
         return iter->second[0];
     }
 
-    const std::vector<uint64_t>& get_numbers(const char* key) const {
+    const std::vector<uint64_t>& get_numbers(const std::string& key) const {
+        BITCOIN_ASSERT(is_multi_value_key(key));
         auto iter = map_.find(key);
         if (iter == map_.end()) {
             return empty_num_vec;
@@ -269,7 +288,7 @@ private:
 
 const std::vector<uint64_t> attenuation_model::impl::empty_num_vec;
 
-attenuation_model::attenuation_model(std::string&& param)
+attenuation_model::attenuation_model(const std::string& param)
     : pimpl(std::make_unique<impl>(param))
 {
 }

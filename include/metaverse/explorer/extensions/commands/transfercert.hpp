@@ -90,7 +90,7 @@ public:
         )
         (
             "cert,c",
-            value<std::vector<std::string>>(&argument_.certs)->multitoken()->required(),
+            value<std::vector<std::string>>(&argument_.certs)->required(),
             "Asset cert type name(s), multi names should be separeted by white-space, eg. ISSUE DOMAIN NAMING"
         )
         (
