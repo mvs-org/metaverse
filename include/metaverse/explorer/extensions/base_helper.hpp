@@ -508,6 +508,38 @@ public:
     void populate_change() override;
 };
 
+class BCX_API issuing_multisig_did : public base_transfer_helper
+{
+public:
+    issuing_multisig_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list, uint64_t fee,
+        account_multisig& multisig)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , multisig_{multisig}
+    {}
+
+    ~issuing_multisig_did(){}
+
+    void sign_tx_inputs() override ;
+
+    // no operation in exec
+    void send_tx() override {}
+
+    bool filter_out_address(const std::string& address) const override;
+
+    void sum_payment_amount() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
+private:
+    account_multisig multisig_;
+};
+
 class BCX_API issuing_did : public base_transfer_helper
 {
 public:
