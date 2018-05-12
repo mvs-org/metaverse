@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,7 +33,7 @@ class createmultisigtx: public command_extension
 {
 public:
     static const char* symbol(){ return "createmultisigtx";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "createmultisigtx "; }
 
@@ -47,7 +47,7 @@ public:
             .add("AMOUNT", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -63,42 +63,52 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"Send from this address, must be a multi-signature script address."
-		)
-		(
-			"TOADDRESS",
-			value<std::string>(&argument_.to)->required(),
-			"Send to this address"
-		)
-		(
-			"AMOUNT",
-			value<uint64_t>(&argument_.amount)->required(),
-			"ETP integer bits."
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		)
-		;
+        )
+        (
+            "FROMADDRESS",
+            value<std::string>(&argument_.from)->required(),
+            "Send from this address, must be a multi-signature script address."
+        )
+        (
+            "TOADDRESS",
+            value<std::string>(&argument_.to)->required(),
+            "Send to this address"
+        )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "ETP integer bits."
+        )
+        (
+            "symbol,s",
+            value<std::string>(&option_.symbol),
+            "asset name, not specify this option for etp tx"
+        )
+        (
+            "type,t",
+            value<uint16_t>(&option_.type)->default_value(0),
+            "Transaction type, defaults to 0. 0 -- transfer etp, 3 -- transfer asset"
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
+        )
+        ;
 
         return options;
     }
@@ -112,14 +122,16 @@ public:
 
     struct argument
     {
-    	std::string from;
-		std::string to;
-		uint64_t amount;
-		uint64_t fee;
+        std::string from;
+        std::string to;
+        uint64_t amount;
+        uint64_t fee;
     } argument_;
 
     struct option
     {
+        std::string symbol;
+        uint16_t type;
     } option_;
 
 };

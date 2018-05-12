@@ -814,19 +814,22 @@ void base_transfer_helper::populate_unspent_list()
 
     // get from address balances
     for (auto& each : *pvaddr) {
+        const auto& address = each.get_address();
         // filter script address
-        if (filter_out_address(each.get_address())) {
+        if (filter_out_address(address)) {
             continue;
         }
 
+        const auto priv_key = each.get_prv_key(passwd_);
+
         if (from_.empty()) {
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
-        } else if (from_ == each.get_address()) {
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address());
+            sync_fetchutxo(priv_key, address);
+        } else if (from_ == address) {
+            sync_fetchutxo(priv_key, address);
             // select etp/asset utxo only in from_ address
             check_payment_satisfied(FILTER_PAYFROM);
         } else {
-            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ALL_BUT_PAYFROM);
+            sync_fetchutxo(priv_key, address, FILTER_ALL_BUT_PAYFROM);
         }
 
         // performance improve
@@ -1090,12 +1093,21 @@ depositing_etp_transaction::get_script_operations(const receiver_record& record)
     return payment_ops;
 }
 
-bool sending_multisig_etp::filter_out_address(const std::string& address) const
+void sending_multisig_tx::populate_change()
+{
+    // etp utxo
+    populate_etp_change();
+
+    // asset utxo
+    populate_asset_change();
+}
+
+bool sending_multisig_tx::filter_out_address(const std::string& address) const
 {
     return !blockchain_.is_script_address(address);
 }
 
-void sending_multisig_etp::sign_tx_inputs()
+void sending_multisig_tx::sign_tx_inputs()
 {
     uint32_t index = 0;
     std::string prikey, pubkey, multisig_script;
@@ -1103,9 +1115,7 @@ void sending_multisig_etp::sign_tx_inputs()
     for (auto& fromeach : from_list_){
         // populate unlock script
         multisig_script = multisig_.get_multisig_script();
-        log::trace("wdy script=") << multisig_script;
-        //wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-        //log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
+
         // prepare sign
         explorer::config::hashtype sign_type;
         uint8_t hash_type = (signature_hash_algorithm)sign_type;
@@ -1123,12 +1133,12 @@ void sending_multisig_etp::sign_tx_inputs()
         {
             throw tx_sign_exception{"get_input_sign sign failure"};
         }
+
         // do script
         bc::chain::script ss;
         data_chunk data;
         ss.operations.push_back({bc::chain::opcode::zero, data});
         ss.operations.push_back({bc::chain::opcode::special, endorse});
-        //ss.operations.push_back({bc::chain::opcode::special, endorse2});
 
         chain::script script_encoded;
         script_encoded.from_string(multisig_script);

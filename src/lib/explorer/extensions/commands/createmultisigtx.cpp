@@ -50,18 +50,43 @@ console_result createmultisigtx::invoke(Json::Value& jv_output,
     account_multisig acc_multisig;
     if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
         throw multisig_notfound_exception{"from address multisig record not found."};
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}
-    };
-    auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.from), std::move(receiver), argument_.fee,
-            acc_multisig);
 
-    send_helper.exec();
+    std::shared_ptr<base_transfer_common> sp_send_helper;
+
+    // receiver
+    std::vector<receiver_record> receiver;
+
+    auto type = static_cast<utxo_attach_type>(option_.type);
+    switch (type) {
+        case utxo_attach_type::etp:
+        {
+            receiver.push_back({argument_.to, "", argument_.amount, 0, type, attachment()});
+        }
+        break;
+        case utxo_attach_type::asset_transfer:
+        {
+            blockchain.uppercase_symbol(option_.symbol);
+            check_asset_symbol(option_.symbol);
+            receiver.push_back({argument_.to, option_.symbol, 0, argument_.amount, type, attachment()});
+        }
+        break;
+        default:
+        {
+            throw argument_legality_exception{"invalid transaction type."};
+        }
+        break;
+    }
+
+    sp_send_helper = std::make_shared<sending_multisig_tx>(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(argument_.from), std::move(receiver),
+        argument_.fee, acc_multisig, std::move(option_.symbol));
+
+    sp_send_helper->exec();
 
     // json output
-    auto&& tx = send_helper.get_transaction();
+    auto&& tx = sp_send_helper->get_transaction();
+
     std::ostringstream config_tx;
     config_tx << config::transaction(tx);
     jv_output = config_tx.str();

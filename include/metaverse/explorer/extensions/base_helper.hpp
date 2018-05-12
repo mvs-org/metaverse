@@ -50,13 +50,15 @@ namespace commands{
 /// utxo_attach_type::asset_transfer --> attachment_asset of asset_transfer
 ///     auto asset_transfer = asset(ASSET_TRANSFERABLE_TYPE, asset_transfer);
 ///     attachment(ASSET_TYPE, attach_version, asset_transfer);
+/// NOTICE: createrawtx / createmultisigtx --type option is using these values.
+/// DO NOT CHANGE EXIST ITEMS!!!
 enum class utxo_attach_type : uint32_t
 {
     etp = 0,
     deposit = 1,
     asset_issue = 2,
     asset_transfer = 3,
-    asset_locked_issue = 4,
+    unused1 = 4,
     asset_locked_transfer = 5,
     message = 6,
     asset_cert = 7,
@@ -397,20 +399,21 @@ public:
     ~sending_etp_more(){}
 };
 
-class BCX_API sending_multisig_etp : public base_transfer_helper
+class BCX_API sending_multisig_tx : public base_transfer_helper
 {
 public:
-    sending_multisig_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    sending_multisig_tx(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig& multisig)
+        account_multisig& multisig, std::string&& symbol = std::string(""))
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee)
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , multisig_{multisig}
     {}
 
-    ~sending_multisig_etp(){}
+    ~sending_multisig_tx(){}
 
+    void populate_change() override;
     void sign_tx_inputs() override ;
 
     // no operation in exec

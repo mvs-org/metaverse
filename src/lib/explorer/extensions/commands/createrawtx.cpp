@@ -36,8 +36,6 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(option_.symbol);
 
-    tx_type tx_;
-
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
         throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
     // senders check
@@ -80,28 +78,41 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         receivers.push_back(record);
     }
 
-    if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
-        auto send_helper = base_transaction_constructor(blockchain, type,
-                std::move(option_.senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address),
-                std::move(option_.message), option_.fee);
+    std::shared_ptr<base_transfer_common> sp_send_helper;
 
-        send_helper.exec();
-        tx_ = send_helper.get_transaction();
-    } else if(type == utxo_attach_type::deposit) {
-        auto send_helper = depositing_etp_transaction(blockchain, type,
-                std::move(option_.senders), std::move(receivers), option_.deposit, std::move(option_.mychange_address),
+    switch (type) {
+        case utxo_attach_type::etp:
+        case utxo_attach_type::asset_transfer:
+        {
+            sp_send_helper = std::make_shared<base_transaction_constructor>(blockchain, type,
+                std::move(option_.senders), std::move(receivers),
+                std::move(option_.symbol), std::move(option_.mychange_address),
                 std::move(option_.message), option_.fee);
-
-        send_helper.exec();
-        tx_ = send_helper.get_transaction();
-    } else {
-        throw argument_legality_exception{"invalid transaction type."};
+        }
+        break;
+        case utxo_attach_type::deposit:
+        {
+            sp_send_helper = std::make_shared<depositing_etp_transaction>(blockchain, type,
+                std::move(option_.senders), std::move(receivers),
+                option_.deposit, std::move(option_.mychange_address),
+                std::move(option_.message), option_.fee);
+        }
+        break;
+        default:
+        {
+            throw argument_legality_exception{"invalid transaction type."};
+        }
+        break;
     }
 
+    sp_send_helper->exec();
+
+    // json output
+    auto&& tx = sp_send_helper->get_transaction();
 
     auto& aroot = jv_output;
     std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx_);
+    tx_buf << config::transaction(tx);
     aroot["hex"] = tx_buf.str();
 
 
