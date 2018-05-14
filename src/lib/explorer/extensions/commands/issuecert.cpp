@@ -123,7 +123,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     // json output
     auto tx = helper.get_transaction();
-    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

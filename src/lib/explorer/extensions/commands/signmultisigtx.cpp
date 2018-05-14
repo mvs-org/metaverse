@@ -29,143 +29,207 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result signmultisigtx::invoke(Json::Value& jv_output,
+console_result signmultisigtx::invoke(
+    Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    // get not signed tx
-    // jv_output =  "###### raw tx ######" << std::endl;
-    // jv_output =  config::json_helper(get_api_version()).prop_tree(argument_.transaction, true));
+    auto account = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
     tx_type tx_ = argument_.transaction;
 
     // get all address of this account
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr)
+    if (!pvaddr) {
         throw address_list_empty_exception{"empty address list for this account."};
+    }
 
-    bc::chain::script ss;
+    std::string addr_prikey("");
+    if (!option_.self_publickey.empty()) {
+        auto owned = false;
+        for (auto& each : *pvaddr) {
+            auto prv_key = each.get_prv_key(auth_.auth);
+            auto pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+            if (option_.self_publickey == pub_key) {
+                owned = true;
+                addr_prikey = prv_key;
+                break;
+            }
+        }
+
+        if (!owned) {
+            throw pubkey_dismatch_exception(
+                "public key " + option_.self_publickey + " is not owned by " + auth_.name);
+        }
+    }
+
+    bc::chain::script input_script;
     bc::chain::script redeem_script;
 
-    auto passwd_ = auth_.auth;
-
-    std::string multisig_script, addr_prikey;
+    bool fullfilled = true;
+    std::string multisig_script;
     uint32_t index = 0;
-    for(auto& each_input : tx_.inputs) {
-        ss = each_input.script;
-        log::trace("wdy old script=") << ss.to_string(false);
-        const auto& ops = ss.operations;
+    for (auto& each_input : tx_.inputs) {
+        input_script = each_input.script;
 
         // 1. extract address from multisig payment script
         // zero sig1 sig2 ... encoded-multisig
-        const auto& redeem_data = ops.back().data;
-
-        if (redeem_data.empty())
+        const auto& redeem_data = input_script.operations.back().data;
+        if (redeem_data.empty()) {
             throw redeem_script_empty_exception{"empty redeem script."};
+        }
 
-        if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
+        if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict)) {
             throw redeem_script_data_exception{"error occured when parse redeem script data."};
+        }
 
         // Is the redeem script a standard pay (output) script?
-        const auto redeem_script_pattern = redeem_script.pattern();
-        if(redeem_script_pattern != script_pattern::pay_multisig)
+        if (redeem_script.pattern() != script_pattern::pay_multisig) {
             throw redeem_script_pattern_exception{"redeem script is not pay multisig pattern."};
+        }
 
-        const payment_address address(redeem_script, 5);
-        auto addr_str = address.encoded(); // pay address
+        const payment_address address(redeem_script, payment_address::mainnet_p2sh);
+        auto hash_address = address.encoded(); // pay address
 
         // 2. get address prikey
-        account_multisig acc_multisig;
-        if(!(acc->get_multisig_by_address(acc_multisig, addr_str)))
-            throw multisig_notfound_exception{addr_str + " multisig record not found."};
+        auto multisig_vec = account->get_multisig(hash_address);
+        if (!multisig_vec || multisig_vec->empty()) {
+            throw multisig_notfound_exception(hash_address + " multisig record not found.");
+        }
 
-        if(ops.size() >= acc_multisig.get_m() + 2) { // signed , nothing to do (2 == zero encoded-script)
+        // signed, nothing to do (2 == zero + encoded-script)
+        account_multisig acc_multisig = *(multisig_vec->begin());
+        if (input_script.operations.size() >= acc_multisig.get_m() + 2) {
             index++;
             continue;
         }
 
-        addr_prikey = "";
-        for (auto& each : *pvaddr){
-            if ( addr_str == each.get_address() ) { // find address
-                addr_prikey = each.get_prv_key(passwd_);
-                break;
+        for (auto& acc_multisig : *multisig_vec) {
+            if (!option_.self_publickey.empty() && option_.self_publickey != acc_multisig.get_pub_key()) {
+                continue;
             }
+
+            if (option_.self_publickey.empty()) {
+                addr_prikey = "";
+                for (auto& each : *pvaddr) {
+                    auto prv_key = each.get_prv_key(auth_.auth);
+                    auto&& pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+                    if (pub_key == acc_multisig.get_pub_key()) {
+                        addr_prikey = prv_key;
+                        break;
+                    }
+                }
+            }
+
+            if (addr_prikey.empty()) {
+                throw prikey_notfound_exception(
+                    "The private key of " + acc_multisig.get_pub_key() + " not found.");
+            }
+
+            // 3. populate unlock script
+            multisig_script = acc_multisig.get_multisig_script();
+            // log::trace("multisig_script=") << multisig_script;
+
+            // prepare sign
+            explorer::config::hashtype sign_type;
+            uint8_t hash_type = (signature_hash_algorithm)sign_type;
+
+            bc::explorer::config::ec_private config_private_key(addr_prikey);
+            bc::explorer::config::script config_contract(multisig_script);
+
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(
+                        endorse, config_private_key, config_contract, tx_, index, hash_type)) {
+                throw tx_sign_exception{"get_input_sign sign failure"};
+            }
+
+            // insert endorse before multisig script
+            auto position = input_script.operations.end();
+            input_script.operations.insert(position - 1, {bc::chain::opcode::special, endorse});
         }
-        if(addr_prikey.empty())
-            throw prikey_notfound_exception{ addr_str + "private key not found."};
-        // 3. populate unlock script
-        multisig_script = acc_multisig.get_multisig_script();
-        log::trace("wdy script=") << multisig_script;
-        //wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-        //log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
-        // prepare sign
-        explorer::config::hashtype sign_type;
-        uint8_t hash_type = (signature_hash_algorithm)sign_type;
 
-        bc::explorer::config::ec_private config_private_key(addr_prikey);
-        const ec_secret& private_key =    config_private_key;
-
-        bc::explorer::config::script config_contract(multisig_script);
-        const bc::chain::script& contract = config_contract;
-
-        // gen sign
-        bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, private_key,
-            contract, tx_, index, hash_type))
-        {
-            throw tx_sign_exception{"get_input_sign sign failure"};
-        }
-        // insert endorse before multisig script
-        auto position = ss.operations.end();
-        ss.operations.insert(position - 1, {bc::chain::opcode::special, endorse});
         // rearange signature order
-        bc::chain::script new_ss;
         data_chunk data;
         chain::script script_encoded;
         script_encoded.from_string(multisig_script);
 
-        new_ss.operations.push_back(ss.operations.front()); // skip first "m" and last "n checkmultisig"
-        for( auto pubkey_it = (script_encoded.operations.begin() + 1 );
-            pubkey_it != (script_encoded.operations.end() - 2); ++pubkey_it) {
-            for (auto it = (ss.operations.begin() + 1); it != (ss.operations.end() - 1); ++it){ // skip first "zero" and last "encoded-script"
-                auto endorsement = it->data;
+        bc::chain::script new_script;
+        // insert zero
+        new_script.operations.push_back(input_script.operations.front());
+
+        /*
+            "multisig-script" : "2 [ pubkey_1 ] [ pubkey_2 ] [ pubkey_3 ] 3 checkmultisig",
+            "script" : "zero [ signature_1 ] [ signature_2 ] [ encoded-script ]",
+        */
+        // skip first "m" and last "n checkmultisig"
+        auto multisig_start = script_encoded.operations.begin() + 1;
+        auto multisig_end = script_encoded.operations.end() - 2;
+
+        // skip first zero and last encoded-script
+        auto script_op_start = input_script.operations.begin() + 1;
+        auto script_op_end = input_script.operations.end() - 1;
+
+        for (auto multisig_it = multisig_start; multisig_it != multisig_end; ++multisig_it) {
+            for (auto script_op_it = script_op_start; script_op_it != script_op_end; ++script_op_it) {
+                auto endorsement = script_op_it->data;
                 const auto sighash_type = endorsement.back();
                 auto distinguished = endorsement;
                 distinguished.pop_back();
 
                 ec_signature signature;
-                auto strict = ((script_context::all_enabled & script_context::bip66_enabled) != 0); // from validate_transaction.cpp handle_previous_tx
-                if (!parse_signature(signature, distinguished, strict))
+                // from validate_transaction.cpp handle_previous_tx
+                auto strict = ((script_context::all_enabled & script_context::bip66_enabled) != 0);
+                if (!parse_signature(signature, distinguished, strict)) {
+                    log::trace("multisig") << "failed to parse_signature! " << sighash_type;
                     continue;
-
-                if (chain::script::check_signature(signature, sighash_type, pubkey_it->data,
-                    script_encoded, tx_, index)) {
-                    new_ss.operations.push_back(*it);
-                    break;
                 }
 
+                if (chain::script::check_signature(signature, sighash_type, multisig_it->data,
+                                                   script_encoded, tx_, index)) {
+                    new_script.operations.push_back(*script_op_it);
+                    break;
+                }
+            }
+
+            if (new_script.operations.size() >= acc_multisig.get_m() + 1) {
+                break;
             }
         }
-        new_ss.operations.push_back(ss.operations.back());
+
+        // insert encoded-script
+        new_script.operations.push_back(input_script.operations.back());
+        if (new_script.operations.size() < acc_multisig.get_m() + 2) {
+            fullfilled = false;
+        }
 
         // set input script of this tx
-        each_input.script = new_ss;
+        each_input.script = new_script;
         index++;
-        log::trace("wdy new script=") << ss.to_string(false);
     }
 
-    // jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
-    // jv_output =  "raw tx content" << std::endl << config::transaction(tx_);
-    std::ostringstream config_tx;
-    config_tx << config::transaction(tx_);
-    jv_output = config_tx.str();
-
-    if(argument_.send_flag){
-        if(blockchain.validate_transaction(tx_))
-                throw tx_validate_exception{std::string("validate transaction failure")};
-        if(blockchain.broadcast_transaction(tx_))
-                throw tx_broadcast_exception{std::string("broadcast transaction failure")};
+    // output json
+    std::ostringstream tx_buf;
+    tx_buf << config::transaction(tx_);
+    if (get_api_version() == 1) {
+        jv_output = tx_buf.str();
     }
+    else {
+        jv_output["raw"] = tx_buf.str();
+    }
+
+    if (option_.broadcast_flag && fullfilled) {
+        log::trace("multisig") << "validate and broadcast multisig transaction: " << tx_buf.str();
+
+        if (blockchain.validate_transaction(tx_)) {
+            throw tx_validate_exception{"validate transaction failure"};
+        }
+
+        if (blockchain.broadcast_transaction(tx_)) {
+            throw tx_broadcast_exception{"broadcast transaction failure"};
+        }
+    }
+
     return console_result::okay;
 }
 

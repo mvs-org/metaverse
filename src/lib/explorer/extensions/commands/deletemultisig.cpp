@@ -28,64 +28,57 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+
 using namespace bc::explorer::config;
+
 console_result deletemultisig::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    // parameter account name check
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    //auto acc_multisig = acc->get_multisig();
-    account_multisig acc_multisig;
 
-    if(!(acc->get_multisig_by_address(acc_multisig, option_.address)))
-        throw multisig_notfound_exception{option_.address + std::string(" multisig record not found.")};
+    if (!blockchain.is_valid_address(option_.address)) {
+        throw fromaddress_invalid_exception("invalid address! "  + option_.address);
+    }
 
-    acc->remove_multisig(acc_multisig);
+    auto addr = bc::wallet::payment_address(option_.address);
+    if (addr.version() != bc::wallet::payment_address::mainnet_p2sh) {
+        throw fromaddress_invalid_exception("address " + option_.address + " is not a script address.");
+    }
+
+    // get multisig
+    auto multisig_vec = acc->get_multisig(option_.address);
+    if (!multisig_vec || multisig_vec->empty()) {
+        throw multisig_notfound_exception(" multisig of address " + option_.address + " is not found.");
+    }
+
+    // remove multisig
+    for(auto& acc_multisig : *multisig_vec) {
+        acc->remove_multisig(acc_multisig);
+    }
 
     // change account type
-    acc->set_type(account_type::common);
-    if(acc->get_multisig_vec().size())
-        acc->set_type(account_type::multisignature);
+    if (acc->get_multisig_vec().empty()) {
+        acc->set_type(account_type::common);
+    }
+
     // flush to db
     blockchain.store_account(acc);
 
-    Json::Value pubkeys;
-
-    if (get_api_version() == 1) {
-        jv_output["index"] += acc_multisig.get_index();
-        jv_output["m"] += acc_multisig.get_m();
-        jv_output["n"] += acc_multisig.get_n();
-    } else {
-        jv_output["index"] = acc_multisig.get_index();
-        jv_output["m"] = acc_multisig.get_m();
-        jv_output["n"] = acc_multisig.get_n();
-    }
-    jv_output["self-publickey"] = acc_multisig.get_pubkey();
-    jv_output["description"] = acc_multisig.get_description();
-
-    for(auto& each : acc_multisig.get_cosigner_pubkeys()) {
-        pubkeys.append(each);
-    }
-    if (get_api_version() == 1 && pubkeys.isNull()) { //compatible for v1
-        jv_output["public-keys"] = "";
-    } else {
-        jv_output["public-keys"] = pubkeys;
-    }
-    jv_output["multisig-script"] = acc_multisig.get_multisig_script();
-    jv_output["address"] = acc_multisig.get_address();
-
     // delete account address
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw address_list_empty_exception{"empty address list for this account"};
+    if (!vaddr) {
+        throw address_list_empty_exception{"empty address list for this account"};
+    }
 
     blockchain.delete_account_address(auth_.name);
     for (auto it = vaddr->begin(); it != vaddr->end();) {
-        if (it->get_address() == acc_multisig.get_address()) {
+        if (it->get_address() == option_.address) {
             it = vaddr->erase(it);
-            break;
         }
-        ++it;
+        else {
+            ++it;
+        }
     }
 
     // restore address
@@ -94,6 +87,20 @@ console_result deletemultisig::invoke(Json::Value& jv_output,
         blockchain.store_account_address(addr);
     }
 
+    // output json
+    Json::Value nodes;
+    auto helper = config::json_helper(get_api_version());
+    for(auto& acc_multisig : *multisig_vec) {
+        Json::Value node = helper.prop_list(acc_multisig);
+        nodes.append(node);
+    }
+
+    if (get_api_version() == 1 && nodes.isNull()) { // compatible for v1
+        jv_output["multisig"] = "";
+    }
+    else {
+        jv_output["multisig"] = nodes;
+    }
 
     return console_result::okay;
 }

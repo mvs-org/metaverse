@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class listmultisig: public command_extension
 {
 public:
     static const char* symbol(){ return "listmultisig";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "listmultisig "; }
 
@@ -46,7 +46,7 @@ public:
             .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -59,22 +59,22 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"ACCOUNTNAME",
-			value<std::string>(&auth_.name)->required(),
-			BX_ACCOUNT_NAME
-		)
-		(
-			"ACCOUNTAUTH",
-			value<std::string>(&auth_.auth)->required(),
-			BX_ACCOUNT_AUTH
-		)
-		;
+        (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
+        )
+        ;
 
         return options;
     }
@@ -100,7 +100,7 @@ public:
         {
         }
 
-		uint16_t index;
+        uint16_t index;
     } option_;
 
 };

@@ -149,7 +149,7 @@ DEFINE_EXPLORER_EXCEPTION(signature_amount_exception, 5220);
 DEFINE_EXPLORER_EXCEPTION(pubkey_amount_exception, 5230);
 DEFINE_EXPLORER_EXCEPTION(pubkey_dismatch_exception, 5231);
 DEFINE_EXPLORER_EXCEPTION(prikey_notfound_exception, 5232);
-
+DEFINE_EXPLORER_EXCEPTION(pubkey_notfound_exception, 5233);
 
 DEFINE_EXPLORER_EXCEPTION(tx_io_exception, 5301);
 DEFINE_EXPLORER_EXCEPTION(tx_source_exception, 5302);

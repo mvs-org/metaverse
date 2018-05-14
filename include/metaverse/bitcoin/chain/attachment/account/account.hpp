@@ -57,38 +57,55 @@ enum account_type : uint8_t
     common = 0,
     multisignature,
 };
+
 /// used for store account related information
-class BC_API account_multisig {
+class BC_API account_multisig
+{
 public:
+    typedef std::vector<account_multisig> list;
+
     account_multisig();
     account_multisig(uint32_t hd_index, uint8_t m, uint8_t n,
         std::vector<std::string>&& cosigner_pubkeys, std::string& pubkey);
+
     void set_hd_index(uint32_t index);
     uint32_t get_hd_index() const;
     inline void increase_hd_index(){ hd_index_++; };
+
     void set_index(uint32_t index);
     uint32_t get_index() const;
+
     void set_m(uint8_t m);
     uint8_t get_m() const;
+
     void set_n(uint8_t n);
     uint8_t get_n() const;
-    std::vector<std::string>& get_cosigner_pubkeys();
+
+    const std::vector<std::string>& get_cosigner_pubkeys() const;
     void set_cosigner_pubkeys(std::vector<std::string>&& cosigner_pubkeys);
-    std::string get_pubkey() const;
-    void set_pubkey(std::string& pubkey);
+
+    std::string get_pub_key() const;
+    void set_pub_key(std::string& pubkey);
+
     std::string get_description() const;
     void set_description(std::string& description);
+
     std::string get_address() const;
     void set_address(std::string& address);
+
+    std::string get_multisig_script() const;
+
     bool from_data(reader& source);
     void to_data(writer& sink) const;
+
     uint64_t serialized_size() const;
-    bool operator==(account_multisig& other) ;
+
+    bool operator==(const account_multisig& other) const;
     void reset();
+
 #ifdef MVS_DEBUG
     std::string to_string();
 #endif
-    std::string get_multisig_script();
 
 private:
     uint32_t hd_index_;
@@ -107,6 +124,7 @@ public:
     account();
     account(const std::string& name, const std::string& mnemonic, const hash_digest& passwd,
         uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type);
+
     static account factory_from_data(const data_chunk& data);
     static account factory_from_data(std::istream& stream);
     static account factory_from_data(reader& source);
@@ -118,10 +136,14 @@ public:
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
+
     bool is_valid() const;
     void reset();
+
     uint64_t serialized_size() const;
+
     operator bool() const;
+
     bool operator==(const account& other) const;
 
 #ifdef MVS_DEBUG
@@ -130,17 +152,20 @@ public:
 
     const std::string& get_name() const;
     void set_name(const std::string& name);
+
     const std::string& get_mnemonic(std::string& passphrase, std::string& decry_output) const;
     const std::string& get_mnemonic() const;
     void set_mnemonic(const std::string& mnemonic, std::string& passphrase);
     void set_mnemonic(const std::string& mnemonic);
+
     const hash_digest& get_passwd() const;
 
-    void set_passwd(const std::string& outside_passwd){
+    void set_passwd(const std::string& outside_passwd) {
         //bc::decode_hash(passwd, outside_passwd);
         data_chunk data(outside_passwd.begin(), outside_passwd.end());
         set_passwd(sha256_hash(data));
     }
+
     void set_passwd(const hash_digest& passwd_hash){
         passwd = passwd_hash;
     }
@@ -152,22 +177,27 @@ public:
 
     uint8_t get_status() const;
     void set_status(const uint8_t status);
+
     uint8_t get_priority() const;
     void set_priority(const uint8_t priority);
+
     void set_user_status(const uint8_t status);
-    void set_system_status(const uint8_t status);
     uint8_t get_user_status() const;
+
+    void set_system_status(const uint8_t status);
     uint8_t get_system_status() const;
+
     void set_type(uint8_t type);
     uint8_t get_type() const;
-    const std::vector<account_multisig>& get_multisig_vec() const;
-    void set_multisig_vec(std::vector<account_multisig>&& multisig);
-    bool is_multisig_exist(account_multisig& multisig);
-    void set_multisig(account_multisig& multisig);
-    void remove_multisig(account_multisig& multisig, uint16_t index = 0);
-    bool get_multisig(account_multisig& multisig, uint16_t index = 0);
-    bool get_multisig_by_address(account_multisig& multisig, std::string& addr);
-    void modify_multisig(account_multisig& multisig);
+
+    const account_multisig::list& get_multisig_vec() const;
+    void set_multisig_vec(account_multisig::list&& multisig);
+
+    bool is_multisig_exist(const account_multisig& multisig);
+    void set_multisig(const account_multisig& multisig);
+    void modify_multisig(const account_multisig& multisig);
+    void remove_multisig(const account_multisig& multisig);
+    std::shared_ptr<account_multisig::list> get_multisig(const std::string& addr);
 
 private:
     std::string name;
@@ -181,7 +211,7 @@ private:
     uint8_t priority;
 
     // multisig fields
-    std::vector<account_multisig> multisig_vec;
+    account_multisig::list multisig_vec;
     //account_multisig multisig;
 };
 

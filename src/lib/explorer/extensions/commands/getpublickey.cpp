@@ -57,9 +57,7 @@ console_result getpublickey::invoke(Json::Value& jv_output,
     std::string pub_key;
     auto found = false;
     for (auto& each : *pvaddr){
-
-        if(each.get_address() == argument_.address) {
-
+        if (each.get_address() == argument_.address) {
             prv_key = each.get_prv_key(auth_.auth);
             pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
 

@@ -106,8 +106,12 @@ console_result signrawtx::invoke(Json::Value& jv_output,
     aroot["hash"] = encode_hash(tx_.hash());
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    aroot["hex"] = tx_buf.str();
-
+    if (get_api_version() == 1) {
+        jv_output["hex"] = tx_buf.str();
+    }
+    else {
+        jv_output["raw"] = tx_buf.str();
+    }
 
     return console_result::okay;
 }

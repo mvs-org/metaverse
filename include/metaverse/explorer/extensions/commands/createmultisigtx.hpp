@@ -32,7 +32,7 @@ namespace commands {
 class createmultisigtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "createmultisigtx";}
+    static const char* symbol() { return "createmultisigtx";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "createmultisigtx "; }
@@ -40,15 +40,15 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("FROMADDRESS", 1)
-            .add("TOADDRESS", 1)
-            .add("AMOUNT", 1);
+               .add("ACCOUNTNAME", 1)
+               .add("ACCOUNTAUTH", 1)
+               .add("FROMADDRESS", 1)
+               .add("TOADDRESS", 1)
+               .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input,
-        po::variables_map& variables) override
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
@@ -118,10 +118,15 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {
+        argument()
+            : amount(0)
+            , fee(0)
+        {}
+
         std::string from;
         std::string to;
         uint64_t amount;

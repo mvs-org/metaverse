@@ -32,12 +32,14 @@
 #include <metaverse/explorer/config/point.hpp>
 #include <metaverse/explorer/config/transaction.hpp>
 #include <metaverse/explorer/config/wrapper.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
 
 #include <jsoncpp/json/json.h>
 
 namespace libbitcoin {
 namespace explorer {
 namespace config {
+
 class base2;
 class header;
 class input;
@@ -439,6 +441,13 @@ BCX_API Json::Value prop_list(const bc::chain::asset_transfer& trans_info, uint8
  * @return             A property list.
  */
 BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
+
+/**
+ * Generate a property list for a multisign.
+ * @param[in]  multisign        The multisign.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
 
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;

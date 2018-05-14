@@ -1121,32 +1121,28 @@ void sending_multisig_tx::sign_tx_inputs()
         uint8_t hash_type = (signature_hash_algorithm)sign_type;
 
         bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        const ec_secret& private_key =    config_private_key;
-
         bc::explorer::config::script config_contract(multisig_script);
-        const bc::chain::script& contract = config_contract;
 
         // gen sign
         bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, private_key,
-            contract, tx_, index, hash_type))
-        {
+        if (!bc::chain::script::create_endorsement(endorse, config_private_key,
+            config_contract, tx_, index, hash_type)) {
             throw tx_sign_exception{"get_input_sign sign failure"};
         }
 
         // do script
-        bc::chain::script ss;
+        bc::chain::script input_script;
         data_chunk data;
-        ss.operations.push_back({bc::chain::opcode::zero, data});
-        ss.operations.push_back({bc::chain::opcode::special, endorse});
+        input_script.operations.push_back({bc::chain::opcode::zero, data});
+        input_script.operations.push_back({bc::chain::opcode::special, endorse});
 
         chain::script script_encoded;
         script_encoded.from_string(multisig_script);
 
-        ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
+        input_script.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
 
         // set input script of this tx
-        tx_.inputs[index].script = ss;
+        tx_.inputs[index].script = input_script;
         index++;
     }
 }
@@ -1396,32 +1392,25 @@ void issuing_multisig_did::sign_tx_inputs()
     for (auto& fromeach : from_list_){
         // populate unlock script
         multisig_script = multisig_.get_multisig_script();
-        log::trace("wdy script=") << multisig_script;
-        //wallet::payment_address payment("3JoocenkYHEKFunupQSgBUR5bDWioiTq5Z");
-        //log::trace("wdy hash=") << libbitcoin::config::base16(payment.hash());
+
         // prepare sign
         explorer::config::hashtype sign_type;
         uint8_t hash_type = (signature_hash_algorithm)sign_type;
-
         bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        const ec_secret& private_key =    config_private_key;
-
         bc::explorer::config::script config_contract(multisig_script);
-        const bc::chain::script& contract = config_contract;
 
         // gen sign
         bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, private_key,
-            contract, tx_, index, hash_type))
-        {
+        if (!bc::chain::script::create_endorsement(endorse, config_private_key,
+            config_contract, tx_, index, hash_type)) {
             throw tx_sign_exception{"get_input_sign sign failure"};
         }
+
         // do script
         bc::chain::script ss;
         data_chunk data;
         ss.operations.push_back({bc::chain::opcode::zero, data});
         ss.operations.push_back({bc::chain::opcode::special, endorse});
-        //ss.operations.push_back({bc::chain::opcode::special, endorse2});
 
         chain::script script_encoded;
         script_encoded.from_string(multisig_script);
@@ -1441,7 +1430,6 @@ void issuing_multisig_did::sum_payment_amount()
         throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 1 etp"};
     }
 }
-
 
 void issuing_did::sum_payment_amount()
 {

@@ -107,14 +107,17 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     sp_send_helper->exec();
 
-    // json output
     auto&& tx = sp_send_helper->get_transaction();
 
-    auto& aroot = jv_output;
+    // output json
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx);
-    aroot["hex"] = tx_buf.str();
-
+    if (get_api_version() == 1) {
+        jv_output["hex"] = tx_buf.str();
+    }
+    else {
+        jv_output["raw"] = tx_buf.str();
+    }
 
     return console_result::okay;
 }

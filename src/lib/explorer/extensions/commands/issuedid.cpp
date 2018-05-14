@@ -49,8 +49,7 @@ console_result issuedid::invoke(Json::Value &jv_output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
 
-    if (!blockchain.get_account_address(auth_.name, argument_.address))
-    {
+    if (!blockchain.get_account_address(auth_.name, argument_.address)) {
         throw address_dismatch_account_exception{
             "address " + argument_.address + " is not owned by " + auth_.name};
     }
@@ -69,29 +68,34 @@ console_result issuedid::invoke(Json::Value &jv_output,
     std::vector<receiver_record> receiver{
         {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_issue, attachment()}};
 
-    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
-    {
-        account_multisig acc_multisig;
-        if (!(acc->get_multisig_by_address(acc_multisig, argument_.address)))
-            throw multisig_notfound_exception{"from address multisig record not found."};
-        auto issue_helper = issuing_multisig_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                                                 std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee,
-                                                 acc_multisig);
+    // for multisig address
+    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) {
+        auto multisig_vec = acc->get_multisig(argument_.address);
+        if (!multisig_vec || multisig_vec->empty()) {
+            throw multisig_notfound_exception{"multisig of address is not found."};
+        }
 
+        account_multisig acc_multisig = *(multisig_vec->begin());
+        auto issue_helper = issuing_multisig_did(
+                                *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+                                std::move(argument_.address), std::move(argument_.symbol),
+                                std::move(receiver), argument_.fee,
+                                acc_multisig);
         issue_helper.exec();
-        // json output
-        auto&& tx = issue_helper.get_transaction();
-        std::ostringstream config_tx;
-        config_tx << config::transaction(tx);
-        jv_output = config_tx.str();
 
-        
+        // output json
+        auto && tx = issue_helper.get_transaction();
+        std::ostringstream tx_buf;
+        tx_buf << config::transaction(tx);
+        jv_output["raw"] = tx_buf.str();
     }
-    else
-    {
-        auto issue_helper = issuing_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                                        std::move(argument_.address), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    else {
+        auto issue_helper = issuing_did(
+                                *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+                                std::move(argument_.address), std::move(argument_.symbol),
+                                std::move(receiver), argument_.fee);
         issue_helper.exec();
+
         auto &&tx = issue_helper.get_transaction();
         jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ class deletemultisig: public command_extension
 {
 public:
     static const char* symbol(){ return "deletemultisig";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "deletemultisig "; }
 
@@ -47,7 +47,7 @@ public:
             .add("ADDRESS", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -61,27 +61,27 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"ACCOUNTNAME",
-			value<std::string>(&auth_.name)->required(),
-			BX_ACCOUNT_NAME
-		)
-		(
-			"ACCOUNTAUTH",
-			value<std::string>(&auth_.auth)->required(),
-			BX_ACCOUNT_AUTH
-		)
-		(
-			"ADDRESS",
-			value<std::string>(&option_.address)->required(),
-			"The multisig script corresponding address."
-		)
-		;
+        (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
+        )
+        (
+            "ADDRESS",
+            value<std::string>(&option_.address)->required(),
+            "The multisig script corresponding address."
+        )
+        ;
 
         return options;
     }
@@ -106,13 +106,13 @@ public:
           : address(""), m(0), n(0), index(0)
         {
         }
-		uint16_t index;
-		uint16_t m;
-		uint16_t n;
-		std::vector<std::string> public_keys;
-		std::string self_publickey;
+        uint16_t index;
+        uint16_t m;
+        uint16_t n;
+        std::vector<std::string> public_keys;
+        std::string self_publickey;
         std::string address;
-		
+
     } option_;
 
 };

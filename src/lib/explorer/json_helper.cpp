@@ -22,17 +22,8 @@
 #include <metaverse/explorer/json_helper.hpp>
 
 #include <cstdint>
-#include <string>
-#include <vector>
 #include <metaverse/client.hpp>
-#include <metaverse/explorer/define.hpp>
-#include <metaverse/explorer/config/header.hpp>
-#include <metaverse/explorer/config/input.hpp>
-#include <metaverse/explorer/config/output.hpp>
-#include <metaverse/explorer/config/point.hpp>
 #include <metaverse/explorer/config/script.hpp>
-#include <metaverse/explorer/config/transaction.hpp>
-#include <metaverse/explorer/config/wrapper.hpp>
 
 using namespace bc::client;
 using namespace bc::config;
@@ -424,6 +415,38 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     } else {
         tree["certs"] = cert_info.get_certs();
     }
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::account_multisig& acc_multisig)
+{
+    Json::Value tree, pubkeys;
+    for (const auto& each : acc_multisig.get_cosigner_pubkeys()) {
+        pubkeys.append(each);
+    }
+
+    if (version_ == 1) {
+        tree["index"] += acc_multisig.get_index();
+        tree["m"] += acc_multisig.get_m();
+        tree["n"] += acc_multisig.get_n();
+    }
+    else {
+        tree["index"] = acc_multisig.get_index();
+        tree["m"] = acc_multisig.get_m();
+        tree["n"] = acc_multisig.get_n();
+    }
+
+    if (version_ == 1 && pubkeys.isNull()) { //compatible for v1
+        tree["public-keys"] = "";
+    }
+    else {
+        tree["public-keys"] = pubkeys;
+    }
+
+    tree["address"] = acc_multisig.get_address();
+    tree["self-publickey"] = acc_multisig.get_pub_key();
+    tree["multisig-script"] = acc_multisig.get_multisig_script();
+    tree["description"] = acc_multisig.get_description();
     return tree;
 }
 

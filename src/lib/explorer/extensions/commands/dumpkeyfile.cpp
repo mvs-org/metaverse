@@ -109,9 +109,9 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
         Json::Value multisig;
         multisig["m"] = ms.get_m();
         multisig["n"] = ms.get_n();
-        multisig["s"] = ms.get_pubkey();
+        multisig["s"] = ms.get_pub_key();
         multisig["d"] = ms.get_description();
-        for (const std::string &cosigner_pubkey : ms.get_cosigner_pubkeys()) {
+        for (const auto &cosigner_pubkey : ms.get_cosigner_pubkeys()) {
             multisig["k"].append( cosigner_pubkey );
         }
         multisig_lst.append(multisig);
