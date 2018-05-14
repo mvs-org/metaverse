@@ -201,8 +201,8 @@ def list_dids(account=None, password=None):
     return "listdids", [account, password], {}, None
 
 @mvs_api
-def modify_did(account, password, from_address, to_address, did_symbol):
-    return "didmodifyaddress", [account, password, from_address, to_address, did_symbol], {}, None
+def modify_did(account, password, to_address, did_symbol):
+    return "didmodifyaddress", [account, password, to_address, did_symbol], {}, None
 
 @mvs_api
 def get_asset(asset_symbol=None, cert=False):

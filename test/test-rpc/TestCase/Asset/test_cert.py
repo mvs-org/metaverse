@@ -1,3 +1,4 @@
+from utils import common
 from TestCase.MVSTestCase import *
 
 class TestCert(MVSTestCaseBase):
@@ -50,7 +51,7 @@ class TestCert(MVSTestCaseBase):
     def test_2_transfercert(self):
         asset_symbol_lst = Alice.asset_symbol.split('.')
         domain_cert_symbol = asset_symbol_lst[0]
-        second_cert_symbol = domain_cert_symbol+'.2ND'
+        second_cert_symbol = domain_cert_symbol+'.2ND'+common.get_timestamp()
 
         # account password match error
         ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_cert_symbol, certs=["NAMING"],

@@ -79,6 +79,53 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.didsend_asset_from(Alice.name, Alice.password + '1', Alice.mainaddress(), Zac.mainaddress(), Alice.asset_symbol, 10 ** 5, 10 ** 4)
         self.assertEqual(ec, 1000, message)
 
+    def test_6_modify_did_boundary(self):
+        # account password match error
+        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password + '1', Alice.addresslist[1], Alice.did_symbol)
+        self.assertEqual(ec, 1000, message)
+
+        # Did 'ZAC.DID' does not exist in blockchain
+        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.addresslist[1], Zac.did_symbol)
+        self.assertEqual(ec, 7006, message)
+
+        # Did 'BOB.DID' is not owned by Alice
+        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.addresslist[1], Bob.did_symbol)
+        self.assertEqual(ec, 7009, message)
+
+        # Target address is not owned by account.
+        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Bob.addresslist[1], Alice.did_symbol)
+        self.assertEqual(ec, 4003, message)
+
+        # Target address is already binded with some did in blockchain
+        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.mainaddress(), Alice.did_symbol)
+        self.assertEqual(ec, 7002, message)
+
+    def test_7_modify_did(self):
+        '''modify did between Zac's addresses'''
+        temp_did = "ZAC.DID@" + common.get_timestamp()
+        Alice.send_etp(Zac.mainaddress(), 10**8)
+        Alice.mining()
+        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), temp_did)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        # no enough balance, unspent = 0, payment = 10000
+        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
+        self.assertEqual(ec, 3302,  message)
+
+        Alice.send_etp(Zac.addresslist[1], 10 ** 4)
+        Alice.mining()
+
+        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        ec, message = mvs_rpc.list_dids(Zac.name, Zac.password)
+        self.assertEqual(ec, 0, message)
+
+        self.assertEqual(message['dids'][0]['symbol'], temp_did, message)
+        self.assertEqual(message['dids'][0]['address'], Zac.addresslist[1], message)
+
 class TestDIDSendMore(MVSTestCaseBase):
     need_mine = False
 
