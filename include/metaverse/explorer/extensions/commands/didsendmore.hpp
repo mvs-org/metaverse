@@ -78,7 +78,7 @@ public:
         (
             "receivers,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [address:etp_bits]."
+            "Send to [did/address:etp_bits]."
 	    )
         (
             "mychange,m",
