@@ -69,8 +69,8 @@ public:
 		exit_
 	};
 
-	bool start(const wallet::payment_address& pay_address);
-	bool start(const std::string& pay_public_key);
+	bool start(const wallet::payment_address& pay_address, uint16_t number = 0);
+	bool start(const std::string& pay_public_key, uint16_t number = 0);
 	bool stop();
 	static block_ptr create_genesis_block(bool is_mainnet);
 	bool script_hash_signature_operations_count(size_t &count, chain::input::list& inputs, vector<transaction_ptr>& transactions);
@@ -104,6 +104,8 @@ private:
 	p2p_node& node_;
 	std::shared_ptr<boost::thread> thread_;
 	mutable state state_;
+    uint16_t new_block_number_;
+    uint16_t new_block_limit_;
 
 	block_ptr new_block_;
 	wallet::payment_address pay_address_;

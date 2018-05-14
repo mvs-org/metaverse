@@ -59,7 +59,12 @@ namespace {
     };
 } // end of anonymous namespace
 
-miner::miner(p2p_node& node) : node_(node), state_(state::init_), setting_(node_.chain_impl().chain_settings())
+miner::miner(p2p_node& node)
+    : node_(node)
+    , state_(state::init_)
+    , new_block_number_(0)
+    , new_block_limit_(0)
+    , setting_(node_.chain_impl().chain_settings())
 {
     if (setting_.use_testnet_rules){
         bc::HeaderAux::set_as_testnet();
@@ -549,6 +554,10 @@ void miner::work(const wallet::payment_address pay_address)
 			if(MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number))){
 				boost::uint64_t height = store_block(block);
 				log::info(LOG_HEADER) << "solo miner create new block at heigth:" << height;
+                ++new_block_number_;
+                if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {
+                    state_ = state::exit_;
+                }
 			}
 		} 
 	} 
@@ -556,22 +565,23 @@ void miner::work(const wallet::payment_address pay_address)
 
 bool miner::is_stop_miner(uint64_t block_height)
 {
-	return state_ == state::exit_ || get_height() > block_height;
+	return (state_ == state::exit_) || (get_height() > block_height);
 }
 
-bool miner::start(const wallet::payment_address& pay_address)
+bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
 	if(!thread_) {
+        new_block_limit_ = number;
 		thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));	
 	}
 	return true;
 }
 
-bool miner::start(const std::string& public_key)
+bool miner::start(const std::string& public_key, uint16_t number)
 {
 	wallet::payment_address pay_address = libbitcoin::wallet::ec_public(public_key).to_payment_address();
 	if(pay_address) {
-		return start(pay_address);	
+		return start(pay_address, number);
 	}
 	return false;
 }
