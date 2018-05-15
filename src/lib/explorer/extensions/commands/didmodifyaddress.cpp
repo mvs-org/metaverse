@@ -34,7 +34,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check did symbol
     auto did = argument_.symbol;
@@ -73,16 +73,64 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {argument_.to, argument_.symbol, 0, 0, utxo_attach_type::did_transfer, attachment()}
     };
-    auto send_helper = sending_did(*this, blockchain,
-        std::move(auth_.name), std::move(auth_.auth),
-        std::move(from_address), std::move(argument_.to),
-        std::move(argument_.symbol), std::move(receiver), argument_.fee);
 
-    send_helper.exec();
+    auto toaddr = bc::wallet::payment_address(argument_.to);
+    auto addr = bc::wallet::payment_address(from_address);
 
-    // json output
-    auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    if( toaddr.version() == bc::wallet::payment_address::mainnet_p2sh
+    && addr.version() == bc::wallet::payment_address::mainnet_p2sh)
+        throw did_multisig_address_exception{"did cannot modify multi-signature address to multi-signature address"};
+
+
+    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh
+    || toaddr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
+    {
+
+        auto findmultisig = [&acc](account_multisig& acc_multisig, std::string address) {
+            auto multisig_vec = acc->get_multisig(address);
+            if (!multisig_vec || multisig_vec->empty())
+                return false;
+
+            acc_multisig = *(multisig_vec->begin());
+            return true;
+        };
+
+        account_multisig acc_multisig;
+        if (addr.version() == bc::wallet::payment_address::mainnet_p2sh && !findmultisig(acc_multisig, from_address))
+            throw multisig_notfound_exception{"from address multisig record not found."};
+
+        account_multisig acc_multisig_to;
+        if (toaddr.version() == bc::wallet::payment_address::mainnet_p2sh && !findmultisig(acc_multisig_to, argument_.to))
+            throw multisig_notfound_exception{"to address multisig record not found."};
+
+        auto issue_helper = sending_multisig_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+                                                 std::move(from_address),  std::move(argument_.to),
+                                                 std::move(argument_.symbol), std::move(receiver), argument_.fee,
+                                                 std::move(acc_multisig), std::move(acc_multisig_to));
+
+        issue_helper.exec();
+        // json output
+        auto && tx = issue_helper.get_transaction();
+        std::ostringstream tx_buf;
+        tx_buf << config::transaction(tx);
+        jv_output["raw"] = tx_buf.str();
+    }
+    else
+    {
+        auto send_helper = sending_did(*this, blockchain,
+                                       std::move(auth_.name), std::move(auth_.auth),
+                                       std::move(from_address), std::move(argument_.to),
+                                       std::move(argument_.symbol), std::move(receiver), argument_.fee);
+
+        send_helper.exec();
+
+        // json output
+        auto tx = send_helper.get_transaction();
+        jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
+    }
+
+
+
 
     return console_result::okay;
 }

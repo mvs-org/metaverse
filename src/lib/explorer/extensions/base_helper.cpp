@@ -1439,6 +1439,154 @@ void issuing_did::sum_payment_amount()
     }
 }
 
+
+
+void sending_multisig_did::sign_tx_inputs()
+{
+    uint32_t index = 0;
+    std::string prikey, pubkey, multisig_script;
+    auto acc = blockchain_.is_account_passwd_valid(name_, passwd_);
+
+    for (auto &fromeach : from_list_)
+    {
+        bc::chain::script ss;
+
+        explorer::config::hashtype sign_type;
+        uint8_t hash_type = (signature_hash_algorithm)sign_type;
+
+        bc::explorer::config::ec_private config_private_key(fromeach.prikey);
+        const ec_secret &private_key = config_private_key;
+
+        bc::explorer::config::script config_contract;
+        auto useMultisig = false;
+
+        if (fromeach.addr == acc_multisigfrom_.get_address())
+        {
+            multisig_script = acc_multisigfrom_.get_multisig_script();            
+            config_contract = multisig_script;
+            useMultisig = true;
+        }
+        else if (fromeach.addr == acc_multisigto_.get_address())
+        {
+            multisig_script = acc_multisigto_.get_multisig_script();                        
+            useMultisig = true;
+        }
+        else
+        {
+            config_contract = fromeach.script;
+        }
+
+        if (useMultisig)
+        {   
+            const bc::chain::script &contract = config_contract;
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(endorse, private_key,
+                                                       contract, tx_, index, hash_type))
+            {
+                throw tx_sign_exception{"get_input_sign sign failure"};
+            }
+            // do script
+            data_chunk data;
+            ss.operations.push_back({bc::chain::opcode::zero, data});
+            ss.operations.push_back({bc::chain::opcode::special, endorse});
+            //ss.operations.push_back({bc::chain::opcode::special, endorse2});
+
+            chain::script script_encoded;
+            script_encoded.from_string(multisig_script);
+
+            ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
+        }
+        else
+        {
+
+            const bc::chain::script &contract = config_contract;
+
+
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(endorse, private_key,
+                                                       contract, tx_, index, hash_type))
+            {
+                throw tx_sign_exception{"get_input_sign sign failure"};
+            }
+
+            // do script
+            bc::wallet::ec_private ec_private_key(private_key, 0u, true);
+            
+            auto &&public_key = ec_private_key.to_public();
+            data_chunk public_key_data;
+            public_key.to_data(public_key_data);
+            ss.operations.push_back({bc::chain::opcode::special, endorse});
+            ss.operations.push_back({bc::chain::opcode::special, public_key_data});
+
+            // if pre-output script is deposit tx.
+            if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
+            {
+                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+                    contract.operations);
+                ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
+            }
+        }
+
+        tx_.inputs[index].script = ss;
+        index++;
+    }
+    
+}
+
+void sending_multisig_did::sum_payment_amount()
+{
+    base_transfer_common::sum_payment_amount();
+    if (fromfee.empty()) {
+        throw fromaddress_empty_exception{"empty fromfee address"};
+    }
+}
+
+void sending_multisig_did::populate_change()
+{
+    // etp utxo
+    populate_etp_change(fromfee);
+}
+
+void sending_multisig_did::populate_unspent_list()
+{
+    // get address list
+    auto pvaddr = blockchain_.get_account_addresses(name_);
+    if (!pvaddr) {
+        throw address_list_nullptr_exception{"nullptr for address list"};
+    }
+
+    // get from address balances
+    for (auto& each : *pvaddr) {
+
+        if (fromfee == each.get_address()) {
+            // pay fee
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_ETP);
+            check_payment_satisfied(FILTER_ETP);
+        }
+
+        if (from_ == each.get_address()) {
+            // pay did
+            sync_fetchutxo(each.get_prv_key(passwd_), each.get_address(), FILTER_DID);
+            check_payment_satisfied(FILTER_DID);
+        }
+
+        if (is_payment_satisfied()) {
+            break;
+        }
+    }
+
+    if (from_list_.empty()) {
+        throw tx_source_exception{"not enough etp or asset in from address"
+            ", or you are't own from address!"};
+    }
+
+    check_payment_satisfied();
+
+    populate_change();
+}
+
 void sending_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();

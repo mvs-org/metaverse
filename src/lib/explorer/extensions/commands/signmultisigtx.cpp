@@ -72,6 +72,9 @@ console_result signmultisigtx::invoke(
     for (auto& each_input : tx_.inputs) {
         input_script = each_input.script;
 
+        if (script_pattern::sign_multisig != input_script.pattern())
+            continue;
+
         // 1. extract address from multisig payment script
         // zero sig1 sig2 ... encoded-multisig
         const auto& redeem_data = input_script.operations.back().data;

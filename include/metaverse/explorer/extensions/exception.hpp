@@ -185,6 +185,7 @@ DEFINE_EXPLORER_EXCEPTION(did_symbol_notfound_exception, 7006);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_duplicate_exception, 7007);
 DEFINE_EXPLORER_EXCEPTION(did_address_needed_exception, 7008);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_notowned_exception, 7009);
+DEFINE_EXPLORER_EXCEPTION(did_multisig_address_exception, 70010);
 
 DEFINE_EXPLORER_EXCEPTION(seed_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);
