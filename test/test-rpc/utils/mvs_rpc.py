@@ -277,6 +277,10 @@ def send_asset_from(account, password, from_, to_, symbol, amount, fee=None):
 def set_miningaccount(account, password, address):
     return "setminingaccount", [account, password, address], {}, None
 
+@mvs_api
+def start_mining(account, password, address=None, number=None):
+    return "startmining", [account, password], {'-a':address, '-n':number}, None
+
 @mvs_api_v3
 def eth_submit_work(nonce, header_hash, mix_hash):
     '''
@@ -414,9 +418,22 @@ def burn(account, password, symbol, amount):
     return "burn", [account, password, symbol, amount], {}, None
 
 @mvs_api
-def gettx(tx_hash):
-    return "gettx", [tx_hash], {}, None
+def gettx(tx_hash, json=None):
+    '''
+    :param tx_hash: The Base16 transaction hash of the transaction
+    :param json: Json/Raw format, default is '--json=true'.
+    :return:
+    '''
+    return "gettx", [tx_hash], {'--json':json}, None
 
+@mvs_api
+def listtxs(account, password, address=None, height=None, index=None, limit=None, symbol=None):
+    return "listtxs", [account, password], {
+        '-a':address,
+        '-e':height,
+        '-i':index,
+        '-s':symbol
+    }, None
 
 @mvs_api
 def issue_cert(account, password, to_did, symbol, type, fee=None):
