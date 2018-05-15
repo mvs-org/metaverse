@@ -556,7 +556,9 @@ void miner::work(const wallet::payment_address pay_address)
 				log::info(LOG_HEADER) << "solo miner create new block at heigth:" << height;
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {
-                    state_ = state::exit_;
+                    thread_.reset();
+                    stop();
+                    break;
                 }
 			}
 		} 
@@ -592,8 +594,10 @@ bool miner::stop()
 		state_ = state::exit_;
 		thread_->join();
 		thread_.reset();
-		state_ = state::init_;
 	}
+    state_ = state::init_;
+    new_block_number_ = 0;
+    new_block_limit_ = 0;
 	return true;
 }
 

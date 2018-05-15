@@ -126,6 +126,26 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(message['dids'][0]['symbol'], temp_did, message)
         self.assertEqual(message['dids'][0]['address'], Zac.addresslist[1], message)
 
+        # confirm the modification procedure by list_didaddresses
+        ec, message = mvs_rpc.list_didaddresses(Zac.name, Zac.password, temp_did)
+        self.assertEqual(ec, 0, message)
+
+        self.assertEqual(message['addresses'][0]["address"], Zac.addresslist[1])
+        self.assertEqual(message['addresses'][0]["status"], "current")
+
+        self.assertEqual(message['addresses'][1]["address"], Zac.addresslist[0])
+        self.assertEqual(message['addresses'][1]["status"], "old")
+
+
+    def test_8_list_didaddresses_boundary(self):
+        ec, message = mvs_rpc.list_didaddresses(Alice.name, Alice.password+'1', Alice.did_symbol)
+        self.assertEqual(ec, 1000, message)
+
+        # did symbol does not exist in blockchain
+        ec, message = mvs_rpc.list_didaddresses(Alice.name, Alice.password, Zac.did_symbol)
+        self.assertEqual(ec, 7006, message)
+
+
 class TestDIDSendMore(MVSTestCaseBase):
     need_mine = False
 
