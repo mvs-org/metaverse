@@ -38,17 +38,30 @@ console_result didsendmore::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     auto&& changesymbol = argument_.mychange_address;
-    if (!changesymbol.empty() && !blockchain.is_valid_address(changesymbol))
+    if (!changesymbol.empty())
     {
-        if (changesymbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
-            throw did_symbol_length_exception{
-                "mychange did symbol [" + changesymbol + "] length must be less than 64."};
+        auto address = changesymbol;
+        if(!blockchain.is_valid_address(changesymbol))
+        {
+            if (changesymbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
+            {
+                throw did_symbol_length_exception{
+                    "mychange did symbol [" + changesymbol + "] length must be less than 64."};
+            }
+
+            std::shared_ptr<did_detail> diddetail = blockchain.get_issued_did(changesymbol);
+            if (!diddetail)
+            {
+                throw did_symbol_notfound_exception{
+                    "mychange did symbol [" + changesymbol + "] is not exist in blockchain"};
+            }
+
+            address = diddetail->get_address();
         }
 
-        if (!blockchain.get_issued_did(changesymbol)) {
-            throw did_symbol_notfound_exception{
-                "mychange did symbol [" + changesymbol + "] is not exist in blockchain"};
-        }
+        auto addr = bc::wallet::payment_address(address);
+        if (addr.version() == bc::wallet::payment_address::mainnet_p2sh)
+            throw did_multisig_address_exception{"didsendmore doesn't support multi-signature address yet,replace of createmultisigtx and signmultisigtx"};
     }
 
     // receiver

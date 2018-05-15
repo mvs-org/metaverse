@@ -57,6 +57,11 @@ console_result didsendfrom::invoke(Json::Value& jv_output,
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
 
+    auto addr = bc::wallet::payment_address(fromaddress);
+    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh)
+        throw did_multisig_address_exception{"didsendfrom doesn't support multi-signature address yet,replace of createmultisigtx and signmultisigtx"};
+
+
     //support address as well as did
     if (blockchain.is_valid_address(argument_.todid)) {
         toaddress = argument_.todid;
