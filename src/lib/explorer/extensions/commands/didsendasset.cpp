@@ -51,14 +51,7 @@ console_result didsendasset::invoke(Json::Value& jv_output,
         tempaddress = argument_.did;
     }
     else {
-        // check did symbol
-        check_did_symbol(argument_.did);
-
-        if (!blockchain.is_did_exist(argument_.did))
-            throw did_symbol_notfound_exception{"did symbol is not exist in blockchain"};
-
-        auto diddetail = blockchain.get_issued_did(argument_.did);
-        tempaddress = diddetail->get_address();
+        tempaddress = get_address_from_did(argument_.did,blockchain);   
         attach.set_to_did(argument_.did);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }

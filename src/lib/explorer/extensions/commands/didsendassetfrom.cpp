@@ -49,35 +49,17 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
         fromaddress = argument_.fromdid;
     }
     else {
-        //blockchain.uppercase_symbol(argument_.fromdid);
-        if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
-        if (!blockchain.is_did_exist(argument_.fromdid))
-            throw did_symbol_notfound_exception{"fromdid symbol is not exist in blockchain"};
-
-        auto diddetail = blockchain.get_issued_did(argument_.fromdid);
-        fromaddress = diddetail->get_address();
+        fromaddress = get_address_from_did(argument_.fromdid, blockchain);      
         attach.set_from_did(argument_.fromdid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
-
-    auto addr = bc::wallet::payment_address(fromaddress);
-    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh)
-        throw did_multisig_address_exception{"didsendassetfrom doesn't support multi-signature address yet,replace of createmultisigtx and signmultisigtx"};
 
     //support address as well as did
     if (blockchain.is_valid_address(argument_.todid)) {
         toaddress = argument_.todid;
     }
     else {
-        //blockchain.uppercase_symbol(argument_.todid);
-        if (argument_.todid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"todid symbol length must be less than 64."};
-        if(!blockchain.is_did_exist(argument_.todid))
-            throw did_symbol_notfound_exception{"todid symbol is not exist in blockchain"};
-
-        auto diddetail=blockchain.get_issued_did(argument_.todid);
-        toaddress = diddetail->get_address();
+        toaddress = get_address_from_did(argument_.todid,blockchain);              
         attach.set_to_did(argument_.todid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }

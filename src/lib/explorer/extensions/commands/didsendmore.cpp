@@ -41,27 +41,8 @@ console_result didsendmore::invoke (Json::Value& jv_output,
     if (!changesymbol.empty())
     {
         auto address = changesymbol;
-        if(!blockchain.is_valid_address(changesymbol))
-        {
-            if (changesymbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            {
-                throw did_symbol_length_exception{
-                    "mychange did symbol [" + changesymbol + "] length must be less than 64."};
-            }
-
-            std::shared_ptr<did_detail> diddetail = blockchain.get_issued_did(changesymbol);
-            if (!diddetail)
-            {
-                throw did_symbol_notfound_exception{
-                    "mychange did symbol [" + changesymbol + "] is not exist in blockchain"};
-            }
-
-            address = diddetail->get_address();
-        }
-
-        auto addr = bc::wallet::payment_address(address);
-        if (addr.version() == bc::wallet::payment_address::mainnet_p2sh)
-            throw did_multisig_address_exception{"didsendmore doesn't support multi-signature address yet,replace of createmultisigtx and signmultisigtx"};
+        if(!blockchain.is_valid_address(changesymbol))     
+            address = get_address_from_did(changesymbol,blockchain);            
     }
 
     // receiver
