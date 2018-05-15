@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -91,7 +92,7 @@ public:
         (
             "cert,c",
             value<std::vector<std::string>>(&argument_.certs)->required(),
-            "Asset cert type name(s), multi names should be separeted by white-space, eg. ISSUE DOMAIN NAMING"
+            "Asset cert type name(s), multi names are supported. eg. -c ISSUE -c DOMAIN -c NAMING"
         )
         (
             "fee,f",
