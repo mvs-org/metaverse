@@ -98,6 +98,30 @@ bool asset_cert::is_valid_domain(const std::string& domain)
     return !domain.empty();
 }
 
+std::string asset_cert::get_key(const std::string&symbol, asset_cert_type bit)
+{
+    return std::string(symbol + ":^#`@:" + std::to_string(bit));
+}
+
+std::vector<std::string> asset_cert::get_keys(const std::string&symbol, asset_cert_type bits)
+{
+    std::vector<std::string> ret_vec;
+
+    for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
+        const asset_cert_type target_type = (1 << i);
+        if (asset_cert::test_certs(bits, target_type)) {
+            ret_vec.push_back(get_key(symbol, target_type));
+        }
+    }
+
+    return ret_vec;
+}
+
+std::vector<std::string> asset_cert::asset_cert::get_keys() const
+{
+    return get_keys(symbol_, certs_);
+}
+
 asset_cert asset_cert::factory_from_data(const data_chunk& data)
 {
     asset_cert instance;

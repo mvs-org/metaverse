@@ -1419,16 +1419,13 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
-        const asset_cert_type target_type = (1 << i);
-        if (asset_cert::test_certs(cert_mask, target_type)) {
-            std::string key_str(symbol + std::to_string(target_type));
-            const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-            const auto key = sha256_hash(data);
-            auto exist = database_.certs.get(key);
-            if (exist == nullptr) {
-                return false;
-            }
+    auto&& keys_vec = asset_cert::get_keys(symbol, cert_mask);
+    for (const auto& key_str : keys_vec) {
+        const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+        const auto key = sha256_hash(data);
+        auto exist = database_.certs.get(key);
+        if (exist == nullptr) {
+            return false;
         }
     }
 
