@@ -116,12 +116,16 @@ public:
     std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     bool test_certs(asset_cert_type bits) const;
+    std::vector<std::string> get_keys() const;
 
     static bool test_certs(asset_cert_type certs, asset_cert_type bits);
     static std::string get_owner_from_address(const std::string& address,
         bc::blockchain::block_chain_impl& chain);
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
+
+    static std::vector<std::string> get_keys(const std::string&symbol, asset_cert_type bits);
+    static std::string get_key(const std::string&symbol, asset_cert_type bit);
 
 private:
     std::string symbol_; // asset name/symbol
