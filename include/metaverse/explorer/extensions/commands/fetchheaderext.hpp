@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 
 namespace libbitcoin {

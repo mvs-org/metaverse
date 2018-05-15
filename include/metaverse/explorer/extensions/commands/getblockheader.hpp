@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -39,7 +40,7 @@ public:
     getblockheader() noexcept {};
     getblockheader(const std::string& other){ if (other == "getbestblockhash") option_.is_getbestblockhash = true; }
     static const char* symbol(){ return "getblockheader";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "getblockheader, alias as fetch-header/getbestblockhash/getbestblockheader."; }
 
@@ -48,7 +49,7 @@ public:
         return get_argument_metadata();
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
     }

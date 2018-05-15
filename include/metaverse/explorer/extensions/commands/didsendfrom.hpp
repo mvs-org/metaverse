@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,7 +36,7 @@ class didsendfrom: public send_command
 {
 public:
     static const char* symbol(){ return "didsendfrom";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "send etp from a specified did/address of this account to target did/address, mychange goes to from_did/address."; }
 
@@ -49,7 +50,7 @@ public:
             .add("AMOUNT", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -118,7 +119,7 @@ public:
 
     struct argument
     {
-    
+
         argument():fromdid(""), todid(""), memo("")
         {};
     	std::string fromdid;
