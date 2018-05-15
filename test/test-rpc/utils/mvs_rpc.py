@@ -205,6 +205,10 @@ def modify_did(account, password, to_address, did_symbol):
     return "didmodifyaddress", [account, password, to_address, did_symbol], {}, None
 
 @mvs_api
+def list_didaddresses(account, password, did_symbol):
+    return "listdidaddresses", [account, password, did_symbol], {}, None
+
+@mvs_api
 def get_asset(asset_symbol=None, cert=False):
     positional = filter(None, [asset_symbol])
     if cert:
@@ -446,3 +450,72 @@ def secondary_issue(account, password, to_did, symbol, volume, model=None, fee=N
                          empty string.
     '''
     return "secondaryissue", [account, password, to_did, symbol, volume], {"-m":model, "-f":fee}, None
+
+@mvs_api
+def get_blockheader(hash=None, height=None):
+    '''
+    -s [--hash]          The Base16 block hash.
+    -t [--height]        The block height.
+    '''
+    return "getblockheader", [], {'-s':hash, '-t':height}, None
+
+@mvs_api
+def get_block(hash_or_height, json=True, tx_json=True):
+    '''
+    HASH_OR_HEIGH        block hash or block height
+    JSON                 Json/Raw format, default is '--json=true'.
+    TX_JSON              Json/Raw format for txs, default is
+                        '--tx_json=true'.
+    '''
+    return 'getblock', [hash_or_height, json, tx_json], {}, None
+
+@mvs_api
+def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None, mychange=None, symbol=None):
+    '''
+    -d [--deposit]       Deposits support [7, 30, 90, 182, 365] days.
+                         defaluts to 7 days
+    -f [--fee]           Transaction fee. defaults to 10000 ETP bits
+    -h [--help]          Get a description and instructions for this command.
+    -i [--message]       Message/Information attached to this transaction
+    -m [--mychange]      Mychange to this address, includes etp and asset
+                         change
+    -n [--symbol]        asset name, not specify this option for etp tx
+    -r [--receivers]     Send to [address:amount]. amount is asset number if
+                         sybol option specified
+                         receivers -> {addr1:amount1, addr2:amount2, ...}
+    -s [--senders]       Send from addresses
+                         [addr1, addr2, ...]
+    -t [--type]          Transaction type. 0 -- transfer etp, 1 -- deposit
+                         etp, 3 -- transfer asset
+    '''
+    return "createrawtx", [], {
+        '-r': ["%s:%s" % (i, receivers[i]) for i in receivers],
+        '-s': senders,
+        '-t': type,
+        '-d': deposit,
+        '-f': fee,
+        '-i': message,
+        '-m': mychange,
+        '-n': symbol
+    }, None
+
+@mvs_api
+def sign_rawtx(account, password, transaction):
+    '''
+    TRANSACTION          The input Base16 transaction to sign.
+    '''
+    return "signrawtx", [account, password, transaction], {}, None
+
+@mvs_api
+def decode_rawtx(transaction):
+    '''
+    TRANSACTION          The input Base16 transaction to decode.
+    '''
+    return "decoderawtx", [transaction], {}, None
+
+@mvs_api
+def send_rawtx(transaction, fee=None):
+    '''
+    TRANSACTION          The input Base16 transaction to broadcast.
+    '''
+    return "sendrawtx", [transaction], {'-f':fee}, None
