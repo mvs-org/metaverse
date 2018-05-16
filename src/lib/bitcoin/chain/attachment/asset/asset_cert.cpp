@@ -108,9 +108,10 @@ std::vector<std::string> asset_cert::get_keys(const std::string&symbol, asset_ce
     std::vector<std::string> ret_vec;
 
     for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
-        const asset_cert_type target_type = (1 << i);
+        const asset_cert_type target_type = (1L << i);
         if (asset_cert::test_certs(bits, target_type)) {
-            ret_vec.push_back(get_key(symbol, target_type));
+            auto&& key = get_key(symbol, target_type);
+            ret_vec.push_back(key);
         }
     }
 

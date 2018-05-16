@@ -102,7 +102,8 @@ console_result issuecert::invoke (Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            certs_create, utxo_attach_type::asset_cert_issue, attachment(to_did, to_did)}
+            certs_create, utxo_attach_type::asset_cert_issue,
+            attachment(domain_cert_did, to_did)}
     };
 
     if (certs_create == asset_cert_ns::naming) {

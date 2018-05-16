@@ -180,6 +180,11 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 for (const auto& key : cert_type_keys) {
                     auto r = assetcerts.insert(key);
                     if (r.second == false) {
+                        log::debug(LOG_BLOCKCHAIN)
+                            << " cert " + output.get_asset_cert_symbol()
+                            << " with type " << output.get_asset_cert_type()
+                            << " already exists in pool!"
+                            << " " << tx->to_string(1);
                         return error::asset_cert_exist;
                     }
                 }
@@ -211,6 +216,11 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
             for (const auto& key : cert_type_keys) {
                 auto r = assetcerts.insert(key);
                 if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << " cert " + output.get_asset_cert_symbol()
+                        << " with type " << output.get_asset_cert_type()
+                        << " already exists!"
+                        << " " << tx->to_string(1);
                     return error::asset_cert_exist;
                 }
             }

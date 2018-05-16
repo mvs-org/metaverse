@@ -150,7 +150,7 @@ void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
     const auto& address = sp_cert.get_address();
 
     for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
-        const asset_cert_type target_type = (1 << i);
+        const asset_cert_type target_type = (1L << i);
         if (sp_cert.test_certs(target_type)) {
             auto&& key_str = asset_cert::get_key(symbol, target_type);
             const data_chunk& data = data_chunk(key_str.begin(), key_str.end());

@@ -791,6 +791,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         }
         auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
         attach.set_to_did(cert_owner);
+        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_from_did(record.attach_elem.get_from_did());
+            attach.set_to_did(record.attach_elem.get_to_did());
+        }
         return attach;
     }
 
@@ -1462,13 +1467,13 @@ void sending_multisig_did::sign_tx_inputs()
 
         if (fromeach.addr == acc_multisigfrom_.get_address())
         {
-            multisig_script = acc_multisigfrom_.get_multisig_script();            
+            multisig_script = acc_multisigfrom_.get_multisig_script();
             config_contract = multisig_script;
             useMultisig = true;
         }
         else if (fromeach.addr == acc_multisigto_.get_address())
         {
-            multisig_script = acc_multisigto_.get_multisig_script();                        
+            multisig_script = acc_multisigto_.get_multisig_script();
             useMultisig = true;
         }
         else
@@ -1477,7 +1482,7 @@ void sending_multisig_did::sign_tx_inputs()
         }
 
         if (useMultisig)
-        {   
+        {
             const bc::chain::script &contract = config_contract;
             // gen sign
             bc::endorsement endorse;
@@ -1513,7 +1518,7 @@ void sending_multisig_did::sign_tx_inputs()
 
             // do script
             bc::wallet::ec_private ec_private_key(private_key, 0u, true);
-            
+
             auto &&public_key = ec_private_key.to_public();
             data_chunk public_key_data;
             public_key.to_data(public_key_data);
@@ -1532,7 +1537,7 @@ void sending_multisig_did::sign_tx_inputs()
         tx_.inputs[index].script = ss;
         index++;
     }
-    
+
 }
 
 void sending_multisig_did::sum_payment_amount()
