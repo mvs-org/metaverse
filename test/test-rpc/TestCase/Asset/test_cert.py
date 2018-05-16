@@ -43,7 +43,7 @@ class TestCert(MVSTestCaseBase):
 
         expect = {u'owner': Bob.did_symbol,
                   u'symbol': cert_symbol,
-                  u'certs': 4,
+                  u'cert': u"NAMING",
                   u'address': Bob.mainaddress()}
         self.assertEqual(len(message['assetcerts']), 1, message)
         self.assertEqual(expect, message['assetcerts'][0])
@@ -54,35 +54,35 @@ class TestCert(MVSTestCaseBase):
         second_cert_symbol = domain_cert_symbol+'.2ND'+common.get_timestamp()
 
         # account password match error
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_cert_symbol, certs=["NAMING"],
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_cert_symbol, "NAMING",
                                             fee=None)
         self.assertEqual(ec, 1000, message)
 
         # did_symbol not exist
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Zac.did_symbol, domain_cert_symbol, certs=["NAMING"],
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Zac.did_symbol, domain_cert_symbol, "NAMING",
                                             fee=None)
         self.assertEqual(ec, 7006, message)
 
         # check cert symbol -- not issued
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, second_cert_symbol, certs=["NAMING"],
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, second_cert_symbol, "NAMING",
                                             fee=None)
         self.assertEqual(ec, 5017, message)
 
         # check cert symbol -- length error
         ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, "X"*65,
-                                            certs=["NAMING"],
+                                            "NAMING",
                                             fee=None)
         self.assertEqual(ec, 5011, message)
 
         # check cert symbol -- owned by some other
         ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, "BOB",
-                                            certs=["NAMING"],
+                                            "NAMING",
                                             fee=None)
         self.assertEqual(ec, 5017, message)
 
         # check fee
         ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, domain_cert_symbol,
-                                            certs=["NAMING"],
+                                            "NAMING",
                                             fee=0)
         self.assertEqual(ec, 5005, message)
 
@@ -90,7 +90,7 @@ class TestCert(MVSTestCaseBase):
         "Alice -> Bob -> Cindy: ALICE.2BOB.timestamp"
         cert_symbol = Alice.issue_cert(Bob)
         Alice.mining()
-        ec, message = mvs_rpc.transfer_cert(Bob.name, Bob.password, Cindy.did_symbol, cert_symbol, certs=["NAMING"])
+        ec, message = mvs_rpc.transfer_cert(Bob.name, Bob.password, Cindy.did_symbol, cert_symbol, "NAMING")
         self.assertEqual(ec,0,message)
 
         Alice.mining()
@@ -100,7 +100,7 @@ class TestCert(MVSTestCaseBase):
 
         expect = {u'owner': Cindy.did_symbol,
                   u'symbol': cert_symbol,
-                  u'certs': 4,
+                  u'cert': u'NAMING',
                   u'address': Cindy.mainaddress()}
         self.assertEqual(len(message['assetcerts']), 1, message)
         self.assertEqual(expect, message['assetcerts'][0])

@@ -456,11 +456,11 @@ def issue_cert(account, password, to_did, symbol, type, fee=None):
     return "issuecert", [account, password, to_did, symbol, type], {'--fee':fee}, None
 
 @mvs_api
-def transfer_cert(account, password, to_did, cert_symbol, certs, fee=None):
+def transfer_cert(account, password, to_did, cert_symbol, type, fee=None):
     '''
-    :param certs: type = list,  Asset cert type name, eg. ISSUE, DOMAIN, NAMING
+    :param type: Asset cert type name, eg. ISSUE, DOMAIN, NAMING
     '''
-    return "transfercert", [account, password, to_did, cert_symbol], {"-c":certs, "-f":fee}, None
+    return "transfercert", [account, password, to_did, cert_symbol, type], {"-f":fee}, None
 
 @mvs_api
 def secondary_issue(account, password, to_did, symbol, volume, model=None, fee=None):
