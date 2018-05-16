@@ -415,7 +415,7 @@ asset_cert_type output::get_asset_cert_type() const
 {
     if (is_asset_cert()) {
         auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
-        return cert_info.get_certs();
+        return cert_info.get_type();
     }
     return asset_cert_ns::none;
 }

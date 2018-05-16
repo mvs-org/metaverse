@@ -69,7 +69,8 @@ console_result issue::invoke (Json::Value& jv_output,
     // domain cert check
     auto&& domain = asset_cert::get_domain(argument_.symbol);
     if (asset_cert::is_valid_domain(domain)) {
-        if (!blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain)) {
+        auto cert = blockchain.get_asset_cert(domain, asset_cert_ns::domain);
+        if (!cert) {
             // domain cert does not exist, issue new domain cert to this address
             cert_address = to_address;
             cert_type = asset_cert_ns::domain;
@@ -77,34 +78,32 @@ console_result issue::invoke (Json::Value& jv_output,
             cert_did = to_did;
         }
         else {
-            const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
-                return asset_cert::test_certs(item.certs.get_certs(), cert_type);
-            };
-
             // if domain cert exists then check whether it belongs to the account.
-            auto certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
-            auto it = std::find_if(certs_vec->begin(), certs_vec->end(),
-                std::bind(match, _1, asset_cert_ns::domain));
-            if (it != certs_vec->end()) {
-                cert_address = it->address;
-                cert_type = asset_cert_ns::domain;
+            auto account_address = blockchain.get_account_address(auth_.name, cert->get_address());
+            if (account_address) {
                 cert_symbol = domain;
-                cert_did = it->certs.get_owner_from_address(blockchain);
+                cert_address = cert->get_address();
+                cert_type = cert->get_type();
+                cert_did = cert->get_owner();
             }
             else {
                 // if domain cert does not belong to the account then check domain naming cert
-                certs_vec = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
-                it = std::find_if(certs_vec->begin(), certs_vec->end(),
-                    std::bind(match, _1, asset_cert_ns::naming));
-                if (it != certs_vec->end()) {
-                    cert_address = it->address;
-                    cert_type = asset_cert_ns::naming;
-                    cert_symbol = argument_.symbol;
-                    cert_did = it->certs.get_owner_from_address(blockchain);
-                }
-                else {
+                cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::naming);
+                if (!cert) {
                     throw asset_cert_notowned_exception{
                         "Domain cert " + domain + " exists in blockchain and is not owned by " + auth_.name};
+                }
+                else {
+                    account_address = blockchain.get_account_address(auth_.name, cert->get_address());
+                    if (!account_address) {
+                        throw asset_cert_notowned_exception{
+                            "No domain cert or domain naming cert owned by " + auth_.name};
+                    }
+
+                    cert_symbol = domain;
+                    cert_address = cert->get_address();
+                    cert_type = cert->get_type();
+                    cert_did = cert->get_owner();
                 }
             }
         }

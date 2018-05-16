@@ -268,9 +268,8 @@ public:
         const std::string& name, const std::string& symbol);
 
     // cert api
-    asset_cert_type get_account_asset_cert_type(const std::string& account, const std::string& symbol);
-    asset_cert_type get_address_asset_cert_type(const std::string& address, const std::string& symbol);
-    bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_mask);
+    bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
+    std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<asset_cert::list> get_issued_asset_certs();
     std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(
         const std::string& account, const std::string& symbol);

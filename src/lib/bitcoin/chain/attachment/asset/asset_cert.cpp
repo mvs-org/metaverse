@@ -37,11 +37,11 @@ asset_cert::asset_cert()
 }
 
 asset_cert::asset_cert(const std::string& symbol, const std::string& owner,
-    const std::string& address, asset_cert_type certs)
+    const std::string& address, asset_cert_type cert_type)
     : symbol_(symbol)
     , owner_(owner)
     , address_(address)
-    , certs_(certs)
+    , cert_type_(cert_type)
     , status_(ASSET_CERT_NORMAL_TYPE)
 {
 }
@@ -50,7 +50,7 @@ void asset_cert::reset()
 {
     symbol_ = "";
     owner_ = "";
-    certs_ = asset_cert_ns::none;
+    cert_type_ = asset_cert_ns::none;
     status_ = ASSET_CERT_NORMAL_TYPE;
 }
 
@@ -58,7 +58,7 @@ bool asset_cert::is_valid() const
 {
     return !(symbol_.empty()
             || owner_.empty()
-            || (certs_ == asset_cert_ns::none)
+            || (cert_type_ == asset_cert_ns::none)
             || ((symbol_.size()+1) > ASSET_CERT_SYMBOL_FIX_SIZE)
             || ((owner_.size()+1) > ASSET_CERT_OWNER_FIX_SIZE)
             || ((address_.size()+1) > ASSET_CERT_ADDRESS_FIX_SIZE)
@@ -72,10 +72,10 @@ bool asset_cert::operator< (const asset_cert& other) const
         return true;
     }
     else if (ret == 0) {
-        if (certs_ < other.certs_) {
+        if (cert_type_ < other.cert_type_) {
             return true;
         }
-        else if (certs_ == other.certs_) {
+        else if (cert_type_ == other.cert_type_) {
             return address_.compare(other.address_) <= 0;
         }
     }
@@ -103,24 +103,9 @@ std::string asset_cert::get_key(const std::string&symbol, asset_cert_type bit)
     return std::string(symbol + ":^#`@:" + std::to_string(bit));
 }
 
-std::vector<std::string> asset_cert::get_keys(const std::string&symbol, asset_cert_type bits)
+std::string asset_cert::asset_cert::get_key() const
 {
-    std::vector<std::string> ret_vec;
-
-    for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
-        const asset_cert_type target_type = (1L << i);
-        if (asset_cert::test_certs(bits, target_type)) {
-            auto&& key = get_key(symbol, target_type);
-            ret_vec.push_back(key);
-        }
-    }
-
-    return ret_vec;
-}
-
-std::vector<std::string> asset_cert::asset_cert::get_keys() const
-{
-    return get_keys(symbol_, certs_);
+    return get_key(symbol_, cert_type_);
 }
 
 asset_cert asset_cert::factory_from_data(const data_chunk& data)
@@ -162,7 +147,7 @@ bool asset_cert::from_data(reader& source)
     symbol_ = source.read_string();
     owner_ = source.read_string();
     address_ = source.read_string();
-    certs_ = source.read_8_bytes_little_endian();
+    cert_type_ = source.read_4_bytes_little_endian();
     status_ = source.read_byte();
 
     auto result = static_cast<bool>(source);
@@ -192,14 +177,14 @@ void asset_cert::to_data(writer& sink) const
     sink.write_string(symbol_);
     sink.write_string(owner_);
     sink.write_string(address_);
-    sink.write_8_bytes_little_endian(certs_);
+    sink.write_4_bytes_little_endian(cert_type_);
     sink.write_byte(status_);
 }
 
 uint64_t asset_cert::serialized_size() const
 {
     size_t len = (symbol_.size()+1) + (owner_.size()+1) + (address_.size()+1)
-        + ASSET_CERT_CERTS_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
+        + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
     return std::min(len, ASSET_CERT_FIX_SIZE);
 }
 
@@ -209,7 +194,7 @@ std::string asset_cert::to_string() const
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t owner = " << owner_ << "\n";
     ss << "\t address = " << address_ << "\n";
-    ss << "\t certs = " << std::to_string(get_certs()) << "\n";
+    ss << "\t cert = " << std::to_string(get_type()) << "\n";
     ss << "\t status = " << std::to_string(status_) << "\n";
     return ss.str();
 }
@@ -257,24 +242,62 @@ void asset_cert::set_address(const std::string& address)
     address_ = address.substr(0, len);
 }
 
+asset_cert_type asset_cert::get_type() const
+{
+    return cert_type_;
+}
+
+void asset_cert::set_type(asset_cert_type cert_type)
+{
+    cert_type_ = cert_type;
+}
+
 asset_cert_type asset_cert::get_certs() const
 {
-    return certs_;
+    return cert_type_;
 }
 
-void asset_cert::set_certs(asset_cert_type certs)
+void asset_cert::set_certs(asset_cert_type cert_type)
 {
-    certs_ = certs;
+    cert_type_ = cert_type;
 }
 
-bool asset_cert::test_certs(asset_cert_type bits) const
+std::string asset_cert::get_type_name() const
 {
-    return test_certs(certs_, bits);
+    BITCOIN_ASSERT(cert_type_ != asset_cert_ns::none);
+
+    std::map<asset_cert_type, std::string> type_name_map = {
+        {asset_cert_ns::issue, "ISSUE"},
+        {asset_cert_ns::domain, "DOMAIN"},
+        {asset_cert_ns::naming, "NAMING"},
+    };
+
+    auto iter = type_name_map.find(cert_type_);
+    BITCOIN_ASSERT(iter != type_name_map.end());
+    return iter->second;
 }
 
-bool asset_cert::test_certs(asset_cert_type certs, asset_cert_type bits)
+bool asset_cert::test_certs(const std::vector<asset_cert_type>& cert_vec, asset_cert_type cert_type)
 {
-    return (certs & bits) == bits;
+    BITCOIN_ASSERT(cert_type != asset_cert_ns::none);
+
+    auto iter = std::find(cert_vec.begin(), cert_vec.end(), cert_type);
+    return iter != cert_vec.end();
+}
+
+bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std::vector<asset_cert_type>& parts)
+{
+    if (total.size() < parts.size()) {
+        return false;
+    }
+
+    for (auto& cert_type : parts) {
+        if (!test_certs(total, cert_type)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl& chain) const

@@ -84,7 +84,8 @@ public:
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,
         size_t parent_height, size_t last_block_height, uint64_t& value_in,
-        uint32_t flags, uint64_t& asset_amount_in, asset_cert_type& asset_certs_in,
+        uint32_t flags, uint64_t& asset_amount_in,
+        std::vector<asset_cert_type>& asset_certs_in,
         std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in);
 
     static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
@@ -128,7 +129,7 @@ private:
     size_t last_block_height_;
     uint64_t value_in_;
     uint64_t asset_amount_in_;
-    asset_cert_type asset_certs_in_;
+    std::vector<asset_cert_type> asset_certs_in_;
     std::string old_symbol_in_; // just used for check same asset symbol in previous outputs
     std::string new_symbol_in_;
     business_kind business_kind_in_;

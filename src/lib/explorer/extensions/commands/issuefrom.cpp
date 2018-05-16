@@ -72,7 +72,7 @@ console_result issuefrom::invoke (Json::Value& jv_output,
         }
         else {
             const auto match = [](const business_address_asset_cert& item, asset_cert_type cert_type) {
-                return asset_cert::test_certs(item.certs.get_certs(), cert_type);
+                return (item.certs.get_type() == cert_type);
             };
 
             // if domain cert exists then check whether it belongs to the account.

@@ -46,24 +46,7 @@ console_result listassets::invoke(Json::Value& jv_output,
         json_key = "assetcerts";
 
         if (auth_.name.empty()) { // no account -- list whole asset certs in blockchain
-            auto result_vec = std::make_shared<asset_cert::list>();
-            auto sh_vec = blockchain.get_issued_asset_certs();
-            for (auto& cert : *sh_vec) {
-                auto match = [&cert](const asset_cert& elem) {
-                    return cert.get_symbol() == elem.get_symbol()
-                        && cert.get_address() == elem.get_address();
-                };
-
-                auto iter = std::find_if(result_vec->begin(), result_vec->end(), match);
-                if (iter == result_vec->end()) { // new item
-                    result_vec->push_back(cert);
-                }
-                else { // exist just merge cert type
-                    auto cert_type = iter->get_certs() | cert.get_certs();
-                    iter->set_certs(cert_type);
-                }
-            }
-
+            auto result_vec = blockchain.get_issued_asset_certs();
             std::sort(result_vec->begin(), result_vec->end());
             for (auto& elem : *result_vec) {
                 Json::Value asset_data = json_helper.prop_list(elem);

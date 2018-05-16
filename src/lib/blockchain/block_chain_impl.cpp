@@ -1356,28 +1356,6 @@ history::list block_chain_impl::get_address_history(const wallet::payment_addres
     return expand_history(cmp_history);
 }
 
-asset_cert_type block_chain_impl::get_account_asset_cert_type(const std::string& account, const std::string& symbol)
-{
-    auto certs = asset_cert_ns::none;
-    auto pvaddr = get_account_addresses(account);
-    if (pvaddr) {
-        for (const auto& account_address : *pvaddr) {
-            certs |= get_address_asset_cert_type(account_address.get_address(), symbol);
-        }
-    }
-    return certs;
-}
-
-asset_cert_type block_chain_impl::get_address_asset_cert_type(const std::string& address, const std::string& symbol)
-{
-    auto&& business_certs = database_.address_assets.get_asset_certs(address, symbol, 0);
-    auto certs = asset_cert_ns::none;
-    for (const auto& business_cert : business_certs) {
-        certs |= business_cert.certs.get_certs();
-    }
-    return certs;
-}
-
 std::shared_ptr<business_address_asset_cert::list>
 block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& symbol)
 {
@@ -1415,21 +1393,20 @@ std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs()
     return sp_vec;
 }
 
-bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_mask)
+bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type)
+{
+    BITCOIN_ASSERT(!symbol.empty());
+    return get_asset_cert(symbol, cert_type) != nullptr;
+}
+
+std::shared_ptr<asset_cert> block_chain_impl::get_asset_cert(const std::string& symbol, asset_cert_type cert_type)
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    auto&& keys_vec = asset_cert::get_keys(symbol, cert_mask);
-    for (const auto& key_str : keys_vec) {
-        const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-        const auto key = sha256_hash(data);
-        auto exist = database_.certs.get(key);
-        if (exist == nullptr) {
-            return false;
-        }
-    }
-
-    return true;
+    auto&& key_str = asset_cert::get_key(symbol, cert_type);
+    const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+    const auto key = sha256_hash(data);
+    return database_.certs.get(key);
 }
 
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)

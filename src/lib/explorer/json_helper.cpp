@@ -411,9 +411,9 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["owner"] = cert_info.get_owner();
     tree["address"] = cert_info.get_address();
     if (version_ == 1) {
-        tree["certs"] += cert_info.get_certs();
+        tree["cert"] += cert_info.get_type_name();
     } else {
-        tree["certs"] = cert_info.get_certs();
+        tree["cert"] = cert_info.get_type_name();
     }
     return tree;
 }

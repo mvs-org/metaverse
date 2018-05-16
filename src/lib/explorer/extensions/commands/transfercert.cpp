@@ -37,6 +37,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     blockchain.uppercase_symbol(argument_.symbol);
+    blockchain.uppercase_symbol(argument_.type_name);
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);
@@ -48,32 +49,31 @@ console_result transfercert::invoke (Json::Value& jv_output,
         {"NAMING", asset_cert_ns::naming}
     };
 
-    auto certs_send = asset_cert_ns::none;
-    for (auto& cert_param : argument_.certs) {
-        blockchain.uppercase_symbol(cert_param);
-        auto iter = cert_param_value_map.find(cert_param);
-        if (iter == cert_param_value_map.end()) {
-            throw asset_cert_exception("unknown asset cert type " + cert_param);
-        }
-
-        certs_send |= iter->second;
+    auto iter = cert_param_value_map.find(argument_.type_name);
+    if (iter == cert_param_value_map.end()) {
+        throw asset_cert_exception("unsupported asset cert type " + argument_.type_name);
     }
 
-    if (certs_send == asset_cert_ns::none) {
-        throw asset_cert_exception("no asset cert type is specified to transfer");
-    }
-
-    if (asset_cert::test_certs(certs_send, asset_cert_ns::issue)) {
+    auto cert_type = iter->second;
+    if (cert_type == asset_cert_ns::issue) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
         if (!sh_asset)
-            throw asset_symbol_notfound_exception{argument_.symbol + " asset not found"};
+            throw asset_symbol_notfound_exception(
+                "asset '" + argument_.symbol + "' does not exist.");
     }
 
-    // check enough certs is owned by the account
-    auto owned_certs = blockchain.get_account_asset_cert_type(auth_.name, argument_.symbol);
-    if (owned_certs == asset_cert_ns::none || !asset_cert::test_certs(owned_certs, certs_send)) {
+    // check cert is owned by the account
+    std::shared_ptr<asset_cert> cert = blockchain.get_asset_cert(argument_.symbol, cert_type);
+    if (!cert) {
+        throw asset_cert_notfound_exception(
+            "cert '" + argument_.symbol + "' does not exist.");
+    }
+
+    auto from_did = cert->get_owner();
+    auto from_address = cert->get_address();
+    if (!blockchain.get_account_address(auth_.name, from_address)) {
         throw asset_cert_notowned_exception(
-            "no enough '" + argument_.symbol + "' certs owned by " + auth_.name);
+            "cert '" + argument_.symbol + "' is not owned by " + auth_.name);
     }
 
     // check target address
@@ -85,7 +85,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            certs_send, utxo_attach_type::asset_cert, attachment("", to_did)}
+            cert_type, utxo_attach_type::asset_cert, attachment(from_did, to_did)}
     };
 
     auto helper = transferring_asset_cert(*this, blockchain,

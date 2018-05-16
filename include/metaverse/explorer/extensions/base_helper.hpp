@@ -232,7 +232,7 @@ public:
     void check_tx();
     void exec();
 
-    std::string get_mychange_address(filter filter) const;
+    std::string get_mychange_address(filter filter, asset_cert_type cert_type=asset_cert_ns::none) const;
 
     tx_type& get_transaction() { return tx_; }
     const tx_type& get_transaction() const { return tx_; }
@@ -251,10 +251,10 @@ protected:
     uint64_t                          tx_item_idx_{0};
     uint64_t                          payment_etp_{0};
     uint64_t                          payment_asset_{0};
-    uint64_t                          payment_asset_cert_{asset_cert_ns::none};
     uint64_t                          unspent_etp_{0};
     uint64_t                          unspent_asset_{0};
-    uint64_t                          unspent_asset_cert_{asset_cert_ns::none};
+    std::vector<asset_cert_type>      payment_asset_cert_;
+    std::vector<asset_cert_type>      unspent_asset_cert_;
     bool                              payment_did_flag{false};
     bool                              unspent_did_flag{false};
     std::vector<receiver_record>      receiver_list_;

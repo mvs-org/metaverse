@@ -69,19 +69,7 @@ console_result getasset::invoke(Json::Value& jv_output,
                     continue;
                 }
 
-                auto match = [&cert](const asset_cert& elem) {
-                    return cert.get_symbol() == elem.get_symbol()
-                        && cert.get_address() == elem.get_address();
-                };
-
-                auto iter = std::find_if(result_vec->begin(), result_vec->end(), match);
-                if (iter == result_vec->end()) { // new item
-                    result_vec->push_back(cert);
-                }
-                else { // exist just merge cert type
-                    auto cert_type = iter->get_certs() | cert.get_certs();
-                    iter->set_certs(cert_type);
-                }
+                result_vec->push_back(cert);
             }
 
             std::sort(result_vec->begin(), result_vec->end());

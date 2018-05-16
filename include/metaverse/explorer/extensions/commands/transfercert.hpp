@@ -91,8 +91,8 @@ public:
         )
         (
             "cert,c",
-            value<std::vector<std::string>>(&argument_.certs)->required(),
-            "Asset cert type name(s), multi names are supported. eg. -c ISSUE -c DOMAIN -c NAMING"
+            value<std::string>(&argument_.type_name)->required(),
+            "Asset cert type name, eg. ISSUE, DOMAIN or NAMING"
         )
         (
             "fee,f",
@@ -114,7 +114,7 @@ public:
     {
         std::string to;
         std::string symbol;
-        std::vector<std::string> certs;
+        std::string type_name;
         uint64_t fee;
     } argument_;
 

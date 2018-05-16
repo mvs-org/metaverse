@@ -193,7 +193,7 @@ public:
     std::string symbol;
     std::string owner;
     std::string address;
-    uint64_t certs;
+    uint32_t type;
     uint8_t status;
 
     ADD_SERIALIZE_METHODS;
@@ -203,7 +203,7 @@ public:
         READWRITE(symbol);
         READWRITE(owner);
         READWRITE(address);
-        READWRITE(certs);
+        READWRITE(type);
         READWRITE(status);
     }
 };

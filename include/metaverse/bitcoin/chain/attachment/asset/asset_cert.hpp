@@ -46,22 +46,19 @@ namespace chain {
 BC_CONSTEXPR size_t ASSET_CERT_SYMBOL_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_OWNER_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_CERT_ADDRESS_FIX_SIZE = 64;
-BC_CONSTEXPR size_t ASSET_CERT_CERTS_FIX_SIZE = 8;
+BC_CONSTEXPR size_t ASSET_CERT_TYPE_FIX_SIZE = 4;
 BC_CONSTEXPR size_t ASSET_CERT_STATUS_FIX_SIZE = 1;
 
 BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
     + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_ADDRESS_FIX_SIZE
-    + ASSET_CERT_CERTS_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
+    + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
 
-using asset_cert_type = uint64_t;
+using asset_cert_type = uint32_t;
 namespace asset_cert_ns {
-    constexpr asset_cert_type none{0};
-    constexpr asset_cert_type issue{1 << 0};
-    constexpr asset_cert_type domain{1 << 1};
-    constexpr asset_cert_type naming{1 << 2};
-    constexpr asset_cert_type all{0xffffffffffffffff};
-
-    constexpr size_t asset_cert_type_bits{64};
+    constexpr asset_cert_type none          = 0;
+    constexpr asset_cert_type issue         = 1;
+    constexpr asset_cert_type domain        = 2;
+    constexpr asset_cert_type naming        = 3;
 }
 
 class BC_API asset_cert
@@ -112,26 +109,32 @@ public:
     asset_cert_type get_certs() const;
     void set_certs(asset_cert_type certs);
 
+    asset_cert_type get_type() const;
+    void set_type(asset_cert_type cert_type);
+    std::string get_type_name() const;
+
     // auxiliary functions
     std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
-    bool test_certs(asset_cert_type bits) const;
-    std::vector<std::string> get_keys() const;
+    std::string get_key() const;
 
-    static bool test_certs(asset_cert_type certs, asset_cert_type bits);
+    static bool test_certs(const std::vector<asset_cert_type>& total, const std::vector<asset_cert_type>& parts);
+    static bool test_certs(const std::vector<asset_cert_type>& certs, asset_cert_type cert_type);
+
     static std::string get_owner_from_address(const std::string& address,
         bc::blockchain::block_chain_impl& chain);
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
-
-    static std::vector<std::string> get_keys(const std::string&symbol, asset_cert_type bits);
     static std::string get_key(const std::string&symbol, asset_cert_type bit);
 
 private:
+    // NOTICE: ref CAssetCert in transaction.h
+    // asset_cert and CAssetCert should have the same size and order.
+    // uint32_t asset_type in CAssetCert is divided into four uint8_t parts here.
     std::string symbol_; // asset name/symbol
     std::string owner_;  // asset cert owner, an digital identity
     std::string address_; // address that owned asset cert
-    asset_cert_type certs_; // asset certs
+    asset_cert_type cert_type_; // asset certs
     uint8_t status_;        // asset status
 };
 

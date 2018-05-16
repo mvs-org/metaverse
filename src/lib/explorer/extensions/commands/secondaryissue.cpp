@@ -61,22 +61,18 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to secondary issue, or the threshold is illegal."};
 
-    if (!blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::issue)) {
-        throw asset_cert_exception{"no issue asset cert exist in blockchain for symbol " + argument_.symbol};
+    auto cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::issue);
+    if (!cert) {
+        throw asset_cert_notfound_exception{"no issue cert '" + argument_.symbol + "' found!"};
     }
 
-    // if issue cert exists then check whether it belongs to the account.
-    const auto match = [](const business_address_asset_cert& item) {
-        return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::issue);
-    };
-
-    auto certs_vec = blockchain.get_account_asset_certs(auth_.name, argument_.symbol);
-    const auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
-    if (it == certs_vec->end()) {
-        throw asset_cert_exception{"no issue asset cert owned for symbol " + argument_.symbol};
+    // check whether it belongs to the account.
+    if (!blockchain.get_account_address(auth_.name, cert->get_address())) {
+        throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
     }
-    auto cert_address = it->address;
-    auto cert_did = it->certs.get_owner_from_address(blockchain);
+
+    auto cert_address = cert->get_address();
+    auto cert_did = cert->get_owner();
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if (total_volume > max_uint64 - argument_.volume)

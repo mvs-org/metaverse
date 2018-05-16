@@ -86,17 +86,18 @@ console_result issuecert::invoke (Json::Value& jv_output,
         }
 
         // check domain cert belong to this account.
-        auto certs_vec = blockchain.get_account_asset_certs(auth_.name, domain);
-        const auto match = [](const business_address_asset_cert& item) {
-            return asset_cert::test_certs(item.certs.get_certs(), asset_cert_ns::domain);
-        };
-        auto it = std::find_if(certs_vec->begin(), certs_vec->end(), match);
-        if (it == certs_vec->end()) {
-            throw asset_cert_notowned_exception("no domain cert owned!");
+        auto cert = blockchain.get_asset_cert(domain, asset_cert_ns::domain);
+        if (!cert) {
+            throw asset_cert_notfound_exception("no domain cert '" + domain + "' found!");
         }
 
-        domain_cert_addr = it->address;
-        domain_cert_did = it->certs.get_owner_from_address(blockchain);
+        auto address = blockchain.get_account_address(auth_.name, cert->get_address());
+        if (!address) {
+            throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + auth_.name);
+        }
+
+        domain_cert_addr = cert->get_address();
+        domain_cert_did = cert->get_owner();
     }
 
     // receiver

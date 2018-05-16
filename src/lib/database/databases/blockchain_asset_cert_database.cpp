@@ -145,40 +145,32 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
 
 void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
 {
-    const auto& symbol = sp_cert.get_symbol();
-    const auto& owner = sp_cert.get_owner();
-    const auto& address = sp_cert.get_address();
-
-    for (size_t i = 0; i < asset_cert_ns::asset_cert_type_bits; ++i) {
-        const asset_cert_type target_type = (1L << i);
-        if (sp_cert.test_certs(target_type)) {
-            auto&& key_str = asset_cert::get_key(symbol, target_type);
-            const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-            const auto key = sha256_hash(data);
-            auto exist = get(key);
-            if (exist != nullptr && exist->get_owner() == owner
-                && exist->get_address() == address) {
-                continue;
-            }
-
-            // Write block data.
-            asset_cert cert{symbol, owner, address, target_type};
-            cert.set_status(sp_cert.get_status());
-            const auto sp_size = cert.serialized_size();
-#ifdef MVS_DEBUG
-            log::debug("blockchain_asset_cert_database::store") << cert.to_string();
-#endif
-            BITCOIN_ASSERT(sp_size <= max_size_t);
-            const auto value_size = static_cast<size_t>(sp_size);
-
-            auto write = [&cert](memory_ptr data)
-            {
-                auto serial = make_serializer(REMAP_ADDRESS(data));
-                serial.write_data(cert.to_data());
-            };
-            lookup_map_.store(key, write, value_size);
-        }
+    auto&& key_str = sp_cert.get_key();
+    const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+    const auto key = sha256_hash(data);
+    auto exist = get(key);
+    if (exist != nullptr
+        && exist->get_owner() == sp_cert.get_owner()
+        && exist->get_address() == sp_cert.get_address())
+    {
+        return;
     }
+
+#ifdef MVS_DEBUG
+    log::debug("blockchain_asset_cert_database::store") << sp_cert.to_string();
+#endif
+
+    // Write block data.
+    const auto sp_size = sp_cert.serialized_size();
+    BITCOIN_ASSERT(sp_size <= max_size_t);
+    const auto value_size = static_cast<size_t>(sp_size);
+
+    auto write = [sp_cert](memory_ptr data)
+    {
+        auto serial = make_serializer(REMAP_ADDRESS(data));
+        serial.write_data(sp_cert.to_data());
+    };
+    lookup_map_.store(key, write, value_size);
 }
 
 
