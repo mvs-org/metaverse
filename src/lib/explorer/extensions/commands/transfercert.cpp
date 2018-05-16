@@ -37,7 +37,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     blockchain.uppercase_symbol(argument_.symbol);
-    blockchain.uppercase_symbol(argument_.type_name);
+    blockchain.uppercase_symbol(argument_.cert);
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);
@@ -49,9 +49,9 @@ console_result transfercert::invoke (Json::Value& jv_output,
         {"NAMING", asset_cert_ns::naming}
     };
 
-    auto iter = cert_param_value_map.find(argument_.type_name);
+    auto iter = cert_param_value_map.find(argument_.cert);
     if (iter == cert_param_value_map.end()) {
-        throw asset_cert_exception("unsupported asset cert type " + argument_.type_name);
+        throw asset_cert_exception("unsupported asset cert type " + argument_.cert);
     }
 
     auto cert_type = iter->second;

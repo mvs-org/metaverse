@@ -46,7 +46,8 @@ public:
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
             .add("TODID", 1)
-            .add("SYMBOL", 1);
+            .add("SYMBOL", 1)
+            .add("CERT", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -57,6 +58,7 @@ public:
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(argument_.to, "TODID", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.cert, "CERT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -90,9 +92,9 @@ public:
             "Asset cert symbol"
         )
         (
-            "cert,c",
-            value<std::string>(&argument_.type_name)->required(),
-            "Asset cert type name, eg. ISSUE, DOMAIN or NAMING"
+            "CERT",
+            value<std::string>(&argument_.cert)->required(),
+            "Asset cert type name. eg. ISSUE, DOMAIN or NAMING"
         )
         (
             "fee,f",
@@ -114,7 +116,7 @@ public:
     {
         std::string to;
         std::string symbol;
-        std::string type_name;
+        std::string cert;
         uint64_t fee;
     } argument_;
 

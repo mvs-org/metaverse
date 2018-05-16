@@ -194,7 +194,7 @@ std::string asset_cert::to_string() const
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t owner = " << owner_ << "\n";
     ss << "\t address = " << address_ << "\n";
-    ss << "\t cert = " << std::to_string(get_type()) << "\n";
+    ss << "\t cert = " << get_type_name() << "\n";
     ss << "\t status = " << std::to_string(status_) << "\n";
     return ss.str();
 }
