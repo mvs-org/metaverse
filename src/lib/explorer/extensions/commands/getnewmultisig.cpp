@@ -44,6 +44,11 @@ console_result getnewmultisig::invoke(
         throw multisig_cosigne_exception{ "multisig cosigner public key needed." };
     }
 
+    std::set<std::string> unique_keys(pubkey_vec.begin(), pubkey_vec.end());
+    if (unique_keys.size() != pubkey_vec.size()) {
+        throw multisig_cosigne_exception{ "multisig cosigner public key has duplicated items." };
+    }
+
     // check m & n
     if (option_.m < 1) {
         throw signature_amount_exception{ "signature number less than 1." };
