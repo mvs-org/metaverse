@@ -454,11 +454,6 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
 {
     Json::Value tree;
 
-    if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION) {
-        tree["from_did"] = attach_data.get_from_did();
-        tree["to_did"] =  attach_data.get_to_did();
-    }
-
     if (attach_data.get_type() == ETP_TYPE) {
         tree["type"] = "etp";
     }
@@ -502,6 +497,11 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
     }
     else {
         tree["type"] = "unknown business";
+    }
+
+    if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION) {
+        tree["from_did"] = attach_data.get_from_did();
+        tree["to_did"] =  attach_data.get_to_did();
     }
     return tree;
 }
