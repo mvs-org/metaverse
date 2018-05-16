@@ -428,10 +428,19 @@ def gettx(tx_hash, json=None):
 
 @mvs_api
 def listtxs(account, password, address=None, height=None, index=None, limit=None, symbol=None):
+    '''
+    height:         Get tx according height eg: -e
+                     start-height:end-height will return tx between
+                     [start-height, end-height)
+    '''
+    if height != None:
+        height = '%s:%s' % (height[0], height[1])
+
     return "listtxs", [account, password], {
         '-a':address,
         '-e':height,
         '-i':index,
+        '-l':limit,
         '-s':symbol
     }, None
 
