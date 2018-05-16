@@ -1,0 +1,6 @@
+test_0_creat (RawTx.test_rawtx.TestRawTx) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 1.114s
+
+OK

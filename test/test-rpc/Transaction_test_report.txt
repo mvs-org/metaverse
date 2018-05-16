@@ -1,0 +1,18 @@
+test_0_gettx (Transaction.test_transaction.TestTransaction) ... FAIL
+test_1_listtxs (Transaction.test_transaction.TestTransaction) ... ok
+test_2_listtxs (Transaction.test_transaction.TestTransaction) ... ok
+
+======================================================================
+FAIL: test_0_gettx (Transaction.test_transaction.TestTransaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Transaction/test_transaction.py", line 16, in test_0_gettx
+    tx_hash = Alice.send_etp(Zac.mainaddress(), 10**8)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 120, in send_etp
+    assert (result == 0)
+AssertionError
+
+----------------------------------------------------------------------
+Ran 3 tests in 4.408s
+
+FAILED (failures=1)

@@ -1,0 +1,23 @@
+test_0_new_account (Account.test_account.TestAccount) ... ok
+test_1_get_account (Account.test_account.TestAccount) ... ok
+test_2_delete_account (Account.test_account.TestAccount) ... ok
+test_3_import_account (Account.test_account.TestAccount) ... ok
+test_4_changepasswd (Account.test_account.TestAccount) ... ok
+test_dumpkeyfile (Account.test_keyfile.TestKeyfile) ... FAIL
+test_importKeyFile_by_Content (Account.test_keyfile.TestKeyfile) ... ok
+test_0_new_address (Account.test_address.TestAccount) ... ok
+test_1_list_addresses (Account.test_address.TestAccount) ... ok
+test_2_check_address (Account.test_address.TestAccount) ... ok
+
+======================================================================
+FAIL: test_dumpkeyfile (Account.test_keyfile.TestKeyfile)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Account/test_keyfile.py", line 55, in test_dumpkeyfile
+    self.assertEqual(multisig[0]['m'], '2')
+AssertionError: 2 != '2'
+
+----------------------------------------------------------------------
+Ran 10 tests in 2.781s
+
+FAILED (failures=1)

@@ -1,0 +1,161 @@
+test_0_check_asset_symbol (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_1_create_asset (Asset.test_asset_boundary.TestAssetBoundary) ... FAIL
+test_2_issue_asset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_3_list_assets (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_4_get_asset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_5_deletelocalasset (Asset.test_asset_boundary.TestAssetBoundary) ... FAIL
+test_6_getaccountasset (Asset.test_asset_boundary.TestAssetBoundary) ... FAIL
+test_7_getaddressasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_8_sendasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_9_sendassetfrom (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_A_burn (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_0_issuecert (Asset.test_cert.TestCert) ... FAIL
+test_1_issuecert_success (Asset.test_cert.TestCert) ... FAIL
+test_2_transfercert (Asset.test_cert.TestCert) ... FAIL
+test_3_transfercert_success (Asset.test_cert.TestCert)
+Alice -> Bob -> Cindy: ALICE.2BOB.timestamp ... FAIL
+test_4_secondaryissue (Asset.test_cert.TestCert) ... FAIL
+test_5_secondaryissue_success (Asset.test_cert.TestCert) ... FAIL
+test_1_create_asset (Asset.test_asset.TestAsset) ... FAIL
+test_2_issue_asset (Asset.test_asset.TestAsset) ... FAIL
+test_3_sendasset (Asset.test_asset.TestAsset) ... FAIL
+test_4_sendassetfrom (Asset.test_asset.TestAsset) ... FAIL
+test_5_burn_asset (Asset.test_asset.TestAsset) ... FAIL
+
+======================================================================
+FAIL: test_1_create_asset (Asset.test_asset_boundary.TestAssetBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset_boundary.py", line 73, in test_1_create_asset
+    self.assertEqual(ec, 5009, message)
+AssertionError: The did 'ALICE.DID' does not exist in blockchain, maybe you should issuedid first
+
+======================================================================
+FAIL: test_5_deletelocalasset (Asset.test_asset_boundary.TestAssetBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset_boundary.py", line 157, in test_5_deletelocalasset
+    Frank.create_asset(False)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 62, in create_asset
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_6_getaccountasset (Asset.test_asset_boundary.TestAssetBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset_boundary.py", line 182, in test_6_getaccountasset
+    Bob.create_asset(False)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 62, in create_asset
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_0_issuecert (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 29, in test_0_issuecert
+    self.assertEqual(ec, 5017, message)
+AssertionError: did BOB.DID does not exist in blockchain
+
+======================================================================
+FAIL: test_1_issuecert_success (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 39, in test_1_issuecert_success
+    cert_symbol = Alice.issue_cert(Bob)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 74, in issue_cert
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_2_transfercert (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 64, in test_2_transfercert
+    self.assertEqual(ec, 7006, message)
+AssertionError: cert 'ALICE' does not exist.
+
+======================================================================
+FAIL: test_3_transfercert_success (Asset.test_cert.TestCert)
+Alice -> Bob -> Cindy: ALICE.2BOB.timestamp
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 91, in test_3_transfercert_success
+    cert_symbol = Alice.issue_cert(Bob)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 74, in issue_cert
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_4_secondaryissue (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 122, in test_4_secondaryissue
+    self.assertEqual(ec, 4003, message)
+AssertionError: did BOB.DID does not exist in blockchain
+
+======================================================================
+FAIL: test_5_secondaryissue_success (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 157, in test_5_secondaryissue_success
+    Alice.create_asset(secondary=-1)  # asset can be secondary issue freely
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 62, in create_asset
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_1_create_asset (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 5, in test_1_create_asset
+    Alice.create_asset(False)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 62, in create_asset
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_2_issue_asset (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 20, in test_2_issue_asset
+    Alice.create_asset()
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/Roles.py", line 62, in create_asset
+    assert (result == 0)
+AssertionError
+
+======================================================================
+FAIL: test_3_sendasset (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 49, in test_3_sendasset
+    origin_amount = self.get_asset_amount(Alice)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 43, in get_asset_amount
+    self.assertEqual(len(addressasset), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_4_sendassetfrom (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 61, in test_4_sendassetfrom
+    origin_amount = self.get_asset_amount(Alice)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 43, in get_asset_amount
+    self.assertEqual(len(addressasset), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_5_burn_asset (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 75, in test_5_burn_asset
+    amount = self.get_asset_amount(Alice)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 43, in get_asset_amount
+    self.assertEqual(len(addressasset), 1)
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 22 tests in 23.868s
+
+FAILED (failures=14)

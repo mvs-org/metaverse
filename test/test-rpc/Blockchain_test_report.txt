@@ -1,0 +1,6 @@
+test_1_no_mining_account (Blockchain.test_work.TestWork) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 2.468s
+
+OK

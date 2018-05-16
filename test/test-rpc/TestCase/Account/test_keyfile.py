@@ -52,8 +52,8 @@ class TestKeyfile(MVSTestCaseBase):
         self.assertEqual(multisig[0]['self-publickey'], Alice.get_publickey(Alice.mainaddress()))
         self.assertEqual(multisig[0]['description'], description, "decription not match!")
 
-        self.assertEqual(multisig[0]['m'], '2')
-        self.assertEqual(multisig[0]['n'], '3')
+        self.assertEqual(multisig[0]['m'], 2)
+        self.assertEqual(multisig[0]['n'], 3)
 
     def test_importKeyFile_by_Content(self):
         Alice.delete()
