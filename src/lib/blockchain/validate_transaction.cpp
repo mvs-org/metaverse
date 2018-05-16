@@ -499,7 +499,8 @@ code validate_transaction::check_asset_issue_transaction(
     is_asset_issue = false;
     int num_asset_cert_issue{0};
     int num_asset_cert_domain{0};
-    asset_cert_type cert_mask{asset_cert_ns::none};
+    int num_asset_cert_naming{0};
+    std::vector<asset_cert_type> cert_mask;
     std::vector<asset_cert_type> cert_type;
     std::string asset_symbol;
     std::string asset_address;
@@ -574,8 +575,8 @@ code validate_transaction::check_asset_issue_transaction(
                 }
             }
             else if (cur_cert_type == asset_cert_ns::naming) {
-                ++num_asset_cert_domain;
-                if (num_asset_cert_domain > 1) {
+                ++num_asset_cert_naming;
+                if (num_asset_cert_naming > 1) {
                     return error::asset_issue_error;
                 }
 
@@ -596,7 +597,7 @@ code validate_transaction::check_asset_issue_transaction(
         }
     }
 
-    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain;
+    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain + num_asset_cert_naming;
     if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
         log::debug(LOG_BLOCKCHAIN) << "issue asset: "
                                    << "too many outputs: " << tx.outputs.size()

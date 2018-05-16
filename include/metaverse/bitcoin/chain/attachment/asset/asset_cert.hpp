@@ -118,6 +118,8 @@ public:
     bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     std::string get_key() const;
 
+    static const std::map<asset_cert_type, std::string>& get_type_name_map();
+    static std::string get_type_name(asset_cert_type cert_type);
     static bool test_certs(const std::vector<asset_cert_type>& total, const std::vector<asset_cert_type>& parts);
     static bool test_certs(const std::vector<asset_cert_type>& certs, asset_cert_type cert_type);
 

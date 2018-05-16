@@ -90,7 +90,7 @@ public:
     void set_address(const std::string& address);
     const std::string& get_description() const;
     void set_description(const std::string& description);
-    asset_cert_type get_asset_cert_mask() const;
+    std::vector<asset_cert_type> get_asset_cert_mask() const;
 
     bool is_asset_secondaryissue() const;
     void set_asset_secondaryissue();

@@ -257,11 +257,11 @@ void asset_detail::set_description(const std::string& description)
      this->description = description.substr(0, len);
 }
 
-asset_cert_type asset_detail::get_asset_cert_mask() const
+std::vector<asset_cert_type> asset_detail::get_asset_cert_mask() const
 {
-    auto certs = asset_cert_ns::none;
+    std::vector<asset_cert_type> certs;
     if (is_secondaryissue_legal()) {
-        certs |= asset_cert_ns::issue;
+        certs.push_back(asset_cert_ns::issue);
     }
 
     return certs;

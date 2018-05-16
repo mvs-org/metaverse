@@ -225,14 +225,13 @@ public:
     void check_receiver_list_not_empty() const;
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
-    void populate_asset_cert_change(const std::string& address = std::string(""));
     bool is_payment_satisfied(filter filter = FILTER_ALL) const;
     void check_payment_satisfied(filter filter = FILTER_ALL) const;
     void populate_tx_inputs();
     void check_tx();
     void exec();
 
-    std::string get_mychange_address(filter filter, asset_cert_type cert_type=asset_cert_ns::none) const;
+    std::string get_mychange_address(filter filter) const;
 
     tx_type& get_transaction() { return tx_; }
     const tx_type& get_transaction() const { return tx_; }
@@ -442,7 +441,6 @@ public:
 
     void sum_payments() override;
     void sum_payment_amount() override;
-    void populate_change() override;
     attachment populate_output_attachment(const receiver_record& record) override;
 
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
@@ -640,8 +638,6 @@ public:
 
     ~transferring_asset_cert()
     {}
-
-    void populate_change() override;
 };
 
 class BCX_API issuing_asset_cert : public base_transfer_helper
@@ -659,7 +655,6 @@ public:
     {}
 
     void sum_payment_amount() override;
-    void populate_change() override;
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;

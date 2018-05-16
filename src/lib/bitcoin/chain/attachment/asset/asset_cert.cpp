@@ -264,15 +264,25 @@ void asset_cert::set_certs(asset_cert_type cert_type)
 
 std::string asset_cert::get_type_name() const
 {
-    BITCOIN_ASSERT(cert_type_ != asset_cert_ns::none);
+    return get_type_name(cert_type_);
+}
 
-    std::map<asset_cert_type, std::string> type_name_map = {
+const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
+{
+    static std::map<asset_cert_type, std::string> static_type_name_map = {
         {asset_cert_ns::issue, "ISSUE"},
         {asset_cert_ns::domain, "DOMAIN"},
         {asset_cert_ns::naming, "NAMING"},
     };
+    return static_type_name_map;
+}
 
-    auto iter = type_name_map.find(cert_type_);
+std::string asset_cert::get_type_name(asset_cert_type cert_type)
+{
+    BITCOIN_ASSERT(cert_type != asset_cert_ns::none);
+
+    const auto& type_name_map = get_type_name_map();
+    auto iter = type_name_map.find(cert_type);
     BITCOIN_ASSERT(iter != type_name_map.end());
     return iter->second;
 }

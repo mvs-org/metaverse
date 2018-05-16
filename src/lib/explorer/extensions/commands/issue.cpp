@@ -116,9 +116,11 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // asset_cert utxo
     auto certs = sh_asset->get_asset_cert_mask();
-    if (certs != asset_cert_ns::none) {
-        receiver.push_back({to_address, argument_.symbol, 0, 0,
-            certs, utxo_attach_type::asset_cert, attachment(to_did, to_did)});
+    if (!certs.empty()) {
+        for (auto each_cert_type : certs) {
+            receiver.push_back({to_address, argument_.symbol, 0, 0,
+                each_cert_type, utxo_attach_type::asset_cert, attachment(to_did, to_did)});
+        }
     }
 
     // domain cert or domain naming cert
