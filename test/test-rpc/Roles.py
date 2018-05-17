@@ -261,7 +261,7 @@ class NewGuy(Role):
             with open('./Zac.txt') as f:
                 lastword = f.read()
                 self.mnemonic = [lastword.strip()]
-        Role.delete(self)
+        return Role.delete(self)
 
 
 homedir = os.path.dirname( os.path.realpath(__file__) )

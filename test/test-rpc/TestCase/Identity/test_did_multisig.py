@@ -96,8 +96,6 @@ class TestDIDMultiSig(MVSTestCaseBase):
         did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)         
         self.assertEqual(did_address, addr_new, "Failed where modify did address from normal to multi_signature address")
 
-        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr, did_symbol)
-        self.assertEqual(ec, 70010, tx)
         
 
     def get_didaddress(self, account, password, symbol):
