@@ -51,10 +51,10 @@ class TestDIDMultiSig(MVSTestCaseBase):
         Alice.mining()
 
 
-        group_new = [Alice, Bob, Zac]
+        group_new = [ Bob, Dale, Zac]
         for i, role in enumerate(group_new):
             addr_new = role.new_multisigaddress(
-                "Alice & Bob & Zac's Multisig-DID", group_new[:i] + group_new[i+1:], 2)
+                "Bob & Dale & Zac's Multisig-DID", group_new[:i] + group_new[i+1:], 2)
 
         Alice.send_etp(addr_new, (10 ** 6))
         Alice.mining()
@@ -84,22 +84,19 @@ class TestDIDMultiSig(MVSTestCaseBase):
         print "after modify address:"+self.get_didaddress(Zac.name,Zac.password, did_symbol)
 
         print "from normal address to multi_signature address"
-
-        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr, did_symbol)
+        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr_new, did_symbol)
         self.assertEqual(ec, 0, tx)
 
-        ec, tx = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, tx['raw'])
+        ec, tx = mvs_rpc.sign_multisigtx(group_new[0].name, group_new[0].password, tx['raw'], True)
         self.assertEqual(ec, 0, tx)
 
-        ec, tx = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx['raw'], True)
-        self.assertEqual(ec, 0, tx)
         Alice.mining(10)
         print "after modify address:"+self.get_didaddress(Zac.name,Zac.password, did_symbol)
 
         print "from multi_signature address to multi_signature"
-        ec, tx = mvs_rpc.modify_did(group[0].name, group[0].password, addr_new, did_symbol)
+        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr, did_symbol)
         self.assertEqual(ec, 70010, tx)
-
+        
 
     def get_didaddress(self, account, password, symbol):
         ec, message = mvs_rpc.list_didaddresses(account, password, symbol)

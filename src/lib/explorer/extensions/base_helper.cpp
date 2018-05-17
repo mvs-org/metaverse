@@ -1411,7 +1411,7 @@ void sending_multisig_did::sign_tx_inputs()
         bc::explorer::config::ec_private config_private_key(fromeach.prikey);
         const ec_secret &private_key = config_private_key;
 
-        bc::explorer::config::script config_contract;
+        bc::explorer::config::script config_contract = fromeach.script;
         auto useMultisig = false;
 
         if (fromeach.addr == acc_multisigfrom_.get_address())
@@ -1423,12 +1423,10 @@ void sending_multisig_did::sign_tx_inputs()
         else if (fromeach.addr == acc_multisigto_.get_address())
         {
             multisig_script = acc_multisigto_.get_multisig_script();
+            config_contract = multisig_script;
             useMultisig = true;
         }
-        else
-        {
-            config_contract = fromeach.script;
-        }
+
 
         if (useMultisig)
         {
