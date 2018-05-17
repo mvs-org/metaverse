@@ -104,6 +104,8 @@ class TestDIDMultiSig(MVSTestCaseBase):
         return message['addresses'][0]['address']
 
 
-
+class TestWithExistDID(MultiSigDIDTestCase):
+    def test_0_todo(self):
+        pass
 
 

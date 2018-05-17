@@ -14,3 +14,10 @@ def toString(h):
 
 def get_timestamp():
     return time.strftime('%Y%m%d.%H%M%S', time.localtime(time.time()))
+
+def create_multisig_address(roles, required_key_num):
+    assert( required_key_num <= len(roles) )
+    desc = ' & '.join([i.name for i in roles]) + '\'s Multisig Address'
+    for i, role in enumerate(roles):
+        addr = role.new_multisigaddress(desc, roles[:i] + roles[i+1:], required_key_num)
+    return addr
