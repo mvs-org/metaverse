@@ -94,7 +94,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuefrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listaddresses.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listassets.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listbalances.hpp" />
@@ -217,7 +216,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuefrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listaddresses.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listassets.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listbalances.cpp" />
