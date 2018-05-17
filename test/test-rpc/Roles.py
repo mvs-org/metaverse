@@ -256,6 +256,13 @@ class NewGuy(Role):
         self.addresslist.reverse()
         return 0, "success"
 
+    def delete(self):
+        if (not self.mnemonic) and os.path.exists('./Zac.txt'):
+            with open('./Zac.txt') as f:
+                lastword = f.read()
+                self.mnemonic = [lastword.strip()]
+        Role.delete(self)
+
 
 homedir = os.path.dirname( os.path.realpath(__file__) )
 keystoredir = 'resource/keystore'
