@@ -183,6 +183,11 @@ def sign_multisigtx(account, password, tx, broadcast=False):
     return "signmultisigtx", positional, {}, None
 
 @mvs_api
+def get_balance(account, password):
+    '''Show total balance details of this account.'''
+    return 'getbalance', [account, password], {}, None
+
+@mvs_api
 def list_balances(account, password, range_):
     '''
     :param range_: (from, to)
@@ -281,10 +286,6 @@ def set_miningaccount(account, password, address):
 def start_mining(account, password, address=None, number=None):
     return "startmining", [account, password], {'-a':address, '-n':number}, None
 
-@mvs_api
-def stop_mining():
-    return "stopmining", [], {}, None
-
 @mvs_api_v3
 def eth_submit_work(nonce, header_hash, mix_hash):
     '''
@@ -343,11 +344,12 @@ def get_info():
     return "getinfo", [], {}, lambda result: (int(result['height']), int(result['difficulty']))
 
 @mvs_api
-def send(account, password, to_, amount, fee=None, desc=None):
+def send(account, password, to_, amount, fee=None, desc=None, remark=None):
     positional = [account, password, to_, amount]
     optional =   {
             '-f': fee,
             '-m': desc,
+            "-r": remark
         }
 
     return "send", positional, optional, None

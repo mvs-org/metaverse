@@ -2,9 +2,17 @@
 import os
 import unittest
 import TestCase
+from Roles import Alice
+
+def ensure_Alice_balance():
+    Alice.create()
+    try:
+        while Alice.get_balance() < 1000 * (10**8):
+            Alice.mining(100)
+    finally:
+        Alice.delete()
 
 def run_testcase():
-    ret = []
     with open('mvs_test_report.txt', 'w') as f:
         category_lst = ['Account', "Blockchain", "Block", "Identity", "ETP", "Asset", "MultiSignature", "RawTx", "Transaction"]
         for i in category_lst:
@@ -17,4 +25,5 @@ def run_testcase():
 
 
 if __name__ == '__main__':
+    ensure_Alice_balance()
     run_testcase()
