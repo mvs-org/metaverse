@@ -13,7 +13,7 @@ def toString(h):
     return ''.join(['%02x' % ord(i) for i in h])
 
 def get_timestamp():
-    return time.strftime('%Y%m%d.%H%M%S', time.localtime(time.time()))
+    return time.strftime('%Y%m%dT%H%M%S', time.localtime(time.time()))
 
 def create_multisig_address(roles, required_key_num):
     assert( required_key_num <= len(roles) )

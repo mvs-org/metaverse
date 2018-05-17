@@ -112,10 +112,11 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     // output json
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx);
-    if (get_api_version() == 1) {
+    if (get_api_version() <= 2) {
         jv_output["hex"] = tx_buf.str();
     }
     else {
+        // TODO support restful API format
         jv_output["raw"] = tx_buf.str();
     }
 

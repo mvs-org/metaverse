@@ -61,7 +61,7 @@ console_result listassets::invoke(Json::Value& jv_output,
 
             auto sh_vec = std::make_shared<asset_cert::list>();
             for (auto& each : *pvaddr) {
-                sync_fetch_asset_cert_balance(each.get_address(), false, blockchain, sh_vec);
+                sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec);
             }
 
             std::sort(sh_vec->begin(), sh_vec->end());

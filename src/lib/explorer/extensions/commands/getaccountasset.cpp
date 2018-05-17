@@ -56,7 +56,7 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
         json_key = "assetcerts";
         auto sh_vec = std::make_shared<asset_cert::list>();
         for (auto& each : *pvaddr){
-            sync_fetch_asset_cert_balance(each.get_address(), false, blockchain, sh_vec);
+            sync_fetch_asset_cert_balance(each.get_address(), argument_.symbol, blockchain, sh_vec);
         }
 
         std::sort(sh_vec->begin(), sh_vec->end());

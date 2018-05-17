@@ -88,7 +88,7 @@ public:
         (
             "broadcast,b",
             value<bool>(&option_.broadcast_flag)->default_value(false)->zero_tokens(),
-            "Broadcast the tx automatically if it is fullly signed, disabled by default."
+            "Broadcast the tx if it is fullly signed, disabled by default."
         );
 
         return options;

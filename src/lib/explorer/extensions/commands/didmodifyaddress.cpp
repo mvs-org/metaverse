@@ -113,7 +113,9 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
         auto && tx = issue_helper.get_transaction();
         std::ostringstream tx_buf;
         tx_buf << config::transaction(tx);
-        jv_output["raw"] = tx_buf.str();
+        jv_output = tx_buf.str();
+        // TODO support restful API format
+        // jv_output["raw"] = tx_buf.str();
     }
     else
     {

@@ -142,13 +142,35 @@ std::string get_random_payment_address(
     return "";
 }
 
-void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
+void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec)
 {
-    auto business_cert_vec = blockchain.get_address_asset_certs(address, "");
-    for (auto& business_cert : *business_cert_vec) {
-        sh_vec->push_back(business_cert.certs);
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.is_asset_cert())
+            {
+                auto asset_cert = output.get_asset_cert();
+                if (!symbol.empty() && symbol != asset_cert.get_symbol()) {
+                    continue;
+                }
+
+                sh_vec->push_back(std::move(asset_cert));
+            }
+        }
     }
 }
 

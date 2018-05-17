@@ -87,7 +87,7 @@ console_result issue::invoke (Json::Value& jv_output,
                 cert_did = cert->get_owner();
             }
             else {
-                // if domain cert does not belong to the account then check domain naming cert
+                // if domain cert does not belong to the account then check naming cert
                 cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::naming);
                 if (!cert) {
                     throw asset_cert_notowned_exception{
@@ -97,7 +97,7 @@ console_result issue::invoke (Json::Value& jv_output,
                     account_address = blockchain.get_account_address(auth_.name, cert->get_address());
                     if (!account_address) {
                         throw asset_cert_notowned_exception{
-                            "No domain cert or domain naming cert owned by " + auth_.name};
+                            "No domain cert or naming cert owned by " + auth_.name};
                     }
 
                     cert_symbol = domain;
@@ -123,7 +123,7 @@ console_result issue::invoke (Json::Value& jv_output,
         }
     }
 
-    // domain cert or domain naming cert
+    // domain cert or naming cert
     if (asset_cert::is_valid_domain(domain)) {
         receiver.push_back({cert_address, cert_symbol, 0, 0,
             cert_type, utxo_attach_type::asset_cert, attachment(cert_did, cert_did)});

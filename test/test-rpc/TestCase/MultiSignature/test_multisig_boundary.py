@@ -60,7 +60,7 @@ class TestMultiSig(MVSTestCaseBase):
 
         # invalid address
         ec, message = mvs_rpc.delete_multisig(Alice.name, Alice.password, "x")
-        self.assertEqual(ec, 5203, message)
+        self.assertEqual(ec, 4015, message)
 
         addr = Alice.new_multisigaddress('A&B&C', [Bob, Cindy], 2)
         ec, message = mvs_rpc.delete_multisig(Alice.name, Alice.password, addr)

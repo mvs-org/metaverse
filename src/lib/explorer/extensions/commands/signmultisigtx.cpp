@@ -214,14 +214,15 @@ console_result signmultisigtx::invoke(
     // output json
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    if (get_api_version() == 1) {
+    if (get_api_version() <= 2) {
         jv_output = tx_buf.str();
     }
     else {
+        // TODO support restful API format
         jv_output["raw"] = tx_buf.str();
     }
 
-    if (option_.broadcast_flag && fullfilled) {
+    if (option_.broadcast_flag /* TODO && fullfilled */) {
         log::trace("multisig") << "validate and broadcast multisig transaction: " << tx_buf.str();
 
         if (blockchain.validate_transaction(tx_)) {

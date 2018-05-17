@@ -37,7 +37,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     blockchain.uppercase_symbol(argument_.symbol);
-    boost::to_upper(argument_.cert);
+    boost::to_lower(argument_.cert);
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);
@@ -49,7 +49,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
-        {"NAMING", asset_cert_ns::naming}
+        {"naming", asset_cert_ns::naming}
     };
     auto iter = cert_map.find(argument_.cert);
     if (iter == cert_map.end()) {
@@ -62,7 +62,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
     if (certs_create == asset_cert_ns::naming) {
         // check symbol is valid.
         auto pos = argument_.symbol.find(".");
-        if (pos == string::npos) {
+        if (pos == std::string::npos) {
             throw asset_symbol_name_exception("invalid naming cert symbol " + argument_.symbol
                 + ", it should contain a dot '.'");
         }
@@ -76,7 +76,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
         // check domain naming cert not exist.
         if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming)) {
             throw asset_cert_existed_exception(
-                "domain naming cert '" + argument_.symbol + "' already exists in blockchain!");
+                "naming cert '" + argument_.symbol + "' already exists in blockchain!");
         }
 
         // check asset not exist.

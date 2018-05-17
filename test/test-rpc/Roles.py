@@ -51,6 +51,23 @@ class Role:
         '''
         return mvs_rpc.issue_did(self.name, self.password, self.mainaddress(), self.did_symbol)
 
+    def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0):
+        '''
+        issue asset to the main address.
+        secondary:   The rate of secondaryissue. Default to 0, means the
+                     asset is not allowed to secondary issue forever;
+                     otherwise, -1 means the asset can be secondary issue
+                     freely; otherwise, the valid rate is in range of 1
+                     to 100, means the asset can be secondary issue when
+                     own percentage greater than or equal to the rate
+                     value.
+        '''
+        result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 3000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
+        assert (result == 0)
+        if is_issue:
+            result, message = mvs_rpc.issue_asset(self.name, self.password, symbol)
+            assert (result == 0)
+
     def create_asset(self, is_issue=True, secondary=0):
         '''
         issue asset to the main address.
@@ -76,6 +93,16 @@ class Role:
     def issue_cert(self, to_):
         cert_symbol = (self.name + ".2%s." % to_.name + common.get_timestamp()).upper()
         result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
+        if result != 0:
+            print("failed to issue_cert: {}".format(message))
+        assert (result == 0)
+        return cert_symbol
+
+    def issue_naming_cert(self, to_, domain_symbol):
+        cert_symbol = (domain_symbol + ".2%s." % to_.name + common.get_timestamp()).upper()
+        result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
+        if result != 0:
+            print("failed to issue_cert: {}".format(message))
         assert (result == 0)
         return cert_symbol
 
@@ -108,6 +135,8 @@ class Role:
         if not asset_symbol:
             asset_symbol = self.asset_symbol
         result, message = mvs_rpc.send_asset(self.name, self.password, to_, asset_symbol, amount)
+        if (result != 0):
+            print("failed to send_asset: {}, {}".format(result, message))
         assert (result == 0)
 
     def send_asset_from(self, from_, to_, amount, asset_symbol=None):

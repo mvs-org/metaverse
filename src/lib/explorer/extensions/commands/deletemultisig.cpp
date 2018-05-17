@@ -88,17 +88,19 @@ console_result deletemultisig::invoke(Json::Value& jv_output,
     }
 
     // output json
-    Json::Value nodes;
     auto helper = config::json_helper(get_api_version());
-    for(auto& acc_multisig : *multisig_vec) {
-        Json::Value node = helper.prop_list(acc_multisig);
-        nodes.append(node);
-    }
-
-    if (get_api_version() == 1 && nodes.isNull()) { // compatible for v1
-        jv_output["multisig"] = "";
+    if (get_api_version() <= 2) {
+        auto& acc_multisig = *(multisig_vec->begin());
+        jv_output = helper.prop_list(acc_multisig);
     }
     else {
+        // TODO support new functionality
+        Json::Value nodes;
+        for(auto& acc_multisig : *multisig_vec) {
+            Json::Value node = helper.prop_list(acc_multisig);
+            nodes.append(node);
+        }
+
         jv_output["multisig"] = nodes;
     }
 

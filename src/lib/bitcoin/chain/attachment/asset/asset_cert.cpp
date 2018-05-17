@@ -270,9 +270,9 @@ std::string asset_cert::get_type_name() const
 const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
 {
     static std::map<asset_cert_type, std::string> static_type_name_map = {
-        {asset_cert_ns::issue, "ISSUE"},
-        {asset_cert_ns::domain, "DOMAIN"},
-        {asset_cert_ns::naming, "NAMING"},
+        {asset_cert_ns::issue, "issue"},
+        {asset_cert_ns::domain, "domain"},
+        {asset_cert_ns::naming, "naming"},
     };
     return static_type_name_map;
 }

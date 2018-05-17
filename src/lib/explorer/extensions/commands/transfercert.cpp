@@ -37,7 +37,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     blockchain.uppercase_symbol(argument_.symbol);
-    blockchain.uppercase_symbol(argument_.cert);
+    boost::to_lower(argument_.cert);
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);
@@ -61,25 +61,25 @@ console_result transfercert::invoke (Json::Value& jv_output,
                 "asset '" + argument_.symbol + "' does not exist.");
     }
 
+    // check target address
+    auto to_did = argument_.to;
+    auto to_address = get_address_from_did(to_did, blockchain);
+    if (!blockchain.is_valid_address(to_address))
+        throw toaddress_invalid_exception{"invalid did parameter! " + to_did};
+
     // check cert is owned by the account
     std::shared_ptr<asset_cert> cert = blockchain.get_asset_cert(argument_.symbol, cert_type);
     if (!cert) {
         throw asset_cert_notfound_exception(
-            "cert '" + argument_.symbol + "' does not exist.");
+            cert_type_name + " cert '" + argument_.symbol + "' does not exist.");
     }
 
     auto from_did = cert->get_owner();
     auto from_address = cert->get_address();
     if (!blockchain.get_account_address(auth_.name, from_address)) {
         throw asset_cert_notowned_exception(
-            "cert '" + argument_.symbol + "' is not owned by " + auth_.name);
+            cert_type_name + " cert '" + argument_.symbol + "' is not owned by " + auth_.name);
     }
-
-    // check target address
-    auto to_did = argument_.to;
-    auto to_address = get_address_from_did(to_did, blockchain);
-    if (!blockchain.is_valid_address(to_address))
-        throw address_invalid_exception{"invalid did parameter! " + to_did};
 
     // receiver
     std::vector<receiver_record> receiver{

@@ -150,7 +150,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_balances::list> sh_asset_vec);
 
-void sync_fetch_asset_cert_balance(const std::string& address, bool sum_all,
+void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec);
 

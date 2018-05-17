@@ -48,7 +48,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         json_key = "assetcerts";
 
         auto sh_vec = std::make_shared<asset_cert::list>();
-        sync_fetch_asset_cert_balance(argument_.address, true, blockchain, sh_vec);
+        sync_fetch_asset_cert_balance(argument_.address, "", blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
             Json::Value asset_cert = json_helper.prop_list(elem);
