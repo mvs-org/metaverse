@@ -2,7 +2,20 @@
 import os
 import unittest
 import TestCase
-from Roles import Alice
+from Roles import *
+
+def clear_account():
+    if os.path.exists('./Zac.txt'):
+        with open('./Zac.txt') as f:
+            lastword = f.read()
+            Zac.mnemonic=[lastword.strip()]
+    for role in [Alice, Bob, Cindy, Dale, Eric, Frank, Zac]:
+        try:
+            # check if the role exists by get_balance
+            role.get_balance()
+            role.delete()
+        except:
+            pass
 
 def ensure_Alice_balance():
     Alice.create()
@@ -25,5 +38,6 @@ def run_testcase():
 
 
 if __name__ == '__main__':
+    clear_account()
     ensure_Alice_balance()
     run_testcase()
