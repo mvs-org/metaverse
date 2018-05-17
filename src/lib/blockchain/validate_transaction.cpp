@@ -597,6 +597,11 @@ code validate_transaction::check_asset_issue_transaction(
         }
     }
 
+    if (num_asset_cert_domain > 0 && num_asset_cert_naming > 0) {
+        log::debug(LOG_BLOCKCHAIN) << "issue asset: domain and naming can not appear together.";
+        return error::asset_issue_error;
+    }
+
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain + num_asset_cert_naming;
     if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
         log::debug(LOG_BLOCKCHAIN) << "issue asset: "
