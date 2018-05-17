@@ -9,6 +9,20 @@ class MVSTestCaseBase(unittest.TestCase):
         for role in self.roles:
             result, message = role.create()
             self.assertEqual(result, 0, message)
+
+        # issue did for role A~F, if not issued
+        for role in self.roles[:-1]:
+            ec, message = mvs_rpc.list_dids(role.name, role.password)
+            if ec == 0 and message['dids']:
+                pass
+            else:
+                if role != Alice:
+                    Alice.send_etp(role.mainaddress(), 10 ** 8)
+                    Alice.mining()
+                ec, message = role.issue_did()
+                self.assertEqual(ec, 0, message)
+                Alice.mining()
+
         if self.need_mine:
             #mine to clear the tx pool
             Alice.mining()

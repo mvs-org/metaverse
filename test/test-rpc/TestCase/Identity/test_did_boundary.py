@@ -32,19 +32,7 @@ class TestDID(MVSTestCaseBase):
         '''
         this test case will create did for all roles. If not created before.
         '''
-        for role in self.roles[:-1]:
-            ec, message = mvs_rpc.list_dids(role.name, role.password)
-            if ec == 0 and message['dids']:
-                pass
-            else:
-                if role != Alice:
-                    Alice.send_etp(role.mainaddress(), 10**8)
-                    Alice.mining()
-                ec, message = role.issue_did()
-                self.assertEqual(ec, 0, message)
-                Alice.mining()
-                ec, message = mvs_rpc.list_dids(role.name, role.password)
-            self.assertIn(role.did_symbol, [i["symbol"] for i in message['dids']], message)
+
         #address in use
         random_did_symbol = common.get_timestamp()+str(random.randint(1, 100))
         ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, Alice.mainaddress(), random_did_symbol)
