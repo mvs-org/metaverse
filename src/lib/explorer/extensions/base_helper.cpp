@@ -760,7 +760,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (record.asset_cert == asset_cert_ns::none) {
             throw asset_cert_exception("asset cert is none");
         }
-        auto cert_owner = asset_cert::get_owner_from_address(record.target, blockchain_);
+        auto cert_owner = blockchain_.get_did_from_address(record.target);
+        if (cert_owner.empty()) {
+            throw asset_cert_exception("no did is issued on " + record.target);
+        }
+
         auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.target, record.asset_cert);
         if (record.type == utxo_attach_type::asset_cert_issue) {
             cert_info.set_status(ASSET_CERT_ISSUE_TYPE);

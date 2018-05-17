@@ -73,7 +73,7 @@ public:
     std::string get_asset_address() const;
     std::string get_asset_cert_symbol() const;
     std::string get_asset_cert_owner() const;
-    std::string get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const;
+    std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;
     const data_chunk& get_attenuation_model_param() const;
     bool is_asset() const;

@@ -88,6 +88,13 @@ console_result createasset::invoke(Json::Value& jv_output,
     if (blockchain.is_asset_exist(option_.symbol, true))
         throw asset_symbol_existed_exception{"symbol is already used."};
 
+    // local database asset check
+    auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, option_.symbol);
+    if (sh_asset) {
+        throw asset_symbol_duplicate_exception{option_.symbol
+            + " already created, you can delete and recreate it."};
+    }
+
     auto acc = std::make_shared<asset_detail>();
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
