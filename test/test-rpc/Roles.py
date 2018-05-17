@@ -148,22 +148,33 @@ class Role:
         return message["transaction"]["hash"]
 
     def mining(self, times=1):
+        #self.mining_solo(times)
+        self.mining_pool(times)
+
+    def mining_solo(self, times=1):
         '''
         use the mainaddress to mining x times.
         do mining to get the main address rich.
+        '''
 
         result, (height_origin, _) = mvs_rpc.get_info()
         assert (result == 0)
         mvs_rpc.start_mining(self.name, self.password, self.mainaddress(), times)
-        for i in range(10):
+        for i in range(20 * times):
             time.sleep(0.1)
             result, (height_new, _) = mvs_rpc.get_info()
             assert (result == 0)
             if height_new == (height_origin + times):
                 break
+        mvs_rpc.stop_mining()
 
-        return
+    def mining_pool(self, times=1):
         '''
+        use the mainaddress to mining x times.
+        do mining to get the main address rich.
+
+        '''
+
         from ethereum.pow.ethpow import mine
         result, message = mvs_rpc.set_miningaccount(
             self.name,
