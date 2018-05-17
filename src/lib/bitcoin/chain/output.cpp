@@ -85,7 +85,7 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
         return false;
     // char check
     for (const auto& i : symbol) {
-        if (!(std::isalnum(i) || i=='.'|| i=='@'))
+        if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-'))
             return false;
     }
     // sensitive check
