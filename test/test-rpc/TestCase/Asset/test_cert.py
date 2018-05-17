@@ -54,7 +54,7 @@ class TestCert(MVSTestCaseBase):
         domain_symbol = u"ALICE" + common.get_timestamp()
         asset_symbol = domain_symbol + ".ASSET"
         Alice.create_asset_with_symbol(asset_symbol)
-        Alice.mining(10)
+        Alice.mining()
 
         exist_asset = asset_symbol
         exist_domain_cert = domain_symbol
@@ -85,7 +85,7 @@ class TestCert(MVSTestCaseBase):
         domain_symbol = u"ALICE" + common.get_timestamp()
         asset_symbol = domain_symbol + ".ASSET"
         Alice.create_asset_with_symbol(asset_symbol)
-        Alice.mining(100)
+        Alice.mining()
 
         exist_asset = asset_symbol
         exist_domain_cert = domain_symbol
@@ -151,7 +151,8 @@ class TestCert(MVSTestCaseBase):
 
         exist_naming_cert = cert_symbol
 
-        Bob.mining(1200)
+        Alice.send_etp(Bob.mainaddress(), 20 * 10 ** 8)
+        Alice.mining()
         '''
         '''
 
@@ -225,8 +226,6 @@ class TestCert(MVSTestCaseBase):
         ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, asset_symbol, volume=100, model=None, fee=0)
         self.assertEqual(ec, 5005, message)
 
-        # asset model -- TODO
-
     def test_5_secondaryissue_success(self):
         Alice.create_asset(secondary=-1)  # asset can be secondary issue freely
         Alice.mining()
@@ -234,4 +233,55 @@ class TestCert(MVSTestCaseBase):
         ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, Alice.asset_symbol, volume=100, model=None, fee=None)
         self.assertEqual(ec, 0, message)
 
+        Alice.mining()
+
+    def test_6_issue_with_attenuation_model(self):
+        domain_symbol = u"ALICE" + common.get_timestamp()
+
+        # attenuation_model type 1
+        asset_symbol = domain_symbol + ".ASSET.TYPE1"
+
+        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=False, secondary=-1)
+        Alice.mining()
+
+        # invalid model type
+        model_type = "invalid"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid LQ
+        model_type = "TYPE=1;LQ=0;LP=60001;UN=3"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid LP
+        model_type = "TYPE=1;LQ=9001;LP=0;UN=3"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid UN
+        model_type = "TYPE=1;LQ=9001;LP=60001;UN=0"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+        Alice.mining()
+
+        # invalid model type
+        model_type = "TYPE=3;LQ=9001;LP=60001;UN=3"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # success
+        model_type = "TYPE=1;LQ=9001;LP=60001;UN=3"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 0, message)
+
+        # attenuation_model type 2
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2001;UQ=3000,3000,3001"
+        asset_symbol = domain_symbol + ".ASSET.TYPE2"
+
+        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=False, secondary=-1)
+        Alice.mining()
+
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 0, message)
         Alice.mining()

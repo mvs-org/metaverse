@@ -150,7 +150,7 @@ class TestDID(MVSTestCaseBase):
         Alice.send_etp(Zac.mainaddress(), 10 ** 8)
         Alice.mining()
 
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), did_normal_symbal)   
+        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), did_normal_symbal)
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
@@ -159,20 +159,20 @@ class TestDID(MVSTestCaseBase):
         did_symbol = '@'.join(r.name for r in group) + common.get_timestamp()
         for i, role in enumerate(group):
             addr = role.new_multisigaddress("Alice & Cindy & Zac's Multisig-DID", group[:i] + group[i+1:], 3)
-        
-        Alice.send_etp(addr, (10 ** 9))      
+
+        Alice.send_etp(addr, (10 ** 9))
         Alice.mining()
 
-        ec, message = mvs_rpc.issue_did(group[0].name, group[0].password, addr, did_symbol)   
+        ec, message = mvs_rpc.issue_did(group[0].name, group[0].password, addr, did_symbol)
         self.assertEqual(ec, 0, message)
 
-        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message['raw'])
+        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
         self.assertEqual(ec, 0, message)
 
-        ec, message = mvs_rpc.sign_multisigtx(group[2].name, group[2].password, message['raw'], True)
+        ec, message = mvs_rpc.sign_multisigtx(group[2].name, group[2].password, message, True)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        
+
         # did not find
         ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.mainaddress(), common.get_timestamp())
         self.assertEqual(ec, 7006,  message)
@@ -197,7 +197,7 @@ class TestDID(MVSTestCaseBase):
         # no enough balance, unspent = 0, payment = 10000
         ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 3302,  message)
-        
+
         Alice.send_etp(Zac.addresslist[1], 10 ** 5)
         Alice.mining()
 
@@ -206,9 +206,9 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(ec, 0, message)
 
         #cannot transfer to another multi-signature
-        ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message['raw'], True)
+        ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message, True)
         self.assertEqual(ec, 5304, message)
-        
+
         group_new = [Bob, Dale, Zac]
         for i, role in enumerate(group_new):
             addr_new = role.new_multisigaddress(
@@ -223,10 +223,10 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 0, message)
 
-        ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message['raw'])
+        ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message)
         self.assertEqual(ec, 0, message)
 
-        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message['raw'], True)
+        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(ec, 0, message)
         self.assertNotEqual(self.get_didaddress(Zac.name, Zac.password,did_symbol), Zac.addresslist[1], "Failed where modify did address from multi_signature to multi_signature address")
 

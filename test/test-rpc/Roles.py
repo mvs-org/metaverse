@@ -68,6 +68,9 @@ class Role:
             result, message = mvs_rpc.issue_asset(self.name, self.password, symbol)
             assert (result == 0)
 
+    def issue_asset_with_symbol(self, symbol, attenuation_model=None):
+        return mvs_rpc.issue_asset(self.name, self.password, symbol, model=attenuation_model)
+
     def create_asset(self, is_issue=True, secondary=0):
         '''
         issue asset to the main address.
@@ -85,10 +88,6 @@ class Role:
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)
             assert (result == 0)
-
-    def issue_asset(self, from_):
-        result, message = mvs_rpc.issue_asset_from(self.name, self.password, self.asset_symbol, from_)
-        assert (result == 0)
 
     def issue_cert(self, to_):
         cert_symbol = (self.name + ".2%s." % to_.name + common.get_timestamp()).upper()

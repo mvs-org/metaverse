@@ -50,7 +50,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
 
                 ec, tx = mvs_rpc.issue_did(roles[0].name, roles[0].password, addr, did_symbol)
                 self.assertEqual(ec, 0, tx)
-                ec, tx = mvs_rpc.sign_multisigtx(roles[1].name, roles[1].password, tx['raw'], True)
+                ec, tx = mvs_rpc.sign_multisigtx(roles[1].name, roles[1].password, tx, True)
                 self.assertEqual(ec, 0, tx)
                 Alice.mining()
 

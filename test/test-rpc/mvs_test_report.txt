@@ -1,0 +1,187 @@
+==== Account ====
+test_0_new_account (Account.test_account.TestAccount) ... ok
+test_1_get_account (Account.test_account.TestAccount) ... ok
+test_2_delete_account (Account.test_account.TestAccount) ... ok
+test_3_import_account (Account.test_account.TestAccount) ... ok
+test_4_changepasswd (Account.test_account.TestAccount) ... ok
+test_dumpkeyfile (Account.test_keyfile.TestKeyfile) ... ok
+test_importKeyFile_by_Content (Account.test_keyfile.TestKeyfile) ... ok
+test_0_new_address (Account.test_address.TestAccount) ... ok
+test_1_list_addresses (Account.test_address.TestAccount) ... ok
+test_2_check_address (Account.test_address.TestAccount) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 2.806s
+
+OK
+==== Blockchain ====
+test_1_no_mining_account (Blockchain.test_work.TestWork) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.845s
+
+OK
+==== Block ====
+test_0_getblock (Block.test_block.TestBlock) ... ok
+test_1_getblockheader (Block.test_block.TestBlock) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.039s
+
+OK
+==== Identity ====
+ERROR
+ERROR
+test_0_didsend_more (Identity.test_did.TestDIDSendMore) ... FAIL
+test_0_boundary (Identity.test_did_boundary.TestDID) ... ERROR
+test_1_issue_did (Identity.test_did_boundary.TestDID) ... ok
+test_2_didsend_etp (Identity.test_did_boundary.TestDID) ... ok
+test_3_didsend_etp_from (Identity.test_did_boundary.TestDID) ... ok
+test_4_didsend_asset (Identity.test_did_boundary.TestDID) ... ok
+test_5_didsend_asset_from (Identity.test_did_boundary.TestDID) ... ok
+test_6_modify_did_boundary (Identity.test_did_boundary.TestDID) ... ok
+test_7_modify_did (Identity.test_did_boundary.TestDID)
+modify did between Zac's addresses ... ok
+test_8_list_didaddresses_boundary (Identity.test_did_boundary.TestDID) ... ok
+test_9_modify_did_multisig (Identity.test_did_boundary.TestDID) ... ok
+test_0_didsend_more (Identity.test_did_boundary.TestDIDSendMore) ... ok
+test_1_didsend_more (Identity.test_did_boundary.TestDIDSendMore) ... ok
+test_0_issuedid (Identity.test_did_multisig.TestDIDMultiSig) ... ok
+test_1_modifydid (Identity.test_did_multisig.TestDIDMultiSig) ... ok
+test_0_todo (Identity.test_did_multisig.TestWithExistDID) ... ok
+
+======================================================================
+ERROR: setUpClass (Identity.test_did.TestDIDSend)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Identity/test_did.py", line 13, in setUpClass
+    exist_symbols = [i["symbol"] for i in message['dids']]
+TypeError: 'NoneType' object is not iterable
+
+======================================================================
+ERROR: setUpClass (Identity.test_did.TestDIDSendAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Identity/test_did.py", line 70, in setUpClass
+    exist_symbols = [i["symbol"] for i in message['dids']]
+TypeError: 'NoneType' object is not iterable
+
+======================================================================
+ERROR: test_0_boundary (Identity.test_did_boundary.TestDID)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Identity/test_did_boundary.py", line 26, in test_0_boundary
+    exist_symbols = [i["symbol"] for i in message['dids']]
+TypeError: 'NoneType' object is not iterable
+
+======================================================================
+FAIL: test_0_didsend_more (Identity.test_did.TestDIDSendMore)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Identity/test_did.py", line 60, in test_0_didsend_more
+    self.assertEqual(ec, 0, message)
+AssertionError: did ERIC.DID does not exist in blockchain
+
+----------------------------------------------------------------------
+Ran 16 tests in 17.378s
+
+FAILED (failures=1, errors=3)
+==== ETP ====
+test_0_send (ETP.test_etp.TestSendETP) ... ok
+test_1_sendfrom (ETP.test_etp.TestSendETP) ... ok
+test_2_sendmore (ETP.test_etp.TestSendETP) ... ok
+test_0_send (ETP.test_etp_boundary.TestSendETP) ... ok
+test_1_sendfrom (ETP.test_etp_boundary.TestSendETP) ... ok
+test_2_sendmore (ETP.test_etp_boundary.TestSendETP) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 5.381s
+
+OK
+==== Asset ====
+test_0_check_asset_symbol (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_1_create_asset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_2_issue_asset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_3_list_assets (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_4_get_asset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_5_deletelocalasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_6_getaccountasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_7_getaddressasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_8_sendasset (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_9_sendassetfrom (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_A_burn (Asset.test_asset_boundary.TestAssetBoundary) ... ok
+test_0_issuecert (Asset.test_cert.TestCert) ... ok
+test_1_issuecert_success (Asset.test_cert.TestCert) ... ok
+test_2_transfercert (Asset.test_cert.TestCert) ... ok
+test_3_transfercert_success (Asset.test_cert.TestCert) ... ok
+test_4_secondaryissue (Asset.test_cert.TestCert) ... ok
+test_5_secondaryissue_success (Asset.test_cert.TestCert) ... ok
+test_6_issue_with_attenuation_model (Asset.test_cert.TestCert) ... FAIL
+test_1_create_asset (Asset.test_asset.TestAsset) ... ok
+test_2_issue_asset (Asset.test_asset.TestAsset) ... ok
+test_3_sendasset (Asset.test_asset.TestAsset) ... ok
+test_4_sendassetfrom (Asset.test_asset.TestAsset) ... FAIL
+test_5_burn_asset (Asset.test_asset.TestAsset) ... FAIL
+
+======================================================================
+FAIL: test_6_issue_with_attenuation_model (Asset.test_cert.TestCert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_cert.py", line 276, in test_6_issue_with_attenuation_model
+    self.assertEqual(ec, 0, message)
+AssertionError: check asset attenuation model param failed
+
+======================================================================
+FAIL: test_4_sendassetfrom (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 61, in test_4_sendassetfrom
+    origin_amount = self.get_asset_amount(Alice)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 43, in get_asset_amount
+    self.assertEqual(len(addressasset), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_5_burn_asset (Asset.test_asset.TestAsset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 75, in test_5_burn_asset
+    amount = self.get_asset_amount(Alice)
+  File "/home/kesalin/projects/metaverse_nova/test/test-rpc/TestCase/Asset/test_asset.py", line 43, in get_asset_amount
+    self.assertEqual(len(addressasset), 1)
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 23 tests in 23.710s
+
+FAILED (failures=3)
+==== MultiSignature ====
+test_0_multisig_2p3 (MultiSignature.test_multisig.TestMultiSig) ... ok
+test_1_multisig_3p3 (MultiSignature.test_multisig.TestMultiSig) ... ok
+test_0_getnew (MultiSignature.test_multisig_boundary.TestMultiSig)
+test getnew(_multisig ... ok
+test_1_list (MultiSignature.test_multisig_boundary.TestMultiSig)
+test list_multisig ... ok
+test_2_delete (MultiSignature.test_multisig_boundary.TestMultiSig)
+test delete multisig addr ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 4.726s
+
+OK
+==== RawTx ====
+test_0_creat (RawTx.test_rawtx.TestRawTx) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.770s
+
+OK
+==== Transaction ====
+test_0_gettx (Transaction.test_transaction.TestTransaction) ... ok
+test_1_listtxs (Transaction.test_transaction.TestTransaction) ... ok
+test_2_listtxs (Transaction.test_transaction.TestTransaction) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 2.890s
+
+OK
