@@ -59,8 +59,6 @@ class TestDIDMultiSig(MVSTestCaseBase):
         Alice.send_etp(addr_new, (10 ** 6))
         Alice.mining()
 
-        print "from multi_signature address to normal address"
-        print "current address:"+self.get_didaddress(group[0].name, group[0].password, did_symbol)
         
         normal_new = Zac.mainaddress()
         Alice.send_etp(normal_new , 123456789)
@@ -72,28 +70,32 @@ class TestDIDMultiSig(MVSTestCaseBase):
         ec, tx = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx['raw'], True)
         self.assertEqual(ec, 0, tx)
         Alice.mining()
-        print "after modify address:"+self.get_didaddress(Zac.name,Zac.password, did_symbol)
 
-        print "from normal address  address to normal address"      
+        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)        
+        self.assertEqual(did_address, normal_new, "Failed where modify did address from multi_signature to normal ")
+
         normal_new = Zac.addresslist[1]
         Alice.send_etp(normal_new , (10 ** 6) )
         Alice.mining()
         ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, normal_new, did_symbol)
         self.assertEqual(ec, 0, tx)
         Alice.mining()
-        print "after modify address:"+self.get_didaddress(Zac.name,Zac.password, did_symbol)
+        
+        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)        
+        self.assertEqual(did_address, normal_new, "Failed where modify did address from normal to normal")
 
-        print "from normal address to multi_signature address"
+
         ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr_new, did_symbol)
         self.assertEqual(ec, 0, tx)
 
         ec, tx = mvs_rpc.sign_multisigtx(group_new[0].name, group_new[0].password, tx['raw'], True)
         self.assertEqual(ec, 0, tx)
 
-        Alice.mining(10)
-        print "after modify address:"+self.get_didaddress(Zac.name,Zac.password, did_symbol)
+        Alice.mining(1)
 
-        print "from multi_signature address to multi_signature"
+        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)         
+        self.assertEqual(did_address, addr_new, "Failed where modify did address from normal to multi_signature address")
+
         ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr, did_symbol)
         self.assertEqual(ec, 70010, tx)
         
