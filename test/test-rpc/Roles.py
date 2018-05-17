@@ -243,7 +243,11 @@ class NewGuy(Role):
 
         result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
         assert (result == 0)
-        print("Account created:", self.name, self.password, self.lastword())
+
+        f = open('./Zac.txt', 'w')
+        print >> f, self.lastword()
+        f.close()
+
         result, _ = mvs_rpc.new_address(self.name, self.password, 9)
         assert (result == 0)
         result, self.addresslist = mvs_rpc.list_addresses(self.name, self.password)
