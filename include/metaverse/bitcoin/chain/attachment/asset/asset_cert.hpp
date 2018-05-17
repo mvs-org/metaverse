@@ -114,8 +114,6 @@ public:
     std::string get_type_name() const;
 
     // auxiliary functions
-    std::string get_owner_from_address(bc::blockchain::block_chain_impl& chain) const;
-    bool check_cert_owner(bc::blockchain::block_chain_impl& chain) const;
     std::string get_key() const;
 
     static const std::map<asset_cert_type, std::string>& get_type_name_map();
@@ -123,8 +121,6 @@ public:
     static bool test_certs(const std::vector<asset_cert_type>& total, const std::vector<asset_cert_type>& parts);
     static bool test_certs(const std::vector<asset_cert_type>& certs, asset_cert_type cert_type);
 
-    static std::string get_owner_from_address(const std::string& address,
-        bc::blockchain::block_chain_impl& chain);
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
     static std::string get_key(const std::string&symbol, asset_cert_type bit);

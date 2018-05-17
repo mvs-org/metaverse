@@ -43,18 +43,17 @@ console_result transfercert::invoke (Json::Value& jv_output,
     check_asset_symbol(argument_.symbol);
 
     // check asset cert types
-    std::map <std::string, asset_cert_type> cert_param_value_map = {
-        {"ISSUE", asset_cert_ns::issue},
-        {"DOMAIN", asset_cert_ns::domain},
-        {"NAMING", asset_cert_ns::naming}
+    auto& cert_type_name = argument_.cert;
+    auto match = [&cert_type_name](const std::pair<asset_cert_type, std::string> & item) {
+        return item.second == cert_type_name;
     };
-
-    auto iter = cert_param_value_map.find(argument_.cert);
-    if (iter == cert_param_value_map.end()) {
-        throw asset_cert_exception("unsupported asset cert type " + argument_.cert);
+    const auto& type_name_map = asset_cert::get_type_name_map();
+    auto iter = std::find_if(type_name_map.begin(), type_name_map.end(), match);
+    if (iter == type_name_map.end()) {
+        throw asset_cert_exception("unsupported asset cert type " + cert_type_name);
     }
 
-    auto cert_type = iter->second;
+    auto cert_type = iter->first;
     if (cert_type == asset_cert_ns::issue) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);
         if (!sh_asset)

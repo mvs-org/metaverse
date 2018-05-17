@@ -116,7 +116,7 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
         attachment_address = get_asset_address();
         is_asset = true;
     } else if (is_asset_cert()) {
-        attachment_address = get_asset_cert_address(chain);
+        attachment_address = get_asset_cert_address();
         is_asset = true;
     } else if (is_did_issue() || is_did_transfer()) {
         attachment_address = get_did_address();
@@ -402,7 +402,7 @@ std::string output::get_asset_cert_owner() const
     return std::string("");
 }
 
-std::string output::get_asset_cert_address(bc::blockchain::block_chain_impl& chain) const
+std::string output::get_asset_cert_address() const
 {
     if (is_asset_cert()) {
         auto cert_info = boost::get<asset_cert>(attach_data.get_attach());

@@ -310,33 +310,6 @@ bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std
     return true;
 }
 
-std::string asset_cert::get_owner_from_address(bc::blockchain::block_chain_impl& chain) const
-{
-    return get_owner_from_address(address_, chain);
-}
-
-std::string asset_cert::get_owner_from_address(const std::string& address,
-    bc::blockchain::block_chain_impl& chain)
-{
-    auto owner = chain.get_did_from_address(address);
-    if (owner.empty()) {
-        owner = address;
-    }
-    return owner;
-}
-
-bool asset_cert::check_cert_owner(bc::blockchain::block_chain_impl& chain) const
-{
-    if (owner_.empty()) {
-        return false;
-    }
-
-    if (chain.is_valid_address(owner_)) {
-        return true;
-    }
-
-    return chain.is_did_exist(owner_);
-}
 
 } // namspace chain
 } // namspace libbitcoin
