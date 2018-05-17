@@ -35,5 +35,5 @@ def run_testcase():
 
 if __name__ == '__main__':
     clear_account()
-    #ensure_Alice_balance()
-    #run_testcase()
+    ensure_Alice_balance()
+    run_testcase()
