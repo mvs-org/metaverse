@@ -257,9 +257,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issue.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuefrom.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listaddresses.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -583,9 +580,6 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issue.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuefrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listaddresses.cpp">
