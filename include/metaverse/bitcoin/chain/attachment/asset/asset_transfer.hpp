@@ -63,7 +63,7 @@ struct asset_balances {
                     return true;
                 }
                 else if (ret == 0) {
-                    return locked_asset <= other.locked_asset;
+                    return locked_asset < other.locked_asset;
                 }
             }
         }
