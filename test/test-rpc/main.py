@@ -3,6 +3,7 @@ import os
 import unittest
 import TestCase
 from Roles import *
+from HTMLTestRunner import HTMLTestRunner
 
 def clear_account():
     for role in [Alice, Bob, Cindy, Dale, Eric, Frank, Zac]:
@@ -22,15 +23,18 @@ def ensure_Alice_balance():
         Alice.delete()
 
 def run_testcase():
-    with open('mvs_test_report.txt', 'w') as f:
-        category_lst = ['Account', "Blockchain", "Block", "Identity", "ETP", "Asset", "MultiSignature", "RawTx", "Transaction"]
-        for i in category_lst:
-            test_dir = "./TestCase/" + i
-            print >> f, '====', i, '===='
-            discover = unittest.defaultTestLoader.discover(test_dir, pattern='test_*.py', top_level_dir="./TestCase/")
+    with open('mvs_test_report.html', 'w') as f:
+        # runner = unittest.TextTestRunner(stream=f, verbosity=2)
+        runner = HTMLTestRunner(stream=f,
+                                title='MVS API Test Report',
+                                description='',
+                                verbosity=2)
 
-            runner = unittest.TextTestRunner(stream=f, verbosity=2)
-            runner.run(discover)
+        #category_lst = ['Account', "Blockchain", "Block", "Identity", "ETP", "Asset", "MultiSignature", "RawTx", "Transaction"]
+        #for i in category_lst:
+        test_dir = "./TestCase/"
+        discover = unittest.defaultTestLoader.discover(test_dir, pattern='test_*.py', top_level_dir="./TestCase/")
+        runner.run(discover)
 
 
 if __name__ == '__main__':
