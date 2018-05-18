@@ -204,3 +204,34 @@ class TestSendETP(MVSTestCaseBase):
                 }
 
         })
+
+        # not enough balance
+        ec, message = mvs_rpc.deposit(Zac.name, Zac.password, 10 ** 8, address=address)
+        self.assertEqual(ec, 5302, message)
+
+        # deposit again , this time we deposit from, to address belong to the same account
+        Alice.send_etp(Zac.mainaddress(), 10 ** 8 + 10**4)
+        Alice.mining()
+
+        address = Zac.addresslist[2]
+        ec, message = mvs_rpc.deposit(Zac.name, Zac.password, 10 ** 8, address=address)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
+        self.assertEqual(ec, 0, message)
+
+        balance = filter(lambda x: x["balance"]["address"] == address, message["balances"])
+        self.assertEqual(len(balance), 1)
+        self.assertEqual(balance[0], {
+            "balance":
+                {
+                    "address": address,
+                    "available": 0,
+                    "confirmed": 100095890,
+                    "frozen": 100095890,
+                    "received": 100095890,
+                    "unspent": 100095890
+                }
+
+        })
+
