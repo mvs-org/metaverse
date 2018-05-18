@@ -76,7 +76,7 @@ bool asset_cert::operator< (const asset_cert& other) const
             return true;
         }
         else if (cert_type_ == other.cert_type_) {
-            return address_.compare(other.address_) <= 0;
+            return address_.compare(other.address_) < 0;
         }
     }
 

@@ -191,7 +191,7 @@ bool asset_detail::operator< (const asset_detail& other) const
                 return true;
             }
             else if (ret == 0) {
-                return address.compare(other.address) <= 0;
+                return address.compare(other.address) < 0;
             }
         }
     }

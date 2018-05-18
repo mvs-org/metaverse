@@ -139,7 +139,7 @@ bool did_detail::operator< (const did_detail& other) const
         return true;
     }
     else if (ret == 0) {
-        return address.compare(other.address) <= 0;
+        return address.compare(other.address) < 0;
     }
 
     return false;
