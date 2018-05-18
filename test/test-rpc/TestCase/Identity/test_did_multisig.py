@@ -70,7 +70,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         self.assertEqual(ec, 0, tx)
         Alice.mining()
 
-        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)
+        did_address = group[0].get_didaddress(did_symbol)
         self.assertEqual(did_address, normal_new, "Failed where modify did address from multi_signature to normal ")
 
         normal_new = Zac.addresslist[1]
@@ -80,7 +80,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         self.assertEqual(ec, 0, tx)
         Alice.mining()
 
-        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)
+        did_address = group[0].get_didaddress(did_symbol)
         self.assertEqual(did_address, normal_new, "Failed where modify did address from normal to normal")
 
         ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr_new, did_symbol)
@@ -88,17 +88,10 @@ class TestDIDMultiSig(MVSTestCaseBase):
 
         ec, tx = mvs_rpc.sign_multisigtx(group_new[0].name, group_new[0].password, tx, True)
         self.assertEqual(ec, 0, tx)
+        Alice.mining()
 
-        Alice.mining(1)
-
-        did_address = self.get_didaddress(group[0].name, group[0].password, did_symbol)
+        did_address = group[0].get_didaddress(did_symbol)
         self.assertEqual(did_address, addr_new, "Failed where modify did address from normal to multi_signature address")
-
-
-    def get_didaddress(self, account, password, symbol):
-        ec, message = mvs_rpc.list_didaddresses(account, password, symbol)
-        self.assertEqual(ec, 0, message)
-        return message['addresses'][0]['address']
 
 
 class TestWithExistDID(MultiSigDIDTestCase):

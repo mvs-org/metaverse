@@ -216,12 +216,7 @@ class TestDID(MVSTestCaseBase):
 
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(ec, 0, message)
-        self.assertNotEqual(self.get_didaddress(Zac.name, Zac.password,did_symbol), Zac.addresslist[1], "Failed where modify did address from multi_signature to multi_signature address")
-
-    def get_didaddress(self, account, password, symbol):
-        ec, message = mvs_rpc.list_didaddresses(account, password, symbol)
-        self.assertEqual(ec, 0, message)
-        return message['addresses'][0]['address']
+        self.assertNotEqual(Zac.get_didaddress(symbol=did_symbol), Zac.addresslist[1], "Failed where modify did address from multi_signature to multi_signature address")
 
 
 

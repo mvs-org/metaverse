@@ -101,7 +101,7 @@ class TestMultiSig(MVSTestCaseBase):
         result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), total_amount+1000, 3 ,Alice.asset_symbol)
         self.assertEqual(result, 5001 , message)
 
-        #
+        #invalid symbol
         result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , "test"+common.get_timestamp())
         self.assertEqual(result, 5001 , message)
 

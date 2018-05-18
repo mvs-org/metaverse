@@ -114,3 +114,52 @@ class TestDIDSendAsset(MVSTestCaseBase):
         self.assertEqual(pA, cA + 1)
         self.assertEqual(pB, cB - 1)
 
+class Testdidcommon(MVSTestCaseBase):
+    def test_1_issuedid(self):
+        special_symbol=['@','.','-','_']
+        optional = {}
+        for i in xrange(len(special_symbol)):
+            optional[Zac.addresslist[i]] = 10**8
+
+        mvs_rpc.sendmore(Alice.name, Alice.password, optional)
+        Alice.mining()            
+        
+        
+        for i ,symbol in  enumerate(special_symbol):
+            did_symbol = '%s%stest%d%s'%(Zac.did_symbol,symbol,i,common.get_timestamp())
+            ec, message = Zac.issue_did(Zac.addresslist[i], did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+            self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[i], 'Failed when issuedid with:'+symbol)
+    
+    def test_2_didmodifyaddress(self):
+        did_symbol = 'Zac@'+common.get_timestamp()
+        Alice.send_etp(Zac.mainaddress(), 10**8)
+        Alice.mining()
+
+        ec, message = Zac.issue_did(symbol=did_symbol)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when issuedid with:'+did_symbol)
+
+        Alice.send_etp(Zac.addresslist[1], 10**4)
+        Alice.mining()
+        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[1], 'Failed when issuedid with:'+did_symbol)
+
+        Alice.send_etp(Zac.mainaddress(), 10**4)
+        Alice.mining()
+        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.mainaddress(), did_symbol)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when issuedid with:'+did_symbol)
+
+
+    
+
+
+            
+
+
