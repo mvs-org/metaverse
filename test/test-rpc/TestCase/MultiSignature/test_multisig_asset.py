@@ -12,7 +12,7 @@ class TestMultiSigasset(MVSTestCaseBase):
         group = [Alice, Bob, Zac]
         address = common.create_multisig_address(group, 2)
         Alice.send_etp(address, 10**4)
-        Alice.mining()    
+        Alice.mining()
 
         # send amount asset to multi-signature address
         result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, Alice.asset_symbol, amount)
@@ -24,12 +24,12 @@ class TestMultiSigasset(MVSTestCaseBase):
         result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), amount_ret, 3 ,Alice.asset_symbol)
         self.assertEqual(result, 0 , message)
 
-        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message[, True)
+        ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(ec, 0, message)
 
         self.assertEqual(amount_total-amount+amount_ret, self.get_asset_amount(Alice), "Failed  when send asset from multi-signature address to Alice")
 
-    
+
 
     def get_asset_amount(self, role, addr=None):
         if addr == None:
