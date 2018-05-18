@@ -45,11 +45,16 @@ class Role:
         assert (ec == 0)
         return message['total-available'] # spendable
 
-    def issue_did(self):
+    def issue_did(self,address=None,symbol=None):
         '''
         issue did to the main address.
         '''
-        return mvs_rpc.issue_did(self.name, self.password, self.mainaddress(), self.did_symbol)
+        if address == None:
+            address = self.mainaddress()
+        if symbol == None:
+            symbol = self.did_symbol
+
+        return mvs_rpc.issue_did(self.name, self.password, address, symbol)
 
     def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0):
         '''
@@ -252,6 +257,11 @@ class Role:
 
     def get_multisigaddress(self, description):
         return self.multisig_addresses[description]
+
+    def get_didaddress(self, symbol):
+        ec, message = mvs_rpc.list_didaddresses(self.name, self.password, symbol)
+        assert(ec == 0)
+        return message['addresses'][0]['address']
 
 class NewGuy(Role):
     '''
