@@ -39,10 +39,6 @@ namespace {
         {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}}
     };
 
-    bool is_multi_value_key(const std::string& key) {
-        return key == "UC" || key == "UQ";
-    }
-
     bool is_positive_number(uint64_t num) {
         return num > 0;
     };
@@ -167,6 +163,18 @@ private:
         return true;
     }
 
+    bool parse_uint64(const std::string& param, uint64_t& value)
+    {
+        for (auto& i : param){
+            if (!std::isalnum(i)) {
+                return false;
+            }
+        }
+
+        value = std::stoull(param);
+        return true;
+    }
+
     bool parse_param() {
         if (model_param_.empty()) {
             return true;
@@ -220,17 +228,29 @@ private:
 
                 try {
                     std::vector<uint64_t> num_vec;
-                    if (is_multi_value_key(key)) {
+                    uint64_t num = 0;
+                    if (attenuation_model::is_multi_value_key(key)) {
                         auto str_vec = bc::split(values, ",", true);
                         for (const auto& item : str_vec) {
-                            auto num = std::stoull(item);
-                            num_vec.emplace_back(num);
+                            if (parse_uint64(item, num)) {
+                                num_vec.emplace_back(num);
+                            }
+                            else {
+                                log::info(LOG_HEADER) << "value is not a number: " << item;
+                                return false;
+                            }
                         }
                     }
                     else {
-                        auto num = std::stoull(values);
-                        num_vec.emplace_back(num);
+                        if (parse_uint64(values, num)) {
+                            num_vec.emplace_back(num);
+                        }
+                        else {
+                            log::info(LOG_HEADER) << "value is not a number: " << values;
+                            return false;
+                        }
                     }
+
                     map_[key] = std::move(num_vec);
                 }
                 catch (const std::exception& e) {
@@ -253,7 +273,7 @@ private:
 
     template<typename T = uint64_t>
     T getnumber(const std::string& key) const {
-        BITCOIN_ASSERT(!is_multi_value_key(key));
+        BITCOIN_ASSERT(!attenuation_model::is_multi_value_key(key));
         auto iter = map_.find(key);
         if (iter == map_.end()) {
             return 0;
@@ -262,7 +282,7 @@ private:
     }
 
     const std::vector<uint64_t>& get_numbers(const std::string& key) const {
-        BITCOIN_ASSERT(is_multi_value_key(key));
+        BITCOIN_ASSERT(attenuation_model::is_multi_value_key(key));
         auto iter = map_.find(key);
         if (iter == map_.end()) {
             return empty_num_vec;
@@ -341,6 +361,11 @@ const std::vector<uint64_t>& attenuation_model::get_unlock_cycles() const
 const std::vector<uint64_t>& attenuation_model::get_unlocked_quantities() const
 {
     return pimpl->get_unlocked_quantities();
+}
+
+bool attenuation_model::is_multi_value_key(const std::string& key)
+{
+    return key == "UC" || key == "UQ";
 }
 
 uint8_t attenuation_model::get_first_unused_index()

@@ -296,10 +296,33 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
 
     if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(tx_output.script.operations)) {
         auto model_param = tx_output.get_attenuation_model_param();
-        tree["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
+        tree["attenuation_model_param"] = prop_attenuation_model_param(model_param);
     }
 
     tree["attachment"] = prop_list(const_cast<bc::chain::attachment&>(tx_output.attach_data));
+    return tree;
+}
+
+Json::Value json_helper::prop_attenuation_model_param(const data_chunk& chunk)
+{
+    Json::Value tree;
+    std::string param_str(chunk.begin(), chunk.end());
+    const auto& kv_vec = bc::split(param_str, ";", true);
+    for (const auto& kv : kv_vec) {
+        auto vec = bc::split(kv, "=", true);
+        if (vec.size() == 2) {
+            auto& key = vec[0];
+            auto& value = vec[1];
+            if (attenuation_model::is_multi_value_key(key)) {
+                tree[key] = value;
+            }
+            else {
+                uint64_t num = std::stoull(value);
+                tree[key] = num;
+            }
+        }
+    }
+
     return tree;
 }
 
