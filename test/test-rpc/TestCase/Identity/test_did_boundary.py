@@ -11,6 +11,11 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.issue_did(Zac.name, Zac.password+'1', Zac.mainaddress(), Zac.did_symbol)
         self.assertEqual(ec, 1000, message)
 
+        #symbol is address
+        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.addresslist[1])
+        self.assertEqual(ec, 4010, message)
+
+
         #not enough fee
         ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8 -1)
         self.assertEqual(ec, 7005, message)
@@ -38,6 +43,13 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, Alice.mainaddress(), random_did_symbol)
         self.assertEqual(ec, 7002, message)
 
+        Alice.send_etp(Zac.mainaddress(), 10**8)
+        Alice.mining()
+        #symbol contain special symbol
+        special_symbol='''~`!#$%^&*()=+|\:;'"?/.>'''
+        for chr in special_symbol:
+            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), "%s%stest"%(Zac.did_symbol,chr))
+            self.assertEqual(ec, 5304, "did symol contains:"+chr)
 
     def test_2_didsend_etp(self):
         # account password match error

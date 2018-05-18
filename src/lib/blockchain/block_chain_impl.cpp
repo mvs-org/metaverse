@@ -1330,6 +1330,7 @@ static history::list expand_history(history_compact::list& compact)
         }
     }
 
+
     // sort by height and index of output, spend or both in order.
     std::sort(result.begin(), result.end(),
         [](const history& elem1, const history& elem2){
@@ -1339,7 +1340,7 @@ static history::list expand_history(history_compact::list& compact)
                 if (elem1.output_height < elem2.output_height) { // output time increasely
                     return true;
                 } else if (elem1.output_height == elem2.output_height) {
-                    return elem1.output.index <= elem2.output.index;
+                    return elem1.output.index < elem2.output.index;
                 }
             }
             return false;
