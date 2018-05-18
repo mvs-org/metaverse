@@ -308,19 +308,52 @@ Json::Value json_helper::prop_attenuation_model_param(const data_chunk& chunk)
     Json::Value tree;
     std::string param_str(chunk.begin(), chunk.end());
     const auto& kv_vec = bc::split(param_str, ";", true);
+    std::vector<uint64_t> uc_vec, uq_vec;
     for (const auto& kv : kv_vec) {
         auto vec = bc::split(kv, "=", true);
         if (vec.size() == 2) {
             auto& key = vec[0];
             auto& value = vec[1];
             if (attenuation_model::is_multi_value_key(key)) {
-                tree[key] = value;
+                try {
+                    if (key == "UC") {
+                        auto&& str_vec = bc::split(value, ",", true);
+                        for (auto& str : str_vec) {
+                            uc_vec.push_back(std::stoull(str));
+                        }
+                    }
+                    else if (key == "UQ") {
+                        auto&& str_vec = bc::split(value, ",", true);
+                        for (auto& str : str_vec) {
+                            uq_vec.push_back(std::stoull(str));
+                        }
+                    }
+                }
+                catch (const std::exception& e) {
+                    uc_vec.clear();
+                    uq_vec.clear();
+                    log::info("json_helper") << "invalid attenuation_model_param: " << param_str;
+                }
             }
             else {
                 uint64_t num = std::stoull(value);
-                tree[key] = num;
+                auto display_key = attenuation_model::get_name_of_key(key);
+                tree[display_key] = num;
             }
         }
+    }
+
+    if (uc_vec.size() > 0 && uc_vec.size() == uq_vec.size()) {
+        Json::Value nodes;
+
+        for (size_t i = 0; i < uc_vec.size(); ++i) {
+            Json::Value node;
+            node["number"] = uc_vec[i];
+            node["quantity"] = uq_vec[i];
+            nodes.append(node);
+        }
+
+        tree["locked"] = nodes;
     }
 
     return tree;

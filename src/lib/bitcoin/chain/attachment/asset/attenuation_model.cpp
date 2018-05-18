@@ -368,6 +368,22 @@ bool attenuation_model::is_multi_value_key(const std::string& key)
     return key == "UC" || key == "UQ";
 }
 
+std::string attenuation_model::get_name_of_key(const std::string& key)
+{
+    static std::map<std::string, std::string> key_name_map{
+        {"PN",      "current_period_nbr"},
+        {"LH",      "next_interval"},
+        {"TYPE",    "type"},
+        {"LQ",      "lock_quantity"},
+        {"LP",      "lock_period"},
+        {"UN",      "total_period_nbr"},
+    };
+
+    auto iter = key_name_map.find(key);
+    BITCOIN_ASSERT(iter != key_name_map.end());
+    return iter->second;
+}
+
 uint8_t attenuation_model::get_first_unused_index()
 {
     return to_index(model_type::unused1);

@@ -86,7 +86,7 @@ public:
     const std::vector<uint64_t>& get_unlocked_quantities() const;  // UQt size()==1 means fixed quantity
 
     static bool is_multi_value_key(const std::string& key);
-
+    static std::string get_name_of_key(const std::string& key);
 private:
     class impl;
     std::unique_ptr<impl> pimpl;
