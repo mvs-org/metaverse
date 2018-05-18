@@ -449,6 +449,13 @@ BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
  */
 BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
 
+/**
+ * Generate a property list for a attenuation_model_param.
+ * @param[in]  param            The parameter of attenuation model.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_attenuation_model_param(const data_chunk& param);
+
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;
 };

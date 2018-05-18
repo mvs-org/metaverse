@@ -146,6 +146,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"invalid limit or index parameter"};
     }
 
+    auto json_helper = config::json_helper(get_api_version());
+
     // sort by height
     std::vector<tx_block_info> result(sh_txs->begin() + start, sh_txs->begin() + start + tx_count);
 
@@ -239,11 +241,11 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
             if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(op.script.operations)) {
                 const auto& model_param = op.get_attenuation_model_param();
-                pt_output["attenuation_model_param"] = std::string(model_param.begin(), model_param.end());
+                pt_output["attenuation_model_param"] = json_helper.prop_attenuation_model_param(model_param);
             }
 
             auto attach_data = op.attach_data;
-            Json::Value tree = config::json_helper(get_api_version()).prop_list(attach_data);
+            Json::Value tree = json_helper.prop_list(attach_data);
 
             if (attach_data.get_type() == ASSET_TYPE) {
                 auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
