@@ -1,19 +1,23 @@
 from TestCase.MVSTestCase import *
 
 class TestAsset(MVSTestCaseBase):
+
     def test_1_create_asset(self):
-        Alice.create_asset(False)
+
+        domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False)
+        Alice.mining()
+
         #validate result
-        assets = Alice.get_accountasset()
+        assets = Alice.get_accountasset(asset_symbol)
         self.assertEqual(len(assets), 1)
-        self.assertEqual(assets[0].symbol, Alice.asset_symbol)
+        self.assertEqual(assets[0].symbol, asset_symbol)
         self.assertEqual(assets[0].address, "")
         self.assertEqual(assets[0].issuer, Alice.did_symbol)
         self.assertEqual(assets[0].status, 'unissued')
 
         #delete_localasset
-        Alice.delete_localasset()
-        assets = Alice.get_accountasset()
+        Alice.delete_localasset(asset_symbol)
+        assets = Alice.get_accountasset(asset_symbol)
         self.assertEqual(len(assets), 0)
 
     def test_2_issue_asset(self):
@@ -35,17 +39,24 @@ class TestAsset(MVSTestCaseBase):
         self.assertEqual(addressasset[0].issuer, Alice.did_symbol)
         self.assertEqual(addressasset[0].status, 'unspent')
 
+        origin_amount = self.get_asset_amount(Alice)
+        self.assertGreater(origin_amount, 0)
+
     def get_asset_amount(self, role):
         addressassets = role.get_addressasset(role.mainaddress())
 
         #we only consider Alice's Asset
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
-        self.assertEqual(len(addressasset), 1)
-        previous_quantity = addressasset[0].quantity
-        previous_decimal = addressasset[0].decimal_number
+        filterassets = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        self.assertEqual(len(filterassets), 1)
+
+        previous_quantity = filterassets[0].quantity
+        previous_decimal = filterassets[0].decimal_number
         return previous_quantity * (10 ** previous_decimal)
 
     def test_3_sendasset(self):
+        Alice.create_asset()
+        Alice.mining()
+
         origin_amount = self.get_asset_amount(Alice)
         send_amount = 100
         #pre-set condition
@@ -58,6 +69,9 @@ class TestAsset(MVSTestCaseBase):
         self.assertEqual(send_amount, self.get_asset_amount(Zac))
 
     def test_4_sendassetfrom(self):
+        Alice.create_asset()
+        Alice.mining()
+
         origin_amount = self.get_asset_amount(Alice)
         send_amount = 100
         # pre-set condition
@@ -70,6 +84,9 @@ class TestAsset(MVSTestCaseBase):
         self.assertEqual(send_amount, self.get_asset_amount(Zac))
 
     def test_5_burn_asset(self):
+        Alice.create_asset()
+        Alice.mining()
+
         #use the asset created in the previous test case
         #amout > previous_amount
         amount = self.get_asset_amount(Alice)
@@ -87,11 +104,3 @@ class TestAsset(MVSTestCaseBase):
         addressassets = Alice.get_addressasset(Alice.mainaddress())
         addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 0)
-
-
-
-
-
-
-
-

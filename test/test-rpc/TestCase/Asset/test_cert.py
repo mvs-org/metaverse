@@ -9,9 +9,7 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice create asset and cert
         '''
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
-        Alice.create_asset_with_symbol(asset_symbol)
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
         exist_asset = asset_symbol
@@ -69,18 +67,13 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice create asset and cert
         '''
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
-        Alice.create_asset_with_symbol(asset_symbol)
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
-
-        exist_asset = asset_symbol
-        exist_domain_cert = domain_symbol
 
         '''
         Alice issue cert to Bob.
         '''
-        cert_symbol = Alice.issue_naming_cert(Bob, exist_domain_cert)
+        cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
         Alice.mining()
 
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password, cert_symbol, True)
@@ -93,29 +86,23 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(len(message['assetcerts']), 1, message)
         self.assertEqual(expect, message['assetcerts'][0])
 
-        exist_naming_cert = cert_symbol
-
 
     def test_2_transfercert(self):
         '''
         Alice create asset and cert
         '''
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
-        Alice.create_asset_with_symbol(asset_symbol)
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
         exist_asset = asset_symbol
         exist_domain_cert = domain_symbol
 
-        cert_symbol = Alice.issue_naming_cert(Bob, exist_domain_cert)
+        naming_cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
         Alice.mining()
-
-        exist_naming_cert = cert_symbol
         '''
         '''
 
-        domain_cert_symbol = exist_domain_cert
+        domain_cert_symbol = domain_symbol
         not_issued_symbol = domain_cert_symbol+'.2ND'+common.get_timestamp()
 
         # account password match error
@@ -140,13 +127,13 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5019, message)
 
         # check cert symbol -- owned by some other
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, exist_naming_cert,
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, naming_cert_symbol,
                                             'naming',
                                             fee=None)
         self.assertEqual(ec, 5020, message)
 
         # check fee
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, exist_domain_cert,
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, domain_cert_symbol,
                                             'domain',
                                             fee=0)
         self.assertEqual(ec, 5005, message)
@@ -156,34 +143,27 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice create asset and cert
         '''
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
-        Alice.create_asset_with_symbol(asset_symbol)
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
-        exist_asset = asset_symbol
-        exist_domain_cert = domain_symbol
-
-        cert_symbol = Alice.issue_naming_cert(Bob, exist_domain_cert)
+        naming_cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
         Alice.mining()
-
-        exist_naming_cert = cert_symbol
 
         Alice.send_etp(Bob.mainaddress(), 20 * 10 ** 8)
         Alice.mining()
         '''
         '''
 
-        ec, message = mvs_rpc.transfer_cert(Bob.name, Bob.password, Cindy.did_symbol, cert_symbol, 'naming')
+        ec, message = mvs_rpc.transfer_cert(Bob.name, Bob.password, Cindy.did_symbol, naming_cert_symbol, 'naming')
         self.assertEqual(ec, 0, message)
 
         Alice.mining()
 
-        ec, message = mvs_rpc.get_accountasset(Cindy.name, Cindy.password, cert_symbol, True)
+        ec, message = mvs_rpc.get_accountasset(Cindy.name, Cindy.password, naming_cert_symbol, True)
         self.assertEqual(ec, 0, message)
 
         expect = {u'owner': Cindy.did_symbol,
-                  u'symbol': cert_symbol,
+                  u'symbol': naming_cert_symbol,
                   u'cert': u'naming',
                   u'address': Cindy.mainaddress()}
         self.assertEqual(len(message['assetcerts']), 1, message)
@@ -216,20 +196,18 @@ class TestCert(MVSTestCaseBase):
         Alice.mining()
 
         # issue the asset
-        Alice.create_asset(secondary=0) # not allowed to secondary_issue
+        # not allowed to secondary_issue
+        domain_symbol, asset_symbol = Alice.create_random_asset(secondary=0)
         Alice.mining()
 
         # asset not allowed to secondary_issue
-        ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, Alice.asset_symbol,
+        ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, asset_symbol,
                                               volume=100, model=None, fee=None)
         self.assertEqual(ec, 5015, message)
 
         # issue the asset
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
-
         # asset can be secondary issue freely
-        Alice.create_asset_with_symbol(symbol=asset_symbol, secondary=-1)
+        domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)
         Alice.mining()
 
         # asset belong to some other
@@ -246,21 +224,19 @@ class TestCert(MVSTestCaseBase):
 
 
     def test_5_secondaryissue_success(self):
-        Alice.create_asset(secondary=-1)  # asset can be secondary issue freely
+        domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)  # asset can be secondary issue freely
         Alice.mining()
 
-        ec, message = Alice.secondary_issue_asset_with_symbol(Alice.asset_symbol)
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol)
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
 
     def test_6_issue_with_attenuation_model(self):
-        domain_symbol = u"ALICE" + common.get_timestamp()
-
+        #
         # attenuation_model type 1
-        asset_symbol = domain_symbol + ".ASSET.TYPE1"
-
-        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=False, secondary=-1)
+        #
+        domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False, secondary=-1)
         Alice.mining()
 
         # invalid model type
@@ -293,10 +269,12 @@ class TestCert(MVSTestCaseBase):
         model_type = "TYPE=1;LQ=9001;LP=6001;UN=3"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 0, message)
+        Alice.mining()
 
+        #
         # attenuation_model type 2
-        asset_symbol = domain_symbol + ".ASSET.TYPE2"
-        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=False, secondary=-1)
+        #
+        domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False, secondary=-1)
         Alice.mining()
 
         # UC size dismatch UQ size
@@ -311,11 +289,8 @@ class TestCert(MVSTestCaseBase):
 
 
     def test_7_secondary_issue_with_attenuation_model(self):
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET.TYPE"
-
         # create asset
-        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=True, secondary=-1)
+        domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=True, secondary=-1)
         Alice.mining()
 
         #

@@ -72,11 +72,11 @@ class TestDIDSendAsset(MVSTestCaseBase):
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)
 
-    def get_asset_amount(self, role):
+    def get_asset_amount(self, role, asset_symbol):
         addressassets = role.get_addressasset(role.mainaddress())
 
         #we only consider Alice's Asset
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         if len(addressasset) == 1:
             previous_quantity = addressasset[0].quantity
             previous_decimal = addressasset[0].decimal_number
@@ -86,30 +86,33 @@ class TestDIDSendAsset(MVSTestCaseBase):
         self.assertEqual(0,1,addressasset)
 
     def test_2_didsend_asset(self):
-        Alice.create_asset()
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
+
         # send to did
-        pA = self.get_asset_amount(Alice)
-        pB = self.get_asset_amount(Bob)
-        tx_hash = Alice.didsend_asset(Bob.did_symbol, 1, Alice.asset_symbol)
+        pA = self.get_asset_amount(Alice, asset_symbol)
+        pB = self.get_asset_amount(Bob, asset_symbol)
+        tx_hash = Alice.didsend_asset(Bob.did_symbol, 1, asset_symbol)
         Alice.mining()
-        cA = self.get_asset_amount(Alice)
-        cB = self.get_asset_amount(Bob)
+        cA = self.get_asset_amount(Alice, asset_symbol)
+        cB = self.get_asset_amount(Bob, asset_symbol)
 
         self.assertEqual(pA, cA + 1)
         self.assertEqual(pB, cB - 1)
 
     def test_3_didsend_asset_from(self):
-        Alice.create_asset()
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
-        # send to did
-        pA = self.get_asset_amount(Alice)
-        pB = self.get_asset_amount(Bob)
 
-        tx_hash = Alice.didsend_asset_from(Alice.did_symbol, Bob.did_symbol, 1, Alice.asset_symbol)
+        # send to did
+        pA = self.get_asset_amount(Alice, asset_symbol)
+        pB = self.get_asset_amount(Bob, asset_symbol)
+
+        tx_hash = Alice.didsend_asset_from(Alice.did_symbol, Bob.did_symbol, 1, asset_symbol)
         Alice.mining()
-        cA = self.get_asset_amount(Alice)
-        cB = self.get_asset_amount(Bob)
+
+        cA = self.get_asset_amount(Alice, asset_symbol)
+        cB = self.get_asset_amount(Bob, asset_symbol)
 
         self.assertEqual(pA, cA + 1)
         self.assertEqual(pB, cB - 1)

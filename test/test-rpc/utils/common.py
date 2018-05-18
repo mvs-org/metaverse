@@ -1,4 +1,5 @@
-import os, time
+import os
+from datetime import datetime
 
 def remove_file(file_path):
     if os.path.exists(file_path):
@@ -13,7 +14,8 @@ def toString(h):
     return ''.join(['%02x' % ord(i) for i in h])
 
 def get_timestamp():
-    return time.strftime('%Y%m%dT%H%M%S', time.localtime(time.time()))
+    now = datetime.now()
+    return now.strftime("%Y%m%dT%H%M%ST%f")
 
 def create_multisig_address(roles, required_key_num):
     assert( required_key_num <= len(roles) )

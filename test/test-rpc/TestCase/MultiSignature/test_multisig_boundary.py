@@ -72,33 +72,34 @@ class TestMultiSig(MVSTestCaseBase):
         self.assertEqual(message["multisig"], None)
 
     def test_3_multi_sendasset(self):
-        Alice.create_asset()
+        domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
-        total_amount = self.get_asset_amount(Alice)
+
+        total_amount = self.get_asset_amount(Alice, asset_symbol)
 
         group = [Alice, Bob, Cindy,Dale, Zac]
         address = common.create_multisig_address(group, 3)
         Alice.send_etp(address, 10**5)
-        Alice.mining()    
+        Alice.mining()
 
         # send amount asset to multi-signature address
-        result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, Alice.asset_symbol, 2000)
+        result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, asset_symbol, 2000)
         self.assertEqual(result, 0 , message)
         Alice.mining()
-        
+
         #send from multisig-addr
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 1500, 2 ,Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 1500, 2 ,asset_symbol)
         self.assertEqual(result, 2003 , message)
-        
+
         #invalid parameter
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), -1, 3 ,Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), -1, 3 ,asset_symbol)
         self.assertEqual(result, 1021 , message)
 
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 200**10, 3 ,Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 200**10, 3 ,asset_symbol)
         self.assertEqual(result, 1021 , message)
 
-        #no enough amount            
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), total_amount+1000, 3 ,Alice.asset_symbol)
+        #no enough amount
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), total_amount+1000, 3 ,asset_symbol)
         self.assertEqual(result, 5001 , message)
 
         #invalid symbol
@@ -106,18 +107,18 @@ class TestMultiSig(MVSTestCaseBase):
         self.assertEqual(result, 5001 , message)
 
         #multisig of from address is not found
-        result, message = mvs_rpc.create_multisigtx(Frank.name, Frank.password, address, Alice.mainaddress(), total_amount+1000, 3 ,Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(Frank.name, Frank.password, address, Alice.mainaddress(), total_amount+1000, 3 ,asset_symbol)
         self.assertEqual(result, 5203 , message)
 
         #signature must be large than 3
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , asset_symbol)
         self.assertEqual(result, 0 , message)
 
         result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(result, 5304 , message)
 
         #success test case
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , asset_symbol)
         self.assertEqual(result, 0 , message)
 
         result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
@@ -126,16 +127,16 @@ class TestMultiSig(MVSTestCaseBase):
         result, message = mvs_rpc.sign_multisigtx(group[2].name, group[2].password, message, True)
         self.assertEqual(result, 0 , message)
         Alice.mining()
-        self.assertEqual(self.get_asset_amount(group[0], address), 2000-100,"Failed when send asset from multi-signature to normal")
+        self.assertEqual(self.get_asset_amount(group[0], asset_symbol, address), 2000-100,"Failed when send asset from multi-signature to normal")
 
 
-    def get_asset_amount(self, role, addr=None):
+    def get_asset_amount(self, role, asset_symbol, addr=None):
         if addr == None:
             addr = role.mainaddress()
         addressassets = role.get_addressasset(addr)
 
         #we only consider Alice's Asset
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 1)
         previous_quantity = addressasset[0].quantity
         previous_decimal = addressasset[0].decimal_number

@@ -56,21 +56,21 @@ class Role:
 
         return mvs_rpc.issue_did(self.name, self.password, address, symbol)
 
+    def create_random_asset(self, is_issue=True, secondary=0):
+        domain_symbol = u"ALICE" + common.get_timestamp()
+        asset_symbol = domain_symbol + ".ASSET"
+        self.create_asset_with_symbol(asset_symbol, is_issue, secondary)
+        return domain_symbol, asset_symbol
+
     def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0):
-        '''
-        issue asset to the main address.
-        secondary:   The rate of secondaryissue. Default to 0, means the
-                     asset is not allowed to secondary issue forever;
-                     otherwise, -1 means the asset can be secondary issue
-                     freely; otherwise, the valid rate is in range of 1
-                     to 100, means the asset can be secondary issue when
-                     own percentage greater than or equal to the rate
-                     value.
-        '''
         result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
+        if (result):
+            print("#ERROR#: failed to create asset: {}".format(message))
         assert (result == 0)
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, symbol)
+            if (result):
+                print("#ERROR#: failed to issue asset: {}".format(message))
             assert (result == 0)
 
     def issue_asset_with_symbol(self, symbol, attenuation_model=None):
@@ -113,8 +113,10 @@ class Role:
         assert (result == 0)
         return cert_symbol
 
-    def delete_localasset(self):
-        result, message = mvs_rpc.delete_localasset(self.name, self.password, self.asset_symbol)
+    def delete_localasset(self, asset_symbol=None):
+        if None == asset_symbol:
+            asset_symbol = self.asset_symbol
+        result, message = mvs_rpc.delete_localasset(self.name, self.password, asset_symbol)
         assert (result == 0)
 
     @classmethod
@@ -123,8 +125,10 @@ class Role:
         assert (result == 0)
         return [MOCs.Asset.init(i) for i in message["assets"]]
 
-    def get_accountasset(self):
-        result, message = mvs_rpc.get_accountasset(self.name, self.password, self.asset_symbol)
+    def get_accountasset(self, asset_symbol=None):
+        if None == asset_symbol:
+            asset_symbol = self.asset_symbol
+        result, message = mvs_rpc.get_accountasset(self.name, self.password, asset_symbol)
         assert (result == 0)
         if message["assets"]:
             return [MOCs.Asset.init(i) for i in message["assets"] if i]
@@ -152,8 +156,10 @@ class Role:
         result, message = mvs_rpc.send_asset_from(self.name, self.password, from_, to_, asset_symbol, amount)
         assert (result == 0)
 
-    def burn_asset(self, amount):
-        result, message = mvs_rpc.burn(self.name, self.password, self.asset_symbol, amount)
+    def burn_asset(self, amount, asset_symbol=None):
+        if not asset_symbol:
+            asset_symbol = self.asset_symbol
+        result, message = mvs_rpc.burn(self.name, self.password, asset_symbol, amount)
         assert (result == 0)
 
     def send_etp(self, to_, amount):
