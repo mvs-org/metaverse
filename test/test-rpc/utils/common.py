@@ -23,3 +23,11 @@ def create_multisig_address(roles, required_key_num):
     for i, role in enumerate(roles):
         addr = role.new_multisigaddress(desc, roles[:i] + roles[i+1:], required_key_num)
     return addr
+
+def gen_invalid_address(address):
+    '''
+    generate an invalid Base58 addr, according to the input address
+    '''
+    if address[-1] == '1':
+        return address[:-1] + '0'
+    return address[:-1] + '1'

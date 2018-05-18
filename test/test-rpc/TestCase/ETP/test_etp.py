@@ -154,3 +154,53 @@ class TestSendETP(MVSTestCaseBase):
             self.assertEqual(tx.outputs[ max_output ].value, sum_payment - (total_out + specific_fee))
             self.assertEqual(tx.outputs[ max_output ].address, Alice.addresslist[1])
             self.assertEqual(tx.outputs[ max_output ].attachment.type, 'etp')
+
+
+    def test_3_deposit(self):
+        # account not found or incorrect password
+        ec, message = mvs_rpc.deposit(Alice.name, Alice.password+'1', 10**8)
+        self.assertEqual(ec, 1000, message)
+
+        # amazing! the amount 0 is valid for deposit
+        ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 0)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        # invalid address!
+        invalid_address = common.gen_invalid_address( Alice.addresslist[1] )
+        ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10**8, address=invalid_address)
+        self.assertEqual(ec, 4010, message)
+
+        # invalid deposit
+        deposits = [7, 30, 90, 182, 365]
+        for deposit in deposits:
+            for i in [-1, 1]:
+                ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, deposit=deposit+i)
+                self.assertEqual(ec, 3301, message)
+
+        # invalid fee
+        for fee in [10**4 -1, 0, 100 * (10**8)+1]:
+            ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, fee=fee)
+            self.assertEqual(ec, 5005, message)
+
+        address = Zac.addresslist[1]
+        ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, address=address)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
+        self.assertEqual(ec, 0, message)
+
+        balance =filter(lambda x: x["balance"]["address"] == address, message["balances"])
+        self.assertEqual(len(balance), 1)
+        self.assertEqual(balance[0], {
+            "balance":
+                {
+                    "address": address,
+                    "available": 0,
+                    "confirmed": 100095890,
+                    "frozen": 100095890,
+                    "received": 100095890,
+                    "unspent": 100095890
+                }
+
+        })
