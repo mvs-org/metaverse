@@ -65,6 +65,7 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
+
     if (symbol.empty()) {
         throw did_symbol_length_exception{"Did symbol can not be empty."};
     }
@@ -72,6 +73,10 @@ void check_did_symbol(const std::string& symbol, bool check_sensitive)
     if (symbol.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
         throw did_symbol_length_exception{"Did symbol length must be less than "
             + std::to_string(DID_DETAIL_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    if (!chain::output::is_valid_did_symbol(symbol, 0)){
+            throw did_symbol_name_exception{"Did symbol " + symbol + " is forbidden."};
     }
 
     if (check_sensitive) {
