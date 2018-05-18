@@ -14,6 +14,7 @@ class TestMultiSigasset(MVSTestCaseBase):
         Alice.send_etp(address, 10**4)
         Alice.mining()
 
+        pre_asset = self.get_asset_amount(Alice)
         # send amount asset to multi-signature address
         result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, Alice.asset_symbol, amount)
         self.assertEqual(result, 0 , message)
@@ -26,6 +27,7 @@ class TestMultiSigasset(MVSTestCaseBase):
 
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(ec, 0, message)
+        Alice.mining()
 
         self.assertEqual(amount_total-amount+amount_ret, self.get_asset_amount(Alice), "Failed  when send asset from multi-signature address to Alice")
 
