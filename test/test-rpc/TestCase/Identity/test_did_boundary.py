@@ -46,10 +46,10 @@ class TestDID(MVSTestCaseBase):
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
         #symbol contain special symbol
-        special_symbol='''~`!#$%^&*()=+|\:;'"?/.>'''
+        special_symbol='''~`!#$%^&*()=+|\:;'"?/>'''
         for chr in special_symbol:
             ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), "%s%stest"%(Zac.did_symbol,chr))
-            self.assertEqual(ec, 5304, "did symol contains:"+chr)
+            self.assertEqual(ec, 7001, "did symol contains:"+chr)
 
     def test_2_didsend_etp(self):
         # account password match error
