@@ -159,7 +159,7 @@ def delete_multisig(account, password, addr):
     return "deletemultisig", [account, password, addr], {}, None
 
 @mvs_api
-def create_multisigtx(account, password, from_, to_, amount):
+def create_multisigtx(account, password, from_, to_, amount, type=None, symbol=None, fee =None):
     '''
     ACCOUNTNAME          Account name required.
     ACCOUNTAUTH          Account password(authorization) required.
@@ -167,7 +167,13 @@ def create_multisigtx(account, password, from_, to_, amount):
     TOADDRESS            Send to this address
     AMOUNT               ETP integer bits.
     '''
-    return "createmultisigtx", [account, password, from_, to_, amount], {}, None
+    optionals = {
+        '--symbol': symbol,
+        '--type': type,
+        '--fee': fee,
+    }
+
+    return "createmultisigtx", [account, password, from_, to_, amount], optionals, None
 
 @mvs_api
 def sign_multisigtx(account, password, tx, broadcast=False):
