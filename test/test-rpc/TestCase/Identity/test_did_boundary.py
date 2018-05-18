@@ -189,7 +189,7 @@ class TestDID(MVSTestCaseBase):
         Alice.send_etp(Zac.addresslist[1], 10 ** 5)
         Alice.mining()
 
-        #signure must be large than 3
+        #signature must be large than 3
         ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 0, message)
 
