@@ -194,7 +194,7 @@ def get_balance(account, password):
     return 'getbalance', [account, password], {}, None
 
 @mvs_api
-def list_balances(account, password, range_):
+def list_balances(account, password, range_=[None, None]):
     '''
     :param range_: (from, to)
     '''
@@ -348,6 +348,14 @@ def eth_get_work():
 @mvs_api
 def get_info():
     return "getinfo", [], {}, lambda result: (int(result['height']), int(result['difficulty']))
+
+@mvs_api
+def deposit(account, password, amount, address=None, deposit=None, fee=None):
+    return "deposit", [account, password, amount], {
+        '-a':address,
+        '-d':deposit,
+        '-f':fee
+    }, None
 
 @mvs_api
 def send(account, password, to_, amount, fee=None, desc=None, remark=None):
