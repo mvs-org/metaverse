@@ -62,7 +62,7 @@ class Role:
                      own percentage greater than or equal to the rate
                      value.
         '''
-        result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 3000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
+        result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
         assert (result == 0)
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, symbol)
@@ -70,6 +70,9 @@ class Role:
 
     def issue_asset_with_symbol(self, symbol, attenuation_model=None):
         return mvs_rpc.issue_asset(self.name, self.password, symbol, model=attenuation_model)
+
+    def secondary_issue_asset_with_symbol(self, symbol, attenuation_model=None):
+        return mvs_rpc.secondary_issue(self.name, self.password, self.did_symbol, symbol, volume=300000, model=attenuation_model, fee=None)
 
     def create_asset(self, is_issue=True, secondary=0):
         '''
@@ -83,7 +86,7 @@ class Role:
                      value.
         '''
         self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
-        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 3000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
+        result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
         assert (result == 0)
         if is_issue:
             result, message = mvs_rpc.issue_asset(self.name, self.password, self.asset_symbol)

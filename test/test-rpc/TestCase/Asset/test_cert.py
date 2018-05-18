@@ -4,12 +4,25 @@ from TestCase.MVSTestCase import *
 class TestCert(MVSTestCaseBase):
     need_mine = False
 
-
     def test_0_issuecert(self):
+
+        '''
+        Alice create asset and cert
+        '''
+        domain_symbol = u"ALICE" + common.get_timestamp()
+        asset_symbol = domain_symbol + ".ASSET"
+        Alice.create_asset_with_symbol(asset_symbol)
+        Alice.mining()
+
+        exist_asset = asset_symbol
+        exist_domain_cert = domain_symbol
+
+        test_cert_symbol = domain_symbol + ".CERT.TO.BOB"
         invalid_naming_cert = common.get_timestamp()
 
+
         #account password error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password + '1', Bob.did_symbol, "ALICE.TO_BOB", 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password + '1', Bob.did_symbol, test_cert_symbol, 'naming')
         self.assertEqual(ec, 1000, message)
         Alice.mining()
 
@@ -21,7 +34,7 @@ class TestCert(MVSTestCaseBase):
         # 2 -- invalid char
         spec_char_lst = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<>/?"
         for char in spec_char_lst:
-            ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, "ALICE.TO.BOB" + char, 'naming')
+            ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol + char, 'naming')
             self.assertEqual(ec, 1000, message)
             self.assertEqual(message, "symbol must be alpha or number or dot", message)
 
@@ -31,20 +44,25 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5012, message)
 
         # did not exist
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Zac.did_symbol, "ALICE.2BOB", 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Zac.did_symbol, test_cert_symbol, 'naming')
         self.assertEqual(ec, 7006, message)
 
         # cert type error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, "ALICE.2BOB", "naming1")
-        self.assertEqual(ec, 5017, message)
-
-        # cert already exist error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, "ALICE.2BOB", "naming1")
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming1")
         self.assertEqual(ec, 5017, message)
 
         # no domain cert owned
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, "ALICE.2BOB2", 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, invalid_naming_cert + ".2BOB2", 'naming')
         self.assertEqual(ec, 5019, message)
+
+        # issue cert success
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming")
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        # cert already exist error
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming")
+        self.assertEqual(ec, 5018, message)
 
 
     def test_1_issuecert_success(self):
@@ -226,14 +244,15 @@ class TestCert(MVSTestCaseBase):
         ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, asset_symbol, volume=100, model=None, fee=0)
         self.assertEqual(ec, 5005, message)
 
+
     def test_5_secondaryissue_success(self):
         Alice.create_asset(secondary=-1)  # asset can be secondary issue freely
         Alice.mining()
 
-        ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, Alice.asset_symbol, volume=100, model=None, fee=None)
+        ec, message = Alice.secondary_issue_asset_with_symbol(Alice.asset_symbol)
         self.assertEqual(ec, 0, message)
-
         Alice.mining()
+
 
     def test_6_issue_with_attenuation_model(self):
         domain_symbol = u"ALICE" + common.get_timestamp()
@@ -250,7 +269,7 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5016, message)
 
         # invalid LQ
-        model_type = "TYPE=1;LQ=0;LP=60001;UN=3"
+        model_type = "TYPE=1;LQ=0;LP=6001;UN=3"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 5016, message)
 
@@ -260,28 +279,91 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5016, message)
 
         # invalid UN
-        model_type = "TYPE=1;LQ=9001;LP=60001;UN=0"
+        model_type = "TYPE=1;LQ=9001;LP=6001;UN=0"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 5016, message)
         Alice.mining()
 
         # invalid model type
-        model_type = "TYPE=3;LQ=9001;LP=60001;UN=3"
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 5016, message)
 
         # success
-        model_type = "TYPE=1;LQ=9001;LP=60001;UN=3"
+        model_type = "TYPE=1;LQ=9001;LP=6001;UN=3"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 0, message)
 
         # attenuation_model type 2
-        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2001;UQ=3000,3000,3001"
         asset_symbol = domain_symbol + ".ASSET.TYPE2"
-
         Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=False, secondary=-1)
         Alice.mining()
 
+        # UC size dismatch UQ size
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000;UQ=3000,3000,3001"
         ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2001;UQ=3000,3000,3001"
+        ec, message = Alice.issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+
+    def test_7_secondary_issue_with_attenuation_model(self):
+        domain_symbol = u"ALICE" + common.get_timestamp()
+        asset_symbol = domain_symbol + ".ASSET.TYPE"
+
+        # create asset
+        Alice.create_asset_with_symbol(symbol=asset_symbol, is_issue=True, secondary=-1)
+        Alice.mining()
+
+        #
+        # attenuation_model type 1
+        #
+
+        # invalid model type
+        model_type = "invalid"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid LQ
+        model_type = "TYPE=1;LQ=0;LP=6001;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid LP
+        model_type = "TYPE=1;LQ=9001;LP=0;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid UN
+        model_type = "TYPE=1;LQ=9001;LP=6001;UN=0"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+        Alice.mining()
+
+        # invalid model type
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # success
+        model_type = "TYPE=1;LQ=9001;LP=6001;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #
+        # attenuation_model type 2
+        #
+
+        # UC size dismatch UQ size
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000;UQ=3000,3000,3001"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2001;UQ=3000,3000,3001"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 0, message)
         Alice.mining()

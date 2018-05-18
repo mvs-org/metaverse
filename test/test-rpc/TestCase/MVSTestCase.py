@@ -10,6 +10,9 @@ class MVSTestCaseBase(unittest.TestCase):
             result, message = role.create()
             self.assertEqual(result, 0, message)
 
+        while Alice.get_balance() < 1000 * (10**8):
+            Alice.mining(100)
+
         # issue did for role A~F, if not issued
         for role in self.roles[:-1]:
             ec, message = mvs_rpc.list_dids(role.name, role.password)
