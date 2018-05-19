@@ -39,9 +39,10 @@ namespace chain {
 
 enum transaction_version {
     first = 1,   //the frist version
-    check_output_script,   //add check output script
-    check_nova_feature,
-    max_version
+    check_output_script = 2,   //add check output script
+    check_nova_testnet = 3,
+    check_nova_feature = 4,
+    max_version = 5
 };
 
 class BC_API transaction

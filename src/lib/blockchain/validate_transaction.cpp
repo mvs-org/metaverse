@@ -446,7 +446,8 @@ code validate_transaction::check_secondaryissue_transaction(
         return error::asset_secondaryissue_error;
     }
 
-    if (!asset_cert::test_certs(certs_out, asset_cert_ns::issue)) {
+    if (tx.version >= transaction_version::check_nova_feature
+        && !asset_cert::test_certs(certs_out, asset_cert_ns::issue)) {
         log::debug(LOG_BLOCKCHAIN) << "secondaryissue: no issue asset cert, " << asset_symbol;
         return error::asset_cert_error;
     }
@@ -970,6 +971,11 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
 code validate_transaction::check_transaction_basic(const transaction& tx, blockchain::block_chain_impl& chain)
 {
     if (tx.version >= transaction_version::max_version) {
+        return error::transaction_version_error;
+    }
+
+    if (tx.version == transaction_version::check_nova_testnet
+        && !chain.chain_settings().use_testnet_rules) {
         return error::transaction_version_error;
     }
 
