@@ -25,13 +25,20 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(ec, 3302, message)
 
         #did symbol duplicated
-        ec, message = mvs_rpc.list_dids()
-        if ec != 0:
-            return
-        exist_symbols = [i["symbol"] for i in message['dids']]
-        for symbol in exist_symbols:
-            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), symbol, 10 ** 8)
+        did_exist=[Alice, Bob, Cindy]
+        for role in did_exist:
+            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), role.did_symbol, 10 ** 8)
             self.assertEqual(ec, 7002, message)
+        
+        Alice.send_etp(Zac.mainaddress(), 10**8)
+        Alice.mining()
+
+        blackHoles = ['BlackHole','BLACKHOLE','blackhole','blackHole','Blackhole']
+        for bh in blackHoles:
+            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), bh, 10 ** 8)
+            self.assertEqual(ec, 7001, message)
+        
+
 
     def test_1_issue_did(self):
         '''
