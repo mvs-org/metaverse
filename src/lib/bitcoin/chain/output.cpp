@@ -88,6 +88,7 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
         if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-'))
             return false;
     }
+    
     // sensitive check
     if (bc::wallet::symbol::is_sensitive(symbol)) {
         return false;

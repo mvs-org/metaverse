@@ -303,7 +303,7 @@ void validate_transaction::check_fees()
     auto is_did_type = (business_kind_in_ == business_kind::did_issue)
                        || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
-        if (!check_did_symbol(*tx_)) {
+        if (!check_did_symbol_match(*tx_)) {
             handle_validate_(error::did_symbol_not_match, tx_, {});
             return;
         }
@@ -1341,7 +1341,7 @@ bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
     return true;
 }
 
-bool validate_transaction::check_did_symbol(const transaction& tx)
+bool validate_transaction::check_did_symbol_match(const transaction& tx)
 {
     // check did symbol in out
     std::string old_symbol = "";

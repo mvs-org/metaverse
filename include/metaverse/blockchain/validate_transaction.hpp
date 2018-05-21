@@ -95,7 +95,8 @@ public:
     bool check_asset_certs(const transaction& tx);
 
     static bool is_did_validate(blockchain::block_chain_impl& chain);
-    bool check_did_symbol(const transaction& tx);
+    //check input did match output did
+    bool check_did_symbol_match(const transaction& tx);
 
 private:
     code basic_checks(blockchain::block_chain_impl& chain) const;

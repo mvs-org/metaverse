@@ -39,7 +39,7 @@ console_result issuedid::invoke(Json::Value &jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check did symbol
-    check_did_symbol(argument_.symbol, true);
+    check_did_symbol(argument_.symbol,blockchain, true);
 
     if (blockchain.is_valid_address(argument_.symbol))
         throw address_invalid_exception{"symbol cannot be an address!"};
