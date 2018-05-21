@@ -713,6 +713,7 @@ void base_transfer_common::populate_tx_outputs()
 
         // generate asset info
         auto&& output_att = populate_output_attachment(iter);
+        set_did_verify_attachment(iter, output_att);
 
         if (!output_att.is_valid()) {
             throw tx_validate_exception{"validate transaction failure, invalid output attachment."};
@@ -759,13 +760,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
         attachment attach(ETP_TYPE, attach_version, chain::etp(record.amount));
-        set_did_verify_attachment(record, attach);
         return attach;
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
         attachment attach(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
-        set_did_verify_attachment(record, attach);
         return attach;
     }
     else if (record.type == utxo_attach_type::asset_transfer
@@ -813,7 +812,6 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
 
         auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
         attach.set_to_did(cert_owner);
-        set_did_verify_attachment(record, attach);
         return attach;
     }
 
