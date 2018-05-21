@@ -1,4 +1,6 @@
 import os
+import pwd
+
 from datetime import datetime
 
 def remove_file(file_path):
@@ -31,3 +33,6 @@ def gen_invalid_address(address):
     if address[-1] == '1':
         return address[:-1] + '0'
     return address[:-1] + '1'
+
+def get_username():
+    return pwd.getpwuid(os.getuid())[0]

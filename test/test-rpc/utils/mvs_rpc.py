@@ -565,3 +565,7 @@ def send_rawtx(transaction, fee=None):
     TRANSACTION          The input Base16 transaction to broadcast.
     '''
     return "sendrawtx", [transaction], {'-f':fee}, None
+
+@mvs_api
+def shutdown():
+    return "shutdown", [], {}, None
