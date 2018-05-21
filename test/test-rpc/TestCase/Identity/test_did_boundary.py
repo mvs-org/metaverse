@@ -285,5 +285,23 @@ class TestDIDSendMore(MVSTestCaseBase):
         ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol)
         self.assertEqual(ec, 7006, message)
 
+    def test_3_didsend_more(self):
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Cindy.did_symbol: 200000,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        min_fee = 10**4-1
+        max_fee = 10*10+1
+
+        #Invalid fee
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol,min_fee)
+        self.assertEqual(ec, 5005, message)   
+
+
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol,max_fee)
+        self.assertEqual(ec, 5005, message)   
+
 
         
