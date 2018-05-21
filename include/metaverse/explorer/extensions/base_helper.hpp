@@ -161,7 +161,7 @@ std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain);
 
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
-void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
+void check_did_symbol(const std::string& symbol,  bool check_blackhole=false);
 
 class BCX_API base_transfer_common
 {

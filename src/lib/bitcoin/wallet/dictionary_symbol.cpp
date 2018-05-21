@@ -90,8 +90,7 @@ namespace symbol {
         "ASK",
         "BID",
         "DID",
-        "ZEN.",
-        "BLACKHOLE"
+        "ZEN."
     };
 
     bool is_sensitive(const std::string& symbol) {
