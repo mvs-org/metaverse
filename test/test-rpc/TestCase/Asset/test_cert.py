@@ -1,3 +1,4 @@
+import time
 from utils import common
 from TestCase.MVSTestCase import *
 
@@ -143,6 +144,7 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice create asset and cert
         '''
+        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
@@ -207,6 +209,7 @@ class TestCert(MVSTestCaseBase):
 
         # issue the asset
         # asset can be secondary issue freely
+        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)
         Alice.mining()
 
@@ -224,6 +227,7 @@ class TestCert(MVSTestCaseBase):
 
 
     def test_5_secondaryissue_success(self):
+        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)  # asset can be secondary issue freely
         Alice.mining()
 
@@ -236,6 +240,7 @@ class TestCert(MVSTestCaseBase):
         #
         # attenuation_model type 1
         #
+        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False, secondary=-1)
         Alice.mining()
 
@@ -290,6 +295,7 @@ class TestCert(MVSTestCaseBase):
 
     def test_7_secondary_issue_with_attenuation_model(self):
         # create asset
+        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=True, secondary=-1)
         Alice.mining()
 

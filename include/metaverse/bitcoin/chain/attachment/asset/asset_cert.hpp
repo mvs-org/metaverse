@@ -32,6 +32,7 @@
 
 #define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_normal)
 #define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
+#define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
 
 // forward declaration
 namespace libbitcoin {
@@ -70,6 +71,7 @@ public:
     {
         asset_cert_normal,
         asset_cert_issue,
+        asset_cert_transfer,
     };
 
     asset_cert();

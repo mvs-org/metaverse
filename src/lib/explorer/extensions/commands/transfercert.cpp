@@ -84,7 +84,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert, attachment(from_did, to_did)}
+            cert_type, utxo_attach_type::asset_cert_transfer, attachment(from_did, to_did)}
     };
 
     auto helper = transferring_asset_cert(*this, blockchain,

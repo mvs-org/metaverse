@@ -66,7 +66,7 @@ class TestRawTx(MVSTestCaseBase):
         ec, message = mvs_rpc.create_rawtx(0, senders, multi_receivers, fee=0);
         self.assertEqual(ec, asset_exchange_poundage_exception, message)
 
-        ec, message = mvs_rpc.create_rawtx(0, senders, multi_receivers, fee=9999);
+        ec, message = mvs_rpc.create_rawtx(0, senders, multi_receivers, fee=10**4 -1);
         self.assertEqual(ec, asset_exchange_poundage_exception, message)
 
         ec, message = mvs_rpc.create_rawtx(0, senders, multi_receivers, fee=10000000001);

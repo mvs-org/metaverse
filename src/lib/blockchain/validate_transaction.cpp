@@ -1286,11 +1286,16 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
 
 bool validate_transaction::check_asset_certs(const transaction& tx)
 {
+    bool is_cert_transfer = false;
     std::vector<asset_cert_type> asset_certs_out;
     for (auto& output : tx.outputs) {
         if (output.is_asset_cert()) {
             auto&& asset_cert = output.get_asset_cert();
             auto cert_type = asset_cert.get_type();
+
+            if (asset_cert.get_status() == ASSET_CERT_TRANSFER_TYPE) {
+                is_cert_transfer = true;
+            }
 
             if (asset_cert::test_certs(asset_certs_out, cert_type)) { // double certs exists
                 return false;
@@ -1315,6 +1320,19 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
             continue;
         }
         else if (!output.is_etp()) { // asset cert transfer tx only related to asset_cert and etp output
+            return false;
+        }
+    }
+
+    if (is_cert_transfer) {
+        if (asset_certs_in_.size() != 1) {
+            log::debug(LOG_BLOCKCHAIN) << "transfer cert: invalid number of cert in inputs: "
+                                       << asset_certs_in_.size();
+            return false;
+        }
+        if (asset_certs_out.size() != 1) {
+            log::debug(LOG_BLOCKCHAIN) << "transfer cert: invalid number of cert in outputs: "
+                                       << asset_certs_out.size();
             return false;
         }
     }

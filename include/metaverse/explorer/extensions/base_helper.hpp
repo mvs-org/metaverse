@@ -66,6 +66,7 @@ enum class utxo_attach_type : uint32_t
     did_issue = 9,
     did_transfer = 10,
     asset_cert_issue = 11,
+    asset_cert_transfer = 12,
     invalid = 0xffffffff
 };
 
@@ -240,6 +241,8 @@ public:
     virtual bool is_locked_asset_as_payment() const {return false;}
 
     virtual bool filter_out_address(const std::string& address) const;
+
+    void set_did_verify_attachment(const receiver_record& record, attachment& attach);
 
 protected:
     bc::blockchain::block_chain_impl& blockchain_;

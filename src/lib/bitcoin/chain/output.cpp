@@ -88,7 +88,7 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
         if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-'))
             return false;
     }
-    
+
     // sensitive check
     std::string symbolupper = symbol;
     for (auto &i : symbolupper)
@@ -311,6 +311,17 @@ bool output::is_asset_cert_issue() const
     if (attach_data.get_type() == ASSET_CERT_TYPE) {
         auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
         if (cert_info.get_status() == ASSET_CERT_ISSUE_TYPE) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool output::is_asset_cert_transfer() const
+{
+    if (attach_data.get_type() == ASSET_CERT_TYPE) {
+        auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
+        if (cert_info.get_status() == ASSET_CERT_TRANSFER_TYPE) {
             return true;
         }
     }

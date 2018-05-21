@@ -100,8 +100,6 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }
     }
-
-    
 }
 
 std::string get_address_from_did(const std::string& did,
@@ -745,19 +743,30 @@ void base_transfer_common::populate_tx_inputs()
     }
 }
 
+void base_transfer_common::set_did_verify_attachment(const receiver_record& record, attachment& attach)
+{
+    if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
+        attach.set_to_did(record.attach_elem.get_to_did());
+        attach.set_from_did(record.attach_elem.get_from_did());
+    }
+}
+
 attachment base_transfer_common::populate_output_attachment(const receiver_record& record)
 {
     if ((record.type == utxo_attach_type::etp)
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attachment attach(ETP_TYPE, DID_ATTACH_VERIFY_VERSION, chain::etp(record.amount));
-            attach.set_to_did(record.attach_elem.get_to_did());
-            attach.set_from_did(record.attach_elem.get_from_did());
-            return attach;
-        }
-        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
+        attachment attach(ETP_TYPE, attach_version, chain::etp(record.amount));
+        set_did_verify_attachment(record, attach);
+        return attach;
+    }
+    else if (record.type == utxo_attach_type::asset_issue
+        || record.type == utxo_attach_type::asset_secondaryissue) {
+        attachment attach(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
+        set_did_verify_attachment(record, attach);
+        return attach;
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer) {
@@ -784,7 +793,8 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         return attachment(DID_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
-        || record.type == utxo_attach_type::asset_cert_issue) {
+        || record.type == utxo_attach_type::asset_cert_issue
+        || record.type == utxo_attach_type::asset_cert_transfer) {
         if (record.asset_cert == asset_cert_ns::none) {
             throw asset_cert_exception("asset cert is none");
         }
@@ -797,13 +807,13 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (record.type == utxo_attach_type::asset_cert_issue) {
             cert_info.set_status(ASSET_CERT_ISSUE_TYPE);
         }
+        else if (record.type == utxo_attach_type::asset_cert_transfer) {
+            cert_info.set_status(ASSET_CERT_TRANSFER_TYPE);
+        }
+
         auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
         attach.set_to_did(cert_owner);
-        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-            attach.set_from_did(record.attach_elem.get_from_did());
-            attach.set_to_did(record.attach_elem.get_to_did());
-        }
+        set_did_verify_attachment(record, attach);
         return attach;
     }
 
@@ -1238,21 +1248,16 @@ issuing_asset::get_script_operations(const receiver_record& record) const
 
 attachment issuing_asset::populate_output_attachment(const receiver_record& record)
 {
+    attachment&& attach = base_transfer_common::populate_output_attachment(record);
+
     if (record.type == utxo_attach_type::asset_issue) {
         unissued_asset_->set_address(record.target);
         auto ass = asset(ASSET_DETAIL_TYPE, *unissued_asset_);
 
-        attachment attach(ASSET_TYPE, attach_version, ass);
-        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-            attach.set_from_did(record.attach_elem.get_from_did());
-            attach.set_to_did(record.attach_elem.get_to_did());
-        }
-
-        return attach;
+        attach.set_attach(ass);
     }
 
-    return base_transfer_common::populate_output_attachment(record);
+    return attach;
 }
 
 void sending_asset::populate_change()
@@ -1330,6 +1335,8 @@ void secondary_issuing_asset::populate_change()
 
 attachment secondary_issuing_asset::populate_output_attachment(const receiver_record& record)
 {
+    auto&& attach = base_transfer_common::populate_output_attachment(record);
+
     if (record.type == utxo_attach_type::asset_secondaryissue) {
         auto asset_detail = *issued_asset_;
         asset_detail.set_address(record.target);
@@ -1338,17 +1345,10 @@ attachment secondary_issuing_asset::populate_output_attachment(const receiver_re
         asset_detail.set_issuer(record.attach_elem.get_to_did());
         auto ass = asset(ASSET_DETAIL_TYPE, asset_detail);
 
-        attachment attach(ASSET_TYPE, attach_version, ass);
-        if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-            attach.set_from_did(record.attach_elem.get_from_did());
-            attach.set_to_did(record.attach_elem.get_to_did());
-        }
-
-        return attach;
+        attach.set_attach(ass);
     }
 
-    return base_transfer_common::populate_output_attachment(record);
+    return attach;
 }
 
 void issuing_asset_cert::sum_payment_amount()
@@ -1425,8 +1425,6 @@ void issuing_did::sum_payment_amount()
     }
 }
 
-
-
 void sending_multisig_did::sign_tx_inputs()
 {
     uint32_t index = 0;
@@ -1481,11 +1479,8 @@ void sending_multisig_did::sign_tx_inputs()
 
             ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
         }
-        else
-        {
-
+        else {
             const bc::chain::script &contract = config_contract;
-
 
             // gen sign
             bc::endorsement endorse;
@@ -1516,7 +1511,6 @@ void sending_multisig_did::sign_tx_inputs()
         tx_.inputs[index].script = ss;
         index++;
     }
-
 }
 
 void sending_multisig_did::sum_payment_amount()
