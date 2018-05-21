@@ -39,7 +39,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     // check did symbol
     auto did = argument_.symbol;
 
-    check_did_symbol(did,blockchain);
+    check_did_symbol(did);
 
     // check did exsits
     auto did_detail = blockchain.get_issued_did(did);

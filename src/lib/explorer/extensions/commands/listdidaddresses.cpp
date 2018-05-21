@@ -38,7 +38,7 @@ console_result listdidaddresses::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check did symbol
-    check_did_symbol(argument_.symbol,blockchain);
+    check_did_symbol(argument_.symbol);
 
     // check did exists
     if (!blockchain.is_did_exist(argument_.symbol))

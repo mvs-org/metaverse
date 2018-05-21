@@ -57,7 +57,7 @@ console_result createasset::invoke(Json::Value& jv_output,
 
     // check did symbol
     auto issuer_did = option_.issuer;
-    check_did_symbol(issuer_did,blockchain);
+    check_did_symbol(issuer_did);
 
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};

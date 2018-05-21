@@ -63,7 +63,7 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
             + std::to_string(output.attach_data.get_type()));
 }
 
-void check_did_symbol(const std::string& symbol,bc::blockchain::block_chain_impl& blockchain, bool check_sensitive)
+void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
 
     if (symbol.empty()) {
@@ -78,12 +78,16 @@ void check_did_symbol(const std::string& symbol,bc::blockchain::block_chain_impl
     if (!chain::output::is_valid_did_symbol(symbol, 0)){
             throw did_symbol_name_exception{"Did symbol " + symbol + " is forbidden."};
     }
-  
 
-    if (check_sensitive) {
-        std::string symbol_up = symbol;
-        blockchain.uppercase_symbol(symbol_up);
-        if (bc::wallet::symbol::is_sensitive(symbol_up)) {
+    if (check_sensitive)
+    {
+        std::string symbolupper = symbol;
+        for (auto &i : symbolupper)
+        {
+            i = std::toupper(i);
+        }
+
+        if (bc::wallet::symbol::is_sensitive(symbolupper)) {
             throw did_symbol_name_exception{"Did symbol " + symbol + " is forbidden."};
         }
     }
@@ -113,7 +117,7 @@ std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain)
 {
 
-    check_did_symbol(did, blockchain);
+    check_did_symbol(did);
 
     auto diddetail = blockchain.get_issued_did(did);
     if (!diddetail) {
