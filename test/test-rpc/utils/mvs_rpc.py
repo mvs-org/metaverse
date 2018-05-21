@@ -516,7 +516,7 @@ def get_block(hash_or_height, json=True, tx_json=True):
     return 'getblock', [hash_or_height, json, tx_json], {}, None
 
 @mvs_api
-def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None, mychange=None, symbol=None):
+def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None):
     '''
     -d [--deposit]       Deposits support [7, 30, 90, 182, 365] days.
                          defaluts to 7 days
@@ -536,7 +536,7 @@ def create_rawtx(receivers, senders, type, deposit=None, fee=None, message=None,
     '''
     return "createrawtx", [], {
         '-r': ["%s:%s" % (i, receivers[i]) for i in receivers],
-        '-s': senders,
+        '-s': [i for i in senders],
         '-t': type,
         '-d': deposit,
         '-f': fee,
@@ -565,3 +565,7 @@ def send_rawtx(transaction, fee=None):
     TRANSACTION          The input Base16 transaction to broadcast.
     '''
     return "sendrawtx", [transaction], {'-f':fee}, None
+
+@mvs_api
+def shutdown():
+    return "shutdown", [], {}, None

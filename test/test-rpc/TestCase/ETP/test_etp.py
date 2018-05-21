@@ -183,6 +183,11 @@ class TestSendETP(MVSTestCaseBase):
             ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, fee=fee)
             self.assertEqual(ec, 5005, message)
 
+        address = Alice.addresslist[1]
+        ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, address=address)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
         address = Zac.addresslist[1]
         ec, message = mvs_rpc.deposit(Alice.name, Alice.password, 10 ** 8, address=address)
         self.assertEqual(ec, 0, message)
@@ -234,4 +239,11 @@ class TestSendETP(MVSTestCaseBase):
                 }
 
         })
+
+        # get_balance will not cause coredump
+        ec, message = mvs_rpc.get_balance(Zac.name, Zac.password)
+        self.assertEqual(ec, 0, message)
+
+
+
 

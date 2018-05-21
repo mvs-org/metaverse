@@ -59,6 +59,37 @@ class TestDIDSendMore(MVSTestCaseBase):
         ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.addresslist[1], specific_fee)
         self.assertEqual(ec, 0, message)
         Alice.mining()
+        # change is did
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Frank.did_symbol)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        # change is None
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+    def test_1_didsend_more(self):
+        did_symbol = 'Zac@'+common.get_timestamp()
+        Alice.send_etp(Zac.mainaddress(), 10**8)
+        Alice.mining()        
+        Zac.issue_did(symbol=did_symbol)
+        Alice.mining()
+
+        receivers = {
+            Zac.mainaddress(): 100000,
+            did_symbol: 200000,
+            Cindy.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+        self.assertEqual(300000,Zac.get_balance(),"sendmore failed") 
+
+
+
 
 class TestDIDSendAsset(MVSTestCaseBase):
     @classmethod
