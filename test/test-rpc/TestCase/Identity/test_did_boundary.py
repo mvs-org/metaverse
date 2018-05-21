@@ -270,6 +270,20 @@ class TestDIDSendMore(MVSTestCaseBase):
             Dale.mainaddress(): 100002,
             Eric.did_symbol: 100003,
         }
-        specific_fee = 12421
+        #no enough balance
+        ec, message = mvs_rpc.didsendmore(Zac.name, Zac.password, receivers, Alice.did_symbol)
+        self.assertEqual(ec, 5302, message)
+
+    def test_2_didsend_more(self):
+        receivers = {
+            Bob.mainaddress(): 100000,
+            'Invalid_address_'+ common.get_timestamp(): 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        #Invalid_address or did
+        ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol)
+        self.assertEqual(ec, 7006, message)
 
 
+        
