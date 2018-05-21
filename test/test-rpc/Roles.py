@@ -167,6 +167,10 @@ class Role:
         assert (result == 0)
         return message["transaction"]["hash"]
 
+    def sendmore_etp(self, receivers):
+        result, message = mvs_rpc.sendmore(self.name, self.password, receivers)
+        assert (result == 0)
+
     def didsend_etp(self, to_, amount):
         '''
         :param to_: to did/address

@@ -98,6 +98,10 @@ def new_account(account, password):
     return "getnewaccount", [account, password], {}, lambda result: result["mnemonic"].split()
 
 @mvs_api
+def easy_new_account(account, password):
+    return "getnewaccount", [account, password], {}, lambda result: (result["mnemonic"].split()[-1], result["default-address"])
+
+@mvs_api
 def get_account(account, password, lastword):
     return "getaccount", [account, password, lastword], {}, lambda result: (result["mnemonic-key"], result["address-count"])
 
