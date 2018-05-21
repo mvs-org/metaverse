@@ -49,7 +49,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw address_invalid_exception{"invalid did parameter! " + to_did};
 
     if (!blockchain.get_account_address(auth_.name, to_address))
-        throw address_dismatch_account_exception{"target address does not match account. " + to_address};
+        throw address_dismatch_account_exception{"target did does not match account. " + to_did};
 
     auto asset = blockchain.get_issued_asset(argument_.symbol);
     if (!asset) {

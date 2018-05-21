@@ -35,7 +35,7 @@ namespace commands {
 class sendrawtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "sendrawtx";}
+    static const char* symbol() { return "sendrawtx";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "sendrawtx "; }
@@ -43,11 +43,11 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("TRANSACTION", 1);
+               .add("TRANSACTION", 1);
     }
 
     void load_fallbacks (std::istream& input,
-        po::variables_map& variables) override
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
@@ -58,7 +58,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -82,7 +82,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {

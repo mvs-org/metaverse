@@ -269,6 +269,7 @@ class Role:
         assert(ec == 0)
         return message['addresses'][0]['address']
 
+
 class NewGuy(Role):
     '''
     New guy means:
