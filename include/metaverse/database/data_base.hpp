@@ -352,6 +352,7 @@ public:
         uint64_t value_;
     };
     void set_admin(const std::string& name, const std::string& passwd);
+    void set_blackhole_did();
    /* begin store asset info into  database */
 
 protected:

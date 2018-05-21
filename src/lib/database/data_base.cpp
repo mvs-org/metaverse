@@ -141,6 +141,23 @@ void data_base::set_admin(const std::string& name, const std::string& passwd)
     accounts.set_admin(name, passwd);
 }
 
+void data_base::set_blackhole_did()
+{
+    const std::string did_symbol = did_detail::get_blackhole_did_symbol();
+    const std::string& did_address = wallet::payment_address::blackhole_address;
+    did_detail diddetail(did_symbol, did_address);
+
+    data_chunk data(did_address.begin(), did_address.end());
+    short_hash hash = ripemd160_hash(data);
+
+    output_point outpoint = { null_hash, max_uint32 };
+    uint32_t output_height = max_uint32;
+    uint64_t value = 0;
+
+    push_did_detail(diddetail, hash, outpoint, output_height, value);
+    synchronize_dids();
+}
+
 data_base::store::store(const path& prefix)
 {
     // Hash-based lookup (hash tables).
@@ -1172,6 +1189,7 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
     //dids.store(hash, sp_detail);
     auto bc_did = blockchain_did(0, outpoint,output_height, blockchain_did::address_current,sp_detail);
     dids.store(hash, bc_did);
+    dids.sync();
     address_dids.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue),
         timestamp_, sp_detail);

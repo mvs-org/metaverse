@@ -185,5 +185,10 @@ void did_detail::set_address(const std::string& address)
      this->address = address.substr(0, len);
 }
 
+std::string did_detail::get_blackhole_did_symbol()
+{
+    return "BLACKHOLE";
+}
+
 } // namspace chain
 } // namspace libbitcoin

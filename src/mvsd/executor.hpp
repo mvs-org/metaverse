@@ -54,6 +54,7 @@ private:
     void do_version();
     bool do_initchain();
 	void set_admin();
+    void set_blackhole_did();
 
     void initialize_output();
     bool verify_directory();

@@ -57,6 +57,7 @@ public:
     static did_detail factory_from_data(std::istream& stream);
     static did_detail factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
+    static std::string get_blackhole_did_symbol();
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);

@@ -40,10 +40,10 @@ console_result burn::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"invalid amount parameter!"};
 
     auto&& amount = std::to_string(argument_.amount);
-    auto blackhole_address = wallet::payment_address::blackhole_address;
+    std::string blackhole_did = did_detail::get_blackhole_did_symbol();
 
     std::stringstream sout("");
-    const char* cmds[]{"sendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_address.c_str(), argument_.symbol.c_str(), amount.c_str()};
+    const char* cmds[]{"didsendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()};
 
     if (dispatch_command(6, cmds, jv_output, node, 2) != console_result::okay) {
         throw address_generate_exception(sout.str());

@@ -102,6 +102,14 @@ void executor::set_admin()
 	db.stop();
 }
 
+void executor::set_blackhole_did()
+{
+    data_base db(metadata_.configured.database);
+    db.start();
+    db.set_blackhole_did();
+    db.stop();
+}
+
 // Emit to the log.
 bool executor::do_initchain()
 {
@@ -129,6 +137,8 @@ bool executor::do_initchain()
         }
 		// init admin account
 		set_admin();
+        // init blackhole DID
+        set_blackhole_did();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
     }
@@ -137,6 +147,8 @@ bool executor::do_initchain()
         if (!data_base::upgrade_version_63(data_path)) {
             throw std::runtime_error{ " upgrade database to version 63 failed!" };
         }
+        // init blackhole DID
+        set_blackhole_did();
     }
 
     if (ec.value() == directory_exists)
