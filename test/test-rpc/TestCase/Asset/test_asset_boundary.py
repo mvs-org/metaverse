@@ -107,8 +107,9 @@ class TestAssetBoundary(MVSTestCaseBase):
                 if i.startswith(domain):
                     return True
 
-        if isDomainExist("ALICE."):
-            asset_symbol = "ALICE."+Bob.asset_symbol
+        domain = Alice.domain_symbol + "."
+        if isDomainExist(domain):
+            asset_symbol = domain + Bob.asset_symbol
             # domain cert not belong to current account
             ec, message = mvs_rpc.create_asset(Bob.name, Bob.password, asset_symbol, 100, Bob.did_symbol)
             self.assertEqual(ec, 0, message)

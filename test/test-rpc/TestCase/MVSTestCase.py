@@ -1,5 +1,5 @@
 import unittest
-from utils import mvs_rpc, common
+from utils import mvs_rpc, common, code
 from Roles import Alice, Bob, Cindy, Dale, Eric, Frank, Zac
 
 class MVSTestCaseBase(unittest.TestCase):
