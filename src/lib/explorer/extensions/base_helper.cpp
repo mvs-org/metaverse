@@ -671,7 +671,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
             attachment attach;
             attach.set_version(DID_ATTACH_VERIFY_VERSION);
             attach.set_to_did(addr);
-            receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
+            receiver_list_.push_back({diddetail->get_address(), symbol_, 0, unspent_asset_ - payment_asset_,
                 utxo_attach_type::asset_transfer, attach});
         }
     }
@@ -817,12 +817,14 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         if (record.asset_cert == asset_cert_ns::none) {
             throw asset_cert_exception("asset cert is none");
         }
-        auto cert_owner = blockchain_.get_did_from_address(record.target);
-        if (cert_owner.empty()) {
-            throw asset_cert_exception("no did is issued on " + record.target);
+
+        auto to_did = record.attach_elem.get_to_did();
+        auto to_address = get_address_from_did(to_did, blockchain_);
+        if (to_address != record.target) {
+            throw asset_cert_exception("address " + to_address + " dismatch did " + to_did);
         }
 
-        auto cert_info = chain::asset_cert(record.symbol, cert_owner, record.target, record.asset_cert);
+        auto cert_info = chain::asset_cert(record.symbol, to_did, to_address, record.asset_cert);
         if (record.type == utxo_attach_type::asset_cert_issue) {
             cert_info.set_status(ASSET_CERT_ISSUE_TYPE);
         }

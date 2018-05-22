@@ -71,8 +71,8 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
     }
 
-    auto cert_address = cert->get_address();
     auto cert_did = cert->get_owner();
+    auto cert_address = get_address_from_did(cert_did, blockchain);
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if (total_volume > max_uint64 - argument_.volume)

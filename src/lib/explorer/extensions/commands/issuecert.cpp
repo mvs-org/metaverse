@@ -96,8 +96,8 @@ console_result issuecert::invoke (Json::Value& jv_output,
             throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + auth_.name);
         }
 
-        domain_cert_addr = cert->get_address();
         domain_cert_did = cert->get_owner();
+        domain_cert_addr = get_address_from_did(domain_cert_did, blockchain);
     }
 
     // receiver

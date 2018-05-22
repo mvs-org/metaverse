@@ -344,7 +344,7 @@ code validate_transaction::check_secondaryissue_transaction(
     is_asset_secondaryissue = false;
     std::string asset_symbol;
     std::string asset_address;
-    std::string asset_cert_address;
+    std::string asset_cert_owner;
     uint8_t secondaryissue_threshold{0};
     uint64_t secondaryissue_asset_amount{0};
     uint64_t asset_transfer_volume{0};
@@ -411,7 +411,7 @@ code validate_transaction::check_secondaryissue_transaction(
                 if (!check_same(asset_symbol, asset_cert.get_symbol())) {
                     return error::asset_secondaryissue_error;
                 }
-                if (!check_same(asset_cert_address, output.get_script_address())) {
+                if (!check_same(asset_cert_owner, asset_cert.get_owner())) {
                     return error::asset_secondaryissue_error;
                 }
                 certs_out.push_back(cur_cert_type);
@@ -476,7 +476,8 @@ code validate_transaction::check_secondaryissue_transaction(
         if (prev_output.is_asset() || prev_output.is_asset_cert()) {
             auto&& asset_address_in = prev_output.get_script_address();
             if (prev_output.is_asset_cert()) {
-                if (asset_cert_address != asset_address_in) {
+                auto&& prev_asset_cert = prev_output.get_asset_cert();
+                if (asset_cert_owner != prev_asset_cert.get_owner()) {
                     log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid cert input, " << asset_symbol;
                     return error::validate_inputs_failed;
                 }
@@ -511,7 +512,7 @@ code validate_transaction::check_asset_issue_transaction(
     std::vector<asset_cert_type> cert_type;
     std::string asset_symbol;
     std::string asset_address;
-    std::string cert_address;
+    std::string cert_owner;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_issue())
@@ -577,7 +578,7 @@ code validate_transaction::check_asset_issue_transaction(
                     }
                 }
 
-                if (!check_same(cert_address, output.get_script_address())) {
+                if (!check_same(cert_owner, cert_info.get_owner())) {
                     return error::asset_issue_error;
                 }
             }
@@ -591,7 +592,7 @@ code validate_transaction::check_asset_issue_transaction(
                     return error::asset_issue_error;
                 }
 
-                if (!check_same(cert_address, output.get_script_address())) {
+                if (!check_same(cert_owner, cert_info.get_owner())) {
                     return error::asset_issue_error;
                 }
             }
@@ -621,24 +622,24 @@ code validate_transaction::check_asset_issue_transaction(
     auto&& domain = asset_cert::get_domain(asset_symbol);
     if (tx.version >= transaction_version::check_nova_feature
             && asset_cert::is_valid_domain(domain)) {
-        if (cert_address.empty()) {
+        if (cert_owner.empty()) {
             log::debug(LOG_BLOCKCHAIN) << "issue asset: address of cert "
                                        << asset_symbol << " is empty!";
             return error::asset_cert_error;
         }
 
-        // if domain certs exists then make sure it belongs to the address
+        // if domain certs exists then make sure it belongs to the owner
         auto cert = chain.get_asset_cert(domain, asset_cert_ns::domain);
         if (cert) {
             if (asset_cert::test_certs(cert_type, asset_cert_ns::domain)) {
-                if (cert->get_address() != cert_address) {
+                if (cert->get_owner() != cert_owner) {
                     log::debug(LOG_BLOCKCHAIN) << "issue asset: no domain cert owned.";
                     return error::asset_cert_not_owned;
                 }
             }
             else if (asset_cert::test_certs(cert_type, asset_cert_ns::naming)) {
                 cert = chain.get_asset_cert(asset_symbol, asset_cert_ns::naming);
-                if (!cert || cert->get_address() != cert_address) {
+                if (!cert || cert->get_owner() != cert_owner) {
                     log::debug(LOG_BLOCKCHAIN) << "issue asset: no naming cert owned.";
                     return error::asset_cert_not_owned;
                 }
@@ -675,7 +676,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
     asset_cert_type issue_cert_type{asset_cert_ns::none};
     std::vector<asset_cert_type> cert_type;
     std::string cert_symbol;
-    std::string domain_cert_address;
+    std::string cert_owner;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_cert_issue()) {
@@ -726,7 +727,19 @@ code validate_transaction::check_asset_cert_issue_transaction(
                     }
                 }
 
-                domain_cert_address = output.get_asset_cert_address();
+                cert_owner = cert_info.get_owner();
+                auto diddetail = chain.get_issued_did(cert_owner);
+                auto address = cert_info.get_address();
+                if (!diddetail) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue cert: cert owner is not issued. "
+                                               <<  cert_info.to_string();
+                    return error::asset_cert_issue_error;
+                }
+                if (address != diddetail->get_address()) {
+                    log::debug(LOG_BLOCKCHAIN) << "issue cert: cert address dispatch cert owner. "
+                                               <<  cert_info.to_string();
+                    return error::asset_cert_issue_error;
+                }
             }
             else {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: invalid output of cert "
@@ -756,7 +769,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
 
     if (issue_cert_type == asset_cert_ns::naming) {
         if (!asset_cert::test_certs(cert_type, asset_cert_ns::domain)
-                || domain_cert_address.empty()) {
+            || cert_owner.empty()) {
             log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                                        << "no domain cert provided to issue naming cert.";
             return error::asset_cert_issue_error;
@@ -768,17 +781,16 @@ code validate_transaction::check_asset_cert_issue_transaction(
                                        << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
             return error::asset_exist;
         }
-
-        // check domain cert is owned by the address
-        auto&& domain = asset_cert::get_domain(cert_symbol);
-        auto certs_vec = chain.get_address_asset_certs(domain_cert_address, domain);
-        if (certs_vec->empty()) {
-            log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                       << "no domain cert owned to issue naming cert.";
-            return error::asset_cert_not_owned;
-        }
     }
 
+    // check domain cert is owned by the owner
+    auto&& domain = asset_cert::get_domain(cert_symbol);
+    auto cert = chain.get_asset_cert(domain, asset_cert_ns::domain);
+    if (!cert || cert->get_owner() != cert_owner) {
+        log::debug(LOG_BLOCKCHAIN) << "issue cert: "
+                                   << "no domain cert owned to issue naming cert.";
+        return error::asset_cert_not_owned;
+    }
     return error::success;
 }
 

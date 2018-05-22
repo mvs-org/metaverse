@@ -82,9 +82,9 @@ console_result issue::invoke (Json::Value& jv_output,
             auto account_address = blockchain.get_account_address(auth_.name, cert->get_address());
             if (account_address) {
                 cert_symbol = domain;
-                cert_address = cert->get_address();
                 cert_type = cert->get_type();
                 cert_did = cert->get_owner();
+                cert_address = get_address_from_did(cert_did, blockchain);
             }
             else {
                 // if domain cert does not belong to the account then check naming cert
@@ -101,9 +101,9 @@ console_result issue::invoke (Json::Value& jv_output,
                     }
 
                     cert_symbol = domain;
-                    cert_address = cert->get_address();
                     cert_type = cert->get_type();
                     cert_did = cert->get_owner();
+                    cert_address = get_address_from_did(cert_did, blockchain);
                 }
             }
         }
