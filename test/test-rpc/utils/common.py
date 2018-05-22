@@ -1,5 +1,6 @@
 import os
 import pwd
+import time
 
 from datetime import datetime
 
@@ -36,3 +37,9 @@ def gen_invalid_address(address):
 
 def get_username():
     return pwd.getpwuid(os.getuid())[0]
+
+def duration_call(func, *args, **kwargs):
+    before = time.clock()
+    ret = func(*args, **kwargs)
+    after = time.clock()
+    return after - before, ret
