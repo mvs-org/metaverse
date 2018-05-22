@@ -652,8 +652,28 @@ void base_transfer_common::populate_asset_change(const std::string& address)
         }
         BITCOIN_ASSERT(!addr.empty());
 
-        receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
-            utxo_attach_type::asset_transfer, attachment()});
+        if (blockchain_.is_valid_address(addr)) {
+            receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
+                utxo_attach_type::asset_transfer, attachment()});
+        }
+        else {
+            if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+                throw did_symbol_length_exception{
+                    "mychange did symbol [" + addr + "] length must be less than 64."};
+            }
+
+            auto diddetail = blockchain_.get_issued_did(addr);
+            if (!diddetail) {
+                throw did_symbol_notfound_exception{
+                    "mychange did symbol [" + addr + "is not exist in blockchain"};
+            }
+
+            attachment attach;
+            attach.set_version(DID_ATTACH_VERIFY_VERSION);
+            attach.set_to_did(addr);
+            receiver_list_.push_back({addr, symbol_, 0, unspent_asset_ - payment_asset_,
+                utxo_attach_type::asset_transfer, attach});
+        }
     }
 }
 
@@ -811,7 +831,6 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         }
 
         auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
-        attach.set_to_did(cert_owner);
         return attach;
     }
 
