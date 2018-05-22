@@ -16,7 +16,7 @@ class TestDIDBatch(MVSTestCaseBase):
         lastwords = []
         addresses = []
 
-        batch_amount_i, batch_amount_j = 500, 10 # total 5000
+        batch_amount_i, batch_amount_j = 200, 10 # total 2000
 
         def get_lastword(i, j):
             return lastwords[i * batch_amount_j + j]
@@ -29,18 +29,19 @@ class TestDIDBatch(MVSTestCaseBase):
             self.assertEqual(ec, 0)
             return len(message["dids"])
 
-        for i in xrange(batch_amount_i):
-            receivers = {}
-            for j in xrange(batch_amount_j):
-                ec, (lastword, address) = mvs_rpc.easy_new_account(get_account_name(i, j), "123456")
-                self.assertEqual(ec, 0)
-                lastwords.append(lastword)
-                addresses.append( address )
-
-                receivers[address] = 10**8 # 1 etp for each
-            Alice.sendmore_etp(receivers)
-            Alice.mining()
         try:
+            for i in xrange(batch_amount_i):
+                receivers = {}
+                for j in xrange(batch_amount_j):
+                    ec, (lastword, address) = mvs_rpc.easy_new_account(get_account_name(i, j), "123456")
+                    self.assertEqual(ec, 0)
+                    lastwords.append(lastword)
+                    addresses.append( address )
+
+                    receivers[address] = 10**8 # 1 etp for each
+                Alice.sendmore_etp(receivers)
+                Alice.mining()
+
             previous = get_did_count()
             for i in xrange(batch_amount_i):
                 for j in xrange(batch_amount_j):
@@ -54,7 +55,7 @@ class TestDIDBatch(MVSTestCaseBase):
                 current = get_did_count()
                 mine_round += 1
 
-            self.assertEqual(mine_round, 3) # 2000 txs for 1 block, 5000 did ~~ 2.5 block, mine 3 times
+            self.assertEqual(mine_round, 2)
 
         finally:
             for i in xrange(batch_amount_i):
