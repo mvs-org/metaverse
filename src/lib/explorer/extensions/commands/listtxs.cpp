@@ -121,11 +121,11 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
     // page limit & page index paramenter check
     if(!argument_.index)
-        throw argument_legality_exception{"page index parameter must not be zero"};
+        throw argument_legality_exception{"page index parameter cannot be zero"};
     if(!argument_.limit)
-        throw argument_legality_exception{"page record limit parameter must not be zero"};
+        throw argument_legality_exception{"page record limit parameter cannot be zero"};
     if(argument_.limit > 100)
-        throw argument_legality_exception{"page record limit must not be bigger than 100."};
+        throw argument_legality_exception{"page record limit cannot be bigger than 100."};
 
     uint64_t start, end, total_page, tx_count;
     if(argument_.index && argument_.limit) {

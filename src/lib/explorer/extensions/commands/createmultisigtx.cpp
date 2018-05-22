@@ -52,7 +52,7 @@ console_result createmultisigtx::invoke(
 
     auto multisig_vec = account->get_multisig(argument_.from);
     if (!multisig_vec || multisig_vec->empty()) {
-        throw multisig_notfound_exception{"multisig of from address is not found."};
+        throw multisig_notfound_exception{"multisig of from address not found."};
     }
 
     account_multisig acc_multisig = *(multisig_vec->begin());

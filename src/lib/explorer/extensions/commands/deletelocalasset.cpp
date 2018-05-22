@@ -83,7 +83,7 @@ console_result deletelocalasset::invoke(Json::Value& jv_output,
     }
 
     if (!found) {
-        throw asset_notfound_exception{"asset " + option_.symbol + " is not existed or is not belong to " + auth_.name + "."};
+        throw asset_notfound_exception{"asset " + option_.symbol + " does not existed or do not belong to " + auth_.name + "."};
     }
 
     Json::Value result;

@@ -53,13 +53,13 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     auto asset = blockchain.get_issued_asset(argument_.symbol);
     if (!asset) {
-        throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
+        throw asset_symbol_notfound_exception{"asset symbol does not exist on the blockchain"};
     }
 
     auto from_did = asset->get_issuer();
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
-        throw asset_secondaryissue_threshold_exception{"asset is not allowed to secondary issue, or the threshold is illegal."};
+        throw asset_secondaryissue_threshold_exception{"asset is not allowed to do secondary issue, or the threshold is illegal."};
 
     auto cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::issue);
     if (!cert) {

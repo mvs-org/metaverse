@@ -76,13 +76,13 @@ console_result issuecert::invoke (Json::Value& jv_output,
         // check domain naming cert not exist.
         if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming)) {
             throw asset_cert_existed_exception(
-                "naming cert '" + argument_.symbol + "' already exists in blockchain!");
+                "naming cert '" + argument_.symbol + "' already exists on the blockchain!");
         }
 
         // check asset not exist.
         if (blockchain.is_asset_exist(argument_.symbol, false)) {
             throw asset_symbol_existed_exception(
-                "asset symbol '" + argument_.symbol + "' already exists in blockchain!");
+                "asset symbol '" + argument_.symbol + "' already exists on the blockchain!");
         }
 
         // check domain cert belong to this account.
