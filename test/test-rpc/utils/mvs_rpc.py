@@ -1,12 +1,15 @@
 import requests
 import json
 from utils import common
+import time
 
 class RPC:
     version = "2.0"
     id = 0
 
     url="http://127.0.0.1:8820/rpc/v2"
+
+    method_time = {}
 
     def __init__(self, method):
         self.method = method
@@ -35,9 +38,27 @@ class RPC:
         return json.dumps( ret )
 
     def post(self, positional, optional):
+        before = time.clock()
         rpc_rsp = requests.post(self.url, data=self.__to_data(positional, optional))
+        after = time.clock()
         assert (rpc_rsp.json()['id'] == self.id)
+
+        if "error" not in rpc_rsp.json():
+            if self.method in self.method_time:
+                self.method_time[self.method].append(after - before)
+            else:
+                self.method_time[self.method] = [after - before]
+
         return rpc_rsp
+
+    @classmethod
+    def export_method_time(cls):
+        for method in cls.method_time:
+            times = cls.method_time[method]
+            max_ = max(times)
+            min_ = min(times)
+            avg_ = sum(times) / len(times)
+            yield method, max_, min_, avg_, len(times)
 
 def mvs_api(func):
     def wrapper(*args, **kwargs):

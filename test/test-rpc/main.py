@@ -3,6 +3,7 @@ import os
 import unittest
 import TestCase
 from Roles import *
+from utils import mvs_rpc
 from HTMLTestRunner import HTMLTestRunner
 
 def clear_account():
@@ -35,6 +36,8 @@ def run_testcase():
         test_dir = "./TestCase/"
         discover = unittest.defaultTestLoader.discover(test_dir, pattern='test_*.py', top_level_dir="./TestCase/")
         runner.run(discover)
+    for i in mvs_rpc.RPC.export_method_time():
+        print i
 
 
 if __name__ == '__main__':
