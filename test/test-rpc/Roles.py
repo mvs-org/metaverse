@@ -15,6 +15,7 @@ class Role:
         self.addresslist.reverse()
         self.did_symbol = (name+".DID").upper()
         self.asset_symbol = ""
+        self.domain_symbol = ""
         self.multisig_addresses = {} # desc : multisig-addr
 
     def lastword(self):
@@ -28,7 +29,8 @@ class Role:
         create account by importkeyfile
         '''
         #auto create a new asset name for each time create_asset is called
-        self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
+        self.domain_symbol = (self.name + common.get_timestamp()).upper();
+        self.asset_symbol = (self.domain_symbol + ".ASSET." + common.get_timestamp()).upper()
         return mvs_rpc.import_keyfile(self.name, self.password, self.keystore_file)
 
     def dump_keyfile(self, path):
@@ -90,7 +92,8 @@ class Role:
                      own percentage greater than or equal to the rate
                      value.
         '''
-        self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
+        self.domain_symbol = (self.name + common.get_timestamp()).upper();
+        self.asset_symbol = (self.domain_symbol + ".ASSET." + common.get_timestamp()).upper()
         result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
         assert (result == 0)
         if is_issue:
