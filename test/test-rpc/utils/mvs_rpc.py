@@ -53,12 +53,18 @@ class RPC:
 
     @classmethod
     def export_method_time(cls):
+        ret = []
         for method in cls.method_time:
             times = cls.method_time[method]
             max_ = max(times)
             min_ = min(times)
             avg_ = sum(times) / len(times)
-            yield method, max_, min_, avg_, len(times)
+            ret.append( (method, max_, min_, avg_, len(times)) )
+        ret.sort(
+            lambda x,y: cmp(x[3], y[3]),
+            reverse=True
+        )
+        return ret
 
 def mvs_api(func):
     def wrapper(*args, **kwargs):

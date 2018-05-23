@@ -35,9 +35,41 @@ def run_testcase():
         #for i in category_lst:
         test_dir = "./TestCase/"
         discover = unittest.defaultTestLoader.discover(test_dir, pattern='test_*.py', top_level_dir="./TestCase/")
-        runner.run(discover)
-    for i in mvs_rpc.RPC.export_method_time():
-        print i
+        result = runner.run(discover)
+
+        #add api call time statics
+        benchmark_head = '''
+<table id='benchmark_table'>
+<colgroup>
+<col align='left' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+</colgroup>
+<tr id='header_row'>
+    <td>MVS API/Method</td>
+    <td>Max(s)</td>
+    <td>Min(s)</td>
+    <td>Average(s)</td>
+    <td>Called(times)</td>
+</tr>'''
+        benchmark_fmt = '''
+<tr class='passClass'>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+</tr>'''
+        benchmark_tail = '''
+</table>'''
+        body = ''.join( [benchmark_fmt % i for i in mvs_rpc.RPC.export_method_time()] )
+        runner.ENDING_TMPL += benchmark_head + body + benchmark_tail
+        f.seek(0)
+        runner.generateReport(None, result)
+
 
 
 if __name__ == '__main__':
