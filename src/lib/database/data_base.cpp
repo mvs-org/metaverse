@@ -93,6 +93,7 @@ bool data_base::initialize_dids(const path& prefix)
 
     instance.stop();
     instance.start();
+    instance.set_blackhole_did();
     instance.synchronize_dids();
     return instance.stop();
 }

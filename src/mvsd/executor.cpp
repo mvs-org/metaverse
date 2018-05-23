@@ -147,8 +147,6 @@ bool executor::do_initchain()
         if (!data_base::upgrade_version_63(data_path)) {
             throw std::runtime_error{ " upgrade database to version 63 failed!" };
         }
-        // init blackhole DID
-        set_blackhole_did();
     }
 
     if (ec.value() == directory_exists)
