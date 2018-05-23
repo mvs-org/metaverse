@@ -1331,6 +1331,11 @@ void secondary_issuing_asset::sum_payment_amount()
         throw asset_cert_exception("no asset cert of issue right is provided.");
     }
 
+    if (blockchain_.chain_settings().use_testnet_rules
+        && !blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::issue)) {
+        payment_asset_cert_.clear();
+    }
+
     if (!attenuation_model_param_.empty()) {
         if (!attenuation_model::check_model_param_initial(attenuation_model_param_, volume_)) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");

@@ -56,23 +56,30 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         throw asset_symbol_notfound_exception{"asset symbol does not exist on the blockchain"};
     }
 
-    auto from_did = asset->get_issuer();
     auto secondaryissue_threshold = asset->get_secondaryissue_threshold();
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to do secondary issue, or the threshold is illegal."};
 
+    std::string cert_did;
+    std::string cert_address;
     auto cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::issue);
-    if (!cert) {
+    if (cert) {
+        // check whether it belongs to the account.
+        if (!blockchain.get_account_address(auth_.name, cert->get_address())) {
+            throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
+        }
+
+        cert_did = cert->get_owner();
+        cert_address = get_address_from_did(cert_did, blockchain);
+    }
+    else if (blockchain.chain_settings().use_testnet_rules) {
+        // if not exist, then issue one. only happen in testnet.
+        cert_did = to_did;
+        cert_address = to_address;
+    }
+    else {
         throw asset_cert_notfound_exception{"no issue cert '" + argument_.symbol + "' found!"};
     }
-
-    // check whether it belongs to the account.
-    if (!blockchain.get_account_address(auth_.name, cert->get_address())) {
-        throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
-    }
-
-    auto cert_did = cert->get_owner();
-    auto cert_address = get_address_from_did(cert_did, blockchain);
 
     auto total_volume = blockchain.get_asset_volume(argument_.symbol);
     if (total_volume > max_uint64 - argument_.volume)
@@ -86,7 +93,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, asset_volume_of_threshold,
-            utxo_attach_type::asset_secondaryissue, attachment(from_did, to_did)},
+            utxo_attach_type::asset_secondaryissue, attachment(to_did, to_did)},
         {cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
             utxo_attach_type::asset_cert, attachment(cert_did, cert_did)}
     };
