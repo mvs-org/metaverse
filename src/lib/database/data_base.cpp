@@ -852,7 +852,6 @@ void data_base::push(const block& block, uint64_t height)
             data_chunk data(didaddress.begin(), didaddress.end());
             short_hash key = ripemd160_hash(data);
             address_dids.delete_old_did(key);
-            address_dids.sync();
         }
 
         // Add outputs
