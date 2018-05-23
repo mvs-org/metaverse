@@ -44,7 +44,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     // check did exsits
     auto did_detail = blockchain.get_issued_did(did);
     if (!did_detail) {
-        throw did_symbol_notfound_exception{"Did '" + did + "' does not exist in blockchain"};
+        throw did_symbol_notfound_exception{"Did '" + did + "' does not exist on the blockchain"};
     }
 
     auto from_address = did_detail->get_address();
@@ -66,7 +66,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
 
      // fail if address is already binded with did in blockchain
     if (blockchain.is_address_issued_did(argument_.to)) {
-        throw did_symbol_existed_exception{"Target address is already binded with some did in blockchain"};
+        throw did_symbol_existed_exception{"Target address is already binded with some did on the blockchain"};
     }
 
     // receiver

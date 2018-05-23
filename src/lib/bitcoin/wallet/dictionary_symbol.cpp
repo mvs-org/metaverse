@@ -48,7 +48,6 @@ namespace symbol {
         "FUCK",
         "SHIT",
         "198964",
-        "64",
         "GONGCHANDANG",
         "GCD",
         "TUGONG",
@@ -95,7 +94,7 @@ namespace symbol {
 
     bool is_sensitive(const std::string& symbol) {
     	for(auto& each : ban_list) {
-    	    if (boost::starts_with(symbol, each)) {
+    	    if (symbol.find(each) != std::string::npos) {
 	           return true;
 	        }
     	}

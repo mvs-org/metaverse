@@ -517,7 +517,13 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         auto asset_info = boost::get<bc::chain::asset>(attach_data.get_attach());
         if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<bc::chain::asset_detail>(asset_info.get_data());
-            tree = prop_list(detail_info, true);
+            tree = prop_list(detail_info, false);
+            // add is_secondaryissue for asset-issue
+            if (version_ == 1) {
+                tree["is_secondaryissue"] = detail_info.is_asset_secondaryissue() ? "true" : "false";
+            } else {
+                tree["is_secondaryissue"] = detail_info.is_asset_secondaryissue();
+            }
             tree["type"] = "asset-issue";
         }
         if (asset_info.get_status() == ASSET_TRANSFERABLE_TYPE) {

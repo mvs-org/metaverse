@@ -49,7 +49,7 @@ console_result didsendfrom::invoke(Json::Value& jv_output,
         if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
             throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
         if (!blockchain.is_did_exist(argument_.fromdid))
-            throw did_symbol_notfound_exception{"fromdid symbol is not exist in blockchain"};
+            throw did_symbol_notfound_exception{"fromdid symbol is not exist on the blockchain"};
 
         auto diddetail=blockchain.get_issued_did(argument_.fromdid);
         fromaddress = diddetail->get_address();

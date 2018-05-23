@@ -50,7 +50,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     auto&& words = bc::split(mnemonic, " ", true); // with trim
 
     if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
-        throw mnemonicwords_amount_exception{"invliad size of backup words."};
+        throw mnemonicwords_amount_exception{"invalid size of backup words."};
     }
 
     Json::Value addresses;

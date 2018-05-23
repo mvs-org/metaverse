@@ -68,7 +68,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
 
         fs::file_status status2 = fs::status(argument_.dst.parent_path());
         if(!fs::exists(status2))
-            throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory not exist.")};
+            throw argument_legality_exception{argument_.dst.parent_path().string() + std::string(" directory does not exist.")};
     }
 
     //acc->set_mnemonic(mnemonic); // reset mnemonic to plain text

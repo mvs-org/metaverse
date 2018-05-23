@@ -168,7 +168,7 @@ void account_info::decrypt(std::string& hexcode)
     data_chunk encrypt_data = base16(hexcode);
     aes256_common_decrypt(encrypt_data, pass_chunk, data_);
     if(!verify_checksum(data_))
-        throw std::logic_error{"account info decrypt error."};
+        throw std::logic_error{"error while decrypting the account."};
 }
 std::istream& operator>>(std::istream& input, account_info& self_ref)
 {

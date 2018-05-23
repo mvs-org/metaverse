@@ -62,7 +62,7 @@ console_result didsendmore::invoke (Json::Value& jv_output,
         else {
             auto to_address = get_address_from_did(addressordid, blockchain);
             if (!blockchain.is_valid_address(to_address))
-                throw address_invalid_exception{"invalid receiver did! " + addressordid};
+                throw address_invalid_exception{"invalid recipient did! " + addressordid};
 
             attach.set_to_did(addressordid);
             attach.set_version(DID_ATTACH_VERIFY_VERSION);

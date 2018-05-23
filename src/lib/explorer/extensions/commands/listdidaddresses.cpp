@@ -42,7 +42,7 @@ console_result listdidaddresses::invoke (Json::Value& jv_output,
 
     // check did exists
     if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_notfound_exception{"did symbol does not exist in blockchain"};
+        throw did_symbol_notfound_exception{"did symbol does not exist on the blockchain"};
 
     auto blockchain_dids = blockchain.get_did_history_addresses(argument_.symbol);
     if (blockchain_dids) {

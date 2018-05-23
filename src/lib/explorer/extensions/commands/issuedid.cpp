@@ -45,7 +45,7 @@ console_result issuedid::invoke(Json::Value &jv_output,
         throw address_invalid_exception{"symbol cannot be an address!"};
 
     if (argument_.fee < 100000000)
-        throw did_issue_poundage_exception{"issue did fee less than 100000000 satoshi = 1 etp!"};
+        throw did_issue_poundage_exception{"issue did fee must be at least 100000000 satoshi = 1 etp!"};
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
 
@@ -56,11 +56,11 @@ console_result issuedid::invoke(Json::Value &jv_output,
 
     // fail if did is already in blockchain
     if (blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_existed_exception{"did symbol already exists in blockchain"};
+        throw did_symbol_existed_exception{"did symbol already exists on the blockchain"};
 
     // fail if address is already binded with did in blockchain
     if (blockchain.is_address_issued_did(argument_.address))
-        throw did_symbol_existed_exception{"address is already binded with some did in blockchain"};
+        throw did_symbol_existed_exception{"address is already binded with some did on the blockchain"};
 
     auto addr = bc::wallet::payment_address(argument_.address);
 
@@ -72,7 +72,7 @@ console_result issuedid::invoke(Json::Value &jv_output,
     if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) {
         auto multisig_vec = acc->get_multisig(argument_.address);
         if (!multisig_vec || multisig_vec->empty()) {
-            throw multisig_notfound_exception{"multisig of address is not found."};
+            throw multisig_notfound_exception{"multisig of address does not found."};
         }
 
         account_multisig acc_multisig = *(multisig_vec->begin());

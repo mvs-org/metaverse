@@ -87,7 +87,7 @@ void check_did_symbol(const std::string& symbol, bool check_blackhole)
 void check_asset_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (symbol.empty()) {
-        throw asset_symbol_length_exception{"Symbol can not be empty."};
+        throw asset_symbol_length_exception{"Symbol cannot be empty."};
     }
 
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
@@ -110,7 +110,7 @@ std::string get_address_from_did(const std::string& did,
 
     auto diddetail = blockchain.get_issued_did(did);
     if (!diddetail) {
-        throw did_symbol_notfound_exception{"did " + did + " does not exist in blockchain"};
+        throw did_symbol_notfound_exception{"did " + did + " does not exist on the blockchain"};
     }
     return diddetail->get_address();
 }
@@ -495,7 +495,7 @@ void base_transfer_common::sum_payments()
         }
         if (iter.type == utxo_attach_type::did_transfer) {
             if (payment_did_flag) {
-                throw std::logic_error{"at most one DID can be transfered"};
+                throw std::logic_error{"maximum one DID can be transfered"};
             }
             payment_did_flag = true;
         }
@@ -537,12 +537,12 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
 void base_transfer_common::check_payment_satisfied(filter filter) const
 {
     if ((filter & FILTER_ETP) && (unspent_etp_ < payment_etp_)) {
-        throw account_balance_lack_exception{"no enough balance, unspent = "
+        throw account_balance_lack_exception{"not enough balance, unspent = "
             + std::to_string(unspent_etp_) + ", payment = " + std::to_string(payment_etp_)};
     }
 
     if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_)) {
-        throw asset_lack_exception{"no enough asset amount, unspent = "
+        throw asset_lack_exception{"not enough asset amount, unspent = "
             + std::to_string(unspent_asset_) + ", payment = " + std::to_string(payment_asset_)};
     }
 
@@ -559,12 +559,12 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
             unspent += " ";
         }
 
-        throw asset_cert_exception{"no enough asset cert, unspent = ("
+        throw asset_cert_exception{"not enough asset cert, unspent = ("
             + unspent + "), payment = (" + payment + ")"};
     }
 
     if ((filter & FILTER_DID) && (unspent_did_flag != payment_did_flag)) {
-        throw tx_source_exception{"no did of " + symbol_ + " is found"};
+        throw tx_source_exception{"no did named " + symbol_ + " is found"};
     }
 }
 
@@ -624,13 +624,13 @@ void base_transfer_common::populate_etp_change(const std::string& address)
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
                 throw did_symbol_length_exception{
-                    "mychange did symbol [" + addr + "] length must be less than 64."};
+                    "mychange did symbol " + addr + " length must be less than 64."};
             }
 
             auto diddetail = blockchain_.get_issued_did(addr);
             if (!diddetail) {
                 throw did_symbol_notfound_exception{
-                    "mychange did symbol [" + addr + "is not exist in blockchain"};
+                    "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
             attachment attach;
@@ -659,13 +659,13 @@ void base_transfer_common::populate_asset_change(const std::string& address)
         else {
             if (addr.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
                 throw did_symbol_length_exception{
-                    "mychange did symbol [" + addr + "] length must be less than 64."};
+                    "mychange did symbol " + addr + " length must be less than 64."};
             }
 
             auto diddetail = blockchain_.get_issued_did(addr);
             if (!diddetail) {
                 throw did_symbol_notfound_exception{
-                    "mychange did symbol [" + addr + "is not exist in blockchain"};
+                    "mychange did symbol " + addr + "does not exist on the blockchain"};
             }
 
             attachment attach;
@@ -725,7 +725,7 @@ void base_transfer_common::populate_tx_outputs()
         }
 
         if (tx_item_idx_ >= (tx_limit + 10)) {
-            throw tx_validate_exception{"Too many inputs/outputs makes tx too large, canceled."};
+            throw tx_validate_exception{"Too many inputs/outputs,tx too large, canceled."};
         }
         tx_item_idx_++;
 
@@ -881,8 +881,8 @@ void base_transfer_helper::populate_unspent_list()
     }
 
     if (from_list_.empty()) {
-        throw tx_source_exception{"no enough etp or asset in from address"
-            ", or you are't own from address!"};
+        throw tx_source_exception{"not enough etp or asset in from address"
+            ", or you do not own the from address!"};
     }
 
     check_payment_satisfied();
@@ -1046,7 +1046,7 @@ void base_transaction_constructor::populate_unspent_list()
     }
 
     if (from_list_.empty()) {
-        throw tx_source_exception{"not enough etp or asset in from address!"};
+        throw tx_source_exception{"not enough etp or asset in the from address!"};
     }
 
     check_payment_satisfied();
@@ -1232,7 +1232,7 @@ void issuing_asset::sum_payment_amount()
     }
 
     if (payment_etp_ < 1000000000) { // 10 etp now
-        throw asset_issue_poundage_exception{"fee must more than 1000000000 satoshi == 10 etp"};
+        throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()) {
         if (!attenuation_model::check_model_param_initial(
@@ -1319,7 +1319,7 @@ void secondary_issuing_asset::sum_payment_amount()
 
     issued_asset_ = blockchain_.get_issued_asset(symbol_);
     if (!issued_asset_) {
-        throw asset_symbol_notfound_exception{"asset symbol is not exist in blockchain"};
+        throw asset_symbol_notfound_exception{"asset symbol does not exist on the blockchain"};
     }
 
     auto total_volume = blockchain_.get_asset_volume(symbol_);
@@ -1329,6 +1329,11 @@ void secondary_issuing_asset::sum_payment_amount()
 
     if (!asset_cert::test_certs(payment_asset_cert_, asset_cert_ns::issue)) {
         throw asset_cert_exception("no asset cert of issue right is provided.");
+    }
+
+    if (blockchain_.chain_settings().use_testnet_rules
+        && !blockchain_.is_asset_cert_exist(symbol_, asset_cert_ns::issue)) {
+        payment_asset_cert_.clear();
     }
 
     if (!attenuation_model_param_.empty()) {
@@ -1432,7 +1437,7 @@ void issuing_multisig_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
     if (payment_etp_ < 100000000) {
-        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 1 etp"};
+        throw did_issue_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
     }
 }
 
@@ -1440,7 +1445,7 @@ void issuing_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
     if (payment_etp_ < 100000000) {
-        throw did_issue_poundage_exception{"fee must more than 100000000 satoshi == 1 etp"};
+        throw did_issue_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
     }
 }
 
@@ -1576,7 +1581,7 @@ void sending_multisig_did::populate_unspent_list()
 
     if (from_list_.empty()) {
         throw tx_source_exception{"not enough etp or asset in from address"
-            ", or you are't own from address!"};
+            ", or you do not own the from address!"};
     }
 
     check_payment_satisfied();
@@ -1631,7 +1636,7 @@ void sending_did::populate_unspent_list()
 
     if (from_list_.empty()) {
         throw tx_source_exception{"not enough etp or asset in from address"
-            ", or you are't own from address!"};
+            ", or you do not own the from address!"};
     }
 
     check_payment_satisfied();

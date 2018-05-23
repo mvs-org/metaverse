@@ -40,7 +40,7 @@ void validate(boost::any& v,
 
     std::string const& s = validators::get_single_string(values);
     if (s[0] == '-') {
-        throw argument_legality_exception{"volume must not be negative number."};
+        throw argument_legality_exception{"volume cannot be anegative number."};
     }
     v = boost::any(non_negative_uint64 { boost::lexical_cast<uint64_t>(s) } );
 }
@@ -64,18 +64,18 @@ console_result createasset::invoke(Json::Value& jv_output,
     auto threshold = option_.secondaryissue_threshold;
     if ((threshold < -1) || (threshold > 100)) {
         throw asset_secondaryissue_threshold_exception{
-            "secondaryissue threshold value error, is must be -1 or in range of 0 to 100."};
+            "secondaryissue threshold value error, it must be -1 or in the interval 0 to 100."};
     }
 
     if (option_.decimal_number > 19u)
         throw asset_amount_exception{"asset decimal number must less than 20."};
     if (option_.maximum_supply.volume == 0u)
-        throw argument_legality_exception{"volume must not be zero."};
+        throw argument_legality_exception{"volume cannot be zero."};
 
     // check did exists
     if (!blockchain.is_did_exist(issuer_did)) {
         throw did_symbol_notfound_exception{
-            "The did '" + issuer_did + "' does not exist in blockchain, maybe you should issuedid first"};
+            "The did '" + issuer_did + "' does not exist on the blockchain, maybe you should issuedid first"};
     }
 
     // check did is owned by the account

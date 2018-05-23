@@ -60,7 +60,7 @@ console_result getnewmultisig::invoke(
     if (option_.m > option_.n) {
         throw signature_amount_exception{
             "signature number " + std::to_string(option_.m)
-            + " bigger than public key number " + std::to_string(option_.n) };
+            + " is bigger than public key number " + std::to_string(option_.n) };
     }
 
     // check self public key
@@ -77,7 +77,7 @@ console_result getnewmultisig::invoke(
 
     // check public key size
     if (option_.n != pubkey_vec.size()) {
-        throw pubkey_amount_exception{ "public key number not match with n." };
+        throw pubkey_amount_exception{ "public key number does not match with n." };
     }
 
     // get private key according public key
@@ -98,7 +98,7 @@ console_result getnewmultisig::invoke(
     }
 
     if (!found) {
-        throw pubkey_dismatch_exception{ self_pubkey + " not belongs to this account" };
+        throw pubkey_dismatch_exception{ self_pubkey + " does not belongs to this account" };
     }
 
     // generate multisig account
