@@ -553,6 +553,9 @@ void miner::work(const wallet::payment_address pay_address)
 		{ 
 			if(MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number))){
 				boost::uint64_t height = store_block(block);
+                if (height == 0) {
+                    continue;
+                }
 				log::info(LOG_HEADER) << "solo miner create new block at heigth:" << height;
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {
