@@ -44,7 +44,6 @@
 #include <miniupnpc/miniwget.h>
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
-#include "tinyformat.h"
 #endif
 
 namespace libbitcoin {
@@ -464,7 +463,7 @@ connections::ptr p2p::connections_ptr()
 
 void p2p::thread_map_port(uint16_t map_port)
 {
-    std::string port = strprintf("%u", map_port);
+    std::string port = std::to_string(map_port);
     const char * multicastif = nullptr;
     const char * minissdpdpath = nullptr;
     struct UPNPDev * devlist = nullptr;
@@ -496,7 +495,7 @@ void p2p::thread_map_port(uint16_t map_port)
     }
     if (r == 1)
     {
-        std::string strDesc = strprintf("ETP v%s", MVS_VERSION);
+        std::string strDesc = std::string("ETP v") + MVS_VERSION;
         
 
         try {
@@ -582,7 +581,7 @@ config::authority::ptr p2p::get_out_address() {
             log::info("UPnP") << "GetExternalIPAddress() returned " << r;
         else
         {
-            std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
+            std::string outaddressstr = std::string(externalIPAddress) + ":" + std::to_string(settings_.inbound_port);
             upnp_out.store(std::make_shared<config::authority>(outaddressstr));
             out_address_use_count_ = 1;
             freeUPNPDevlist(devlist); devlist = nullptr;
