@@ -1083,6 +1083,13 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 const auto symbol_hash = sha256_hash(symbol_data);
                 dids.remove(symbol_hash);
             }
+            else if (op.is_asset_cert()) {
+                const auto asset_cert = op.get_asset_cert();
+                const auto key_str = asset_cert.get_key();
+                const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+                const auto key_hash = sha256_hash(data);
+                certs.remove(key_hash);
+            }
         }
     }
 }

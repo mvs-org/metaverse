@@ -148,13 +148,6 @@ void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
     auto&& key_str = sp_cert.get_key();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = sha256_hash(data);
-    auto exist = get(key);
-    if (exist != nullptr
-        && exist->get_owner() == sp_cert.get_owner()
-        && exist->get_address() == sp_cert.get_address())
-    {
-        return;
-    }
 
 #ifdef MVS_DEBUG
     log::debug("blockchain_asset_cert_database::store") << sp_cert.to_string();
