@@ -618,6 +618,13 @@ void p2p::map_port(bool use_upnp)
     }
 }
 
+#else // #ifdef USE_UPNP
+void p2p::map_port(bool)
+{
+    // Intentionally left blank.
+}
+#endif // #ifdef USE_UPNP
+
 void p2p::restart_seeding()
 {
     //1. clear the host::buffer_ cache
@@ -631,16 +638,8 @@ void p2p::restart_seeding()
     };
 
     seed->restart(handler);
-
-
 }
 
-#else
-void p2p::map_port(bool)
-{
-    // Intentionally left blank.
-}
-#endif
 
 } // namespace network
 } // namespace libbitcoin
