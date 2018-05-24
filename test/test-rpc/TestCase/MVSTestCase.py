@@ -115,9 +115,11 @@ class ForkTestCase(MVSTestCaseBase):
         ec, message = mvs_rpc.add_node(Alice.name, Alice.password, self.remote_ip+':5251')
         self.assertEqual(ec, 0, message)
         import time
-        time.sleep(3)
-        ec, message = mvs_rpc.get_info()
-        self.assertEqual(ec, 0, message)
-        new_height = message[0]
+        new_height = 0
 
-        self.assertEqual(self.partion_height + ming_round, new_height)
+        # wait until the fork complete
+        while  new_height < self.partion_height + ming_round:
+            time.sleep(1)
+            ec, message = mvs_rpc.get_info()
+            self.assertEqual(ec, 0, message)
+            new_height = message[0]
