@@ -50,7 +50,6 @@ public:
 		did_locked,
 		did_transferable,
 	};
-	typedef boost::variant<did_detail> did_data_type;
 
 	did();
 	did(uint32_t status, const did_detail& detail);
@@ -73,11 +72,11 @@ public:
 	uint32_t get_status() const;
 	void set_status(uint32_t status);
 	void set_data(const did_detail& detail);
-	did_data_type& get_data();
+	const did_detail& get_data() const;
 	
 private:
     uint32_t status;
-    did_data_type data;
+    did_detail data;
 
 };
 

@@ -1177,8 +1177,7 @@ void data_base::push_asset_transfer(const asset_transfer& sp_transfer, const sho
 void data_base::push_did(const did& sp, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value) // sp = smart property
 {
-    auto visitor = did_visitor(this, key, outpoint, output_height, value);
-    boost::apply_visitor(visitor, const_cast<did&>(sp).get_data());
+    push_did_detail(sp.get_data(), key, outpoint, output_height, value);
 }
 
 void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& key,

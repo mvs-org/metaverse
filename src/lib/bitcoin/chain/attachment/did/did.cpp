@@ -63,8 +63,7 @@ did did::factory_from_data(reader& source)
 void did::reset()
 {
     status = 0; //did_status::did_none;
-    auto visitor = reset_visitor();
-	boost::apply_visitor(visitor, data);
+    data.reset();
 }
 
 bool did::is_valid() const
@@ -98,20 +97,7 @@ bool did::from_data(reader& source)
     auto result = static_cast<bool>(source);
 	
     if (result && is_valid_type()) {
-		switch(status) {
-			case DID_DETAIL_TYPE:
-			{
-				data = did_detail();
-				break;
-			}
-			case DID_TRANSFERABLE_TYPE:
-			{
-				data = did_detail();
-				break;
-			}			
-		}	
-		auto visitor = from_data_visitor(source);
-		result = boost::apply_visitor(visitor, data);
+        data = did_detail::factory_from_data(source);
     }
 	else {
 		result = false;
@@ -140,26 +126,19 @@ void did::to_data(std::ostream& stream) const
 void did::to_data(writer& sink) const
 {
     sink.write_4_bytes_little_endian(status);
-	
-    auto visitor = to_data_visitor(sink);
-	boost::apply_visitor(visitor, data);
+    data.to_data(sink);
 }
 
 uint64_t did::serialized_size() const
 {
-    uint64_t size = 0;
-	
-    auto visitor = serialized_size_visitor();
-	size += boost::apply_visitor(visitor, data);
-	return 4 + size;
+	return 4 + data.serialized_size();
 }
 
 std::string did::to_string() const
 {
     std::ostringstream ss;
     ss << "\t status = " << status << "\n";
-    auto visitor = to_string_visitor();
-	ss << boost::apply_visitor(visitor, data);
+    ss << data.to_string();
     return ss.str();
 }
 
@@ -176,7 +155,7 @@ void did::set_data(const did_detail& detail)
 	this->data = detail;
 }
 
-did::did_data_type& did::get_data()
+const did_detail& did::get_data() const
 {
 	return this->data;
 }

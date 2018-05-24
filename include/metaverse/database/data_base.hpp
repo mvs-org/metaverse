@@ -330,27 +330,6 @@ public:
         uint64_t value_;
     };
 
-    class did_visitor : public boost::static_visitor<void>
-    {
-    public:
-        did_visitor(data_base* db, const short_hash& key,
-            const output_point& outpoint, uint32_t output_height, uint64_t value):
-            db_(db), key_(key), outpoint_(outpoint), output_height_(output_height), value_(value)
-        {
-
-        }
-        void operator()(const did_detail &t) const
-        {
-            return db_->push_did_detail(t, key_, outpoint_, output_height_, value_);
-        }
-
-    private:
-        data_base* db_;
-        short_hash key_;
-        output_point outpoint_;
-        uint32_t output_height_;
-        uint64_t value_;
-    };
     void set_admin(const std::string& name, const std::string& passwd);
     void set_blackhole_did();
    /* begin store asset info into  database */
