@@ -89,18 +89,6 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
             return false;
     }
 
-    // sensitive check
-    std::string symbolupper = symbol;
-    for (auto &i : symbolupper)
-    {
-        i = std::toupper(i);
-    }
-
-    if (bc::wallet::symbol::is_sensitive(symbolupper))
-    {
-        return false;
-    }
-
     return true;
 }
 
