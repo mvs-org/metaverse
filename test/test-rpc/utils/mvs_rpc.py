@@ -66,6 +66,26 @@ class RPC:
         )
         return ret
 
+def remote_call(remote_ip, func):
+    def wrapper(*args, **kwargs):
+        local_url = RPC.url
+        try:
+            RPC.url = local_url.replace('127.0.0.1', remote_ip)
+            return func(*args, **kwargs)
+        finally:
+            RPC.url = local_url
+    return wrapper
+
+class RemoteCtrl:
+    def __init__(self, ip_addr):
+        self.ip_addr = ip_addr
+
+    def __getattr__(self, item):
+        func = globals().get(item, None)
+        if callable(func):
+            return remote_call(self.ip_addr, func)
+
+
 def mvs_api(func):
     def wrapper(*args, **kwargs):
         cmd, positional, optional, result_handler = func(*args, **kwargs)
@@ -600,3 +620,22 @@ def send_rawtx(transaction, fee=None):
 @mvs_api
 def shutdown():
     return "shutdown", [], {}, None
+
+@mvs_api
+def add_node(account, password, peer):
+    '''
+    :param peer: format in: "10.10.10.35:5251"
+    '''
+    return 'addnode', [account, password, peer], {}, None
+
+@mvs_api
+def ban_node(account, password, peer):
+    '''
+    :param peer: format in: "10.10.10.35:5251"
+    '''
+    return 'addnode', [account, password, peer], {'-o':'ban'}, None
+
+if __name__ == "__main__":
+    rc = RemoteCtrl("10.10.10.35")
+    print rc.list_balances('lxf', '123')
+    print list_balances('lxf', '123')

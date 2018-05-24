@@ -68,4 +68,56 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
                 self.assertEqual(ec, 0, tx)
                 Alice.mining()
 
+class ForkTestCase(MVSTestCaseBase):
+    remote_ip = "10.10.10.35"
+    remote_ctrl = None
+    @classmethod
+    def setUpClass(cls):
+        cls.remote_ctrl = mvs_rpc.RemoteCtrl(cls.remote_ip)
 
+    def setUp(self):
+        '''import Alice account to the remote'''
+        MVSTestCaseBase.setUp(self)
+        self.partion_height = -1
+        with open(Alice.keystore_file) as f:
+            ec, message = self.remote_ctrl.import_keyfile(Alice.name, Alice.password, "any", f.read() )
+            # it still works if the account Alice already exist in remote wallet
+            #self.assertEqual(ec, 0, message)
+
+    def tearDown(self):
+        self.remote_ctrl.delete_account(Alice.name, Alice.password, Alice.lastword())
+
+        ec, message = mvs_rpc.add_node(Alice.name, Alice.password, self.remote_ip + ':5251')
+        self.assertEqual(ec, 0, message)
+
+        MVSTestCaseBase.tearDown(self)
+
+    def make_partion(self):
+        '''make the p2p network partion into 2 seperate ones.'''
+        # record current block height
+        ec, message = mvs_rpc.get_info()
+        self.assertEqual(ec, 0, message)
+        self.partion_height = message[0]
+
+        ec, peers = mvs_rpc.getpeerinfo()
+        for peer in peers:
+            ec, message = mvs_rpc.ban_node(Alice.name, Alice.password, peer)
+            self.assertEqual(ec, 0, message)
+
+    def remote_ming(self, times):
+        mining = mvs_rpc.remote_call(self.remote_ip, Alice.mining)
+        mining(times)
+
+    def fork(self):
+        ming_round = 6
+        self.remote_ming(ming_round)
+
+        ec, message = mvs_rpc.add_node(Alice.name, Alice.password, self.remote_ip+':5251')
+        self.assertEqual(ec, 0, message)
+        import time
+        time.sleep(3)
+        ec, message = mvs_rpc.get_info()
+        self.assertEqual(ec, 0, message)
+        new_height = message[0]
+
+        self.assertEqual(self.partion_height + ming_round, new_height)
