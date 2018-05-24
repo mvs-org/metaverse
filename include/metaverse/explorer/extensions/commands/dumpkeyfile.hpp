@@ -88,6 +88,11 @@ public:
             value<boost::filesystem::path>(&argument_.dst)->default_value(""),
             "The keyfile storage path to."
         )
+        (
+            "data,d",
+            value<bool>(&option_.is_data)->default_value(false)->zero_tokens(),
+            "If specified, the keyfile content will be append to the report, rather than to local file specified by DESTINATION."
+        );
         ;
 
         return options;
@@ -108,6 +113,7 @@ public:
 
     struct option
     {
+        bool is_data;
     } option_;
 
 };
