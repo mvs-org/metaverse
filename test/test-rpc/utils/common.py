@@ -1,6 +1,7 @@
 import os
 import pwd
 import time
+import random
 
 from datetime import datetime
 
@@ -19,6 +20,9 @@ def toString(h):
 def get_timestamp():
     now = datetime.now()
     return now.strftime("%Y%m%dT%H%M%ST%f")
+
+def get_random_str():
+    return get_timestamp() + str(random.randint(0, 100))
 
 def create_multisig_address(roles, required_key_num):
     assert( required_key_num <= len(roles) )

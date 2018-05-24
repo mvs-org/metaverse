@@ -13,7 +13,7 @@ class Role:
         self.keystore_file = keystore_file
 
         self.addresslist.reverse()
-        self.did_symbol = (name+".DID").upper()
+        self.did_symbol = (name+".DIID").upper()
         self.asset_symbol = ""
         self.domain_symbol = ""
         self.multisig_addresses = {} # desc : multisig-addr
@@ -29,8 +29,8 @@ class Role:
         create account by importkeyfile
         '''
         #auto create a new asset name for each time create_asset is called
-        self.domain_symbol = (self.name + common.get_timestamp()).upper();
-        self.asset_symbol = (self.domain_symbol + ".ASSET." + common.get_timestamp()).upper()
+        self.domain_symbol = (self.name + common.get_random_str()).upper()
+        self.asset_symbol = (self.domain_symbol + ".AST." + common.get_random_str()).upper()
         return mvs_rpc.import_keyfile(self.name, self.password, self.keystore_file)
 
     def dump_keyfile(self, path):
@@ -59,8 +59,8 @@ class Role:
         return mvs_rpc.issue_did(self.name, self.password, address, symbol)
 
     def create_random_asset(self, is_issue=True, secondary=0):
-        domain_symbol = u"ALICE" + common.get_timestamp()
-        asset_symbol = domain_symbol + ".ASSET"
+        domain_symbol = (self.name + common.get_random_str()).upper()
+        asset_symbol = domain_symbol + ".AST"
         self.create_asset_with_symbol(asset_symbol, is_issue, secondary)
         return domain_symbol, asset_symbol
 
@@ -92,8 +92,8 @@ class Role:
                      own percentage greater than or equal to the rate
                      value.
         '''
-        self.domain_symbol = (self.name + common.get_timestamp()).upper();
-        self.asset_symbol = (self.domain_symbol + ".ASSET." + common.get_timestamp()).upper()
+        self.domain_symbol = (self.name + common.get_random_str()).upper();
+        self.asset_symbol = (self.domain_symbol + ".AST." + common.get_random_str()).upper()
         result, message = mvs_rpc.create_asset(self.name, self.password, self.asset_symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
         assert (result == 0)
         if is_issue:
@@ -101,7 +101,7 @@ class Role:
             assert (result == 0)
 
     def issue_cert(self, to_):
-        cert_symbol = (self.name + ".2%s." % to_.name + common.get_timestamp()).upper()
+        cert_symbol = (self.name + ".2%s." % to_.name + common.get_random_str()).upper()
         result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
         if result != 0:
             print("failed to issue_cert: {}".format(message))
@@ -109,7 +109,7 @@ class Role:
         return cert_symbol
 
     def issue_naming_cert(self, to_, domain_symbol):
-        cert_symbol = (domain_symbol + ".2%s." % to_.name + common.get_timestamp()).upper()
+        cert_symbol = (domain_symbol + ".2%s." % to_.name + common.get_random_str()).upper()
         result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
         if result != 0:
             print("failed to issue_cert: {}".format(message))
@@ -123,26 +123,40 @@ class Role:
         assert (result == 0)
 
     @classmethod
-    def get_asset(cls, asset_symbol=None):
+    def get_asset(cls, asset_symbol=None, cert=False):
         result, message = mvs_rpc.get_asset(asset_symbol)
         assert (result == 0)
-        return [MOCs.Asset.init(i) for i in message["assets"]]
+        if cert:
+            if message["assetcerts"]:
+                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+        else:
+            if message["assets"]:
+                return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        return []
 
-    def get_accountasset(self, asset_symbol=None):
+    def get_accountasset(self, asset_symbol=None, cert=False):
         if None == asset_symbol:
             asset_symbol = self.asset_symbol
         result, message = mvs_rpc.get_accountasset(self.name, self.password, asset_symbol)
         assert (result == 0)
-        if message["assets"]:
-            return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        if cert:
+            if message["assetcerts"]:
+                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+        else:
+            if message["assets"]:
+                return [MOCs.Asset.init(i) for i in message["assets"] if i]
         return []
 
     @classmethod
-    def get_addressasset(cls, address, cert=None):
+    def get_addressasset(cls, address, cert=False):
         result, message = mvs_rpc.get_addressasset(address, cert)
         assert (result == 0)
-        if message["assets"]:
-            return [MOCs.Asset.init(i) for i in message["assets"] if i]
+        if cert:
+            if message["assetcerts"]:
+                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+        else:
+            if message["assets"]:
+                return [MOCs.Asset.init(i) for i in message["assets"] if i]
         return []
 
     def send_asset(self, to_, amount, asset_symbol=None):
@@ -294,7 +308,7 @@ class NewGuy(Role):
         create account by getnewaccount
         '''
         #auto create a new asset name for each time create_asset is called
-        self.asset_symbol = (self.name + ".ASSET." + common.get_timestamp()).upper()
+        self.asset_symbol = (self.name + ".AST." + common.get_random_str()).upper()
 
         result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
         assert (result == 0)

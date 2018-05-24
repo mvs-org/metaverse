@@ -76,6 +76,7 @@ class TestMultiSig(MVSTestCaseBase):
         Alice.mining()
 
         total_amount = self.get_asset_amount(Alice, asset_symbol)
+        self.assertGreater(total_amount, 0, "failed to create asset")
 
         group = [Alice, Bob, Cindy,Dale, Zac]
         address = common.create_multisig_address(group, 3)

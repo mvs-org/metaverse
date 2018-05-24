@@ -1063,23 +1063,18 @@ void base_multisig_transfer_helper::send_tx()
 
 bool base_multisig_transfer_helper::filter_out_address(const std::string& address) const
 {
-    auto from_address = multisig_.get_address();
-    if (from_address.empty()) {
+    auto multisig_address = multisig_.get_address();
+    if (multisig_address.empty()) {
         return base_transfer_common::filter_out_address(address);
     }
     else {
-        return address != from_address;
+        return address != multisig_address;
     }
 }
 
 std::string base_multisig_transfer_helper::get_sign_tx_multisig_script(const address_asset_record& from) const
 {
-    std::string multisig_script;
-    if (from.addr == multisig_.get_address()) {
-        multisig_script = multisig_.get_multisig_script();
-
-    }
-    return multisig_script;
+    return multisig_.get_multisig_script();
 }
 
 void base_transaction_constructor::sum_payment_amount()
@@ -1431,11 +1426,6 @@ void issuing_did::sum_payment_amount()
     if (payment_etp_ < 100000000) {
         throw did_issue_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
     }
-}
-
-std::string issuing_did::get_sign_tx_multisig_script(const address_asset_record& from) const
-{
-    return multisig_.get_multisig_script();
 }
 
 std::string sending_multisig_did::get_sign_tx_multisig_script(const address_asset_record& from) const

@@ -17,7 +17,7 @@ class TestCert(MVSTestCaseBase):
         exist_domain_cert = domain_symbol
 
         test_cert_symbol = domain_symbol + ".CERT.TO.BOB"
-        invalid_naming_cert = common.get_timestamp()
+        invalid_naming_cert = common.get_random_str()
 
 
         #account password error
@@ -104,7 +104,7 @@ class TestCert(MVSTestCaseBase):
         '''
 
         domain_cert_symbol = domain_symbol
-        not_issued_symbol = domain_cert_symbol+'.2ND'+common.get_timestamp()
+        not_issued_symbol = domain_cert_symbol+'.2ND'+common.get_random_str()
 
         # account password match error
         ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_cert_symbol, 'naming',

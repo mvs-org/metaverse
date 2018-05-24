@@ -69,9 +69,9 @@ class TestDIDSendMore(MVSTestCaseBase):
         Alice.mining()
 
     def test_1_didsend_more(self):
-        did_symbol = 'Zac@'+common.get_timestamp()
+        did_symbol = 'Zac@'+common.get_random_str()
         Alice.send_etp(Zac.mainaddress(), 10**8)
-        Alice.mining()        
+        Alice.mining()
         Zac.issue_did(symbol=did_symbol)
         Alice.mining()
 
@@ -82,11 +82,11 @@ class TestDIDSendMore(MVSTestCaseBase):
             Dale.mainaddress(): 100002,
             Eric.did_symbol: 100003,
         }
-        
+
         ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
-        self.assertEqual(300000,Zac.get_balance(),"sendmore failed") 
+        self.assertEqual(300000,Zac.get_balance(),"sendmore failed")
 
 
 
@@ -106,7 +106,6 @@ class TestDIDSendAsset(MVSTestCaseBase):
     def get_asset_amount(self, role, asset_symbol):
         addressassets = role.get_addressasset(role.mainaddress())
 
-        #we only consider Alice's Asset
         addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         if len(addressasset) == 1:
             previous_quantity = addressasset[0].quantity
@@ -156,18 +155,17 @@ class Testdidcommon(MVSTestCaseBase):
             optional[Zac.addresslist[i]] = 10**8
 
         mvs_rpc.sendmore(Alice.name, Alice.password, optional)
-        Alice.mining()            
-        
-        
+        Alice.mining()
+
         for i ,symbol in  enumerate(special_symbol):
-            did_symbol = '%s%stest%d%s'%(Zac.did_symbol,symbol,i,common.get_timestamp())
+            did_symbol = '%s%stest%d%s'%(Zac.did_symbol,symbol,i,common.get_random_str())
             ec, message = Zac.issue_did(Zac.addresslist[i], did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
             self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[i], 'Failed when issuedid with:'+symbol)
-    
+
     def test_2_didmodifyaddress(self):
-        did_symbol = 'Zac@'+common.get_timestamp()
+        did_symbol = 'Zac@'+common.get_random_str()
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
 
@@ -189,11 +187,3 @@ class Testdidcommon(MVSTestCaseBase):
         self.assertEqual(ec, 0, message)
         Alice.mining()
         self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when issuedid with:'+did_symbol)
-
-
-    
-
-
-            
-
-

@@ -563,8 +563,6 @@ public:
     {}
 
     void sum_payment_amount() override;
-
-    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
 };
 
 class BCX_API sending_multisig_did : public base_transfer_helper
@@ -577,7 +575,7 @@ public:
         , uint64_t fee, account_multisig&& multisig, account_multisig&& multisigto)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-            ,fromfee(feefrom), multisig_from_(std::move(multisig)), multisig_to_(std::move(multisigto))
+        , fromfee(feefrom), multisig_from_(std::move(multisig)), multisig_to_(std::move(multisigto))
     {}
 
     ~sending_multisig_did()

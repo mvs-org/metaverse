@@ -100,7 +100,8 @@ console_result transfercert::invoke (Json::Value& jv_output,
 
     auto helper = transferring_asset_cert(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(argument_.symbol),
+        is_multisig_address ? std::move(from_address) : "",
+        std::move(argument_.symbol),
         std::move(receiver), argument_.fee,
         std::move(acc_multisig));
 

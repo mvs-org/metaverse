@@ -3,7 +3,6 @@ from utils import common
 from TestCase.MVSTestCase import *
 
 class TestAssetAfterDidModified(MVSTestCaseBase):
-    need_mine = False
 
     def test_0_scenario_did_modified(self):
 
@@ -53,7 +52,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         Alice.mining()
 
         # test issue cert
-        naming_cert_symbol = domain_symbol + ".NAMING." + common.get_timestamp()
+        naming_cert_symbol = domain_symbol + ".NAMING." + common.get_random_str()
         ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, snd_did_symbol, naming_cert_symbol, "naming")
         self.assertEqual(ec, code.success, message)
         Alice.mining()
@@ -65,7 +64,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
 
         # test issue new asset
         #
-        snd_asset_symbol = domain_symbol + ".ASSET." + common.get_timestamp()
+        snd_asset_symbol = domain_symbol + ".ASSEET." + common.get_random_str()
         ec, message = mvs_rpc.create_asset(Alice.name, Alice.password, snd_asset_symbol,
             volume=8000000, issuer=snd_did_symbol, rate=-1)
         self.assertEqual(ec, code.success, message)

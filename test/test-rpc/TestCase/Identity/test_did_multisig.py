@@ -5,7 +5,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
 
     def test_0_issuedid(self):
         group = [Alice, Bob, Zac]
-        did_symbol = "Alice.Bob.Zac.DID." + common.get_timestamp()
+        did_symbol = "Alice.Bob.Zac.DIID." + common.get_random_str()
 
         for i, role in enumerate(group):
             addr = role.new_multisigaddress("Alice & Bob & Zac's Multisig-DID", group[:i] + group[i+1:], 2)
@@ -35,7 +35,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         #import pdb; pdb.set_trace()
         group = [Alice, Cindy, Zac]
 
-        did_symbol = '@'.join(r.name for r in group) + common.get_timestamp()
+        did_symbol = '@'.join(r.name for r in group) + common.get_random_str()
         for i, role in enumerate(group):
             addr = role.new_multisigaddress("Alice & Cindy & Zac's Multisig-DID", group[:i] + group[i+1:], 2)
 

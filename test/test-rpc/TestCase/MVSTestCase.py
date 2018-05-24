@@ -20,7 +20,7 @@ class MVSTestCaseBase(unittest.TestCase):
                     Alice.send_etp(role.mainaddress(), 10 ** 8)
                     Alice.mining()
                 ec, message = role.issue_did()
-                self.assertEqual(ec, 0, message)
+                self.assertEqual(ec, 0, "error: {}, message: {}".format(ec, message))
                 Alice.mining()
 
         if self.need_mine:
@@ -45,8 +45,8 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
         self.addr_DEF = common.create_multisig_address(self.group_DEF, 2)
 
         # issue did if not issued
-        self.did_ABC = "Alice.Bob.Cindy@DID"
-        self.did_DEF = "Dale.Eric.Frank@DID"
+        self.did_ABC = "Alice.Bob.Cindy@DIID"
+        self.did_DEF = "Dale.Eric.Frank@DIID"
 
         for roles, addr, attr_name in [(self.group_ABC, self.addr_ABC, "did_ABC"), (self.group_DEF, self.addr_DEF, "did_DEF")]:
             ec, message = mvs_rpc.list_dids(roles[-1].name, roles[-1].password)

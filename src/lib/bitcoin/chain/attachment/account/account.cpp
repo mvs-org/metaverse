@@ -38,7 +38,7 @@ namespace libbitcoin {
 namespace chain {
 
 account_multisig::account_multisig()
-    : hd_index_(0), m_(0), n_(0), pubkey_("")
+    : hd_index_(0), m_(0), n_(0)
 {
 }
 
@@ -220,6 +220,11 @@ std::string account_multisig::to_string()
 
 std::string account_multisig::get_multisig_script() const
 {
+    if (m_ == 0 && n_ == 0) {
+        // not initialized
+        return "";
+    }
+
     std::ostringstream ss;
     ss << std::to_string(m_);
     for (auto& each : cosigner_pubkeys_)

@@ -55,6 +55,21 @@ class Asset:
 
         return obj
 
+class Cert:
+    def __init__(self, symbol):
+        self.address = None
+        self.cert = None
+        self.owner = None
+        self.symbol = symbol
+
+    @classmethod
+    def init(cls, json_report):
+        obj = Asset(json_report['symbol'])
+        obj.address = json_report['address']
+        obj.cert = json_report['cert']
+        obj.owner = json_report['owner']
+        return obj
+
 class Attachment:
     def __init__(self):
         self.type = "" # etp/message/...

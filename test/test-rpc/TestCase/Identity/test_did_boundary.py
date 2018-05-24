@@ -29,7 +29,7 @@ class TestDID(MVSTestCaseBase):
         for role in did_exist:
             ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), role.did_symbol, 10 ** 8)
             self.assertEqual(ec, 7002, message)
-        
+
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
 
@@ -37,7 +37,7 @@ class TestDID(MVSTestCaseBase):
         for bh in blackHoles:
             ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), bh, 10 ** 8)
             self.assertEqual(ec, 7001, message)
-        
+
 
 
     def test_1_issue_did(self):
@@ -46,7 +46,7 @@ class TestDID(MVSTestCaseBase):
         '''
 
         #address in use
-        random_did_symbol = common.get_timestamp()+str(random.randint(1, 100))
+        random_did_symbol = common.get_random_str()
         ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, Alice.mainaddress(), random_did_symbol)
         self.assertEqual(ec, 7002, message)
 
@@ -109,7 +109,7 @@ class TestDID(MVSTestCaseBase):
 
     def test_7_modify_did(self):
         '''modify did between Zac's addresses'''
-        temp_did = "ZAC.DID@" + common.get_timestamp()
+        temp_did = "ZAC.DIID@" + common.get_timestamp()
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
         ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), temp_did)
@@ -304,11 +304,11 @@ class TestDIDSendMore(MVSTestCaseBase):
 
         #Invalid fee
         ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol,min_fee)
-        self.assertEqual(ec, 5005, message)   
+        self.assertEqual(ec, 5005, message)
 
 
         ec, message = mvs_rpc.didsendmore(Alice.name, Alice.password, receivers, Alice.did_symbol,max_fee)
-        self.assertEqual(ec, 5005, message)   
+        self.assertEqual(ec, 5005, message)
 
 
-        
+
