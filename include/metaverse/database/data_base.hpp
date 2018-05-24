@@ -388,12 +388,10 @@ public:
     transaction_database transactions;
     /* begin database for account, asset, address_asset,did relationship */
     account_database accounts;
-    //asset_database assets;
     blockchain_asset_database assets;
     address_asset_database address_assets;
     account_asset_database account_assets;
     blockchain_asset_cert_database certs;
-    //did_database dids;
     blockchain_did_database dids;
     address_did_database address_dids;
     account_address_database account_addresses;

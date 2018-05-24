@@ -95,6 +95,10 @@ bool data_base::initialize_dids(const path& prefix)
     instance.start();
     instance.set_blackhole_did();
     instance.synchronize_dids();
+
+    log::info(LOG_DATABASE)
+        << "Upgrading did table is complete.";
+
     return instance.stop();
 }
 
@@ -113,6 +117,10 @@ bool data_base::initialize_certs(const path& prefix)
     instance.stop();
     instance.start();
     instance.synchronize_certs();
+
+    log::info(LOG_DATABASE)
+        << "Upgrading cert table is complete.";
+
     return instance.stop();
 }
 
@@ -132,8 +140,6 @@ bool data_base::upgrade_version_63(const path& prefix)
             << "Failed to upgrade cert database.";
     }
 
-    log::info(LOG_DATABASE)
-        << "Upgrading is complete.";
     return true;
 }
 
@@ -900,9 +906,6 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
         address_assets.store_input(key, point, height, previous, timestamp_);
         address_assets.sync();
         /* end added for asset issue/transfer */
-
-        //address_dids.delete_old_did(key);
-        //address_dids.sync();
     }
 }
 
@@ -1045,7 +1048,6 @@ void data_base::pop_inputs(const input::list& inputs, size_t height)
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
             address_assets.delete_last_row(hash);
-            //address_dids.delete_last_row(hash);
         }
     }
 }
@@ -1161,7 +1163,6 @@ void data_base::push_asset_detail(const asset_detail& sp_detail, const short_has
 {
     const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
-    //assets.store(hash, sp_detail);
     auto bc_asset = blockchain_asset(0, outpoint,output_height, sp_detail);
     assets.store(hash, bc_asset);
     address_assets.store_output(key, outpoint, output_height, value,
@@ -1192,7 +1193,6 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 {
     const data_chunk& data = data_chunk(sp_detail.get_symbol().begin(), sp_detail.get_symbol().end());
     const auto hash = sha256_hash(data);
-    //dids.store(hash, sp_detail);
     auto bc_did = blockchain_did(0, outpoint,output_height, blockchain_did::address_current,sp_detail);
     dids.store(hash, bc_did);
     dids.sync();

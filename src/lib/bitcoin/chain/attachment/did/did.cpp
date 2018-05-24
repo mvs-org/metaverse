@@ -97,7 +97,7 @@ bool did::from_data(reader& source)
     auto result = static_cast<bool>(source);
 	
     if (result && is_valid_type()) {
-        data = did_detail::factory_from_data(source);
+        result = data.from_data(source);
     }
 	else {
 		result = false;
