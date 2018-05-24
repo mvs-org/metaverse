@@ -940,42 +940,75 @@ void base_transfer_common::check_tx()
     }
 }
 
+std::string base_transfer_common::get_sign_tx_multisig_script(const address_asset_record& from) const
+{
+    return "";
+}
+
 void base_transfer_common::sign_tx_inputs()
 {
     uint32_t index = 0;
-    for (auto& fromeach : from_list_){
+    for (auto& fromeach : from_list_)
+    {
+        bc::chain::script ss;
+
         // paramaters
         explorer::config::hashtype sign_type;
         uint8_t hash_type = (signature_hash_algorithm)sign_type;
 
         bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        const ec_secret& private_key =    config_private_key;
-        bc::wallet::ec_private ec_private_key(private_key, 0u, true);
+        const ec_secret& private_key = config_private_key;
 
-        bc::explorer::config::script config_contract(fromeach.script);
-        const bc::chain::script& contract = config_contract;
+        std::string multisig_script = get_sign_tx_multisig_script(fromeach);
+        if (!multisig_script.empty()) {
+            bc::explorer::config::script config_contract(multisig_script);
+            const bc::chain::script &contract = config_contract;
 
-        // gen sign
-        bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, private_key,
-            contract, tx_, index, hash_type))
-        {
-            throw tx_sign_exception{"get_input_sign sign failure"};
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(endorse, private_key,
+                                                       contract, tx_, index, hash_type))
+            {
+                throw tx_sign_exception{"get_input_sign sign failure"};
+            }
+
+            // do script
+            data_chunk data;
+            ss.operations.push_back({bc::chain::opcode::zero, data});
+            ss.operations.push_back({bc::chain::opcode::special, endorse});
+
+            chain::script script_encoded;
+            script_encoded.from_string(multisig_script);
+
+            ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
         }
+        else {
+            bc::explorer::config::script config_contract(fromeach.script);
+            const bc::chain::script& contract = config_contract;
 
-        // do script
-        auto&& public_key = ec_private_key.to_public();
-        data_chunk public_key_data;
-        public_key.to_data(public_key_data);
-        bc::chain::script ss;
-        ss.operations.push_back({bc::chain::opcode::special, endorse});
-        ss.operations.push_back({bc::chain::opcode::special, public_key_data});
+            // gen sign
+            bc::endorsement endorse;
+            if (!bc::chain::script::create_endorsement(endorse, private_key,
+                contract, tx_, index, hash_type))
+            {
+                throw tx_sign_exception{"get_input_sign sign failure"};
+            }
 
-        // if pre-output script is deposit tx.
-        if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
-            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                contract.operations);
-            ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
+            // do script
+            bc::wallet::ec_private ec_private_key(private_key, 0u, true);
+            auto&& public_key = ec_private_key.to_public();
+            data_chunk public_key_data;
+            public_key.to_data(public_key_data);
+
+            ss.operations.push_back({bc::chain::opcode::special, endorse});
+            ss.operations.push_back({bc::chain::opcode::special, public_key_data});
+
+            // if pre-output script is deposit tx.
+            if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
+                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+                    contract.operations);
+                ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
+            }
         }
 
         // set input script of this tx
@@ -1015,6 +1048,38 @@ void base_transfer_common::exec()
 
     // send tx
     send_tx();
+}
+
+void base_multisig_transfer_helper::send_tx()
+{
+    auto from_address = multisig_.get_address();
+    if (from_address.empty()) {
+        base_transfer_common::send_tx();
+    }
+    else {
+        // no operation in exec for transferring multisig asset cert
+    }
+}
+
+bool base_multisig_transfer_helper::filter_out_address(const std::string& address) const
+{
+    auto from_address = multisig_.get_address();
+    if (from_address.empty()) {
+        return base_transfer_common::filter_out_address(address);
+    }
+    else {
+        return address != from_address;
+    }
+}
+
+std::string base_multisig_transfer_helper::get_sign_tx_multisig_script(const address_asset_record& from) const
+{
+    std::string multisig_script;
+    if (from.addr == multisig_.get_address()) {
+        multisig_script = multisig_.get_multisig_script();
+
+    }
+    return multisig_script;
 }
 
 void base_transaction_constructor::sum_payment_amount()
@@ -1155,44 +1220,9 @@ bool sending_multisig_tx::filter_out_address(const std::string& address) const
     return !blockchain_.is_script_address(address);
 }
 
-void sending_multisig_tx::sign_tx_inputs()
+std::string sending_multisig_tx::get_sign_tx_multisig_script(const address_asset_record& from) const
 {
-    uint32_t index = 0;
-    std::string prikey, pubkey, multisig_script;
-
-    for (auto& fromeach : from_list_){
-        // populate unlock script
-        multisig_script = multisig_.get_multisig_script();
-
-        // prepare sign
-        explorer::config::hashtype sign_type;
-        uint8_t hash_type = (signature_hash_algorithm)sign_type;
-
-        bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        bc::explorer::config::script config_contract(multisig_script);
-
-        // gen sign
-        bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, config_private_key,
-            config_contract, tx_, index, hash_type)) {
-            throw tx_sign_exception{"get_input_sign sign failure"};
-        }
-
-        // do script
-        bc::chain::script input_script;
-        data_chunk data;
-        input_script.operations.push_back({bc::chain::opcode::zero, data});
-        input_script.operations.push_back({bc::chain::opcode::special, endorse});
-
-        chain::script script_encoded;
-        script_encoded.from_string(multisig_script);
-
-        input_script.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-
-        // set input script of this tx
-        tx_.inputs[index].script = input_script;
-        index++;
-    }
+    return multisig_.get_multisig_script();
 }
 
 void issuing_asset::sum_payments()
@@ -1395,58 +1425,6 @@ void issuing_asset_cert::sum_payment_amount()
     }
 }
 
-bool issuing_multisig_did::filter_out_address(const std::string& address) const
-{
-    return !blockchain_.is_script_address(address);
-}
-
-void issuing_multisig_did::sign_tx_inputs()
-{
-    uint32_t index = 0;
-    std::string prikey, pubkey, multisig_script;
-
-    for (auto& fromeach : from_list_){
-        // populate unlock script
-        multisig_script = multisig_.get_multisig_script();
-
-        // prepare sign
-        explorer::config::hashtype sign_type;
-        uint8_t hash_type = (signature_hash_algorithm)sign_type;
-        bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        bc::explorer::config::script config_contract(multisig_script);
-
-        // gen sign
-        bc::endorsement endorse;
-        if (!bc::chain::script::create_endorsement(endorse, config_private_key,
-            config_contract, tx_, index, hash_type)) {
-            throw tx_sign_exception{"get_input_sign sign failure"};
-        }
-
-        // do script
-        bc::chain::script ss;
-        data_chunk data;
-        ss.operations.push_back({bc::chain::opcode::zero, data});
-        ss.operations.push_back({bc::chain::opcode::special, endorse});
-
-        chain::script script_encoded;
-        script_encoded.from_string(multisig_script);
-
-        ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-
-        // set input script of this tx
-        tx_.inputs[index].script = ss;
-        index++;
-    }
-}
-
-void issuing_multisig_did::sum_payment_amount()
-{
-    base_transfer_common::sum_payment_amount();
-    if (payment_etp_ < 100000000) {
-        throw did_issue_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
-    }
-}
-
 void issuing_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
@@ -1455,92 +1433,22 @@ void issuing_did::sum_payment_amount()
     }
 }
 
-void sending_multisig_did::sign_tx_inputs()
+std::string issuing_did::get_sign_tx_multisig_script(const address_asset_record& from) const
 {
-    uint32_t index = 0;
-    std::string prikey, pubkey, multisig_script;
-    auto acc = blockchain_.is_account_passwd_valid(name_, passwd_);
+    return multisig_.get_multisig_script();
+}
 
-    for (auto &fromeach : from_list_)
-    {
-        bc::chain::script ss;
+std::string sending_multisig_did::get_sign_tx_multisig_script(const address_asset_record& from) const
+{
+    std::string multisig_script;
+    if (from.addr == multisig_from_.get_address()) {
+        multisig_script = multisig_from_.get_multisig_script();
 
-        explorer::config::hashtype sign_type;
-        uint8_t hash_type = (signature_hash_algorithm)sign_type;
-
-        bc::explorer::config::ec_private config_private_key(fromeach.prikey);
-        const ec_secret &private_key = config_private_key;
-
-        bc::explorer::config::script config_contract = fromeach.script;
-        auto useMultisig = false;
-
-        if (fromeach.addr == acc_multisigfrom_.get_address())
-        {
-            multisig_script = acc_multisigfrom_.get_multisig_script();
-            config_contract = multisig_script;
-            useMultisig = true;
-        }
-        else if (fromeach.addr == acc_multisigto_.get_address())
-        {
-            multisig_script = acc_multisigto_.get_multisig_script();
-            config_contract = multisig_script;
-            useMultisig = true;
-        }
-
-
-        if (useMultisig)
-        {
-            const bc::chain::script &contract = config_contract;
-            // gen sign
-            bc::endorsement endorse;
-            if (!bc::chain::script::create_endorsement(endorse, private_key,
-                                                       contract, tx_, index, hash_type))
-            {
-                throw tx_sign_exception{"get_input_sign sign failure"};
-            }
-            // do script
-            data_chunk data;
-            ss.operations.push_back({bc::chain::opcode::zero, data});
-            ss.operations.push_back({bc::chain::opcode::special, endorse});
-            //ss.operations.push_back({bc::chain::opcode::special, endorse2});
-
-            chain::script script_encoded;
-            script_encoded.from_string(multisig_script);
-
-            ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
-        }
-        else {
-            const bc::chain::script &contract = config_contract;
-
-            // gen sign
-            bc::endorsement endorse;
-            if (!bc::chain::script::create_endorsement(endorse, private_key,
-                                                       contract, tx_, index, hash_type))
-            {
-                throw tx_sign_exception{"get_input_sign sign failure"};
-            }
-
-            // do script
-            bc::wallet::ec_private ec_private_key(private_key, 0u, true);
-
-            auto &&public_key = ec_private_key.to_public();
-            data_chunk public_key_data;
-            public_key.to_data(public_key_data);
-            ss.operations.push_back({bc::chain::opcode::special, endorse});
-            ss.operations.push_back({bc::chain::opcode::special, public_key_data});
-
-            // if pre-output script is deposit tx.
-            if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height)
-            {
-                uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                    contract.operations);
-                ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
-            }
-        }
-
-        tx_.inputs[index].script = ss;
-        index++;
     }
+    else if (from.addr == multisig_to_.get_address()) {
+        multisig_script = multisig_to_.get_multisig_script();
+    }
+    return multisig_script;
 }
 
 void sending_multisig_did::sum_payment_amount()

@@ -62,28 +62,31 @@ console_result issuedid::invoke(Json::Value &jv_output,
     if (blockchain.is_address_issued_did(argument_.address))
         throw did_symbol_existed_exception{"address is already binded with some did on the blockchain"};
 
-    auto addr = bc::wallet::payment_address(argument_.address);
-
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_issue, attachment()}};
-
-    // for multisig address
-    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) {
+    account_multisig acc_multisig;
+    bool is_multisig_address = blockchain.is_script_address(argument_.address);
+    if (is_multisig_address) {
         auto multisig_vec = acc->get_multisig(argument_.address);
         if (!multisig_vec || multisig_vec->empty()) {
             throw multisig_notfound_exception{"multisig of address does not found."};
         }
 
-        account_multisig acc_multisig = *(multisig_vec->begin());
-        auto issue_helper = issuing_multisig_did(
-                                *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                                std::move(argument_.address), std::move(argument_.symbol),
-                                std::move(receiver), argument_.fee,
-                                acc_multisig);
-        issue_helper.exec();
+        acc_multisig = *(multisig_vec->begin());
+    }
 
-        // output json
+    // receiver
+    std::vector<receiver_record> receiver{
+        {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_issue, attachment()}};
+
+    auto issue_helper = issuing_did(
+        *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+        std::move(argument_.address), std::move(argument_.symbol),
+        std::move(receiver), argument_.fee,
+        std::move(acc_multisig));
+
+    issue_helper.exec();
+
+    // output json
+    if (is_multisig_address) {
         auto && tx = issue_helper.get_transaction();
         std::ostringstream tx_buf;
         tx_buf << config::transaction(tx);
@@ -92,12 +95,6 @@ console_result issuedid::invoke(Json::Value &jv_output,
         // jv_output["raw"] = tx_buf.str();
     }
     else {
-        auto issue_helper = issuing_did(
-                                *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                                std::move(argument_.address), std::move(argument_.symbol),
-                                std::move(receiver), argument_.fee);
-        issue_helper.exec();
-
         auto &&tx = issue_helper.get_transaction();
         jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
     }

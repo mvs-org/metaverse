@@ -34,7 +34,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     blockchain.uppercase_symbol(argument_.symbol);
     boost::to_lower(argument_.cert);
@@ -81,6 +81,17 @@ console_result transfercert::invoke (Json::Value& jv_output,
             cert_type_name + " cert '" + argument_.symbol + "' is not owned by " + auth_.name);
     }
 
+    account_multisig acc_multisig;
+    bool is_multisig_address = blockchain.is_script_address(from_address);
+    if (is_multisig_address) {
+        auto multisig_vec = acc->get_multisig(from_address);
+        if (!multisig_vec || multisig_vec->empty()) {
+            throw multisig_notfound_exception{"from address multisig record not found."};
+        }
+
+        acc_multisig = *(multisig_vec->begin());
+    }
+
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
@@ -90,13 +101,23 @@ console_result transfercert::invoke (Json::Value& jv_output,
     auto helper = transferring_asset_cert(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
         "", std::move(argument_.symbol),
-        std::move(receiver), argument_.fee);
+        std::move(receiver), argument_.fee,
+        std::move(acc_multisig));
 
     helper.exec();
 
-    // json output
-    auto tx = helper.get_transaction();
-    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+        // json output
+    if (is_multisig_address) {
+        // out rawtx for multisig cert
+        auto && tx = helper.get_transaction();
+        std::ostringstream tx_buf;
+        tx_buf << config::transaction(tx);
+        jv_output = tx_buf.str();
+    }
+    else {
+        auto tx = helper.get_transaction();
+        jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    }
 
     return console_result::okay;
 }

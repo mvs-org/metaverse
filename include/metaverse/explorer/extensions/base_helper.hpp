@@ -242,6 +242,8 @@ public:
 
     virtual bool filter_out_address(const std::string& address) const;
 
+    virtual std::string get_sign_tx_multisig_script(const address_asset_record& from) const;
+
     void set_did_verify_attachment(const receiver_record& record, attachment& attach);
 
 protected:
@@ -288,6 +290,38 @@ protected:
     command&                          cmd_;
     std::string                       name_;
     std::string                       passwd_;
+};
+
+class BCX_API base_multisig_transfer_helper : public base_transfer_helper
+{
+public:
+    base_multisig_transfer_helper(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, receiver_record::list&& receiver_list,
+        uint64_t fee, std::string&& symbol,
+        account_multisig&& multisig_from)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , multisig_(std::move(multisig_from))
+    {}
+
+    ~base_multisig_transfer_helper()
+    {}
+
+    bool filter_out_address(const std::string& address) const override;
+
+    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
+
+    void send_tx() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
+protected:
+    // for multisig address
+    account_multisig multisig_;
 };
 
 class BCX_API base_transaction_constructor : public base_transfer_common
@@ -416,7 +450,8 @@ public:
     ~sending_multisig_tx(){}
 
     void populate_change() override;
-    void sign_tx_inputs() override ;
+
+    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
 
     // no operation in exec
     void send_tx() override {}
@@ -512,47 +547,16 @@ public:
     void populate_change() override;
 };
 
-class BCX_API issuing_multisig_did : public base_transfer_helper
-{
-public:
-    issuing_multisig_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
-        std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list, uint64_t fee,
-        account_multisig& multisig)
-        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee, std::move(symbol))
-        , multisig_{multisig}
-    {}
-
-    ~issuing_multisig_did(){}
-
-    void sign_tx_inputs() override ;
-
-    // no operation in exec
-    void send_tx() override {}
-
-    bool filter_out_address(const std::string& address) const override;
-
-    void sum_payment_amount() override;
-
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
-
-private:
-    account_multisig multisig_;
-};
-
-class BCX_API issuing_did : public base_transfer_helper
+class BCX_API issuing_did : public base_multisig_transfer_helper
 {
 public:
     issuing_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol,
-        receiver_record::list&& receiver_list, uint64_t fee)
-        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list, uint64_t fee,
+        account_multisig&& multisig)
+        : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol),
+            std::move(multisig))
     {}
 
     ~issuing_did()
@@ -560,12 +564,8 @@ public:
 
     void sum_payment_amount() override;
 
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
+    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
 };
-
 
 class BCX_API sending_multisig_did : public base_transfer_helper
 {
@@ -577,7 +577,7 @@ public:
         , uint64_t fee, account_multisig&& multisig, account_multisig&& multisigto)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-            ,fromfee(feefrom), acc_multisigfrom_(std::move(multisig)), acc_multisigto_(std::move(multisigto))
+            ,fromfee(feefrom), multisig_from_(std::move(multisig)), multisig_to_(std::move(multisigto))
     {}
 
     ~sending_multisig_did()
@@ -587,12 +587,10 @@ public:
     void populate_unspent_list() override;
     void populate_change() override;
 
-    void sign_tx_inputs() override ;
+    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
 
     // no operation in exec
     void send_tx() override {}
-
-
 
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;
@@ -601,10 +599,9 @@ public:
 
 private:
     std::string fromfee;
-    account_multisig acc_multisigfrom_;
-    account_multisig acc_multisigto_;
+    account_multisig multisig_from_;
+    account_multisig multisig_to_;
 };
-
 
 class BCX_API sending_did : public base_transfer_helper
 {
@@ -628,15 +625,17 @@ private:
     std::string fromfee;
 };
 
-class BCX_API transferring_asset_cert : public base_transfer_helper
+class BCX_API transferring_asset_cert : public base_multisig_transfer_helper
 {
 public:
     transferring_asset_cert(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
-        receiver_record::list&& receiver_list, uint64_t fee)
-        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        receiver_record::list&& receiver_list, uint64_t fee,
+        account_multisig&& multisig_from)
+        : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol),
+            std::move(multisig_from))
     {}
 
     ~transferring_asset_cert()
