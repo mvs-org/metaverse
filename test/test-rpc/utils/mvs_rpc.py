@@ -122,7 +122,11 @@ def getpeerinfo():
         ]
     }
     '''
-    return "getpeerinfo", [], {}, lambda result: result["peers"]
+    def handle_peers(result):
+        if result["peers"]:
+            return result["peers"]
+        return []
+    return "getpeerinfo", [], {}, handle_peers
 
 @mvs_api
 def getblockheader(hash=None, height=None):

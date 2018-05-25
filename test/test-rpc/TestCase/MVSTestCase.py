@@ -118,8 +118,12 @@ class ForkTestCase(MVSTestCaseBase):
         new_height = 0
 
         # wait until the fork complete
+        timeout = 10
         while  new_height < self.partion_height + ming_round:
             time.sleep(1)
             ec, message = mvs_rpc.get_info()
             self.assertEqual(ec, 0, message)
             new_height = message[0]
+            timeout -= 1
+            self.assertGreater(timeout, 0, "wait fork timeout error!")
+
