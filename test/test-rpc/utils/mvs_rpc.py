@@ -59,7 +59,7 @@ class RPC:
             max_ = max(times)
             min_ = min(times)
             avg_ = sum(times) / len(times)
-            ret.append( (method, max_, min_, avg_, len(times)) )
+            ret.append( (method, max_*1000, min_*1000, avg_*1000, len(times)) )
         ret.sort(
             lambda x,y: cmp(x[3], y[3]),
             reverse=True

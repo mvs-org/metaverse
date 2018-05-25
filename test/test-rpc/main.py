@@ -50,9 +50,9 @@ def run_testcase():
 </colgroup>
 <tr id='header_row'>
     <td>MVS API/Method</td>
-    <td>Max(s)</td>
-    <td>Min(s)</td>
-    <td>Average(s)</td>
+    <td>Max(ms)</td>
+    <td>Min(ms)</td>
+    <td>Average(ms)</td>
     <td>Called(times)</td>
 </tr>'''
         benchmark_fmt = '''
