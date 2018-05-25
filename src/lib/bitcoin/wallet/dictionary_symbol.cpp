@@ -25,7 +25,7 @@ namespace libbitcoin {
 namespace wallet {
 namespace symbol {
 
-    const dictionary2 ban_list = {
+    const std::array<const char*, 64> ban_list = {
         "HUJINTAO",
         "WENJIABAO",
         "WJB",
@@ -101,7 +101,7 @@ namespace symbol {
         return false;
     }
 
-    const std::vector<std::string> forbidden_list = {
+    const std::array<const char*, 1> forbidden_list = {
         "ETP"
     };
 

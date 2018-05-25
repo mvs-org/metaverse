@@ -61,9 +61,7 @@ namespace language
 
 namespace symbol
 {
-    typedef std::array<const char*, 64> dictionary2;
     // built in ban dict (upper case):
-    extern const dictionary2 ban_list; //S level
     bool is_sensitive(const std::string& symbol);
 
     // built in forbidden dict (upper case):
