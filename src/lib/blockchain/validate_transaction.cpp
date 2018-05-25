@@ -1240,6 +1240,13 @@ bool validate_transaction::connect_input(const transaction& tx,
             return false;
     }
 
+    // check forbidden symbol
+    if (previous_output.attach_data.get_type() == ASSET_TYPE) {
+        if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
+            return false;
+        }
+    }
+
     if (!check_consensus(previous_output.script, tx, current_input, flags))
         return false;
 

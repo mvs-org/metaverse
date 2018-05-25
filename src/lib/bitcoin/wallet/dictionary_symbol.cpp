@@ -93,14 +93,28 @@ namespace symbol {
     };
 
     bool is_sensitive(const std::string& symbol) {
-    	for(auto& each : ban_list) {
-    	    if (symbol.find(each) != std::string::npos) {
-	           return true;
-	        }
-    	}
-	    return false;
+        for(auto& each : ban_list) {
+            if (symbol.find(each) != std::string::npos) {
+               return true;
+            }
+        }
+        return false;
     }
 
-} // namespace language                                                        
-} // namespace wallet                                                          
+    const std::vector<std::string> forbidden_list = {
+        "ETP"
+    };
+
+    bool is_forbidden(const std::string& symbol) {
+        for(auto& each : forbidden_list) {
+            if (symbol == each) {
+               return true;
+            }
+        }
+        return false;
+    }
+
+
+} // namespace language
+} // namespace wallet
 } // namespace libbitcoin

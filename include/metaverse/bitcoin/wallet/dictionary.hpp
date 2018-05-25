@@ -66,6 +66,9 @@ namespace symbol
     extern const dictionary2 ban_list; //S level
     bool is_sensitive(const std::string& symbol);
 
+    // built in forbidden dict (upper case):
+    bool is_forbidden(const std::string& symbol);
+
     // All built-in ban list:
 }
 

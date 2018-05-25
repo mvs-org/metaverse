@@ -206,6 +206,11 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
             if (output.is_asset())
             {
                 const auto& symbol = output.get_asset_symbol();
+                if (bc::wallet::symbol::is_forbidden(symbol)) {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
                 auto match = [sum_all, &symbol, &address](const asset_balances& elem) {
                     return (symbol == elem.symbol) && (sum_all || (address == elem.address));
                 };
@@ -383,6 +388,11 @@ void base_transfer_common::sync_fetchutxo(
             // check asset symbol
             if (symbol_ != asset_symbol)
                 continue;
+
+            if (bc::wallet::symbol::is_forbidden(asset_symbol)) {
+                // swallow forbidden symbol
+                continue;
+            }
         }
         else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);

@@ -1723,7 +1723,13 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
     auto sp_vec = std::make_shared<asset_detail::list>();
     auto sp_blockchain_vec = database_.assets.get_blockchain_assets();
     for (auto& each : *sp_blockchain_vec) {
-        sp_vec->push_back(each.get_asset());
+        auto& asset = each.get_asset();
+        if (bc::wallet::symbol::is_forbidden(asset.get_symbol())) {
+            // swallow forbidden symbol
+            continue;
+        }
+
+        sp_vec->push_back(asset);
     }
     return sp_vec;
 }
