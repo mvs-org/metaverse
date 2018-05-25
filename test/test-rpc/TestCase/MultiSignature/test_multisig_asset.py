@@ -40,7 +40,6 @@ class TestMultiSigasset(MVSTestCaseBase):
             addr = role.didaddress()
         addressassets = role.get_addressasset(addr)
 
-        #we only consider Alice's Asset
         addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 1)
         previous_quantity = addressasset[0].quantity

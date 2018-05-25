@@ -435,31 +435,21 @@ public:
     ~sending_etp_more(){}
 };
 
-class BCX_API sending_multisig_tx : public base_transfer_helper
+class BCX_API sending_multisig_tx : public base_multisig_transfer_helper
 {
 public:
     sending_multisig_tx(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list, uint64_t fee,
         account_multisig& multisig, std::string&& symbol = std::string(""))
-        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee, std::move(symbol))
-        , multisig_{multisig}
+        : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol),
+            std::move(multisig))
     {}
 
     ~sending_multisig_tx(){}
 
     void populate_change() override;
-
-    std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
-
-    // no operation in exec
-    void send_tx() override {}
-
-    bool filter_out_address(const std::string& address) const override;
-
-private:
-    account_multisig multisig_;
 };
 
 class BCX_API issuing_asset : public base_transfer_helper

@@ -50,27 +50,40 @@ class TestFork(ForkTestCase):
     def test_2_fork_at_issueasset(self):
         self.make_partion()
 
-        Alice.create_asset()
-        Alice.mining()
+        domain_symbol = (u'NotExists' + common.get_random_str()).upper()
+        asset_symbol = None
+        try:
+            domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain_symbol)
+            Alice.mining()
 
+            ec, message = mvs_rpc.get_asset( )
+            self.assertEqual(ec, 0, message)
+            self.assertIn(asset_symbol, message["assets"])
+
+            addressassets = Alice.get_addressasset(Alice.mainaddress())
+            addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
+            self.assertEqual(len(addressasset), 1)
+
+            certs = Alice.get_addressasset(Alice.mainaddress(), True)
+            cert = filter(lambda a: a.symbol == asset_symbol, certs)
+            self.assertEqual(len(cert), 2) # domain and issue
+
+        finally:
+            self.fork()
+
+        # check asset
         ec, message = mvs_rpc.get_asset( )
         self.assertEqual(ec, 0, message)
-        self.assertIn(Alice.asset_symbol, message["assets"])
-
-
-        addressassets = Alice.get_addressasset(Alice.mainaddress())
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
-        self.assertEqual(len(addressasset), 1)
-
-        self.fork()
-
-        ec, message = mvs_rpc.get_asset( )
-        self.assertEqual(ec, 0, message)
-        self.assertNotIn(Alice.asset_symbol, message["assets"])
+        self.assertNotIn(asset_symbol, message["assets"])
 
         addressassets = Alice.get_addressasset(Alice.mainaddress())
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 0)
+
+        # check cert
+        certs = Alice.get_addressasset(Alice.mainaddress(), True)
+        cert = filter(lambda a: a.symbol == asset_symbol, certs)
+        self.assertEqual(len(cert), 0)
 
     def test_3_fork_at_modify_did(self):
         self.make_partion()

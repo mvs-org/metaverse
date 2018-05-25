@@ -1210,16 +1210,6 @@ void sending_multisig_tx::populate_change()
     populate_asset_change();
 }
 
-bool sending_multisig_tx::filter_out_address(const std::string& address) const
-{
-    return !blockchain_.is_script_address(address);
-}
-
-std::string sending_multisig_tx::get_sign_tx_multisig_script(const address_asset_record& from) const
-{
-    return multisig_.get_multisig_script();
-}
-
 void issuing_asset::sum_payments()
 {
     for (auto& iter : receiver_list_) {

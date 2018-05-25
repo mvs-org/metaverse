@@ -78,8 +78,9 @@ class Role:
 
         return mvs_rpc.issue_did(self.name, self.password, address, symbol)
 
-    def create_random_asset(self, is_issue=True, secondary=0, did_symbol=None):
-        domain_symbol = (self.name + common.get_random_str()).upper()
+    def create_random_asset(self, domain_symbol=None, did_symbol=None, is_issue=True, secondary=0):
+        if None == domain_symbol:
+            domain_symbol = (self.name + common.get_random_str()).upper()
         asset_symbol = domain_symbol + ".AST"
         self.create_asset_with_symbol(asset_symbol, is_issue, secondary)
         return domain_symbol, asset_symbol
