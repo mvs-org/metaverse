@@ -14,15 +14,35 @@ class Role:
 
         self.addresslist.reverse()
         self.did_symbol = (name+".DIID").upper()
+        self.did_address = None
         self.asset_symbol = ""
         self.domain_symbol = ""
         self.multisig_addresses = {} # desc : multisig-addr
+
+    def ensure_balance(self, mount=500):
+        try:
+            while self.get_balance() < mount * (10**8):
+                self.mining(50)
+        finally:
+            print("ensure balance of {}".format(self.name))
 
     def lastword(self):
         return self.mnemonic[-1]
 
     def mainaddress(self):
         return self.addresslist[0]
+
+    def didaddress(self):
+        if None == self.did_address:
+            ec, message = mvs_rpc.list_dids(self.name, self.password)
+            assert (ec == 0)
+            if message['dids']:
+                dids = [MOCs.Did.init(i) for i in message["dids"] if i]
+                found_dids = filter(lambda a: a.symbol == self.did_symbol, dids)
+                assert(len(found_dids) == 1)
+                self.did_address = found_dids[0].address
+
+        return self.did_address
 
     def create(self):
         '''
@@ -58,14 +78,16 @@ class Role:
 
         return mvs_rpc.issue_did(self.name, self.password, address, symbol)
 
-    def create_random_asset(self, is_issue=True, secondary=0):
+    def create_random_asset(self, is_issue=True, secondary=0, did_symbol=None):
         domain_symbol = (self.name + common.get_random_str()).upper()
         asset_symbol = domain_symbol + ".AST"
         self.create_asset_with_symbol(asset_symbol, is_issue, secondary)
         return domain_symbol, asset_symbol
 
-    def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0):
-        result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 300000, self.did_symbol, description="%s's Asset" % self.name, rate=secondary)
+    def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0, did_symbol=None):
+        if did_symbol == None:
+            did_symbol = self.did_symbol
+        result, message = mvs_rpc.create_asset(self.name, self.password, symbol, 300000, did_symbol, description="%s's Asset" % self.name, rate=secondary)
         if (result):
             print("#ERROR#: failed to create asset: {}".format(message))
         assert (result == 0)

@@ -11,10 +11,10 @@ class TestTransferMultisigCert(MVSTestCaseBase):
 
         # create multisig
         #
-        description = "Alice & Dale's multi-sig address"
+        description = "Alice & Zac's multi-sig address"
 
-        multisig_address = Alice.new_multisigaddress(description, [Dale], 2)
-        multisig_address2 = Dale.new_multisigaddress(description, [Alice], 2)
+        multisig_address = Alice.new_multisigaddress(description, [Zac], 2)
+        multisig_address2 = Zac.new_multisigaddress(description, [Alice], 2)
         self.assertEqual(multisig_address, multisig_address2, "multisig addresses dismatch.")
 
         # send etp to multisig_address
@@ -31,7 +31,7 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         self.assertEqual(ec, code.success, tx)
 
         # sign multisig rawtx
-        ec, tx2 = mvs_rpc.sign_multisigtx(Dale.name, Dale.password, tx, True)
+        ec, tx2 = mvs_rpc.sign_multisigtx(Zac.name, Zac.password, tx, True)
         self.assertEqual(ec, 0, tx2)
         Alice.mining()
 
@@ -42,7 +42,7 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         Alice.mining()
 
         # check cert
-        certs = Dale.get_addressasset(multisig_address, True);
+        certs = Zac.get_addressasset(multisig_address, True);
         self.assertGreater(len(certs), 0, "not cert found at " + multisig_address)
         self.assertEqual(asset_symbol, certs[0].symbol, "cert symbol dismatch: " + certs[0].symbol)
 
@@ -52,7 +52,7 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         self.assertEqual(ec, code.success, tx)
 
         # sign multisig rawtx
-        ec, tx2 = mvs_rpc.sign_multisigtx(Dale.name, Dale.password, tx, True)
+        ec, tx2 = mvs_rpc.sign_multisigtx(Zac.name, Zac.password, tx, True)
         self.assertEqual(ec, 0, tx2)
         Alice.mining()
 

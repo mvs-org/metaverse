@@ -2,6 +2,8 @@ from TestCase.MVSTestCase import *
 
 class TestMultiSigasset(MVSTestCaseBase):
     def test_0_multisig_asset(self):
+        Alice.ensure_balance()
+
         #create multisig addr
         domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)
         Alice.mining()
@@ -15,15 +17,14 @@ class TestMultiSigasset(MVSTestCaseBase):
         Alice.send_etp(address, 10**4)
         Alice.mining()
 
-        pre_asset = self.get_asset_amount(Alice, asset_symbol)
         # send amount asset to multi-signature address
-        result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, Alice.asset_symbol, amount)
+        result, message = mvs_rpc.send_asset(Alice.name, Alice.password, address, asset_symbol, amount)
         self.assertEqual(result, 0 , message)
         Alice.mining()
         self.assertEqual(amount, self.get_asset_amount(group[0], asset_symbol, address) , "Failed when send asset from Alice to multi-signature address")
 
         #send from multisig-addr
-        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), amount_ret, 3 ,Alice.asset_symbol)
+        result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), amount_ret, 3, asset_symbol)
         self.assertEqual(result, 0 , message)
 
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
@@ -36,7 +37,7 @@ class TestMultiSigasset(MVSTestCaseBase):
 
     def get_asset_amount(self, role, asset_symbol, addr=None):
         if addr == None:
-            addr = role.mainaddress()
+            addr = role.didaddress()
         addressassets = role.get_addressasset(addr)
 
         #we only consider Alice's Asset

@@ -6,6 +6,7 @@ class TestCert(MVSTestCaseBase):
     need_mine = False
 
     def test_0_issuecert(self):
+        Alice.ensure_balance()
 
         '''
         Alice create asset and cert

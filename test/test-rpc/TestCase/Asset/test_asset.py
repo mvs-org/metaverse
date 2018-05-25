@@ -3,6 +3,7 @@ from TestCase.MVSTestCase import *
 class TestAsset(MVSTestCaseBase):
 
     def test_1_create_asset(self):
+        Alice.ensure_balance()
 
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False)
         Alice.mining()
@@ -24,33 +25,28 @@ class TestAsset(MVSTestCaseBase):
         Alice.create_asset()
         Alice.mining()
 
-        assets = Alice.get_accountasset()
-        self.assertEqual(len(assets), 1)
-        self.assertEqual(assets[0].symbol, Alice.asset_symbol)
-        self.assertEqual(assets[0].address, Alice.mainaddress())
-        self.assertEqual(assets[0].issuer, Alice.did_symbol)
-        self.assertEqual(assets[0].status, 'unspent')
-
-        addressassets = Alice.get_addressasset( Alice.mainaddress() )
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
-        self.assertEqual(len(addressasset), 1)
-        self.assertEqual(addressasset[0].symbol, Alice.asset_symbol)
-        self.assertEqual(addressasset[0].address, Alice.mainaddress())
-        self.assertEqual(addressasset[0].issuer, Alice.did_symbol)
-        self.assertEqual(addressasset[0].status, 'unspent')
+        account_assets = Alice.get_accountasset()
+        found_assets = filter(lambda a: a.symbol == Alice.asset_symbol, account_assets)
+        self.assertEqual(len(found_assets), 1)
+        self.assertEqual(found_assets[0].symbol, Alice.asset_symbol)
+        self.assertEqual(found_assets[0].issuer, Alice.did_symbol)
+        self.assertEqual(found_assets[0].address, Alice.didaddress())
+        self.assertEqual(found_assets[0].status, 'unspent')
 
         origin_amount = self.get_asset_amount(Alice)
         self.assertGreater(origin_amount, 0)
 
-    def get_asset_amount(self, role):
-        addressassets = role.get_addressasset(role.mainaddress())
+    def get_asset_amount(self, role, address=None):
+        if address == None:
+            address = role.didaddress()
+        address_assets = role.get_addressasset(address)
 
         #we only consider Alice's Asset
-        filterassets = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
-        self.assertEqual(len(filterassets), 1)
+        found_assets = filter(lambda a: a.symbol == Alice.asset_symbol, address_assets)
+        self.assertEqual(len(found_assets), 1)
 
-        previous_quantity = filterassets[0].quantity
-        previous_decimal = filterassets[0].decimal_number
+        previous_quantity = found_assets[0].quantity
+        previous_decimal = found_assets[0].decimal_number
         return previous_quantity * (10 ** previous_decimal)
 
     def test_3_sendasset(self):
@@ -65,8 +61,8 @@ class TestAsset(MVSTestCaseBase):
         Alice.mining()
 
         final_amount = self.get_asset_amount(Alice)
-        self.assertEqual(origin_amount-send_amount, final_amount)
-        self.assertEqual(send_amount, self.get_asset_amount(Zac))
+        self.assertEqual(origin_amount - send_amount, final_amount)
+        self.assertEqual(send_amount, self.get_asset_amount(Zac, Zac.mainaddress()))
 
     def test_4_sendassetfrom(self):
         Alice.create_asset()
@@ -74,14 +70,19 @@ class TestAsset(MVSTestCaseBase):
 
         origin_amount = self.get_asset_amount(Alice)
         send_amount = 100
+
         # pre-set condition
         self.assertGreater(origin_amount, send_amount)
-        Alice.send_asset_from(Alice.mainaddress(), Zac.mainaddress(), send_amount)
+
+        Alice.send_etp(Alice.didaddress(), 1 * 10 ** 8)
+        Alice.mining()
+
+        Alice.send_asset_from(Alice.didaddress(), Zac.mainaddress(), send_amount)
         Alice.mining()
 
         final_amount = self.get_asset_amount(Alice)
         self.assertEqual(origin_amount - send_amount, final_amount)
-        self.assertEqual(send_amount, self.get_asset_amount(Zac))
+        self.assertEqual(send_amount, self.get_asset_amount(Zac, Zac.mainaddress()))
 
     def test_5_burn_asset(self):
         Alice.create_asset()
@@ -101,6 +102,6 @@ class TestAsset(MVSTestCaseBase):
 
         Alice.burn_asset(1)
         Alice.mining()
-        addressassets = Alice.get_addressasset(Alice.mainaddress())
+        addressassets = Alice.get_addressasset(Alice.didaddress())
         addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 0)
