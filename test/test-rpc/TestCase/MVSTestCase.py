@@ -87,7 +87,7 @@ class ForkTestCase(MVSTestCaseBase):
     def tearDown(self):
         self.remote_ctrl.delete_account(Alice.name, Alice.password, Alice.lastword())
 
-        ec, message = mvs_rpc.add_node(Alice.name, Alice.password, self.remote_ip + ':5251')
+        ec, message = mvs_rpc.add_node( self.remote_ip + ':5251')
         self.assertEqual(ec, 0, message)
 
         MVSTestCaseBase.tearDown(self)
@@ -101,7 +101,7 @@ class ForkTestCase(MVSTestCaseBase):
 
         ec, peers = mvs_rpc.getpeerinfo()
         for peer in peers:
-            ec, message = mvs_rpc.ban_node(Alice.name, Alice.password, peer)
+            ec, message = mvs_rpc.ban_node( peer)
             self.assertEqual(ec, 0, message)
 
     def remote_ming(self, times):
@@ -112,7 +112,7 @@ class ForkTestCase(MVSTestCaseBase):
         ming_round = 6
         self.remote_ming(ming_round)
 
-        ec, message = mvs_rpc.add_node(Alice.name, Alice.password, self.remote_ip+':5251')
+        ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
         self.assertEqual(ec, 0, message)
         import time
         new_height = 0

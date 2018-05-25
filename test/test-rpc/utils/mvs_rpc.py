@@ -626,18 +626,18 @@ def shutdown():
     return "shutdown", [], {}, None
 
 @mvs_api
-def add_node(account, password, peer):
+def add_node(peer):
     '''
     :param peer: format in: "10.10.10.35:5251"
     '''
-    return 'addnode', [account, password, peer], {}, None
+    return 'addnode', [peer], {}, None
 
 @mvs_api
-def ban_node(account, password, peer):
+def ban_node(peer):
     '''
     :param peer: format in: "10.10.10.35:5251"
     '''
-    return 'addnode', [account, password, peer], {'-o':'ban'}, None
+    return 'addnode', [peer], {'-o':'ban'}, None
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")

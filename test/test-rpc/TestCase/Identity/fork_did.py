@@ -71,3 +71,46 @@ class TestFork(ForkTestCase):
         addressassets = Alice.get_addressasset(Alice.mainaddress())
         addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 0)
+
+    def test_3_fork_at_modify_did(self):
+        self.make_partion()
+        try:
+            target_addr = Cindy.addresslist[-1]
+            Alice.send_etp(target_addr, 10**8)
+            Alice.mining()
+
+            ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            expect = {
+                u'status': u'issued',
+                u'symbol': Cindy.did_symbol,
+                u'address': target_addr
+            }
+
+            ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
+            self.assertEqual(ec, 0, message)
+            self.assertIn(expect, message['dids'])
+
+            ec, message = mvs_rpc.list_dids()
+            self.assertEqual(ec, 0, message)
+            self.assertIn(expect, message['dids'])
+
+        finally:
+            self.fork()
+
+        expect = {
+            u'status': u'issued',
+            u'symbol': Cindy.did_symbol,
+            u'address': Cindy.mainaddress()
+        }
+
+        ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
+        self.assertEqual(ec, 0, message)
+        self.assertIn(expect, message['dids'])
+
+        ec, message = mvs_rpc.list_dids()
+        self.assertEqual(ec, 0, message)
+        self.assertIn(expect, message['dids'])
+

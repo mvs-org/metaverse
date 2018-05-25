@@ -69,7 +69,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
     }
     file_root["multisigs"] = multisig_lst;
 
-    std::string result;
+    Json::Value result;
 
     if (!option_.is_data) {
         if (argument_.dst.empty()) {
@@ -110,7 +110,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
         result = argument_.dst.string();
 
     } else {
-        result = file_root.toStyledString();
+        result = file_root;
     }
 
     auto& root = jv_output;

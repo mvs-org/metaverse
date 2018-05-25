@@ -37,10 +37,9 @@ namespace commands {
 console_result addnode::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-    //jv_output["message"] = IN_DEVELOPING;
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    auto& root = jv_output;
+
+    administrator_required_checker(node, auth_.name, auth_.auth);
 
     const auto authority = libbitcoin::config::authority(argument_.address);
 
@@ -49,14 +48,14 @@ console_result addnode::invoke(Json::Value& jv_output,
         errcode = ec;
     };
 
-    if (argument_.operation == "ban") {
+    if (option_.operation == "ban") {
         network::channel::manual_ban(authority);
         node.connections_ptr()->stop(authority);
-    } else if ((argument_.operation == "add") || (argument_.operation == "")){
+    } else if ((option_.operation == "add") || (option_.operation == "")){
         network::channel::manual_unban(authority);
         node.store(authority.to_network_address(), handler);
     } else {
-        jv_output = string("Invalid operation [") +argument_.operation+"]." ;
+        jv_output = string("Invalid operation [") +option_.operation+"]." ;
         return console_result::okay;
     }
 
