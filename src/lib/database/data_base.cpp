@@ -1079,11 +1079,29 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 assets.remove(symbol_hash);
             }
             else if (op.is_did()) {
-                address_dids.delete_last_row(hash);
                 auto symbol = op.get_did_symbol();
                 const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
                 const auto symbol_hash = sha256_hash(symbol_data);
-                dids.remove(symbol_hash);
+
+                if(op.is_did_issue())
+                {
+                    address_dids.delete_last_row(hash);
+                    dids.remove(symbol_hash);
+                }
+                else if(op.is_did_transfer() )
+                {
+                   std::shared_ptr<blockchain_did> blockchain_did_=  dids.pop_did_transfer(symbol_hash);
+                   if(blockchain_did_)
+                   {
+                        address_dids.delete_last_row(hash);
+                        address_dids.store_output(hash, blockchain_did_->get_tx_point(), blockchain_did_->get_height(), 0,
+                            static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue),
+                            timestamp_, blockchain_did_->get_did());
+                        address_dids.sync();
+    
+                   }
+                }
+
             }
             else if (op.is_asset_cert()) {
                 const auto asset_cert = op.get_asset_cert();

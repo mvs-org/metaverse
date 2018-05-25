@@ -75,9 +75,12 @@ public:
     /// Synchronise storage with disk so things are consistent.
     /// Should be done at the end of every block write.
     void sync();
+
+    //pop back did_detail
+    std::shared_ptr<blockchain_did> pop_did_transfer(const hash_digest &hash);
 protected:
-    ///get old address and update status to old
-    void update_old_address(const hash_digest& hash);
+    /// update address status(current or old), default old
+     std::shared_ptr<blockchain_did> update_address_status(const hash_digest& hash,uint32_t status = blockchain_did::address_old);
 private:
     typedef slab_hash_table<hash_digest> slab_map;
 

@@ -175,7 +175,7 @@ void blockchain_did_database::store(const hash_digest& hash, const blockchain_di
     const auto key = hash;
 
     //cannot remove old address,instead of update its status
-    update_old_address(key);
+    update_address_status(key,blockchain_did::address_old);
 
     const auto sp_size = sp_detail.serialized_size();
 #ifdef MVS_DEBUG
@@ -192,24 +192,37 @@ void blockchain_did_database::store(const hash_digest& hash, const blockchain_di
 	lookup_map_.store(key, write, value_size);
 }
 
-void blockchain_did_database::update_old_address(const hash_digest &hash)
+std::shared_ptr<blockchain_did> blockchain_did_database::update_address_status(const hash_digest &hash,uint32_t status )
 {
-    blockchain_did detail;
+    std::shared_ptr<blockchain_did>  detail = nullptr;
 
     const auto raw_memory = lookup_map_.find(hash);
     if (raw_memory)
     {
-        const auto memory = REMAP_ADDRESS(raw_memory);
-        auto deserial = make_deserializer_unsafe(memory);
-        detail.from_data(deserial);
-        if (detail.get_status() != blockchain_did::address_old)
+        detail = std::make_shared<blockchain_did>();
+        if(detail)
         {
-            //update status and serializer
-            detail.set_status(blockchain_did::address_old);
-            auto serial = make_serializer(memory);
-            serial.write_data(detail.to_data());
+            const auto memory = REMAP_ADDRESS(raw_memory);
+            auto deserial = make_deserializer_unsafe(memory);
+            detail->from_data(deserial);
+            if (detail->get_status() != status)
+            {
+                //update status and serializer
+                detail->set_status(status);
+                auto serial = make_serializer(memory);
+                serial.write_data(detail->to_data());
+            }
         }
+
     }
+
+    return detail;
+}
+
+std::shared_ptr<blockchain_did> blockchain_did_database::pop_did_transfer(const hash_digest &hash)
+{
+    lookup_map_.unlink(hash);
+    return update_address_status(hash, blockchain_did::address_current);
 }
 
 } // namespace database
