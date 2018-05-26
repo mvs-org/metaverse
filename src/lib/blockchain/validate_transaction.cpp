@@ -869,7 +869,7 @@ code validate_transaction::check_did_transaction(
                 return error::asset_did_issuer_not_match;
             }
         }
-        else if (output.is_asset_cert_issue() || output.is_asset_cert()) {
+        else if (output.is_asset_cert()) {
             if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION) {
                 if (output.get_asset_cert_owner() != output.attach_data.get_to_did()) {
                     log::debug(LOG_BLOCKCHAIN)

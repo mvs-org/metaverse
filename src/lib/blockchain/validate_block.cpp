@@ -286,7 +286,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                     return error::asset_exist;
                 }
             }
-            else if (output.is_asset_cert_issue()) {
+            else if (output.is_asset_cert()) {
                 auto&& key = output.get_asset_cert().get_key();
                 auto r = assetcerts.insert(key);
                 if (r.second == false) {
@@ -298,7 +298,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                     return error::asset_cert_exist;
                 }
             }
-            else if (output.is_did_issue() || output.is_did_transfer()) {
+            else if (output.is_did()) {
                 auto didexist = dids.insert(output.get_did_symbol());
                 if (didexist.second == false) {
                     return error::did_exist;

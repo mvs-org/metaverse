@@ -67,6 +67,7 @@ enum class utxo_attach_type : uint32_t
     did_transfer = 10,
     asset_cert_issue = 11,
     asset_cert_transfer = 12,
+    asset_cert_autoissue = 13,
     invalid = 0xffffffff
 };
 

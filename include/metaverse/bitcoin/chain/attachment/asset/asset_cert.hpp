@@ -33,6 +33,7 @@
 #define ASSET_CERT_NORMAL_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_normal)
 #define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
 #define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
+#define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_autoissue)
 
 // forward declaration
 namespace libbitcoin {
@@ -69,9 +70,10 @@ public:
 
     enum class asset_cert_status : uint8_t
     {
-        asset_cert_normal,
-        asset_cert_issue,
-        asset_cert_transfer,
+        asset_cert_normal = 0,
+        asset_cert_issue = 1,
+        asset_cert_transfer = 2,
+        asset_cert_autoissue = 3,
     };
 
     asset_cert();
@@ -101,6 +103,7 @@ public:
 
     uint8_t get_status() const;
     void set_status(uint8_t status);
+    bool is_newly_generated() const;
 
     void set_owner(const std::string& owner);
     const std::string& get_owner() const;

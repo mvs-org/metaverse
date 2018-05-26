@@ -130,14 +130,16 @@ std::shared_ptr<asset_cert> blockchain_asset_cert_database::get(const hash_diges
 std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blockchain_asset_certs() const
 {
     auto vec_acc = std::make_shared<std::vector<asset_cert>>();
-    uint64_t i = 0;
-    for( i = 0; i < number_buckets; i++ ) {
+    for( uint64_t i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
-            auto iter = memo->begin();
-            const auto memory = REMAP_ADDRESS(*iter);
-            auto deserial = make_deserializer_unsafe(memory);
-            vec_acc->push_back(asset_cert::factory_from_data(deserial));
+            const auto action = [&](memory_ptr elem)
+            {
+                const auto memory = REMAP_ADDRESS(elem);
+                auto deserial = make_deserializer_unsafe(memory);
+                vec_acc->push_back(asset_cert::factory_from_data(deserial));
+            };
+            std::for_each(memo->begin(), memo->end(), action);
         }
     }
     return vec_acc;

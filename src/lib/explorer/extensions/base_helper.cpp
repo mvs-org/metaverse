@@ -847,6 +847,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         else if (record.type == utxo_attach_type::asset_cert_transfer) {
             cert_info.set_status(ASSET_CERT_TRANSFER_TYPE);
         }
+        else if (record.type == utxo_attach_type::asset_cert_autoissue) {
+            cert_info.set_status(ASSET_CERT_AUTOISSUE_TYPE);
+        }
 
         auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
         return attach;

@@ -1094,10 +1094,12 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             }
             else if (op.is_asset_cert()) {
                 const auto asset_cert = op.get_asset_cert();
-                const auto key_str = asset_cert.get_key();
-                const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-                const auto key_hash = sha256_hash(data);
-                certs.remove(key_hash);
+                if (asset_cert.is_newly_generated()) {
+                    const auto key_str = asset_cert.get_key();
+                    const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
+                    const auto key_hash = sha256_hash(data);
+                    certs.remove(key_hash);
+                }
             }
         }
     }
@@ -1157,8 +1159,10 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
 void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-    certs.store(sp_cert);
-    certs.sync();
+    if (sp_cert.is_newly_generated()) {
+        certs.store(sp_cert);
+        certs.sync();
+    }
     address_assets.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_cert),
         timestamp_, sp_cert);
@@ -1172,6 +1176,7 @@ void data_base::push_asset_detail(const asset_detail& sp_detail, const short_has
     const auto hash = sha256_hash(data);
     auto bc_asset = blockchain_asset(0, outpoint,output_height, sp_detail);
     assets.store(hash, bc_asset);
+    assets.sync();
     address_assets.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_issue),
         timestamp_, sp_detail);

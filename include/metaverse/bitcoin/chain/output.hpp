@@ -82,6 +82,7 @@ public:
     bool is_asset_cert() const;
     bool is_asset_cert_issue() const;
     bool is_asset_cert_transfer() const;
+    bool is_asset_cert_autoissue() const;
     bool is_etp() const;
     bool is_etp_award() const;
     bool is_message() const;

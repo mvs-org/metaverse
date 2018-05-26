@@ -65,6 +65,7 @@ console_result issue::invoke (Json::Value& jv_output,
     std::string cert_symbol;
     std::string cert_did;
     asset_cert_type cert_type = asset_cert_ns::none;
+    bool is_domain_cert_exist = false;
 
     // domain cert check
     auto&& domain = asset_cert::get_domain(argument_.symbol);
@@ -72,6 +73,7 @@ console_result issue::invoke (Json::Value& jv_output,
         auto cert = blockchain.get_asset_cert(domain, asset_cert_ns::domain);
         if (!cert) {
             // domain cert does not exist, issue new domain cert to this address
+            is_domain_cert_exist = false;
             cert_address = to_address;
             cert_type = asset_cert_ns::domain;
             cert_symbol = domain;
@@ -79,6 +81,7 @@ console_result issue::invoke (Json::Value& jv_output,
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
+            is_domain_cert_exist = true;
             auto account_address = blockchain.get_account_address(auth_.name, cert->get_address());
             if (account_address) {
                 cert_symbol = domain;
@@ -119,14 +122,15 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!certs.empty()) {
         for (auto each_cert_type : certs) {
             receiver.push_back({to_address, argument_.symbol, 0, 0,
-                each_cert_type, utxo_attach_type::asset_cert, attachment(to_did, to_did)});
+                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment(to_did, to_did)});
         }
     }
 
     // domain cert or naming cert
     if (asset_cert::is_valid_domain(domain)) {
-        receiver.push_back({cert_address, cert_symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert, attachment(cert_did, cert_did)});
+        receiver.push_back({cert_address, cert_symbol, 0, 0, cert_type,
+            (is_domain_cert_exist ? utxo_attach_type::asset_cert : utxo_attach_type::asset_cert_autoissue),
+            attachment(cert_did, cert_did)});
     }
 
     auto issue_helper = issuing_asset(*this, blockchain,
