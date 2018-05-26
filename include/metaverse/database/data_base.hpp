@@ -188,7 +188,6 @@ public:
 
     /// Stop all databases (threads must be joined).
     ~data_base();
-    bool clear_block_db();
     // Startup and shutdown.
     // ------------------------------------------------------------------------
 

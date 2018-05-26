@@ -501,17 +501,6 @@ data_base::~data_base()
     close();
 }
 
-bool data_base::clear_block_db()
-{
-    size_t current_height;
-    auto empty_chain = blocks.top(current_height);
-    while(empty_chain){
-        pop();
-        empty_chain = blocks.top(current_height);
-    }
-    return true;
-}
-
 void data_base::write_metadata(const path& metadata_path, data_base::db_metadata& metadata)
 {
     bc::ofstream file_output(metadata_path.string(), std::ofstream::out);
@@ -1002,7 +991,7 @@ chain::block data_base::pop()
 
         // TODO: the deserialization should cache the hash on the tx.
         // Deserialize the transaction and move it to the block.
-        block.transactions.emplace_back(tx_result.transaction());
+        txs.emplace_back(tx_result.transaction());
     }
 
     // Loop txs backwards, the reverse of how they are added.
