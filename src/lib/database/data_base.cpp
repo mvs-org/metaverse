@@ -123,14 +123,28 @@ bool data_base::upgrade_version_63(const path& prefix)
     if (!boost::filesystem::exists(metadata_path))
         return false;
 
+    data_base::db_metadata metadata;
+    data_base::read_metadata(metadata_path, metadata);
+    if (metadata.version_.empty()) {
+        return false; // no version before, initialize all intead of upgrade.
+    }
+
     if (!initialize_dids(prefix)) {
         log::error(LOG_DATABASE)
             << "Failed to upgrade did database.";
+        return false;
     }
 
     if (!initialize_certs(prefix)) {
         log::error(LOG_DATABASE)
             << "Failed to upgrade cert database.";
+        return false;
+    }
+
+    if (metadata.version_ != db_metadata::current_version) {
+        // write new db version to metadata
+        metadata = db_metadata(db_metadata::current_version);
+        data_base::write_metadata(metadata_path, metadata);
     }
 
     return true;
