@@ -91,10 +91,7 @@ bool data_base::initialize_dids(const path& prefix)
     if (!instance.create_dids())
         return false;
 
-    instance.stop();
-    instance.start();
     instance.set_blackhole_did();
-    instance.synchronize_dids();
 
     log::info(LOG_DATABASE)
         << "Upgrading did table is complete.";
@@ -113,10 +110,6 @@ bool data_base::initialize_certs(const path& prefix)
     data_base instance(prefix, 0, 0);
     if (!instance.create_certs())
         return false;
-
-    instance.stop();
-    instance.start();
-    instance.synchronize_certs();
 
     log::info(LOG_DATABASE)
         << "Upgrading cert table is complete.";
