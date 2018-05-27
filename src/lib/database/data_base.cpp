@@ -251,90 +251,6 @@ bool data_base::store::touch_certs() const
     return touch_file(certs_lookup);
 }
 
-data_base::blockchain_store::blockchain_store(const path& prefix)
-{
-    // Hash-based lookup (hash tables).
-    blocks_lookup = prefix / "block_table";
-    history_lookup = prefix / "history_table";
-    spends_lookup = prefix / "spend_table";
-    transactions_lookup = prefix / "transaction_table";
-    /* begin database for account, asset, address_asset, did relationship */
-    assets_lookup = prefix / "asset_table";  // for blockchain assets
-    certs_lookup = prefix / "cert_table";   // for blockchain certs
-    address_assets_lookup = prefix / "address_asset_table"; // for blockchain
-    address_assets_rows = prefix / "address_asset_row"; // for blockchain
-    address_dids_lookup = prefix / "address_did_table"; // for blockchain
-    address_dids_rows = prefix / "address_did_row"; // for blockchain
-    dids_lookup = prefix / "did_table";  // for blockchain dids
-
-    /* end database for account, asset, address_asset, did relationship */
-
-    // Height-based (reverse) lookup.
-    blocks_index = prefix / "block_index";
-
-    // One (address) to many (rows).
-    history_rows = prefix / "history_rows";
-    stealth_rows = prefix / "stealth_rows";
-}
-
-bool data_base::blockchain_store::touch_all() const
-{
-    // Return the result of the database file create.
-    return
-        touch_file(blocks_lookup) &&
-        touch_file(blocks_index) &&
-        touch_file(history_lookup) &&
-        touch_file(history_rows) &&
-        touch_file(stealth_rows) &&
-        touch_file(spends_lookup) &&
-        touch_file(transactions_lookup) &&
-        /* begin database for account, asset, address_asset, did relationship */
-        touch_file(assets_lookup) &&
-        touch_file(certs_lookup) &&
-        touch_file(address_assets_lookup) &&
-        touch_file(address_assets_rows) &&
-
-        touch_file(dids_lookup) &&
-        touch_file(address_dids_lookup) &&
-        touch_file(address_dids_rows)
-        /* end database for account, asset, address_asset, did relationship */
-        ;
-}
-
-data_base::blockchain_asset_store::blockchain_asset_store(const path& prefix)
-{
-    // Hash-based lookup (hash tables).
-    /* begin database for account, asset, address_asset relationship */
-    assets_lookup = prefix / "asset_table";  // for blockchain assets
-    /* end database for account, asset, address_asset relationship */
-}
-
-bool data_base::blockchain_asset_store::touch_all() const
-{
-    // Return the result of the database file create.
-    return
-        /* begin database for account, asset, address_asset relationship */
-        touch_file(assets_lookup);
-        /* end database for account, asset, address_asset relationship */
-}
-
-data_base::blockchain_did_store::blockchain_did_store(const path& prefix)
-{
-    // Hash-based lookup (hash tables).
-    /* begin database for account, asset, address_asset relationship */
-    dids_lookup = prefix / "did_table";  // for blockchain dids
-    /* end database for account, asset, address_asset relationship */
-}
-
-bool data_base::blockchain_did_store::touch_all() const
-{
-    // Return the result of the database file create.
-    return
-        /* begin database for account, asset, address_asset, did relationship */
-        touch_file(dids_lookup);
-        /* end database for account, asset, address_asset, did relationship */
-}
-
 data_base::db_metadata::db_metadata():version_("")
 {
 }
@@ -552,43 +468,6 @@ bool data_base::create()
         ;
 }
 
-bool data_base::blockchain_create()
-{
-    // Return the result of the database create.
-    return
-        blocks.create() &&
-        history.create() &&
-        spends.create() &&
-        stealth.create() &&
-        transactions.create() &&
-        /* begin database for account, asset, address_asset relationship */
-        assets.create() &&
-        address_assets.create() &&
-        certs.create() &&
-        dids.create() &&
-        address_dids.create()
-        /* end database for account, asset, address_asset relationship */
-        ;
-}
-
-bool data_base::blockchain_asset_create()
-{
-    // Return the result of the database create.
-    return
-        /* begin database for account, asset, address_asset relationship */
-        assets.create();
-        /* end database for account, asset, address_asset relationship */
-}
-
-bool data_base::blockchain_did_create()
-{
-    // Return the result of the database create.
-    return
-        /* begin database for account, asset, address_asset relationship */
-        dids.create();
-        /* end database for account, asset, address_asset relationship */
-}
-
 bool data_base::create_dids()
 {
     return
@@ -600,14 +479,6 @@ bool data_base::create_certs()
 {
     return
         certs.create();
-}
-
-bool data_base::account_db_start()
-{
-    return
-        accounts.start() &&
-        account_assets.start() &&
-        account_addresses.start();
 }
 
 // Start must be called before performing queries.

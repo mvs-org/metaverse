@@ -94,60 +94,12 @@ public:
         path address_assets_rows;
         path account_assets_lookup;
         path account_assets_rows;
-        path account_dids_lookup;
-        path account_dids_rows;
         path dids_lookup;
         path address_dids_lookup;
         path address_dids_rows;
         path account_addresses_lookup;
         path account_addresses_rows;
         /* end database for account, asset, address_asset, did ,address_did relationship */
-    };
-
-
-    class blockchain_store
-    {
-    public:
-        blockchain_store(const path& prefix);
-        bool touch_all() const;
-
-        path database_lock;
-        path blocks_lookup;
-        path blocks_index;
-        path history_lookup;
-        path history_rows;
-        path stealth_rows;
-        path spends_lookup;
-        path transactions_lookup;
-        /* begin database for account, asset, address_asset, did relationship */
-        path assets_lookup;
-        path certs_lookup;
-        path address_assets_lookup;
-        path address_assets_rows;
-        path dids_lookup;
-        path address_dids_lookup;
-        path address_dids_rows;
-        /* end database for account, asset, address_asset, did relationship */
-    };
-
-    class blockchain_asset_store
-    {
-    public:
-        blockchain_asset_store(const path& prefix);
-        bool touch_all() const;
-        /* begin database for account, asset, address_asset relationship */
-        path assets_lookup;
-        /* end database for account, asset, address_asset relationship */
-    };
-
-    class blockchain_did_store
-    {
-    public:
-        blockchain_did_store(const path& prefix);
-        bool touch_all() const;
-        /* begin database for account, did, address_did relationship */
-        path dids_lookup;
-        /* end database for account, did, address_did relationship */
     };
 
     class db_metadata
@@ -195,11 +147,7 @@ public:
     bool create();
     bool create_dids();
     bool create_certs();
-    bool blockchain_create();
-    bool blockchain_asset_create();
-    bool blockchain_did_create();
 
-    bool account_db_start();
     /// Start all databases.
     bool start();
 
