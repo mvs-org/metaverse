@@ -108,9 +108,14 @@ class ForkTestCase(MVSTestCaseBase):
         mining = mvs_rpc.remote_call(self.remote_ip, Alice.mining)
         mining(times)
 
+        get_info = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)
+        ec, message = get_info()
+        self.assertEqual(ec, 0, message)
+        return message[0] # expect hight
+
     def fork(self):
         ming_round = 6
-        self.remote_ming(ming_round)
+        expect_hight = self.remote_ming(ming_round)
 
         ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
         self.assertEqual(ec, 0, message)
@@ -119,7 +124,7 @@ class ForkTestCase(MVSTestCaseBase):
 
         # wait until the fork complete
         timeout = 10
-        while  new_height < self.partion_height + ming_round:
+        while  new_height < expect_hight:#self.partion_height + ming_round:
             time.sleep(1)
             ec, message = mvs_rpc.get_info()
             self.assertEqual(ec, 0, message)

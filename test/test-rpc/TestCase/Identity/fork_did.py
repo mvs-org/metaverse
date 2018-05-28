@@ -25,12 +25,13 @@ class TestFork(ForkTestCase):
     def test_1_fork_at_issuedid(self):
         self.make_partion()
         try:
+            target_address = Alice.addresslist[-1]
             # issuedid and mine
-            did_symbol = "YouShouldNotSeeThis2.Avatar"
-            Alice.send_etp(Alice.addresslist[-2], 10 ** 8)
+            did_symbol = "YouShouldNotSeeThis.Avatar"
+            Alice.send_etp(target_address, 10 ** 8)
             Alice.mining()
 
-            ec, message = Alice.issue_did(Alice.addresslist[-2], did_symbol)
+            ec, message = Alice.issue_did(target_address, did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
 
@@ -38,13 +39,15 @@ class TestFork(ForkTestCase):
             self.assertEqual(ec, 0, message)
 
             self.assertIn({'status': "issued",
-                           'address': Alice.addresslist[-2],
+                           'address': target_address,
                            'symbol': did_symbol}, message['dids'])
         finally:
             self.fork()
 
+        ec, message = mvs_rpc.list_dids(Alice.name, Alice.password)
+        self.assertEqual(ec, 0, message)
         self.assertNotIn({'status': "issued",
-                       'address': Alice.addresslist[-2],
+                       'address': target_address,
                        'symbol': Alice.did_symbol}, message['dids'])
 
     def test_2_fork_at_issueasset(self):
