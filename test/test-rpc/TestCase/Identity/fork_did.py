@@ -98,7 +98,6 @@ class TestFork(ForkTestCase):
             Alice.send_etp(target_addr, 10**8)
             Alice.mining()
 
-            print "before modify:"+Cindy.get_didaddress(Cindy.did_symbol)
             ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
@@ -112,7 +111,6 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
             self.assertEqual(ec, 0, message)
             self.assertIn(expect, message['dids'])
-            print "after modify first time:"+Cindy.get_didaddress(Cindy.did_symbol)
 
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0, message)
@@ -136,7 +134,6 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
             self.assertEqual(ec, 0, message)
             self.assertIn(expect, message['dids'])
-            print "after modify second time:"+Cindy.get_didaddress(Cindy.did_symbol)
 
 
             ec, message = mvs_rpc.list_dids()
@@ -155,7 +152,6 @@ class TestFork(ForkTestCase):
         ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
         self.assertEqual(ec, 0, message)
         self.assertIn(expect, message['dids'])
-        print "after fork:"+Cindy.get_didaddress(Cindy.did_symbol)
 
         ec, message = mvs_rpc.list_dids()
         self.assertEqual(ec, 0, message)
@@ -177,9 +173,7 @@ class TestFork(ForkTestCase):
 
             # check naming cert
             certs = Alice.get_addressasset(Alice.didaddress(), True)
-            print("cert_symbol: {}, certs: {}".format(cert_symbol, len(certs)))
-            for item in certs:
-                print("{}, {}".format(item.symbol, item.cert))
+
 
             cert = filter(lambda a: a.symbol == cert_symbol, certs)
             self.assertEqual(len(cert), 1)
