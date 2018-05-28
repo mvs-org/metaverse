@@ -217,8 +217,8 @@ public:
     virtual void sign_tx_inputs();
     virtual void send_tx();
 
-    virtual void populate_tx_header() {
-        tx_.version = transaction_version::check_output_script;
+    void populate_tx_header() {
+        tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     }
 
@@ -314,11 +314,6 @@ public:
     std::string get_sign_tx_multisig_script(const address_asset_record& from) const override;
 
     void send_tx() override;
-
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
 
 protected:
     // for multisig address
@@ -474,11 +469,6 @@ public:
 
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
-
 private:
     std::shared_ptr<asset_detail> unissued_asset_;
     std::string domain_cert_address_;
@@ -507,10 +497,6 @@ public:
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
     uint64_t get_volume() { return volume_; };
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
 
     bool is_locked_asset_as_payment() const override {return true;}
 
@@ -581,11 +567,6 @@ public:
     // no operation in exec
     void send_tx() override {}
 
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
-
 private:
     std::string fromfee;
     account_multisig multisig_from_;
@@ -646,11 +627,6 @@ public:
     {}
 
     void sum_payment_amount() override;
-
-    void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    };
 };
 
 
