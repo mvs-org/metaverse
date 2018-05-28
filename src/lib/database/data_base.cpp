@@ -953,20 +953,30 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 if(op.is_did_issue())
                 {
                     address_dids.delete_last_row(hash);
+                    address_dids.sync();
                     dids.remove(symbol_hash);
+                    dids.sync();
                 }
                 else if(op.is_did_transfer() )
                 {
-                   std::shared_ptr<blockchain_did> blockchain_did_=  dids.pop_did_transfer(symbol_hash);
-                   if(blockchain_did_)
-                   {
+                    std::shared_ptr<blockchain_did> blockchain_did_=  dids.pop_did_transfer(symbol_hash);
+                    dids.sync();     
+
+                    if(blockchain_did_)
+                    {   
+                        auto old_address = blockchain_did_->get_did().get_address();
+                        data_chunk data_old(old_address.begin(), old_address.end());
+                        short_hash old_hash = ripemd160_hash(data_old);
+
+                        address_dids.delete_last_row(old_hash);
                         address_dids.delete_last_row(hash);
-                        address_dids.store_output(hash, blockchain_did_->get_tx_point(), blockchain_did_->get_height(), 0,
+                        
+                        address_dids.store_output(old_hash, blockchain_did_->get_tx_point(), blockchain_did_->get_height(), 0,
                             static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue),
                             timestamp_, blockchain_did_->get_did());
                         address_dids.sync();
-    
-                   }
+
+                    }
                 }
 
             }

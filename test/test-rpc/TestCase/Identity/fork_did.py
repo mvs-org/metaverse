@@ -95,6 +95,7 @@ class TestFork(ForkTestCase):
             Alice.send_etp(target_addr, 10**8)
             Alice.mining()
 
+            print "before modify:"+Cindy.get_didaddress(Cindy.did_symbol)
             ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
@@ -108,7 +109,33 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
             self.assertEqual(ec, 0, message)
             self.assertIn(expect, message['dids'])
+            print "after modify first time:"+Cindy.get_didaddress(Cindy.did_symbol)
 
+            ec, message = mvs_rpc.list_dids()
+            self.assertEqual(ec, 0, message)
+            self.assertIn(expect, message['dids'])
+
+
+            target_addr = Cindy.addresslist[-2]
+            Alice.send_etp(target_addr, 10**8)
+            Alice.mining()
+
+            ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            expect = {
+                u'status': u'issued',
+                u'symbol': Cindy.did_symbol,
+                u'address': target_addr
+            }
+
+            ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
+            self.assertEqual(ec, 0, message)
+            self.assertIn(expect, message['dids'])
+            print "after modify second time:"+Cindy.get_didaddress(Cindy.did_symbol)
+
+            
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0, message)
             self.assertIn(expect, message['dids'])
@@ -125,6 +152,7 @@ class TestFork(ForkTestCase):
         ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
         self.assertEqual(ec, 0, message)
         self.assertIn(expect, message['dids'])
+        print "after fork:"+Cindy.get_didaddress(Cindy.did_symbol)
 
         ec, message = mvs_rpc.list_dids()
         self.assertEqual(ec, 0, message)
