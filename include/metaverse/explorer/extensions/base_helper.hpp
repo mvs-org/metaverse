@@ -154,7 +154,7 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
 
 void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_cert::list> sh_vec);
+    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=asset_cert_ns::none);
 
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);

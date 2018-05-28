@@ -82,7 +82,7 @@ class Role:
         if None == domain_symbol:
             domain_symbol = (self.name + common.get_random_str()).upper()
         asset_symbol = domain_symbol + ".AST"
-        self.create_asset_with_symbol(asset_symbol, is_issue, secondary)
+        self.create_asset_with_symbol(asset_symbol, is_issue, secondary, did_symbol)
         return domain_symbol, asset_symbol
 
     def create_asset_with_symbol(self, symbol, is_issue=True, secondary=0, did_symbol=None):

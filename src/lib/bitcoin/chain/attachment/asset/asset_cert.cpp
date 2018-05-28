@@ -223,8 +223,7 @@ void asset_cert::set_status(uint8_t status)
 bool asset_cert::is_newly_generated() const
 {
     return (status_ == ASSET_CERT_ISSUE_TYPE)
-        || (status_ == ASSET_CERT_AUTOISSUE_TYPE)
-        || (status_ == ASSET_CERT_TRANSFER_TYPE);
+        || (status_ == ASSET_CERT_AUTOISSUE_TYPE);
 }
 
 const std::string& asset_cert::get_owner() const

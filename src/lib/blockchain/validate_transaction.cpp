@@ -618,37 +618,20 @@ code validate_transaction::check_asset_issue_transaction(
         return error::asset_issue_error;
     }
 
-    // check domain cert for transactions after check_nova_feature version.
+    // check cert for transactions after check_nova_feature version.
     auto&& domain = asset_cert::get_domain(asset_symbol);
     if (tx.version >= transaction_version::check_nova_feature
             && asset_cert::is_valid_domain(domain)) {
         if (cert_owner.empty()) {
-            log::debug(LOG_BLOCKCHAIN) << "issue asset: address of cert "
+            log::debug(LOG_BLOCKCHAIN) << "issue asset: owner of cert "
                                        << asset_symbol << " is empty!";
             return error::asset_cert_error;
         }
 
-        // if domain certs exists then make sure it belongs to the owner
-        auto cert = chain.get_asset_cert(domain, asset_cert_ns::domain);
-        if (cert) {
-            if (asset_cert::test_certs(cert_type, asset_cert_ns::domain)) {
-                if (cert->get_owner() != cert_owner) {
-                    log::debug(LOG_BLOCKCHAIN) << "issue asset: no domain cert owned.";
-                    return error::asset_cert_not_owned;
-                }
-            }
-            else if (asset_cert::test_certs(cert_type, asset_cert_ns::naming)) {
-                cert = chain.get_asset_cert(asset_symbol, asset_cert_ns::naming);
-                if (!cert || cert->get_owner() != cert_owner) {
-                    log::debug(LOG_BLOCKCHAIN) << "issue asset: no naming cert owned.";
-                    return error::asset_cert_not_owned;
-                }
-            }
-            else {
-                // no valid domain cert
-                log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
-                return error::asset_cert_not_provided;
-            }
+        if (num_asset_cert_domain_or_naming < 1) {
+            // no valid domain or naming cert
+            log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
+            return error::asset_cert_not_provided;
         }
     }
 
@@ -783,14 +766,6 @@ code validate_transaction::check_asset_cert_issue_transaction(
         }
     }
 
-    // check domain cert is owned by the owner
-    auto&& domain = asset_cert::get_domain(cert_symbol);
-    auto cert = chain.get_asset_cert(domain, asset_cert_ns::domain);
-    if (!cert || cert->get_owner() != cert_owner) {
-        log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                   << "no domain cert owned to issue naming cert.";
-        return error::asset_cert_not_owned;
-    }
     return error::success;
 }
 

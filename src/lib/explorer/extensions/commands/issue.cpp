@@ -70,8 +70,8 @@ console_result issue::invoke (Json::Value& jv_output,
     // domain cert check
     auto&& domain = asset_cert::get_domain(argument_.symbol);
     if (asset_cert::is_valid_domain(domain)) {
-        auto cert = blockchain.get_asset_cert(domain, asset_cert_ns::domain);
-        if (!cert) {
+        bool exist = blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain);
+        if (!exist) {
             // domain cert does not exist, issue new domain cert to this address
             is_domain_cert_exist = false;
             cert_address = to_address;
@@ -82,8 +82,8 @@ console_result issue::invoke (Json::Value& jv_output,
         else {
             // if domain cert exists then check whether it belongs to the account.
             is_domain_cert_exist = true;
-            auto account_address = blockchain.get_account_address(auth_.name, cert->get_address());
-            if (account_address) {
+            auto cert = blockchain.get_account_asset_cert(auth_.name, domain, asset_cert_ns::domain);
+            if (cert) {
                 cert_symbol = domain;
                 cert_type = cert->get_type();
                 cert_did = cert->get_owner();
@@ -91,14 +91,14 @@ console_result issue::invoke (Json::Value& jv_output,
             }
             else {
                 // if domain cert does not belong to the account then check naming cert
-                cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::naming);
-                if (!cert) {
+                exist = blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming);
+                if (!exist) {
                     throw asset_cert_notowned_exception{
                         "Domain cert " + domain + " exists on the blockchain and is not owned by " + auth_.name};
                 }
                 else {
-                    account_address = blockchain.get_account_address(auth_.name, cert->get_address());
-                    if (!account_address) {
+                    cert = blockchain.get_account_asset_cert(auth_.name, argument_.symbol, asset_cert_ns::naming);
+                    if (!cert) {
                         throw asset_cert_notowned_exception{
                             "No domain cert or naming cert owned by " + auth_.name};
                     }

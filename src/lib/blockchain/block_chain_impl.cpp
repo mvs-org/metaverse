@@ -1357,11 +1357,51 @@ history::list block_chain_impl::get_address_history(const wallet::payment_addres
     return expand_history(cmp_history);
 }
 
+std::shared_ptr<asset_cert> block_chain_impl::get_account_asset_cert(
+    const std::string& account, const std::string& symbol, asset_cert_type cert_type)
+{
+    BITCOIN_ASSERT(!symbol.empty());
+    BITCOIN_ASSERT(cert_type != asset_cert_ns::none);
+
+    auto pvaddr = get_account_addresses(account);
+    if (!pvaddr)
+        return nullptr;
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    auto sh_vec = std::make_shared<asset_cert::list>();
+    for (auto& each : *pvaddr){
+        wallet::payment_address payment_address(each.get_address());
+        auto&& rows = get_address_history(payment_address);
+
+        for (auto& row: rows) {
+            // spend unconfirmed (or no spend attempted)
+            if ((row.spend.hash == null_hash)
+                    && get_transaction(row.output.hash, tx_temp, tx_height))
+            {
+                BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+                const auto& output = tx_temp.outputs.at(row.output.index);
+                if (output.is_asset_cert()) {
+                    auto cert = output.get_asset_cert();
+                    if (symbol != cert.get_symbol() || cert_type != cert.get_type()) {
+                        continue;
+                    }
+
+                    return std::make_shared<asset_cert>(cert);
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<business_address_asset_cert::list>
-block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& symbol)
+block_chain_impl::get_address_asset_certs(const std::string& address, const std::string& symbol, asset_cert_type cert_type)
 {
     auto ret_vector = std::make_shared<business_address_asset_cert::list>();
-    auto&& business_certs = database_.address_assets.get_asset_certs(address, symbol, 0);
+    auto&& business_certs = database_.address_assets.get_asset_certs(address, symbol, cert_type, 0);
     for (auto& business_cert : business_certs) {
         ret_vector->emplace_back(std::move(business_cert));
     }
@@ -1369,14 +1409,14 @@ block_chain_impl::get_address_asset_certs(const std::string& address, const std:
 }
 
 std::shared_ptr<business_address_asset_cert::list>
-block_chain_impl::get_account_asset_certs(const std::string& account, const std::string& symbol)
+block_chain_impl::get_account_asset_certs(const std::string& account, const std::string& symbol, asset_cert_type cert_type)
 {
     auto ret_vector = std::make_shared<business_address_asset_cert::list>();
     auto pvaddr = get_account_addresses(account);
     if (pvaddr) {
         for (const auto& account_address : *pvaddr) {
             auto&& business_certs = database_.address_assets.
-                get_asset_certs(account_address.get_address(), symbol, 0);
+                get_asset_certs(account_address.get_address(), symbol, cert_type, 0);
             for (auto& business_cert : business_certs) {
                 ret_vector->emplace_back(std::move(business_cert));
             }
@@ -1397,17 +1437,11 @@ std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs()
 bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type)
 {
     BITCOIN_ASSERT(!symbol.empty());
-    return get_asset_cert(symbol, cert_type) != nullptr;
-}
-
-std::shared_ptr<asset_cert> block_chain_impl::get_asset_cert(const std::string& symbol, asset_cert_type cert_type)
-{
-    BITCOIN_ASSERT(!symbol.empty());
 
     auto&& key_str = asset_cert::get_key(symbol, cert_type);
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = sha256_hash(data);
-    return database_.certs.get(key);
+    return database_.certs.get(key) != nullptr;
 }
 
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)

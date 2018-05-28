@@ -269,12 +269,13 @@ public:
 
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
-    std::shared_ptr<asset_cert> get_asset_cert(const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<asset_cert::list> get_issued_asset_certs();
+    std::shared_ptr<asset_cert> get_account_asset_cert(
+        const std::string& account, const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<business_address_asset_cert::list> get_account_asset_certs(
-        const std::string& account, const std::string& symbol);
+        const std::string& account, const std::string& symbol, asset_cert_type cert_type);
     std::shared_ptr<business_address_asset_cert::list> get_address_asset_certs(
-        const std::string& address, const std::string& symbol);
+        const std::string& address, const std::string& symbol, asset_cert_type cert_type);
 
     // account did api
     bool is_did_exist(const std::string& symbol);

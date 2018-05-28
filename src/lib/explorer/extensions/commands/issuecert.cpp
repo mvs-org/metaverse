@@ -86,13 +86,13 @@ console_result issuecert::invoke (Json::Value& jv_output,
         }
 
         // check domain cert belong to this account.
-        auto cert = blockchain.get_asset_cert(domain, asset_cert_ns::domain);
-        if (!cert) {
+        bool exist = blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain);
+        if (!exist) {
             throw asset_cert_notfound_exception("no domain cert '" + domain + "' found!");
         }
 
-        auto address = blockchain.get_account_address(auth_.name, cert->get_address());
-        if (!address) {
+        auto cert = blockchain.get_account_asset_cert(auth_.name, domain, asset_cert_ns::domain);
+        if (!cert) {
             throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + auth_.name);
         }
 

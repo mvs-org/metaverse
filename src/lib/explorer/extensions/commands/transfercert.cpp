@@ -68,18 +68,20 @@ console_result transfercert::invoke (Json::Value& jv_output,
         throw toaddress_invalid_exception{"invalid did parameter! " + to_did};
 
     // check cert is owned by the account
-    std::shared_ptr<asset_cert> cert = blockchain.get_asset_cert(argument_.symbol, cert_type);
-    if (!cert) {
+    bool exist = blockchain.is_asset_cert_exist(argument_.symbol, cert_type);
+    if (!exist) {
         throw asset_cert_notfound_exception(
             cert_type_name + " cert '" + argument_.symbol + "' does not exist.");
     }
 
-    auto from_did = cert->get_owner();
-    auto from_address = cert->get_address();
-    if (!blockchain.get_account_address(auth_.name, from_address)) {
+    auto cert = blockchain.get_account_asset_cert(auth_.name, argument_.symbol, cert_type);
+    if (!cert) {
         throw asset_cert_notowned_exception(
             cert_type_name + " cert '" + argument_.symbol + "' is not owned by " + auth_.name);
     }
+
+    auto from_did = cert->get_owner();
+    auto from_address = cert->get_address();
 
     account_multisig acc_multisig;
     bool is_multisig_address = blockchain.is_script_address(from_address);

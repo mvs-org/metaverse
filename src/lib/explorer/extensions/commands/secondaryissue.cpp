@@ -62,10 +62,10 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
 
     std::string cert_did;
     std::string cert_address;
-    auto cert = blockchain.get_asset_cert(argument_.symbol, asset_cert_ns::issue);
-    if (cert) {
+    if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::issue)) {
         // check whether it belongs to the account.
-        if (!blockchain.get_account_address(auth_.name, cert->get_address())) {
+        auto cert = blockchain.get_account_asset_cert(auth_.name, argument_.symbol, asset_cert_ns::issue);
+        if (!cert) {
             throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
         }
 

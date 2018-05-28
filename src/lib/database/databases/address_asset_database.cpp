@@ -732,7 +732,7 @@ business_address_message::list address_asset_database::get_messages(const std::s
 }
 
 business_address_asset_cert::list address_asset_database::get_asset_certs(const std::string& address,
-    const std::string& symbol, size_t from_height) const
+    const std::string& symbol, asset_cert_type cert_type, size_t from_height) const
 {
     data_chunk data(address.begin(), address.end());
     auto key = ripemd160_hash(data);
@@ -746,6 +746,12 @@ business_address_asset_cert::list address_asset_database::get_asset_certs(const 
         auto cert_info = boost::get<asset_cert>(row.data.get_data());
         if (!symbol.empty()) {
             if (symbol != cert_info.get_symbol()) {
+                continue;
+            }
+        }
+
+        if (cert_type != asset_cert_ns::none) {
+            if (cert_type != cert_info.get_type()) {
                 continue;
             }
         }

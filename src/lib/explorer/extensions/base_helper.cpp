@@ -154,7 +154,8 @@ std::string get_random_payment_address(
 
 void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_cert::list> sh_vec)
+    std::shared_ptr<asset_cert::list> sh_vec,
+    asset_cert_type cert_type)
 {
     auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
 
@@ -175,6 +176,9 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
             {
                 auto asset_cert = output.get_asset_cert();
                 if (!symbol.empty() && symbol != asset_cert.get_symbol()) {
+                    continue;
+                }
+                if (cert_type != asset_cert_ns::none && cert_type != asset_cert.get_type()) {
                     continue;
                 }
 
