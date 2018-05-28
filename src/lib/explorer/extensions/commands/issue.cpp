@@ -94,7 +94,7 @@ console_result issue::invoke (Json::Value& jv_output,
                 exist = blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::naming);
                 if (!exist) {
                     throw asset_cert_notowned_exception{
-                        "Domain cert " + domain + " exists on the blockchain and is not owned by " + auth_.name};
+                        "Naming cert " + argument_.symbol + " exists on the blockchain and is not owned by " + auth_.name};
                 }
                 else {
                     cert = blockchain.get_account_asset_cert(auth_.name, argument_.symbol, asset_cert_ns::naming);
