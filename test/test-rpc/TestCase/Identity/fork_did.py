@@ -53,12 +53,14 @@ class TestFork(ForkTestCase):
     def test_2_fork_at_issueasset(self):
         self.make_partion()
 
-        domain_symbol = (u'NotExists' + common.get_random_str()).upper()
         asset_symbol = None
+        domain_symbol = None
         try:
-            domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain_symbol)
+            domain = (u'Not1Exist' + common.get_random_str()).upper()
+            domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain)
             Alice.mining()
 
+            # check asset
             ec, message = mvs_rpc.get_asset( )
             self.assertEqual(ec, 0, message)
             self.assertIn(asset_symbol, message["assets"])
@@ -67,9 +69,10 @@ class TestFork(ForkTestCase):
             addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
             self.assertEqual(len(addressasset), 1)
 
+            # check domain cert
             certs = Alice.get_addressasset(Alice.mainaddress(), True)
-            cert = filter(lambda a: a.symbol == asset_symbol, certs)
-            self.assertEqual(len(cert), 2) # domain and issue
+            cert = filter(lambda a: a.symbol == domain_symbol, certs)
+            self.assertEqual(len(cert), 1)
 
         finally:
             self.fork()
@@ -83,9 +86,9 @@ class TestFork(ForkTestCase):
         addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
         self.assertEqual(len(addressasset), 0)
 
-        # check cert
+        # check domain cert
         certs = Alice.get_addressasset(Alice.mainaddress(), True)
-        cert = filter(lambda a: a.symbol == asset_symbol, certs)
+        cert = filter(lambda a: a.symbol == domain_symbol, certs)
         self.assertEqual(len(cert), 0)
 
     def test_3_fork_at_modify_did(self):
@@ -135,7 +138,7 @@ class TestFork(ForkTestCase):
             self.assertIn(expect, message['dids'])
             print "after modify second time:"+Cindy.get_didaddress(Cindy.did_symbol)
 
-            
+
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0, message)
             self.assertIn(expect, message['dids'])
@@ -161,24 +164,30 @@ class TestFork(ForkTestCase):
     def test_4_fork_at_issuecert(self):
         self.make_partion()
 
-        domain_symbol = (u'NotExists' + common.get_random_str()).upper()
-        cert_symbol = domain_symbol + ".Naming";
-
-        domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain_symbol)
-        Alice.mining()
-
+        cert_symbol = None
         try:
+            domain = (u'Not2Exist' + common.get_random_str()).upper()
+            domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain)
+            Alice.mining()
+
+            cert_symbol = (domain_symbol + ".NAMING").upper();
             ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, cert_symbol, "NAMING")
             self.assertEqual(ec, 0, message)
+            Alice.mining()
 
+            # check naming cert
             certs = Alice.get_addressasset(Alice.didaddress(), True)
-            cert = filter(lambda a: a.symbol == cert_symbol and a.cert == "naming", certs)
-            self.assertEqual(len(cert), 1) # naming
+            print("cert_symbol: {}, certs: {}".format(cert_symbol, len(certs)))
+            for item in certs:
+                print("{}, {}".format(item.symbol, item.cert))
+
+            cert = filter(lambda a: a.symbol == cert_symbol, certs)
+            self.assertEqual(len(cert), 1)
 
         finally:
             self.fork()
 
         # check cert
         certs = Alice.get_addressasset(Alice.didaddress(), True)
-        cert = filter(lambda a: a.symbol == asset_symbol and a.cert == "naming", certs)
+        cert = filter(lambda a: a.symbol == cert_symbol, certs)
         self.assertEqual(len(cert), 0)
