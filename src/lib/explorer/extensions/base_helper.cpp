@@ -804,22 +804,31 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        attachment attach(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
-        return attach;
+        throw tx_attachment_value_exception{
+            "asset issue/secondaryissue attachment should be processed in derived class,"};
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer) {
         auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid asset transfer attachment"};
+        }
         return attachment(ASSET_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
+        if (!msg.is_valid()) {
+            throw tx_attachment_value_exception{"invalid message attachment"};
+        }
         return attachment(MESSAGE_TYPE, attach_version, msg);
     }
     else if (record.type == utxo_attach_type::did_issue) {
         did_detail diddetail(symbol_, record.target);
         auto ass = did(DID_DETAIL_TYPE, diddetail);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid did issue attachment"};
+        }
         return attachment(DID_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
@@ -829,6 +838,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
 
         sh_did->set_address(record.target);
         auto ass = did(DID_TRANSFERABLE_TYPE, *sh_did);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid did transfer attachment"};
+        }
         return attachment(DID_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
@@ -856,8 +868,10 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
             cert_info.set_status(ASSET_CERT_AUTOISSUE_TYPE);
         }
 
-        auto attach = attachment(ASSET_CERT_TYPE, attach_version, cert_info);
-        return attach;
+        if (!cert_info.is_valid()) {
+            throw tx_attachment_value_exception{"invalid cert attachment"};
+        }
+        return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
 
     throw tx_attachment_value_exception{
@@ -1311,6 +1325,9 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
     if (record.type == utxo_attach_type::asset_issue) {
         unissued_asset_->set_address(record.target);
         auto ass = asset(ASSET_DETAIL_TYPE, *unissued_asset_);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid asset issue attachment"};
+        }
 
         attach.set_attach(ass);
     }
@@ -1407,6 +1424,9 @@ attachment secondary_issuing_asset::populate_output_attachment(const receiver_re
         asset_detail.set_maximum_supply(volume_);
         asset_detail.set_issuer(record.attach_elem.get_to_did());
         auto ass = asset(ASSET_DETAIL_TYPE, asset_detail);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid asset secondary issue attachment"};
+        }
 
         attach.set_attach(ass);
     }
