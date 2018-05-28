@@ -214,9 +214,11 @@ std::string attachment::to_string() const
     std::ostringstream ss;
 
     ss << "\t version = " << version << "\n"
-        << "\t type = " << type << "\n"
-        << "\t fromdid = " << fromdid << "\n"
-        << "\t todid = " << todid << "\n";
+        << "\t type = " << type << "\n";
+    if (version == DID_ATTACH_VERIFY_VERSION) {
+        ss << "\t fromdid = " << fromdid << "\n"
+            << "\t todid = " << todid << "\n";
+    }
     auto visitor = to_string_visitor();
     ss << boost::apply_visitor(visitor, attach);
 
