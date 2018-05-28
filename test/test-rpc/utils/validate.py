@@ -17,7 +17,7 @@ def validate_tx(checker, tx_hash, from_who, to_who, amount, fee, desc=None):
     tx = MOCs.Transaction.from_hash(tx_hash)
 
     checker.assertEqual(tx.hash, tx_hash)
-    checker.assertEqual(tx.version, '2')
+    checker.assertEqual(tx.version, '4') # 2 -> 4 since nova version
     checker.assertNotEqual(len(tx.inputs), 0)
 
     sum_payment = 0

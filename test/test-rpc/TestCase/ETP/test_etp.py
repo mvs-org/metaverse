@@ -20,7 +20,7 @@ class TestSendETP(MVSTestCaseBase):
         tx = MOCs.Transaction.from_json(message)
 
         self.assertEqual(tx.hash, hash)
-        self.assertEqual(tx.version, '2')
+        self.assertEqual(tx.version, '4')
         self.assertNotEqual(len(tx.inputs), 0)
 
         sum_payment = 0
@@ -70,7 +70,7 @@ class TestSendETP(MVSTestCaseBase):
         tx = MOCs.Transaction.from_json(message)
 
         self.assertEqual(tx.hash, hash)
-        self.assertEqual(tx.version, '2')
+        self.assertEqual(tx.version, '4')
         self.assertNotEqual(len(tx.inputs), 0)
 
         sum_payment = 0
@@ -124,7 +124,7 @@ class TestSendETP(MVSTestCaseBase):
         tx = MOCs.Transaction.from_json(message)
 
         self.assertEqual(tx.hash, hash)
-        self.assertEqual(tx.version, '2')
+        self.assertEqual(tx.version, '4')
         self.assertNotEqual(len(tx.inputs), 0)
 
         sum_payment = 0
