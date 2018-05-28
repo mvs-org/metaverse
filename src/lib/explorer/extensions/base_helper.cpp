@@ -828,6 +828,7 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         return attachment(DID_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::asset_cert
+        || record.type == utxo_attach_type::asset_cert_autoissue
         || record.type == utxo_attach_type::asset_cert_issue
         || record.type == utxo_attach_type::asset_cert_transfer) {
         if (record.asset_cert == asset_cert_ns::none) {
