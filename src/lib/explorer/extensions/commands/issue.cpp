@@ -103,7 +103,7 @@ console_result issue::invoke (Json::Value& jv_output,
                             "No domain cert or naming cert owned by " + auth_.name};
                     }
 
-                    cert_symbol = domain;
+                    cert_symbol = argument_.symbol;
                     cert_type = cert->get_type();
                     cert_did = cert->get_owner();
                     cert_address = get_address_from_did(cert_did, blockchain);
