@@ -73,7 +73,8 @@ void asset::reset()
 
 bool asset::is_valid() const
 {
-    return true;
+    auto visitor = is_valid_visitor();
+    return boost::apply_visitor(visitor, data);
 }
 
 bool asset::is_valid_type() const

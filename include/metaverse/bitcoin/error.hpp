@@ -166,6 +166,8 @@ enum error_code_t
     asset_cert_not_provided,
     asset_cert_issue_error,
     asset_did_issuer_not_match,
+
+    attachment_invalid,
 };
 
 enum error_condition_t

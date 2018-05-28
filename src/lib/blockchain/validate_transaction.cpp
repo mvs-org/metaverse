@@ -1040,6 +1040,12 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 return error::did_func_not_actived;
             }
         }
+
+        // check attachment, from nova version.
+        if ((tx.version >= transaction_version::check_nova_feature)
+            && (!output.attach_data.is_valid())) {
+            return error::attachment_invalid;
+        }
     }
 
     if (tx.is_coinbase())

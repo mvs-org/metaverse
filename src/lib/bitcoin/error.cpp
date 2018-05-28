@@ -246,6 +246,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::asset_did_issuer_not_match:
             return "attach todid must equal with asset issuer or cert owner";
 
+        case error::attachment_invalid:
+            return "attachment is invalid";
+
         // unknown errors
         case error::unknown:
         default:

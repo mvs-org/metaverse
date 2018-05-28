@@ -68,7 +68,7 @@ void did::reset()
 
 bool did::is_valid() const
 {
-    return true;
+    return data.is_valid();
 }
 
 bool did::is_valid_type() const
