@@ -44,7 +44,8 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         # check cert
         certs = Zac.get_addressasset(multisig_address, True);
         self.assertGreater(len(certs), 0, "not cert found at " + multisig_address)
-        self.assertEqual(asset_symbol, certs[0].symbol, "cert symbol dismatch: " + certs[0].symbol)
+        exist_symbols = filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs)
+        self.assertEqual(len(exist_symbols), 1, "not cert found at " + multisig_address)
 
         # transfer cert to Cindy
         #
@@ -57,7 +58,7 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         Alice.mining()
 
         # check cert
-        certs = Cindy.get_addressasset(Cindy.mainaddress(), True);
-        self.assertGreater(len(certs), 0, "not cert found at " + Cindy.mainaddress())
-        exist_symbols = [cert for cert in certs if cert.symbol == asset_symbol]
-        self.assertEqual(len(exist_symbols), 1, "not cert found at " + Cindy.mainaddress())
+        certs = Cindy.get_addressasset(Cindy.didaddress(), True);
+        self.assertGreater(len(certs), 0, "not cert found at " + Cindy.didaddress())
+        exist_symbols = filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs)
+        self.assertEqual(len(exist_symbols), 1, "not cert found at " + Cindy.didaddress())
