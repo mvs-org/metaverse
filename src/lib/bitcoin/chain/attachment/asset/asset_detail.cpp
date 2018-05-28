@@ -74,7 +74,7 @@ asset_detail asset_detail::factory_from_data(reader& source)
 bool asset_detail::is_valid() const
 {
     return !(symbol.empty()
-            || (maximum_supply==0)
+            || (maximum_supply==0 && !is_asset_secondaryissue())
             || (symbol.size() + 8 + 4 + issuer.size() + address.size() + description.size() + 4)>ASSET_DETAIL_FIX_SIZE);
 }
 

@@ -1019,6 +1019,8 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         // check attachment, from nova version.
         if ((tx.version >= transaction_version::check_nova_feature)
             && (!output.attach_data.is_valid())) {
+            log::debug(LOG_BLOCKCHAIN) << "invalid attachment : "
+                << output.attach_data.to_string();
             return error::attachment_invalid;
         }
     }
