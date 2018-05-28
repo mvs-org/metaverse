@@ -130,3 +130,27 @@ class TestFork(ForkTestCase):
         self.assertEqual(ec, 0, message)
         self.assertIn(expect, message['dids'])
 
+    def test_4_fork_at_issuecert(self):
+        self.make_partion()
+
+        domain_symbol = (u'NotExists' + common.get_random_str()).upper()
+        cert_symbol = domain_symbol + ".Naming";
+
+        domain_symbol, asset_symbol = Alice.create_random_asset(domain_symbol=domain_symbol)
+        Alice.mining()
+
+        try:
+            ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, cert_symbol, "NAMING")
+            self.assertEqual(ec, 0, message)
+
+            certs = Alice.get_addressasset(Alice.didaddress(), True)
+            cert = filter(lambda a: a.symbol == cert_symbol and a.cert == "naming", certs)
+            self.assertEqual(len(cert), 1) # naming
+
+        finally:
+            self.fork()
+
+        # check cert
+        certs = Alice.get_addressasset(Alice.didaddress(), True)
+        cert = filter(lambda a: a.symbol == asset_symbol and a.cert == "naming", certs)
+        self.assertEqual(len(cert), 0)
