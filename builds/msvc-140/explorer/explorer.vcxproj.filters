@@ -188,7 +188,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-        <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp">
@@ -359,24 +359,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -393,6 +375,24 @@
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -711,24 +711,6 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
@@ -745,6 +727,24 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
