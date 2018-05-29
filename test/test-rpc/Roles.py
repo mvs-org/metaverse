@@ -97,6 +97,7 @@ class Role:
             if (result):
                 print("#ERROR#: failed to issue asset: {}".format(message))
             assert (result == 0)
+        return result, message
 
     def issue_asset_with_symbol(self, symbol, attenuation_model=None):
         return mvs_rpc.issue_asset(self.name, self.password, symbol, model=attenuation_model)

@@ -50,6 +50,7 @@ void asset_cert::reset()
 {
     symbol_ = "";
     owner_ = "";
+    address_ = "";
     cert_type_ = asset_cert_ns::none;
     status_ = ASSET_CERT_NORMAL_TYPE;
 }

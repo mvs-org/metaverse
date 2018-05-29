@@ -1,4 +1,5 @@
 import time
+import MOCs
 from utils import common
 from TestCase.MVSTestCase import *
 
@@ -86,8 +87,24 @@ class TestCert(MVSTestCaseBase):
                   u'cert': u'naming',
                   u'address': Bob.mainaddress()}
         self.assertEqual(len(message['assetcerts']), 1, message)
-        self.assertEqual(expect, message['assetcerts'][0])
+        self.assertIn(expect, message['assetcerts'])
 
+        # Bob issue asset with naming cert
+        Alice.send_etp(Bob.mainaddress(), 12 * 10 ** 8);
+        Alice.mining()
+
+        ec, message = Bob.create_asset_with_symbol(cert_symbol, is_issue=True);
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        # check asset
+        ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password, cert_symbol, False)
+        self.assertEqual(ec, 0, message)
+        self.assertEqual(len(message['assets']), 1, message)
+        asset = MOCs.Asset.init(message['assets'][0])
+        self.assertEqual(asset.issuer, Bob.did_symbol)
+        self.assertEqual(asset.address, Bob.mainaddress())
+        self.assertEqual(asset.status, "unspent")
 
     def test_2_transfercert(self):
         '''
@@ -145,7 +162,6 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice create asset and cert
         '''
-        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
@@ -210,7 +226,6 @@ class TestCert(MVSTestCaseBase):
 
         # issue the asset
         # asset can be secondary issue freely
-        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)
         Alice.mining()
 
@@ -218,17 +233,12 @@ class TestCert(MVSTestCaseBase):
         ec, message = mvs_rpc.secondary_issue(Bob.name, Bob.password, Bob.did_symbol, asset_symbol, volume=100, model=None, fee=None)
         self.assertEqual(ec, 5020, message)
 
-        # asset volume 0
-        #ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, asset_symbol, volume=0, model=None, fee=None)
-        #self.assertEqual(ec, 5010, message)
-
         # fee 0
         ec, message = mvs_rpc.secondary_issue(Alice.name, Alice.password, Alice.did_symbol, asset_symbol, volume=100, model=None, fee=0)
         self.assertEqual(ec, 5005, message)
 
 
     def test_5_secondaryissue_success(self):
-        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(secondary=-1)  # asset can be secondary issue freely
         Alice.mining()
 
@@ -241,7 +251,6 @@ class TestCert(MVSTestCaseBase):
         #
         # attenuation_model type 1
         #
-        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=False, secondary=-1)
         Alice.mining()
 
@@ -296,7 +305,6 @@ class TestCert(MVSTestCaseBase):
 
     def test_7_secondary_issue_with_attenuation_model(self):
         # create asset
-        time.sleep(1);
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=True, secondary=-1)
         Alice.mining()
 
