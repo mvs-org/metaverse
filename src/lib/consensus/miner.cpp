@@ -45,14 +45,16 @@ namespace consensus {
 typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
 
 namespace {
-bool sort_by_priority(const transaction_priority& a, const transaction_priority& b)
+// fee : per kb
+bool sort_by_fee_per_kb(const transaction_priority& a, const transaction_priority& b)
 {
     if (a.get<1>() == b.get<1>())
         return a.get<0>() < b.get<0>();
     return a.get<1>() < b.get<1>();
 };
 
-bool sort_by_fee(const transaction_priority& a, const transaction_priority& b)
+// priority : coin age
+bool sort_by_priority(const transaction_priority& a, const transaction_priority& b)
 {
     if (a.get<0>() == b.get<0>())
         return a.get<1>() < b.get<1>();
@@ -432,7 +434,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     }
 
     vector<transaction_ptr> blocked_transactions;
-    auto sort_func = sort_by_priority;
+    auto sort_func = sort_by_fee_per_kb;
     bool is_resort = false;
     make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 
@@ -506,7 +508,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         if (is_resort == false &&
                 ((block_size + serialized_size >= block_priority_size) || (priority < coin_price() * 144 / 250)))
         {
-            sort_func = sort_by_fee;
+            sort_func = sort_by_priority;
             is_resort = true;
             make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
         }
