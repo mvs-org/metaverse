@@ -73,9 +73,9 @@ public:
     bool start(const std::string& pay_public_key, uint16_t number = 0);
     bool stop();
     static block_ptr create_genesis_block(bool is_mainnet);
-    bool script_hash_signature_operations_count(size_t &count, chain::input::list& inputs,
+    bool script_hash_signature_operations_count(size_t &count, const chain::input::list& inputs,
         vector<transaction_ptr>& transactions);
-    bool script_hash_signature_operations_count(size_t &count, chain::input& input,
+    bool script_hash_signature_operations_count(size_t &count, const chain::input& input,
         vector<transaction_ptr>& transactions);
     transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_addres,
         uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);

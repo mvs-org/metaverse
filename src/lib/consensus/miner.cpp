@@ -42,7 +42,7 @@ namespace libbitcoin {
 namespace consensus {
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
-typedef boost::tuple<double, double, int64_t, miner::transaction_ptr> transaction_priority;
+typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
 
 namespace {
 bool sort_by_priority(const transaction_priority& a, const transaction_priority& b)
@@ -82,7 +82,7 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
     total_inputs = 0;
     block_chain_impl& block_chain = node_.chain_impl();
     for (auto& input : tx.inputs) {
-        int64_t input_value = 0;
+        uint64_t input_value = 0;
         transaction t;
         uint64_t h;
         if (block_chain.get_transaction(t, h, input.previous_output.hash)) {
@@ -181,7 +181,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
     return transactions.empty() == false;
 }
 
-bool miner::script_hash_signature_operations_count(size_t &count, chain::input& input, vector<transaction_ptr>& transactions)
+bool miner::script_hash_signature_operations_count(size_t &count, const chain::input& input, vector<transaction_ptr>& transactions)
 {
     const auto& previous_output = input.previous_output;
     transaction previous_tx;
@@ -205,10 +205,10 @@ bool miner::script_hash_signature_operations_count(size_t &count, chain::input& 
 }
 
 bool miner::script_hash_signature_operations_count(
-    size_t &count, chain::input::list& inputs, vector<transaction_ptr>& transactions)
+    size_t &count, const chain::input::list& inputs, vector<transaction_ptr>& transactions)
 {
     count = 0;
-    for (auto input : inputs)
+    for (const auto& input : inputs)
     {
         size_t c = 0;
         if (script_hash_signature_operations_count(c, input, transactions) == false)
@@ -382,23 +382,23 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     unsigned int block_min_size = 0;
     block_min_size = min(block_max_size, block_min_size);
 
-    int64_t total_fee = 0;
+    uint64_t total_fee = 0;
     unsigned int block_size = 0;
     unsigned int total_tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*pblock->transactions.begin());
     for (auto tx : transactions)
     {
-        int64_t total_inputs = 0;
+        uint64_t total_inputs = 0;
         double priority = 0;
-        for (auto input : tx->inputs)
+        for (const auto& input : tx->inputs)
         {
             transaction t;
             uint64_t h;
-            int64_t input_value;
+            uint64_t input_value;
             if (block_chain.get_transaction(t, h, input.previous_output.hash)) {
                 input_value = t.outputs[input.previous_output.index].value;
             }
             else {
-                hash_digest& hash = input.previous_output.hash;
+                const hash_digest& hash = input.previous_output.hash;
                 const auto found = [&hash](const transaction_ptr & entry)
                 {
                     return entry->hash() == hash;
@@ -419,7 +419,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             priority += (double)input_value * (current_block_height - h + 1);
         }
 
-        int64_t serialized_size = tx->serialized_size(0);
+        uint64_t serialized_size = tx->serialized_size(0);
 
         // Priority is sum(valuein * age) / txsize
         priority /= serialized_size;
@@ -449,7 +449,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 
         double priority = temp_priority.get<0>();
         double fee_per_kb = temp_priority.get<1>();
-        int64_t fee = temp_priority.get<2>();
+        uint64_t fee = temp_priority.get<2>();
         transaction_ptr ptx = temp_priority.get<3>();
 
         if (next_transaction_priority) {
@@ -468,10 +468,10 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         }
 
         // Size limits
-        int64_t serialized_size = ptx->serialized_size(1);
+        uint64_t serialized_size = ptx->serialized_size(1);
         vector<transaction_ptr> coinage_reward_coinbases;
         transaction_ptr coinage_reward_coinbase;
-        for (auto& output : ptx->outputs) {
+        for (const auto& output : ptx->outputs) {
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
                 coinage_reward_coinbase = create_coinbase_tx(wallet::payment_address::extract(ptx->outputs[0].script),
