@@ -611,7 +611,7 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain_or_naming;
-    if ((tx.outputs.size() > max_outputs_size) || !asset_cert::test_certs(cert_type, cert_mask)) {
+    if ((tx.outputs.size() > max_outputs_size)) {
         log::debug(LOG_BLOCKCHAIN) << "issue asset: "
                                    << "too many outputs: " << tx.outputs.size()
                                    << ", max_outputs_size: " << max_outputs_size;
@@ -619,19 +619,26 @@ code validate_transaction::check_asset_issue_transaction(
     }
 
     // check cert for transactions after check_nova_feature version.
-    auto&& domain = asset_cert::get_domain(asset_symbol);
-    if (tx.version >= transaction_version::check_nova_feature
-            && asset_cert::is_valid_domain(domain)) {
-        if (cert_owner.empty()) {
-            log::debug(LOG_BLOCKCHAIN) << "issue asset: owner of cert "
-                                       << asset_symbol << " is empty!";
-            return error::asset_cert_error;
+    if (tx.version >= transaction_version::check_nova_feature) {
+        if (!asset_cert::test_certs(cert_type, cert_mask)) {
+            log::debug(LOG_BLOCKCHAIN) << "issue asset: "
+                                       << "not enough cert.";
+            return error::asset_issue_error;
         }
 
-        if (num_asset_cert_domain_or_naming < 1) {
-            // no valid domain or naming cert
-            log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
-            return error::asset_cert_not_provided;
+        auto&& domain = asset_cert::get_domain(asset_symbol);
+        if (asset_cert::is_valid_domain(domain)) {
+            if (cert_owner.empty()) {
+                log::debug(LOG_BLOCKCHAIN) << "issue asset: owner of cert "
+                                           << asset_symbol << " is empty!";
+                return error::asset_cert_error;
+            }
+
+            if (num_asset_cert_domain_or_naming < 1) {
+                // no valid domain or naming cert
+                log::debug(LOG_BLOCKCHAIN) << "issue asset: not cert provided!";
+                return error::asset_cert_not_provided;
+            }
         }
     }
 
