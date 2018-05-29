@@ -799,13 +799,11 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         || (record.type == utxo_attach_type::deposit)
         || ((record.type == utxo_attach_type::asset_transfer)
             && ((record.amount > 0) && (!record.asset_amount)))) { // etp
-        attachment attach(ETP_TYPE, attach_version, chain::etp(record.amount));
-        return attach;
+        return attachment(ETP_TYPE, attach_version, chain::etp(record.amount));
     }
     else if (record.type == utxo_attach_type::asset_issue
         || record.type == utxo_attach_type::asset_secondaryissue) {
-        throw tx_attachment_value_exception{
-            "asset issue/secondaryissue attachment should be processed in derived class,"};
+        return attachment(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
             || record.type == utxo_attach_type::asset_locked_transfer) {
