@@ -123,7 +123,7 @@ class ForkTestCase(MVSTestCaseBase):
         new_height = 0
 
         # wait until the fork complete
-        timeout = 10
+        timeout = 300
         while  new_height < expect_hight:#self.partion_height + ming_round:
             time.sleep(1)
             ec, message = mvs_rpc.get_info()

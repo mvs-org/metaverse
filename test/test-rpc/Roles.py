@@ -272,7 +272,7 @@ class Role:
             rounds = 100
             nonce = 0
             while True:
-                bin_nonce, mixhash = mine(block_number=height, difficulty=difficulty, mining_hash=header_hash,
+                bin_nonce, mixhash = mine(block_number=height+1, difficulty=difficulty, mining_hash=header_hash,
                                           rounds=rounds, start_nonce=nonce)
                 if bin_nonce:
                     break
