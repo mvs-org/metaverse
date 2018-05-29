@@ -968,6 +968,11 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         return error::transaction_version_error;
     }
 
+    if (tx.version == transaction_version::check_nova_feature
+        && !is_nova_feature_activated(chain)) {
+        return error::nova_feature_not_activated;
+    }
+
     if (tx.version == transaction_version::check_nova_testnet
         && !chain.chain_settings().use_testnet_rules) {
         return error::transaction_version_error;
@@ -1016,10 +1021,6 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         else if (output.is_did_issue()) {
             if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), tx.version)) {
                 return error::did_symbol_invalid;
-            }
-
-            if (!is_did_validate(chain)) {
-                return error::did_func_not_actived;
             }
         }
 
@@ -1349,25 +1350,6 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
     return asset_cert::test_certs(asset_certs_out, asset_certs_in_);
 }
 
-bool validate_transaction::is_did_validate(blockchain::block_chain_impl& chain)
-{
-    if (chain.chain_settings().use_testnet_rules)
-    {
-        return true;
-    }
-
-    uint64_t current_blockheight = 0;
-
-    chain.get_last_height(current_blockheight);
-
-    /*if (current_blockheight < 1130000)
-    {
-        return false;
-    }*/
-
-    return true;
-}
-
 bool validate_transaction::check_did_symbol_match(const transaction& tx)
 {
     // check did symbol in out
@@ -1387,6 +1369,19 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx)
     if (old_symbol != old_symbol_in_) // symbol in input and output not match
         return false;
     return true;
+}
+
+bool validate_transaction::is_nova_feature_activated(blockchain::block_chain_impl& chain)
+{
+    if (chain.chain_settings().use_testnet_rules) {
+        return true;
+    }
+
+    uint64_t current_blockheight = 0;
+    chain.get_last_height(current_blockheight);
+
+    // active SuperNove on 2018-06-18 (duanwu festival)
+    return (current_blockheight > 1270000);
 }
 
 } // namespace blockchain

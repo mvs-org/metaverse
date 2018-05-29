@@ -28,6 +28,7 @@ namespace explorer {
 namespace commands {
 
 using bc::chain::blockchain_message;
+using bc::blockchain::validate_transaction;
 
 utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 {
@@ -1059,21 +1060,10 @@ void base_transfer_common::send_tx()
         throw tx_broadcast_exception{"broadcast transaction failure"};
 }
 
-bool is_nova_feature_activated(const bc::blockchain::block_chain_impl& blockchain)
-{
-    if (blockchain.chain_settings().use_testnet_rules) {
-        return true;
-    }
-    uint64_t current_blockheight = 0;
-    blockchain.get_last_height(current_blockheight);
-    // active SuperNove on 2018-06-18 (duanwu festival)
-    return (current_blockheight > 1270000);
-}
-
 void base_transfer_common::populate_tx_header()
 {
     tx_.locktime = 0;
-    if (is_nova_feature_activated(blockchain_)) {
+    if (validate_transaction::is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_nova_feature;
     } else {
         tx_.version = transaction_version::check_output_script;
@@ -1307,7 +1297,7 @@ void issuing_asset::sum_payment_amount()
         throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()) {
-        if (!is_nova_feature_activated(blockchain_)) {
+        if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
             throw asset_attenuation_model_exception(
                 "attenuation model should be supported after nova feature is activated.");
         }

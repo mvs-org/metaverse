@@ -94,9 +94,10 @@ public:
     bool check_asset_symbol(const transaction& tx);
     bool check_asset_certs(const transaction& tx);
 
-    static bool is_did_validate(blockchain::block_chain_impl& chain);
     //check input did match output did
     bool check_did_symbol_match(const transaction& tx);
+
+    static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
 
 private:
     code basic_checks(blockchain::block_chain_impl& chain) const;

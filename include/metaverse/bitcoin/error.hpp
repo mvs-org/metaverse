@@ -168,6 +168,7 @@ enum error_code_t
     asset_did_issuer_not_match,
 
     attachment_invalid,
+    nova_feature_not_activated,     // 85
 };
 
 enum error_condition_t

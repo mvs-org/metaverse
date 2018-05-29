@@ -248,6 +248,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 
         case error::attachment_invalid:
             return "attachment is invalid";
+        case error::nova_feature_not_activated:
+            return "nova feature is not activated, it will be activated when block height is larger than 1270000";
 
         // unknown errors
         case error::unknown:
