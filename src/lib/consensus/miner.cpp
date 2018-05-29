@@ -77,6 +77,39 @@ miner::~miner()
     stop();
 }
 
+bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions, uint64_t& total_inputs)
+{
+    total_inputs = 0;
+    block_chain_impl& block_chain = node_.chain_impl();
+    for (auto& input : tx.inputs) {
+        int64_t input_value = 0;
+        transaction t;
+        uint64_t h;
+        if (block_chain.get_transaction(t, h, input.previous_output.hash)) {
+            input_value = t.outputs[input.previous_output.index].value;
+        }
+        else {
+            const hash_digest& hash = input.previous_output.hash;
+            const auto found = [&hash](const transaction_ptr & entry)
+            {
+                return entry->hash() == hash;
+            };
+            auto it = std::find_if(transactions.begin(), transactions.end(), found);
+            if (it != transactions.end()) {
+                input_value = (*it)->outputs[input.previous_output.index].value;
+            }
+            else {
+                log::debug(LOG_HEADER) << "previous transaction not ready: " << encode_hash(hash);
+                return false;
+            }
+        }
+
+        total_inputs += input_value;
+    }
+
+    return true;
+}
+
 bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
 {
     boost::mutex mutex;
@@ -95,22 +128,48 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
         for (auto i = transactions.begin(); i != transactions.end(); ) {
             auto& tx = **i;
             auto hash = tx.hash();
-            auto output_script_is_ok = true;
+            auto transaction_is_ok = true;
 
-            if (tx.version >= transaction_version::check_output_script) {
-                for (auto& output : tx.outputs) {
-                    if (output.script.pattern() == script_pattern::non_standard) {
+            for (auto& output : tx.outputs) {
+                if (tx.version >= transaction_version::check_output_script
+                    && output.script.pattern() == script_pattern::non_standard) {
 #ifdef MVS_DEBUG
-                        log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
+                    log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
 #endif
+                    node_.pool().delete_tx(hash);
+                    transaction_is_ok = false;
+                    break;
+                }
+
+                uint64_t input_value = 0;
+                bool ready = get_input_etp(tx, transactions, input_value);
+                if (!ready) {
+                    transaction_is_ok = false;
+                    break;
+                }
+
+                // check fee for issue asset or did
+                if (output.is_asset_issue() || output.is_did_issue()) {
+                    auto fee = input_value - tx.total_output_value();
+                    if (output.is_asset_issue() && fee < coin_price(10)) {
+                        transaction_is_ok = false;
+                    }
+                    else if (output.is_did_issue() && fee < coin_price(1)) {
+                        transaction_is_ok = false;
+                    }
+
+                    if (!transaction_is_ok) {
+                        log::debug(LOG_HEADER) << "not enought fee! input: "
+                                               << input_value << ", output: " << tx.total_output_value()
+                                               << ", fee: " << fee << ", tx: " << tx.to_string(1);
+
                         node_.pool().delete_tx(hash);
-                        output_script_is_ok = false;
                         break;
                     }
                 }
             }
 
-            if (output_script_is_ok || (sets.find(hash) == sets.end())) {
+            if (transaction_is_ok && (sets.find(hash) == sets.end())) {
                 sets.insert(hash);
                 ++i;
             }

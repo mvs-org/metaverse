@@ -102,6 +102,7 @@ private:
     bool is_exit();
     uint64_t store_block(block_ptr block);
     uint64_t get_height();
+    bool get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions, uint64_t& value);
     bool is_stop_miner(uint64_t block_height);
 
 private:
