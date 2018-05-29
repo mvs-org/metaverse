@@ -216,11 +216,7 @@ public:
     virtual void populate_unspent_list() = 0;
     virtual void sign_tx_inputs();
     virtual void send_tx();
-
-    void populate_tx_header() {
-        tx_.version = transaction_version::check_nova_feature;
-        tx_.locktime = 0;
-    }
+    virtual void populate_tx_header();
 
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
@@ -500,6 +496,11 @@ public:
 
     bool is_locked_asset_as_payment() const override {return true;}
 
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
 private:
     uint64_t volume_{0};
     std::shared_ptr<asset_detail> issued_asset_;
@@ -540,6 +541,11 @@ public:
     {}
 
     void sum_payment_amount() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 class BCX_API sending_multisig_did : public base_transfer_helper
@@ -567,6 +573,11 @@ public:
     // no operation in exec
     void send_tx() override {}
 
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
 private:
     std::string fromfee;
     account_multisig multisig_from_;
@@ -591,6 +602,11 @@ public:
     void populate_unspent_list() override;
     void populate_change() override;
 
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
 private:
     std::string fromfee;
 };
@@ -610,6 +626,11 @@ public:
 
     ~transferring_asset_cert()
     {}
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 class BCX_API issuing_asset_cert : public base_transfer_helper
@@ -627,6 +648,11 @@ public:
     {}
 
     void sum_payment_amount() override;
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
 };
 
 

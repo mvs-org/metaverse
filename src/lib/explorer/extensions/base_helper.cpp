@@ -1059,6 +1059,21 @@ void base_transfer_common::send_tx()
         throw tx_broadcast_exception{"broadcast transaction failure"};
 }
 
+void base_transfer_common::populate_tx_header()
+{
+    uint64_t current_blockheight = 0;
+    blockchain_.get_last_height(current_blockheight);
+
+    if (current_blockheight > 1270000) {
+        // active SuperNove on 2018-06-18 (duanwu festival)
+        tx_.version = transaction_version::check_nova_feature;
+    } else {
+        tx_.version = transaction_version::check_output_script;
+    }
+
+    tx_.locktime = 0;
+}
+
 void base_transfer_common::exec()
 {
     // prepare
