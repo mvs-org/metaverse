@@ -165,6 +165,8 @@ std::string get_address_from_did(const std::string& did,
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
 
+bool is_nova_feature_activated(const bc::blockchain::block_chain_impl& blockchain);
+
 class BCX_API base_transfer_common
 {
 public:

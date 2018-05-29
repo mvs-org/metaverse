@@ -1059,19 +1059,25 @@ void base_transfer_common::send_tx()
         throw tx_broadcast_exception{"broadcast transaction failure"};
 }
 
+bool is_nova_feature_activated(const bc::blockchain::block_chain_impl& blockchain)
+{
+    if (blockchain.chain_settings().use_testnet_rules) {
+        return true;
+    }
+    uint64_t current_blockheight = 0;
+    blockchain.get_last_height(current_blockheight);
+    // active SuperNove on 2018-06-18 (duanwu festival)
+    return (current_blockheight > 1270000);
+}
+
 void base_transfer_common::populate_tx_header()
 {
-    uint64_t current_blockheight = 0;
-    blockchain_.get_last_height(current_blockheight);
-
-    if (current_blockheight > 1270000) {
-        // active SuperNove on 2018-06-18 (duanwu festival)
+    tx_.locktime = 0;
+    if (is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_nova_feature;
     } else {
         tx_.version = transaction_version::check_output_script;
     }
-
-    tx_.locktime = 0;
 }
 
 void base_transfer_common::exec()
@@ -1301,6 +1307,10 @@ void issuing_asset::sum_payment_amount()
         throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
     }
     if (!attenuation_model_param_.empty()) {
+        if (!is_nova_feature_activated(blockchain_)) {
+            throw asset_attenuation_model_exception(
+                "attenuation model should be supported after nova feature is activated.");
+        }
         if (!attenuation_model::check_model_param_initial(
             attenuation_model_param_, unissued_asset_->get_maximum_supply())) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
