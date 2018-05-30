@@ -41,6 +41,8 @@ using namespace std;
 namespace libbitcoin {
 namespace consensus {
 
+static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
+
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
 typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
 
@@ -146,12 +148,17 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                 uint64_t input_value = 0;
                 bool ready = get_input_etp(tx, transactions, input_value);
                 if (!ready) {
+                    // erase tx but not delete it from pool if parent tx is not ready
                     transaction_is_ok = false;
                     break;
                 }
 
+                // check normal fee
+                if (input_value < tx.total_output_value() + min_tx_fee) {
+                    transaction_is_ok = false;
+                }
                 // check fee for issue asset or did
-                if (output.is_asset_issue() || output.is_did_issue()) {
+                else if (output.is_asset_issue() || output.is_did_issue()) {
                     auto fee = input_value - tx.total_output_value();
                     if (output.is_asset_issue() && fee < coin_price(10)) {
                         transaction_is_ok = false;
@@ -159,15 +166,15 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                     else if (output.is_did_issue() && fee < coin_price(1)) {
                         transaction_is_ok = false;
                     }
+                }
 
-                    if (!transaction_is_ok) {
-                        log::debug(LOG_HEADER) << "not enought fee! input: "
-                                               << input_value << ", output: " << tx.total_output_value()
-                                               << ", fee: " << fee << ", tx: " << tx.to_string(1);
-
-                        node_.pool().delete_tx(hash);
-                        break;
-                    }
+                if (!transaction_is_ok) {
+                    log::debug(LOG_HEADER) << "not enough fee! input: "
+                                           << input_value << ", output: " << tx.total_output_value()
+                                           << ", tx: " << tx.to_string(1);
+                    // delete ifrom pool if not enough fee
+                    node_.pool().delete_tx(hash);
+                    break;
                 }
             }
 
