@@ -7,8 +7,12 @@ class MVSTestCaseBase(unittest.TestCase):
     need_mine = True
     def setUp(self):
         for role in self.roles:
-            result, message = role.create()
-            self.assertEqual(result, 0, message)
+            try:
+                # check if the role exists by get_balance
+                role.delete()
+            finally:
+                result, message = role.create()
+                self.assertEqual(result, 0, message)
 
         # issue did for role A~F, if not issued
         for role in self.roles[:-1]:
@@ -69,7 +73,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
                 Alice.mining()
 
 class ForkTestCase(MVSTestCaseBase):
-    remote_ip = "10.10.10.35"
+    remote_ip = "10.10.10.137"
     remote_ctrl = None
     @classmethod
     def setUpClass(cls):
@@ -79,16 +83,23 @@ class ForkTestCase(MVSTestCaseBase):
         '''import Alice account to the remote'''
         MVSTestCaseBase.setUp(self)
         self.partion_height = -1
-        with open(Alice.keystore_file) as f:
-            ec, message = self.remote_ctrl.import_keyfile(Alice.name, Alice.password, "any", f.read() )
-            # it still works if the account Alice already exist in remote wallet
-            #self.assertEqual(ec, 0, message)
+        try:
+            with open(Alice.keystore_file) as f:
+                ec, message = self.remote_ctrl.import_keyfile(Alice.name, Alice.password, "any", f.read() )
+                # it still works if the account Alice already exist in remote wallet
+                #self.assertEqual(ec, 0, message)
+        except :
+            print 'unable to connect remote url:'+self.remote_ip
+
 
     def tearDown(self):
-        self.remote_ctrl.delete_account(Alice.name, Alice.password, Alice.lastword())
+        try:
+            self.remote_ctrl.delete_account(Alice.name, Alice.password, Alice.lastword())
 
-        ec, message = mvs_rpc.add_node( self.remote_ip + ':5251')
-        self.assertEqual(ec, 0, message)
+            ec, message = mvs_rpc.add_node( self.remote_ip + ':5251')
+            self.assertEqual(ec, 0, message)
+        except :
+            print 'unable to connect remote url:'+self.remote_ip
 
         MVSTestCaseBase.tearDown(self)
 
@@ -114,21 +125,24 @@ class ForkTestCase(MVSTestCaseBase):
         return message[0] # expect hight
 
     def fork(self):
-        ming_round = 6
-        expect_hight = self.remote_ming(ming_round)
+        try:
+            ming_round = 6
+            expect_hight = self.remote_ming(ming_round)
 
-        ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
-        self.assertEqual(ec, 0, message)
-        import time
-        new_height = 0
-
-        # wait until the fork complete
-        timeout = 300
-        while  new_height < expect_hight:#self.partion_height + ming_round:
-            time.sleep(1)
-            ec, message = mvs_rpc.get_info()
+            ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
             self.assertEqual(ec, 0, message)
-            new_height = message[0]
-            timeout -= 1
-            self.assertGreater(timeout, 0, "wait fork timeout error!")
+            import time
+            new_height = 0
+
+            # wait until the fork complete
+            timeout = 300
+            while  new_height < expect_hight:#self.partion_height + ming_round:
+                time.sleep(1)
+                ec, message = mvs_rpc.get_info()
+                self.assertEqual(ec, 0, message)
+                new_height = message[0]
+                timeout -= 1
+                self.assertGreater(timeout, 0, "wait fork timeout error!")
+        except :
+            print 'unable to connect remote url:'+self.remote_ip
 
