@@ -60,6 +60,12 @@ public:
     typedef blockchain::transaction_pool transaction_pool;
     typedef libbitcoin::node::p2p_node p2p_node;
 
+    // prev_output_point -> (prev_block_height, prev_output)
+    typedef std::unordered_map<chain::point, std::pair<uint64_t, chain::output>> previous_out_map_t;
+
+    // tx_hash -> tx_fee
+    typedef std::unordered_map<hash_digest, uint64_t> tx_fee_map_t;
+
     miner(p2p_node& node);
     ~miner();
 
@@ -96,14 +102,13 @@ public:
 private:
     void work(const wallet::payment_address pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_addres);
-    unsigned int get_adjust_time(uint64_t height);
-    unsigned int get_median_time_past(uint64_t height);
-    bool get_transaction(std::vector<transaction_ptr>&);
-    bool is_exit();
+    unsigned int get_adjust_time(uint64_t height) const;
+    unsigned int get_median_time_past(uint64_t height) const;
+    bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
     uint64_t store_block(block_ptr block);
-    uint64_t get_height();
-    bool get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions, uint64_t& value);
-    bool is_stop_miner(uint64_t block_height);
+    uint64_t get_height() const;
+    bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
+    bool is_stop_miner(uint64_t block_height) const;
 
 private:
     p2p_node& node_;

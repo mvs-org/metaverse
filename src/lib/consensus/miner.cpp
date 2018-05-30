@@ -81,16 +81,19 @@ miner::~miner()
     stop();
 }
 
-bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions, uint64_t& total_inputs)
+bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions,
+    uint64_t& total_inputs, previous_out_map_t& previous_out_map) const
 {
     total_inputs = 0;
     block_chain_impl& block_chain = node_.chain_impl();
     for (auto& input : tx.inputs) {
+        transaction prev_tx;
+        uint64_t prev_height = 0;
         uint64_t input_value = 0;
-        transaction t;
-        uint64_t h;
-        if (block_chain.get_transaction(t, h, input.previous_output.hash)) {
-            input_value = t.outputs[input.previous_output.index].value;
+        if (block_chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+            input_value = prev_tx.outputs[input.previous_output.index].value;
+            previous_out_map[input.previous_output] =
+                std::make_pair(prev_height, prev_tx.outputs[input.previous_output.index]);
         }
         else {
             const hash_digest& hash = input.previous_output.hash;
@@ -101,6 +104,8 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
             auto it = std::find_if(transactions.begin(), transactions.end(), found);
             if (it != transactions.end()) {
                 input_value = (*it)->outputs[input.previous_output.index].value;
+                previous_out_map[input.previous_output] =
+                    std::make_pair(max_uint64, (*it)->outputs[input.previous_output.index]);
             }
             else {
 #ifdef MVS_DEBUG
@@ -116,7 +121,8 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
     return true;
 }
 
-bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
+bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
+    previous_out_map_t& previous_out_map, tx_fee_map_t& tx_fee_map) const
 {
     boost::mutex mutex;
     mutex.lock();
@@ -136,6 +142,8 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
             auto hash = tx.hash();
             auto transaction_is_ok = true;
 
+            uint64_t fee = 0;
+
             for (auto& output : tx.outputs) {
                 if (tx.version >= transaction_version::check_output_script
                     && output.script.pattern() == script_pattern::non_standard) {
@@ -148,7 +156,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                 }
 
                 uint64_t total_input_value = 0;
-                bool ready = get_input_etp(tx, transactions, total_input_value);
+                bool ready = get_input_etp(tx, transactions, total_input_value, previous_out_map);
                 if (!ready) {
                     // erase tx but not delete it from pool if parent tx is not ready
                     transaction_is_ok = false;
@@ -161,12 +169,13 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                 if (total_input_value < total_output_value + min_tx_fee) {
                     transaction_is_ok = false;
                 }
-                // check fee for issue asset or did
-                else if (output.is_asset_issue() || output.is_did_issue()) {
-                    auto fee = total_input_value - total_output_value;
+                else {
+                    fee = total_input_value - total_output_value;
+                    // check fee for issue asset
                     if (output.is_asset_issue() && fee < coin_price(10)) {
                         transaction_is_ok = false;
                     }
+                    // check fee for issue did
                     else if (output.is_did_issue() && fee < coin_price(1)) {
                         transaction_is_ok = false;
                     }
@@ -185,6 +194,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
             }
 
             if (transaction_is_ok && (sets.find(hash) == sets.end())) {
+                tx_fee_map[hash] = fee;
                 sets.insert(hash);
                 ++i;
             }
@@ -364,7 +374,9 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     block_ptr pblock;
     vector<transaction_ptr> transactions;
     map<hash_digest, transaction_dependent> transaction_dependents;
-    get_transaction(transactions);
+    previous_out_map_t previous_out_map;
+    tx_fee_map_t tx_fee_map;
+    get_transaction(transactions, previous_out_map, tx_fee_map);
 
     vector<transaction_priority> transaction_prioritys;
     block_chain_impl& block_chain = node_.chain_impl();
@@ -402,36 +414,22 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     unsigned int total_tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*pblock->transactions.begin());
     for (auto tx : transactions)
     {
-        uint64_t total_inputs = 0;
+        auto tx_hash = tx->hash();
         double priority = 0;
         for (const auto& input : tx->inputs)
         {
-            transaction t;
-            uint64_t h;
-            uint64_t input_value;
-            if (block_chain.get_transaction(t, h, input.previous_output.hash)) {
-                input_value = t.outputs[input.previous_output.index].value;
+            auto prev_pair = previous_out_map[input.previous_output];
+            uint64_t prev_height = prev_pair.first;
+            const auto& prev_output = prev_pair.second;
+
+            if (prev_height != max_uint64) {
+                uint64_t input_value = prev_output.value;
+                priority += (double)input_value * (current_block_height - prev_height + 1);
             }
             else {
-                const hash_digest& hash = input.previous_output.hash;
-                const auto found = [&hash](const transaction_ptr & entry)
-                {
-                    return entry->hash() == hash;
-                };
-                auto it = std::find_if(transactions.begin(), transactions.end(), found);
-                if (it != transactions.end()) {
-                    input_value = (*it)->outputs[input.previous_output.index].value;
-                    hash_digest h = tx->hash();
-                    transaction_dependents[input.previous_output.hash].hash = make_shared<hash_digest>(h);
-                    transaction_dependents[h].dpendens++;
-                }
-                else {
-                    continue;
-                }
+                transaction_dependents[input.previous_output.hash].hash = make_shared<hash_digest>(tx_hash);
+                transaction_dependents[tx_hash].dpendens++;
             }
-
-            total_inputs += input_value;
-            priority += (double)input_value * (current_block_height - h + 1);
         }
 
         uint64_t serialized_size = tx->serialized_size(0);
@@ -442,8 +440,9 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         // This is a more accurate fee-per-kilobyte than is used by the client code, because the
         // client code rounds up the size to the nearest 1K. That's good, because it gives an
         // incentive to create smaller transactions.
-        double fee_per_kb = double(total_inputs - tx->total_output_value()) / (double(serialized_size) / 1000.0);
-        transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, total_inputs - tx->total_output_value(), tx));
+        auto tx_fee = tx_fee_map[tx_hash];
+        double fee_per_kb = double(tx_fee) / (double(serialized_size) / 1000.0);
+        transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, tx_fee, tx));
     }
 
     vector<transaction_ptr> blocked_transactions;
@@ -570,7 +569,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     return pblock;
 }
 
-unsigned int miner::get_adjust_time(uint64_t height)
+unsigned int miner::get_adjust_time(uint64_t height) const
 {
     typedef std::chrono::system_clock wall_clock;
     const auto now = wall_clock::now();
@@ -585,7 +584,7 @@ unsigned int miner::get_adjust_time(uint64_t height)
     }
 }
 
-unsigned int miner::get_median_time_past(uint64_t height)
+unsigned int miner::get_median_time_past(uint64_t height) const
 {
     block_chain_impl& block_chain = node_.chain_impl();
 
@@ -655,7 +654,7 @@ void miner::work(const wallet::payment_address pay_address)
     }
 }
 
-bool miner::is_stop_miner(uint64_t block_height)
+bool miner::is_stop_miner(uint64_t block_height) const
 {
     return (state_ == state::exit_) || (get_height() > block_height);
 }
@@ -692,7 +691,7 @@ bool miner::stop()
     return true;
 }
 
-uint64_t miner::get_height()
+uint64_t miner::get_height() const
 {
     uint64_t height = 0;
     node_.chain_impl().get_last_height(height);
