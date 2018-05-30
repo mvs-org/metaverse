@@ -103,7 +103,9 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
                 input_value = (*it)->outputs[input.previous_output.index].value;
             }
             else {
+#ifdef MVS_DEBUG
                 log::debug(LOG_HEADER) << "previous transaction not ready: " << encode_hash(hash);
+#endif
                 return false;
             }
         }
@@ -145,21 +147,23 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                     break;
                 }
 
-                uint64_t input_value = 0;
-                bool ready = get_input_etp(tx, transactions, input_value);
+                uint64_t total_input_value = 0;
+                bool ready = get_input_etp(tx, transactions, total_input_value);
                 if (!ready) {
                     // erase tx but not delete it from pool if parent tx is not ready
                     transaction_is_ok = false;
                     break;
                 }
 
+                uint64_t total_output_value = tx.total_output_value();
+
                 // check normal fee
-                if (input_value < tx.total_output_value() + min_tx_fee) {
+                if (total_input_value < total_output_value + min_tx_fee) {
                     transaction_is_ok = false;
                 }
                 // check fee for issue asset or did
                 else if (output.is_asset_issue() || output.is_did_issue()) {
-                    auto fee = input_value - tx.total_output_value();
+                    auto fee = total_input_value - total_output_value;
                     if (output.is_asset_issue() && fee < coin_price(10)) {
                         transaction_is_ok = false;
                     }
@@ -169,9 +173,11 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
                 }
 
                 if (!transaction_is_ok) {
+#ifdef MVS_DEBUG
                     log::debug(LOG_HEADER) << "not enough fee! input: "
-                                           << input_value << ", output: " << tx.total_output_value()
+                                           << total_input_value << ", output: " << total_output_value
                                            << ", tx: " << tx.to_string(1);
+#endif
                     // delete ifrom pool if not enough fee
                     node_.pool().delete_tx(hash);
                     break;
