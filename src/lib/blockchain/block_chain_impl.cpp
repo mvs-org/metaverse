@@ -1332,18 +1332,18 @@ static history::list expand_history(history_compact::list& compact)
 
 
     // sort by height and index of output, spend or both in order.
+    // spent height first, decreasely
+    // output height second, increasely
+    // output index third, increasely
     std::sort(result.begin(), result.end(),
-        [](const history& elem1, const history& elem2){
-            if (elem1.spend_height > elem2.spend_height) { // unspent first, spent time decresely
-                return true;
-            } else if (elem1.spend_height == elem2.spend_height) {
-                if (elem1.output_height < elem2.output_height) { // output time increasely
-                    return true;
-                } else if (elem1.output_height == elem2.output_height) {
+        [](const history& elem1, const history& elem2) {
+            if (elem1.spend_height == elem2.spend_height) {
+                if (elem1.output_height == elem2.output_height) {
                     return elem1.output.index < elem2.output.index;
                 }
+                return (elem1.output_height < elem2.output_height);
             }
-            return false;
+            return (elem1.spend_height > elem2.spend_height);
         });
     return result;
 }
@@ -1351,7 +1351,7 @@ static history::list expand_history(history_compact::list& compact)
 history::list block_chain_impl::get_address_history(const wallet::payment_address& addr)
 {
     history_compact::list cmp_history;
-    if (!fetch_history(addr, 0, 0, cmp_history)) {
+    if (!get_history(addr, 0, 0, cmp_history)) {
         return history::list();
     }
     return expand_history(cmp_history);
