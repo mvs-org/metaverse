@@ -900,8 +900,11 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
             get_input_point_from_pay_key_hash_with_attenuation_model(output.script.operations);
         chain::input_point input_point = chain::point::factory_from_data(input_point_data);
         if (input_point.is_null()) {
-            log::info(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
-            return error::attenuation_model_param_error;
+            if (!check_model_param(model_param, output.get_asset_amount())) {
+                log::info(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
+                return error::attenuation_model_param_error;
+            }
+            continue;
         }
 
         auto iter = std::find_if(vec_prev_input.begin(), vec_prev_input.end(),
@@ -919,7 +922,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         if (!check_model_param_immutable(prev_model_param, model_param)) {
             log::info(LOG_HEADER) << "check immutable failed, "
                 << "prev is " << chunk_to_string(prev_model_param)
-                << ", new is" << chunk_to_string(model_param);
+                << ", new is " << chunk_to_string(model_param);
             return error::attenuation_model_param_error;
         }
 

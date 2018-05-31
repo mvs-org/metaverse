@@ -58,7 +58,7 @@ enum class utxo_attach_type : uint32_t
     deposit = 1,
     asset_issue = 2,
     asset_transfer = 3,
-    unused1 = 4,
+    asset_attenuation_transfer = 4,
     asset_locked_transfer = 5,
     message = 6,
     asset_cert = 7,

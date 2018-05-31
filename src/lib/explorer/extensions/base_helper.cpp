@@ -830,7 +830,8 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         return attachment(ASSET_TYPE, attach_version, asset(/*set on subclass*/));
     }
     else if (record.type == utxo_attach_type::asset_transfer
-            || record.type == utxo_attach_type::asset_locked_transfer) {
+            || record.type == utxo_attach_type::asset_locked_transfer
+            || record.type == utxo_attach_type::asset_attenuation_transfer) {
         auto transfer = chain::asset_transfer(record.symbol, record.asset_amount);
         auto ass = asset(ASSET_TRANSFERABLE_TYPE, transfer);
         if (!ass.is_valid()) {
@@ -1375,7 +1376,7 @@ chain::operation::stack
 sending_asset::get_script_operations(const receiver_record& record) const
 {
     if (!attenuation_model_param_.empty()
-        && (utxo_attach_type::asset_locked_transfer == record.type)) { // for sending asset only
+        && (utxo_attach_type::asset_attenuation_transfer == record.type)) { // for sending asset only
         return get_pay_key_hash_with_attenuation_model_operations(attenuation_model_param_, record);
     }
 

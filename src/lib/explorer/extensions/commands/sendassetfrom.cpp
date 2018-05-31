@@ -49,7 +49,7 @@ console_result sendassetfrom::invoke(Json::Value& jv_output,
 
     // receiver
     utxo_attach_type attach_type = option_.attenuation_model_param.empty()
-        ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_locked_transfer;
+        ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_attenuation_transfer;
     std::vector<receiver_record> receiver{
         {argument_.to, argument_.symbol, 0, argument_.amount, attach_type, attachment()}
     };
