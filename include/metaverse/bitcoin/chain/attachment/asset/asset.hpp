@@ -45,17 +45,17 @@ namespace chain {
 class BC_API asset
 {
 public:
-	enum class asset_status : uint32_t
-	{
-		asset_none,
-		asset_locked,
-		asset_transferable,
-	};
-	typedef boost::variant<asset_detail, asset_transfer> asset_data_type;
+    enum class asset_status : uint32_t
+    {
+        asset_none,
+        asset_locked,
+        asset_transferable,
+    };
+    typedef boost::variant<asset_detail, asset_transfer> asset_data_type;
 
-	asset();
-	asset(uint32_t status, const asset_detail& detail);
-	asset(uint32_t status, const asset_transfer& detail);
+    asset();
+    asset(uint32_t status, const asset_detail& detail);
+    asset(uint32_t status, const asset_transfer& detail);
     static asset factory_from_data(const data_chunk& data);
     static asset factory_from_data(std::istream& stream);
     static asset factory_from_data(reader& source);
@@ -68,16 +68,17 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
     std::string to_string() const;
-	bool is_valid_type() const;
+    bool is_valid_type() const;
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	uint32_t get_status() const;
-	void set_status(uint32_t status);
-	void set_data(const asset_detail& detail);
-	void set_data(const asset_transfer& detail);
-	asset_data_type& get_data();
-	
+    uint32_t get_status() const;
+    void set_status(uint32_t status);
+    void set_data(const asset_detail& detail);
+    void set_data(const asset_transfer& detail);
+    asset_data_type& get_data();
+    const asset_data_type& get_data() const;
+
 private:
     uint32_t status;
     asset_data_type data;

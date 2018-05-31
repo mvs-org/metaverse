@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,7 +36,7 @@ class sendassetfrom: public command_extension
 {
 public:
     static const char* symbol(){ return "sendassetfrom";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "sendassetfrom "; }
 
@@ -50,7 +51,7 @@ public:
             .add("AMOUNT", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -102,6 +103,11 @@ public:
 			value<uint64_t>(&argument_.amount)->required(),
 			"Asset integer bits. see asset <decimal_number>."
 		)
+        (
+            "model,m",
+            value<std::string>(&option_.attenuation_model_param),
+            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+        )
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -129,6 +135,7 @@ public:
 
     struct option
     {
+        std::string attenuation_model_param;
     } option_;
 
 };

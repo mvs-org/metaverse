@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -34,20 +35,20 @@ namespace commands {
 class getnewmultisig: public command_extension
 {
 public:
-    static const char* symbol(){ return "getnewmultisig";}
-    const char* name() override { return symbol();} 
+    static const char* symbol() { return "getnewmultisig";}
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "getnewmultisig "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+               .add("ACCOUNTNAME", 1)
+               .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
+    void load_fallbacks (std::istream& input,
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
@@ -59,47 +60,47 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"ACCOUNTNAME",
-			value<std::string>(&auth_.name)->required(),
-			BX_ACCOUNT_NAME
-		)
-		(
-			"ACCOUNTAUTH",
-			value<std::string>(&auth_.auth)->required(),
-			BX_ACCOUNT_AUTH
-		)
-		(
-			"signaturenum,m",
-			value<uint16_t>(&option_.m)->required(),
-			"Account multisig signature number."
-		)
-		(
-			"publickeynum,n",
-			value<uint16_t>(&option_.n)->required(),
-			"Account multisig public key number."
-		)
-		(
-			"selfpublickey,s",
-			value<std::string>(&option_.self_publickey)->required(),
-			"the public key belongs to this account."
-		)
-		(
-			"publickey,k",
-			value<std::vector<std::string>>(&option_.public_keys),
-			"cosigner public key used for multisig"
-		)
-		(
-			"description,d",
-			value<std::string>(&option_.description),
-			"multisig record description."
-		)
-		;
+        (
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
+        )
+        (
+            "signaturenum,m",
+            value<uint16_t>(&option_.m)->required(),
+            "Account multisig signature number."
+        )
+        (
+            "publickeynum,n",
+            value<uint16_t>(&option_.n)->required(),
+            "Account multisig public key number."
+        )
+        (
+            "selfpublickey,s",
+            value<std::string>(&option_.self_publickey)->required(),
+            "the public key belongs to this account."
+        )
+        (
+            "publickey,k",
+            value<std::vector<std::string>>(&option_.public_keys),
+            "cosigner public key used for multisig"
+        )
+        (
+            "description,d",
+            value<std::string>(&option_.description),
+            "multisig record description."
+        )
+        ;
 
         return options;
     }
@@ -109,7 +110,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {
@@ -121,16 +122,17 @@ public:
     struct option
     {
         option()
-          : self_publickey(""), description(""), m(0), n(0)
+            : m(0), n(0)
+            , self_publickey(""), description("")
         {
         }
 
-		uint16_t m;
-		uint16_t n;
-		std::vector<std::string> public_keys;
-		std::string self_publickey;
-		std::string description;
-		
+        uint16_t m;
+        uint16_t n;
+        std::vector<std::string> public_keys;
+        std::string self_publickey;
+        std::string description;
+
     } option_;
 
 };

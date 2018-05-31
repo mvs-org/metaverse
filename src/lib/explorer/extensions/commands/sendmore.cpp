@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,8 +31,8 @@ namespace explorer {
 namespace commands {
 
 
-console_result sendmore::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendmore::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -43,7 +43,7 @@ console_result sendmore::invoke (Json::Value& jv_output,
     // receiver
     receiver_record record;
     std::vector<receiver_record> receiver;
-    
+
     for( auto& each : argument_.receivers){
         colon_delimited2_item<std::string, uint64_t> item(each);
         record.target = item.first();
@@ -58,9 +58,9 @@ console_result sendmore::invoke (Json::Value& jv_output,
         record.type = utxo_attach_type::etp; // attach not used so not do attah init
         receiver.push_back(record);
     }
-    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
-    
+
     send_helper.exec();
 
     // json output

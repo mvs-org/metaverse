@@ -173,6 +173,8 @@ unsigned int verify_flags_to_script_flags(unsigned int flags)
         script_flags |= SCRIPT_VERIFY_CLEANSTACK;
     if ((flags & verify_flags_checklocktimeverify) != 0)
         script_flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+    if ((flags & verify_flags_checkattenuationverify) != 0)
+        script_flags |= SCRIPT_VERIFY_CHECKATTENUATIONVERIFY;
 
     return script_flags;
 }
@@ -195,7 +197,7 @@ verify_result_type verify_script(const unsigned char* transaction,
         TxInputStream stream(transaction, transaction_size);
         Unserialize(stream, tx, SER_NETWORK, PROTOCOL_VERSION);
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
         return verify_result_tx_invalid;
     }

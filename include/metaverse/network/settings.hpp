@@ -53,6 +53,7 @@ public:
     uint32_t channel_germination_seconds;
     uint32_t host_pool_capacity;
     bool relay_transactions;
+    bool enable_re_seeding;
     boost::filesystem::path hosts_file;
     boost::filesystem::path debug_file;
     boost::filesystem::path error_file;

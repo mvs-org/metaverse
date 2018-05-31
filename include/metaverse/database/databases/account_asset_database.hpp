@@ -71,18 +71,18 @@ public:
 
     /// Call to unload the memory map.
     bool close();
-	
-	void store(const short_hash& key, const asset_detail& account_asset);
-	
-	void delete_last_row(const short_hash& key);
-	
-	asset_detail::list get(const short_hash& key) const;
-	
-	std::shared_ptr<asset_detail> get(const short_hash& key, const std::string& address) const;
-	
-	/// get assets whose status is not issued and stored in local database (not in blockchain)
-	std::shared_ptr<std::vector<business_address_asset>> get_unissued_assets(const short_hash& key) const;
-	
+
+    void store(const short_hash& key, const asset_detail& account_asset);
+
+    void delete_last_row(const short_hash& key);
+
+    asset_detail::list get(const short_hash& key) const;
+
+    std::shared_ptr<asset_detail> get(const short_hash& key, const std::string& address) const;
+
+    /// get assets whose status is not issued and stored in local database (not in blockchain)
+    std::shared_ptr<business_address_asset::list> get_unissued_assets(const short_hash& key) const;
+
     /// Synchonise with disk.
     void sync();
 

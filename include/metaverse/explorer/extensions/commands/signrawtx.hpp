@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -34,21 +35,21 @@ namespace commands {
 class signrawtx: public command_extension
 {
 public:
-    static const char* symbol(){ return "signrawtx";}
-    const char* name() override { return symbol();} 
+    static const char* symbol() { return "signrawtx";}
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "signrawtx "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("TRANSACTION", 1);
+               .add("ACCOUNTNAME", 1)
+               .add("ACCOUNTAUTH", 1)
+               .add("TRANSACTION", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
-        po::variables_map& variables) override
+    void load_fallbacks (std::istream& input,
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
@@ -61,21 +62,21 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "TRANSACTION",
             value<explorer::config::transaction>(&argument_.transaction)->required(),
@@ -90,7 +91,7 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {

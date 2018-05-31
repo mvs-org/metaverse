@@ -91,62 +91,6 @@ bool organizer::strict(uint64_t fork_point) const
     return checkpoints_.empty() || fork_point >= checkpoints_.back().height();
 }
 
-code organizer::verify_asset_exist(uint64_t fork_point,
-    const block_detail::list& orphan_chain, uint64_t orphan_index)
-{
-    block_chain_impl& chain = (block_chain_impl&)chain_;
-    auto& block = *orphan_chain[orphan_index]->actual();
-    std::set<string> assets;
-    for(auto& tx : block.transactions)
-    {
-        for(auto& output : tx.outputs)
-        {
-            if(output.is_asset_issue())
-            {
-                auto result = assets.insert(output.get_asset_symbol());
-                if(result.second == false)
-                {
-                    return error::asset_exist;
-                }
-            }
-        }
-    }
-
-    if(assets.empty())
-    {
-        return error::success;
-    }
-
-    for(auto& i: assets)
-    {
-        uint64_t height = 0;
-        if(chain.get_asset_height(i, height) && height <= fork_point)
-        {
-            return error::asset_exist;
-        }
-    }
-
-    for(uint64_t i = 0; i < orphan_index; ++i)
-    {
-        auto& block = *orphan_chain[orphan_index - 1]->actual();
-        for(auto& tx : block.transactions)
-        {
-            for(auto& output : tx.outputs)
-            {
-                if(output.is_asset_issue())
-                {
-                    if(assets.find(output.get_asset_symbol()) != assets.end())
-                    {
-                        return error::asset_exist;
-                    }
-                }
-            }
-        }
-    }
-
-    return error::success;
-}
-
 // This verifies the block at orphan_chain[orphan_index]->actual()
 code organizer::verify(uint64_t fork_point,
     const block_detail::list& orphan_chain, uint64_t orphan_index)
@@ -205,10 +149,6 @@ code organizer::verify(uint64_t fork_point,
         }
 
     };
-
-    if(ec == error::success) {
-        ec = verify_asset_exist(fork_point, orphan_chain, orphan_index);
-    }
 
     // Execute the timed validation.
     const auto elapsed = timer<std::chrono::milliseconds>::duration(timed);
@@ -293,6 +233,18 @@ void organizer::process(block_detail::ptr process_block)
     }
 }
 
+/*********************************************************************
+ * this set include blocks which cause consensus validation problems.
+ ********************************************************************/
+// the pair's structure: first is block height, second is block hash
+static std::set<std::pair<uint64_t, std::string>> exception_blocks {
+    // this block has error of merkle_mismatch,
+    // because it exist a too long memo text which is more than 300 bytes.
+    // memo text length should be less than 256 bytes limited by the database record design.
+    // we will add this length verification in the transaction validation after nova version.
+    {1211234, "3a17c696ba0d506b07e85b8440a99d868ae93c985064eaf4c616d13911bd97cb"}
+};
+
 void organizer::replace_chain(uint64_t fork_index,
     block_detail::list& orphan_chain)
 {
@@ -311,6 +263,14 @@ void organizer::replace_chain(uint64_t fork_index,
                 {
                     const auto& header = orphan_chain[orphan]->actual()->header;
                     const auto block_hash = encode_hash(header.hash());
+
+                    if (exception_blocks.count(std::make_pair(header.number, block_hash)))
+                    {
+                        orphan_chain[orphan]->set_is_checked_work_proof(true);
+                        const auto& orphan_block = orphan_chain[orphan]->actual();
+                        orphan_work += block_work(orphan_block->header.bits);
+                        continue;
+                    }
 
                     log::warning(LOG_BLOCKCHAIN)
                         << "Invalid block [" << block_hash << "] " << ec.message();
@@ -359,14 +319,19 @@ void organizer::replace_chain(uint64_t fork_index,
 
     // Replace! Switch!
     block_detail::list released_blocks;
-    DEBUG_ONLY(auto success =) chain_.pop_from(released_blocks, begin_index);
-    BITCOIN_ASSERT(success);
+    auto success = chain_.pop_from(released_blocks, begin_index);
 
     if (!released_blocks.empty())
         log::warning(LOG_BLOCKCHAIN) 
             << " blockchain fork at height:" << released_blocks.front()->actual()->header.number 
             << " begin_index:"  << encode_hash(released_blocks.front()->actual()->header.hash())
             << " size:"  << released_blocks.size();
+
+    // if pop blocks failed, stop replace
+    if (!success) {
+        log::warning(LOG_BLOCKCHAIN) << " pop_from begin_height:" << begin_index << "failed";
+        return;
+    }
 
     // We add the arriving blocks first to the main chain because if
     // we add the blocks being replaced back to the pool first then
@@ -392,6 +357,8 @@ void organizer::replace_chain(uint64_t fork_index,
                 << " push block height:" << arrival_block->actual()->header.number
                 << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
                 << "failed";
+            // if push block failed, stop replace
+            return;
         }
         else
         {

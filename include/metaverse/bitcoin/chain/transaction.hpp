@@ -37,10 +37,12 @@
 namespace libbitcoin {
 namespace chain {
 
-enum transaction_version{
+enum transaction_version {
     first = 1,   //the frist version
-    check_output_script,   //add check output script 
-    max_version
+    check_output_script = 2,   //add check output script
+    check_nova_testnet = 3,
+    check_nova_feature = 4,
+    max_version = 5
 };
 
 class BC_API transaction
@@ -90,8 +92,11 @@ public:
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;
 	uint64_t total_output_transfer_amount() const;
-	bool has_asset_issue();
 	bool has_asset_transfer();
+
+    bool has_did_register();
+	bool has_did_transfer();
+    std::string get_did_transfer_old_address() const;
 
     uint32_t version;
     uint32_t locktime;

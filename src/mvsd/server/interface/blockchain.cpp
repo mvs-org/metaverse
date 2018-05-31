@@ -160,7 +160,7 @@ void blockchain::block_header_fetched(const code& ec,
     const auto result = build_chunk(
     {
         message::to_bytes(ec),
-        block.to_data(false)
+        block.to_data()
     });
 
     handler(message(request, result));

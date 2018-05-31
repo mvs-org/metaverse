@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -31,32 +31,63 @@ namespace commands {
 
 /************************ startmining *************************/
 
-console_result startmining::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result startmining::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    
-    // get new address 
-    const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
-
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
-    Json::Value jv_temp;
 
-    if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
-        throw address_generate_exception(jv_temp.asString());
+    uint64_t height;
+    uint64_t rate;
+    std::string difficulty;
+    bool is_solo_mining;
+    node.miner().get_state(height, rate, difficulty, is_solo_mining);
+    if (is_solo_mining) {
+        throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
 
-    auto&& str_addr = jv_temp["addresses"][0].asString();
-     
+    auto str_addr = option_.address;
+
+    if (str_addr.empty()) {
+        Json::Value jv_temp;
+
+        // get new address
+        const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
+
+        if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
+            throw address_generate_exception(jv_temp.asString());
+        }
+
+        str_addr = jv_temp["addresses"][0].asString();
+    } else {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+        if (!blockchain.is_valid_address(str_addr)) {
+            throw address_invalid_exception{"invalid address parameter! " + str_addr};
+        }
+
+        if (!blockchain.get_account_address(auth_.name, str_addr)) {
+            throw address_dismatch_account_exception{"target address does not match account. " + str_addr};
+        }
+    }
+
     bc::wallet::payment_address addr(str_addr);
 
+    if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) { // for multisig address
+        throw argument_legality_exception{"script address parameter not allowed!"};
+    }
+
     // start
-    if (miner.start(addr)){
-        jv_output = "solo mining started at " + str_addr;
+    if (miner.start(addr, option_.number)){
+        if (option_.number == 0) {
+            jv_output = "solo mining started at " + str_addr;
+        } else {
+            jv_output = "solo mining started at " + str_addr
+                + ", try to mine " + std::to_string(option_.number) + " block(s).";
+        }
     } else {
         throw unknown_error_exception{"solo mining startup got error"};
     }
-
 
     return console_result::okay;
 }

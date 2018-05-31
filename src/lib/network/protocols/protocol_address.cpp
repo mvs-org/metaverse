@@ -78,9 +78,10 @@ void protocol_address::start()
 
 #ifdef USE_UPNP
     if (settings.upnp_map_port && settings.be_found) {
-        config::authority out_address = *network_.get_out_address();
+        config::authority::ptr sp_out_address = network_.get_out_address();
 
-        if (settings.self != out_address) {
+        if (sp_out_address && (settings.self != *sp_out_address)) {
+            const config::authority& out_address = *sp_out_address;
             network_address nt_address = out_address.to_network_address();
             if (settings.hosts_file == "hosts-test.cache") {
                 address self = address({ { nt_address } });
@@ -156,13 +157,14 @@ bool protocol_address::handle_receive_address(const code& ec,
     network_address::list addresses;
     addresses.reserve(message->addresses.size());
     for (auto& addr:message->addresses) {
-        if (!channel::blacklisted(addr)) {
+        //if (!channel::blacklisted(addr)) {
+        if (!channel::manualbanned(addr)) {
             addresses.push_back(addr);
         }
     }
 
     // TODO: manage timestamps (active channels are connected < 3 hours ago).
-    network_.store(message->addresses, BIND2(handle_store_addresses, _1, message));
+    network_.store(addresses, BIND2(handle_store_addresses, _1, message));
 
     // RESUBSCRIBE
     return true;

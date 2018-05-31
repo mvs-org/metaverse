@@ -166,6 +166,9 @@
     <ProjectReference Include="..\consensus\consensus.vcxproj">
       <Project>{d21052f1-33b6-4f1f-bb8d-5c0e8173e416}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\cryptojs\cryptojs.vcxproj">
+      <Project>{4e2b7608-bb5c-4d0e-ac0d-67910c65a6da}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\database\database.vcxproj">
       <Project>{5848918e-2f38-4feb-85de-d992fbda4c97}</Project>
     </ProjectReference>

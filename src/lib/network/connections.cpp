@@ -144,6 +144,22 @@ void connections::remove(channel::ptr channel, result_handler handler)
     handler(safe_remove(channel) ? error::success : error::not_found);
 }
 
+void connections::stop(const config::authority& address)
+{
+    // Critical Section
+    ///////////////////////////////////////////////////////////////////////////
+    shared_lock lock(mutex_);
+
+    for(auto it = channels_.begin(); it != channels_.end(); ++it)
+    {
+        if ( (*it)->authority().ip() == address.ip())
+        {
+            (*it)->stop(error::address_blocked);
+            log::info(LOG_NETWORK) << "actively disconnect from blocked address: " << (*it)->authority().to_string();
+        }
+    }
+}
+
 code connections::safe_store(channel::ptr channel)
 {
     const auto nonce = channel->nonce();

@@ -52,6 +52,8 @@ protected:
     virtual void attach_protocols(channel::ptr channel);
     void delay_new_connect(connector::ptr connect);
 
+    void delay_reseeding();
+
 private:
     void new_connection(connector::ptr connect);
     void handle_started(const code& ec, result_handler handler);
@@ -62,6 +64,10 @@ private:
         channel::ptr channel);
     void handle_channel_start(const code& ec, connector::ptr connect,
         channel::ptr channel);
+
+    std::atomic_int outbound_counter;
+    std::atomic_bool in_reseeding; //to mark if the re-seeding timer is active
+    p2p& network__;
 };
 
 } // namespace network

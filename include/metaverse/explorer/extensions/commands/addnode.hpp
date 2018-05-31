@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,23 +35,25 @@ class addnode: public command_extension
 {
 public:
     static const char* symbol(){ return "addnode";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
-    const char* description() override { return "addnode "; }
+    const char* description() override { return "This command is used to add/remove p2p node."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("NODEADDRESS", 1)
+            .add("ADMINNAME", 1)
+            .add("ADMINAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.address, "NODEADDRESS", variables, input, raw);
+        load_input(auth_.name, "ADMINNAME", variables, input, raw);
+        load_input(auth_.auth, "ADMINAUTH", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,16 +66,26 @@ public:
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
-	    )
         (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
-	    );
+            "NODEADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "The target node address[x.x.x.x:port]."
+        )
+        (
+            "ADMINNAME",
+            value<std::string>(&auth_.name),
+            "admin name."
+        )
+        (
+            "ADMINAUTH",
+            value<std::string>(&auth_.auth),
+            "admin password/authorization."
+        )
+        (
+            "operation,o",
+            value<std::string>(&option_.operation),
+            "The operation[ add|ban ] to the target node address. default: add."
+        );
 
         return options;
     }
@@ -87,10 +99,12 @@ public:
 
     struct argument
     {
+        std::string address;
     } argument_;
 
     struct option
     {
+        std::string operation;
     } option_;
 
 };

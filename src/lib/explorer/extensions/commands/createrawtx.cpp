@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,80 +30,122 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result createrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result createrawtx::invoke(Json::Value& jv_output,
+                                   libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(option_.symbol);
 
-    tx_type tx_;
-    
     if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
-        throw toaddress_invalid_exception{std::string("invalid address ") + option_.mychange_address};
-    // senders check
-    for (auto& each : option_.senders){
+        throw toaddress_invalid_exception{"invalid address " + option_.mychange_address};
+
+    // check senders
+    if (option_.senders.empty()) {
+        throw fromaddress_invalid_exception{"senders can not be empty!"};
+    }
+
+    for (auto& each : option_.senders) {
+        if (!blockchain.is_valid_address(each)) {
+            throw fromaddress_invalid_exception{"invalid sender address " + each};
+        }
+
         // filter script address
-        if(blockchain.is_script_address(each))
-            throw fromaddress_invalid_exception{std::string("invalid address ") + each};
+        if (blockchain.is_script_address(each)) {
+            throw fromaddress_invalid_exception{"invalid sender address " + each};
+        }
     }
 
     auto type = static_cast<utxo_attach_type>(option_.type);
-    
-    if(type == utxo_attach_type::deposit) {
-        if(!option_.symbol.empty())
-            throw argument_legality_exception{std::string("not deposit asset ") + option_.symbol};
-        if(option_.receivers.size() != 1)
-            throw argument_legality_exception{std::string("only support deposit on one address!")};
+
+    if (type == utxo_attach_type::deposit) {
+        if (!option_.symbol.empty()) {
+            throw argument_legality_exception{"not deposit asset " + option_.symbol};
+        }
+
+        if (option_.receivers.size() != 1) {
+            throw argument_legality_exception{"only support deposit on one address!"};
+        }
     }
+    else if (type == utxo_attach_type::asset_transfer) {
+        blockchain.uppercase_symbol(option_.symbol);
+
+        // check asset symbol
+        check_asset_symbol(option_.symbol);
+    }
+
     // receiver
     receiver_record record;
     std::vector<receiver_record> receivers;
-    for( auto& each : option_.receivers){
+    for ( auto& each : option_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
         record.target = item.first();
         // address check
-        if (!blockchain.is_valid_address(record.target))
-            throw toaddress_invalid_exception{std::string("invalid address ") + record.target};
+        if (!blockchain.is_valid_address(record.target)) {
+            throw toaddress_invalid_exception{"invalid receiver address " + record.target};
+        }
+
         record.symbol = option_.symbol;
-        if(record.symbol.empty()) {
+        if (record.symbol.empty()) {
             record.amount = item.second(); // etp amount
             record.asset_amount = 0;
             if (!record.amount)
-                throw argument_legality_exception{std::string("invalid amount parameter ") + each};
-        } else {
+                throw argument_legality_exception{"invalid amount parameter " + each};
+        }
+        else {
             record.amount = 0;
             record.asset_amount = item.second();
             if (!record.asset_amount)
-                throw argument_legality_exception{std::string("invalid asset amount parameter ") + each};
+                throw argument_legality_exception{"invalid asset amount parameter " + each};
         }
+
         record.type = type;
         receivers.push_back(record);
     }
 
-    if((type == utxo_attach_type::etp) || (type == utxo_attach_type::asset_transfer)) {
-        auto send_helper = base_transaction_constructor(blockchain, type, 
-                std::move(option_.senders), std::move(receivers), std::move(option_.symbol), std::move(option_.mychange_address), 
-                std::move(option_.message), option_.fee);
-
-        send_helper.exec();
-        tx_ = send_helper.get_transaction();
-    } else if(type == utxo_attach_type::deposit) {
-        auto send_helper = depositing_etp_transaction(blockchain, type, 
-                std::move(option_.senders), std::move(receivers), option_.deposit, std::move(option_.mychange_address), 
-                std::move(option_.message), option_.fee);
-
-        send_helper.exec();
-        tx_ = send_helper.get_transaction();
-    } else {
-        throw argument_legality_exception{"invalid transaction type."};
+    if (receivers.empty()) {
+        throw toaddress_invalid_exception{"receivers can not be empty!"};
     }
-    
 
-    auto& aroot = jv_output;
+    std::shared_ptr<base_transfer_common> sp_send_helper;
+
+    switch (type) {
+        case utxo_attach_type::etp:
+        case utxo_attach_type::asset_transfer: {
+            sp_send_helper = std::make_shared<base_transaction_constructor>(blockchain, type,
+                             std::move(option_.senders), std::move(receivers),
+                             std::move(option_.symbol), std::move(option_.mychange_address),
+                             std::move(option_.message), option_.fee);
+            break;
+        }
+
+        case utxo_attach_type::deposit: {
+            sp_send_helper = std::make_shared<depositing_etp_transaction>(blockchain, type,
+                             std::move(option_.senders), std::move(receivers),
+                             option_.deposit, std::move(option_.mychange_address),
+                             std::move(option_.message), option_.fee);
+            break;
+        }
+
+        default: {
+            throw argument_legality_exception{"invalid transaction type."};
+            break;
+        }
+    }
+
+    sp_send_helper->exec();
+
+    auto&& tx = sp_send_helper->get_transaction();
+
+    // output json
     std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx_);
-    aroot["hex"] = tx_buf.str();
-
+    tx_buf << config::transaction(tx);
+    if (get_api_version() <= 2) {
+        jv_output["hex"] = tx_buf.str();
+    }
+    else {
+        // TODO support restful API format
+        jv_output["raw"] = tx_buf.str();
+    }
 
     return console_result::okay;
 }

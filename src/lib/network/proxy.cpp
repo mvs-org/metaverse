@@ -338,13 +338,13 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
     }
 
     if (command == "headers") {
-    	log::trace(LOG_NETWORK) << "";
+        log::trace(LOG_NETWORK) << "";
     }
 
     //thin log network
-	log::trace(LOG_NETWORK)
-		<< "Sending " << command << " to [" << authority() << "] ("
-		<< buffer.size() << " bytes)";
+    log::trace(LOG_NETWORK)
+        << "Sending " << command << " to [" << authority() << "] ("
+        << buffer.size() << " bytes)";
 
     // Critical Section (protect socket)
     ///////////////////////////////////////////////////////////////////////////
@@ -363,10 +363,10 @@ void proxy::do_send(const std::string& command, const_buffer buffer,
                 return;
             }
             const auto socket = socket_->get_socket();
-			auto& native_socket = socket->get();
+            auto& native_socket = socket->get();
             async_write(native_socket, buffer,
                     std::bind(&proxy::handle_send,
-                    		shared_from_this(), _1, buffer, handler));
+                            shared_from_this(), _1, buffer, handler));
         };
         const auto socket = socket_->get_socket();
         outbound_size = outbound_queue_.size();
@@ -423,8 +423,8 @@ void proxy::handle_send(const boost_code& ec, const_buffer buffer,
     handler(error);
 #ifdef QUEUE_REQUEST
     if(error){
-    	const auto socket = socket_->get_socket();
-    	std::queue<request_callback>{}.swap(outbound_queue_);
+        const auto socket = socket_->get_socket();
+        std::queue<request_callback>{}.swap(outbound_queue_);
         return;
     }
 
@@ -468,8 +468,8 @@ void proxy::stop(const code& ec)
     // Give channel opportunity to terminate timers.
     handle_stopping();
     {
-		const auto socket = socket_->get_socket();
-		std::queue<request_callback>{}.swap(outbound_queue_);
+        const auto socket = socket_->get_socket();
+        std::queue<request_callback>{}.swap(outbound_queue_);
     }
 
     // The socket_ is internally guarded against concurrent use.
@@ -494,7 +494,9 @@ bool proxy::stopped() const
 }
 
 std::map<config::authority, int64_t> proxy::banned_;
+std::list<config::authority> proxy::manual_banned_;
 boost::detail::spinlock proxy::spinlock_;
+boost::detail::spinlock proxy::manual_banned_spinlock_;
 
 bool proxy::blacklisted(const config::authority& authority)
 {
@@ -506,12 +508,42 @@ bool proxy::blacklisted(const config::authority& authority)
             return false;
         ms = it->second;
     }
+
     auto millissecond = unix_millisecond();
     if (ms >= millissecond)
     {
         return true;
     }
     return false;
+}
+
+bool proxy::manualbanned(const config::authority& authority)
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), config::authority(authority.ip(), 0));
+    return (it != manual_banned_.end());
+}
+
+void proxy::manual_ban(const config::authority& authority)
+{
+    const config::authority local_authority{authority.ip(), 0};
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
+    if (it == manual_banned_.end()) {
+        manual_banned_.push_back(local_authority);
+        log::info(LOG_NETWORK) << "add to manual_ban_list: " << local_authority.to_string();
+    }
+}
+
+void proxy::manual_unban(const config::authority& authority)
+{
+    const config::authority local_authority{authority.ip(), 0};
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    auto it = find(manual_banned_.begin(), manual_banned_.end(), local_authority);
+    if (it != manual_banned_.end()) {
+        manual_banned_.erase(it);
+        log::info(LOG_NETWORK) << "remove from manual_ban_list: " << local_authority.to_string();
+    }
 }
 
 

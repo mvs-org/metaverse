@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -22,6 +22,7 @@
 #include <metaverse/explorer/extensions/commands/getasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -30,51 +31,88 @@ using namespace bc::explorer::config;
 
 /************************ getasset *************************/
 
-console_result getasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(argument_.symbol);
-    
-    if (argument_.symbol.size() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"Illegal asset symbol length."};
 
-    // 1. first search asset in blockchain
-    auto sh_vec = blockchain.get_issued_assets();
+    if (!argument_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(argument_.symbol);
+    }
 
-    auto& aroot = jv_output;
-    Json::Value assets;
-    for (auto& elem: *sh_vec) {
-        Json::Value asset_data;
+    std::string json_key;
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
 
+    if (option_.is_cert) { // only get asset certs
+        json_key = "assetcerts";
+
+        // get asset cert in blockchain
+        auto sh_vec = blockchain.get_issued_asset_certs();
         if (argument_.symbol.empty()) {
-            assets.append(elem.get_symbol());
-        } else {
-            // find out target from blockchain 
-            if (elem.get_symbol().compare(argument_.symbol) == 0) {
-                asset_data["symbol"] = elem.get_symbol();
-                if (get_api_version() == 1) {
-                    asset_data["maximum_supply"] += elem.get_maximum_supply();
-                    asset_data["decimal_number"] = std::to_string(elem.get_decimal_number());
-                } else {
-                    asset_data["maximum_supply"] = elem.get_maximum_supply();
-                    asset_data["decimal_number"] = elem.get_decimal_number();
+            std::set<std::string> symbols;
+            std::sort(sh_vec->begin(), sh_vec->end());
+            for (auto& elem : *sh_vec) {
+               // get rid of duplicate symbols
+                if (!symbols.count(elem.get_symbol())) {
+                    symbols.insert(elem.get_symbol());
+                    json_value.append(elem.get_symbol());
                 }
-                asset_data["issuer"] = elem.get_issuer();
-                asset_data["address"] = elem.get_address();
-                asset_data["description"] = elem.get_description();
-                asset_data["status"] = "issued";
-                assets.append(asset_data);
-                break;
             }
         }
+        else {
+            auto result_vec = std::make_shared<asset_cert::list>();
+            for (auto& cert : *sh_vec) {
+                if (argument_.symbol != cert.get_symbol()) {
+                    continue;
+                }
 
+                result_vec->push_back(cert);
+            }
+
+            std::sort(result_vec->begin(), result_vec->end());
+            for (auto& elem : *result_vec) {
+                Json::Value asset_data = json_helper.prop_list(elem);
+                json_value.append(asset_data);
+            }
+        }
     }
-    
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1        
-        aroot["assets"] = "";                                                   
-    } else {                                                                    
-        aroot["assets"] = assets;                                               
+    else {
+        json_key = "assets";
+
+        // get asset in blockchain
+        auto sh_vec = blockchain.get_issued_assets();
+        if (argument_.symbol.empty()) {
+            std::sort(sh_vec->begin(), sh_vec->end());
+            std::set<std::string> symbols;
+            for (auto& elem: *sh_vec) {
+                // get rid of duplicate symbols
+                if (!symbols.count(elem.get_symbol())) {
+                    symbols.insert(elem.get_symbol());
+                    json_value.append(elem.get_symbol());
+                }
+            }
+        }
+        else {
+            for (auto& elem: *sh_vec) {
+                if (elem.get_symbol() != argument_.symbol) {
+                    continue;
+                }
+
+                Json::Value asset_data = json_helper.prop_list(elem, true);
+                asset_data["status"] = "issued";
+                json_value.append(asset_data);
+            }
+        }
+    }
+
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
+    }
+    else {
+        jv_output[json_key] = json_value;
     }
 
     return console_result::okay;

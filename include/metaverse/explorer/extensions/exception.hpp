@@ -124,6 +124,13 @@ DEFINE_EXPLORER_EXCEPTION(asset_symbol_length_exception, 5011);
 DEFINE_EXPLORER_EXCEPTION(asset_symbol_name_exception, 5012);
 DEFINE_EXPLORER_EXCEPTION(asset_issued_not_delete, 5013);
 DEFINE_EXPLORER_EXCEPTION(asset_delete_fail, 5014);
+DEFINE_EXPLORER_EXCEPTION(asset_secondaryissue_threshold_exception, 5015);
+DEFINE_EXPLORER_EXCEPTION(asset_attenuation_model_exception, 5016);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_exception, 5017);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_existed_exception, 5018);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_notfound_exception, 5019);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_notowned_exception, 5020);
+DEFINE_EXPLORER_EXCEPTION(asset_cert_domain_exception, 5021);
 
 DEFINE_EXPLORER_EXCEPTION(etp_lack_exception, 5051);
 
@@ -142,7 +149,7 @@ DEFINE_EXPLORER_EXCEPTION(signature_amount_exception, 5220);
 DEFINE_EXPLORER_EXCEPTION(pubkey_amount_exception, 5230);
 DEFINE_EXPLORER_EXCEPTION(pubkey_dismatch_exception, 5231);
 DEFINE_EXPLORER_EXCEPTION(prikey_notfound_exception, 5232);
-
+DEFINE_EXPLORER_EXCEPTION(pubkey_notfound_exception, 5233);
 
 DEFINE_EXPLORER_EXCEPTION(tx_io_exception, 5301);
 DEFINE_EXPLORER_EXCEPTION(tx_source_exception, 5302);
@@ -169,6 +176,16 @@ DEFINE_EXPLORER_EXCEPTION(encode_exception, 6001);
 DEFINE_EXPLORER_EXCEPTION(ec_to_address_exception, 6002);
 DEFINE_EXPLORER_EXCEPTION(ec_to_public_exception, 6003);
 
+DEFINE_EXPLORER_EXCEPTION(did_symbol_name_exception, 7001);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_existed_exception, 7002);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_length_exception, 7003);
+DEFINE_EXPLORER_EXCEPTION(did_description_length_exception, 7004);
+DEFINE_EXPLORER_EXCEPTION(did_register_poundage_exception, 7005);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_notfound_exception, 7006);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_duplicate_exception, 7007);
+DEFINE_EXPLORER_EXCEPTION(did_address_needed_exception, 7008);
+DEFINE_EXPLORER_EXCEPTION(did_symbol_notowned_exception, 7009);
+DEFINE_EXPLORER_EXCEPTION(did_multisig_address_exception, 7010);
 
 DEFINE_EXPLORER_EXCEPTION(seed_exception, 9001);
 DEFINE_EXPLORER_EXCEPTION(seed_size_exception, 9001);

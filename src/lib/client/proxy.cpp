@@ -324,7 +324,7 @@ bool proxy::decode_height(reader& payload, height_handler& handler)
 bool proxy::decode_block_header(reader& payload, block_header_handler& handler)
 {
     chain::header header;
-    if (!header.from_data(payload, false) || !payload.is_exhausted())
+    if (!header.from_data(payload) || !payload.is_exhausted())
         return false;
 
     handler(header);

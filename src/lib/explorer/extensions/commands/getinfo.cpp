@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,20 +32,26 @@ using namespace bc::explorer::config;
 
 /************************ getinfo *************************/
 
-console_result getinfo::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getinfo::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-	auto& blockchain = node.chain_impl();
+    auto& blockchain = node.chain_impl();
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    auto& jv = jv_output; 
+    auto& jv = jv_output;
     jv["protocol-version"] = node.network_settings().protocol;
     jv["wallet-version"] = MVS_EXPLORER_VERSION;
     jv["database-version"] = MVS_DATABASE_VERSION;
     jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
-    jv["peers"] = get_connections_count(node); 
-    jv["network-assets-count"] = static_cast<uint64_t>(blockchain.get_issued_assets()->size()); 
+    jv["peers"] = get_connections_count(node);
+
+    auto sh_vec = blockchain.get_issued_assets();
+    std::set<std::string> symbols;
+    for (const auto& elem: *sh_vec) {
+        symbols.insert(elem.get_symbol());
+    }
+    jv["network-assets-count"] = static_cast<uint64_t>(symbols.size());
     jv["wallet-account-count"] = static_cast<uint64_t>(blockchain.get_accounts()->size());
 
     uint64_t height;
@@ -54,10 +60,10 @@ console_result getinfo::invoke (Json::Value& jv_output,
     bool is_solo_mining;
     node.miner().get_state(height, rate, difficulty, is_solo_mining);
 
-    jv["height"] = height; 
-    jv["difficulty"] = difficulty; 
-    jv["is-mining"] = is_solo_mining; 
-    jv["hash-rate"] = rate; 
+    jv["height"] = height;
+    jv["difficulty"] = difficulty;
+    jv["is-mining"] = is_solo_mining;
+    jv["hash-rate"] = rate;
 
 
     return console_result::okay;

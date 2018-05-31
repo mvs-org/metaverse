@@ -12,6 +12,7 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 
 using namespace std;
 
@@ -373,7 +374,30 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     break;
                 }
 
-                case OP_NOP1: case OP_NOP3: case OP_NOP4: case OP_NOP5:
+                case OP_CHECKATTENUATIONVERIFY:
+                {
+                    if (!(flags & SCRIPT_VERIFY_CHECKATTENUATIONVERIFY)) {
+                        // not enabled; treat as a NOP3
+                        if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) {
+                            return set_error(serror, SCRIPT_ERR_DISCOURAGE_UPGRADABLE_NOPS);
+                        }
+                        break;
+                    }
+
+                    if (stack.size() < 2)
+                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
+
+                    valtype& vcModelParam = stacktop(-2);
+                    //valtype& vcInputPoint = stacktop(-1);
+                    if (!attenuation_model::check_model_param_format(vcModelParam))
+                        return set_error(serror, SCRIPT_ERR_INVALID_MODEL_PARAM);
+
+                    popstack(stack);
+                    popstack(stack);
+                }
+                break;
+
+                case OP_NOP1: case OP_NOP4: case OP_NOP5:
                 case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
                 {
                     if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS)

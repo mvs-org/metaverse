@@ -44,7 +44,6 @@
 #include <miniupnpc/miniwget.h>
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
-#include "tinyformat.h"
 #endif
 
 namespace libbitcoin {
@@ -66,7 +65,8 @@ p2p::p2p(const settings& settings)
     hosts_(std::make_shared<hosts>(threadpool_, settings_)),
     connections_(std::make_shared<connections>()),
     stop_subscriber_(std::make_shared<stop_subscriber>(threadpool_, NAME "_stop_sub")),
-    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub"))
+    channel_subscriber_(std::make_shared<channel_subscriber>(threadpool_, NAME "_sub")),
+    seed(nullptr)
 {
 }
 
@@ -143,7 +143,7 @@ void p2p::handle_hosts_loaded(const code& ec, result_handler handler)
     }
 
     // The instance is retained by the stop handler (until shutdown).
-    const auto seed = attach_seed_session();
+    seed = attach_seed_session();
 
     // This is invoked on a new thread.
     seed->start(
@@ -463,7 +463,7 @@ connections::ptr p2p::connections_ptr()
 
 void p2p::thread_map_port(uint16_t map_port)
 {
-    std::string port = strprintf("%u", map_port);
+    std::string port = std::to_string(map_port);
     const char * multicastif = nullptr;
     const char * minissdpdpath = nullptr;
     struct UPNPDev * devlist = nullptr;
@@ -495,7 +495,7 @@ void p2p::thread_map_port(uint16_t map_port)
     }
     if (r == 1)
     {
-        std::string strDesc = strprintf("ETP v%s", MVS_VERSION);
+        std::string strDesc = std::string("ETP v") + MVS_VERSION;
         
 
         try {
@@ -515,7 +515,7 @@ void p2p::thread_map_port(uint16_t map_port)
                 else
                     log::info("UPnP") << "Port Mapping successful.";
 
-                boost::this_thread::sleep(boost::posix_time::milliseconds(20 * 60 * 1000));
+                std::this_thread::sleep_for(asio::milliseconds(20 * 60 * 1000));
             }
         }
         catch (const boost::thread_interrupted&)
@@ -581,7 +581,7 @@ config::authority::ptr p2p::get_out_address() {
             log::info("UPnP") << "GetExternalIPAddress() returned " << r;
         else
         {
-            std::string outaddressstr = strprintf("%s:%d", externalIPAddress, settings_.inbound_port);
+            std::string outaddressstr = std::string(externalIPAddress) + ":" + std::to_string(settings_.inbound_port);
             upnp_out.store(std::make_shared<config::authority>(outaddressstr));
             out_address_use_count_ = 1;
             freeUPNPDevlist(devlist); devlist = nullptr;
@@ -618,12 +618,28 @@ void p2p::map_port(bool use_upnp)
     }
 }
 
-#else
+#else // #ifdef USE_UPNP
 void p2p::map_port(bool)
 {
     // Intentionally left blank.
 }
-#endif
+#endif // #ifdef USE_UPNP
+
+void p2p::restart_seeding()
+{
+    //1. clear the host::buffer_ cache
+    const auto result = hosts_->clear();
+    log::debug(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();
+
+    //2. start the session_seed
+    result_handler handler = [this](const code& ec) {
+        log::debug(LOG_NETWORK) << "restart_seeding result: " << ec.message();
+        hosts_->after_reseeding();
+    };
+
+    seed->restart(handler);
+}
+
 
 } // namespace network
 } // namespace libbitcoin

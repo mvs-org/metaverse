@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,23 +36,23 @@ class submitwork: public command_extension
 {
 public:
     static const char* symbol(){ return "submitwork";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "submitwork to submit mining result."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("NOUNCE", 1)
+            .add("NONCE", 1)
             .add("HEADERHASH", 1)
             .add("MIXHASH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(argument_.nounce, "NOUNCE", variables, input, raw);
+        load_input(argument_.nonce, "NONCE", variables, input, raw);
         load_input(argument_.header_hash, "HEADERHASH", variables, input, raw);
         load_input(argument_.mix_hash, "MIXHASH", variables, input, raw);
     }
@@ -67,19 +68,19 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "NOUNCE",
-            value<std::string>(&argument_.nounce)->required(),
-            "nounce."
+            "NONCE",
+            value<std::string>(&argument_.nonce)->required(),
+            "nonce. without leading 0x"
         )
         (
             "HEADERHASH",
             value<std::string>(&argument_.header_hash)->required(),
-            "header hash."
+            "header hash. with leading 0x"
         )
         (
             "MIXHASH",
             value<std::string>(&argument_.mix_hash)->required(),
-            "mix hash."
+            "mix hash. with leading 0x"
         );
 
         return options;
@@ -94,8 +95,8 @@ public:
 
     struct argument
     {
-        std::string nounce;     
-        std::string mix_hash;   
+        std::string nonce;
+        std::string mix_hash;
         std::string header_hash;
     } argument_;
 

@@ -80,7 +80,7 @@ static std::ostream& get_command_error(command& command, std::ostream& error)
     return error;
 }
 
-console_result dispatch(int argc, const char* argv[], 
+console_result dispatch(int argc, const char* argv[],
     std::istream& input, std::ostream& output, std::ostream& error)
 {
     if (argc == 1)
@@ -131,7 +131,7 @@ console_result dispatch_command(int argc, const char* argv[],
 }
 
 console_result dispatch_command(int argc, const char* argv[],
-    Json::Value& jv_output, 
+    Json::Value& jv_output,
     libbitcoin::server::server_node& node, uint8_t api_version)
 {
     std::istringstream input;
@@ -169,20 +169,20 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (command->category(ctgy_extension))
     {
-
         // fixme. is_blockchain_sync has some problem.
         // if (command->category(ctgy_online) && node.is_blockchain_sync()) {
         if (command->category(ctgy_online) &&
             !node.chain_impl().chain_settings().use_testnet_rules) {
-       	    uint64_t height{0};
+            uint64_t height{0};
             node.chain_impl().get_last_height(height);
-            if (!command->is_block_height_fullfilled(height))
+            if (!command->is_block_height_fullfilled(height)) {
                 throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
-        }                                                                       
+            }
+        }
 
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
-
-    }else{
+    }
+    else {
         command->set_api_version(1); // only compatible for v1
         auto retcode = command->invoke(output, output);
         jv_output = output.str();

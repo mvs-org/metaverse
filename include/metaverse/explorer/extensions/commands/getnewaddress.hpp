@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,7 +36,7 @@ class getnewaddress: public command_extension
 {
 public:
     static const char* symbol(){ return "getnewaddress";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "Generate new address for this account."; }
 
@@ -46,7 +47,7 @@ public:
             .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -59,26 +60,26 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-       	(
-			"number,n",
-			value<std::uint32_t>(&option_.count),
-			"The address count."
-		);
+        )
+        (
+            "number,n",
+            value<std::uint32_t>(&option_.count),
+            "The number of addresses to be generated, defaults to 1."
+        );
 
         return options;
     }
@@ -96,9 +97,9 @@ public:
 
     struct option
     {
-		option():count(1)
-		{};
-    	uint32_t count;
+        option():count(1)
+        {};
+        uint32_t count;
     } option_;
 
 };

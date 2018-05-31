@@ -33,7 +33,7 @@ class error_category_impl
 public:
     virtual const char* name() const BC_NOEXCEPT;
     virtual std::string message(int ev) const BC_NOEXCEPT;
-    virtual std::error_condition default_error_condition(int ev) 
+    virtual std::error_condition default_error_condition(int ev)
         const BC_NOEXCEPT;
 };
 
@@ -179,19 +179,77 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::channel_stopped:
             return "channel is stopped";
         case error::not_satisfied:
-        	return "not satisfied";
+            return "not satisfied";
 
-		// asset errors
-		case error::asset_amount_overflow:
-			return "asset amount overflow";
-		case error::asset_amount_not_equal:
-			return "asset amount not equal";
-		case error::asset_symbol_not_match:
-			return "asset symbol not match";
-		case error::asset_symbol_invalid:
-			return "asset symbol invalid";
+        // asset errors
+        case error::asset_amount_overflow:
+            return "asset amount overflow";
+        case error::asset_amount_not_equal:
+            return "asset amount not equal";
+        case error::asset_symbol_not_match:
+            return "asset symbol not match";
+        case error::asset_symbol_invalid:
+            return "asset symbol invalid";
+        case error::asset_address_not_match:
+            return "asset attachment address must be equal with output address";
         case error::asset_exist:
             return "asset exist";
+        case error::asset_not_exist:
+            return "asset not exist";
+        case error::asset_issue_error:
+            return "issue asset error";
+        case error::asset_secondaryissue_error:
+            return "secondary issue asset error";
+        case error::asset_secondaryissue_share_not_enough:
+            return "user asset share is not enought to secondary issue asset ";
+        case error::asset_secondaryissue_threshold_invalid:
+            return "asset secondaryissue assetshare threshold value invalid";
+
+        // did errors
+        case error::did_symbol_not_match:
+            return "did symbol not match";
+        case error::did_symbol_invalid:
+            return "did symbol invalid";
+        case error::did_exist:
+            return "did exist";
+        case error::address_registered_did:
+            return "address already registered did";
+        case error::did_func_not_actived:
+            return "did function has not been actived until block height is larger than 1130000";
+        case error::did_address_not_match:
+            return "attach did address must equal with output address";
+        case error::did_address_needed:
+            return "did address is needed but not supplied";
+        case error::did_not_exist:
+            return "did does not exist";
+        case error::did_input_error:
+            return "did input error";
+        case error::did_multi_type_exist:
+            return "did attchment type can not be with some others";
+        case error::attenuation_model_param_error:
+            return "attenuation model parameter is wrong";
+
+        // cert errors
+        case error::asset_cert_error:
+            return "asset cert error";
+        case error::asset_cert_exist:
+            return "asset cert already exists";
+        case error::asset_cert_not_exist:
+            return "asset cert does not exist";
+        case error::asset_cert_not_provided:
+            return "asset cert is not provided";
+        case error::asset_cert_not_owned:
+            return "asset cert is not owned";
+        case error::asset_cert_issue_error:
+            return "asset cert issue error";
+
+        case error::asset_did_registerr_not_match:
+            return "attach todid must equal with asset issuer or cert owner";
+
+        case error::attachment_invalid:
+            return "attachment is invalid";
+        case error::nova_feature_not_activated:
+            return "nova feature is not activated, it will be activated when block height is larger than 1270000";
 
         // unknown errors
         case error::unknown:

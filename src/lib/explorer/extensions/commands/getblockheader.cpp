@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,8 +19,8 @@
  */
 
 
-#include <jsoncpp/json/json.h>                                                 
-#include <metaverse/client.hpp>                                                 
+#include <jsoncpp/json/json.h>
+#include <metaverse/client.hpp>
 #include <metaverse/explorer/callback_state.hpp>
 #include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -37,8 +37,8 @@ using namespace bc::explorer::config;
 
 /************************ getblockheader *************************/
 
-console_result getblockheader::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getblockheader::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
 
     uint64_t height = 0;
@@ -66,8 +66,8 @@ console_result getblockheader::invoke (Json::Value& jv_output,
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
-    	if( !jheader.isObject() 
-    	    || !jheader["result"].isObject() 
+    	if( !jheader.isObject()
+    	    || !jheader["result"].isObject()
     	    || !jheader["result"]["hash"].isString()) {
 
         	throw block_hash_get_exception{"getbestblockhash got parser exception."};

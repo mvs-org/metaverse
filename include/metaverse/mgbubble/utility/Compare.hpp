@@ -63,9 +63,9 @@ class Comparable {
 };
 
 template <typename EnumT, typename std::enable_if_t<std::is_enum<EnumT>::value>* = nullptr>
-constexpr int compare(EnumT lhs, EnumT rhs) noexcept
+int compare(EnumT lhs, EnumT rhs) noexcept
 {
-  int i{};
+  int i = 0;
   if (lhs < rhs) {
     i = -1;
   } else if (lhs > rhs) {
@@ -78,9 +78,9 @@ constexpr int compare(EnumT lhs, EnumT rhs) noexcept
 
 template <typename IntegralT,
           typename std::enable_if_t<std::is_integral<IntegralT>::value>* = nullptr>
-constexpr int compare(IntegralT lhs, IntegralT rhs) noexcept
+int compare(IntegralT lhs, IntegralT rhs) noexcept
 {
-  int i{};
+  int i = 0;
   if (lhs < rhs) {
     i = -1;
   } else if (lhs > rhs) {

@@ -59,6 +59,17 @@ namespace language
     extern const dictionary_list all;
 }
 
+namespace symbol
+{
+    // built in ban dict (upper case):
+    bool is_sensitive(const std::string& symbol);
+
+    // built in forbidden dict (upper case):
+    bool is_forbidden(const std::string& symbol);
+
+    // All built-in ban list:
+}
+
 } // namespace wallet
 } // namespace libbitcoin
 

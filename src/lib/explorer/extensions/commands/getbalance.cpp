@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,8 +33,8 @@ using namespace bc::explorer::config;
 
 /************************ getbalance *************************/
 
-console_result getbalance::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getbalance::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -49,20 +49,17 @@ console_result getbalance::invoke (Json::Value& jv_output,
     uint64_t total_unspent = 0;
     uint64_t total_frozen = 0;
 
-    //balances addr_balance;
-    std::string type("all");
-
     for (auto& i: *vaddr) {
         balances addr_balance{0, 0, 0, 0};
         auto waddr = wallet::payment_address(i.get_address());
-        sync_fetchbalance(waddr, type, blockchain, addr_balance, 0);
+        sync_fetchbalance(waddr, blockchain, addr_balance);
 
         total_confirmed += addr_balance.confirmed_balance;
         total_received += addr_balance.total_received;
         total_unspent += addr_balance.unspent_balance;
         total_frozen += addr_balance.frozen_balance;
     }
-    
+
     if (get_api_version() == 1){
         aroot["total-confirmed"] += total_confirmed;
         aroot["total-received"] += total_received;

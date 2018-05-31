@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2015 mvs developers 
+ * Copyright (c) 2011-2015 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -35,7 +35,7 @@ std::string formerly_extension(const std::string& former);
 
 std::shared_ptr<command> find_extension(const std::string& symbol);
 
-void broadcast_extension(const std::function<void(std::shared_ptr<command>)> func);
+void broadcast_extension(const std::function<void(std::shared_ptr<command>)> func, std::ostream& os);
 
 
 } // namespace explorer

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
+#include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
 #include <metaverse/bitcoin/math/elliptic_curve.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
@@ -352,6 +353,26 @@ bool operation::is_pay_script_hash_pattern(const operation::stack& ops)
         && ops[2].code == opcode::equal;
 }
 
+bool operation::is_pay_blackhole_pattern(const operation::stack& ops)
+{
+    return ops.size() == 1
+        && ops[0].code == opcode::return_;
+}
+
+bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops)
+{
+    return ops.size() == 8
+        && ops[0].code == opcode::pushdata2 // model param
+        && ops[1].code == opcode::special // input point
+        && ops[2].code == opcode::checkattenuationverify
+        && ops[3].code == opcode::dup
+        && ops[4].code == opcode::hash160
+        && ops[5].code == opcode::special
+        && ops[5].data.size() == short_hash_size
+        && ops[6].code == opcode::equalverify
+        && ops[7].code == opcode::checksig;
+}
+
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
 {
     if (ops.size() < 2 || !is_push_only(ops))
@@ -414,6 +435,16 @@ bool operation::is_sign_script_hash_pattern(const operation::stack& ops)
         || redeem_script_pattern == script_pattern::pay_key_hash
         || redeem_script_pattern == script_pattern::pay_script_hash
         || redeem_script_pattern == script_pattern::null_data;
+}
+
+const data_chunk& operation::get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+{
+    return ops[0].data;
+}
+
+const data_chunk& operation::get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
+{
+    return ops[1].data;
 }
 
 // pattern templates
@@ -522,6 +553,30 @@ operation::stack operation::to_pay_script_hash_pattern(const short_hash& hash)
         { opcode::hash160, {} },
         { opcode::special, to_chunk(hash) },
         { opcode::equal, {} }
+    };
+}
+
+operation::stack operation::to_pay_blackhole_pattern(const short_hash&)
+{
+    return operation::stack
+    {
+        { opcode::return_, {} }
+    };
+}
+
+operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
+    const short_hash& hash, const std::string& model_param, const point& input_point)
+{
+    return operation::stack
+    {
+        { opcode::pushdata2, to_chunk(model_param) },
+        { opcode::special, input_point.to_data() },
+        { opcode::checkattenuationverify, {} },
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(hash) },
+        { opcode::equalverify, {} },
+        { opcode::checksig, {} }
     };
 }
 

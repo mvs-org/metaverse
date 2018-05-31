@@ -69,6 +69,10 @@ public:
     // Save hosts to file.
     virtual code stop();
 
+    // Clear hosts buffer
+    virtual code clear();
+    virtual code after_reseeding();
+
     virtual size_t count() const;
     virtual code fetch(address& out, const config::authority::list& excluded_list);
     virtual code remove(const address& host);
@@ -76,8 +80,9 @@ public:
     virtual void store(const address::list& hosts, result_handler handler);
     address::list copy();
 private:
-//    typedef boost::circular_buffer<address> list;
+    //    typedef boost::circular_buffer<address> list;
     using list = std::set<address, address_compare >;
+
     typedef list::iterator iterator;
 
     iterator find(const address& host);
@@ -86,6 +91,7 @@ private:
 
     // These are protected by a mutex.
     list buffer_;
+    list backup_;
     list inactive_;
     std::atomic<bool> stopped_;
     mutable upgrade_mutex mutex_;
@@ -98,6 +104,9 @@ private:
     const boost::filesystem::path file_path_;
     threadpool& pool_;
     deadline::ptr snap_timer_;
+
+    // record the seed count
+    const size_t seed_count;
 };
 
 } // namespace network

@@ -105,8 +105,7 @@ protected:
 
     bool stopped();
     const_iterator find(const hash_digest& tx_hash) const;
-    const_iterator find(const std::string& assert_name) const;
-
+    
     bool handle_reorganized(const code& ec, size_t fork_point,
         const block_list& new_blocks, const block_list& replaced_blocks);
     void handle_validated(const code& ec, transaction_ptr tx,
@@ -123,6 +122,8 @@ protected:
     void add(transaction_ptr tx, confirm_handler handler);
     void remove(const block_list& blocks);
     void clear(const code& ec);
+
+    code check_symbol_repeat(transaction_ptr tx);
 
     // These would be private but for test access.
     void delete_spent_in_blocks(const block_list& blocks);
@@ -144,7 +145,6 @@ private:
 
     // These methods are NOT thread safe.
     bool is_in_pool(const hash_digest& tx_hash) const;
-    bool is_in_pool(const std::string& assert_name) const;
     bool is_spent_in_pool(transaction_ptr tx) const;
     bool is_spent_in_pool(const chain::transaction& tx) const;
     bool is_spent_in_pool(const chain::output_point& outpoint) const;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,31 +30,33 @@ namespace explorer {
 namespace commands {
 
 
-console_result sendasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
-    
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
+
+    // check asset symbol
+    check_asset_symbol(argument_.symbol);
+
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid to address parameter!"};
     if (!argument_.amount)
         throw asset_amount_exception{"invalid asset amount parameter!"};
 
     // receiver
+    utxo_attach_type attach_type = option_.attenuation_model_param.empty()
+        ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_attenuation_transfer;
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}  
+        {argument_.address, argument_.symbol, 0, argument_.amount, attach_type, attachment()}
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
-#if 0
-    auto send_helper = sending_locked_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee, argument_.lockedtime);
-#endif
-    
+    auto send_helper = sending_asset(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), argument_.fee);
+
     send_helper.exec();
 
     // json output

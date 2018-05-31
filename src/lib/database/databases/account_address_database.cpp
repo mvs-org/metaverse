@@ -42,13 +42,13 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
 BC_CONSTEXPR size_t address_db_size = ADDRESS_NAME_FIX_SIZE + ADDRESS_PRV_KEY_FIX_SIZE + ADDRESS_PUB_KEY_FIX_SIZE \
-	+ ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE
-	+ ADDRESS_STATUS_FIX_SIZE; // 222 -- refer account_address.hpp
+    + ADDRESS_HD_INDEX_FIX_SIZE + ADDRESS_BALANCE_FIX_SIZE + ADDRESS_ALIAS_FIX_SIZE + ADDRESS_ADDRESS_FIX_SIZE
+    + ADDRESS_STATUS_FIX_SIZE; // 222 -- refer account_address.hpp
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(address_db_size);
 
 account_address_database::account_address_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(lookup_filename, mutex), 
+  : lookup_file_(lookup_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size, record_size),
     lookup_map_(lookup_header_, lookup_manager_),
@@ -123,33 +123,39 @@ bool account_address_database::close()
 
 void account_address_database::store(const short_hash& key, const account_address& address)
 {
-	// find the target asset if exist
-	auto address_vec = get(key);
-	auto pos = std::find_if(address_vec.begin(), address_vec.end(), [&](const account_address& elem){
-			return (elem.get_address() == address.get_address());
-			});
-	
-	if (pos == address_vec.end()) { // new item
-		// actually store 
-		auto write = [&address](memory_ptr data)
-		{
-			auto serial = make_serializer(REMAP_ADDRESS(data));
-			serial.write_data(address.to_data());
-		};
-		rows_multimap_.add_row(key, write);
-	} else { // delete all and recreate all
-		*pos = address;
-		for(auto& each : address_vec)
-			delete_last_row(key);
-		for(auto& each : address_vec) {
-			auto each_write = [&each](memory_ptr data)
-			{
-				auto serial = make_serializer(REMAP_ADDRESS(data));
-				serial.write_data(each.to_data());
-			};
-			rows_multimap_.add_row(key, each_write);
-		}
-	}
+    const auto address_data = address.to_data();
+
+    const auto check_store = [this, &key, &address, &address_data]() {
+        auto address_vec = get(key);
+        auto pos = std::find_if(address_vec.begin(), address_vec.end(),
+                [&address](const account_address& elem){
+                    return (elem.get_address() == address.get_address());
+                });
+
+        if (pos == address_vec.end()) { // new item
+            return true;
+        }
+
+        if (pos->to_data() == address_data) {
+            // don't store duplicate data
+            return false;
+        }
+
+        // remove old record
+        delete_last_row(key);
+        sync();
+        return true;
+    };
+
+    if (check_store()) {
+        // actually store address
+        auto write = [&address_data](memory_ptr data)
+        {
+            auto serial = make_serializer(REMAP_ADDRESS(data));
+            serial.write_data(address_data);
+        };
+        rows_multimap_.add_row(key, write);
+    }
 }
 
 void account_address_database::safe_store(const short_hash& key, const account_address& address)
@@ -196,18 +202,18 @@ account_address::list account_address_database::get(const short_hash& key) const
 
 std::shared_ptr<account_address> account_address_database::get(const short_hash& key, const std::string& address) const
 {
-	std::shared_ptr<account_address> addr(nullptr);
+    std::shared_ptr<account_address> addr(nullptr);
     account_address::list result = get(key);
     for (auto element: result)
     {
-		if(element.get_address() == address)
-		{
-			addr = std::make_shared<account_address>(element);
-			break;
-		}
-	}
+        if(element.get_address() == address)
+        {
+            addr = std::make_shared<account_address>(element);
+            break;
+        }
+    }
 
-	return addr;
+    return addr;
 }
 void account_address_database::sync()
 {

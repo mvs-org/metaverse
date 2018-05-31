@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -29,33 +30,34 @@ namespace explorer {
 namespace commands {
 
 
-/************************ issuefrom *************************/
-
-class issuefrom: public command_extension
+/************************ secondaryissue *************************/
+class secondaryissue: public command_extension
 {
 public:
-    static const char* symbol(){ return "issuefrom";}
-    const char* name() override { return symbol();} 
+    static const char* symbol(){ return "secondaryissue";}
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "issuefrom "; }
+    const char* description() override { return "secondaryissue, alias as additionalissue."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("ADDRESS", 1)
-            .add("SYMBOL", 1);
+            .add("TODID", 1)
+            .add("SYMBOL", 1)
+            .add("VOLUME", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
+        load_input(argument_.to, "TODID", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.volume, "VOLUME", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -63,36 +65,46 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"ADDRESS",
-			value<std::string>(&argument_.address)->required(),
-			"target address"
-		)
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"issued asset symbol"
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(1000000000),
-			"The fee of tx. default_value 10 etp"
-		);
+        )
+        (
+            "TODID",
+            value<std::string>(&argument_.to)->required(),
+            "target did to check and issue asset, fee from and mychange to the address of this did too."
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "issued asset symbol"
+        )
+        (
+            "VOLUME",
+            value<uint64_t>(&argument_.volume)->required(),
+            "The volume of asset, with unit of integer bits."
+        )
+        (
+            "model,m",
+            value<std::string>(&option_.attenuation_model_param),
+            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "The fee of tx. default_value 10000 ETP bits"
+        );
 
         return options;
     }
@@ -101,22 +113,23 @@ public:
     {
     }
 
-    console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+    console_result invoke(Json::Value& jv_output,
+        libbitcoin::server::server_node& node) override;
 
     struct argument
     {
-    	std::string address;
-    	std::string symbol;
-    	uint64_t fee;
+        std::string to;
+        std::string symbol;
+        uint64_t fee;
+        uint64_t volume;
     } argument_;
 
     struct option
     {
+        std::string attenuation_model_param;
     } option_;
 
 };
-
 
 } // namespace commands
 } // namespace explorer

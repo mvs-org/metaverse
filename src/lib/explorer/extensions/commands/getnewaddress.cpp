@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,28 +32,27 @@ namespace commands {
 
 /************************ getnewaddress *************************/
 
-console_result getnewaddress::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getnewaddress::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     std::string mnemonic;
     acc->get_mnemonic(auth_.auth, mnemonic);
-    if (mnemonic.empty()) { throw mnemonicwords_empty_exception("mnemonic empty"); }
-    if (!option_.count || (option_.count & 0xfff00000)) { throw address_amount_exception("invalid address number parameter"); }
-    
-    std::vector<std::string> words;
-    words.reserve(24);
-
-    //split mnemonic to words
-    boost::split(words, mnemonic, boost::is_any_of(" "));
-
-    if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
-        throw mnemonicwords_amount_exception{"invliad size of backup words."};
+    if (mnemonic.empty()) {
+        throw mnemonicwords_empty_exception("mnemonic empty");
+    }
+    if (!option_.count || (option_.count & 0xfff00000)) {
+        throw address_amount_exception("invalid address number parameter");
     }
 
-    uint32_t idx = 0;
-    auto& aroot = jv_output;
+    //split mnemonic to vector words
+    auto&& words = bc::split(mnemonic, " ", true); // with trim
+
+    if ((words.size() % bc::wallet::mnemonic_word_multiple) != 0) {
+        throw mnemonicwords_amount_exception{"invalid size of backup words."};
+    }
+
     Json::Value addresses;
 
     std::vector<std::shared_ptr<account_address>> account_addresses;
@@ -63,15 +62,15 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
     const auto prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);//76066276 is HD private key version
     const bc::wallet::hd_private private_key(ds, prefixes);
+
     // mainnet payment address version
     auto payment_version = 50;
-
-    if (blockchain.chain_settings().use_testnet_rules){
-         // testnetpayment address version
-         payment_version = 127;
+    if (blockchain.chain_settings().use_testnet_rules) {
+        // testnetpayment address version
+        payment_version = 127;
     }
 
-    for ( idx = 0; idx < option_.count; idx++ ) {
+    for (uint32_t idx = 0; idx < option_.count; idx++ ) {
 
         auto addr = std::make_shared<bc::chain::account_address>();
         addr->set_name(auth_.name);
@@ -100,18 +99,19 @@ console_result getnewaddress::invoke (Json::Value& jv_output,
         addr->set_hd_index(acc->get_hd_index());
         account_addresses.push_back(addr);
 
-        // write to output json
         addresses.append(addr->get_address());
-
-        if(get_api_version() == 1 && option_.count == 1)
-            jv_output = addr->get_address();
     }
 
     blockchain.safe_store_account(*acc, account_addresses);
 
-    if(get_api_version() == 2 || option_.count != 1)
-        aroot["addresses"] = addresses;
-    
+    // write to output json
+    if (get_api_version() == 1 && option_.count == 1) {
+        jv_output = addresses[0];
+    }
+    else {
+        jv_output["addresses"] = addresses;
+    }
+
     return console_result::okay;
 }
 

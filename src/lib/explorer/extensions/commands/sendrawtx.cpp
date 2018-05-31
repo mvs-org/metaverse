@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -23,33 +23,37 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result sendrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendrawtx::invoke(Json::Value& jv_output,
+                                 libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    // get raw tx
     tx_type tx_ = argument_.transaction;
 
-    // max transfer fee check
-    uint64_t inputs_etp_val = 0, outputs_etp_val = tx_.total_output_value();
-    if(!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
-        throw tx_validate_exception{std::string("get transaction inputs etp value error!")};
-    if((inputs_etp_val - outputs_etp_val) > argument_.fee) //  fee more than max limit etp
-        throw tx_validate_exception{std::string("invalid tx fee")};
-    if(blockchain.validate_transaction(tx_))
-        throw tx_validate_exception{std::string("validate transaction failure")};
-    if(blockchain.broadcast_transaction(tx_)) 
-        throw tx_broadcast_exception{std::string("broadcast transaction failure")};
+    uint64_t outputs_etp_val = tx_.total_output_value();
+    uint64_t inputs_etp_val = 0;
+    if (!blockchain.get_tx_inputs_etp_value(tx_, inputs_etp_val))
+        throw tx_validate_exception{"get transaction inputs etp value error!"};
 
-    auto& aroot = jv_output;
-    aroot["hash"] = encode_hash(tx_.hash());
-    
+    // check raw tx fee range
+    if (inputs_etp_val <= outputs_etp_val)
+        throw tx_validate_exception{"no enough transaction fee"};
+    base_transfer_common::check_fee_in_valid_range(inputs_etp_val - outputs_etp_val);
+
+    if (blockchain.validate_transaction(tx_))
+        throw tx_validate_exception{"validate transaction failure"};
+
+    if (blockchain.broadcast_transaction(tx_))
+        throw tx_broadcast_exception{"broadcast transaction failure"};
+
+    jv_output["hash"] = encode_hash(tx_.hash());
+
     return console_result::okay;
 }
 

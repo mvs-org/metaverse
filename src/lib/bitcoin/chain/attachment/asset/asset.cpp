@@ -33,14 +33,14 @@ namespace chain {
 
 asset::asset()
 {
-	reset();
+    reset();
 }
 asset::asset(uint32_t status, const asset_detail& detail):
-	status(status), data(detail)
+    status(status), data(detail)
 {
 }
 asset::asset(uint32_t status, const asset_transfer& detail):
-	status(status), data(detail)
+    status(status), data(detail)
 {
 }
 asset asset::factory_from_data(const data_chunk& data)
@@ -68,18 +68,19 @@ void asset::reset()
 {
     status = 0; //asset_status::asset_none;
     auto visitor = reset_visitor();
-	boost::apply_visitor(visitor, data);
+    boost::apply_visitor(visitor, data);
 }
 
 bool asset::is_valid() const
 {
-    return true;
+    auto visitor = is_valid_visitor();
+    return boost::apply_visitor(visitor, data);
 }
 
 bool asset::is_valid_type() const
 {
     return ((ASSET_DETAIL_TYPE == status)
-		|| (ASSET_TRANSFERABLE_TYPE == status));
+        || (ASSET_TRANSFERABLE_TYPE == status));
 }
 
 bool asset::from_data(const data_chunk& data)
@@ -100,28 +101,28 @@ bool asset::from_data(reader& source)
 
     status = source.read_4_bytes_little_endian();
     auto result = static_cast<bool>(source);
-	
+
     if (result && is_valid_type()) {
-		switch(status) {
-			case ASSET_DETAIL_TYPE:
-			{
-				data = asset_detail();
-				break;
-			}
-			case ASSET_TRANSFERABLE_TYPE:
-			{
-				data = asset_transfer();
-				break;
-			}			
-		}	
-		auto visitor = from_data_visitor(source);
-		result = boost::apply_visitor(visitor, data);
+        switch(status) {
+            case ASSET_DETAIL_TYPE:
+            {
+                data = asset_detail();
+                break;
+            }
+            case ASSET_TRANSFERABLE_TYPE:
+            {
+                data = asset_transfer();
+                break;
+            }
+        }
+        auto visitor = from_data_visitor(source);
+        result = boost::apply_visitor(visitor, data);
     }
-	else {
-		result = false;
-		reset();
-	}
-		
+    else {
+        result = false;
+        reset();
+    }
+
     return result;
 }
 
@@ -144,18 +145,18 @@ void asset::to_data(std::ostream& stream) const
 void asset::to_data(writer& sink) const
 {
     sink.write_4_bytes_little_endian(status);
-	
+
     auto visitor = to_data_visitor(sink);
-	boost::apply_visitor(visitor, data);
+    boost::apply_visitor(visitor, data);
 }
 
 uint64_t asset::serialized_size() const
 {
     uint64_t size = 0;
-	
+
     auto visitor = serialized_size_visitor();
-	size += boost::apply_visitor(visitor, data);
-	return 4 + size;
+    size += boost::apply_visitor(visitor, data);
+    return 4 + size;
 }
 
 std::string asset::to_string() const
@@ -163,29 +164,33 @@ std::string asset::to_string() const
     std::ostringstream ss;
     ss << "\t status = " << status << "\n";
     auto visitor = to_string_visitor();
-	ss << boost::apply_visitor(visitor, data);
+    ss << boost::apply_visitor(visitor, data);
     return ss.str();
 }
 
 uint32_t asset::get_status() const
 {
-	return status;
+    return status;
 }
 void asset::set_status(uint32_t status)
 {
-	this->status = status;
+    this->status = status;
 }
 void asset::set_data(const asset_detail& detail)
 {
-	this->data = detail;
+    this->data = detail;
 }
 void asset::set_data(const asset_transfer& detail)
 {
-	this->data = detail;
+    this->data = detail;
 }
 asset::asset_data_type& asset::get_data()
 {
-	return this->data;
+    return this->data;
+}
+const asset::asset_data_type& asset::get_data() const
+{
+    return this->data;
 }
 
 } // namspace chain

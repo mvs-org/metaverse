@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,8 +29,8 @@ namespace commands {
 using namespace bc::explorer::config;
 /************************ getheight *************************/
 
-console_result getheight::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getheight::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ setminingaccount *************************/
 
-console_result setminingaccount::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result setminingaccount::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto& miner = node.miner();
@@ -41,7 +41,7 @@ console_result setminingaccount::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if (!pvaddr) 
+    if (!pvaddr)
         throw address_list_nullptr_exception{"nullptr for address list"};
 
 #if 0 // no random address required for miner
@@ -56,7 +56,7 @@ console_result setminingaccount::invoke (Json::Value& jv_output,
     if (ret) {
         jv_output = "Address [" + argument_.payment_address.encoded() + "] setted.";
     } else {
-        throw unknown_error_exception{"set mining account solo mining got error"};
+        throw unknown_error_exception{"set mining account solo mining got an error"};
     }
 
     return console_result::okay;

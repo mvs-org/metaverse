@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,92 +33,87 @@ using namespace bc::explorer::config;
 
 /************************ getaccountasset *************************/
 
-console_result getaccountasset::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getaccountasset::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
-    auto& aroot = jv_output;
-    Json::Value assets;
-    
-    std::string symbol;
     auto& blockchain = node.chain_impl();
-    
-    if (argument_.symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE)
-        throw asset_symbol_length_exception{"asset symbol length must be less than 64."};
-    
-    auto sh_vec = std::make_shared<std::vector<asset_detail>>();
-    
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
+    if (!argument_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(argument_.symbol);
+    }
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
+    if(!pvaddr)
         throw address_list_nullptr_exception{"nullptr for address list"};
-    
-    // 1. get asset in blockchain       
-    // get address unspent asset balance
-    std::string addr;
-    for (auto& each : *pvaddr){
-        addr = each.get_address();
-        sync_fetch_asset_balance_record (addr, blockchain, sh_vec);
+
+    std::string json_key;
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
+
+    if (option_.is_cert) { // only get asset certs
+        json_key = "assetcerts";
+        auto sh_vec = std::make_shared<asset_cert::list>();
+        for (auto& each : *pvaddr){
+            sync_fetch_asset_cert_balance(each.get_address(), argument_.symbol, blockchain, sh_vec);
+        }
+
+        std::sort(sh_vec->begin(), sh_vec->end());
+        for (auto& elem: *sh_vec) {
+            if (!argument_.symbol.empty() && argument_.symbol != elem.get_symbol())
+                continue;
+
+            Json::Value asset_cert = json_helper.prop_list(elem);
+            json_value.append(asset_cert);
+        }
+    }
+    else {
+        json_key = "assets";
+        auto sh_vec = std::make_shared<asset_balances::list>();
+
+        // 1. get asset in blockchain
+        // get address unspent asset balance
+        std::string addr;
+        for (auto& each : *pvaddr){
+            sync_fetch_asset_balance(each.get_address(), false, blockchain, sh_vec);
+        }
+
+        std::sort(sh_vec->begin(), sh_vec->end());
+        for (auto& elem: *sh_vec) {
+            auto& symbol = elem.symbol;
+            if (!argument_.symbol.empty() && argument_.symbol != symbol)
+                continue;
+            auto issued_asset = blockchain.get_issued_asset(symbol);
+            if (!issued_asset) {
+                continue;
+            }
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
+        }
+
+        // 2. get asset in local database
+        // shoudl filter all issued asset which be stored in local account asset database
+        auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);
+        for (auto& elem: *sh_unissued) {
+            auto& symbol = elem.detail.get_symbol();
+            // symbol filter
+            if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
+                continue;
+            Json::Value asset_data = json_helper.prop_list(elem.detail, false);
+            asset_data["status"] = "unissued";
+            json_value.append(asset_data);
+        }
     }
 
-    Json::Value asset_data;
-    for (auto& elem: *sh_vec) {
-        if(!argument_.symbol.empty() && argument_.symbol !=  elem.get_symbol())
-            continue;
-        asset_data["symbol"] = elem.get_symbol();
-        asset_data["address"] = elem.get_address();
-        symbol = elem.get_symbol();
-        if (get_api_version() == 1) {
-            asset_data["quantity"] += elem.get_maximum_supply();
-        } else {
-            asset_data["quantity"] = elem.get_maximum_supply();
-        }
-        //asset_data["address"] = elem.get_address();
-        auto issued_asset = blockchain.get_issued_asset(symbol);
-        if(issued_asset && get_api_version() == 1) {
-            asset_data["decimal_number"] += issued_asset->get_decimal_number();
-        }
-        if(issued_asset && get_api_version() == 2) {
-            asset_data["decimal_number"] = issued_asset->get_decimal_number();
-        }
-        asset_data["status"] = "unspent";
-        assets.append(asset_data);
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
     }
-    // 2. get asset in local database
-    // shoudl filter all issued asset which be stored in local account asset database
-    sh_vec->clear();
-    sh_vec = blockchain.get_issued_assets();
-    //std::shared_ptr<std::vector<business_address_asset>>
-    auto sh_unissued = blockchain.get_account_unissued_assets(auth_.name);        
-    for (auto& elem: *sh_unissued) {
-        
-        auto symbol = elem.detail.get_symbol();         
-        auto pos = std::find_if(sh_vec->begin(), sh_vec->end(), [&](const asset_detail& elem){
-            return symbol == elem.get_symbol();
-        });
-        
-        if (pos != sh_vec->end()){ // asset already issued in blockchain
-            continue;
-        } 
-        // symbol filter
-        if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
-            continue;
-        Json::Value asset_data;
-        asset_data["symbol"] = elem.detail.get_symbol();
-        asset_data["address"] = "";
-        symbol = elem.detail.get_symbol();
-        asset_data["quantity"] += elem.detail.get_maximum_supply();
-        asset_data["decimal_number"] += elem.detail.get_decimal_number();
-        //asset_data["address"] = "";
-        asset_data["status"] = "unissued";
-        assets.append(asset_data);
+    else {
+        jv_output[json_key] = json_value;
     }
 
-    if (get_api_version() == 1 && assets.isNull()) { //compatible for v1
-        aroot["assets"] = "";
-    } else {
-        aroot["assets"] = assets;
-    }
-    
     return console_result::okay;
 }
 

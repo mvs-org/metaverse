@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,21 +36,27 @@ class importkeyfile: public command_extension
 {
 public:
     static const char* symbol(){ return "importkeyfile";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "importkeyfile "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("FILE", 1);
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("FILE", 1)
+            .add("FILECONTENT", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
+        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
+        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
         load_input(option_.file, "FILE", variables, input, raw);
+        load_input(option_.content, "FILECONTENT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -63,14 +70,24 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "password,p",
-            value<std::string>(&option_.depasswd)->required(),
-            "provide the password to decrypt the keyfile"
+            "ACCOUNTNAME",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
         )
         (
             "FILE",
             value<boost::filesystem::path>(&option_.file)->required(),
-            "account info file path"
+            "key file path."
+        )
+        (
+            "FILECONTENT",
+            value<std::string>(&option_.content),
+            "key file content. this will omit the FILE argument if specified."
         );
 
         return options;
@@ -90,12 +107,12 @@ public:
     struct option
     {
         option()
-          : file(""), depasswd("")
+          : file(""), content("")
         {
         }
 
         boost::filesystem::path file;
-        std::string depasswd;
+        std::string content;
     } option_;
 
 };

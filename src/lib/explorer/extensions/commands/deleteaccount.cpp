@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,20 +30,14 @@ namespace commands {
 
 /************************ deleteaccount *************************/
 
-console_result deleteaccount::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result deleteaccount::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    std::string mnemonic;
-    acc->get_mnemonic(auth_.auth, mnemonic);
-    std::vector<std::string> results;
-    boost::split(results, mnemonic, boost::is_any_of(" "));
+    blockchain.is_account_lastwd_valid(*acc, auth_.auth, argument_.last_word);
 
-    if (*results.rbegin() != argument_.last_word){
-        throw argument_dismatch_exception{"last word not matching."};
-    }
     // delete account addresses
     blockchain.delete_account_address(acc->get_name());
 

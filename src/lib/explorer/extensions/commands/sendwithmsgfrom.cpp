@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -30,24 +30,24 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result sendwithmsgfrom::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result sendwithmsgfrom::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!blockchain.is_valid_address(argument_.from)) 
+    if(!blockchain.is_valid_address(argument_.from))
         throw fromaddress_invalid_exception{"invalid from address!"};
-    if(!blockchain.is_valid_address(argument_.to)) 
+    if(!blockchain.is_valid_address(argument_.to))
         throw toaddress_invalid_exception{"invalid to address!"};
-    
+
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()},  
-        {argument_.to, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.message))}  
+        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()},
+        {argument_.to, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.message))}
     };
-    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
+    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(argument_.from), std::move(receiver), argument_.fee);
-    
+
     send_helper.exec();
 
     // json output

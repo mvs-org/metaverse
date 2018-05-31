@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,7 +36,7 @@ class startmining: public command_extension
 {
 public:
     static const char* symbol(){ return "startmining";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "start CPU solo mining. You have to setminingaccount firstly."; }
 
@@ -46,7 +47,7 @@ public:
             .add("ACCOUNTAUTH", 1);
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -59,21 +60,31 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    );
+        )
+        (
+            "address,a",
+            value<std::string>(&option_.address),
+            "The mining target address. Defaults to empty, means a new address will be generated."
+        )
+        (
+            "number,n",
+            value<uint16_t>(&option_.number)->default_value(0),
+            "The number of mining blocks, useful for testing. Defaults to 0, means no limit."
+        );
 
         return options;
     }
@@ -91,6 +102,8 @@ public:
 
     struct option
     {
+        std::string address;
+        uint16_t number;
     } option_;
 
 };

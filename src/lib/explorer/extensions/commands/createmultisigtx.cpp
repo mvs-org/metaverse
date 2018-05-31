@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -33,38 +33,76 @@ namespace commands {
 
 using namespace bc::explorer::config;
 
-console_result createmultisigtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result createmultisigtx::invoke(
+    Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!blockchain.is_valid_address(argument_.from)) 
-        throw fromaddress_invalid_exception{"invalid from address!"};
-    
-    auto addr = bc::wallet::payment_address(argument_.from);
-    if(addr.version() != 0x05) // for multisig address
-        throw fromaddress_invalid_exception{"from address is not script address."};
-    if(!blockchain.is_valid_address(argument_.to)) 
-        throw toaddress_invalid_exception{"invalid to address!"};
-    
-    account_multisig acc_multisig;
-    if(!(acc->get_multisig_by_address(acc_multisig, argument_.from)))
-        throw multisig_notfound_exception{"from address multisig record not found."};
-    // receiver
-    std::vector<receiver_record> receiver{
-        {argument_.to, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}  
-    };
-    auto send_helper = sending_multisig_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth), 
-            std::move(argument_.from), std::move(receiver), argument_.fee, 
-            acc_multisig);
-    
-    send_helper.exec();
+    auto account = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    // json output
-    auto&& tx = send_helper.get_transaction();
-    std::ostringstream config_tx;
-    config_tx << config::transaction(tx);
-    jv_output = config_tx.str();
+    // check from address
+    if (!blockchain.is_valid_address(argument_.from)) {
+        throw fromaddress_invalid_exception{"invalid from address!"};
+    }
+
+    auto addr = bc::wallet::payment_address(argument_.from);
+    if (addr.version() != bc::wallet::payment_address::mainnet_p2sh) {
+        throw fromaddress_invalid_exception{"from address is not a script address."};
+    }
+
+    auto multisig_vec = account->get_multisig(argument_.from);
+    if (!multisig_vec || multisig_vec->empty()) {
+        throw multisig_notfound_exception{"multisig of from address not found."};
+    }
+
+    account_multisig acc_multisig = *(multisig_vec->begin());
+
+    // check to address
+    if (!blockchain.is_valid_address(argument_.to)) {
+        throw toaddress_invalid_exception{"invalid to address!"};
+    }
+
+    // receiver
+    std::vector<receiver_record> receiver;
+
+    auto type = static_cast<utxo_attach_type>(option_.type);
+    switch (type) {
+        case utxo_attach_type::etp: {
+            receiver.push_back({argument_.to, "", argument_.amount, 0, type, attachment()});
+            break;
+        }
+
+        case utxo_attach_type::asset_transfer: {
+            blockchain.uppercase_symbol(option_.symbol);
+            check_asset_symbol(option_.symbol);
+            receiver.push_back({argument_.to, option_.symbol, 0, argument_.amount, type, attachment()});
+            break;
+        }
+
+        default: {
+            throw argument_legality_exception{"invalid transaction type."};
+        }
+        break;
+    }
+
+    auto sp_send_helper = std::make_shared<sending_multisig_tx>(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(argument_.from), std::move(receiver),
+        argument_.fee, acc_multisig, std::move(option_.symbol));
+
+    sp_send_helper->exec();
+
+    // output json
+    auto && tx = sp_send_helper->get_transaction();
+    std::ostringstream tx_buf;
+    tx_buf << config::transaction(tx);
+    if (get_api_version() <= 2) {
+        jv_output = tx_buf.str();
+    }
+    else {
+        // TODO support restful API format
+        jv_output["raw"] = tx_buf.str();
+    }
 
     return console_result::okay;
 }

@@ -60,6 +60,11 @@ void session_seed::start(result_handler handler)
     session::start(CONCURRENT2(handle_started, _1, handler));
 }
 
+void session_seed::restart(result_handler handler)
+{
+    handle_started(error::success, handler);
+}
+
 void session_seed::handle_started(const code& ec, result_handler handler)
 {
     if (ec)
@@ -182,7 +187,7 @@ void session_seed::attach_protocols(channel::ptr channel,
 
 void session_seed::handle_channel_stop(const code& ec)
 {
-    log::debug(LOG_NETWORK)
+    log::info(LOG_NETWORK)
         << "Seed channel stopped: " << ec.message();
 }
 
@@ -190,6 +195,9 @@ void session_seed::handle_channel_stop(const code& ec)
 void session_seed::handle_complete(size_t start_size, result_handler handler)
 {
     address_count(BIND3(handle_final_count, _1, start_size, handler));
+
+    log::info(LOG_NETWORK)
+            << "session_seed complete!";
 }
 
 // We succeed only if there is a host count increase.

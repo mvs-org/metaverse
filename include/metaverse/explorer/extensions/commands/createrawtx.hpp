@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -19,6 +19,7 @@
  */
 
 
+#pragma once
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/extensions/command_extension.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -35,7 +36,7 @@ class createrawtx: public command_extension
 {
 public:
     static const char* symbol(){ return "createrawtx";}
-    const char* name() override { return symbol();} 
+    const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
     const char* description() override { return "createrawtx"; }
 
@@ -44,7 +45,7 @@ public:
         return get_argument_metadata();
     }
 
-    void load_fallbacks (std::istream& input, 
+    void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
@@ -55,21 +56,21 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"type,t",
-			value<uint16_t>(&option_.type)->required(),
-			"Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset, 6 -- just only send message"
-		)
-		(
-			"senders,s",
-			value<std::vector<std::string>>(&option_.senders)->required(),
-			"Send from addresses"
-		)
+        (
+            "type,t",
+            value<uint16_t>(&option_.type)->required(),
+            "Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset"
+        )
+        (
+            "senders,s",
+            value<std::vector<std::string>>(&option_.senders)->required(),
+            "Send from addresses"
+        )
         (
             "receivers,r",
             value<std::vector<std::string>>(&option_.receivers)->required(),
@@ -121,14 +122,14 @@ public:
     struct option
     {
         uint16_t type;
-		std::vector<std::string> senders;
-		std::vector<std::string> receivers;
-		std::string symbol;
+        std::vector<std::string> senders;
+        std::vector<std::string> receivers;
+        std::string symbol;
         std::string mychange_address;
         std::string message;
         uint16_t deposit;
-		uint64_t fee;
-		
+        uint64_t fee;
+
     } option_;
 
 };

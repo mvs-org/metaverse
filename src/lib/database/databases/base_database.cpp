@@ -116,12 +116,11 @@ void base_database::sync()
 {
     lookup_manager_.sync();
 }
-#if 0
-base_database::slab_map& base_database::get_lookup_map()
+
+size_t base_database::get_bucket_count() const
 {
-	return lookup_map_;
+    return lookup_header_.size();
 }
-#endif
 
 } // namespace database
 } // namespace libbitcoin

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -32,8 +32,8 @@ namespace commands {
 
 /************************ gettx *************************/
 /// extent fetch-tx command , add tx height in tx content
-console_result gettx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result gettx::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     bc::chain::transaction tx;
     uint64_t tx_height = 0;
@@ -41,7 +41,7 @@ console_result gettx::invoke (Json::Value& jv_output,
     auto exist = blockchain.get_transaction(argument_.hash, tx, tx_height);
     if(!exist)
         throw tx_notfound_exception{"transaction does not exist!"};
-    
+
     if (option_.json) {
         if (get_api_version() == 1 && option_.is_fetch_tx) { // compatible for v1 fetch-tx
             jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);

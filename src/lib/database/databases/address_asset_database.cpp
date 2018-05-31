@@ -44,12 +44,12 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
 BC_CONSTEXPR size_t asset_transfer_record_size = 1 + 36 + 4 + 8 + 2 + 4 + ASSET_DETAIL_FIX_SIZE; // ASSET_DETAIL_FIX_SIZE is the biggest one
-//		+ std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
+//      + std::max({ETP_FIX_SIZE, ASSET_DETAIL_FIX_SIZE, ASSET_TRANSFER_FIX_SIZE});
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(asset_transfer_record_size);
 
 address_asset_database::address_asset_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(lookup_filename, mutex), 
+    : lookup_file_(lookup_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size, record_size),
     lookup_map_(lookup_header_, lookup_manager_),
@@ -133,18 +133,18 @@ void address_asset_database::store_input(const short_hash& key,
         serial.write_4_bytes_little_endian(input_height); // 4
         serial.write_8_bytes_little_endian(previous.checksum()); // 8
 
-		serial.write_2_bytes_little_endian(0); // 2 use etp type fill incase invalid when deser
-		serial.write_4_bytes_little_endian(timestamp); // 4
-		// asset data should be here but input has no these data
+        serial.write_2_bytes_little_endian(0); // 2 use etp type fill incase invalid when deser
+        serial.write_4_bytes_little_endian(timestamp); // 4
+        // asset data should be here but input has no these data
     };
     rows_multimap_.add_row(key, write);
 }
-
 
 void address_asset_database::delete_last_row(const short_hash& key)
 {
     rows_multimap_.delete_last_row(key);
 }
+
 /// get all record of key from database
 business_record::list address_asset_database::get(const short_hash& key,
     size_t from_height, size_t limit) const
@@ -174,12 +174,12 @@ business_record::list address_asset_database::get(const short_hash& key,
 
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
-            
-			// business_kd;
+
+            // business_kd;
             //deserial.read_2_bytes_little_endian(),
-			// timestamp;
+            // timestamp;
             //deserial.read_4_bytes_little_endian(),
-            
+
             business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
@@ -199,19 +199,21 @@ business_record::list address_asset_database::get(const short_hash& key,
         const auto address = REMAP_ADDRESS(record);
 
         // Skip rows below from_height.
-        if (from_height == 0 || read_height(address) <= from_height) // from current block height
+        if (from_height == 0 || read_height(address) >= from_height) // from current block height
             result.emplace_back(read_row(address));
     }
 
     // TODO: we could sort result here.
     return result;
 }
+
 /// get all record of key from database
-std::shared_ptr<std::vector<business_record>> address_asset_database::get(const std::string& address, const std::string& symbol, 
+std::shared_ptr<business_record::list> address_asset_database::get(
+    const std::string& address, const std::string& symbol,
     size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const
 {
-	data_chunk addr_data(address.begin(), address.end());
-	auto key = ripemd160_hash(addr_data);
+    data_chunk addr_data(address.begin(), address.end());
+    auto key = ripemd160_hash(addr_data);
 
     // Read the height value from the row.
     const auto read_height = [](uint8_t* data)
@@ -238,17 +240,17 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
 
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
-            
-			// business_kd;
+
+            // business_kd;
             //deserial.read_2_bytes_little_endian(),
-			// timestamp;
+            // timestamp;
             //deserial.read_4_bytes_little_endian(),
-            
+
             business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
 
-    auto result = std::make_shared<std::vector<business_record>>();
+    auto result = std::make_shared<business_record::list>();
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
@@ -262,32 +264,38 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
         // This obtains a remap safe address pointer against the rows file.
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
-		auto height = read_height(address);
+        auto height = read_height(address);
         std::string asset_symbol;
 
         // Skip rows below from_height.
-        if (((start_height == 0)&&(end_height == 0)) 
-			|| ((start_height <= height) && (height < end_height))) { // from current block height
+        if ((start_height <= height)
+            && ((end_height == 0) || (height < end_height))) { // from current block height
             //result->emplace_back(read_row(address));
             auto row = read_row(address);
-            if(symbol.empty()) { // all utxo
+            if (symbol.empty()) { // all utxo
                 cnt++;
-                if((limit > 0) && (page_number > 0) && ((cnt - 1) / limit) < (page_number - 1))
+                if ((limit > 0) && (page_number > 0) && ((cnt - 1) / limit) < (page_number - 1))
                     continue; // skip previous page record
                 result->emplace_back(row);
-            } else { // asset symbol utxo
+            }
+            else { // asset symbol utxo
                 // asset business process
                 asset_symbol = "";
-                if(row.data.get_kind_value() ==  business_kind::asset_issue) {
+                if(row.data.get_kind_value() == business_kind::asset_issue) {
                     auto transfer = boost::get<asset_detail>(row.data.get_data());
                     asset_symbol = transfer.get_symbol();
                 }
-                
-                if(row.data.get_kind_value() ==  business_kind::asset_transfer) {
+
+                if(row.data.get_kind_value() == business_kind::asset_transfer) {
                     auto transfer = boost::get<asset_transfer>(row.data.get_data());
-                    asset_symbol = transfer.get_address();
+                    asset_symbol = transfer.get_symbol();
                 }
-                
+
+                if (row.data.get_kind_value() == business_kind::asset_cert) {
+                    auto cert = boost::get<asset_cert>(row.data.get_data());
+                    asset_symbol = cert.get_symbol();
+                }
+
                 if (symbol == asset_symbol) {
                     cnt++;
                     if((limit > 0) && (page_number > 0) && ((cnt - 1) / limit) < (page_number - 1))
@@ -303,11 +311,11 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
 }
 
 /// get all record of key from database
-std::shared_ptr<std::vector<business_record>> address_asset_database::get(const std::string& address, size_t start_height,
+std::shared_ptr<business_record::list> address_asset_database::get(const std::string& address, size_t start_height,
     size_t end_height) const
 {
-	data_chunk addr_data(address.begin(), address.end());
-	auto key = ripemd160_hash(addr_data);
+    data_chunk addr_data(address.begin(), address.end());
+    auto key = ripemd160_hash(addr_data);
 
     // Read the height value from the row.
     const auto read_height = [](uint8_t* data)
@@ -334,17 +342,17 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
 
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
-            
-			// business_kd;
+
+            // business_kd;
             //deserial.read_2_bytes_little_endian(),
-			// timestamp;
+            // timestamp;
             //deserial.read_4_bytes_little_endian(),
-            
+
             business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
 
-    auto result = std::make_shared<std::vector<business_record>>();
+    auto result = std::make_shared<business_record::list>();
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
@@ -353,20 +361,20 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(const 
         // This obtains a remap safe address pointer against the rows file.
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
-		auto height = read_height(address);
+        auto height = read_height(address);
         // Skip rows below from_height.
-        if (((start_height == 0)&&(end_height == 0)) 
-			|| ((start_height <= height) && (height < end_height))) // from current block height
+        if ((start_height <= height)
+            && ((end_height == 0) || (height < end_height))) {
             result->emplace_back(read_row(address));
+        }
     }
 
     // TODO: we could sort result here.
     return result;
 }
 
-
 /// get all record of key from database
-std::shared_ptr<std::vector<business_record>> address_asset_database::get(size_t idx) const
+std::shared_ptr<business_record::list> address_asset_database::get(size_t idx) const
 {
     // Read a row from the data for the history list.
     const auto read_row = [](uint8_t* data)
@@ -385,35 +393,34 @@ std::shared_ptr<std::vector<business_record>> address_asset_database::get(size_t
 
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
-            
-			// business_kd;
+
+            // business_kd;
             //deserial.read_2_bytes_little_endian(),
-			// timestamp;
+            // timestamp;
             //deserial.read_4_bytes_little_endian(),
-            
+
             business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
-	
-    auto result = std::make_shared<std::vector<business_record>>();
-    auto sh_idx_vec = rows_multimap_.lookup(idx);
-	
-	for(auto each : *sh_idx_vec) {
-		
-	    const auto records = record_multimap_iterable(rows_list_, each);
 
-	    for (const auto index: records)
-	    {
-	        // This obtains a remap safe address pointer against the rows file.
-	        const auto record = rows_list_.get(index);
-	        const auto address = REMAP_ADDRESS(record);
-	        result->emplace_back(read_row(address));
-	    }
-	}
+    auto result = std::make_shared<business_record::list>();
+    auto sh_idx_vec = rows_multimap_.lookup(idx);
+
+    for(auto each : *sh_idx_vec) {
+        const auto records = record_multimap_iterable(rows_list_, each);
+        for (const auto index: records)
+        {
+            // This obtains a remap safe address pointer against the rows file.
+            const auto record = rows_list_.get(index);
+            const auto address = REMAP_ADDRESS(record);
+            result->emplace_back(read_row(address));
+        }
+    }
 
     // TODO: we could sort result here.
     return result;
 }
+
 /// get one record by index from row_list
 business_record address_asset_database::get_record(size_t idx) const
 {
@@ -434,28 +441,27 @@ business_record address_asset_database::get_record(size_t idx) const
 
             // value or checksum
             { deserial.read_8_bytes_little_endian() },
-            
+
             // business_kd;
             //deserial.read_2_bytes_little_endian(),
             // timestamp;
             //deserial.read_4_bytes_little_endian(),
-            
+
             business_data::factory_from_data(deserial) // 2 + 4 are in this class
         };
     };
-        
+
     // This obtains a remap safe address pointer against the rows file.
     const auto record = rows_list_.get(idx);
     const auto address = REMAP_ADDRESS(record);
     return read_row(address);
 }
-business_history::list address_asset_database::get_business_history(const short_hash& key,
-		size_t from_height) const
-{
-	business_record::list compact = get(key, from_height, 0);
-	
-    business_history::list result;
 
+business_history::list address_asset_database::get_business_history(const short_hash& key,
+    size_t from_height) const
+{
+    business_record::list compact = get(key, from_height, 0);
+    business_history::list result;
 
     // Process and remove all outputs.
     for (auto output = compact.begin(); output != compact.end();)
@@ -468,7 +474,7 @@ business_history::list address_asset_database::get_business_history(const short_
             row.value = output->val_chk_sum.value;
             row.spend = { null_hash, max_uint32 };
             row.temporary_checksum = output->point.checksum();
-			row.data = output->data;
+            row.data = output->data;
             result.emplace_back(row);
             output = compact.erase(output);
             continue;
@@ -485,8 +491,8 @@ business_history::list address_asset_database::get_business_history(const short_
         // Update outputs with the corresponding spends.
         for (auto& row: result)
         {
-            if (row.temporary_checksum == spend.val_chk_sum.previous_checksum &&
-                row.spend.hash == null_hash)
+            if (row.temporary_checksum == spend.val_chk_sum.previous_checksum
+                && row.spend.hash == null_hash)
             {
                 row.spend = spend.point;
                 row.spend_height = spend.height;
@@ -521,231 +527,257 @@ business_history::list address_asset_database::get_business_history(const short_
 }
 
 // get address assets in the database(blockchain)
-std::shared_ptr<std::vector<business_history>> address_asset_database::get_address_business_history(const std::string& address, 
-	size_t from_height) const
+std::shared_ptr<business_history::list> address_asset_database::get_address_business_history(
+    const std::string& address, size_t from_height) const
 {
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	auto unspent = std::make_shared<std::vector<business_history>>();
-	
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    auto unspent = std::make_shared<business_history::list>();
+
     for (auto& row: result)
     {
         if ((row.spend.hash == null_hash)) {// unspent business
-        	row.status = business_status::unspent;
-			unspent->emplace_back(row);
+            row.status = business_status::unspent;
+            unspent->emplace_back(row);
         }
 
-		if (row.output_height != 0 
-				&&(row.spend.hash == null_hash || row.spend_height == 0)) {// confirmed business
-        	row.status = business_status::confirmed;
-			unspent->emplace_back(row);
-		}
-		
+        if (row.output_height != 0
+                &&(row.spend.hash == null_hash || row.spend_height == 0)) {// confirmed business
+            row.status = business_status::confirmed;
+            unspent->emplace_back(row);
+        }
     }
-	return unspent;
-	    
+
+    return unspent;
 }
 
 // get special kind of asset in the database(blockchain)
 /*
  status -- // 0 -- unspent  1 -- confirmed
 */
-business_history::list address_asset_database::get_business_history(const std::string& address, 
-	size_t from_height, business_kind kind, uint8_t status) const
+business_history::list address_asset_database::get_business_history(const std::string& address,
+    size_t from_height, business_kind kind, uint8_t status) const
 {
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	business_history::list unspent;
-	// asset type check
-	if((kind != business_kind::asset_issue) // asset_detail
-		&& (kind != business_kind::asset_transfer) // asset_transfer
-		&& (kind != business_kind::etp))
-		return unspent;
-	
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_history::list unspent;
+
+    // asset type check
+    if((kind != business_kind::asset_issue) // asset_detail
+        && (kind != business_kind::asset_transfer) // asset_transfer
+        && (kind != business_kind::asset_cert) // asset_cert
+        && (kind != business_kind::etp_award)
+        && (kind != business_kind::etp))
+        return unspent;
+
     for (const auto& row: result)
     {
-    	if(row.data.get_kind_value() != kind)
-			continue;
-		
-        if ((row.spend.hash == null_hash)
-				&& (status == 0)) // unspent business
-			unspent.emplace_back(row);
+        if(row.data.get_kind_value() != kind)
+            continue;
 
-		if (row.output_height != 0 
-				&&(row.spend.hash == null_hash || row.spend_height == 0)
-				&& (status == 1)) // confirmed business
-			unspent.emplace_back(row);
-		
+        if ((row.spend.hash == null_hash)
+                && (status == business_status::unspent)) // unspent business
+            unspent.emplace_back(row);
+
+        if (row.output_height != 0
+                &&(row.spend.hash == null_hash || row.spend_height == 0)
+                && (status == business_status::confirmed)) // confirmed business
+            unspent.emplace_back(row);
     }
-	return unspent;
-	    
+
+    return unspent;
 }
 
 // get special kind of asset in the database(blockchain)
 /*
  status -- // 0 -- unspent  1 -- confirmed
 */
-business_history::list address_asset_database::get_business_history(const std::string& address, 
-	size_t from_height, business_kind kind, uint32_t time_begin, uint32_t time_end) const
+business_history::list address_asset_database::get_business_history(const std::string& address,
+    size_t from_height, business_kind kind, uint32_t time_begin, uint32_t time_end) const
 {
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	business_history::list unspent;
-	// asset type check
-	if((kind != business_kind::asset_issue) // asset_detail
-		&& (kind != business_kind::asset_transfer) // asset_transfer
-		&& (kind != business_kind::etp))
-		return unspent;
-	
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_history::list unspent;
+
+    // asset type check
+    if((kind != business_kind::asset_issue) // asset_detail
+        && (kind != business_kind::asset_transfer) // asset_transfer
+        && (kind != business_kind::asset_cert) // asset_cert
+        && (kind != business_kind::etp_award)
+        && (kind != business_kind::etp))
+        return unspent;
+
     for (auto& row: result)
     {
-    	if(row.data.get_kind_value() != kind
-			|| row.data.get_timestamp()<time_begin 
-			|| row.data.get_timestamp()>time_end)
-			continue;
-		
+        if(row.data.get_kind_value() != kind
+            || row.data.get_timestamp()<time_begin
+            || row.data.get_timestamp()>time_end)
+            continue;
+
         if ((row.spend.hash == null_hash)) {//0 -- unspent business
-        	row.status = 0;
-			unspent.emplace_back(row);
+            row.status = business_status::unspent;
+            unspent.emplace_back(row);
         }
 
-		if (row.output_height != 0 
-				&&(row.spend.hash == null_hash || row.spend_height == 0)) {// 1 -- confirmed business
-			row.status = 1;
-			unspent.emplace_back(row);
-		}
-		
+        if (row.output_height != 0
+                &&(row.spend.hash == null_hash || row.spend_height == 0)) {// 1 -- confirmed business
+            row.status = business_status::confirmed;
+            unspent.emplace_back(row);
+        }
     }
-	return unspent;
-	    
-}
 
-// get special kind of asset in the database(blockchain)
-business_address_asset::list address_asset_database::get_assets(const std::string& address, 
-	size_t from_height, business_kind kind) const
-{
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	business_address_asset::list unspent;
-	// asset type check
-	if((kind != business_kind::asset_issue) // asset_detail
-		&& (kind != business_kind::asset_transfer)) // asset_transfer
-		return unspent;
-	
-    for (const auto& row: result)
-    {
-    	if(row.data.get_kind_value() != kind)
-			continue;
-		
-        uint8_t status = 0xff; 
-        if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
-
-		if (row.output_height != 0 &&
-            (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
-		
-		business_address_asset detail;
-		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
-		{
-			auto issue_info = boost::get<asset_detail>(row.data.get_data());
-			detail.quantity = issue_info.get_maximum_supply();
-			detail.detail = issue_info;
-		}
-		else //asset transfer
-		{
-			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
-			detail.quantity = transfer_info.get_quantity();
-			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
-		}
-
-		detail.address = address; // account address
-		detail.status = status; // 0 -- unspent  1 -- confirmed
-		unspent.emplace_back(detail);
-    }
-	return unspent;
-	    
+    return unspent;
 }
 
 // get all kinds of asset in the database(blockchain)
-business_address_asset::list address_asset_database::get_assets(const std::string& address, 
-	size_t from_height) const
+business_address_asset::list address_asset_database::get_assets(const std::string& address,
+    size_t from_height) const
 {
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	business_address_asset::list unspent;
-    for (const auto& row: result)
-    {
-    	if((row.data.get_kind_value() != business_kind::asset_issue)  // asset_detail
-			&& (row.data.get_kind_value() != business_kind::asset_transfer))  // asset_transfer
-			continue;
-		
-        uint8_t status = 0xff; 
-        if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
-
-		if (row.output_height != 0 &&
-            (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
-		
-		business_address_asset detail;
-		if(row.data.get_kind_value() == business_kind::asset_issue) // asset issue
-		{
-			auto issue_info = boost::get<asset_detail>(row.data.get_data());
-			detail.quantity = issue_info.get_maximum_supply();
-			detail.detail = issue_info;
-		}
-		else //asset transfer
-		{
-			auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
-			detail.quantity = transfer_info.get_quantity();
-			detail.detail.set_symbol(transfer_info.get_address()); // asset address == symbol/name
-		}
-
-		detail.address = address; // account address
-		detail.status = status; // 0 -- unspent  1 -- confirmed
-		unspent.emplace_back(detail);
-    }
-	return unspent;
-	    
+    return get_assets(address, from_height, business_kind::unknown);
 }
 
-business_address_message::list address_asset_database::get_messages(const std::string& address, 
-	size_t from_height) const
+// get special kind of asset in the database(blockchain)
+business_address_asset::list address_asset_database::get_assets(const std::string& address,
+    size_t from_height, business_kind kind) const
 {
-	data_chunk data(address.begin(), address.end());
-	auto key = ripemd160_hash(data);
-	business_history::list result = get_business_history(key, from_height);
-	business_address_message::list unspent;
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_address_asset::list unspent;
+
+    // get by kind
+    if (kind != business_kind::unknown) {
+        // asset type check
+        if ((kind != business_kind::asset_issue) // asset_detail
+            && (kind != business_kind::asset_transfer)) // asset_transfer
+            return unspent;
+    }
+
     for (const auto& row: result)
     {
-    	if((row.data.get_kind_value() != business_kind::message))  // asset_detail
-			continue;
-		
-        uint8_t status = 0xff; 
-        if (row.spend.hash == null_hash) 
-			status = 0; // 0 -- unspent  1 -- confirmed
+        auto kind_value = row.data.get_kind_value();
+        if (kind != business_kind::unknown) {
+            if (kind_value != kind)
+                continue;
+        }
+        else {
+            if ((kind_value != business_kind::asset_issue)  // asset_detail
+                && (kind_value != business_kind::asset_transfer))  // asset_transfer
+                continue;
+        }
 
-		if (row.output_height != 0 &&
+        uint8_t status = business_status::unknown;
+        if (row.spend.hash == null_hash)
+            status = business_status::unspent; // 0 -- unspent  1 -- confirmed
+
+        if (row.output_height != 0 &&
             (row.spend.hash == null_hash || row.spend_height == 0))
-            status = 1;
-		
-		business_address_message detail;
-		auto issue_info = boost::get<chain::blockchain_message>(row.data.get_data());
-		detail.msg = issue_info;
+            status = business_status::confirmed;
 
-		detail.address = address; // account address
-		detail.status = status; // 0 -- unspent  1 -- confirmed
-		unspent.emplace_back(detail);
+        business_address_asset detail;
+        if (kind_value == business_kind::asset_issue) {
+            // asset issue
+            auto issue_info = boost::get<asset_detail>(row.data.get_data());
+            detail.quantity = issue_info.get_maximum_supply();
+            detail.detail = issue_info;
+        }
+        else {
+            //asset transfer
+            auto transfer_info = boost::get<asset_transfer>(row.data.get_data());
+            detail.quantity = transfer_info.get_quantity();
+            detail.detail.set_symbol(transfer_info.get_symbol());
+        }
+
+        detail.address = address; // account address
+        detail.status = status; // 0 -- unspent  1 -- confirmed
+        unspent.emplace_back(detail);
     }
-	return unspent;
-	    
+
+    return unspent;
 }
+
+business_address_message::list address_asset_database::get_messages(const std::string& address,
+    size_t from_height) const
+{
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_address_message::list unspent;
+    for (const auto& row: result)
+    {
+        if ((row.data.get_kind_value() != business_kind::message))
+            continue;
+
+        uint8_t status = business_status::unknown;
+        if (row.spend.hash == null_hash)
+            status = business_status::unspent; // 0 -- unspent  1 -- confirmed
+
+        if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = business_status::confirmed;
+
+        business_address_message detail;
+        auto issue_info = boost::get<chain::blockchain_message>(row.data.get_data());
+        detail.msg = issue_info;
+
+        detail.address = address; // account address
+        detail.status = status; // 0 -- unspent  1 -- confirmed
+        unspent.emplace_back(detail);
+    }
+
+    return unspent;
+}
+
+business_address_asset_cert::list address_asset_database::get_asset_certs(const std::string& address,
+    const std::string& symbol, asset_cert_type cert_type, size_t from_height) const
+{
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_address_asset_cert::list unspent;
+    for (const auto& row: result)
+    {
+        if ((row.data.get_kind_value() != business_kind::asset_cert))  // asset_cert
+            continue;
+
+        auto cert_info = boost::get<asset_cert>(row.data.get_data());
+        if (!symbol.empty()) {
+            if (symbol != cert_info.get_symbol()) {
+                continue;
+            }
+        }
+
+        if (cert_type != asset_cert_ns::none) {
+            if (cert_type != cert_info.get_type()) {
+                continue;
+            }
+        }
+
+        uint8_t status = business_status::unknown;
+        if (row.spend.hash == null_hash)
+            status = business_status::unspent;
+
+        if (row.output_height != 0 &&
+            (row.spend.hash == null_hash || row.spend_height == 0))
+            status = business_status::confirmed;
+
+        if (status == business_status::unknown) {
+            continue;
+        }
+
+        business_address_asset_cert cert;
+        cert.certs = cert_info;
+        cert.address = address; // account address
+        cert.status = status; // 0 -- unspent  1 -- confirmed
+        unspent.emplace_back(cert);
+    }
+
+    return unspent;
+}
+
 void address_asset_database::sync()
 {
     lookup_manager_.sync();

@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include "asset_cert.hpp"
 
 namespace libbitcoin {
 namespace chain {
@@ -40,26 +41,26 @@ BC_CONSTEXPR size_t ASSET_DETAIL_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t ASSET_DETAIL_DESCRIPTION_FIX_SIZE = 64;
 
 BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
-			+ ASSET_DETAIL_MAX_SUPPLY_FIX_SIZE
-			+ ASSET_DETAIL_ASSET_TYPE_FIX_SIZE
-			+ ASSET_DETAIL_ISSUER_FIX_SIZE
-			+ ASSET_DETAIL_ADDRESS_FIX_SIZE
-			+ ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
+            + ASSET_DETAIL_MAX_SUPPLY_FIX_SIZE
+            + ASSET_DETAIL_ASSET_TYPE_FIX_SIZE
+            + ASSET_DETAIL_ISSUER_FIX_SIZE
+            + ASSET_DETAIL_ADDRESS_FIX_SIZE
+            + ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
 
 class BC_API asset_detail
 {
 public:
-	enum asset_detail_type : uint32_t
-	{
-		created,
-		issued_not_in_blockchain,
-		issued_in_blockchain
-	};
-	typedef std::vector<asset_detail> list;
-	asset_detail();
-	asset_detail(std::string symbol, uint64_t maximum_supply,
-		uint8_t asset_type, std::string issuer,
-		std::string address, std::string description);
+    typedef std::vector<asset_detail> list;
+
+    static BC_CONSTEXPR uint8_t forbidden_secondaryissue_threshold = 0;
+    static BC_CONSTEXPR uint8_t freely_secondaryissue_threshold = 127;
+
+    asset_detail();
+    asset_detail(
+        const std::string& symbol, uint64_t maximum_supply,
+        uint8_t decimal_number, uint8_t threshold, const std::string& issuer,
+        const std::string& address, const std::string& description);
+
     static asset_detail factory_from_data(const data_chunk& data);
     static asset_detail factory_from_data(std::istream& stream);
     static asset_detail factory_from_data(reader& source);
@@ -71,47 +72,53 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
 
+    bool operator< (const asset_detail& other) const;
     std::string to_string() const;
-	void to_json(std::ostream& out);
 
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const std::string& get_symbol() const;
-	void set_symbol(const std::string& symbol);
-	uint64_t get_maximum_supply() const;
-	void set_maximum_supply(uint64_t maximum_supply);
-	uint8_t get_decimal_number() const;
-	void set_decimal_number(uint8_t decimal_number);
-	const std::string& get_issuer() const;
-	void set_issuer(const std::string& issuer);
-	const std::string& get_address() const;
-	void set_address(const std::string& address);
-	const std::string& get_description() const;
-	void set_description(const std::string& description);
+    const std::string& get_symbol() const;
+    void set_symbol(const std::string& symbol);
+    uint64_t get_maximum_supply() const;
+    void set_maximum_supply(uint64_t maximum_supply);
+    uint8_t get_decimal_number() const;
+    void set_decimal_number(uint8_t decimal_number);
+    const std::string& get_issuer() const;
+    void set_issuer(const std::string& issuer);
+    const std::string& get_address() const;
+    void set_address(const std::string& address);
+    const std::string& get_description() const;
+    void set_description(const std::string& description);
+    std::vector<asset_cert_type> get_asset_cert_mask() const;
 
-private:    
+    bool is_asset_secondaryissue() const;
+    void set_asset_secondaryissue();
+    uint8_t get_secondaryissue_threshold() const;
+    void set_secondaryissue_threshold(uint8_t share);
+
+    bool is_secondaryissue_threshold_value_ok() const;
+    bool is_secondaryissue_legal() const;
+
+    static bool is_secondaryissue_forbidden(uint8_t threshold);
+    static bool is_secondaryissue_freely(uint8_t threshold);
+    static bool is_secondaryissue_threshold_value_ok(uint8_t threshold);
+    static bool is_secondaryissue_legal(uint8_t threshold);
+    static bool is_secondaryissue_owns_enough(uint64_t own, uint64_t total, uint8_t threshold);
+
+private:
+    // NOTICE: ref CAssetDetail in transaction.h
+    // asset_detail and CAssetDetail should have the same size and order.
+    // uint32_t asset_type in CAssetDetail is divided into four uint8_t parts here.
     std::string symbol;
     uint64_t maximum_supply;
-    //uint32_t asset_type;
     uint8_t decimal_number;
-	uint8_t unused1;
-	uint8_t unused2;
-	uint8_t unused3;
-    std::string issuer; 
+    uint8_t secondaryissue_threshold;
+    uint8_t unused2;
+    uint8_t unused3;
+    std::string issuer;
     std::string address;
     std::string description;
-    //uint64_t issue_price;
-
-    //restrict section
-    //uint32_t number_of_decimal_point; //number of decimal point
-    //life circle
-    //uint64_t flag; //is_white_list/is_tx_backwards/is_require_approval
-    
-    // relationship section
-    //double fee;
-    //correlation asset
-    //std::string authentication_organization; //authentication organization
 };
 
 } // namespace chain

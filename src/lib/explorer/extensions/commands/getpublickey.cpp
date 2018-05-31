@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -24,14 +24,15 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-console_result getpublickey::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result getpublickey::invoke(Json::Value& jv_output,
+    libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -39,18 +40,16 @@ console_result getpublickey::invoke (Json::Value& jv_output,
         throw address_invalid_exception{"invalid address parameter!"};
 
     auto addr = bc::wallet::payment_address(argument_.address);
-    if(addr.version() == 0x05) // for multisig address
+    if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
         throw argument_legality_exception{"script address parameter not allowed!"};
-    
+
     auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr) 
+    if(!pvaddr)
         throw address_list_nullptr_exception{"nullptr for address list"};
-    
+
     // set random address
     if (argument_.address.empty()) {
-        auto random = bc::pseudo_random();
-        auto index = random % pvaddr->size();
-        argument_.address = pvaddr->at(index).get_address();
+        argument_.address = get_random_payment_address(pvaddr, blockchain);
     }
 
     // get public key
@@ -58,9 +57,7 @@ console_result getpublickey::invoke (Json::Value& jv_output,
     std::string pub_key;
     auto found = false;
     for (auto& each : *pvaddr){
-
-        if(each.get_address() == argument_.address) {
-
+        if (each.get_address() == argument_.address) {
             prv_key = each.get_prv_key(auth_.auth);
             pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
 
@@ -72,11 +69,11 @@ console_result getpublickey::invoke (Json::Value& jv_output,
     if(!found) {
         throw account_address_get_exception{pub_key};
     }
-    
+
     auto& root = jv_output;
     root["public-key"] = pub_key;
     root["address"] = argument_.address;
-    
+
     return console_result::okay;
 }
 

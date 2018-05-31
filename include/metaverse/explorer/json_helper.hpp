@@ -32,12 +32,14 @@
 #include <metaverse/explorer/config/point.hpp>
 #include <metaverse/explorer/config/transaction.hpp>
 #include <metaverse/explorer/config/wrapper.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
 
 #include <jsoncpp/json/json.h>
 
 namespace libbitcoin {
 namespace explorer {
 namespace config {
+
 class base2;
 class header;
 class input;
@@ -406,6 +408,53 @@ BCX_API Json::Value prop_tree(const wallet::bitcoin_uri& uri);
  * @returns          A new property tree containing the settings.
  */
 BCX_API Json::Value prop_tree(const block& block, bool json, bool tx_json);
+
+/**
+ * Generate a property list for a asset detail.
+ * @param[in]  detail_info          The asset detail.
+ * @param[in]  is_maximum_supply    The asset amount means maximum_supply or quantity.
+ * @param[in]  show_address         A boolean value indicate whether show address.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool is_maximum_supply, bool show_address = true);
+
+/**
+ * Generate a property list for a asset transfer with detail.
+ * @param[in]  balance_info The asset balance info.
+ * @param[in]  issued_info  The issued asset detail. include the other info.
+ * @param[in]  show_address A boolean value indicate whether show address.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_balances& balance_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
+
+/**
+ * Generate a property list for a asset transfer.
+ * @param[in]  trans_info        The asset transfer.
+ * @param[in]  decimal_number    The asset transfer unit. if equals max_uint8, do not add "decimal_number" index.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_transfer& trans_info, uint8_t decimal_number = max_uint8);
+
+/**
+ * Generate a property list for a asset cert.
+ * @param[in]  cert_info        The asset cert.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
+
+/**
+ * Generate a property list for a multisign.
+ * @param[in]  multisign        The multisign.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
+
+/**
+ * Generate a property list for a attenuation_model_param.
+ * @param[in]  param            The parameter of attenuation model.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_attenuation_model_param(const data_chunk& param);
 
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;

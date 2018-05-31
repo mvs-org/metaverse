@@ -1,0 +1,7 @@
+{
+	"algo" : "aes",
+	"index" : 10,
+	"mnemonic" : "U2FsdGVkX1/Nfr6qc7ye8yeFxoql0cuTb/HOQ4ViT3ID1bV4susHm3EjREyWnNa5PYKABEcL128aOROmmOBVFVA0CwO5/0bryuxvwfpoPbDRgU/NbZE9wxu/3LG6oCQvXe/ooL1+KS2snOkT24FBgWNzEQcVpG0CkGW2eVSbgdpQIUOCfS/3Reo45vl5W5+mIBjg5xcYUi8gpqlsmklZZLf+eB78Id6ia+KMUfwU4F4=",
+	"multisigs" : null,
+	"version" : "0.2.1"
+}

@@ -39,7 +39,8 @@ hosts::hosts(threadpool& pool, const settings& settings)
     dispatch_(pool, NAME),
     file_path_(default_data_path() / settings.hosts_file),
     disabled_(settings.host_pool_capacity == 0),
-	pool_{pool}
+	pool_(pool),
+    seed_count(settings.seeds.size())
 {
 //	buffer_.reserve(std::max(settings.host_pool_capacity, 1u));
 }
@@ -278,6 +279,55 @@ code hosts::stop()
             << "Failed to load hosts file.";
         return error::file_system;
     }
+
+    return error::success;
+}
+
+code hosts::clear()
+{
+    // Critical Section
+    mutex_.lock_upgrade();
+
+    if (stopped_)
+    {
+        mutex_.unlock_upgrade();
+        //---------------------------------------------------------------------
+        return error::service_stopped;
+    }
+
+
+    mutex_.unlock_upgrade_and_lock();
+    backup_ = std::move( buffer_ );
+    mutex_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    return error::success;
+}
+
+code hosts::after_reseeding()
+{
+    mutex_.lock_upgrade();
+
+    if (stopped_)
+    {
+        mutex_.unlock_upgrade();
+        //---------------------------------------------------------------------
+        return error::service_stopped;
+    }
+
+
+    mutex_.unlock_upgrade_and_lock();
+    //re-seeding failed and recover the buffer with backup one
+    if (buffer_.size() <= seed_count) {
+        log::warning(LOG_NETWORK) << "Reseeding finished, but got address list: " << buffer_.size() << ", less than seed count: "
+                                << seed_count << ", roll back the hosts cache.";
+        buffer_ = std::move(backup_);
+    }
+
+    log::debug(LOG_NETWORK) << "Reseeding finished, and got addresses of count: " << buffer_.size();
+
+    mutex_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }

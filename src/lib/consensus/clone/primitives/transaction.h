@@ -10,6 +10,7 @@
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
+#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
 
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
@@ -103,10 +104,10 @@ public:
     std::string symbol;
     uint64_t maximum_supply;
     uint32_t asset_type;
-    std::string issuer; 
+    std::string issuer;
     std::string address;
     std::string description;
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -124,7 +125,7 @@ class CAssetTransfer
 public:
     std::string address;  // symbol  -- in block
     uint64_t quantity;  // -- in block
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
@@ -138,51 +139,144 @@ class CAsset
 {
 public:
     uint32_t status;
-	CAssetDetail detail;
-	CAssetTransfer trans;
-	
-    size_t GetSerializeSize(int nType, int nVersion) const {                         
-        CSizeComputer s(nType, nVersion);                                            
+    CAssetDetail detail;
+    CAssetTransfer trans;
+
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
         NCONST_PTR(this)->Serialize(s, nType, nVersion);
-        return s.size();                                                             
-    }                                                                                
-    template<typename Stream>                                                        
-    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
         //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionSerialize()));
-		switch(status) {
-			case 1: // asset detail
-				(::SerReadWrite(s, (*(CAssetDetail*)(&detail)), nType, nVersion, CSerActionSerialize()));
-				break;
-			case 2: // asset transfer
-				(::SerReadWrite(s, (*(CAssetTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
-				break;
-		};
-    }                                                                                
-    template<typename Stream>                                                        
-    void Unserialize(Stream& s, int nType, int nVersion) {                           
+        switch(status) {
+            case 1: // asset detail
+                (::SerReadWrite(s, (*(CAssetDetail*)(&detail)), nType, nVersion, CSerActionSerialize()));
+                break;
+            case 2: // asset transfer
+                (::SerReadWrite(s, (*(CAssetTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
+                break;
+        };
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
         //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
         (::SerReadWrite(s, (status), nType, nVersion, CSerActionUnserialize()));
-		switch(status) {
-			case 1: // asset detail
-				(::SerReadWrite(s, (*(CAssetDetail*)(&detail)), nType, nVersion, CSerActionUnserialize()));
-				break;
-			case 2: // asset transfer
-				(::SerReadWrite(s, (*(CAssetTransfer*)(&trans)), nType, nVersion, CSerActionUnserialize()));
-				break;
-		};
+        switch(status) {
+            case 1: // asset detail
+                (::SerReadWrite(s, (*(CAssetDetail*)(&detail)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 2: // asset transfer
+                (::SerReadWrite(s, (*(CAssetTransfer*)(&trans)), nType, nVersion, CSerActionUnserialize()));
+                break;
+        };
     }
 };
 class CMessage
 {
 public:
     std::string content;
-	
+
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(content);
+    }
+};
+
+class CAssetCert
+{
+public:
+    std::string symbol;
+    std::string owner;
+    std::string address;
+    uint32_t type;
+    uint8_t status;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(owner);
+        READWRITE(address);
+        READWRITE(type);
+        READWRITE(status);
+    }
+};
+
+class CDidDetail
+{
+public:
+    std::string symbol;
+    std::string address;
+
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(address);
+    }
+};
+
+class CDidTransfer
+{
+public:
+    std::string symbol;
+    std::string address;
+
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(address);
+    }
+};
+
+class CDid
+{
+public:
+    uint32_t status;
+    CDidDetail detail;
+    CDidTransfer trans;
+
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
+        NCONST_PTR(this)->Serialize(s, nType, nVersion);
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
+        //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
+        (::SerReadWrite(s, (status), nType, nVersion, CSerActionSerialize()));
+        switch(status) {
+            case 1: // did detail
+                (::SerReadWrite(s, (*(CDidDetail*)(&detail)), nType, nVersion, CSerActionSerialize()));
+                break;
+            case 2: // did transfer
+                (::SerReadWrite(s, (*(CDidTransfer*)(&trans)), nType, nVersion, CSerActionSerialize()));
+                break;
+        };
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
+        //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
+        (::SerReadWrite(s, (status), nType, nVersion, CSerActionUnserialize()));
+        switch(status) {
+            case 1: // did detail
+                (::SerReadWrite(s, (*(CDidDetail*)(&detail)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 2: // did transfer
+                (::SerReadWrite(s, (*(CDidTransfer*)(&trans)), nType, nVersion, CSerActionUnserialize()));
+                break;
+        };
     }
 };
 /** An output of a transaction.  It contains the public key that the next input
@@ -191,116 +285,141 @@ public:
 class CTxOut
 {
 public:
-	CAmount nValue;
-	CScript scriptPubKey;
-	// add for attachment
+    CAmount nValue;
+    CScript scriptPubKey;
+    // add for attachment
     uint32_t version;
     uint32_t type;
-	
-	CAsset asset;
-	CMessage message;
-	
-	CTxOut()
-	{
-		SetNull();
-	}
+    std::string fromdid;
+    std::string todid;
 
-	CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn);
+    CAsset asset;
+    CAssetCert assetcert;
+    CDid did;
+    CMessage message;
+
+    CTxOut()
+    {
+        SetNull();
+    }
+
+    CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn);
 
     //ADD_SERIALIZE_METHODS;
-    size_t GetSerializeSize(int nType, int nVersion) const {                         
-        CSizeComputer s(nType, nVersion);                                            
+    size_t GetSerializeSize(int nType, int nVersion) const {
+        CSizeComputer s(nType, nVersion);
         NCONST_PTR(this)->Serialize(s, nType, nVersion);
-        return s.size();                                                             
-    }                                                                                
-    template<typename Stream>                                                        
-    void Serialize(Stream& s, int nType, int nVersion) const {                       
+        return s.size();
+    }
+    template<typename Stream>
+    void Serialize(Stream& s, int nType, int nVersion) const {
         //NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize(), nType, nVersion);
         (::SerReadWrite(s, (nValue), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionSerialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionSerialize()));
-		switch(type) {
-			case 0: // etp
-			case 1: // etp award
-				// not data left
-				break;
-			case 2: // asset
-				(::SerReadWrite(s, (*(CAsset*)(&asset)), nType, nVersion, CSerActionSerialize()));
-				break;
-			case 3: // message
-				(::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionSerialize()));
-				break;
-		};
-    }                                                                                
-    template<typename Stream>                                                        
-    void Unserialize(Stream& s, int nType, int nVersion) {                           
+        if (version == DID_ATTACH_VERIFY_VERSION) {
+            (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionSerialize()));
+            (::SerReadWrite(s, (todid), nType, nVersion, CSerActionSerialize()));
+        }
+
+        switch(type) {
+            case 0: // etp
+            case 1: // etp award
+                // not data left
+                break;
+            case 2: // asset
+                (::SerReadWrite(s, (*(CAsset*)(&asset)), nType, nVersion, CSerActionSerialize()));
+                break;
+            case 3: // message
+                (::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionSerialize()));
+                break;
+            case 4: //did
+                (::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionSerialize()));
+                break;
+            case 5: // asset cert
+                (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
+                break;
+        };
+    }
+    template<typename Stream>
+    void Unserialize(Stream& s, int nType, int nVersion) {
         //SerializationOp(s, CSerActionUnserialize(), nType, nVersion);
         (::SerReadWrite(s, (nValue), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (*(CScriptBase*)(&scriptPubKey)), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (version), nType, nVersion, CSerActionUnserialize()));
         (::SerReadWrite(s, (type), nType, nVersion, CSerActionUnserialize()));
-		switch(type) {
-			case 0: // etp
-			case 1: // etp award
-				// not data left
-				break;
-			case 2: // asset
-				(::SerReadWrite(s, (*(CAsset*)(&asset)), nType, nVersion, CSerActionUnserialize()));
-				break;
-			case 3: // message
-				(::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionUnserialize()));
-				break;
-		};
+        if (version == DID_ATTACH_VERIFY_VERSION) {
+            (::SerReadWrite(s, (fromdid), nType, nVersion, CSerActionUnserialize()));
+            (::SerReadWrite(s, (todid), nType, nVersion, CSerActionUnserialize()));
+        }
+        switch(type) {
+            case 0: // etp
+            case 1: // etp award
+                // not data left
+                break;
+            case 2: // asset
+                (::SerReadWrite(s, (*(CAsset*)(&asset)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 3: // message
+                (::SerReadWrite(s, (*(CMessage*)(&message)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 4: // did
+                (::SerReadWrite(s, (*(CDid*)(&did)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 5: // asset cert
+                (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionUnserialize()));
+                break;
+        };
     }
 
-	void SetNull()
-	{
-		nValue = -1;
-		scriptPubKey.clear();
-	}
+    void SetNull()
+    {
+        nValue = -1;
+        scriptPubKey.clear();
+    }
 
-	bool IsNull() const
-	{
-		return (nValue == -1);
-	}
+    bool IsNull() const
+    {
+        return (nValue == -1);
+    }
 
-	uint256 GetHash() const;
+    uint256 GetHash() const;
 
-	CAmount GetDustThreshold(const CFeeRate &minRelayTxFee) const
-	{
-		// "Dust" is defined in terms of CTransaction::minRelayTxFee,
-		// which has units satoshis-per-kilobyte.
-		// If you'd pay more than 1/3 in fees
-		// to spend something, then we consider it dust.
-		// A typical spendable txout is 34 bytes big, and will
-		// need a CTxIn of at least 148 bytes to spend:
-		// so dust is a spendable txout less than
-		// 546*minRelayTxFee/1000 (in satoshis)
-		if (scriptPubKey.IsUnspendable())
-			return 0;
+    CAmount GetDustThreshold(const CFeeRate &minRelayTxFee) const
+    {
+        // "Dust" is defined in terms of CTransaction::minRelayTxFee,
+        // which has units satoshis-per-kilobyte.
+        // If you'd pay more than 1/3 in fees
+        // to spend something, then we consider it dust.
+        // A typical spendable txout is 34 bytes big, and will
+        // need a CTxIn of at least 148 bytes to spend:
+        // so dust is a spendable txout less than
+        // 546*minRelayTxFee/1000 (in satoshis)
+        if (scriptPubKey.IsUnspendable())
+            return 0;
 
-		size_t nSize = GetSerializeSize(SER_DISK,0)+148u;
-		return 3*minRelayTxFee.GetFee(nSize);
-	}
+        size_t nSize = GetSerializeSize(SER_DISK,0)+148u;
+        return 3*minRelayTxFee.GetFee(nSize);
+    }
 
-	bool IsDust(const CFeeRate &minRelayTxFee) const
-	{
-		return (nValue < GetDustThreshold(minRelayTxFee));
-	}
+    bool IsDust(const CFeeRate &minRelayTxFee) const
+    {
+        return (nValue < GetDustThreshold(minRelayTxFee));
+    }
 
-	friend bool operator==(const CTxOut& a, const CTxOut& b)
-	{
-		return (a.nValue	   == b.nValue &&
-				a.scriptPubKey == b.scriptPubKey);
-	}
+    friend bool operator==(const CTxOut& a, const CTxOut& b)
+    {
+        return (a.nValue       == b.nValue &&
+                a.scriptPubKey == b.scriptPubKey);
+    }
 
-	friend bool operator!=(const CTxOut& a, const CTxOut& b)
-	{
-		return !(a == b);
-	}
+    friend bool operator!=(const CTxOut& a, const CTxOut& b)
+    {
+        return !(a == b);
+    }
 
-	std::string ToString() const;
+    std::string ToString() const;
 };
 #if 0 // old CTxOut
 class CTxOut

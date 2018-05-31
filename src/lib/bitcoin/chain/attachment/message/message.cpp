@@ -32,7 +32,7 @@ blockchain_message::blockchain_message(): content_("")
 {
 }
 blockchain_message::blockchain_message(std::string content):
-	content_(content)
+    content_(content)
 {
 
 }
@@ -60,12 +60,12 @@ blockchain_message blockchain_message::factory_from_data(reader& source)
 
 void blockchain_message::reset()
 {
-	content_ = "";
+    content_ = "";
 }
 bool blockchain_message::is_valid() const
 {
-    return !(content_.empty() 
-			|| content_.size()+1>BLOCKCHAIN_MESSAGE_FIX_SIZE);
+    return !(content_.empty()
+            || content_.size()+1>BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
 bool blockchain_message::from_data(const data_chunk& data)
@@ -85,7 +85,7 @@ bool blockchain_message::from_data(reader& source)
     reset();
     content_ = source.read_string();
     auto result = static_cast<bool>(source);
-	
+
     return result;
 }
 
@@ -107,31 +107,35 @@ void blockchain_message::to_data(std::ostream& stream) const
 
 void blockchain_message::to_data(writer& sink) const
 {
-	sink.write_string(content_);
+    if (content_.size() < BLOCKCHAIN_MESSAGE_FIX_SIZE) {
+        sink.write_string(content_);
+    } else {
+        sink.write_string(content_.substr(0, BLOCKCHAIN_MESSAGE_FIX_SIZE));
+    }
 }
 
 uint64_t blockchain_message::serialized_size() const
 {
-	size_t len = content_.size() + 1;
-	return std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
+    size_t len = content_.size() + 1;
+    return std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
 std::string blockchain_message::to_string() const
 {
     std::ostringstream ss;
-	ss << "\t content = " << content_ << "\n";
+    ss << "\t content = " << content_ << "\n";
 
     return ss.str();
 }
 const std::string& blockchain_message::get_content() const
 {
-	return content_;
+    return content_;
 }
 
 void blockchain_message::set_content(const std::string& content)
 {
-	size_t len = content.size()+1 < (BLOCKCHAIN_MESSAGE_FIX_SIZE) ?content.size()+1:BLOCKCHAIN_MESSAGE_FIX_SIZE;
-	this->content_ = content.substr(0, len);
+    size_t len = std::min(content.size()+1, BLOCKCHAIN_MESSAGE_FIX_SIZE);
+    this->content_ = content.substr(0, len);
 }
 
 } // namspace chain

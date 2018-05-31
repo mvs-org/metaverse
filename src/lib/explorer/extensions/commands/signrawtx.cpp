@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -29,66 +29,42 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-// copy from src/lib/consensus/clone/script/script.h
-static std::vector<unsigned char> satoshi_to_chunk(const int64_t& value)
-{
-    if(value == 0)
-        return std::vector<unsigned char>();
-
-    std::vector<unsigned char> result;
-    const bool neg = value < 0;
-    uint64_t absvalue = neg ? -value : value;
-
-    while(absvalue)
-    {
-        result.push_back(absvalue & 0xff);
-        absvalue >>= 8;
-    }
-
-    if (result.back() & 0x80)
-        result.push_back(neg ? 0x80 : 0);
-    else if (neg)
-        result.back() |= 0x80;
-
-    return result;
-}
-
-console_result signrawtx::invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node)
+console_result signrawtx::invoke(Json::Value& jv_output,
+                                 libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     tx_type tx_ = argument_.transaction;
+
     // sign tx
     {
         uint32_t index = 0;
         chain::transaction tx_temp;
-        uint64_t tx_height;  
-        
-        //for (auto& fromeach : from_list_){
-        for (auto& fromeach : tx_.inputs){
-            
-            if(!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height)))
-                throw argument_legality_exception{std::string("invalid transaction hash ") + encode_hash(fromeach.previous_output.hash)};
-            
+        uint64_t tx_height;
+
+        for (auto& fromeach : tx_.inputs) {
+            if (!(blockchain.get_transaction(fromeach.previous_output.hash, tx_temp, tx_height)))
+                throw argument_legality_exception{"invalid transaction hash " + encode_hash(fromeach.previous_output.hash)};
+
             auto output = tx_temp.outputs.at(fromeach.previous_output.index);
+
             // get address private key
             auto address = payment_address::extract(output.script);
             if (!address || (address.version() == 0x5)) // script address : maybe multisig
-                throw argument_legality_exception{std::string("invalid script ") + config::script(output.script).to_string()};
+                throw argument_legality_exception{"invalid script " + config::script(output.script).to_string()};
 
             auto acc_addr = blockchain.get_account_address(auth_.name, address.encoded());
 
-            if(!acc_addr)
-                throw argument_legality_exception{std::string("not own address ") + address.encoded()};
+            if (!acc_addr)
+                throw argument_legality_exception{"not own address " + address.encoded()};
 
             // paramaters
             explorer::config::hashtype sign_type;
             uint8_t hash_type = (signature_hash_algorithm)sign_type;
 
             bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(auth_.auth)); // address private key
-            const ec_secret& private_key =    config_private_key;    
+            const ec_secret& private_key =    config_private_key;
             bc::wallet::ec_private ec_private_key(private_key, 0u, true);
 
             bc::explorer::config::script config_contract(output.script); // previous output script
@@ -97,7 +73,7 @@ console_result signrawtx::invoke (Json::Value& jv_output,
             // gen sign
             bc::endorsement endorse;
             if (!bc::chain::script::create_endorsement(endorse, private_key,
-                contract, tx_, index, hash_type))
+                    contract, tx_, index, hash_type))
             {
                 throw tx_sign_exception{"signrawtx sign failure"};
             }
@@ -109,32 +85,36 @@ console_result signrawtx::invoke (Json::Value& jv_output,
             bc::chain::script ss;
             ss.operations.push_back({bc::chain::opcode::special, endorse});
             ss.operations.push_back({bc::chain::opcode::special, public_key_data});
-            
+
             // if pre-output script is deposit tx.
             if (contract.pattern() == bc::chain::script_pattern::pay_key_hash_with_lock_height) {
                 uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-                    contract.operations);
-                ss.operations.push_back({bc::chain::opcode::special, satoshi_to_chunk(lock_height)});
+                                           contract.operations);
+                ss.operations.push_back({bc::chain::opcode::special, script_number(lock_height).data()});
             }
+
             // set input script of this tx
             tx_.inputs[index].script = ss;
-            //fromeach.script = ss;
             index++;
-        }
-
+        } // end for
     }
 
     // get raw tx
-    if(blockchain.validate_transaction(tx_))
-            throw tx_validate_exception{std::string("validate transaction failure")};
+    if (blockchain.validate_transaction(tx_))
+        throw tx_validate_exception{std::string("validate transaction failure")};
 
     auto& aroot = jv_output;
     aroot["hash"] = encode_hash(tx_.hash());
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx_);
-    aroot["hex"] = tx_buf.str();
-    
-    
+    if (get_api_version() <= 2) {
+        jv_output["hex"] = tx_buf.str();
+    }
+    else {
+        // TODO support restful API format
+        jv_output["raw"] = tx_buf.str();
+    }
+
     return console_result::okay;
 }
 

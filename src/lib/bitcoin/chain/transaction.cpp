@@ -208,7 +208,7 @@ data_chunk transaction::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    BITCOIN_ASSERT(data.size() == serialized_size());
+    //BITCOIN_ASSERT(data.size() == serialized_size());
 
     return data;
 }
@@ -348,19 +348,16 @@ uint64_t transaction::total_output_transfer_amount() const
 {
     const auto value = [](uint64_t total, const output& output)
     {
+        // asset issue and asset transfer can not co-exist in one transaction outputs.
+        // asset secondary issue is from air, so not add its amount to pass amount check.
+        if (output.is_asset_secondaryissue()) {
+            return total;
+        }
         return total + output.get_asset_amount();
     };
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
 }
 
-bool transaction::has_asset_issue()
-{
-	for (auto& elem: outputs) {
-		if(elem.is_asset_issue())
-			return true;
-	}
-	return false;
-}
 bool transaction::has_asset_transfer()
 {
 	for (auto& elem: outputs) {
@@ -368,6 +365,41 @@ bool transaction::has_asset_transfer()
 			return true;
 	}
 	return false;
+}
+
+bool transaction::has_did_transfer()
+{
+	for (auto& elem: outputs) {
+		if(elem.is_did_transfer())
+			return true;
+	}
+	return false;
+}
+
+std::string transaction::get_did_transfer_old_address() const
+{
+    std::string newdidstr = "";
+	for (auto& elem: outputs) {
+		if(elem.is_did_transfer()) {
+            newdidstr = elem.get_script_address();
+        }
+			
+	}
+
+    if (newdidstr.empty()){
+        return newdidstr;
+    }
+
+    for (auto& elem: inputs) {
+		if(elem.get_script_address()!=newdidstr) {
+            newdidstr = elem.get_script_address();
+            return newdidstr;
+        }
+			
+	}
+
+
+    return newdidstr;
 }
 
 } // namspace chain

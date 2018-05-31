@@ -102,11 +102,19 @@ void executor::set_admin()
 	db.stop();
 }
 
+void executor::set_blackhole_did()
+{
+    data_base db(metadata_.configured.database);
+    db.start();
+    db.set_blackhole_did();
+    db.stop();
+}
+
 // Emit to the log.
 bool executor::do_initchain()
 {
     initialize_output();
-    
+
     boost::system::error_code ec;
 
     const auto& directory = metadata_.configured.database.directory;
@@ -129,8 +137,16 @@ bool executor::do_initchain()
         }
 		// init admin account
 		set_admin();
+        // init blackhole DID
+        set_blackhole_did();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
         return true;
+    }
+    else if (MVS_DATABASE_VERSION_NUMBER >= 63)
+    {
+        if (!data_base::upgrade_version_63(data_path)) {
+            throw std::runtime_error{ " upgrade database to version 63 failed!" };
+        }
     }
 
     if (ec.value() == directory_exists)
@@ -172,10 +188,13 @@ bool executor::menu()
 	{
 	    log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
         // set block data absolute path
-        const auto& home = metadata_.configured.data_dir ;
         const auto& directory = metadata_.configured.database.directory ;
         if (!directory.is_absolute()) {
+            const auto& home = metadata_.configured.data_dir ;
             metadata_.configured.database.directory = home / directory ;
+        } else {
+            const auto& default_directory = metadata_.configured.database.default_directory;
+            metadata_.configured.database.directory = directory / default_directory;
         }
 
 	    auto result = do_initchain(); // false means no need to initial chain

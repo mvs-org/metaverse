@@ -34,6 +34,9 @@
 namespace libbitcoin {
 namespace chain {
 
+// forward declaration
+class point;
+
 /// Script patterms.
 /// Comments from: bitcoin.org/en/developer-guide#signature-hash-types
 enum class script_pattern
@@ -81,7 +84,18 @@ enum class script_pattern
     /// The script is valid but does not conform to the standard tempaltes.
     /// Such scripts are always accepted if they are mined into blocks, but
     /// transactions with non-standard scripts may not be forwarded by peers.
-    non_standard
+    non_standard,
+
+    /// Pay to black hole address
+    pay_blackhole_address,
+
+    /// Pay to Public Key Hash [P2PKH] with attenuation model
+    /// Pubkey script:
+    ///     <model_param> <input_point> OP_CHECKATTENUATIONVERIFY
+    ///     OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+    /// Signature script: <sig> <pubkey>
+    pay_key_hash_with_attenuation_model,
+
 };
 
 class BC_API operation
@@ -106,6 +120,8 @@ public:
     static bool is_pay_key_hash_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_with_lock_height_pattern(const operation::stack& ops);
     static bool is_pay_script_hash_pattern(const operation::stack& ops);
+    static bool is_pay_blackhole_pattern(const operation::stack& ops);
+    static bool is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
@@ -116,6 +132,8 @@ public:
 
     static uint64_t get_lock_height_from_sign_key_hash_with_lock_height(const operation::stack& ops);
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
+    static const data_chunk& get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static const data_chunk& get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);
@@ -127,6 +145,9 @@ public:
     static stack to_pay_key_hash_pattern(const short_hash& hash);
     static stack to_pay_key_hash_with_lock_height_pattern(const short_hash& hash, uint32_t block_height);
     static stack to_pay_script_hash_pattern(const short_hash& hash);
+    static stack to_pay_blackhole_pattern(const short_hash& hash);
+    static stack to_pay_key_hash_with_attenuation_model_pattern(
+            const short_hash& hash, const std::string& model_param, const point& input_point);
 
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);

@@ -60,7 +60,7 @@ namespace commands {
 /**
  * Class to implement the help command.
  */
-class BCX_API help 
+class BCX_API help
   : public command
 {
 public:
@@ -109,12 +109,12 @@ public:
             .add("COMMAND", 1);
     }
 
-	/**
+    /**
      * Load parameter fallbacks from file or input as appropriate.
      * @param[in]  input  The input stream for loading the parameters.
      * @param[in]         The loaded variables.
      */
-    virtual void load_fallbacks(std::istream& input, 
+    virtual void load_fallbacks(std::istream& input,
         po::variables_map& variables)
     {
     }
@@ -133,11 +133,6 @@ public:
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
-        )
-        (
-            BX_CONFIG_VARIABLE ",c",
-            value<boost::filesystem::path>(),
-            "The path to the configuration settings file."
         )
         (
             "COMMAND",
