@@ -1330,14 +1330,22 @@ static history::list expand_history(history_compact::list& compact)
         }
     }
 
-
-    // sort by height and index of output, spend or both in order.
+    // sort by height and index of output(unspend) and spend in order.
+    // 1. unspend before spend
+    // because unspend's spend height is max_uint64,
+    // so sort by spend height decreasely can ensure this.
+    // 2. for spend
     // spent height first, decreasely
-    // output height second, increasely
-    // output index third, increasely
+    // spend index second, increasely
+    // 3. for unspend
+    // output height first, increasely
+    // output index second, increasely
     std::sort(result.begin(), result.end(),
         [](const history& elem1, const history& elem2) {
             if (elem1.spend_height == elem2.spend_height) {
+                if (elem1.spend_height != max_uint64) { // spend
+                    return elem1.spend.index < elem2.spend.index;
+                }
                 if (elem1.output_height == elem2.output_height) {
                     return elem1.output.index < elem2.output.index;
                 }
