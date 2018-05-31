@@ -125,7 +125,7 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
     } else if (is_asset_cert()) {
         attachment_address = get_asset_cert_address();
         is_asset = true;
-    } else if (is_did_issue() || is_did_transfer()) {
+    } else if (is_did_register() || is_did_transfer()) {
         attachment_address = get_did_address();
         is_did = true;
     }
@@ -450,7 +450,7 @@ asset_cert_type output::get_asset_cert_type() const
     return asset_cert_ns::none;
 }
 
-bool output::is_did_issue() const
+bool output::is_did_register() const
 {
     if(attach_data.get_type() == DID_TYPE) {
         auto did_info = boost::get<did>(attach_data.get_attach());

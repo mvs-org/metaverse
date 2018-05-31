@@ -30,22 +30,19 @@ namespace explorer {
 namespace commands {
 
 
-/************************ didmodifyaddress *************************/
+/************************ getdid *************************/
 
-class didmodifyaddress: public command_extension
+class getdid: public command_extension
 {
 public:
-    static const char* symbol(){ return "didmodifyaddress";}
+    static const char* symbol(){ return "getdid";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "didmodifyaddress "; }
+    const char* description() override { return "getdid "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("TOADDRESS", 1)
             .add("DIDSYMBOL", 1);
     }
 
@@ -53,10 +50,7 @@ public:
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.to, "TOADDRESS", variables, input, raw);
-        load_input(argument_.symbol, "DIDSYMBOL", variables, input, raw);
+        load_input(option_.symbol, "DIDSYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,36 +58,16 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-        (
+		(
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-        (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
-        )
-        (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
-        )
-        (
-            "TOADDRESS",
-            value<std::string>(&argument_.to)->required(),
-            "Target address"
-        )
-        (
-            "DIDSYMBOL",
-            value<std::string>(&argument_.symbol)->required(),
-            "Did symbol"
-        )
-        (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
-        );
+		(
+			"DIDSYMBOL",
+			value<std::string>(&option_.symbol),
+			"Did symbol"
+		);
 
         return options;
     }
@@ -107,13 +81,11 @@ public:
 
     struct argument
     {
-        std::string to;
-        std::string symbol;
-        uint64_t fee;
     } argument_;
 
     struct option
     {
+		std::string symbol;        
     } option_;
 
 };

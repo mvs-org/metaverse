@@ -2,7 +2,7 @@ from utils import common
 from TestCase.MVSTestCase import *
 
 class TestDIDBatch(MVSTestCaseBase):
-    def test_0_issuedid_batch(self):
+    def test_0_registerdid_batch(self):
         # create 5000 account
         # send 1 etp to each account
         # issue a did for each account
@@ -45,7 +45,7 @@ class TestDIDBatch(MVSTestCaseBase):
             previous = get_did_count()
             for i in xrange(batch_amount_i):
                 for j in xrange(batch_amount_j):
-                    ec, message = mvs_rpc.issue_did(get_account_name(i, j), "123456", get_address(i, j), get_did_symbol(i, j))
+                    ec, message = mvs_rpc.register_did(get_account_name(i, j), "123456", get_address(i, j), get_did_symbol(i, j))
                     self.assertEqual(ec, 0)
 
             current = 0

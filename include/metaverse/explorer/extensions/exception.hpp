@@ -180,7 +180,7 @@ DEFINE_EXPLORER_EXCEPTION(did_symbol_name_exception, 7001);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_existed_exception, 7002);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_length_exception, 7003);
 DEFINE_EXPLORER_EXCEPTION(did_description_length_exception, 7004);
-DEFINE_EXPLORER_EXCEPTION(did_issue_poundage_exception, 7005);
+DEFINE_EXPLORER_EXCEPTION(did_register_poundage_exception, 7005);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_notfound_exception, 7006);
 DEFINE_EXPLORER_EXCEPTION(did_symbol_duplicate_exception, 7007);
 DEFINE_EXPLORER_EXCEPTION(did_address_needed_exception, 7008);

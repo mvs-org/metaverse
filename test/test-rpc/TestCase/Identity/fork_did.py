@@ -1,5 +1,5 @@
 '''
-test issuedid/modifydid when fork occured
+test registerdid/modifydid when fork occured
 '''
 from utils import common
 from TestCase.MVSTestCase import *
@@ -18,27 +18,27 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.list_dids(role.name, role.password)
             self.assertEqual(ec, 0, message)
 
-            self.assertIn({'status':"issued",
+            self.assertIn({'status':"registered",
             'address':role.mainaddress(),
             'symbol':role.did_symbol}, message['dids'])
 
-    def test_1_fork_at_issuedid(self):
+    def test_1_fork_at_registerdid(self):
         self.make_partion()
         try:
             target_address = Alice.addresslist[-1]
-            # issuedid and mine
+            # registerdid and mine
             did_symbol = "YouShouldNotSeeThis.Avatar"
             Alice.send_etp(target_address, 10 ** 8)
             Alice.mining()
 
-            ec, message = Alice.issue_did(target_address, did_symbol)
+            ec, message = Alice.register_did(target_address, did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
 
             ec, message = mvs_rpc.list_dids(Alice.name, Alice.password)
             self.assertEqual(ec, 0, message)
 
-            self.assertIn({'status': "issued",
+            self.assertIn({'status': "registered",
                            'address': target_address,
                            'symbol': did_symbol}, message['dids'])
         finally:
@@ -46,7 +46,7 @@ class TestFork(ForkTestCase):
 
         ec, message = mvs_rpc.list_dids(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertNotIn({'status': "issued",
+        self.assertNotIn({'status': "registered",
                        'address': target_address,
                        'symbol': Alice.did_symbol}, message['dids'])
 
@@ -91,19 +91,19 @@ class TestFork(ForkTestCase):
         cert = filter(lambda a: a.symbol == domain_symbol, certs)
         self.assertEqual(len(cert), 0)
 
-    def test_3_fork_at_modify_did(self):
+    def test_3_fork_at_change_did(self):
         self.make_partion()
         try:
             target_addr = Cindy.addresslist[-1]
             Alice.send_etp(target_addr, 10**8)
             Alice.mining()
 
-            ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
+            ec, message = mvs_rpc.change_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
 
             expect = {
-                u'status': u'issued',
+                u'status': u'registered',
                 u'symbol': Cindy.did_symbol,
                 u'address': target_addr
             }
@@ -121,12 +121,12 @@ class TestFork(ForkTestCase):
             Alice.send_etp(target_addr, 10**8)
             Alice.mining()
 
-            ec, message = mvs_rpc.modify_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
+            ec, message = mvs_rpc.change_did(Cindy.name, Cindy.password, target_addr, Cindy.did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
 
             expect = {
-                u'status': u'issued',
+                u'status': u'registered',
                 u'symbol': Cindy.did_symbol,
                 u'address': target_addr
             }
@@ -144,7 +144,7 @@ class TestFork(ForkTestCase):
             self.fork()
 
         expect = {
-            u'status': u'issued',
+            u'status': u'registered',
             u'symbol': Cindy.did_symbol,
             u'address': Cindy.mainaddress()
         }

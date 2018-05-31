@@ -259,20 +259,20 @@ def list_balances(account, password, range_=[None, None]):
     }, None
 
 @mvs_api
-def issue_did(account, password, address, did_symbol, fee=None):
-    return "issuedid", [account, password, address, did_symbol], {'--fee' : fee}, None
+def register_did(account, password, address, did_symbol, fee=None):
+    return "registerdid", [account, password, address, did_symbol], {'--fee' : fee}, None
 
 @mvs_api
 def list_dids(account=None, password=None):
     return "listdids", [account, password], {}, None
 
 @mvs_api
-def modify_did(account, password, to_address, did_symbol):
-    return "didmodifyaddress", [account, password, to_address, did_symbol], {}, None
+def change_did(account, password, to_address, did_symbol):
+    return "didchangeaddress", [account, password, to_address, did_symbol], {}, None
 
 @mvs_api
-def list_didaddresses(account, password, did_symbol):
-    return "listdidaddresses", [account, password, did_symbol], {}, None
+def list_didaddresses(did_symbol):
+    return "getdid", [did_symbol], {}, None
 
 @mvs_api
 def get_asset(asset_symbol=None, cert=False):

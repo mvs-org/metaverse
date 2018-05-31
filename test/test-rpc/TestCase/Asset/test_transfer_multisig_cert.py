@@ -24,10 +24,10 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         assert (result == 0)
         Alice.mining()
 
-        # issue did to multisig_address
+        # register did to multisig_address
         #
         multisig_did_symbol = "Multisig" + common.get_random_str()
-        ec, tx = mvs_rpc.issue_did(Alice.name, Alice.password, multisig_address, multisig_did_symbol)
+        ec, tx = mvs_rpc.register_did(Alice.name, Alice.password, multisig_address, multisig_did_symbol)
         self.assertEqual(ec, code.success, tx)
 
         # sign multisig rawtx

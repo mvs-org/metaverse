@@ -51,7 +51,7 @@ console_result didsendfrom::invoke(Json::Value& jv_output,
         if (!blockchain.is_did_exist(argument_.fromdid))
             throw did_symbol_notfound_exception{"fromdid symbol is not exist on the blockchain"};
 
-        auto diddetail=blockchain.get_issued_did(argument_.fromdid);
+        auto diddetail=blockchain.get_registered_did(argument_.fromdid);
         fromaddress = diddetail->get_address();
         attach.set_from_did(argument_.fromdid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);

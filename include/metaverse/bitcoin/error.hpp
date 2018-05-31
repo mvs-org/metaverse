@@ -149,7 +149,7 @@ enum error_code_t
     did_symbol_not_match,
     did_symbol_invalid,
     did_exist,
-    address_issued_did,
+    address_registered_did,
     did_func_not_actived,           // 70
     did_address_not_match,
     did_address_needed,
@@ -165,7 +165,7 @@ enum error_code_t
     asset_cert_not_owned,           // 80
     asset_cert_not_provided,
     asset_cert_issue_error,
-    asset_did_issuer_not_match,
+    asset_did_registerr_not_match,
 
     attachment_invalid,
     nova_feature_not_activated,     // 85

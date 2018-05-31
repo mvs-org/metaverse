@@ -63,7 +63,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
-#include <metaverse/explorer/extensions/commands/issuedid.hpp>
+#include <metaverse/explorer/extensions/commands/registerdid.hpp>
 #include <metaverse/explorer/extensions/commands/didsend.hpp>
 #include <metaverse/explorer/extensions/commands/didsendasset.hpp>
 #include <metaverse/explorer/extensions/commands/didsendfrom.hpp>
@@ -71,7 +71,6 @@
 #include <metaverse/explorer/extensions/commands/listdids.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
-// #include <metaverse/explorer/extensions/commands/issuefrom.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
 #include <metaverse/explorer/extensions/commands/burn.hpp>
@@ -94,8 +93,8 @@
 #include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
-#include <metaverse/explorer/extensions/commands/didmodifyaddress.hpp>
-#include <metaverse/explorer/extensions/commands/listdidaddresses.hpp>
+#include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
+#include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/commands/didsendmore.hpp>
 
 
@@ -194,15 +193,15 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
 
     os <<"\r\n";
     //did
-    func(make_shared<issuedid>());
+    func(make_shared<registerdid>());
     func(make_shared<didsend>());
     func(make_shared<didsendfrom>());
     func(make_shared<didsendasset>());
     func(make_shared<didsendassetfrom>());
     func(make_shared<didsendmore>());
-    func(make_shared<didmodifyaddress>());
+    func(make_shared<didchangeaddress>());
     func(make_shared<listdids>());
-    func(make_shared<listdidaddresses>());
+    func(make_shared<getdid>());
 }
 
 shared_ptr<command> find_extension(const string& symbol)
@@ -351,8 +350,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<issuecert>();
 
     // did
-    if (symbol == issuedid::symbol())
-        return make_shared<issuedid>();
+    if (symbol == registerdid::symbol())
+        return make_shared<registerdid>();
     if (symbol == didsend::symbol())
         return make_shared<didsend>();
     if (symbol == didsendasset::symbol())
@@ -363,12 +362,12 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<didsendmore>();
     if (symbol == didsendassetfrom::symbol())
         return make_shared<didsendassetfrom>();
-    if (symbol == didmodifyaddress::symbol())
-        return make_shared<didmodifyaddress>();
+    if (symbol == didchangeaddress::symbol())
+        return make_shared<didchangeaddress>();
     if (symbol == listdids::symbol())
         return make_shared<listdids>();
-    if (symbol == listdidaddresses::symbol())
-        return make_shared<listdidaddresses>();
+    if (symbol == getdid::symbol())
+        return make_shared<getdid>();
 
     return nullptr;
 }

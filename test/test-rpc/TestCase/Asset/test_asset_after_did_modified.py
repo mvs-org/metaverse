@@ -34,7 +34,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         self.assertEqual(result, code.success, message)
         Zac.mining()
 
-        ec, message = Zac.issue_did(fst_did_address, fst_did_symbol)
+        ec, message = Zac.register_did(fst_did_address, fst_did_symbol)
         self.assertEqual(ec, code.success, message)
         Zac.mining()
 
@@ -46,7 +46,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         self.assertEqual(result, code.success, message)
         Zac.mining()
 
-        ec, message = Zac.issue_did(snd_did_address, snd_did_symbol)
+        ec, message = Zac.register_did(snd_did_address, snd_did_symbol)
         self.assertEqual(ec, code.success, message)
         Zac.mining()
 
@@ -63,8 +63,8 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         domain_symbol, fst_asset_symbol = Zac.create_random_asset(did_symbol=snd_did_symbol, secondary=-1)
         Zac.mining()
 
-        # modify address of did
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, trd_address, snd_did_symbol)
+        # change address of did
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, trd_address, snd_did_symbol)
         self.assertEqual(ec, code.success, message)
         Zac.mining()
 

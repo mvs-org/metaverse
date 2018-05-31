@@ -362,7 +362,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\burn.hpp">
@@ -371,7 +371,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdidaddresses.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getdid.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp">
@@ -380,7 +380,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registerdid.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp">
@@ -714,7 +714,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\burn.cpp">
@@ -723,7 +723,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdidaddresses.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getdid.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp">
@@ -741,7 +741,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registerdid.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">

@@ -20,7 +20,7 @@
 
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/didmodifyaddress.hpp>
+#include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,7 +30,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result didmodifyaddress::invoke(Json::Value& jv_output,
+console_result didchangeaddress::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
@@ -42,7 +42,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     check_did_symbol(did);
 
     // check did exsits
-    auto did_detail = blockchain.get_issued_did(did);
+    auto did_detail = blockchain.get_registered_did(did);
     if (!did_detail) {
         throw did_symbol_notfound_exception{"Did '" + did + "' does not exist on the blockchain"};
     }
@@ -65,7 +65,7 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
     }
 
      // fail if address is already binded with did in blockchain
-    if (blockchain.is_address_issued_did(argument_.to)) {
+    if (blockchain.is_address_registered_did(argument_.to)) {
         throw did_symbol_existed_exception{"Target address is already binded with some did on the blockchain"};
     }
 
@@ -103,14 +103,14 @@ console_result didmodifyaddress::invoke(Json::Value& jv_output,
         if (toaddr.version() == bc::wallet::payment_address::mainnet_p2sh && !findmultisig(acc_multisig_to, argument_.to))
             throw multisig_notfound_exception{"to address multisig record not found."};
 
-        auto issue_helper = sending_multisig_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+        auto send_helper = sending_multisig_did(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
                                                  std::move(from_address),  std::move(argument_.to),
                                                  std::move(argument_.symbol), std::move(receiver), argument_.fee,
                                                  std::move(acc_multisig), std::move(acc_multisig_to));
 
-        issue_helper.exec();
+        send_helper.exec();
         // json output
-        auto && tx = issue_helper.get_transaction();
+        auto && tx = send_helper.get_transaction();
         std::ostringstream tx_buf;
         tx_buf << config::transaction(tx);
         jv_output = tx_buf.str();

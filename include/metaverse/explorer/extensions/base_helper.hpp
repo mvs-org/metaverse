@@ -38,7 +38,7 @@ namespace commands{
 /// attachment_etp_award     --> etp_award
 /// attachment_asset         --> asset_issue | asset_transfer
 /// attachment_message       --> message
-/// attachment_did           --> did_issue   |  did_transfer
+/// attachment_did           --> did_register   |  did_transfer
 /// attachment_asset_cert    --> asset_cert
 /// -------------------------------------------------------------------
 /// utxo_attach_type is only used in explorer module
@@ -63,7 +63,7 @@ enum class utxo_attach_type : uint32_t
     message = 6,
     asset_cert = 7,
     asset_secondaryissue = 8,
-    did_issue = 9,
+    did_register = 9,
     did_transfer = 10,
     asset_cert_issue = 11,
     asset_cert_transfer = 12,
@@ -536,10 +536,10 @@ private:
     std::string attenuation_model_param_;
 };
 
-class BCX_API issuing_did : public base_multisig_transfer_helper
+class BCX_API registering_did : public base_multisig_transfer_helper
 {
 public:
-    issuing_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    registering_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list, uint64_t fee,
         account_multisig&& multisig)
@@ -548,7 +548,7 @@ public:
             std::move(multisig))
     {}
 
-    ~issuing_did()
+    ~registering_did()
     {}
 
     void sum_payment_amount() override;

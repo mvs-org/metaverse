@@ -72,7 +72,7 @@ class TestDIDSendMore(MVSTestCaseBase):
         did_symbol = 'Zac@'+common.get_random_str()
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
-        Zac.issue_did(symbol=did_symbol)
+        Zac.register_did(symbol=did_symbol)
         Alice.mining()
 
         receivers = {
@@ -148,7 +148,7 @@ class TestDIDSendAsset(MVSTestCaseBase):
         self.assertEqual(pB, cB - 1)
 
 class Testdidcommon(MVSTestCaseBase):
-    def test_1_issuedid(self):
+    def test_1_registerdid(self):
         special_symbol=['@','.','-','_']
         optional = {}
         for i in xrange(len(special_symbol)):
@@ -159,31 +159,31 @@ class Testdidcommon(MVSTestCaseBase):
 
         for i ,symbol in  enumerate(special_symbol):
             did_symbol = '%s%stest%d%s'%(Zac.did_symbol,symbol,i,common.get_random_str())
-            ec, message = Zac.issue_did(Zac.addresslist[i], did_symbol)
+            ec, message = Zac.register_did(Zac.addresslist[i], did_symbol)
             self.assertEqual(ec, 0, message)
             Alice.mining()
-            self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[i], 'Failed when issuedid with:'+symbol)
+            self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[i], 'Failed when registerdid with:'+symbol)
 
-    def test_2_didmodifyaddress(self):
+    def test_2_didchangeaddress(self):
         did_symbol = 'Zac@'+common.get_random_str()
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
 
-        ec, message = Zac.issue_did(symbol=did_symbol)
+        ec, message = Zac.register_did(symbol=did_symbol)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when issuedid with:'+did_symbol)
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when registerdid with:'+did_symbol)
 
         Alice.send_etp(Zac.addresslist[1], 10**4)
         Alice.mining()
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[1], 'Failed when issuedid with:'+did_symbol)
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.addresslist[1], 'Failed when registerdid with:'+did_symbol)
 
         Alice.send_etp(Zac.mainaddress(), 10**4)
         Alice.mining()
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.mainaddress(), did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.mainaddress(), did_symbol)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when issuedid with:'+did_symbol)
+        self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when registerdid with:'+did_symbol)

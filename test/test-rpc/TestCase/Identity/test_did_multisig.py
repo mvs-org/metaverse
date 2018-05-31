@@ -3,7 +3,7 @@ from TestCase.MVSTestCase import *
 
 class TestDIDMultiSig(MVSTestCaseBase):
 
-    def test_0_issuedid(self):
+    def test_0_registerdid(self):
         group = [Alice, Bob, Zac]
         did_symbol = "Alice.Bob.Zac.DIID." + common.get_random_str()
 
@@ -13,7 +13,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         Alice.send_etp(addr, (10 ** 8))
         Alice.mining()
 
-        ec, tx = mvs_rpc.issue_did(group[0].name, group[0].password, addr, did_symbol)
+        ec, tx = mvs_rpc.register_did(group[0].name, group[0].password, addr, did_symbol)
         self.assertEqual(ec, 0, tx)
 
         ec, tx = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx, True)
@@ -43,7 +43,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         Alice.mining()
 
 
-        ec, tx = mvs_rpc.issue_did(group[0].name, group[0].password, addr, did_symbol)
+        ec, tx = mvs_rpc.register_did(group[0].name, group[0].password, addr, did_symbol)
         self.assertEqual(ec, 0, tx)
 
         ec, tx = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx, True)
@@ -63,7 +63,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         Alice.send_etp(normal_new , 123456789)
         Alice.mining()
 
-        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, normal_new, did_symbol)
+        ec, tx = mvs_rpc.change_did(Zac.name, Zac.password, normal_new, did_symbol)
         self.assertEqual(ec, 0, tx)
 
         ec, tx = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx, True)
@@ -76,14 +76,14 @@ class TestDIDMultiSig(MVSTestCaseBase):
         normal_new = Zac.addresslist[1]
         Alice.send_etp(normal_new , (10 ** 6) )
         Alice.mining()
-        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, normal_new, did_symbol)
+        ec, tx = mvs_rpc.change_did(Zac.name, Zac.password, normal_new, did_symbol)
         self.assertEqual(ec, 0, tx)
         Alice.mining()
 
         did_address = group[0].get_didaddress(did_symbol)
         self.assertEqual(did_address, normal_new, "Failed where modify did address from normal to normal")
 
-        ec, tx = mvs_rpc.modify_did(Zac.name, Zac.password, addr_new, did_symbol)
+        ec, tx = mvs_rpc.change_did(Zac.name, Zac.password, addr_new, did_symbol)
         self.assertEqual(ec, 0, tx)
 
         ec, tx = mvs_rpc.sign_multisigtx(group_new[0].name, group_new[0].password, tx, True)

@@ -62,7 +62,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletelocalasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didmodifyaddress.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp" />
@@ -93,11 +93,11 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importkeyfile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuedid.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registerdid.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listaddresses.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listassets.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listbalances.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdidaddresses.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getdid.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
@@ -184,7 +184,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletelocalasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didmodifyaddress.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp" />
@@ -215,11 +215,11 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importkeyfile.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuedid.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registerdid.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listaddresses.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listassets.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listbalances.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdidaddresses.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getdid.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />

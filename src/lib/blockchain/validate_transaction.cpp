@@ -300,7 +300,7 @@ void validate_transaction::check_fees()
         }
     }
 
-    auto is_did_type = (business_kind_in_ == business_kind::did_issue)
+    auto is_did_type = (business_kind_in_ == business_kind::did_register)
                        || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
         if (!check_did_symbol_match(*tx_)) {
@@ -718,7 +718,7 @@ code validate_transaction::check_asset_cert_issue_transaction(
                 }
 
                 cert_owner = cert_info.get_owner();
-                auto diddetail = chain.get_issued_did(cert_owner);
+                auto diddetail = chain.get_registered_did(cert_owner);
                 auto address = cert_info.get_address();
                 if (!diddetail) {
                     log::debug(LOG_BLOCKCHAIN) << "issue cert: cert owner is not issued. "
@@ -792,7 +792,7 @@ code validate_transaction::check_did_transaction(
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
 
-        if (output.is_did_issue()) {
+        if (output.is_did_register()) {
             if (!connect_input_address_match_did(tx, chain, output.attach_data)) {
                 return error::did_address_not_match;
             }
@@ -805,8 +805,8 @@ code validate_transaction::check_did_transaction(
                 return error::did_exist;
             }
 
-            if (chain.is_address_issued_did(output.get_did_address())) {
-                return error::address_issued_did;
+            if (chain.is_address_registered_did(output.get_did_address())) {
+                return error::address_registered_did;
             }
 
             if (type != 255) {
@@ -828,8 +828,8 @@ code validate_transaction::check_did_transaction(
                 return error::did_not_exist;
             }
 
-            if (chain.is_address_issued_did(output.get_did_address())) {
-                return error::address_issued_did;
+            if (chain.is_address_registered_did(output.get_did_address())) {
+                return error::address_registered_did;
             }
 
             if (type != 255) {
@@ -848,7 +848,7 @@ code validate_transaction::check_did_transaction(
                         << "asset issuer " << output.get_asset_issuer()
                         << " , does not match did " << output.attach_data.get_to_did()
                         << " , attach_data: " << output.attach_data.to_string();
-                return error::asset_did_issuer_not_match;
+                return error::asset_did_registerr_not_match;
             }
         }
         else if (output.is_asset_cert()) {
@@ -858,7 +858,7 @@ code validate_transaction::check_did_transaction(
                             << "cert owner " << output.get_asset_cert_owner()
                             << " , does not match did " << output.attach_data.get_to_did()
                             << " , attach_data: " << output.attach_data.to_string();
-                    return error::asset_did_issuer_not_match;
+                    return error::asset_did_registerr_not_match;
                 }
             }
         }
@@ -888,7 +888,7 @@ bool validate_transaction::connect_did_input(
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
 
-        if (prev_output.is_did_issue() || prev_output.is_did_transfer()) {
+        if (prev_output.is_did_register() || prev_output.is_did_transfer()) {
             if (info.get_status() ==  DID_TRANSFERABLE_TYPE) {
                 if (detail_info.get_symbol() == prev_output.get_did_symbol()) {
                     found_did_info = true;
@@ -1018,7 +1018,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 return error::did_address_needed;
             }
         }
-        else if (output.is_did_issue()) {
+        else if (output.is_did_register()) {
             if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), true)) {
                 return error::did_symbol_invalid;
             }
@@ -1221,8 +1221,8 @@ bool validate_transaction::connect_input(const transaction& tx,
         }
 
         // 3. set business type
-        if (previous_output.is_did_issue()) {
-            business_kind_in = business_kind::did_issue;
+        if (previous_output.is_did_register()) {
+            business_kind_in = business_kind::did_register;
         }
         else if (previous_output.is_did_transfer()) {
             business_kind_in = business_kind::did_transfer;

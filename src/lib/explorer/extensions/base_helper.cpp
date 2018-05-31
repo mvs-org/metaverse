@@ -48,8 +48,8 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     if (output.is_asset_cert()) {
         return utxo_attach_type::asset_cert;
     }
-    if (output.is_did_issue()) {
-        return utxo_attach_type::did_issue;
+    if (output.is_did_register()) {
+        return utxo_attach_type::did_register;
     }
     if (output.is_did_transfer()) {
         return utxo_attach_type::did_transfer;
@@ -103,7 +103,7 @@ std::string get_address_from_did(const std::string& did,
 
     check_did_symbol(did);
 
-    auto diddetail = blockchain.get_issued_did(did);
+    auto diddetail = blockchain.get_registered_did(did);
     if (!diddetail) {
         throw did_symbol_notfound_exception{"did " + did + " does not exist on the blockchain"};
     }
@@ -417,7 +417,7 @@ void base_transfer_common::sync_fetchutxo(
             }
         }
         else if ((filter & FILTER_DID) &&
-            (output.is_did_issue() || output.is_did_transfer())) { // did related
+            (output.is_did_register() || output.is_did_transfer())) { // did related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
@@ -650,7 +650,7 @@ void base_transfer_common::populate_etp_change(const std::string& address)
                     "mychange did symbol " + addr + " length must be less than 64."};
             }
 
-            auto diddetail = blockchain_.get_issued_did(addr);
+            auto diddetail = blockchain_.get_registered_did(addr);
             if (!diddetail) {
                 throw did_symbol_notfound_exception{
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
@@ -685,7 +685,7 @@ void base_transfer_common::populate_asset_change(const std::string& address)
                     "mychange did symbol " + addr + " length must be less than 64."};
             }
 
-            auto diddetail = blockchain_.get_issued_did(addr);
+            auto diddetail = blockchain_.get_registered_did(addr);
             if (!diddetail) {
                 throw did_symbol_notfound_exception{
                     "mychange did symbol " + addr + "does not exist on the blockchain"};
@@ -846,16 +846,16 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         }
         return attachment(MESSAGE_TYPE, attach_version, msg);
     }
-    else if (record.type == utxo_attach_type::did_issue) {
+    else if (record.type == utxo_attach_type::did_register) {
         did_detail diddetail(symbol_, record.target);
         auto ass = did(DID_DETAIL_TYPE, diddetail);
         if (!ass.is_valid()) {
-            throw tx_attachment_value_exception{"invalid did issue attachment"};
+            throw tx_attachment_value_exception{"invalid did register attachment"};
         }
         return attachment(DID_TYPE, attach_version, ass);
     }
     else if (record.type == utxo_attach_type::did_transfer) {
-        auto sh_did = blockchain_.get_issued_did(symbol_);
+        auto sh_did = blockchain_.get_registered_did(symbol_);
         if(!sh_did)
             throw did_symbol_notfound_exception{symbol_ + " not found"};
 
@@ -1473,11 +1473,11 @@ void issuing_asset_cert::sum_payment_amount()
     }
 }
 
-void issuing_did::sum_payment_amount()
+void registering_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
     if (payment_etp_ < 100000000) {
-        throw did_issue_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
+        throw did_register_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
     }
 }
 

@@ -14,7 +14,7 @@ class MVSTestCaseBase(unittest.TestCase):
                 result, message = role.create()
                 self.assertEqual(result, 0, message)
 
-        # issue did for role A~F, if not issued
+        # register did for role A~F, if not registered
         for role in self.roles[:-1]:
             ec, message = mvs_rpc.list_dids(role.name, role.password)
             if ec == 0 and message['dids']:
@@ -23,7 +23,7 @@ class MVSTestCaseBase(unittest.TestCase):
                 if role != Alice:
                     Alice.send_etp(role.mainaddress(), 10 ** 8)
                     Alice.mining()
-                ec, message = role.issue_did()
+                ec, message = role.register_did()
                 self.assertEqual(ec, 0, "error: {}, message: {}".format(ec, message))
                 Alice.mining()
 
@@ -48,7 +48,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
         self.addr_ABC = common.create_multisig_address(self.group_ABC, 2)
         self.addr_DEF = common.create_multisig_address(self.group_DEF, 2)
 
-        # issue did if not issued
+        # register did if not registered
         self.did_ABC = "Alice.Bob.Cindy@DIID"
         self.did_DEF = "Dale.Eric.Frank@DIID"
 
@@ -66,7 +66,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
 
                 did_symbol = getattr(self, attr_name)
 
-                ec, tx = mvs_rpc.issue_did(roles[0].name, roles[0].password, addr, did_symbol)
+                ec, tx = mvs_rpc.register_did(roles[0].name, roles[0].password, addr, did_symbol)
                 self.assertEqual(ec, 0, tx)
                 ec, tx = mvs_rpc.sign_multisigtx(roles[1].name, roles[1].password, tx, True)
                 self.assertEqual(ec, 0, tx)

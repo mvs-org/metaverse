@@ -50,7 +50,7 @@ enum class business_kind : uint16_t
     asset_transfer = 2,
     message = 3,
     etp_award = 4, // store to address_asset database
-    did_issue = 5,
+    did_register = 5,
     did_transfer = 6,
     asset_cert = 7,
     unknown = 0xffff

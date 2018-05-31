@@ -20,7 +20,7 @@
 
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/listdidaddresses.hpp>
+#include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,35 +30,53 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result listdidaddresses::invoke (Json::Value& jv_output,
+console_result getdid::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-    Json::Value addresses;
+    Json::Value json_value;
+    std::string json_key;
+    
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    // check did symbol
-    check_did_symbol(argument_.symbol);
+    if(option_.symbol.empty())
+    {
+        json_key = "dids";
 
-    // check did exists
-    if (!blockchain.is_did_exist(argument_.symbol))
-        throw did_symbol_notfound_exception{"did symbol does not exist on the blockchain"};
+        auto sh_vec = blockchain.get_registered_dids();
 
-    auto blockchain_dids = blockchain.get_did_history_addresses(argument_.symbol);
-    if (blockchain_dids) {
-        Json::Value did_data;
-        for (auto &did : *blockchain_dids){
-            did_data["address"] = did.get_did().get_address();
-            did_data["status"] = did.get_status_string();
-            addresses.append(did_data);
+        // add blockchain dids
+        for (auto& elem: *sh_vec) 
+            json_value.append(elem.get_symbol());  
+    }
+    else
+    {
+        json_key = "addresses";
+        // check did symbol
+        check_did_symbol(option_.symbol);
+
+        // check did exists
+        if (!blockchain.is_did_exist(option_.symbol))
+            throw did_symbol_notfound_exception{"did symbol does not exist on the blockchain"};
+
+        auto blockchain_dids = blockchain.get_did_history_addresses(option_.symbol);
+        if (blockchain_dids) {
+            Json::Value did_data;
+            for (auto &did : *blockchain_dids){
+                did_data["address"] = did.get_did().get_address();
+                did_data["status"] = did.get_status_string();
+                json_value.append(did_data);
+            }
         }
+
+
     }
 
-    if (get_api_version() == 1 && addresses.isNull()) { //compatible for v1
-        jv_output["addresses"] = "";
+
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output[json_key] = "";
     }
     else {
-        jv_output["addresses"] = addresses;
+        jv_output[json_key] = json_value;
     }
 
     return console_result::okay;

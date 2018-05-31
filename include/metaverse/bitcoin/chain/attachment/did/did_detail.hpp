@@ -46,8 +46,8 @@ public:
     enum did_detail_type : uint32_t
     {
         created,
-        issued_not_in_blockchain,
-        issued_in_blockchain
+        registered_not_in_blockchain,
+        registered_in_blockchain
     };
 
     did_detail();

@@ -8,26 +8,27 @@ class TestDID(MVSTestCaseBase):
 
     def test_0_boundary(self):
         # account password match error
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password+'1', Zac.mainaddress(), Zac.did_symbol)
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password+'1', Zac.mainaddress(), Zac.did_symbol)
         self.assertEqual(ec, 1000, message)
 
         #symbol is address
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.addresslist[1])
+        import pdb;pdb.set_trace()
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.addresslist[1])
         self.assertEqual(ec, 4010, message)
 
 
         #not enough fee
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8 -1)
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8 -1)
         self.assertEqual(ec, 7005, message)
 
         #not enough balance
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8)
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8)
         self.assertEqual(ec, 3302, message)
 
         #did symbol duplicated
         did_exist=[Alice, Bob, Cindy]
         for role in did_exist:
-            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), role.did_symbol, 10 ** 8)
+            ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), role.did_symbol, 10 ** 8)
             self.assertEqual(ec, 7002, message)
 
         Alice.send_etp(Zac.mainaddress(), 10**8)
@@ -35,19 +36,19 @@ class TestDID(MVSTestCaseBase):
 
         blackHoles = ['BlackHole','BLACKHOLE','blackhole','blackHole','Blackhole']
         for bh in blackHoles:
-            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), bh, 10 ** 8)
+            ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), bh, 10 ** 8)
             self.assertEqual(ec, 7001, message)
 
 
 
-    def test_1_issue_did(self):
+    def test_1_register_did(self):
         '''
         this test case will create did for all roles. If not created before.
         '''
 
         #address in use
         random_did_symbol = common.get_random_str()
-        ec, message = mvs_rpc.issue_did(Alice.name, Alice.password, Alice.mainaddress(), random_did_symbol)
+        ec, message = mvs_rpc.register_did(Alice.name, Alice.password, Alice.mainaddress(), random_did_symbol)
         self.assertEqual(ec, 7002, message)
 
         Alice.send_etp(Zac.mainaddress(), 10**8)
@@ -55,7 +56,7 @@ class TestDID(MVSTestCaseBase):
         #symbol contain special symbol
         special_symbol='''~`!#$%^&*()=+|\:;'"?/>'''
         for chr in special_symbol:
-            ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), "%s%stest"%(Zac.did_symbol,chr))
+            ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), "%s%stest"%(Zac.did_symbol,chr))
             self.assertEqual(ec, 7001, "did symol contains:"+chr)
 
     def test_2_didsend_etp(self):
@@ -86,44 +87,44 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.didsend_asset_from(Alice.name, Alice.password + '1', Alice.mainaddress(), Zac.mainaddress(), Alice.asset_symbol, 10 ** 5, 10 ** 4)
         self.assertEqual(ec, 1000, message)
 
-    def test_6_modify_did_boundary(self):
+    def test_6_change_did_boundary(self):
         # account password match error
-        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password + '1', Alice.addresslist[1], Alice.did_symbol)
+        ec, message = mvs_rpc.change_did(Alice.name, Alice.password + '1', Alice.addresslist[1], Alice.did_symbol)
         self.assertEqual(ec, 1000, message)
 
         # Did 'ZAC.DID' does not exist in blockchain
-        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.addresslist[1], Zac.did_symbol)
+        ec, message = mvs_rpc.change_did(Alice.name, Alice.password, Alice.addresslist[1], Zac.did_symbol)
         self.assertEqual(ec, 7006, message)
 
         # Did 'BOB.DID' is not owned by Alice
-        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.addresslist[1], Bob.did_symbol)
+        ec, message = mvs_rpc.change_did(Alice.name, Alice.password, Alice.addresslist[1], Bob.did_symbol)
         self.assertEqual(ec, 7009, message)
 
         # Target address is not owned by account.
-        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Bob.addresslist[1], Alice.did_symbol)
+        ec, message = mvs_rpc.change_did(Alice.name, Alice.password, Bob.addresslist[1], Alice.did_symbol)
         self.assertEqual(ec, 4003, message)
 
         # Target address is already binded with some did in blockchain
-        ec, message = mvs_rpc.modify_did(Alice.name, Alice.password, Alice.mainaddress(), Alice.did_symbol)
+        ec, message = mvs_rpc.change_did(Alice.name, Alice.password, Alice.mainaddress(), Alice.did_symbol)
         self.assertEqual(ec, 7002, message)
 
-    def test_7_modify_did(self):
+    def test_7_change_did(self):
         '''modify did between Zac's addresses'''
         temp_did = "ZAC.DIID@" + common.get_timestamp()
         Alice.send_etp(Zac.mainaddress(), 10**8)
         Alice.mining()
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), temp_did)
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), temp_did)
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
         # no enough balance, unspent = 0, payment = 10000
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
         self.assertEqual(ec, 3302,  message)
 
         Alice.send_etp(Zac.addresslist[1], 10 ** 4)
         Alice.mining()
 
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], temp_did)
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
@@ -134,7 +135,7 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(message['dids'][0]['address'], Zac.addresslist[1], message)
 
         # confirm the modification procedure by list_didaddresses
-        ec, message = mvs_rpc.list_didaddresses(Zac.name, Zac.password, temp_did)
+        ec, message = mvs_rpc.list_didaddresses(temp_did)
         self.assertEqual(ec, 0, message)
 
         self.assertEqual(message['addresses'][0]["address"], Zac.addresslist[1])
@@ -145,19 +146,19 @@ class TestDID(MVSTestCaseBase):
 
 
     def test_8_list_didaddresses_boundary(self):
-        ec, message = mvs_rpc.list_didaddresses(Alice.name, Alice.password+'1', Alice.did_symbol)
-        self.assertEqual(ec, 1000, message)
+        # ec, message = mvs_rpc.list_didaddresses(Alice.did_symbol)
+        # self.assertEqual(ec, 1000, message)
 
         # did symbol does not exist in blockchain
-        ec, message = mvs_rpc.list_didaddresses(Alice.name, Alice.password, Zac.did_symbol)
+        ec, message = mvs_rpc.list_didaddresses(Zac.did_symbol)
         self.assertEqual(ec, 7006, message)
 
-    def test_9_modify_did_multisig(self):
+    def test_9_change_did_multisig(self):
         did_normal_symbal = "Zac@"+common.get_timestamp()
         Alice.send_etp(Zac.mainaddress(), 10 ** 8)
         Alice.mining()
 
-        ec, message = mvs_rpc.issue_did(Zac.name, Zac.password, Zac.mainaddress(), did_normal_symbal)
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), did_normal_symbal)
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
@@ -170,7 +171,7 @@ class TestDID(MVSTestCaseBase):
         Alice.send_etp(addr, (10 ** 9))
         Alice.mining()
 
-        ec, message = mvs_rpc.issue_did(group[0].name, group[0].password, addr, did_symbol)
+        ec, message = mvs_rpc.register_did(group[0].name, group[0].password, addr, did_symbol)
         self.assertEqual(ec, 0, message)
 
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
@@ -181,35 +182,35 @@ class TestDID(MVSTestCaseBase):
         Alice.mining()
 
         # did not find
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.mainaddress(), common.get_timestamp())
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.mainaddress(), common.get_timestamp())
         self.assertEqual(ec, 7006,  message)
 
         #did not owner by account
-        ec, message = mvs_rpc.modify_did(Bob.name, Bob.password, Bob.mainaddress(), did_symbol)
+        ec, message = mvs_rpc.change_did(Bob.name, Bob.password, Bob.mainaddress(), did_symbol)
         self.assertEqual(ec, 7009,  message)
 
         #did address invalid
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, "Test"*20, did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, "Test"*20, did_symbol)
         self.assertEqual(ec, 4012,  message)
 
         #address didn't owned by the account
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Bob.mainaddress(), did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Bob.mainaddress(), did_symbol)
         self.assertEqual(ec, 4003,  message)
 
         #address is already binded with did
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.mainaddress(), did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.mainaddress(), did_symbol)
         self.assertEqual(ec, 7002,  message)
 
 
         # no enough balance, unspent = 0, payment = 10000
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 3302,  message)
 
         Alice.send_etp(Zac.addresslist[1], 10 ** 5)
         Alice.mining()
 
         #signature must be large than 3
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 0, message)
 
         #cannot transfer to another multi-signature
@@ -223,11 +224,11 @@ class TestDID(MVSTestCaseBase):
 
         Alice.send_etp(addr_new, (10 ** 6))
         Alice.mining()
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, addr_new, did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, addr_new, did_symbol)
         self.assertEqual(ec, 7010, message)
 
 
-        ec, message = mvs_rpc.modify_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+        ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
         self.assertEqual(ec, 0, message)
 
         ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message)

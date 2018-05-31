@@ -42,7 +42,7 @@ console_result listdids::invoke(Json::Value& jv_output,
     std::shared_ptr<did_detail::list> sh_vec;
     if (auth_.name.empty()) {
         // no account -- list all dids in blockchain
-        sh_vec = blockchain.get_issued_dids();
+        sh_vec = blockchain.get_registered_dids();
     }
     else {
         // list dids owned by the account
@@ -57,7 +57,7 @@ console_result listdids::invoke(Json::Value& jv_output,
         Json::Value did_data;
         did_data["symbol"] = elem.get_symbol();
         did_data["address"] = elem.get_address();
-        did_data["status"] = "issued";
+        did_data["status"] = "registered";
         dids.append(did_data);
     }
 

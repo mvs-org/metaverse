@@ -282,7 +282,7 @@ std::shared_ptr<std::vector<business_record>> address_did_database::get(const st
             } else { // did symbol utxo
                 // did business process
                 did_symbol = "";
-                if (row.data.get_kind_value() ==  business_kind::did_issue) {
+                if (row.data.get_kind_value() ==  business_kind::did_register) {
                     auto transfer = boost::get<did_detail>(row.data.get_data());
                     did_symbol = transfer.get_symbol();
                 }else if(row.data.get_kind_value() ==  business_kind::did_transfer) {
@@ -561,7 +561,7 @@ business_history::list address_did_database::get_business_history(const std::str
 	business_history::list result = get_business_history(key, from_height);
 	business_history::list unspent;
 	// did type check
-	if((kind != business_kind::did_issue) // did_detail
+	if((kind != business_kind::did_register) // did_detail
 		&& (kind != business_kind::did_transfer) // did_transfer
 		&& (kind != business_kind::etp))
 		return unspent;
@@ -597,7 +597,7 @@ business_history::list address_did_database::get_business_history(const std::str
 	business_history::list result = get_business_history(key, from_height);
 	business_history::list unspent;
 	// did type check
-	if((kind != business_kind::did_issue) // did_detail
+	if((kind != business_kind::did_register) // did_detail
 		&& (kind != business_kind::did_transfer) // did_transfer
 		&& (kind != business_kind::etp))
 		return unspent;
@@ -634,7 +634,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
 	business_history::list result = get_business_history(key, from_height);
 	business_address_did::list unspent;
 	// did type check
-	if((kind != business_kind::did_issue) // did_detail
+	if((kind != business_kind::did_register) // did_detail
 		&& (kind != business_kind::did_transfer)) // did_transfer
 		return unspent;
 	
@@ -652,7 +652,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
             status = 1;
 		
 		business_address_did detail;
-		if(row.data.get_kind_value() == business_kind::did_issue) // did issue
+		if(row.data.get_kind_value() == business_kind::did_register) // did issue
 		{
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;
@@ -681,7 +681,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
 	business_address_did::list unspent;
     for (const auto& row: result)
     {
-    	if((row.data.get_kind_value() != business_kind::did_issue)  // did_detail
+    	if((row.data.get_kind_value() != business_kind::did_register)  // did_detail
 			&& (row.data.get_kind_value() != business_kind::did_transfer))  // did_transfer
 			continue;
 		
@@ -694,7 +694,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
             status = 1;
 		
 		business_address_did detail;
-		if(row.data.get_kind_value() == business_kind::did_issue) // did issue
+		if(row.data.get_kind_value() == business_kind::did_register) // did issue
 		{
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;

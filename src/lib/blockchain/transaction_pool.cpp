@@ -195,7 +195,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
 
                 auto didaddress = didaddreses.insert(output.get_did_address());
                 if (didaddress.second == false ) {
-                    return error::address_issued_did;
+                    return error::address_registered_did;
                 }
             }
         }
@@ -229,7 +229,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
 
             auto didaddress = didaddreses.insert(output.get_did_address());
             if (didaddress.second == false ) {
-                return error::address_issued_did;
+                return error::address_registered_did;
             }
         }
     }

@@ -306,7 +306,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
                 auto didaddress = didaddreses.insert(output.get_did_address());
                 if (didaddress.second == false ) {
-                    return error::address_issued_did;
+                    return error::address_registered_did;
                 }
             }
         }

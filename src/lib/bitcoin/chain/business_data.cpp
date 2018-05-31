@@ -32,7 +32,7 @@
 #define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
 #define ASSET_CERT_TYPE     KIND2UINT16(business_kind::asset_cert)
 #define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
-#define DID_ISSUE_TYPE    	KIND2UINT16(business_kind::did_issue)
+#define did_register_TYPE    	KIND2UINT16(business_kind::did_register)
 #define DID_TRANSFER_TYPE    	KIND2UINT16(business_kind::did_transfer)
 
 namespace libbitcoin {
@@ -79,7 +79,7 @@ bool business_data::is_valid_type() const
 		|| (ASSET_CERT_TYPE == KIND2UINT16(kind))
 		|| (ETP_AWARD_TYPE == KIND2UINT16(kind))
 		|| (MESSAGE_TYPE == KIND2UINT16(kind))
-		|| (DID_ISSUE_TYPE == KIND2UINT16(kind))
+		|| (did_register_TYPE == KIND2UINT16(kind))
 		|| (DID_TRANSFER_TYPE == KIND2UINT16(kind)));
 }
 
@@ -137,7 +137,7 @@ bool business_data::from_data(reader& source)
 				data = blockchain_message();
 				break;
 			}
-			case DID_ISSUE_TYPE:
+			case did_register_TYPE:
 			{
 				data = did_detail();
 				break;

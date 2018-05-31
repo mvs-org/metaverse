@@ -212,8 +212,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "did symbol invalid";
         case error::did_exist:
             return "did exist";
-        case error::address_issued_did:
-            return "address already issued did";
+        case error::address_registered_did:
+            return "address already registered did";
         case error::did_func_not_actived:
             return "did function has not been actived until block height is larger than 1130000";
         case error::did_address_not_match:
@@ -243,7 +243,7 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::asset_cert_issue_error:
             return "asset cert issue error";
 
-        case error::asset_did_issuer_not_match:
+        case error::asset_did_registerr_not_match:
             return "attach todid must equal with asset issuer or cert owner";
 
         case error::attachment_invalid:

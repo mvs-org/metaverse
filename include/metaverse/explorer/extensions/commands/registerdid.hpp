@@ -30,15 +30,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ issuedid *************************/
+/************************ registerdid *************************/
 
-class issuedid: public command_extension
+class registerdid: public command_extension
 {
 public:
-    static const char* symbol(){ return "issuedid";}
+    static const char* symbol(){ return "registerdid";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "issuedid "; }
+    const char* description() override { return "registerdid "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -87,7 +87,7 @@ public:
 		(
 			"SYMBOL",
 			value<std::string>(&argument_.symbol)->required(),
-			"issued did symbol"
+			"registered did symbol"
 		)
 		(
 			"fee,f",

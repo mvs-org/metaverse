@@ -56,8 +56,8 @@ console_result createasset::invoke(Json::Value& jv_output,
     check_asset_symbol(option_.symbol, true);
 
     // check did symbol
-    auto issuer_did = option_.issuer;
-    check_did_symbol(issuer_did);
+    auto issued_did = option_.issuer;
+    check_did_symbol(issued_did);
 
     if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
@@ -73,15 +73,15 @@ console_result createasset::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"volume cannot be zero."};
 
     // check did exists
-    if (!blockchain.is_did_exist(issuer_did)) {
+    if (!blockchain.is_did_exist(issued_did)) {
         throw did_symbol_notfound_exception{
-            "The did '" + issuer_did + "' does not exist on the blockchain, maybe you should issuedid first"};
+            "The did '" + issued_did + "' does not exist on the blockchain, maybe you should registerdid first"};
     }
 
     // check did is owned by the account
-    if (!blockchain.is_account_owned_did(auth_.name, issuer_did)) {
+    if (!blockchain.is_account_owned_did(auth_.name, issued_did)) {
         throw did_symbol_notowned_exception{
-            "The did '" + issuer_did + "' is not owned by " + auth_.name};
+            "The did '" + issued_did + "' is not owned by " + auth_.name};
     }
 
     // check asset exists
@@ -99,7 +99,7 @@ console_result createasset::invoke(Json::Value& jv_output,
     acc->set_symbol(option_.symbol);
     acc->set_maximum_supply(option_.maximum_supply.volume);
     acc->set_decimal_number(static_cast<uint8_t>(option_.decimal_number));
-    acc->set_issuer(issuer_did);
+    acc->set_issuer(issued_did);
     acc->set_description(option_.description);
     // use 127 to represent freely secondary issue, and 255 for its secondary issued status.
     acc->set_secondaryissue_threshold((threshold == -1) ?

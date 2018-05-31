@@ -176,7 +176,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                         transaction_is_ok = false;
                     }
                     // check fee for issue did
-                    else if (output.is_did_issue() && fee < coin_price(1)) {
+                    else if (output.is_did_register() && fee < coin_price(1)) {
                         transaction_is_ok = false;
                     }
                 }

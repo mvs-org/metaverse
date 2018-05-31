@@ -87,7 +87,7 @@ public:
     bool is_etp_award() const;
     bool is_message() const;
     bool is_did() const;
-    bool is_did_issue() const;
+    bool is_did_register() const;
     bool is_did_transfer() const;
     bool is_asset_secondaryissue() const;
     asset_detail get_asset_detail() const;

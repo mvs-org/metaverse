@@ -94,7 +94,7 @@ public:
 	uint64_t total_output_transfer_amount() const;
 	bool has_asset_transfer();
 
-    bool has_did_issue();
+    bool has_did_register();
 	bool has_did_transfer();
     std::string get_did_transfer_old_address() const;
 

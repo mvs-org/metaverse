@@ -950,7 +950,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
                 const auto symbol_hash = sha256_hash(symbol_data);
 
-                if(op.is_did_issue())
+                if(op.is_did_register())
                 {
                     address_dids.delete_last_row(hash);
                     address_dids.sync();
@@ -972,7 +972,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                         address_dids.delete_last_row(hash);
 
                         address_dids.store_output(old_hash, blockchain_did_->get_tx_point(), blockchain_did_->get_height(), 0,
-                            static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue),
+                            static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_register),
                             timestamp_, blockchain_did_->get_did());
                         address_dids.sync();
 
@@ -1097,7 +1097,7 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
     dids.store(hash, bc_did);
     dids.sync();
     address_dids.store_output(key, outpoint, output_height, value,
-        static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_issue),
+        static_cast<typename std::underlying_type<business_kind>::type>(business_kind::did_register),
         timestamp_, sp_detail);
     address_dids.sync();
 }

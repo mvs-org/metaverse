@@ -1787,12 +1787,12 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
 bool block_chain_impl::is_did_exist(const std::string& did_name)
 {
     // find from blockchain database
-    return get_issued_did(did_name) != nullptr;
+    return get_registered_did(did_name) != nullptr;
 }
 
 /* check did address exist or not
 */
-bool block_chain_impl::is_address_issued_did(const std::string& did_address)
+bool block_chain_impl::is_address_registered_did(const std::string& did_address)
 {
     // find from blockchain database
     auto&& did_vec = database_.address_dids.get_dids(did_address, 0);
@@ -1801,7 +1801,7 @@ bool block_chain_impl::is_address_issued_did(const std::string& did_address)
 
 bool block_chain_impl::is_account_owned_did(const std::string& account, const std::string& symbol)
 {
-    auto did_detail = get_issued_did(symbol);
+    auto did_detail = get_registered_did(symbol);
     if (!did_detail) {
         return false;
     }
@@ -1856,7 +1856,7 @@ std::shared_ptr<blockchain_did::list> block_chain_impl::get_did_history_addresse
     return database_.dids.get_history_dids(hash);
 }
 
-std::shared_ptr<did_detail> block_chain_impl::get_issued_did(const std::string& symbol)
+std::shared_ptr<did_detail> block_chain_impl::get_registered_did(const std::string& symbol)
 {
     std::shared_ptr<did_detail> sp_did(nullptr);
     const auto hash = get_hash(symbol);
@@ -1868,7 +1868,7 @@ std::shared_ptr<did_detail> block_chain_impl::get_issued_did(const std::string& 
 }
 
 /// get all the did in blockchain
-std::shared_ptr<did_detail::list> block_chain_impl::get_issued_dids()
+std::shared_ptr<did_detail::list> block_chain_impl::get_registered_dids()
 {
     auto sp_vec = std::make_shared<did_detail::list>();
     if (!sp_vec)

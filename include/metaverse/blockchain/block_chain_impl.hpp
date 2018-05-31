@@ -280,11 +280,11 @@ public:
     // account did api
     bool is_did_exist(const std::string& symbol);
     bool get_did_height(const std::string& symbol, uint64_t& height);
-    bool is_address_issued_did(const std::string& address);
+    bool is_address_registered_did(const std::string& address);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address);
-    std::shared_ptr<did_detail> get_issued_did(const std::string& symbol);
-    std::shared_ptr<did_detail::list> get_issued_dids();
+    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol);
+    std::shared_ptr<did_detail::list> get_registered_dids();
     std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
 
     //get history addresses from did symbol
