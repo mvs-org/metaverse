@@ -350,7 +350,7 @@ void base_transfer_common::sync_fetchutxo(
         const std::string& prikey, const std::string& addr, filter filter)
 {
     auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr);
+    auto&& rows = blockchain_.get_address_history(waddr, true);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);

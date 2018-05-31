@@ -979,7 +979,7 @@ bool block_chain_impl::fetch_history(const wallet::payment_address& address,
         mutex.unlock();
     };
 
-    // Obtain payment address history from the transaction pool and blockchain.
+    // Obtain payment address history from the blockchain.
     fetch_history(address, limit, from_height, f);
     boost::unique_lock<boost::mutex> lock(mutex);
 
@@ -1356,13 +1356,19 @@ static history::list expand_history(history_compact::list& compact)
     return result;
 }
 
-history::list block_chain_impl::get_address_history(const wallet::payment_address& addr)
+history::list block_chain_impl::get_address_history(const wallet::payment_address& addr, bool add_memory_pool)
 {
     history_compact::list cmp_history;
-    if (!get_history(addr, 0, 0, cmp_history)) {
-        return history::list();
+    bool result = true;
+    if (add_memory_pool) {
+        result = get_history(addr, 0, 0, cmp_history);
+    } else {
+        result = fetch_history(addr, 0, 0, cmp_history);
     }
-    return expand_history(cmp_history);
+    if (result) {
+        return expand_history(cmp_history);
+    }
+    return history::list();
 }
 
 std::shared_ptr<asset_cert> block_chain_impl::get_account_asset_cert(
@@ -2250,6 +2256,7 @@ bool block_chain_impl::get_history_callback(const payment_address& address,
         }
     };
 
+    // Obtain payment address history from the transaction pool and blockchain.
     pool().fetch_history(address, limit, from_height, f);
 
     return ret;
