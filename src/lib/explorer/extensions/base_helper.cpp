@@ -21,7 +21,7 @@
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
-
+#include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -66,25 +66,13 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
-    if (!chain::output::is_valid_did_symbol(symbol, 0)) {
+    if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
             throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
     if (check_sensitive)
     {
-        // sensitive check
-        std::string symbolupper = symbol;
-        for (auto &i : symbolupper)
-        {
-            i = std::toupper(i);
-        }
-
-        if (bc::wallet::symbol::is_sensitive(symbolupper))
-        {
-            throw did_symbol_name_exception{"Did symbol is forbidden."};
-        }
-
-        if (symbolupper == "BLACKHOLE")
+        if (boost::iequals(symbol, "BLACKHOLE"))
         {
             throw did_symbol_name_exception{"Did symbol cannot be blackhole."};
         }

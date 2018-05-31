@@ -1019,7 +1019,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
         }
         else if (output.is_did_issue()) {
-            if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), tx.version)) {
+            if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), true)) {
                 return error::did_symbol_invalid;
             }
         }

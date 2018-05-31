@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/bitcoin/wallet/payment_address.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -76,7 +77,7 @@ bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
     return true;
 }
 
-bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
+bool output::is_valid_did_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (symbol.empty())
         return false;
@@ -86,6 +87,15 @@ bool output::is_valid_did_symbol(const std::string& symbol, uint32_t tx_version)
     // char check
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-'))
+            return false;
+    }
+
+    if(check_sensitive)
+    {
+        // sensitive check
+        std::string symbolupper = symbol;
+        boost::to_upper(symbolupper);
+        if (bc::wallet::symbol::is_sensitive(symbolupper))
             return false;
     }
 
