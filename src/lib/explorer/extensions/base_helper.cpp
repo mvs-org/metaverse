@@ -502,7 +502,7 @@ void base_transfer_common::check_model_param_initial(std::string& param, uint64_
             throw asset_attenuation_model_exception(
                 "attenuation model should be supported after nova feature is activated.");
         }
-        if (!attenuation_model::check_model_param_initial(param, amount)) {
+        if (!attenuation_model::check_model_param_initial(param, amount, true)) {
             throw asset_attenuation_model_exception("check asset attenuation model param failed");
         }
     }

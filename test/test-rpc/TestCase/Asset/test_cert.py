@@ -308,18 +308,28 @@ class TestCert(MVSTestCaseBase):
         domain_symbol, asset_symbol = Alice.create_random_asset(is_issue=True, secondary=-1)
         Alice.mining()
 
-        #
-        # attenuation_model type 1
-        #
-
-        # invalid model type
+        # invalid model parem
         model_type = "invalid"
         ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 5016, message)
 
+        # invalid model type
+        model_type = "TYPE=4;LQ=9001;LP=6001;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        #
+        # attenuation_model type 1
+        #
+
         # invalid LQ
         model_type = "TYPE=1;LQ=0;LP=6001;UN=3"
         ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=1;LQ=9001;LP=6001;UN=3"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 8000)
+        print(ec)
         self.assertEqual(ec, 5016, message)
 
         # invalid LP
@@ -333,11 +343,6 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5016, message)
         Alice.mining()
 
-        # invalid model type
-        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3"
-        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
-        self.assertEqual(ec, 5016, message)
-
         # success
         model_type = "TYPE=1;LQ=9001;LP=6001;UN=3"
         ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
@@ -348,12 +353,70 @@ class TestCert(MVSTestCaseBase):
         # attenuation_model type 2
         #
 
+        # UN size dismatch UC size
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000;UQ=3000,3000,3001"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # UN size dismatch UQ size
+        model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2000;UQ=3000,3000"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
         # UC size dismatch UQ size
         model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000;UQ=3000,3000,3001"
         ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
         self.assertEqual(ec, 5016, message)
 
+        # success
         model_type = "TYPE=2;LQ=9001;LP=6001;UN=3;UC=2000,2000,2001;UQ=3000,3000,3001"
         ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #
+        # attenuation_model type 3
+        #
+
+        # invalid LQ
+        model_type = "TYPE=3;LQ=0;LP=6001;UN=3;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid LP
+        model_type = "TYPE=3;LQ=9001;LP=0;UN=3;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid UN
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=0;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=101;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
+        self.assertEqual(ec, 5016, message)
+
+        # invalid IR
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=0;IR=0"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3;IR=100001"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
+        self.assertEqual(ec, 5016, message)
+
+        # LQ size dismatch total size
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 10000)
+        self.assertEqual(ec, 5016, message)
+
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 8000)
+        self.assertEqual(ec, 5016, message)
+
+        # success
+        model_type = "TYPE=3;LQ=9001;LP=6001;UN=3;IR=8"
+        ec, message = Alice.secondary_issue_asset_with_symbol(asset_symbol, model_type, 9001)
         self.assertEqual(ec, 0, message)
         Alice.mining()

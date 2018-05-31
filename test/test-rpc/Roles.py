@@ -102,8 +102,10 @@ class Role:
     def issue_asset_with_symbol(self, symbol, attenuation_model=None):
         return mvs_rpc.issue_asset(self.name, self.password, symbol, model=attenuation_model)
 
-    def secondary_issue_asset_with_symbol(self, symbol, attenuation_model=None):
-        return mvs_rpc.secondary_issue(self.name, self.password, self.did_symbol, symbol, volume=300000, model=attenuation_model, fee=None)
+    def secondary_issue_asset_with_symbol(self, symbol, attenuation_model=None, volume=None):
+        if volume == None:
+            volume = 300000
+        return mvs_rpc.secondary_issue(self.name, self.password, self.did_symbol, symbol, volume=volume, model=attenuation_model, fee=None)
 
     def create_asset(self, is_issue=True, secondary=0):
         '''

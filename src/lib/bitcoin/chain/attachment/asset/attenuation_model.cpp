@@ -27,6 +27,9 @@
 namespace libbitcoin {
 namespace chain {
 
+static BC_CONSTEXPR uint64_t max_inflation_rate = 100000;
+static BC_CONSTEXPR uint64_t max_unlock_number = 100;
+
 namespace {
     const char* LOG_HEADER{"attenuation_model"};
 
@@ -36,8 +39,11 @@ namespace {
 
     std::map<attenuation_model::model_type, std::vector<std::string>> model_keys_map {
         {attenuation_model::model_type::fixed_quantity, {"PN","LH","TYPE","LQ","LP","UN"}},
-        {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}}
+        {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}},
+        {attenuation_model::model_type::fixed_inflation,{"PN","LH","TYPE","LQ","LP","UN","IR","UC","UQ"}}
     };
+
+    std::vector<std::string> inflation_model_initial_keys{"PN","LH","TYPE","LQ","LP","UN","IR"};
 
     bool is_positive_number(uint64_t num) {
         return num > 0;
@@ -80,10 +86,10 @@ namespace {
 class attenuation_model::impl
 {
 public:
-    impl(const std::string& param)
+    impl(const std::string& param, bool is_init)
         : model_param_(param)
     {
-        if (!parse_param()) {
+        if (!parse_param(is_init)) {
             map_.clear();
         }
     }
@@ -122,6 +128,11 @@ public:
         return getnumber("UN");
     }
 
+    // IR  inflation rate
+    uint64_t get_inflation_rate() const {
+        return getnumber("IR");
+    }
+
     // UCt size()==1 means fixed cycle
     const std::vector<uint64_t>& get_unlock_cycles() const {
         return get_numbers("UC");
@@ -143,24 +154,37 @@ public:
     }
 
 private:
-    bool check_keys() {
-        auto model = get_model_type();
-        if (model == model_type::none) {
-            return true;
-        }
-        const auto& keys = model_keys_map[model];
+    bool validate_keys(model_type model, const std::vector<std::string>& keys) {
         if (map_.size() != keys.size()) {
-            log::info(LOG_HEADER) << "The size of keys for model type " << to_index(model)
+            log::info(LOG_HEADER) << "The size of keys " << map_.size()
+                << " for model type " << std::to_string(to_index(model))
                 << " does not equal " << keys.size();
             return false;
         }
+
         for (size_t i = 0; i < keys.size(); ++i) {
             if (map_.find(keys[i]) == map_.end()) {
-                log::info(LOG_HEADER) << "model type " << to_index(model) << "needs key " << keys[i] << " but missed.";
+                log::info(LOG_HEADER) << "model type " << std::to_string(to_index(model))
+                    << " needs key " << keys[i] << " but missed.";
                 return false;
             }
         }
+
         return true;
+    }
+
+    bool check_keys(bool is_init) {
+        auto model = get_model_type();
+        if (model == model_type::none || model >= model_type::unused1) {
+            return false;
+        }
+
+        if (is_init && model == model_type::fixed_inflation) {
+            return validate_keys(model, inflation_model_initial_keys);
+        }
+        else {
+            return validate_keys(model, model_keys_map[model]);
+        }
     }
 
     bool parse_uint64(const std::string& param, uint64_t& value)
@@ -175,7 +199,7 @@ private:
         return true;
     }
 
-    bool parse_param() {
+    bool parse_param(bool is_init=false) {
         if (model_param_.empty()) {
             return true;
         }
@@ -264,7 +288,7 @@ private:
         }
 
         // check keys after map is constructed
-        if (!check_keys()) {
+        if (!check_keys(is_init)) {
             log::info(LOG_HEADER) << "check keys of model param failed ";
             return false;
         }
@@ -299,6 +323,8 @@ private:
     // "PN=0;LH=20000;TYPE=1;LQ=9000;LP=60000;UN=3"
     // * example of custom model param:
     // "PN=0;LH=20000;TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+    // * example of fixed inflation reate model param
+    // "PN=0;LH=2000;TYPE=3;LQ=20000000;LP=36000;UN=12;IR=8"
     std::string model_param_;
 
     // auxilary data
@@ -308,8 +334,8 @@ private:
 
 const std::vector<uint64_t> attenuation_model::impl::empty_num_vec;
 
-attenuation_model::attenuation_model(const std::string& param)
-    : pimpl(std::make_unique<impl>(param))
+attenuation_model::attenuation_model(const std::string& param, bool is_init)
+    : pimpl(std::make_unique<impl>(param, is_init))
 {
 }
 
@@ -353,6 +379,11 @@ uint64_t attenuation_model::get_unlock_number() const
     return pimpl->get_unlock_number();
 }
 
+uint64_t attenuation_model::get_inflation_rate() const
+{
+    return pimpl->get_inflation_rate();
+}
+
 const std::vector<uint64_t>& attenuation_model::get_unlock_cycles() const
 {
     return pimpl->get_unlock_cycles();
@@ -377,6 +408,7 @@ std::string attenuation_model::get_name_of_key(const std::string& key)
         {"LQ",      "lock_quantity"},
         {"LP",      "lock_period"},
         {"UN",      "total_period_nbr"},
+        {"IR",      "inflation_rate"},
     };
 
     auto iter = key_name_map.find(key);
@@ -440,17 +472,17 @@ bool attenuation_model::check_model_param_format(const data_chunk& param)
     return true;
 }
 
-bool attenuation_model::check_model_param_initial(const data_chunk& param, uint64_t total_amount)
+bool attenuation_model::check_model_param(const data_chunk& param, uint64_t total_amount)
 {
     std::string model_param(param.begin(), param.end());
-    return check_model_param_initial(model_param, total_amount);
+    return check_model_param_initial(model_param, total_amount, false);
 }
 
-bool attenuation_model::check_model_param_initial(std::string& param, uint64_t total_amount)
+bool attenuation_model::check_model_param_initial(std::string& param, uint64_t total_amount, bool is_init)
 {
     bool has_prefix = param.find("PN=") == 0;
 
-    attenuation_model parser(has_prefix ? param : ("PN=0;LH=0;" + param));
+    attenuation_model parser(has_prefix ? param : ("PN=0;LH=0;" + param), is_init);
 
     const auto model = parser.get_model_type();
 
@@ -478,79 +510,39 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
         return false;
     }
 
-    // common condition : LQ > 0
-    if (!is_positive_number(LQ)) {
-        log::info(LOG_HEADER) << "common param error: LQ <= 0";
-        return false;
-    }
-    // common condition : LP > 0
-    if (!is_positive_number(LP)) {
-        log::info(LOG_HEADER) << "common param error: LP <= 0";
-        return false;
-    }
-    // common condition : UN > 0
-    if (!is_positive_number(UN)) {
-        log::info(LOG_HEADER) << "common param error: UN <= 0";
-        return false;
-    }
-
     // common condition : LQ <= IQ (utxo's asset amount)
     if (LQ > total_amount) {
         log::info(LOG_HEADER) << "common initial param error: LQ > IQ";
         return false;
     }
 
-    // add prefix of PN,LH, check after ensured UN > 0
-    auto initial_lock_height = (!UCs.empty()) ? UCs[0] : (LP / UN);
-    if (!has_prefix) {
-        LH = initial_lock_height;
-        param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
-    } else if (LH != initial_lock_height) {
-        log::info(LOG_HEADER) << "common initial param error: LH != " << initial_lock_height;
+    if (!check_model_param_common(parser)) {
         return false;
     }
 
-    if (model == model_type::fixed_quantity) {
-        // given LQ, LP, UN, then
-        // LP >= UN and LQ >= UN
-        if (LP < UN) {
-            log::info(LOG_HEADER) << "fixed_quantity param error: LP < UN";
+    if (model == model_type::fixed_quantity || model == model_type::custom) {
+        // add prefix of PN,LH, check after ensured UN > 0
+        auto initial_lock_height = (!UCs.empty()) ? UCs[0] : (LP / UN);
+        if (!has_prefix) {
+            LH = initial_lock_height;
+            if (is_init) {
+                param = "PN=0;LH=" + std::to_string(LH) + ";" + param;
+            }
+        }
+        else if (LH != initial_lock_height) {
+            log::info(LOG_HEADER) << "common initial param error: LH != " << initial_lock_height;
             return false;
         }
-        if (LQ < UN) {
-            log::info(LOG_HEADER) << "fixed_quantity param error: LQ < UN";
-            return false;
-        }
-        return true;
     }
 
-    if (model == model_type::custom) {
-        if (UN > 100) {
-            log::info(LOG_HEADER) << "custom param error: UN > 100, at most 100 cycles is supported.";
-            return false;
-        }
-        // given LQ, LP, UN, UC, UQ, then
-        // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
-        // LP = sum(UC) and all UC > 0 and UC.size == UN
-        const auto& UCs = parser.get_unlock_cycles();
-        const auto& UQs = parser.get_unlocked_quantities();
-        if (UCs.size() != UN) {
-            log::info(LOG_HEADER) << "custom param error: UC.size() != UN";
-            return false;
-        }
-        if (UQs.size() != UN) {
-            log::info(LOG_HEADER) << "custom param error: UQ.size() != UN";
-            return false;
-        }
-        if (sum_and_check_numbers(UCs, is_positive_number) != LP) {
-            log::info(LOG_HEADER) << "custom param error: LP != sum(UC) or exist UC <= 0";
-            return false;
-        }
-        if (sum_and_check_numbers(UQs, is_positive_number) != LQ) {
-            log::info(LOG_HEADER) << "custom param error: LQ != sum(UQ) or exist UQ <= 0";
-            return false;
-        }
-        return true;
+    if (model == model_type::fixed_quantity) {
+        return check_model_param_un(parser);
+    }
+    else if (model == model_type::fixed_inflation) {
+        return check_model_param_initial_fixed_inflation(param, total_amount, parser, is_init);
+    }
+    else if (model == model_type::custom) {
+        return check_model_param_uc_uq(parser);
     }
 
     log::info(LOG_HEADER) << "check_model_param_initial, Unsupported attenuation model: "
@@ -558,7 +550,225 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
     return false;
 }
 
-bool attenuation_model::check_model_param(const data_chunk& param)
+bool attenuation_model::check_model_param_common(attenuation_model& parser)
+{
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+    auto PN = parser.get_current_period_number();
+
+    // common condition : PN < UN
+    if (PN >= UN) {
+        log::info(LOG_HEADER) << "common param error: PN >= UN";
+        return false;
+    }
+
+    // common condition : LQ > 0
+    if (!is_positive_number(LQ)) {
+        log::info(LOG_HEADER) << "attenuation param error: LQ <= 0";
+        return false;
+    }
+
+    // common condition : LP > 0
+    if (!is_positive_number(LP)) {
+        log::info(LOG_HEADER) << "attenuation param error: LP <= 0";
+        return false;
+    }
+
+    // UN > 0
+    if (!is_positive_number(UN)) {
+        log::info(LOG_HEADER) << "attenuation param error: UN <= 0";
+        return false;
+    }
+
+    return true;
+}
+
+bool attenuation_model::check_model_param_un(attenuation_model& parser)
+{
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+
+    // given LQ, LP, UN, then
+    // LP >= UN and LQ >= UN
+    if (LP < UN) {
+        log::info(LOG_HEADER) << "attenuation param error: LP < UN";
+        return false;
+    }
+    if (LQ < UN) {
+        log::info(LOG_HEADER) << "attenuation param error: LQ < UN";
+        return false;
+    }
+
+    return true;
+}
+
+bool attenuation_model::check_model_param_uc_uq(attenuation_model& parser)
+{
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+
+    if (UN > max_unlock_number) {
+        log::info(LOG_HEADER) << "attenuation param error: UN > 100, at most 100 cycles is supported.";
+        return false;
+    }
+
+    // given LQ, LP, UN, UC, UQ, then
+    // LQ = sum(UQ) and all UQ > 0 and UQ.size == UN
+    // LP = sum(UC) and all UC > 0 and UC.size == UN
+    const auto& UCs = parser.get_unlock_cycles();
+    const auto& UQs = parser.get_unlocked_quantities();
+    if (UCs.size() != UN) {
+        log::info(LOG_HEADER) << "attenuation param error: UC.size() != UN";
+        return false;
+    }
+    if (UQs.size() != UN) {
+        log::info(LOG_HEADER) << "attenuation param error: UQ.size() != UN";
+        return false;
+    }
+    if (sum_and_check_numbers(UCs, is_positive_number) != LP) {
+        log::info(LOG_HEADER) << "attenuation param error: LP != sum(UC) or exist UC <= 0";
+        return false;
+    }
+    if (sum_and_check_numbers(UQs, is_positive_number) != LQ) {
+        log::info(LOG_HEADER) << "attenuation param error: LQ != sum(UQ) or exist UQ <= 0";
+        return false;
+    }
+    return true;
+}
+
+bool attenuation_model::check_model_param_inflation(attenuation_model& parser, int total_amount)
+{
+    if (!check_model_param_un(parser)) {
+        return false;
+    }
+
+    auto LQ = parser.get_locked_quantity();
+    auto UN = parser.get_unlock_number();
+    auto IR = parser.get_inflation_rate();
+
+    if (LQ != total_amount) {
+        log::info(LOG_HEADER) << "fixed inflation param error: partial lock is not supported!";
+        return false;
+    }
+
+    if (UN > max_unlock_number) {
+        log::info(LOG_HEADER) << "fixed inflation param error: UN > 100, at most 100 cycles is supported.";
+        return false;
+    }
+
+    // IR > 0
+    if (IR <= 0 || IR > max_inflation_rate) {
+        log::info(LOG_HEADER) << "fixed inflation param error: IR not in [1, " << max_inflation_rate << "]";
+        return false;
+    }
+
+    return true;
+}
+
+bool attenuation_model::check_model_param_initial_fixed_inflation(
+    std::string& param, uint64_t total_amount, attenuation_model& parser, bool is_init)
+{
+    if (!check_model_param_inflation(parser, total_amount)) {
+        return false;
+    }
+
+    auto PN = parser.get_current_period_number();
+    auto LH = parser.get_latest_lock_height();
+    auto LQ = parser.get_locked_quantity();
+    auto LP = parser.get_locked_period();
+    auto UN = parser.get_unlock_number();
+    auto IR = parser.get_inflation_rate();
+
+    if (LQ == total_amount) {
+        uint64_t IP = LP / UN;
+
+        // check LH after ensured UN > 0
+        bool has_prefix = param.find("PN=") == 0;
+        if (!has_prefix) {
+            LH = IP;
+        }
+        else if (LH != IP) {
+            log::info(LOG_HEADER) << "fixed inflation param error: LH != " << IP;
+            return false;
+        }
+
+        if (!is_init) {
+            return check_model_param_uc_uq(parser);
+        }
+
+        // compute UC and UQ array
+        double rate = IR / 100.0;
+        double UP1= std::pow(1 + rate, int64_t(1 - UN));
+        uint64_t UQ1 = LQ * UP1;
+        UQ1 = std::min(UQ1, LQ);
+        BITCOIN_ASSERT(UQ1 > 0);
+
+        std::vector<uint64_t> uc_vec, uq_vec;
+        uc_vec.push_back(IP);
+        uq_vec.push_back(UQ1);
+
+        uint64_t total_uc = IP;
+        uint64_t total_uq = UQ1;
+        uint64_t current_uc, current_uq;
+        for (int i = 1; i < UN; ++i) {
+            current_uq = total_uq * rate;
+            current_uc = IP;
+
+            if (i == UN - 1) {
+                current_uc = LP - total_uc;
+                current_uq = LQ - total_uq;
+            }
+
+            uc_vec.push_back(current_uc);
+            uq_vec.push_back(current_uq);
+            total_uc += current_uc;
+            total_uq += current_uq;
+        }
+
+        BITCOIN_ASSERT(total_uc == LP);
+        BITCOIN_ASSERT(total_uq == LQ);
+
+        // rebuild parameter string
+        // sample: PN=0;LH=2000;TYPE=3;LQ=9001;LP=6000;UN=3;IR=8
+        std::stringstream ss;
+        ss << "PN=0;LH=";   ss << std::to_string(LH);
+        ss << ";TYPE=3;LQ="; ss << std::to_string(LQ);
+        ss << ";LP="; ss << std::to_string(LP);
+        ss << ";UN="; ss << std::to_string(UN);
+        ss << ";IR="; ss << std::to_string(IR);
+        ss << ";UC=";
+        for (auto it = uc_vec.begin(); it != uc_vec.end(); ++it) {
+            if (it != uc_vec.begin()) {
+                ss << ",";
+            }
+            ss << std::to_string(*it);
+        }
+
+        ss << ";UQ=";
+        for (auto it = uq_vec.begin(); it != uq_vec.end(); ++it) {
+            if (it != uq_vec.begin()) {
+                ss << ",";
+            }
+            ss << std::to_string(*it);
+        }
+
+        // update param
+        ss >> param;
+
+        return true;
+    }
+
+    else {
+        log::error(LOG_HEADER) << "fixed inflation param error: partial lock is not supported!";
+    }
+
+    return false;
+}
+
+bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t total_amount)
 {
     attenuation_model parser(std::string(param.begin(), param.end()));
 
@@ -581,9 +791,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     auto LP = parser.get_locked_period();
     auto UN = parser.get_unlock_number();
 
-    // common condition : PN < UN
-    if (PN >= UN) {
-        log::info(LOG_HEADER) << "common param error: PN >= UN";
+    if (!check_model_param_common(parser)) {
         return false;
     }
 
@@ -594,7 +802,7 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     }
 
     if (model == model_type::fixed_quantity) {
-        auto UC = LP / UN;
+        uint64_t UC = LP / UN;
         if (PN + 1 == UN) { // last cycle
             if (PN * UC + LH > LP) {
                 log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
@@ -608,10 +816,26 @@ bool attenuation_model::check_model_param(const data_chunk& param)
         }
     }
 
-    if (model == model_type::custom) {
+    else if (model == model_type::custom) {
         const auto& UCs = parser.get_unlock_cycles();
         if (LH > UCs[PN]) {
             log::info(LOG_HEADER) << "custom param error: LH > UC";
+            return false;
+        }
+    }
+
+    else if (model == model_type::fixed_inflation) {
+        if (!check_model_param_inflation(parser, total_amount)) {
+            return false;
+        }
+
+        if (!check_model_param_uc_uq(parser)) {
+            return false;
+        }
+
+        const auto& UCs = parser.get_unlock_cycles();
+        if (LH > UCs[PN]) {
+            log::info(LOG_HEADER) << "fixed inflation param error: LH > UC";
             return false;
         }
     }
@@ -666,8 +890,8 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         }
 
         const auto& model_param = output.get_attenuation_model_param();
-
-        if (!attenuation_model::check_model_param(model_param)) {
+        auto&& asset_detail = output.get_asset_detail();
+        if (!attenuation_model::validate_model_param(model_param, asset_detail.get_maximum_supply())) {
             log::info(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
             return error::attenuation_model_param_error;
         }
@@ -790,7 +1014,7 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
         return LH + ((PN2 - PN) * UC) - LH2;
     }
 
-    if (model == model_type::custom) {
+    else if (model == model_type::custom || model == model_type::fixed_inflation) {
         const auto& UCs = parser.get_unlock_cycles();
         auto diff_height = LH;
         for (auto i = PN + 1; i <= PN2; ++i) {
@@ -846,7 +1070,7 @@ uint64_t attenuation_model::get_available_asset_amount(
     }
 
     if (model == model_type::fixed_quantity) {
-        auto UC = LP / UN;
+        uint64_t UC = LP / UN;
         auto elapsed_height = (diff_height - LH) + ((PN + 1) * UC);
         if (elapsed_height >= LP) { // include the last unlock cycle, release all
             return asset_amount;
@@ -867,7 +1091,7 @@ uint64_t attenuation_model::get_available_asset_amount(
         return available;
     }
 
-    if (model == model_type::custom) {
+    if (model == model_type::custom || model == model_type::fixed_inflation) {
         available += UQs[PN];
         diff_height -= LH;
         ++PN;
