@@ -69,7 +69,7 @@ public:
     static bool check_model_param_un(attenuation_model& parser);
     static bool check_model_param_common(attenuation_model& parser);
     static bool check_model_param_uc_uq(attenuation_model& parser);
-    static bool check_model_param_inflation(attenuation_model& parser, int total_amount);
+    static bool check_model_param_inflation(attenuation_model& parser, uint64_t total_amount);
     static bool check_model_param_initial_fixed_inflation(
         std::string& param, uint64_t total_amount, attenuation_model& parser, bool is_init=false);
     static bool check_model_param_immutable(const data_chunk& previous, const data_chunk& current);

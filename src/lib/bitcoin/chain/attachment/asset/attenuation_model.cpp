@@ -639,7 +639,7 @@ bool attenuation_model::check_model_param_uc_uq(attenuation_model& parser)
     return true;
 }
 
-bool attenuation_model::check_model_param_inflation(attenuation_model& parser, int total_amount)
+bool attenuation_model::check_model_param_inflation(attenuation_model& parser, uint64_t total_amount)
 {
     if (!check_model_param_un(parser)) {
         return false;
@@ -713,7 +713,7 @@ bool attenuation_model::check_model_param_initial_fixed_inflation(
         uint64_t total_uc = IP;
         uint64_t total_uq = UQ1;
         uint64_t current_uc, current_uq;
-        for (int i = 1; i < UN; ++i) {
+        for (uint64_t i = 1; i < UN; ++i) {
             current_uq = total_uq * rate;
             current_uc = IP;
 
