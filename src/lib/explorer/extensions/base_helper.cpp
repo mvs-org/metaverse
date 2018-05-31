@@ -1348,6 +1348,21 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
     return attach;
 }
 
+void sending_asset::sum_payment_amount()
+{
+    base_transfer_common::sum_payment_amount();
+    if (!attenuation_model_param_.empty()) {
+        if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
+            throw asset_attenuation_model_exception(
+                "attenuation model should be supported after nova feature is activated.");
+        }
+        if (!attenuation_model::check_model_param_initial(
+            attenuation_model_param_, payment_asset_)) {
+            throw asset_attenuation_model_exception("check asset attenuation model param failed");
+        }
+    }
+}
+
 void sending_asset::populate_change()
 {
     // etp utxo
@@ -1355,6 +1370,29 @@ void sending_asset::populate_change()
 
     // asset utxo
     populate_asset_change();
+}
+
+chain::operation::stack
+sending_asset::get_script_operations(const receiver_record& record) const
+{
+    if (!attenuation_model_param_.empty()
+        && (utxo_attach_type::asset_locked_transfer == record.type)) {
+
+        const wallet::payment_address payment(record.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            const auto& hash = payment.hash();
+            return chain::operation::to_pay_key_hash_with_attenuation_model_pattern(
+                    hash, attenuation_model_param_, record.input_point);
+        } else {
+            throw toaddress_invalid_exception{std::string("not supported version target address ") + record.target};
+        }
+    }
+
+    return base_transfer_helper::get_script_operations(record);
 }
 
 chain::operation::stack

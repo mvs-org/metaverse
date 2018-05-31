@@ -103,6 +103,11 @@ public:
 			value<uint64_t>(&argument_.amount)->required(),
 			"Asset integer bits. see asset <decimal_number>."
 		)
+        (
+            "model,m",
+            value<std::string>(&option_.attenuation_model_param),
+            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+        )
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -130,6 +135,7 @@ public:
 
     struct option
     {
+        std::string attenuation_model_param;
     } option_;
 
 };

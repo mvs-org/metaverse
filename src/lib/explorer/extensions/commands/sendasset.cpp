@@ -46,11 +46,16 @@ console_result sendasset::invoke(Json::Value& jv_output,
         throw asset_amount_exception{"invalid asset amount parameter!"};
 
     // receiver
+    utxo_attach_type attach_type = option_.attenuation_model_param.empty()
+        ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_locked_transfer;
     std::vector<receiver_record> receiver{
-        {argument_.address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attachment()}
+        {argument_.address, argument_.symbol, 0, argument_.amount, attach_type, attachment()}
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto send_helper = sending_asset(*this, blockchain,
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), argument_.fee);
 
     send_helper.exec();
 

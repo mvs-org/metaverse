@@ -69,11 +69,16 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
     }
 
     // receiver
+    utxo_attach_type attach_type = option_.attenuation_model_param.empty()
+        ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_locked_transfer;
     std::vector<receiver_record> receiver{
-        {toaddress, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach}
+        {toaddress, argument_.symbol, 0, argument_.amount, attach_type, attach}
     };
-    auto send_helper = sending_asset(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-        std::move(fromaddress), std::move(argument_.symbol), std::move(receiver), argument_.fee);
+    auto send_helper = sending_asset(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(fromaddress), std::move(argument_.symbol),
+        std::move(option_.attenuation_model_param),
+        std::move(receiver), argument_.fee);
 
     send_helper.exec();
 

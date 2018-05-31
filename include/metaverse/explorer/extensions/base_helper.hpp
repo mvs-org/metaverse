@@ -462,7 +462,6 @@ public:
     void sum_payments() override;
     void sum_payment_amount() override;
     attachment populate_output_attachment(const receiver_record& record) override;
-
     chain::operation::stack get_script_operations(const receiver_record& record) const override;
 
 private:
@@ -514,15 +513,22 @@ public:
     sending_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
+        std::string&& model_param,
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , attenuation_model_param_{std::move(model_param)}
     {}
 
     ~sending_asset()
     {}
 
+    void sum_payment_amount() override;
     void populate_change() override;
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
+
+private:
+    std::string attenuation_model_param_;
 };
 
 class BCX_API issuing_did : public base_multisig_transfer_helper
