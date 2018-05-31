@@ -221,10 +221,12 @@ public:
     // common functions, single responsibility.
     static void check_fee_in_valid_range(uint64_t fee);
     void check_receiver_list_not_empty() const;
-    void populate_etp_change(const std::string& address = std::string(""));
-    void populate_asset_change(const std::string& address = std::string(""));
     bool is_payment_satisfied(filter filter = FILTER_ALL) const;
     void check_payment_satisfied(filter filter = FILTER_ALL) const;
+    void check_model_param_initial(std::string& param, uint64_t amount);
+
+    void populate_etp_change(const std::string& address = std::string(""));
+    void populate_asset_change(const std::string& address = std::string(""));
     void populate_tx_inputs();
     void check_tx();
     void exec();

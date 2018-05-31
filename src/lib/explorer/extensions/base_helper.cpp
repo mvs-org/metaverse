@@ -506,6 +506,19 @@ void base_transfer_common::check_fee_in_valid_range(uint64_t fee)
     }
 }
 
+void base_transfer_common::check_model_param_initial(std::string& param, uint64_t amount)
+{
+    if (!param.empty()) {
+        if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
+            throw asset_attenuation_model_exception(
+                "attenuation model should be supported after nova feature is activated.");
+        }
+        if (!attenuation_model::check_model_param_initial(param, amount)) {
+            throw asset_attenuation_model_exception("check asset attenuation model param failed");
+        }
+    }
+}
+
 void base_transfer_common::sum_payments()
 {
     for (auto& iter : receiver_list_) {
@@ -1296,15 +1309,9 @@ void issuing_asset::sum_payment_amount()
     if (payment_etp_ < 1000000000) { // 10 etp now
         throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
     }
+
     if (!attenuation_model_param_.empty()) {
-        if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
-            throw asset_attenuation_model_exception(
-                "attenuation model should be supported after nova feature is activated.");
-        }
-        if (!attenuation_model::check_model_param_initial(
-            attenuation_model_param_, unissued_asset_->get_maximum_supply())) {
-            throw asset_attenuation_model_exception("check asset attenuation model param failed");
-        }
+        check_model_param_initial(attenuation_model_param_, unissued_asset_->get_maximum_supply());
     }
 }
 
@@ -1351,15 +1358,9 @@ attachment issuing_asset::populate_output_attachment(const receiver_record& reco
 void sending_asset::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
+
     if (!attenuation_model_param_.empty()) {
-        if (!validate_transaction::is_nova_feature_activated(blockchain_)) {
-            throw asset_attenuation_model_exception(
-                "attenuation model should be supported after nova feature is activated.");
-        }
-        if (!attenuation_model::check_model_param_initial(
-            attenuation_model_param_, payment_asset_)) {
-            throw asset_attenuation_model_exception("check asset attenuation model param failed");
-        }
+        check_model_param_initial(attenuation_model_param_, payment_asset_);
     }
 }
 
@@ -1444,9 +1445,7 @@ void secondary_issuing_asset::sum_payment_amount()
     }
 
     if (!attenuation_model_param_.empty()) {
-        if (!attenuation_model::check_model_param_initial(attenuation_model_param_, volume_)) {
-            throw asset_attenuation_model_exception("check asset attenuation model param failed");
-        }
+        check_model_param_initial(attenuation_model_param_, volume_);
     }
 }
 
