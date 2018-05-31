@@ -225,6 +225,9 @@ public:
     void check_payment_satisfied(filter filter = FILTER_ALL) const;
     void check_model_param_initial(std::string& param, uint64_t amount);
 
+    static chain::operation::stack get_pay_key_hash_with_attenuation_model_operations(
+            const std::string& model_param, const receiver_record& record);
+
     void populate_etp_change(const std::string& address = std::string(""));
     void populate_asset_change(const std::string& address = std::string(""));
     void populate_tx_inputs();
