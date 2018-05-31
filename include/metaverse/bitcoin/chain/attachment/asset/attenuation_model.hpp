@@ -24,6 +24,7 @@
 #include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
+#include <metaverse/bitcoin/error.hpp>
 
 using namespace libbitcoin::chain;
 
@@ -61,7 +62,7 @@ public:
 
     static bool check_model_index(uint32_t index);
     static bool check_model_param(const data_chunk& param);
-    static bool check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
+    static code check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
     static bool check_model_param_format(const data_chunk& param);
     static bool check_model_param_initial(const data_chunk& param, uint64_t total_amount);
     static bool check_model_param_initial(std::string& param, uint64_t total_amount);

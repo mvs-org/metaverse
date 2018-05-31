@@ -226,8 +226,9 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 if (asset_amount
                     && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                     const auto& attenuation_model_param = output.get_attenuation_model_param();
+                    auto diff_height = row.output_height ? (height - row.output_height) : 0;
                     auto available_amount = attenuation_model::get_available_asset_amount(
-                            asset_amount, height - row.output_height, attenuation_model_param);
+                            asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
                 }
                 if (iter == sh_asset_vec->end()) { // new item
@@ -446,9 +447,9 @@ void base_transfer_common::sync_fetchutxo(
             && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
             const auto& attenuation_model_param = output.get_attenuation_model_param();
             new_model_param_ptr = std::make_shared<data_chunk>();
+            auto diff_height = row.output_height ? (height - row.output_height) : 0;
             asset_amount = attenuation_model::get_available_asset_amount(
-                    asset_total_amount, height - row.output_height,
-                    attenuation_model_param, new_model_param_ptr);
+                    asset_total_amount, diff_height, attenuation_model_param, new_model_param_ptr);
             if ((asset_amount == 0) && !is_locked_asset_as_payment()) {
                 continue; // all locked, filter out
             }

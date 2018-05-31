@@ -619,10 +619,10 @@ bool attenuation_model::check_model_param(const data_chunk& param)
     return true;
 }
 
-bool attenuation_model::check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain)
+code attenuation_model::check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain)
 {
     if (tx.version < transaction_version::check_nova_feature) {
-        return true;
+        return error::success;
     }
 
     struct ext_input_point {
@@ -635,13 +635,13 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
 
     for (const auto& input: tx.inputs) {
         if (input.previous_output.is_null()) {
-            return false;
+            return error::previous_output_null;
         }
 
         uint64_t prev_output_blockheight = 0;
         chain::transaction prev_tx;
         if (!chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash)) {
-            return false;
+            continue;
         }
 
         const auto& prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -654,7 +654,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
     }
 
     if (vec_prev_input.empty()) {
-        return true;
+        return error::success;
     }
 
     uint64_t current_blockheight = 0;
@@ -669,7 +669,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
 
         if (!attenuation_model::check_model_param(model_param)) {
             log::info(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         const auto& input_point_data = operation::
@@ -677,7 +677,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         chain::input_point input_point = chain::point::factory_from_data(input_point_data);
         if (input_point.is_null()) {
             log::info(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         auto iter = std::find_if(vec_prev_input.begin(), vec_prev_input.end(),
@@ -687,7 +687,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
 
         if (iter == vec_prev_input.end()) {
             log::info(LOG_HEADER) << "input not found for " << input_point.to_string();
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         const auto& prev_model_param = iter->prev_output_.get_attenuation_model_param();
@@ -696,7 +696,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             log::info(LOG_HEADER) << "check immutable failed, "
                 << "prev is " << chunk_to_string(prev_model_param)
                 << ", new is" << chunk_to_string(model_param);
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         auto curr_diff_height = current_blockheight - iter->prev_blockheight_;
@@ -705,7 +705,7 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         if (real_diff_height > curr_diff_height) {
             log::info(LOG_HEADER) << "check diff height failed, "
                 << real_diff_height << ", curr diff is" << curr_diff_height;
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         auto asset_total_amount = iter->prev_output_.get_asset_amount();
@@ -718,14 +718,14 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
             log::info(LOG_HEADER) << "check amount failed, "
                 << "locked shoule be " << asset_total_amount - asset_amount
                 << ", but real locked is " << output.get_asset_amount();
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         if (!new_model_param_ptr || (*new_model_param_ptr != model_param)) {
             log::info(LOG_HEADER) << "check model new param failed, "
                 << "prev is " << chunk_to_string(model_param) << ", new is "
                 << (new_model_param_ptr ? chunk_to_string(*new_model_param_ptr) : std::string("empty"));
-            return false;
+            return error::attenuation_model_param_error;
         }
 
         // prevent multiple locked outputs connect to the same input
@@ -740,11 +740,11 @@ bool attenuation_model::check_model_param(const transaction& tx, const blockchai
         if (real_diff_height > curr_diff_height) {
             log::info(LOG_HEADER) << "check diff height failed for all spendable, "
                 << real_diff_height << ", curr diff is" << curr_diff_height;
-            return false;
+            return error::attenuation_model_param_error;
         }
     }
 
-    return true;
+    return error::success;
 }
 
 uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const data_chunk& param)
