@@ -134,12 +134,10 @@ uint32_t did_detail::count_size() const
 
 bool did_detail::operator< (const did_detail& other) const
 {
-    auto ret = symbol.compare(other.symbol);
-    if (ret < 0) {
+    auto ret = 0;
+    if((ret = symbol.compare(other.symbol)) < 0
+    || (ret == 0 && address.compare(other.address) < 0)){
         return true;
-    }
-    else if (ret == 0) {
-        return address.compare(other.address) < 0;
     }
 
     return false;

@@ -46,30 +46,7 @@ struct asset_balances {
     uint64_t locked_asset;
 
     // for sort
-    bool operator< (const asset_balances& other) const
-    {
-        auto ret = symbol.compare(other.symbol);
-        if (ret < 0) {
-            return true;
-        }
-        else if (ret == 0) {
-            ret = address.compare(other.address);
-            if (ret < 0) {
-                return true;
-            }
-            else if (ret == 0) {
-                ret = unspent_asset - other.unspent_asset;
-                if (ret < 0) {
-                    return true;
-                }
-                else if (ret == 0) {
-                    return locked_asset < other.locked_asset;
-                }
-            }
-        }
-
-        return false;
-    }
+    bool operator< (const asset_balances& other) const;
 };
 
 class BC_API asset_transfer
