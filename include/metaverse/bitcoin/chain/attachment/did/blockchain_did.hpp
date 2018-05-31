@@ -39,7 +39,7 @@ public:
     {
         address_invalid,
         address_current,
-        address_old
+        address_history
     };
 	typedef std::vector<blockchain_did> list;
 	blockchain_did();

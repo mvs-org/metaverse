@@ -175,7 +175,7 @@ void blockchain_did_database::store(const hash_digest& hash, const blockchain_di
     const auto key = hash;
 
     //cannot remove old address,instead of update its status
-    update_address_status(key,blockchain_did::address_old);
+    update_address_status(key,blockchain_did::address_history);
 
     const auto sp_size = sp_detail.serialized_size();
 #ifdef MVS_DEBUG

@@ -199,8 +199,8 @@ std::string blockchain_did::get_status_string() const
     case address_current:
         strStatus = "current";
         break;
-    case address_old:
-        strStatus = "old";
+    case address_history:
+        strStatus = "history";
         break;
     }
 

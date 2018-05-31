@@ -80,7 +80,7 @@ public:
     std::shared_ptr<blockchain_did> pop_did_transfer(const hash_digest &hash);
 protected:
     /// update address status(current or old), default old
-     std::shared_ptr<blockchain_did> update_address_status(const hash_digest& hash,uint32_t status = blockchain_did::address_old);
+     std::shared_ptr<blockchain_did> update_address_status(const hash_digest& hash,uint32_t status = blockchain_did::address_history);
 private:
     typedef slab_hash_table<hash_digest> slab_map;
 
