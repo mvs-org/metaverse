@@ -175,8 +175,8 @@ private:
 
     bool check_keys(bool is_init) {
         auto model = get_model_type();
-        if (model == model_type::none || model >= model_type::unused1) {
-            return false;
+        if (model == model_type::none) {
+            return true;
         }
 
         if (is_init && model == model_type::fixed_inflation) {
@@ -324,7 +324,7 @@ private:
     // * example of custom model param:
     // "PN=0;LH=20000;TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
     // * example of fixed inflation reate model param
-    // "PN=0;LH=2000;TYPE=3;LQ=20000000;LP=36000;UN=12;IR=8"
+    // "PN=0;LH=1000;TYPE=3;LQ=20000000;LP=12000;UN=12;IR=8"
     std::string model_param_;
 
     // auxilary data
