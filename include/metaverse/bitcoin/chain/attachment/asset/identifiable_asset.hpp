@@ -31,13 +31,13 @@
 #define IDENTIFIABLE_ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<identifiable_asset::identifiable_asset_status>::type>(kd))
 
 #define IDENTIFIABLE_ASSET_NORMAL_TYPE      IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_normal)
-#define IDENTIFIABLE_ASSET_ISSUE_TYPE       IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_issue)
+#define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_register)
 #define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_transfer)
 
 namespace libbitcoin {
 namespace chain {
 
-BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE  = 128;
+BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE  = 64;
 BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_ADDRESS_FIX_SIZE = 64;
 BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE = 256;
 BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_STATUS_FIX_SIZE  = 1;
@@ -54,7 +54,7 @@ public:
     enum class identifiable_asset_status : uint8_t
     {
         identifiable_asset_normal   = 0,
-        identifiable_asset_issue    = 1,
+        identifiable_asset_register = 1,
         identifiable_asset_transfer = 2,
     };
 
@@ -89,8 +89,11 @@ public:
     void set_content(const std::string& content);
     const std::string& get_content() const;
 
-    uint8_t get_status() const;
     void set_status(uint8_t status);
+    uint8_t get_status() const;
+    std::string get_status_name() const;
+
+    static std::string status_to_string(uint8_t status);
 
 private:
     // NOTICE: ref CIdentifiableAsset in transaction.h

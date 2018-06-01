@@ -466,11 +466,17 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["symbol"] = cert_info.get_symbol();
     tree["owner"] = cert_info.get_owner();
     tree["address"] = cert_info.get_address();
-    if (version_ == 1) {
-        tree["cert"] += cert_info.get_type_name();
-    } else {
-        tree["cert"] = cert_info.get_type_name();
-    }
+    tree["cert"] = cert_info.get_type_name();
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_info)
+{
+    Json::Value tree;
+    tree["symbol"] = asset_info.get_symbol();
+    tree["address"] = asset_info.get_address();
+    tree["content"] = asset_info.get_content();
+    tree["status"] = asset_info.get_status_name();
     return tree;
 }
 

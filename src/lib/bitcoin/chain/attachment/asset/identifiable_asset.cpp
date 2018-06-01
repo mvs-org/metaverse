@@ -152,7 +152,7 @@ std::string identifiable_asset::to_string() const
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t address = " << address_ << "\n";
     ss << "\t content = " << content_ << "\n";
-    ss << "\t status = " << std::to_string(status_) << "\n";
+    ss << "\t status = " << status_to_string(status_) << "\n";
     return ss.str();
 }
 
@@ -197,6 +197,24 @@ uint8_t identifiable_asset::get_status() const
 void identifiable_asset::set_status(uint8_t status)
 {
     status_ = status;
+}
+
+std::string identifiable_asset::status_to_string(uint8_t status)
+{
+    if (status == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+        return "registered";
+    }
+    else if (status == IDENTIFIABLE_ASSET_TRANSFER_TYPE) {
+        return "transfered";
+    }
+    else {
+        return "normal";
+    }
+}
+
+std::string identifiable_asset::get_status_name() const
+{
+    return status_to_string(status_);
 }
 
 } // namspace chain

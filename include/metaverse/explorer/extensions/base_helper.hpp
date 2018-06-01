@@ -40,6 +40,7 @@ namespace commands{
 /// attachment_message       --> message
 /// attachment_did           --> did_register   |  did_transfer
 /// attachment_asset_cert    --> asset_cert
+/// attachment_identifiable_asset    --> identifiable_asset
 /// -------------------------------------------------------------------
 /// utxo_attach_type is only used in explorer module
 /// utxo_attach_type will be used to generate attachment with attachment_type and content
@@ -68,6 +69,8 @@ enum class utxo_attach_type : uint32_t
     asset_cert_issue = 11,
     asset_cert_transfer = 12,
     asset_cert_autoissue = 13,
+    identifiable_asset = 14,
+    identifiable_asset_transfer = 15,
     invalid = 0xffffffff
 };
 
@@ -156,6 +159,10 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=asset_cert_ns::none);
 
+bool sync_fetch_identifiable_asset(const std::string& address, const string& symbol,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<identifiable_asset::list> sh_vec);
+
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
 
@@ -163,6 +170,7 @@ std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain);
 
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
+void check_identifiable_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
 
 class BCX_API base_transfer_common
@@ -173,6 +181,7 @@ public:
         FILTER_ASSET = 1 << 1,
         FILTER_ASSETCERT = 1 << 2,
         FILTER_DID = 1 << 3,
+        FILTER_IDENTIFIABLE_ASSET = 1 << 4,
         FILTER_ALL = 0xff,
         // if specify 'from_' address,
         // then get these types' unspent only from 'from_' address
@@ -261,8 +270,10 @@ protected:
     uint64_t                          unspent_asset_{0};
     std::vector<asset_cert_type>      payment_asset_cert_;
     std::vector<asset_cert_type>      unspent_asset_cert_;
-    bool                              payment_did_flag{false};
-    bool                              unspent_did_flag{false};
+    uint8_t                           payment_did_{0};
+    uint8_t                           unspent_did_{0};
+    uint8_t                           payment_identifiable_asset_{0};
+    uint8_t                           unspent_identifiable_asset_{0};
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
 };
@@ -664,6 +675,55 @@ public:
         tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     };
+};
+class BCX_API registering_identifiable_asset : public base_transfer_helper
+{
+public:
+    registering_identifiable_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol, std::string&& content,
+        receiver_record::list&& receiver_list, uint64_t fee)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+        , content_(content)
+    {}
+
+    ~registering_identifiable_asset()
+    {}
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
+    attachment populate_output_attachment(const receiver_record& record) override;
+
+private:
+    std::string content_;
+};
+
+class BCX_API transferring_identifiable_asset : public base_multisig_transfer_helper
+{
+public:
+    transferring_identifiable_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, std::string&& symbol,
+        receiver_record::list&& receiver_list, uint64_t fee,
+        account_multisig&& multisig_from)
+        : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list), fee, std::move(symbol),
+            std::move(multisig_from))
+    {}
+
+    ~transferring_identifiable_asset()
+    {}
+
+    void populate_tx_header() override {
+        tx_.version = transaction_version::check_nova_feature;
+        tx_.locktime = 0;
+    };
+
+    attachment populate_output_attachment(const receiver_record& record) override;
 };
 
 

@@ -1044,6 +1044,13 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
     boost::apply_visitor(visitor, const_cast<asset&>(sp).get_data());
 }
 
+void data_base::push_identifiable_asset(const identifiable_asset& sp, const short_hash& key,
+    const output_point& outpoint, uint32_t output_height, uint64_t value)
+{
+    // TODO
+    log::info(LOG_DATABASE) << "TODO: push_identifiable_asset";
+}
+
 void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value)
 {

@@ -299,6 +299,11 @@ bool output::is_asset_secondaryissue() const
     return false;
 }
 
+bool output::is_identifiable_asset() const
+{
+    return (attach_data.get_type() == IDENTIFIABLE_ASSET_TYPE);
+}
+
 bool output::is_asset_cert() const
 {
     return (attach_data.get_type() == ASSET_CERT_TYPE);
@@ -364,7 +369,7 @@ bool output::is_message() const
 
 std::string output::get_asset_symbol() const // for validate_transaction.cpp to calculate asset transfer amount
 {
-    if (attach_data.get_type() == ASSET_TYPE) {
+    if (is_asset()) {
         auto asset_info = boost::get<asset>(attach_data.get_attach());
         if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
@@ -374,7 +379,12 @@ std::string output::get_asset_symbol() const // for validate_transaction.cpp to 
             auto trans_info = boost::get<asset_transfer>(asset_info.get_data());
             return trans_info.get_symbol();
         }
-    } else if (is_asset_cert()) {
+    }
+    else if (is_identifiable_asset()) {
+        auto asset_info = boost::get<identifiable_asset>(attach_data.get_attach());
+        return asset_info.get_symbol();
+    }
+    else if (is_asset_cert()) {
         auto cert_info = boost::get<asset_cert>(attach_data.get_attach());
         return cert_info.get_symbol();
     }
@@ -383,26 +393,42 @@ std::string output::get_asset_symbol() const // for validate_transaction.cpp to 
 
 std::string output::get_asset_issuer() const // for validate_transaction.cpp to calculate asset transfer amount
 {
-    if (attach_data.get_type() == ASSET_TYPE) {
+    if (is_asset()) {
         auto asset_info = boost::get<asset>(attach_data.get_attach());
         if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
             return detail_info.get_issuer();
         }
     }
+    else if (is_identifiable_asset()) {
+        BITCOIN_ASSERT(false);
+    }
     return std::string("");
 }
 
 std::string output::get_asset_address() const // for validate_transaction.cpp to verify asset address
 {
-    if (attach_data.get_type() == ASSET_TYPE) {
+    if (is_asset()) {
         auto asset_info = boost::get<asset>(attach_data.get_attach());
         if (asset_info.get_status() == ASSET_DETAIL_TYPE) {
             auto detail_info = boost::get<asset_detail>(asset_info.get_data());
             return detail_info.get_address();
         }
     }
+    else if (is_identifiable_asset()) {
+        auto asset_info = boost::get<identifiable_asset>(attach_data.get_attach());
+        return asset_info.get_address();
+    }
     return std::string("");
+}
+
+identifiable_asset output::get_identifiable_asset() const
+{
+    if (is_identifiable_asset()) {
+        return boost::get<identifiable_asset>(attach_data.get_attach());
+    }
+    log::error("output::get_identifiable_asset") << "Asset type is not an identifiable_asset.";
+    return identifiable_asset();
 }
 
 asset_cert output::get_asset_cert() const
@@ -410,6 +436,7 @@ asset_cert output::get_asset_cert() const
     if (is_asset_cert()) {
         return boost::get<asset_cert>(attach_data.get_attach());
     }
+    log::error("output::get_asset_cert") << "Asset type is not an asset_cert.";
     return asset_cert();
 }
 
