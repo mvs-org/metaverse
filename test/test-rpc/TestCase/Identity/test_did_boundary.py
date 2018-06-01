@@ -12,7 +12,6 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(ec, 1000, message)
 
         #symbol is address
-        import pdb;pdb.set_trace()
         ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.addresslist[1])
         self.assertEqual(ec, 4010, message)
 
@@ -142,7 +141,7 @@ class TestDID(MVSTestCaseBase):
         self.assertEqual(message['addresses'][0]["status"], "current")
 
         self.assertEqual(message['addresses'][1]["address"], Zac.addresslist[0])
-        self.assertEqual(message['addresses'][1]["status"], "old")
+        self.assertEqual(message['addresses'][1]["status"], "history")
 
 
     def test_8_list_didaddresses_boundary(self):
