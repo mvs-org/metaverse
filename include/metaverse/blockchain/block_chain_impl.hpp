@@ -277,6 +277,13 @@ public:
     std::shared_ptr<business_address_asset_cert::list> get_address_asset_certs(
         const std::string& address, const std::string& symbol, asset_cert_type cert_type);
 
+    // identifiable asset
+    std::shared_ptr<identifiable_asset> get_registered_identifiable_asset(const std::string& symbol);
+    std::shared_ptr<identifiable_asset::list> get_registered_identifiable_assets();
+    std::shared_ptr<identifiable_asset::list> get_identifiable_asset_history(const std::string& symbol);
+    std::shared_ptr<identifiable_asset::list> get_account_identifiable_assets(
+        const std::string& account, const std::string& symbol="");
+
     // account did api
     bool is_did_exist(const std::string& symbol);
     bool get_did_height(const std::string& symbol, uint64_t& height);

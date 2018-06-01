@@ -470,13 +470,19 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     return tree;
 }
 
-Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_info)
+Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_info, bool is_tracing)
 {
     Json::Value tree;
     tree["symbol"] = asset_info.get_symbol();
     tree["address"] = asset_info.get_address();
-    tree["content"] = asset_info.get_content();
     tree["status"] = asset_info.get_status_name();
+
+    if (!is_tracing) {
+        if (asset_info.get_status() == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+            tree["content"] = asset_info.get_content();
+        }
+    }
+
     return tree;
 }
 

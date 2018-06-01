@@ -35,87 +35,48 @@ using namespace bc::explorer::config;
 console_result getmit::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-    // TODO
-    // auto& blockchain = node.chain_impl();
-    // blockchain.uppercase_symbol(argument_.symbol);
+    auto& blockchain = node.chain_impl();
 
-    // if (!argument_.symbol.empty()) {
-    //     // check asset symbol
-    //     check_asset_symbol(argument_.symbol);
-    // }
+    if (!argument_.symbol.empty()) {
+        blockchain.uppercase_symbol(argument_.symbol);
+        check_identifiable_asset_symbol(argument_.symbol);
+    }
 
-    // std::string json_key;
-    // Json::Value json_value;
-    // auto json_helper = config::json_helper(get_api_version());
+    Json::Value json_value;
+    auto json_helper = config::json_helper(get_api_version());
 
-    // if (option_.is_cert) { // only get asset certs
-    //     json_key = "assetcerts";
+    if (argument_.symbol.empty()) {
+        auto sh_vec = blockchain.get_registered_identifiable_assets();
+        std::set<std::string> symbols;
+        std::sort(sh_vec->begin(), sh_vec->end());
+        for (auto& elem : *sh_vec) {
+           // get rid of duplicate symbols
+            if (!symbols.count(elem.get_symbol())) {
+                symbols.insert(elem.get_symbol());
+                json_value.append(elem.get_symbol());
+            }
+        }
+    }
+    else {
+        auto sh_vec = blockchain.get_identifiable_asset_history(argument_.symbol);
 
-    //     // get asset cert in blockchain
-    //     auto sh_vec = blockchain.get_issued_asset_certs();
-    //     if (argument_.symbol.empty()) {
-    //         std::set<std::string> symbols;
-    //         std::sort(sh_vec->begin(), sh_vec->end());
-    //         for (auto& elem : *sh_vec) {
-    //            // get rid of duplicate symbols
-    //             if (!symbols.count(elem.get_symbol())) {
-    //                 symbols.insert(elem.get_symbol());
-    //                 json_value.append(elem.get_symbol());
-    //             }
-    //         }
-    //     }
-    //     else {
-    //         auto result_vec = std::make_shared<asset_cert::list>();
-    //         for (auto& cert : *sh_vec) {
-    //             if (argument_.symbol != cert.get_symbol()) {
-    //                 continue;
-    //             }
+        if (option_.show_history) {
+            for (auto& elem : *sh_vec) {
+                Json::Value asset_data = json_helper.prop_list(elem, true);
+                json_value.append(asset_data);
+            }
+        }
+        else {
 
-    //             result_vec->push_back(cert);
-    //         }
+        }
+    }
 
-    //         std::sort(result_vec->begin(), result_vec->end());
-    //         for (auto& elem : *result_vec) {
-    //             Json::Value asset_data = json_helper.prop_list(elem);
-    //             json_value.append(asset_data);
-    //         }
-    //     }
-    // }
-    // else {
-    //     json_key = "assets";
-
-    //     // get asset in blockchain
-    //     auto sh_vec = blockchain.get_issued_assets();
-    //     if (argument_.symbol.empty()) {
-    //         std::sort(sh_vec->begin(), sh_vec->end());
-    //         std::set<std::string> symbols;
-    //         for (auto& elem: *sh_vec) {
-    //             // get rid of duplicate symbols
-    //             if (!symbols.count(elem.get_symbol())) {
-    //                 symbols.insert(elem.get_symbol());
-    //                 json_value.append(elem.get_symbol());
-    //             }
-    //         }
-    //     }
-    //     else {
-    //         for (auto& elem: *sh_vec) {
-    //             if (elem.get_symbol() != argument_.symbol) {
-    //                 continue;
-    //             }
-
-    //             Json::Value asset_data = json_helper.prop_list(elem, true);
-    //             asset_data["status"] = "issued";
-    //             json_value.append(asset_data);
-    //         }
-    //     }
-    // }
-
-    // if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-    //     jv_output[json_key] = "";
-    // }
-    // else {
-    //     jv_output[json_key] = json_value;
-    // }
+    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+        jv_output["mits"] = "";
+    }
+    else {
+        jv_output["mits"] = json_value;
+    }
 
     return console_result::okay;
 }

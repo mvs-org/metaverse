@@ -44,14 +44,28 @@ console_result transfermit::invoke (Json::Value& jv_output,
     auto to_did = argument_.to;
     auto to_address = get_address_from_did(to_did, blockchain);
     if (!blockchain.is_valid_address(to_address)) {
-        throw toaddress_invalid_exception{"invalid did parameter! " + to_did};
+        throw toaddress_invalid_exception("Invalid did parameter! " + to_did);
     }
 
-    account_multisig acc_multisig;
-    std::string from_address;
-    bool is_multisig_address = false;
+    // get identifiable asset
+    auto mits = blockchain.get_account_identifiable_assets(auth_.name, argument_.symbol);
+    if (mits->size() == 0) {
+        throw asset_lack_exception("Not enough asset '" + argument_.symbol +  "'");
+    }
 
-    // TODO get from_address from blockchain
+    auto& mit = *(mits->begin());
+    std::string from_address(mit.get_address());
+    bool is_multisig_address = blockchain.is_script_address(from_address);
+
+    account_multisig acc_multisig;
+    if (is_multisig_address) {
+        auto multisig_vec = acc->get_multisig(from_address);
+        if (!multisig_vec || multisig_vec->empty()) {
+            throw multisig_notfound_exception("From address multisig record not found.");
+        }
+
+        acc_multisig = *(multisig_vec->begin());
+    }
 
     // receiver
     std::vector<receiver_record> receiver{

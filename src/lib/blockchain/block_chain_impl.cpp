@@ -1384,7 +1384,6 @@ std::shared_ptr<asset_cert> block_chain_impl::get_account_asset_cert(
     chain::transaction tx_temp;
     uint64_t tx_height;
 
-    auto sh_vec = std::make_shared<asset_cert::list>();
     for (auto& each : *pvaddr){
         wallet::payment_address payment_address(each.get_address());
         auto&& rows = get_address_history(payment_address);
@@ -1456,6 +1455,71 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = sha256_hash(data);
     return database_.certs.get(key) != nullptr;
+}
+
+std::shared_ptr<identifiable_asset> block_chain_impl::get_registered_identifiable_asset(const std::string& symbol)
+{
+    std::shared_ptr<identifiable_asset> sp_asset(nullptr);
+    // TODO:MIT
+    // return the registered identifiable asset, its status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    return sp_asset;
+}
+
+std::shared_ptr<identifiable_asset::list> block_chain_impl::get_registered_identifiable_assets()
+{
+    auto sp_vec = std::make_shared<identifiable_asset::list>();
+    // TODO:MIT
+    // return the registered identifiable assets, their status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    return sp_vec;
+}
+
+std::shared_ptr<identifiable_asset::list> block_chain_impl::get_identifiable_asset_history(
+    const std::string& symbol)
+{
+    auto sp_vec = std::make_shared<identifiable_asset::list>();
+    // TODO:MIT
+    // return the identifiable assets of specified symbol, the last item's status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    return sp_vec;
+}
+
+std::shared_ptr<identifiable_asset::list> block_chain_impl::get_account_identifiable_assets(
+    const std::string& account, const std::string& symbol)
+{
+    auto sp_vec = std::make_shared<identifiable_asset::list>();
+
+    auto pvaddr = get_account_addresses(account);
+    if (!pvaddr)
+        return sp_vec;
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    for (auto& each : *pvaddr){
+        wallet::payment_address payment_address(each.get_address());
+        auto&& rows = get_address_history(payment_address);
+
+        for (auto& row: rows) {
+            // spend unconfirmed (or no spend attempted)
+            if ((row.spend.hash == null_hash)
+                    && get_transaction(row.output.hash, tx_temp, tx_height))
+            {
+                BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+                const auto& output = tx_temp.outputs.at(row.output.index);
+                if (output.is_identifiable_asset()) {
+                    auto&& asset = output.get_identifiable_asset();
+                    if (symbol.empty()) {
+                        sp_vec->emplace_back(std::move(asset));
+                    }
+                    else if (symbol == asset.get_symbol()) {
+                        sp_vec->emplace_back(std::move(asset));
+                        return sp_vec;
+                    }
+                }
+            }
+        }
+    }
+
+    return sp_vec;
 }
 
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)

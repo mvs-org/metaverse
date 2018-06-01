@@ -161,42 +161,6 @@ std::string get_random_payment_address(
     return "";
 }
 
-bool sync_fetch_identifiable_asset(const std::string& address, const string& symbol,
-    bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<identifiable_asset::list> sh_vec)
-{
-    chain::transaction tx_temp;
-    uint64_t tx_height;
-
-    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
-    for (auto& row: rows)
-    {
-        // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
-        {
-            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
-            const auto& output = tx_temp.outputs.at(row.output.index);
-            if (output.is_identifiable_asset())
-            {
-                auto asset_info = output.get_identifiable_asset();
-                if (symbol.empty()) {
-                    sh_vec->push_back(std::move(asset_info));
-                }
-                else {
-                    if (symbol == asset_info.get_symbol()) {
-                        sh_vec->push_back(std::move(asset_info));
-                        // found unique identifiable asset then exit loop.
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec,

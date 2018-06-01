@@ -1047,7 +1047,7 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
 void data_base::push_identifiable_asset(const identifiable_asset& sp, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-    // TODO
+    // TODO:MIT
     log::info(LOG_DATABASE) << "TODO: push_identifiable_asset";
 }
 
