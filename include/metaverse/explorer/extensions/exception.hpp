@@ -109,6 +109,7 @@ DEFINE_EXPLORER_EXCEPTION(toaddress_unrecognized_exception, 4013);
 DEFINE_EXPLORER_EXCEPTION(fromaddress_empty_exception, 4014);
 DEFINE_EXPLORER_EXCEPTION(fromaddress_invalid_exception, 4015);
 DEFINE_EXPLORER_EXCEPTION(fromaddress_unrecognized_exception, 4016);
+DEFINE_EXPLORER_EXCEPTION(address_not_bound_did_exception, 4017);
 
 DEFINE_EXPLORER_EXCEPTION(asset_lack_exception, 5001);
 DEFINE_EXPLORER_EXCEPTION(asset_amount_exception, 5002);
