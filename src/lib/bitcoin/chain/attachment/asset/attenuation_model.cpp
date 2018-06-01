@@ -911,8 +911,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         }
 
         const auto& model_param = output.get_attenuation_model_param();
-        auto&& asset_detail = output.get_asset_detail();
-        if (!attenuation_model::validate_model_param(model_param, asset_detail.get_maximum_supply())) {
+        if (!attenuation_model::validate_model_param(model_param, output.get_asset_amount())) {
             log::info(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
             return error::attenuation_model_param_error;
         }
