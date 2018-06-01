@@ -82,17 +82,17 @@ public:
 		(
 			"ADDRESS",
 			value<std::string>(&argument_.address)->required(),
-			"target address"
+			"The address will be bound to, can change to other addresses later."
 		)
 		(
 			"SYMBOL",
 			value<std::string>(&argument_.symbol)->required(),
-			"registered did symbol"
+			"The symbol of global unique MVS Digital Identity Destination/Index, supports alphabets/numbers/(“@”, “.”, “_”, “-“), case-sensitive, maximum length is 64."
 		)
 		(
 			"fee,f",
 			value<uint64_t>(&argument_.fee)->default_value(100000000),
-			"The fee of tx. default_value 1 etp"
+			"The fee of tx. defaults to 1 etp."
 		);
 
         return options;

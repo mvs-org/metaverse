@@ -86,17 +86,21 @@ public:
         (
             "rate,r",
             value<int32_t>(&option_.secondaryissue_threshold),
-            "The rate of secondaryissue. Default to 0, means the asset is not allowed to secondary issue forever; otherwise, -1 means the asset can be secondary issue freely; otherwise, the valid rate is in range of 1 to 100, means the asset can be secondary issue when own percentage greater than or equal to the rate value."
+            "The percent threshold value when you secondary issue. \
+             0,  not allowed to secondary issue;  \
+            -1,  the asset can be secondary issue freely; \
+            [1, 100], the asset can be secondary issue when own percentage greater than or equal to this value. \
+            Defaults to 0."
         )
         (
             "symbol,s",
             value<std::string>(&option_.symbol)->required(),
-            "The asset symbol/name. Global unique."
+            "The asset symbol, global uniqueness, only supports UPPER-CASE alphabet and dot(.), eg: CHENHAO.LAPTOP, dot separates prefix 'CHENHAO', It's impossible to create any asset named with 'CHENHAO' prefix, but this issuer."
         )
         (
             "issuer,i",
             value<std::string>(&option_.issuer)->required(),
-            "The did symbol specified its issuer."
+            "Issue must be specified as a DID symbol."
         )
         (
             "volume,v",
@@ -111,7 +115,7 @@ public:
         (
             "description,d",
             value<std::string>(&option_.description),
-            "The asset description, defaults to empty string."
+            "The asset data chuck, defaults to empty string."
         );
 
         return options;

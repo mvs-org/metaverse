@@ -66,7 +66,7 @@ public:
 		(
 			"DID/ADDRESS",
 			value<std::string>(&option_.symbol),
-			"Did symbol or address"
+			"Did symbol or standard address; If no input parameters, then display whole network DIDs."
 		);
 
         return options;

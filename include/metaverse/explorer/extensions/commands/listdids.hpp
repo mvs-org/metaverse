@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "listdids";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "list dids details."; }
+    const char* description() override { return "list whole network DIDs in details."; }
 
     arguments_metadata& load_arguments() override
     {

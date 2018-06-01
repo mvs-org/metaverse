@@ -37,7 +37,7 @@ public:
     static const char* symbol(){ return "issue";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "issue "; }
+    const char* description() override { return "Broadcast the asset whole network."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -79,12 +79,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "issued asset symbol"
+            "The asset symbol, global uniqueness, only supports UPPER-CASE alphabet and dot(.)"
         )
         (
             "model,m",
             value<std::string>(&option_.attenuation_model_param),
-            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+            BX_MST_OFFERING_CURVE
         )
         (
             "fee,f",
