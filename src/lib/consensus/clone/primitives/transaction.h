@@ -208,6 +208,25 @@ public:
     }
 };
 
+class CIdentifiableAsset
+{
+public:
+    std::string symbol;
+    std::string address;
+    std::string content;
+    uint8_t status;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(symbol);
+        READWRITE(address);
+        READWRITE(content);
+        READWRITE(status);
+    }
+};
+
 class CDidDetail
 {
 public:
