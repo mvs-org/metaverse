@@ -540,7 +540,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
     else if (attach_data.get_type() == DID_TYPE) {
         auto did_info = boost::get<bc::chain::did>(attach_data.get_attach());
         if (did_info.get_status() == DID_DETAIL_TYPE) {
-            tree["type"] = "did-issue";
+            tree["type"] = "did-register";
             auto detail_info = boost::get<bc::chain::did_detail>(did_info.get_data());
             tree["symbol"] = detail_info.get_symbol();
             tree["address"] = detail_info.get_address();
