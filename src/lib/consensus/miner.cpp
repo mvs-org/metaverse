@@ -87,7 +87,7 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions)
         		}
 			}
 
-			if (output_script_is_ok || (sets.find(hash) == sets.end())) {
+			if (output_script_is_ok && (sets.find(hash) == sets.end())) {
 				sets.insert(hash);
 				++i;
 			} else {
