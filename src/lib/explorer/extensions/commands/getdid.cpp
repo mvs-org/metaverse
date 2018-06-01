@@ -34,50 +34,69 @@ console_result getdid::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     Json::Value json_value;
-    std::string json_key;
     
     auto& blockchain = node.chain_impl();
 
     if(option_.symbol.empty())
     {
-        json_key = "dids";
-
         auto sh_vec = blockchain.get_registered_dids();
 
         // add blockchain dids
         for (auto& elem: *sh_vec) 
             json_value.append(elem.get_symbol());  
+
+        if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+            jv_output["dids"] = "";
+        }
+        else {
+            jv_output["dids"] = json_value;
+        }
     }
     else
     {
-        json_key = "addresses";
+
+        auto didSymbol = option_.symbol;
+        if(blockchain.is_valid_address(didSymbol))
+        {
+            didSymbol = blockchain.get_did_from_address(didSymbol);
+            if(didSymbol.empty())
+                throw address_not_bound_did_exception{"address is not binded with some did on the blockchain"};        
+        }
+
         // check did symbol
-        check_did_symbol(option_.symbol);
+        check_did_symbol(didSymbol);
 
         // check did exists
-        if (!blockchain.is_did_exist(option_.symbol))
+        if (!blockchain.is_did_exist(didSymbol))
             throw did_symbol_notfound_exception{"did symbol does not exist on the blockchain"};
 
-        auto blockchain_dids = blockchain.get_did_history_addresses(option_.symbol);
+        auto blockchain_dids = blockchain.get_did_history_addresses(didSymbol);
         if (blockchain_dids) {
+            Json::Value json_address;
             Json::Value did_data;
             for (auto &did : *blockchain_dids){
                 did_data["address"] = did.get_did().get_address();
                 did_data["status"] = did.get_status_string();
                 json_value.append(did_data);
             }
+
+
+            if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
+                jv_output["did"] = didSymbol;
+                jv_output["addresses"] = "";
+            }
+            else {
+                jv_output["did"] = didSymbol;            
+                jv_output["addresses"] = json_value;
+            }
+
         }
 
 
     }
 
 
-    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-        jv_output[json_key] = "";
-    }
-    else {
-        jv_output[json_key] = json_value;
-    }
+
 
     return console_result::okay;
 }

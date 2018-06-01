@@ -145,12 +145,13 @@ class TestDID(MVSTestCaseBase):
 
 
     def test_8_list_didaddresses_boundary(self):
-        # ec, message = mvs_rpc.list_didaddresses(Alice.did_symbol)
-        # self.assertEqual(ec, 1000, message)
-
         # did symbol does not exist in blockchain
         ec, message = mvs_rpc.list_didaddresses(Zac.did_symbol)
         self.assertEqual(ec, 7006, message)
+
+        ec, message = mvs_rpc.list_didaddresses(Zac.mainaddress())
+        self.assertEqual(ec, 4017, message)
+
 
     def test_9_change_did_multisig(self):
         did_normal_symbal = "Zac@"+common.get_timestamp()
