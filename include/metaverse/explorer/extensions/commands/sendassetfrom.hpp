@@ -106,7 +106,7 @@ public:
         (
             "model,m",
             value<std::string>(&option_.attenuation_model_param),
-            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+            "The attenuation model parameter, defaults to empty string. eg. For fixed quantity model: \"TYPE=1;LQ=9000;LP=60000;UN=3\". For custom model: \"TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000\". For fixed inflation model: \"TYPE=3;LQ=20000000;LP=12000;UN=12;IR=8\""
         )
 		(
 			"fee,f",

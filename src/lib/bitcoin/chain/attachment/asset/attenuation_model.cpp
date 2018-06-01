@@ -37,6 +37,18 @@ namespace {
         return std::string(chunk.begin(), chunk.end());
     }
 
+    std::vector<std::pair<std::string, std::string>> key_name_pairs{
+        {"PN",      "current_period_nbr"},
+        {"LH",      "next_interval"},
+        {"TYPE",    "type"},
+        {"LQ",      "lock_quantity"},
+        {"LP",      "lock_period"},
+        {"UN",      "total_period_nbr"},
+        {"IR",      "inflation_rate"},
+        {"UC",      "custom_lock_number_array"},
+        {"UQ",      "custom_lock_quantity_array"}
+    };
+
     std::map<attenuation_model::model_type, std::vector<std::string>> model_keys_map {
         {attenuation_model::model_type::fixed_quantity, {"PN","LH","TYPE","LQ","LP","UN"}},
         {attenuation_model::model_type::custom,         {"PN","LH","TYPE","LQ","LP","UN","UC","UQ"}},
@@ -401,19 +413,28 @@ bool attenuation_model::is_multi_value_key(const std::string& key)
 
 std::string attenuation_model::get_name_of_key(const std::string& key)
 {
-    static std::map<std::string, std::string> key_name_map{
-        {"PN",      "current_period_nbr"},
-        {"LH",      "next_interval"},
-        {"TYPE",    "type"},
-        {"LQ",      "lock_quantity"},
-        {"LP",      "lock_period"},
-        {"UN",      "total_period_nbr"},
-        {"IR",      "inflation_rate"},
-    };
+    for (const auto& pair : key_name_pairs) {
+        if (key == pair.first) {
+            return pair.second;
+        }
+    }
+    BITCOIN_ASSERT(false);
+    return "";
+}
 
-    auto iter = key_name_map.find(key);
-    BITCOIN_ASSERT(iter != key_name_map.end());
-    return iter->second;
+std::string attenuation_model::get_key_of_name(const std::string& name)
+{
+    const std::string prefix = "model_";
+    if (name.find(prefix) != 0) {
+        return "";
+    }
+    auto compare_name = name.substr(prefix.size());
+    for (const auto& pair : key_name_pairs) {
+        if (compare_name == pair.second) {
+            return pair.first;
+        }
+    }
+    return "";
 }
 
 uint8_t attenuation_model::get_first_unused_index()
