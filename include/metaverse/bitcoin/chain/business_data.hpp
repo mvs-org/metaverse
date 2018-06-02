@@ -243,6 +243,30 @@ public:
 #endif
 };
 
+class BC_API business_address_mit
+{
+public:
+    typedef std::vector<business_address_mit> list;
+
+    std::string  address;
+    uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
+    identifiable_asset mit;
+
+#ifdef MVS_DEBUG
+    // just used for unit test in block_chain_impl_test.cpp
+    std::string to_string()
+    {
+        std::ostringstream ss;
+
+        ss << "\t address = " << address
+            << "\t status = " << std::to_string(status)
+            << "\t mit = " << mit.to_string() << "\n";
+
+        return ss.str();
+    }
+#endif
+};
+
 class BC_API business_address_did
 {
 public:
