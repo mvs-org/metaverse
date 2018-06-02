@@ -149,7 +149,7 @@ void address_mit_database::store_output(const short_hash& key,
         serial.write_8_bytes_little_endian(value);  // 8
         serial.write_2_bytes_little_endian(business_kd); // 2
         serial.write_4_bytes_little_endian(timestamp); // 4
-        serial.write_data(mit.to_data());
+        serial.write_data(mit.to_short_data());
     };
     rows_multimap_.add_row(key, write);
 }

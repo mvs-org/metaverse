@@ -475,9 +475,9 @@ Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_in
     Json::Value tree;
     tree["symbol"] = asset_info.get_symbol();
     tree["address"] = asset_info.get_address();
-    tree["status"] = asset_info.get_status_name();
 
     if (!is_tracing) {
+        tree["status"] = asset_info.get_status_name();
         if (asset_info.is_register_type()) {
             tree["content"] = asset_info.get_content();
         }

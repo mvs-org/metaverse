@@ -30,6 +30,12 @@
 namespace libbitcoin {
 namespace chain {
 
+// use 1~127 to represent normal mit status type
+// add plus 128 to them to make their status type in tracing state.
+// status >128 means no content should be store
+constexpr uint8_t MIT_STATUS_MASK = 0x7f;
+constexpr uint8_t MIT_STATUS_SHORT_OFFSET = 0x80;
+
 identifiable_asset::identifiable_asset()
 {
     reset();
@@ -120,6 +126,19 @@ bool identifiable_asset::from_data(reader& source)
     return result;
 }
 
+data_chunk identifiable_asset::to_short_data() const
+{
+    data_chunk data;
+    data_sink ostream(data);
+    ostream_writer sink(ostream);
+    // store status with offset, specify to store no content.
+    sink.write_byte(get_status() + MIT_STATUS_SHORT_OFFSET);
+    sink.write_string(symbol_);
+    sink.write_string(address_);
+    ostream.flush();
+    return data;
+}
+
 data_chunk identifiable_asset::to_data() const
 {
     data_chunk data;
@@ -159,7 +178,7 @@ uint64_t identifiable_asset::serialized_size() const
 std::string identifiable_asset::to_string() const
 {
     std::ostringstream ss;
-    ss << "\t status = " << status_to_string(status_) << "\n";
+    ss << "\t status = " << get_status_name() << "\n";
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t address = " << address_ << "\n";
     if (is_register_type()) {
@@ -203,12 +222,12 @@ void identifiable_asset::set_content(const std::string& content)
 
 uint8_t identifiable_asset::get_status() const
 {
-    return status_;
+    return status_ & MIT_STATUS_MASK;
 }
 
 void identifiable_asset::set_status(uint8_t status)
 {
-    status_ = status;
+    status_ = status & MIT_STATUS_MASK;
 }
 
 std::string identifiable_asset::status_to_string(uint8_t status)
@@ -226,7 +245,7 @@ std::string identifiable_asset::status_to_string(uint8_t status)
 
 std::string identifiable_asset::get_status_name() const
 {
-    return status_to_string(status_);
+    return status_to_string(get_status());
 }
 
 bool identifiable_asset::is_register_type() const
