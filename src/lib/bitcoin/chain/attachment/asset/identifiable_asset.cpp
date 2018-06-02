@@ -40,7 +40,7 @@ identifiable_asset::identifiable_asset(const std::string& symbol,
     : symbol_(symbol)
     , address_(address)
     , content_(content)
-    , status_(IDENTIFIABLE_ASSET_NORMAL_TYPE)
+    , status_(IDENTIFIABLE_ASSET_NONE_TYPE)
 {
 }
 
@@ -49,13 +49,15 @@ void identifiable_asset::reset()
     symbol_ = "";
     address_ = "";
     content_ = "";
-    status_ = IDENTIFIABLE_ASSET_NORMAL_TYPE;
+    status_ = IDENTIFIABLE_ASSET_NONE_TYPE;
 }
 
 bool identifiable_asset::is_valid() const
 {
     return !(symbol_.empty()
              || address_.empty()
+             || is_none_type()
+             || (!is_register_type() && !content_.empty())
              || ((symbol_.size() + 1) > IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE)
              || ((address_.size() + 1) > IDENTIFIABLE_ASSET_ADDRESS_FIX_SIZE)
              || ((content_.size() + 1) > IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE)
@@ -104,10 +106,12 @@ bool identifiable_asset::from_data(reader& source)
 {
     reset();
 
+    status_ = source.read_byte();
     symbol_ = source.read_string();
     address_ = source.read_string();
-    content_ = source.read_string();
-    status_ = source.read_byte();
+    if (is_register_type()) {
+        content_ = source.read_string();
+    }
 
     auto result = static_cast<bool>(source);
     if (!result)
@@ -133,26 +137,34 @@ void identifiable_asset::to_data(std::ostream& stream) const
 
 void identifiable_asset::to_data(writer& sink) const
 {
+    sink.write_byte(status_);
     sink.write_string(symbol_);
     sink.write_string(address_);
-    sink.write_string(content_);
-    sink.write_byte(status_);
+    if (is_register_type()) {
+        sink.write_string(content_);
+    }
 }
 
 uint64_t identifiable_asset::serialized_size() const
 {
-    size_t len = (symbol_.size() + 1) + (address_.size() + 1) + (content_.size() + 1)
-                 + IDENTIFIABLE_ASSET_STATUS_FIX_SIZE;
-    return std::min(len, IDENTIFIABLE_ASSET_FIX_SIZE);
+    if (is_register_type()) {
+        size_t len = (symbol_.size() + 1) + (address_.size() + 1) + (content_.size() + 1)
+                     + IDENTIFIABLE_ASSET_STATUS_FIX_SIZE;
+        return std::min(len, IDENTIFIABLE_ASSET_FIX_SIZE);
+    }
+    size_t len = (symbol_.size() + 1) + (address_.size() + 1) + IDENTIFIABLE_ASSET_STATUS_FIX_SIZE;
+    return std::min(len, IDENTIFIABLE_ASSET_TRANSFER_FIX_SIZE);
 }
 
 std::string identifiable_asset::to_string() const
 {
     std::ostringstream ss;
+    ss << "\t status = " << status_to_string(status_) << "\n";
     ss << "\t symbol = " << symbol_ << "\n";
     ss << "\t address = " << address_ << "\n";
-    ss << "\t content = " << content_ << "\n";
-    ss << "\t status = " << status_to_string(status_) << "\n";
+    if (is_register_type()) {
+        ss << "\t content = " << content_ << "\n";
+    }
     return ss.str();
 }
 
@@ -208,13 +220,28 @@ std::string identifiable_asset::status_to_string(uint8_t status)
         return "transfered";
     }
     else {
-        return "normal";
+        return "none";
     }
 }
 
 std::string identifiable_asset::get_status_name() const
 {
     return status_to_string(status_);
+}
+
+bool identifiable_asset::is_register_type() const
+{
+    return status_ == IDENTIFIABLE_ASSET_REGISTER_TYPE;
+}
+
+bool identifiable_asset::is_transfer_type() const
+{
+    return status_ == IDENTIFIABLE_ASSET_TRANSFER_TYPE;
+}
+
+bool identifiable_asset::is_none_type() const
+{
+    return status_ == IDENTIFIABLE_ASSET_NONE_TYPE;
 }
 
 } // namspace chain

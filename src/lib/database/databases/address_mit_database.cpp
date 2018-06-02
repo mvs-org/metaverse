@@ -135,6 +135,25 @@ address_mit_statinfo address_mit_database::statinfo() const
 }
 
 // ----------------------------------------------------------------------------
+void address_mit_database::store_output(const short_hash& key,
+    const output_point& outpoint, uint32_t output_height,
+    uint64_t value, uint16_t business_kd,
+    uint32_t timestamp, const mit& mit)
+{
+    auto write = [&](memory_ptr data)
+    {
+        auto serial = make_serializer(REMAP_ADDRESS(data));
+        serial.write_byte(static_cast<uint8_t>(point_kind::output)); // 1
+        serial.write_data(outpoint.to_data()); // 36
+        serial.write_4_bytes_little_endian(output_height); // 4
+        serial.write_8_bytes_little_endian(value);  // 8
+        serial.write_2_bytes_little_endian(business_kd); // 2
+        serial.write_4_bytes_little_endian(timestamp); // 4
+        serial.write_data(mit.to_data());
+    };
+    rows_multimap_.add_row(key, write);
+}
+
 void address_mit_database::store_input(const short_hash& key,
     const output_point& inpoint, uint32_t input_height,
     const input_point& previous, uint32_t timestamp)

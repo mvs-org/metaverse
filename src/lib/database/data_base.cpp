@@ -117,6 +117,24 @@ bool data_base::initialize_certs(const path& prefix)
     return instance.stop();
 }
 
+bool data_base::initialize_mits(const path& prefix)
+{
+    const store paths(prefix);
+    if (paths.mits_exist())
+        return true;
+    if (!paths.touch_mits())
+        return false;
+
+    data_base instance(prefix, 0, 0);
+    if (!instance.create_mits())
+        return false;
+
+    log::info(LOG_DATABASE)
+        << "Upgrading mit table is complete.";
+
+    return instance.stop();
+}
+
 bool data_base::upgrade_version_63(const path& prefix)
 {
     auto metadata_path = prefix / db_metadata::file_name;
@@ -138,6 +156,12 @@ bool data_base::upgrade_version_63(const path& prefix)
     if (!initialize_certs(prefix)) {
         log::error(LOG_DATABASE)
             << "Failed to upgrade cert database.";
+        return false;
+    }
+
+    if (!initialize_mits(prefix)) {
+        log::error(LOG_DATABASE)
+            << "Failed to upgrade mit database.";
         return false;
     }
 
@@ -193,6 +217,9 @@ data_base::store::store(const path& prefix)
     account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
     /* end database for account, asset, address_asset relationship */
+    mits_lookup = prefix / "mit_table";
+    address_mits_lookup = prefix / "address_mit_table"; // for blockchain
+    address_mits_rows = prefix / "address_mit_row"; // for blockchain
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -228,8 +255,11 @@ bool data_base::store::touch_all() const
         touch_file(address_dids_lookup) &&
         touch_file(address_dids_rows) &&
         touch_file(account_addresses_lookup) &&
-        touch_file(account_addresses_rows);
+        touch_file(account_addresses_rows) &&
         /* end database for account, asset, address_asset relationship */
+        touch_file(mits_lookup) &&
+        touch_file(address_mits_lookup) &&
+        touch_file(address_mits_rows);
 }
 
 bool data_base::store::dids_exist() const
@@ -256,6 +286,22 @@ bool data_base::store::certs_exist() const
 bool data_base::store::touch_certs() const
 {
     return touch_file(certs_lookup);
+}
+
+bool data_base::store::mits_exist() const
+{
+    return
+        boost::filesystem::exists(mits_lookup) ||
+        boost::filesystem::exists(address_mits_lookup) ||
+        boost::filesystem::exists(address_mits_rows);
+}
+
+bool data_base::store::touch_mits() const
+{
+    return
+        touch_file(mits_lookup) &&
+        touch_file(address_mits_lookup) &&
+        touch_file(address_mits_rows);
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -413,8 +459,10 @@ data_base::data_base(const store& paths, size_t history_height,
     certs(paths.certs_lookup, mutex_),
     dids(paths.dids_lookup, mutex_),
     address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),
-    account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_)
+    account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
     /* end database for account, asset, address_asset, did relationship */
+    mits(paths.mits_lookup, mutex_),
+    address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_)
 {
 }
 
@@ -470,8 +518,10 @@ bool data_base::create()
         certs.create() &&
         dids.create() &&
         address_dids.create() &&
-        account_addresses.create()
+        account_addresses.create() &&
         /* end database for account, asset, address_asset relationship */
+        mits.create() &&
+        address_mits.create()
         ;
 }
 
@@ -486,6 +536,13 @@ bool data_base::create_certs()
 {
     return
         certs.create();
+}
+
+bool data_base::create_mits()
+{
+    return
+        mits.create() &&
+        address_mits.create();
 }
 
 // Start must be called before performing queries.
@@ -521,8 +578,10 @@ bool data_base::start()
         certs.start() &&
         dids.start() &&
         address_dids.start() &&
-        account_addresses.start()
+        account_addresses.start() &&
         /* end database for account, asset, address_asset relationship */
+        mits.start() &&
+        address_mits.start()
         ;
     const auto end_exclusive = end_write();
 
@@ -549,6 +608,8 @@ bool data_base::stop()
     const auto address_dids_stop = address_dids.stop();
     const auto account_addresses_stop = account_addresses.stop();
     /* end database for account, asset, address_asset relationship */
+    const auto mits_stop = mits.stop();
+    const auto address_mits_stop = address_mits.stop();
     const auto end_exclusive = end_write();
 
     // This should remove the lock file. This is not important for locking
@@ -574,6 +635,8 @@ bool data_base::stop()
         address_dids_stop &&
         account_addresses_stop &&
         /* end database for account, asset, address_asset relationship */
+        mits_stop &&
+        address_mits_stop &&
         end_exclusive;
 }
 
@@ -593,9 +656,10 @@ bool data_base::close()
     const auto account_assets_close = account_assets.close();
     const auto certs_close = certs.close();
     const auto dids_close = dids.close();
-
     const auto account_addresses_close = account_addresses.close();
     /* end database for account, asset, address_asset relationship */
+    const auto mits_close = mits.close();
+    const auto address_mits_close = address_mits.close();
 
     // Return the cumulative result of the database closes.
     return
@@ -608,12 +672,14 @@ bool data_base::close()
         accounts_close &&
         assets_close &&
         address_assets_close&&
+        address_dids_close &&
         account_assets_close&&
         certs_close &&
         dids_close &&
-
-        account_addresses_close
+        account_addresses_close &&
         /* end database for account, asset, address_asset relationship */
+        mits_close &&
+        address_mits_close
         ;
 }
 
@@ -684,6 +750,8 @@ void data_base::synchronize()
     address_dids.sync();
     account_addresses.sync();
     /* end database for account, asset, address_asset relationship */
+    mits.sync();
+    address_mits.sync();
     blocks.sync();
 }
 
@@ -696,6 +764,12 @@ void data_base::synchronize_dids()
 void data_base::synchronize_certs()
 {
     certs.sync();
+}
+
+void data_base::synchronize_mits()
+{
+    mits.sync();
+    address_mits.sync();
 }
 
 void data_base::push(const block& block)
@@ -773,6 +847,8 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
         address_assets.store_input(key, point, height, previous, timestamp_);
         address_assets.sync();
         /* end added for asset issue/transfer */
+        address_mits.store_input(key, point, height, previous, timestamp_);
+        address_mits.sync();
     }
 }
 
@@ -795,7 +871,7 @@ void data_base::push_outputs(const hash_digest& tx_hash, size_t height,
         const auto value = output.value;
         history.add_output(address.hash(), point, height, value);
 
-        push_attachemnt(output.attach_data, address, point, height, value);
+        push_attachment(output.attach_data, address, point, height, value);
     }
 }
 
@@ -915,6 +991,7 @@ void data_base::pop_inputs(const input::list& inputs, size_t height)
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
             address_assets.delete_last_row(hash);
+            address_mits.delete_last_row(hash);
         }
     }
 }
@@ -937,6 +1014,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
             address_assets.delete_last_row(hash);
+            address_mits.delete_last_row(hash);
             // remove asset or did from database
             bc::chain::output op = *output;
             if (op.is_asset_issue() || op.is_asset_secondaryissue()) {
@@ -989,6 +1067,15 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                     certs.remove(key_hash);
                 }
             }
+            else if (op.is_identifiable_asset()) {
+                const auto mit = op.get_identifiable_asset();
+                if (mit.is_register_type()) {
+                    auto symbol = mit.get_symbol();
+                    const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
+                    const auto symbol_hash = sha256_hash(symbol_data);
+                    mits.remove(symbol_hash);
+                }
+            }
         }
     }
 }
@@ -997,12 +1084,12 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
 #include <metaverse/bitcoin/config/base16.hpp>
 using namespace libbitcoin::config;
 
-void data_base::push_attachemnt(const attachment& attach, const payment_address& address,
+void data_base::push_attachment(const attachment& attach, const payment_address& address,
     const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
     auto address_str = address.encoded();
-    log::trace(LOG_DATABASE) << "push_attachemnt address_str=" << address_str;
-    log::trace(LOG_DATABASE) << "push_attachemnt address hash=" << base16(address.hash());
+    log::trace(LOG_DATABASE) << "push_attachment address_str=" << address_str;
+    log::trace(LOG_DATABASE) << "push_attachment address hash=" << base16(address.hash());
     data_chunk data(address_str.begin(), address_str.end());
     short_hash hash = ripemd160_hash(data);
     auto visitor = attachment_visitor(this, hash, outpoint, output_height, value);
@@ -1042,13 +1129,6 @@ void data_base::push_asset(const asset& sp, const short_hash& key,
 {
     auto visitor = asset_visitor(this, key, outpoint, output_height, value);
     boost::apply_visitor(visitor, const_cast<asset&>(sp).get_data());
-}
-
-void data_base::push_identifiable_asset(const identifiable_asset& sp, const short_hash& key,
-    const output_point& outpoint, uint32_t output_height, uint64_t value)
-{
-    // TODO:MIT
-    log::info(LOG_DATABASE) << "TODO: push_identifiable_asset";
 }
 
 void data_base::push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
@@ -1110,6 +1190,21 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 }
 
 /* end store did related info into database */
+
+/* begin store did related info into database */
+void data_base::push_mit(const mit& mit, const short_hash& key,
+    const output_point& outpoint, uint32_t output_height, uint64_t value)
+{
+    if (mit.is_register_type()) {
+        mits.store(mit);
+        mits.sync();
+    }
+    address_mits.store_output(key, outpoint, output_height, value,
+        static_cast<typename std::underlying_type<business_kind>::type>(business_kind::identifiable_asset),
+        timestamp_, mit);
+    address_mits.sync();
+}
+/* end store mit related info into database */
 
 } // namespace data_base
 } // namespace libbitcoin

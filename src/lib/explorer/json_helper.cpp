@@ -478,7 +478,7 @@ Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_in
     tree["status"] = asset_info.get_status_name();
 
     if (!is_tracing) {
-        if (asset_info.get_status() == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+        if (asset_info.is_register_type()) {
             tree["content"] = asset_info.get_content();
         }
     }

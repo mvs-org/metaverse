@@ -80,24 +80,9 @@ public:
     /// Return statistical info about the database.
     address_mit_statinfo statinfo() const;
 
-    template <class BusinessDataType>
     void store_output(const short_hash& key, const output_point& outpoint,
-        uint32_t output_height, uint64_t value, uint16_t business_kd, uint32_t timestamp, BusinessDataType& business_data)
-    {
-        //delete_last_row(key);
-        auto write = [&](memory_ptr data)
-        {
-            auto serial = make_serializer(REMAP_ADDRESS(data));
-            serial.write_byte(static_cast<uint8_t>(point_kind::output)); // 1
-            serial.write_data(outpoint.to_data()); // 36
-            serial.write_4_bytes_little_endian(output_height); // 4
-            serial.write_8_bytes_little_endian(value);  // 8
-            serial.write_2_bytes_little_endian(business_kd); // 2
-            serial.write_4_bytes_little_endian(timestamp); // 4
-            serial.write_data(business_data.to_data());
-        };
-        rows_multimap_.add_row(key, write);
-    }
+        uint32_t output_height, uint64_t value, uint16_t business_kd,
+        uint32_t timestamp, const mit& mit);
 
     void store_input(const short_hash& key,
         const output_point& inpoint, uint32_t input_height,

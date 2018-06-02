@@ -54,6 +54,8 @@
 #include <metaverse/database/databases/blockchain_asset_cert_database.hpp>
 #include <metaverse/database/databases/blockchain_did_database.hpp>
 #include <metaverse/database/databases/address_did_database.hpp>
+#include <metaverse/database/databases/blockchain_mit_database.hpp>
+#include <metaverse/database/databases/address_mit_database.hpp>
 
 using namespace libbitcoin::wallet;
 using namespace libbitcoin::chain;
@@ -77,6 +79,8 @@ public:
         bool dids_exist() const;
         bool touch_certs() const;
         bool certs_exist() const;
+        bool touch_mits() const;
+        bool mits_exist() const;
 
         path database_lock;
         path blocks_lookup;
@@ -100,6 +104,9 @@ public:
         path account_addresses_lookup;
         path account_addresses_rows;
         /* end database for account, asset, address_asset, did ,address_did relationship */
+        path mits_lookup;
+        path address_mits_lookup;
+        path address_mits_rows;
     };
 
     class db_metadata
@@ -147,6 +154,7 @@ public:
     bool create();
     bool create_dids();
     bool create_certs();
+    bool create_mits();
 
     /// Start all databases.
     bool start();
@@ -181,7 +189,7 @@ public:
 
     /* begin store asset info into  database */
 
-    void push_attachemnt(const attachment& attach, const payment_address& address,
+    void push_attachment(const attachment& attach, const payment_address& address,
             const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_etp(const etp& etp, const short_hash& key,
@@ -194,9 +202,6 @@ public:
             const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_asset(const asset& sp, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
-
-    void push_identifiable_asset(const identifiable_asset& sp, const short_hash& key,
                 const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_asset_cert(const asset_cert& sp_cert, const short_hash& key,
@@ -212,6 +217,9 @@ public:
                 const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_did_detail(const did_detail& sp_detail, const short_hash& key,
+                const output_point& outpoint, uint32_t output_height, uint64_t value);
+
+    void push_mit(const mit& mit, const short_hash& key,
                 const output_point& outpoint, uint32_t output_height, uint64_t value);
 
    class attachment_visitor : public boost::static_visitor<void>
@@ -231,10 +239,6 @@ public:
         {
             return db_->push_asset_cert(t, sh_hash_, outpoint_, output_height_, value_);
         }
-        void operator()(const identifiable_asset &t) const
-        {
-            return db_->push_identifiable_asset(t, sh_hash_, outpoint_, output_height_, value_);
-        }
         void operator()(const etp &t) const
         {
             return db_->push_etp(t, sh_hash_, outpoint_, output_height_, value_);
@@ -250,6 +254,10 @@ public:
         void operator()(const did &t) const
         {
             return db_->push_did(t, sh_hash_, outpoint_, output_height_, value_);
+        }
+        void operator()(const mit &t) const
+        {
+            return db_->push_mit(t, sh_hash_, outpoint_, output_height_, value_);
         }
     private:
         data_base* db_;
@@ -300,6 +308,7 @@ private:
 
     static bool initialize_dids(const path& prefix);
     static bool initialize_certs(const path& prefix);
+    static bool initialize_mits(const path& prefix);
 
     static void uninitialize_lock(const path& lock);
     static file_lock initialize_lock(const path& lock);
@@ -307,6 +316,8 @@ private:
     void synchronize();
     void synchronize_dids();
     void synchronize_certs();
+    void synchronize_mits();
+
     void push_inputs(const hash_digest& tx_hash, size_t height,
         const inputs& inputs);
     void push_outputs(const hash_digest& tx_hash, size_t height,
@@ -350,6 +361,8 @@ public:
     address_did_database address_dids;
     account_address_database account_addresses;
     /* end database for account, asset, address_asset relationship */
+    blockchain_mit_database mits;
+    address_mit_database address_mits;
 };
 
 } // namespace database

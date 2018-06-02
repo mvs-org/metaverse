@@ -30,7 +30,7 @@
 
 #define IDENTIFIABLE_ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<identifiable_asset::identifiable_asset_status>::type>(kd))
 
-#define IDENTIFIABLE_ASSET_NORMAL_TYPE      IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_none)
+#define IDENTIFIABLE_ASSET_NONE_TYPE        IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_none)
 #define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_register)
 #define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_transfer)
 
@@ -98,13 +98,17 @@ public:
 
     static std::string status_to_string(uint8_t status);
 
+    bool is_register_type() const;
+    bool is_transfer_type() const;
+    bool is_none_type() const;
+
 private:
     // NOTICE: ref CIdentifiableAsset in transaction.h
     // identifiable_asset and CIdentifiableAsset should have the same size and order.
+    uint8_t status_;        // asset status
     std::string symbol_;    // asset name/symbol
     std::string address_;   // address that owned asset cert
-    std::string content_;   // the content of the asset
-    uint8_t status_;        // asset status
+    std::string content_;   // the content of the asset, only serialization in register.
 };
 
 using mit = identifiable_asset;

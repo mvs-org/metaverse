@@ -211,19 +211,21 @@ public:
 class CIdentifiableAsset
 {
 public:
+    uint8_t status;
     std::string symbol;
     std::string address;
     std::string content;
-    uint8_t status;
 
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(status);
         READWRITE(symbol);
         READWRITE(address);
-        READWRITE(content);
-        READWRITE(status);
+        if (status == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+            READWRITE(content);
+        }
     }
 };
 
@@ -314,6 +316,7 @@ public:
 
     CAsset asset;
     CAssetCert assetcert;
+    CIdentifiableAsset mit;
     CDid did;
     CMessage message;
 
@@ -359,6 +362,9 @@ public:
             case 5: // asset cert
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
                 break;
+            case 6: // mit
+                (::SerReadWrite(s, (*(CIdentifiableAsset*)(&mit)), nType, nVersion, CSerActionSerialize()));
+                break;
         };
     }
     template<typename Stream>
@@ -388,6 +394,9 @@ public:
                 break;
             case 5: // asset cert
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 6: // mit
+                (::SerReadWrite(s, (*(CIdentifiableAsset*)(&mit)), nType, nVersion, CSerActionUnserialize()));
                 break;
         };
     }

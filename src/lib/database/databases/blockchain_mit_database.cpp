@@ -145,7 +145,7 @@ std::shared_ptr<std::vector<mit>> blockchain_mit_database::get_blockchain_mits()
 
 void blockchain_mit_database::store(const mit& mit)
 {
-    auto&& key_str = mit.get_symbol();
+    const auto& key_str = mit.get_symbol();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = sha256_hash(data);
 
