@@ -30,11 +30,9 @@
 
 #define IDENTIFIABLE_ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<identifiable_asset::identifiable_asset_status>::type>(kd))
 
-#define IDENTIFIABLE_ASSET_NORMAL_TYPE      IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::none)
-#define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::register)
-#define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::transfer)
-
-using mit_status = bc::chain::identifiable_asset::identifiable_asset_status;
+#define IDENTIFIABLE_ASSET_NORMAL_TYPE      IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_none)
+#define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_register)
+#define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_transfer)
 
 namespace libbitcoin {
 namespace chain {
@@ -48,6 +46,9 @@ BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_FIX_SIZE = (IDENTIFIABLE_ASSET_SYMBOL_FIX
         + IDENTIFIABLE_ASSET_ADDRESS_FIX_SIZE + IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE
         + IDENTIFIABLE_ASSET_STATUS_FIX_SIZE);
 
+BC_CONSTEXPR size_t IDENTIFIABLE_ASSET_TRANSFER_FIX_SIZE = (
+        IDENTIFIABLE_ASSET_FIX_SIZE - IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE);
+
 class BC_API identifiable_asset
 {
 public:
@@ -55,9 +56,9 @@ public:
 
     enum class identifiable_asset_status : uint8_t
     {
-        none   = 0,
-        register = 1,
-        transfer = 2,
+        mit_none   = 0,
+        mit_register = 1,
+        mit_transfer = 2,
     };
 
     identifiable_asset();
@@ -105,6 +106,9 @@ private:
     std::string content_;   // the content of the asset
     uint8_t status_;        // asset status
 };
+
+using mit = identifiable_asset;
+using mit_status = typename identifiable_asset::identifiable_asset_status;
 
 } // namespace chain
 } // namespace libbitcoin
