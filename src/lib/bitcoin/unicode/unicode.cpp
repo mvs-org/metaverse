@@ -367,7 +367,7 @@ void set_utf8_stdio()
 {
     set_utf8_stdin();
     set_utf8_stdout();
-    set_utf8_stderr();
+    // set_utf8_stderr();
 }
 
 // Set stdio to use UTF8 translation on Windows.
