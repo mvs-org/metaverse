@@ -1014,7 +1014,6 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
             address_assets.delete_last_row(hash);
-            address_mits.delete_last_row(hash);
             // remove asset or did from database
             bc::chain::output op = *output;
             if (op.is_asset_issue() || op.is_asset_secondaryissue()) {
@@ -1068,6 +1067,7 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 }
             }
             else if (op.is_identifiable_asset()) {
+                address_mits.delete_last_row(hash);
                 const auto mit = op.get_identifiable_asset();
                 if (mit.is_register_type()) {
                     auto symbol = mit.get_symbol();

@@ -1452,25 +1452,21 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     BITCOIN_ASSERT(!symbol.empty());
 
     auto&& key_str = asset_cert::get_key(symbol, cert_type);
-    const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-    const auto key = sha256_hash(data);
+    const auto key = get_hash(key_str);
     return database_.certs.get(key) != nullptr;
 }
 
 std::shared_ptr<identifiable_asset> block_chain_impl::get_registered_identifiable_asset(const std::string& symbol)
 {
-    std::shared_ptr<identifiable_asset> sp_asset(nullptr);
-    // TODO:MIT
+    BITCOIN_ASSERT(!symbol.empty());
     // return the registered identifiable asset, its status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
-    return sp_asset;
+    return database_.mits.get(get_hash(symbol));
 }
 
 std::shared_ptr<identifiable_asset::list> block_chain_impl::get_registered_identifiable_assets()
 {
-    auto sp_vec = std::make_shared<identifiable_asset::list>();
-    // TODO:MIT
     // return the registered identifiable assets, their status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
-    return sp_vec;
+    return database_.mits.get_blockchain_mits();
 }
 
 std::shared_ptr<identifiable_asset::list> block_chain_impl::get_identifiable_asset_history(
@@ -2071,8 +2067,7 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool check_
 
 bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t& height)
 {
-    const data_chunk& data = data_chunk(asset_name.begin(), asset_name.end());
-    const auto hash = sha256_hash(data);
+    const auto hash = get_hash(asset_name);
 
     // std::shared_ptr<blockchain_asset>
     auto sp_asset = database_.assets.get(hash);
@@ -2085,8 +2080,7 @@ bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t&
 
 bool block_chain_impl::get_did_height(const std::string& did_name, uint64_t& height)
 {
-    const data_chunk& data = data_chunk(did_name.begin(), did_name.end());
-    const auto hash = sha256_hash(data);
+    const auto hash = get_hash(did_name);
 
     // std::shared_ptr<blockchain_asset>
     auto sp_did = database_.dids.get(hash);
