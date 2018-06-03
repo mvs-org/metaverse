@@ -847,8 +847,6 @@ void data_base::push_inputs(const hash_digest& tx_hash, size_t height,
         address_assets.store_input(key, point, height, previous, timestamp_);
         address_assets.sync();
         /* end added for asset issue/transfer */
-        address_mits.store_input(key, point, height, previous, timestamp_);
-        address_mits.sync();
     }
 }
 
@@ -991,7 +989,6 @@ void data_base::pop_inputs(const input::list& inputs, size_t height)
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
             address_assets.delete_last_row(hash);
-            address_mits.delete_last_row(hash);
         }
     }
 }
@@ -1068,11 +1065,13 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             }
             else if (op.is_identifiable_asset()) {
                 address_mits.delete_last_row(hash);
+
                 const auto mit = op.get_identifiable_asset();
+                auto symbol = mit.get_symbol();
+                const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
+                const auto symbol_hash = sha256_hash(symbol_data);
+
                 if (mit.is_register_type()) {
-                    auto symbol = mit.get_symbol();
-                    const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
-                    const auto symbol_hash = sha256_hash(symbol_data);
                     mits.remove(symbol_hash);
                 }
             }

@@ -64,6 +64,10 @@ public:
     identifiable_asset();
     identifiable_asset(const std::string& symbol, const std::string& address,
                        const std::string& content);
+    identifiable_asset(const identifiable_asset&);
+    identifiable_asset(identifiable_asset&&);
+    identifiable_asset& operator=(const identifiable_asset&);
+    identifiable_asset& operator=(identifiable_asset&&);
 
     void reset();
     bool is_valid() const;

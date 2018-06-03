@@ -50,6 +50,40 @@ identifiable_asset::identifiable_asset(const std::string& symbol,
 {
 }
 
+identifiable_asset::identifiable_asset(const identifiable_asset& other)
+    : symbol_(other.symbol_)
+    , address_(other.address_)
+    , content_(other.content_)
+    , status_(other.status_)
+{
+}
+
+identifiable_asset::identifiable_asset(identifiable_asset&& other)
+    : symbol_(std::move(other.symbol_))
+    , address_(std::move(other.address_))
+    , content_(std::move(other.content_))
+    , status_(other.status_)
+{
+}
+
+identifiable_asset& identifiable_asset::operator=(const identifiable_asset& other)
+{
+    symbol_ = other.symbol_;
+    address_ = other.address_;
+    content_ = other.content_;
+    status_ = other.status_;
+    return *this;
+}
+
+identifiable_asset& identifiable_asset::operator=(identifiable_asset&& other)
+{
+    symbol_ = std::move(other.symbol_);
+    address_ = std::move(other.address_);
+    content_ = std::move(other.content_);
+    status_ = other.status_;
+    return *this;
+}
+
 void identifiable_asset::reset()
 {
     symbol_ = "";
