@@ -64,7 +64,7 @@ console_result registermit::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {
             to_address, argument_.symbol, 0, 0, 0,
-            utxo_attach_type::asset_mit, attachment()
+            utxo_attach_type::asset_mit, attachment(to_did, to_did)
         }
     };
 
