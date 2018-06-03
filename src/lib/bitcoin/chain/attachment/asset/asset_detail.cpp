@@ -27,7 +27,6 @@
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/bitcoin/utility/string.hpp>
 #include <json/minijson_writer.hpp>
-#include <metaverse/mgbubble/utility/Compare.hpp>
 
 #define ASSET_SYMBOL_DELIMITER "."
 
@@ -177,15 +176,8 @@ std::string asset_detail::to_string() const
 
 bool asset_detail::operator< (const asset_detail& other) const
 {
-    auto ret = 0;
-    if ((ret = symbol.compare(other.symbol)) < 0
-        || (ret == 0 && (ret = issuer.compare(other.issuer)) < 0)
-        || (ret == 0 && (ret = mgbubble::compare(maximum_supply,other.maximum_supply)) < 0)
-        || (ret == 0 && (ret = address.compare(other.address)) < 0)){
-            return true;
-        }
-
-    return false;
+    typedef std::tuple<std::string, std::string> cmp_tuple;
+    return cmp_tuple(symbol, issuer) < cmp_tuple(other.symbol, other.issuer);
 }
 
 const std::string& asset_detail::get_symbol() const

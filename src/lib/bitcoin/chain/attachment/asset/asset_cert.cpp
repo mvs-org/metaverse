@@ -25,7 +25,6 @@
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
-#include <metaverse/mgbubble/utility/Compare.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -69,14 +68,8 @@ bool asset_cert::is_valid() const
 
 bool asset_cert::operator< (const asset_cert& other) const
 {
-    auto ret = 0;
-    if ((ret = symbol_.compare(other.symbol_)) < 0
-        || (ret == 0 && (ret = mgbubble::compare(cert_type_,other.cert_type_)) < 0)
-        || (ret == 0 && (ret = address_.compare(other.address_)) < 0)){
-            return true;
-        }
-
-    return false;
+    typedef std::tuple<std::string, asset_cert_type> cmp_tuple;
+    return cmp_tuple(symbol_, cert_type_) < cmp_tuple(other.symbol_, other.cert_type_);
 }
 
 std::string asset_cert::get_domain(const std::string& symbol)

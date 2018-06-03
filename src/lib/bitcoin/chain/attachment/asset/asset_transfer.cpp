@@ -26,22 +26,15 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <json/minijson_writer.hpp>
-#include <metaverse/mgbubble/utility/Compare.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 bool asset_balances::operator< (const asset_balances& other) const
 {
-    auto ret = 0;
-    if ((ret = symbol.compare(other.symbol)) < 0
-        || (ret == 0 && (ret = address.compare(other.address)) < 0)
-        || (ret == 0 && (ret = mgbubble::compare(unspent_asset ,other.unspent_asset)) < 0)
-        || (ret == 0 && mgbubble::compare(locked_asset ,other.locked_asset) < 0)
-        )
-        return true;
-
-    return false;
+    typedef std::tuple<std::string, std::string, uint64_t, uint64_t> cmp_tuple;
+    return cmp_tuple(symbol, address, unspent_asset, locked_asset)
+        < cmp_tuple(other.symbol, other.address, other.unspent_asset, other.locked_asset);
 }
     
 asset_transfer::asset_transfer()
