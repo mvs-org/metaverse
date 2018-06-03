@@ -448,6 +448,7 @@ BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
  * @return             A property list.
  */
 BCX_API Json::Value prop_list(const bc::chain::asset_mit& asset_info, bool is_tracing=false, bool force_print=false);
+BCX_API Json::Value prop_list(const bc::chain::asset_mit_info& mit_info);
 
 /**
  * Generate a property list for a multisign.

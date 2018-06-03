@@ -1112,7 +1112,8 @@ void data_base::push_attachment(const attachment& attach, const payment_address&
     log::trace(LOG_DATABASE) << "push_attachment address hash=" << base16(address.hash());
     data_chunk data(address_str.begin(), address_str.end());
     short_hash hash = ripemd160_hash(data);
-    auto visitor = attachment_visitor(this, hash, outpoint, output_height, value);
+    auto visitor = attachment_visitor(this, hash, outpoint, output_height, value,
+        attach.get_from_did(), attach.get_to_did());
     boost::apply_visitor(visitor, const_cast<attachment&>(attach).get_attach());
 }
 
@@ -1213,7 +1214,8 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 
 /* begin store did related info into database */
 void data_base::push_mit(const asset_mit& mit, const short_hash& key,
-    const output_point& outpoint, uint32_t output_height, uint64_t value)
+    const output_point& outpoint, uint32_t output_height, uint64_t value,
+    const std::string from_did, std::string to_did)
 {
     if (mit.is_register_status()) {
         mits.store(mit);
@@ -1225,7 +1227,8 @@ void data_base::push_mit(const asset_mit& mit, const short_hash& key,
         timestamp_, mit);
     address_mits.sync();
 
-    mit_history.store(mit, output_height, timestamp_);
+    asset_mit_info mit_info{output_height, timestamp_, to_did, mit};
+    mit_history.store(mit_info);
     mit_history.sync();
 }
 /* end store mit related info into database */

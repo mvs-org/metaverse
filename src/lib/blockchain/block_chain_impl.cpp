@@ -1469,7 +1469,7 @@ std::shared_ptr<asset_mit::list> block_chain_impl::get_registered_mits()
     return database_.mits.get_blockchain_mits();
 }
 
-std::shared_ptr<asset_mit::list> block_chain_impl::get_mit_history(
+std::shared_ptr<asset_mit_info::list> block_chain_impl::get_mit_history(
     const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());

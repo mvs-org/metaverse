@@ -223,14 +223,16 @@ public:
                 const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_mit(const asset_mit& mit, const short_hash& key,
-                const output_point& outpoint, uint32_t output_height, uint64_t value);
+                const output_point& outpoint, uint32_t output_height, uint64_t value,
+                const std::string from_did, std::string to_did);
 
    class attachment_visitor : public boost::static_visitor<void>
     {
     public:
         attachment_visitor(data_base* db, const short_hash& sh_hash,  const output_point& outpoint,
-            uint32_t output_height, uint64_t value):
-            db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value)
+            uint32_t output_height, uint64_t value, const std::string from_did, std::string to_did):
+            db_(db), sh_hash_(sh_hash), outpoint_(outpoint), output_height_(output_height), value_(value),
+            from_did_(from_did), to_did_(to_did)
         {
 
         }
@@ -260,7 +262,7 @@ public:
         }
         void operator()(const asset_mit &t) const
         {
-            return db_->push_mit(t, sh_hash_, outpoint_, output_height_, value_);
+            return db_->push_mit(t, sh_hash_, outpoint_, output_height_, value_, from_did_, to_did_);
         }
     private:
         data_base* db_;
@@ -268,6 +270,8 @@ public:
         output_point outpoint_;
         uint32_t output_height_;
         uint64_t value_;
+        std::string from_did_;
+        std::string to_did_;
     };
 
     class asset_visitor : public boost::static_visitor<void>

@@ -50,12 +50,10 @@ namespace {
     };
 
     // Read a row from the data for the history list.
-    asset_mit read_row(uint8_t* data)
+    asset_mit_info read_row(uint8_t* data)
     {
         auto deserial = make_deserializer_unsafe(data);
-        deserial.read_4_bytes_little_endian(); // output_height
-        deserial.read_4_bytes_little_endian(); // timestamp
-        return asset_mit::factory_from_data(deserial);
+        return asset_mit_info::factory_from_data(deserial);
     };
 } // end of namespace anonymous
 
@@ -65,8 +63,7 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
-// output_height + timestamp + mit_status_transfer
-BC_CONSTEXPR size_t mit_status_transfer_record_size = 4 + 4 + ASSET_MIT_TRANSFER_FIX_SIZE;
+BC_CONSTEXPR size_t mit_status_transfer_record_size = ASSET_MIT_INFO_FIX_SIZE;
 BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(mit_status_transfer_record_size);
 
 mit_history_database::mit_history_database(const path& lookup_filename,
@@ -159,18 +156,16 @@ mit_history_statinfo mit_history_database::statinfo() const
 }
 
 // ----------------------------------------------------------------------------
-void mit_history_database::store(const asset_mit& mit, uint32_t output_height, uint32_t timestamp)
+void mit_history_database::store(const asset_mit_info& mit_info)
 {
-    const auto& key_str = mit.get_symbol();
+    const auto& key_str = mit_info.mit.get_symbol();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = ripemd160_hash(data);
 
-    auto write = [&mit, &output_height, &timestamp](memory_ptr data)
+    auto write = [&mit_info](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_4_bytes_little_endian(output_height);
-        serial.write_4_bytes_little_endian(timestamp);
-        serial.write_data(mit.to_short_data());
+        serial.write_data(mit_info.to_data());
     };
     rows_multimap_.add_row(key, write);
 }
@@ -180,7 +175,7 @@ void mit_history_database::delete_last_row(const short_hash& key)
     rows_multimap_.delete_last_row(key);
 }
 
-std::shared_ptr<asset_mit> mit_history_database::get(const short_hash& key) const
+std::shared_ptr<asset_mit_info> mit_history_database::get(const short_hash& key) const
 {
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -191,18 +186,18 @@ std::shared_ptr<asset_mit> mit_history_database::get(const short_hash& key) cons
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
 
-        return std::make_shared<asset_mit>(read_row(address));
+        return std::make_shared<asset_mit_info>(read_row(address));
     }
 
     return nullptr;
 }
 
-std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_by_height(
+std::shared_ptr<asset_mit_info::list> mit_history_database::get_history_mits_by_height(
     const short_hash& key, uint32_t start_height, uint32_t end_height,
     uint64_t limit, uint64_t page_number) const
 {
     // use map to sort by height, decreasely
-    std::map<uint32_t, asset_mit, std::greater<uint32_t>> height_mit_map;
+    std::map<uint32_t, asset_mit_info, std::greater<uint32_t>> height_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -241,19 +236,19 @@ std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_b
         height_mit_map[height] = row;
     }
 
-    auto result = std::make_shared<std::vector<asset_mit>>();
+    auto result = std::make_shared<asset_mit_info::list>();
     for (const auto& pair : height_mit_map) {
         result->emplace_back(std::move(pair.second));
     }
     return result;
 }
 
-std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_by_time(
+std::shared_ptr<asset_mit_info::list> mit_history_database::get_history_mits_by_time(
     const short_hash& key, uint32_t time_begin, uint32_t time_end,
     uint64_t limit, uint64_t page_number) const
 {
     // use map to sort by time, decreasely
-    std::map<uint32_t, asset_mit, std::greater<uint32_t>> time_mit_map;
+    std::map<uint32_t, asset_mit_info, std::greater<uint32_t>> time_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -292,7 +287,7 @@ std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_b
         time_mit_map[time] = row;
     }
 
-    auto result = std::make_shared<std::vector<asset_mit>>();
+    auto result = std::make_shared<asset_mit_info::list>();
     for (const auto& pair : time_mit_map) {
         result->emplace_back(std::move(pair.second));
     }
