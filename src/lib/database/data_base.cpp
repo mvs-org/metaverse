@@ -220,6 +220,8 @@ data_base::store::store(const path& prefix)
     mits_lookup = prefix / "mit_table";
     address_mits_lookup = prefix / "address_mit_table"; // for blockchain
     address_mits_rows = prefix / "address_mit_row"; // for blockchain
+    mit_history_lookup = prefix / "mit_history_table"; // for blockchain
+    mit_history_rows = prefix / "mit_history_row"; // for blockchain
 
     // Height-based (reverse) lookup.
     blocks_index = prefix / "block_index";
@@ -259,7 +261,9 @@ bool data_base::store::touch_all() const
         /* end database for account, asset, address_asset relationship */
         touch_file(mits_lookup) &&
         touch_file(address_mits_lookup) &&
-        touch_file(address_mits_rows);
+        touch_file(address_mits_rows) &&
+        touch_file(mit_history_lookup) &&
+        touch_file(mit_history_rows);
 }
 
 bool data_base::store::dids_exist() const
@@ -293,7 +297,9 @@ bool data_base::store::mits_exist() const
     return
         boost::filesystem::exists(mits_lookup) ||
         boost::filesystem::exists(address_mits_lookup) ||
-        boost::filesystem::exists(address_mits_rows);
+        boost::filesystem::exists(address_mits_rows) ||
+        boost::filesystem::exists(mit_history_lookup) ||
+        boost::filesystem::exists(mit_history_rows);
 }
 
 bool data_base::store::touch_mits() const
@@ -301,7 +307,9 @@ bool data_base::store::touch_mits() const
     return
         touch_file(mits_lookup) &&
         touch_file(address_mits_lookup) &&
-        touch_file(address_mits_rows);
+        touch_file(address_mits_rows) &&
+        touch_file(mit_history_lookup) &&
+        touch_file(mit_history_rows);
 }
 
 data_base::db_metadata::db_metadata():version_("")
@@ -462,7 +470,8 @@ data_base::data_base(const store& paths, size_t history_height,
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
     /* end database for account, asset, address_asset, did relationship */
     mits(paths.mits_lookup, mutex_),
-    address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_)
+    address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_),
+    mit_history(paths.mit_history_lookup, paths.mit_history_rows, mutex_)
 {
 }
 
@@ -521,7 +530,8 @@ bool data_base::create()
         account_addresses.create() &&
         /* end database for account, asset, address_asset relationship */
         mits.create() &&
-        address_mits.create()
+        address_mits.create() &&
+        mit_history.create()
         ;
 }
 
@@ -542,7 +552,8 @@ bool data_base::create_mits()
 {
     return
         mits.create() &&
-        address_mits.create();
+        address_mits.create() &&
+        mit_history.create();
 }
 
 // Start must be called before performing queries.
@@ -581,7 +592,8 @@ bool data_base::start()
         account_addresses.start() &&
         /* end database for account, asset, address_asset relationship */
         mits.start() &&
-        address_mits.start()
+        address_mits.start() &&
+        mit_history.start()
         ;
     const auto end_exclusive = end_write();
 
@@ -610,6 +622,7 @@ bool data_base::stop()
     /* end database for account, asset, address_asset relationship */
     const auto mits_stop = mits.stop();
     const auto address_mits_stop = address_mits.stop();
+    const auto mit_history_stop = mit_history.stop();
     const auto end_exclusive = end_write();
 
     // This should remove the lock file. This is not important for locking
@@ -637,6 +650,7 @@ bool data_base::stop()
         /* end database for account, asset, address_asset relationship */
         mits_stop &&
         address_mits_stop &&
+        mit_history_stop &&
         end_exclusive;
 }
 
@@ -660,6 +674,7 @@ bool data_base::close()
     /* end database for account, asset, address_asset relationship */
     const auto mits_close = mits.close();
     const auto address_mits_close = address_mits.close();
+    const auto mit_history_close = mit_history.close();
 
     // Return the cumulative result of the database closes.
     return
@@ -679,7 +694,8 @@ bool data_base::close()
         account_addresses_close &&
         /* end database for account, asset, address_asset relationship */
         mits_close &&
-        address_mits_close
+        address_mits_close &&
+        mit_history_close
         ;
 }
 
@@ -752,6 +768,7 @@ void data_base::synchronize()
     /* end database for account, asset, address_asset relationship */
     mits.sync();
     address_mits.sync();
+    mit_history.sync();
     blocks.sync();
 }
 
@@ -770,6 +787,7 @@ void data_base::synchronize_mits()
 {
     mits.sync();
     address_mits.sync();
+    mit_history.sync();
 }
 
 void data_base::push(const block& block)
@@ -1069,9 +1087,12 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                 const auto mit = op.get_identifiable_asset();
                 auto symbol = mit.get_symbol();
                 const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
-                const auto symbol_hash = sha256_hash(symbol_data);
+
+                const auto symbol_short_hash = ripemd160_hash(symbol_data);
+                mit_history.delete_last_row(symbol_short_hash);
 
                 if (mit.is_register_type()) {
+                    const auto symbol_hash = sha256_hash(symbol_data);
                     mits.remove(symbol_hash);
                 }
             }
@@ -1198,10 +1219,14 @@ void data_base::push_mit(const mit& mit, const short_hash& key,
         mits.store(mit);
         mits.sync();
     }
+
     address_mits.store_output(key, outpoint, output_height, value,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::identifiable_asset),
         timestamp_, mit);
     address_mits.sync();
+
+    mit_history.store(mit, output_height, timestamp_);
+    mit_history.sync();
 }
 /* end store mit related info into database */
 

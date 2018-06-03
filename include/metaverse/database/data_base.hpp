@@ -56,6 +56,7 @@
 #include <metaverse/database/databases/address_did_database.hpp>
 #include <metaverse/database/databases/blockchain_mit_database.hpp>
 #include <metaverse/database/databases/address_mit_database.hpp>
+#include <metaverse/database/databases/mit_history_database.hpp>
 
 using namespace libbitcoin::wallet;
 using namespace libbitcoin::chain;
@@ -107,6 +108,8 @@ public:
         path mits_lookup;
         path address_mits_lookup;
         path address_mits_rows;
+        path mit_history_lookup;
+        path mit_history_rows;
     };
 
     class db_metadata
@@ -363,6 +366,7 @@ public:
     /* end database for account, asset, address_asset relationship */
     blockchain_mit_database mits;
     address_mit_database address_mits;
+    mit_history_database mit_history;
 };
 
 } // namespace database
