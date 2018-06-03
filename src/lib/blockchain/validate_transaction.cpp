@@ -236,6 +236,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
                        asset_amount_in_, asset_certs_in_,
                        old_symbol_in_, new_symbol_in_, business_kind_in_))
     {
+        log::info("validate_transaction") << " >> connect_input failed";
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
         return;
@@ -296,6 +297,13 @@ void validate_transaction::check_fees()
         if (!check_asset_certs(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check asset cert." << tx_->to_string(1);
             handle_validate_(error::asset_cert_error, tx_, {});
+            return;
+        }
+    }
+    else if (business_kind_in_ == business_kind::identifiable_asset) {
+        if (!check_identifiable_asset(*tx_)) {
+            log::debug(LOG_BLOCKCHAIN) << "failed to check MIT token." << tx_->to_string(1);
+            handle_validate_(error::identifiable_asset_error, tx_, {});
             return;
         }
     }
@@ -776,6 +784,58 @@ code validate_transaction::check_asset_cert_issue_transaction(
     return error::success;
 }
 
+code validate_transaction::check_mit_register_transaction(
+    const chain::transaction& tx, blockchain::block_chain_impl& chain)
+{
+    bool is_mit_register{false};
+    for (auto& output : tx.outputs) {
+        if (output.is_identifiable_asset_register()) {
+            is_mit_register = true;
+            break;
+        }
+    }
+
+    if (!is_mit_register) {
+        return error::success;
+    }
+
+    int num_mit_register{0};
+    std::string asset_symbol;
+    for (auto& output : tx.outputs)
+    {
+        if (output.is_identifiable_asset_register()) {
+            ++num_mit_register;
+            if (num_mit_register > 1) {
+                // can not register multiple mit at the same transaction
+                return error::identifiable_asset_register_error;
+            }
+
+            auto&& asset_info = output.get_identifiable_asset();
+            asset_symbol = asset_info.get_symbol();
+
+            // check asset not exists
+            if (nullptr != chain.get_registered_identifiable_asset(asset_symbol)) {
+                log::debug(LOG_BLOCKCHAIN) << "register MIT: "
+                                           << asset_info.get_symbol() << " already exists.";
+                return error::asset_cert_exist;
+            }
+        }
+        else if (!output.is_etp()) {
+            return error::asset_cert_issue_error;
+        }
+    }
+
+    size_t max_outputs_size = 1 + num_mit_register;
+    if ((tx.outputs.size() > max_outputs_size)) {
+        log::debug(LOG_BLOCKCHAIN) << "register MIT: "
+                                   << "too many outputs: " << tx.outputs.size()
+                                   << ", max_outputs_size: " << max_outputs_size;
+        return error::identifiable_asset_register_error;
+    }
+
+    return error::success;
+}
+
 code validate_transaction::check_did_transaction(
     const chain::transaction& tx,
     blockchain::block_chain_impl& chain)
@@ -955,6 +1015,10 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
         return ret;
     }
 
+    if ((ret = check_mit_register_transaction(tx, chain)) != error::success) {
+        return ret;
+    }
+
     if ((ret = check_did_transaction(tx, chain)) != error::success) {
         return ret;
     }
@@ -1131,10 +1195,11 @@ bool validate_transaction::check_consensus(const script& prevout_script,
                                       previous_output_script, current_tx, input_index32, flags);
 #endif
 
-    if (!valid)
+    if (!valid) {
         log::warning(LOG_BLOCKCHAIN)
                 << "Invalid transaction ["
                 << encode_hash(current_tx.hash()) << "]";
+    }
 
     return valid;
 }
@@ -1149,17 +1214,21 @@ bool validate_transaction::connect_input(const transaction& tx,
     const auto& input = tx.inputs[current_input];
     const auto& previous_outpoint = tx.inputs[current_input].previous_output;
 
-    if (previous_outpoint.index >= previous_tx.outputs.size())
+    if (previous_outpoint.index >= previous_tx.outputs.size()) {
+        log::debug(LOG_BLOCKCHAIN) << "output point index outof bounds!";
         return false;
+    }
 
     const auto& previous_output = previous_tx.outputs[previous_outpoint.index];
     const auto output_value = previous_output.value;
-    if (output_value > max_money())
+    if (output_value > max_money()) {
+        log::debug(LOG_BLOCKCHAIN) << "output etp value exceeds max amount!";
         return false;
+    }
 
     asset_cert_type asset_certs = asset_cert_ns::none;
     uint64_t asset_transfer_amount = 0;
-    if (previous_output.attach_data.get_type() == ASSET_TYPE) {
+    if (previous_output.is_asset()) {
         // 1. do asset transfer amount check
         asset_transfer_amount = previous_output.get_asset_amount();
 
@@ -1206,7 +1275,20 @@ bool validate_transaction::connect_input(const transaction& tx,
             return false;
         }
     }
-    else if (previous_output.attach_data.get_type() == DID_TYPE) {
+    else if (previous_output.is_identifiable_asset()) {
+        business_kind_in = business_kind::identifiable_asset;
+        new_symbol_in = previous_output.get_asset_symbol();
+
+        if (old_symbol_in.empty()) { // init old symbol
+            old_symbol_in = new_symbol_in;
+        }
+        else {
+            if (old_symbol_in != new_symbol_in) { // asset symbol must be same
+                return false;
+            }
+        }
+    }
+    else if (previous_output.is_did()) {
         // 2. do did symbol check
         new_symbol_in = previous_output.get_did_symbol();
         if (!new_symbol_in.empty()) { // did input
@@ -1215,8 +1297,9 @@ bool validate_transaction::connect_input(const transaction& tx,
             }
             else {
                 // there are different did symbol in this transaction
-                if (old_symbol_in != new_symbol_in)
+                if (old_symbol_in != new_symbol_in) {
                     return false;
+                }
             }
         }
 
@@ -1231,19 +1314,22 @@ bool validate_transaction::connect_input(const transaction& tx,
 
     if (previous_tx.is_coinbase()) {
         const auto height_difference = last_block_height - parent_height;
-        if (height_difference < coinbase_maturity)
+        if (height_difference < coinbase_maturity) {
             return false;
+        }
     }
 
     // check forbidden symbol
-    if (previous_output.attach_data.get_type() == ASSET_TYPE) {
+    if (previous_output.is_asset()) {
         if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
             return false;
         }
     }
 
-    if (!check_consensus(previous_output.script, tx, current_input, flags))
+    if (!check_consensus(previous_output.script, tx, current_input, flags)) {
+        log::debug(LOG_BLOCKCHAIN) << "check_consensus failed";
         return false;
+    }
 
     value_in += output_value;
     asset_amount_in += asset_transfer_amount;
@@ -1352,6 +1438,28 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
     }
 
     return asset_cert::test_certs(asset_certs_out, asset_certs_in_);
+}
+
+bool validate_transaction::check_identifiable_asset(const transaction& tx)
+{
+    size_t num_mit = 0;
+    for (auto& output : tx.outputs) {
+        if (output.is_identifiable_asset_transfer()) {
+            if (++num_mit > 1) {
+                return false;
+            }
+
+            auto&& asset_info = output.get_identifiable_asset();
+            if (old_symbol_in_ != asset_info.get_symbol()) {
+                return false;
+            }
+        }
+        else if (!output.is_etp()) {
+            return false;
+        }
+    }
+
+    return (num_mit == 1);
 }
 
 bool validate_transaction::check_did_symbol_match(const transaction& tx)

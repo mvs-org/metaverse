@@ -80,6 +80,8 @@ public:
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
     bool is_identifiable_asset() const;
+    bool is_identifiable_asset_register() const;
+    bool is_identifiable_asset_transfer() const;
     bool is_asset_cert() const;
     bool is_asset_cert_issue() const;
     bool is_asset_cert_transfer() const;

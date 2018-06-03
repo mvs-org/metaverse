@@ -304,6 +304,28 @@ bool output::is_identifiable_asset() const
     return (attach_data.get_type() == IDENTIFIABLE_ASSET_TYPE);
 }
 
+bool output::is_identifiable_asset_register() const
+{
+    if (is_identifiable_asset()) {
+        auto asset_info = boost::get<identifiable_asset>(attach_data.get_attach());
+        if (asset_info.get_status() == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool output::is_identifiable_asset_transfer() const
+{
+    if (is_identifiable_asset()) {
+        auto asset_info = boost::get<identifiable_asset>(attach_data.get_attach());
+        if (asset_info.get_status() == IDENTIFIABLE_ASSET_TRANSFER_TYPE) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool output::is_asset_cert() const
 {
     return (attach_data.get_type() == ASSET_CERT_TYPE);

@@ -37,7 +37,13 @@ console_result registermit::invoke (Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check symbol
-    blockchain.uppercase_symbol(argument_.symbol);
+    // reserve 4 bytes
+    if (argument_.symbol.size() > (IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE - 4)) {
+        throw asset_symbol_length_exception{"Symbol length must be less than "
+            + std::to_string(IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE - 4) + "."};
+    }
+
+    // check symbol
     check_identifiable_asset_symbol(argument_.symbol);
 
     // check content

@@ -37,7 +37,6 @@ console_result transfermit::invoke (Json::Value& jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check symbol
-    blockchain.uppercase_symbol(argument_.symbol);
     check_identifiable_asset_symbol(argument_.symbol);
 
     // check to did

@@ -111,7 +111,15 @@ void check_identifiable_asset_symbol(const std::string& symbol, bool check_sensi
             + std::to_string(IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE) + "."};
     }
 
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
+            throw asset_symbol_name_exception(
+                "Symbol " + symbol + " has invalid character.");
+    }
+
     if (check_sensitive) {
+        auto upper = boost::to_upper_copy(symbol);
         if (bc::wallet::symbol::is_sensitive(symbol)) {
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }

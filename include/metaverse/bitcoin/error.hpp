@@ -169,6 +169,12 @@ enum error_code_t
 
     attachment_invalid,
     nova_feature_not_activated,     // 85
+
+    // identifier asset
+    identifiable_asset_error,
+    identifiable_asset_exist,
+    identifiable_asset_register_error
+
 };
 
 enum error_condition_t

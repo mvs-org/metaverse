@@ -44,7 +44,7 @@ console_result listmits::invoke(Json::Value& jv_output,
         sh_vec = blockchain.get_registered_identifiable_assets();
     }
     else {
-        // list asset owned by account
+        // list assets owned by account
         sh_vec = blockchain.get_account_identifiable_assets(auth_.name);
     }
 
@@ -53,17 +53,21 @@ console_result listmits::invoke(Json::Value& jv_output,
     if (nullptr != sh_vec) {
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem : *sh_vec) {
-            Json::Value asset_data = json_helper.prop_list(elem);
+            // update content if it's transfered from others
+            if (!elem.is_register_type()) {
+                auto asset = blockchain.get_registered_identifiable_asset(elem.get_symbol());
+                if (nullptr != asset) {
+                    elem.set_content(asset->get_content());
+                }
+            }
+
+            Json::Value asset_data = json_helper.prop_list(elem, false, true);
+            asset_data["did"] = blockchain.get_did_from_address(elem.get_address());
             json_value.append(asset_data);
         }
     }
 
-    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-        jv_output["mits"] = "";
-    }
-    else {
-        jv_output["mits"] = json_value;
-    }
+    jv_output["mits"] = json_value;
 
     return console_result::okay;
 }

@@ -30,9 +30,10 @@
 
 #define IDENTIFIABLE_ASSET_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<identifiable_asset::identifiable_asset_status>::type>(kd))
 
-#define IDENTIFIABLE_ASSET_NONE_TYPE        IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_none)
-#define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_register)
-#define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::mit_transfer)
+#define IDENTIFIABLE_ASSET_NONE_TYPE        IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_none)
+#define IDENTIFIABLE_ASSET_REGISTER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_register)
+#define IDENTIFIABLE_ASSET_TRANSFER_TYPE    IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_transfer)
+#define IDENTIFIABLE_ASSET_MAX_TYPE         IDENTIFIABLE_ASSET_STATUS2UINT32(identifiable_asset::identifiable_asset_status::identifiable_asset_max)
 
 namespace libbitcoin {
 namespace chain {
@@ -56,9 +57,10 @@ public:
 
     enum class identifiable_asset_status : uint8_t
     {
-        mit_none   = 0,
-        mit_register = 1,
-        mit_transfer = 2,
+        identifiable_asset_none     = 0,
+        identifiable_asset_register = 1,
+        identifiable_asset_transfer = 2,
+        identifiable_asset_max      = 3,
     };
 
     identifiable_asset();

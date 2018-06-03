@@ -38,45 +38,40 @@ console_result getmit::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
 
     if (!argument_.symbol.empty()) {
-        blockchain.uppercase_symbol(argument_.symbol);
+        // check symbol
         check_identifiable_asset_symbol(argument_.symbol);
     }
 
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
 
+    bool is_list = true;
     if (argument_.symbol.empty()) {
         auto sh_vec = blockchain.get_registered_identifiable_assets();
-        std::set<std::string> symbols;
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem : *sh_vec) {
-           // get rid of duplicate symbols
-            if (!symbols.count(elem.get_symbol())) {
-                symbols.insert(elem.get_symbol());
-                json_value.append(elem.get_symbol());
-            }
+            json_value.append(elem.get_symbol());
         }
     }
     else {
-        auto sh_vec = blockchain.get_identifiable_asset_history(argument_.symbol);
-
         if (option_.show_history) {
+            auto sh_vec = blockchain.get_identifiable_asset_history(argument_.symbol);
             for (auto& elem : *sh_vec) {
                 Json::Value asset_data = json_helper.prop_list(elem, true);
+                asset_data["did"] = blockchain.get_did_from_address(elem.get_address());
                 json_value.append(asset_data);
             }
         }
         else {
-
+            auto asset = blockchain.get_registered_identifiable_asset(argument_.symbol);
+            if (nullptr != asset) {
+                json_value = json_helper.prop_list(*asset);
+                json_value["did"] = blockchain.get_did_from_address(asset->get_address());
+            }
         }
     }
 
-    if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-        jv_output["mits"] = "";
-    }
-    else {
-        jv_output["mits"] = json_value;
-    }
+    jv_output["mits"] = json_value;
 
     return console_result::okay;
 }

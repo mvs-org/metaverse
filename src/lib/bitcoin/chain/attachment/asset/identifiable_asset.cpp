@@ -101,6 +101,8 @@ bool identifiable_asset::is_valid() const
              || ((symbol_.size() + 1) > IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE)
              || ((address_.size() + 1) > IDENTIFIABLE_ASSET_ADDRESS_FIX_SIZE)
              || ((content_.size() + 1) > IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE)
+             || status_ <= IDENTIFIABLE_ASSET_NONE_TYPE
+             || status_ >= IDENTIFIABLE_ASSET_MAX_TYPE
             );
 }
 
