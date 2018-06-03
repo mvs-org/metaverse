@@ -54,6 +54,7 @@ public:
     static uint64_t satoshi_fixed_size();
     static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
     static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
+    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);

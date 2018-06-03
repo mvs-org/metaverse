@@ -173,7 +173,8 @@ enum error_code_t
     // identifier asset
     mit_error,
     mit_exist,
-    mit_register_error
+    mit_register_error,
+    mit_symbol_invalid
 
 };
 

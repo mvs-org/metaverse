@@ -430,28 +430,12 @@ code validate_transaction::check_secondaryissue_transaction(
                 return error::asset_secondaryissue_error;
             }
         }
-        else if (!output.is_etp())
+        else if (!output.is_etp() && !output.is_message())
         {
             log::debug(LOG_BLOCKCHAIN) << "secondaryissue: illega output, "
                                        << asset_symbol << " : " << output.to_string(1);
             return error::asset_secondaryissue_error;
         }
-    }
-
-    size_t max_outputs_size = 1 + num_asset_secondaryissue + num_asset_transfer + num_asset_cert;
-    if (tx.outputs.size() > max_outputs_size) {
-        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: "
-                                   << "too many outputs: " << tx.outputs.size()
-                                   << ", max_outputs_size: " << max_outputs_size;
-        return error::asset_secondaryissue_error;
-    }
-    if (asset_symbol.empty()) {
-        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: empty asset symbol, " << asset_symbol;
-        return error::asset_secondaryissue_error;
-    }
-    if (asset_address.empty()) {
-        log::debug(LOG_BLOCKCHAIN) << "secondaryissue: empty asset address, " << asset_symbol;
-        return error::asset_secondaryissue_error;
     }
 
     if (tx.version >= transaction_version::check_nova_feature
@@ -612,18 +596,12 @@ code validate_transaction::check_asset_issue_transaction(
 
             cert_type.push_back(cur_cert_type);
         }
-        else if (!output.is_etp())
+        else if (!output.is_etp() && !output.is_message())
         {
+            log::debug(LOG_BLOCKCHAIN) << "issue: illega output, "
+                                       << asset_symbol << " : " << output.to_string(1);
             return error::asset_issue_error;
         }
-    }
-
-    size_t max_outputs_size = 2 + num_asset_cert_issue + num_asset_cert_domain_or_naming;
-    if ((tx.outputs.size() > max_outputs_size)) {
-        log::debug(LOG_BLOCKCHAIN) << "issue asset: "
-                                   << "too many outputs: " << tx.outputs.size()
-                                   << ", max_outputs_size: " << max_outputs_size;
-        return error::asset_issue_error;
     }
 
     // check cert for transactions after check_nova_feature version.
@@ -747,18 +725,12 @@ code validate_transaction::check_asset_cert_issue_transaction(
 
             cert_type.push_back(cur_cert_type);
         }
-        else if (!output.is_etp())
+        else if (!output.is_etp() && !output.is_message())
         {
+            log::debug(LOG_BLOCKCHAIN) << "issuecert: illega output, "
+                                       << cert_symbol << " : " << output.to_string(1);
             return error::asset_cert_issue_error;
         }
-    }
-
-    size_t max_outputs_size = 1 + num_asset_cert_issue + num_asset_cert_domain;
-    if ((tx.outputs.size() > max_outputs_size)) {
-        log::debug(LOG_BLOCKCHAIN) << "issue cert: "
-                                   << "too many outputs: " << tx.outputs.size()
-                                   << ", max_outputs_size: " << max_outputs_size;
-        return error::asset_cert_issue_error;
     }
 
     if (issue_cert_type == asset_cert_ns::none) {
@@ -813,7 +785,9 @@ code validate_transaction::check_asset_mit_register_transaction(
                 return error::mit_exist;
             }
         }
-        else if (!output.is_etp()) {
+        else if (!output.is_etp() && !output.is_message()) {
+            log::debug(LOG_BLOCKCHAIN) << "registermit: illega output, "
+                                       << asset_symbol << " : " << output.to_string(1);
             return error::mit_register_error;
         }
     }
@@ -1070,6 +1044,11 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         else if (output.is_did_register()) {
             if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), true)) {
                 return error::did_symbol_invalid;
+            }
+        }
+        else if (output.is_asset_mit_register()) {
+            if (!chain::output::is_valid_mit_symbol(output.get_asset_symbol(), true)) {
+                return error::mit_symbol_invalid;
             }
         }
 
@@ -1404,7 +1383,8 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
         else if (!output.get_asset_symbol().empty()) { // asset related
             continue;
         }
-        else if (!output.is_etp()) { // asset cert transfer tx only related to asset_cert and etp output
+        else if (!output.is_etp() && !output.is_message()) {
+            // asset cert transfer tx only related to asset_cert and etp output
             return false;
         }
     }
@@ -1439,7 +1419,7 @@ bool validate_transaction::check_asset_mit(const transaction& tx)
                 return false;
             }
         }
-        else if (!output.is_etp()) {
+        else if (!output.is_etp() && !output.is_message()) {
             return false;
         }
     }

@@ -120,7 +120,7 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
 
     if (check_sensitive) {
         auto upper = boost::to_upper_copy(symbol);
-        if (bc::wallet::symbol::is_sensitive(symbol)) {
+        if (bc::wallet::symbol::is_sensitive(upper)) {
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }
     }

@@ -64,15 +64,16 @@ bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i=='.'))
             return false;
-        if ((tx_version >= transaction_version::check_nova_feature)
-                && (i != std::toupper(i))) {
+    }
+    if (tx_version >= transaction_version::check_nova_feature) {
+        // upper char check
+        if (symbol != boost::to_upper_copy(symbol)) {
             return false;
         }
-    }
-    // sensitive check
-    if ((tx_version >= transaction_version::check_nova_feature)
-            && bc::wallet::symbol::is_sensitive(symbol)) {
-        return false;
+        // sensitive check
+        if (bc::wallet::symbol::is_sensitive(symbol)) {
+            return false;
+        }
     }
     return true;
 }
@@ -96,6 +97,30 @@ bool output::is_valid_did_symbol(const std::string& symbol, bool check_sensitive
         std::string symbolupper = symbol;
         boost::to_upper(symbolupper);
         if (bc::wallet::symbol::is_sensitive(symbolupper))
+            return false;
+    }
+
+    return true;
+}
+
+bool output::is_valid_mit_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty())
+        return false;
+    // length check
+    if (symbol.length() > ASSET_MIT_SYMBOL_FIX_SIZE)
+        return false;
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i=='.'|| i=='@' || i=='_' || i=='-'))
+            return false;
+    }
+
+    if (check_sensitive)
+    {
+        // sensitive check
+        auto upper = boost::to_upper_copy(symbol);
+        if (bc::wallet::symbol::is_sensitive(upper))
             return false;
     }
 
