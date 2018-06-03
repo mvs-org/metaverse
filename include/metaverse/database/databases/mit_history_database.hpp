@@ -80,15 +80,15 @@ public:
     /// Return statistical info about the database.
     mit_history_statinfo statinfo() const;
 
-    void store(const mit& mit, uint32_t output_height, uint32_t timestamp);
+    void store(const asset_mit& mit, uint32_t output_height, uint32_t timestamp);
 
-	std::shared_ptr<mit> get(const short_hash& key) const;
+	std::shared_ptr<asset_mit> get(const short_hash& key) const;
 
-    std::shared_ptr<std::vector<mit>> get_history_mits_by_height(const short_hash& key,
+    std::shared_ptr<std::vector<asset_mit>> get_history_mits_by_height(const short_hash& key,
         uint32_t start_height = 0, uint32_t end_height = 0,
         uint64_t limit = 0, uint64_t page_number = 0) const;
 
-    std::shared_ptr<std::vector<mit>> get_history_mits_by_time(const short_hash& key,
+    std::shared_ptr<std::vector<asset_mit>> get_history_mits_by_time(const short_hash& key,
         uint32_t time_begin, uint32_t time_end,
         uint64_t limit = 0, uint64_t page_number = 0) const;
 

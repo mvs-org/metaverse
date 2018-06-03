@@ -1081,17 +1081,17 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
                     certs.remove(key_hash);
                 }
             }
-            else if (op.is_identifiable_asset()) {
+            else if (op.is_asset_mit()) {
                 address_mits.delete_last_row(hash);
 
-                const auto mit = op.get_identifiable_asset();
+                const auto mit = op.get_asset_mit();
                 auto symbol = mit.get_symbol();
                 const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
 
                 const auto symbol_short_hash = ripemd160_hash(symbol_data);
                 mit_history.delete_last_row(symbol_short_hash);
 
-                if (mit.is_register_type()) {
+                if (mit.is_register_status()) {
                     const auto symbol_hash = sha256_hash(symbol_data);
                     mits.remove(symbol_hash);
                 }
@@ -1212,16 +1212,16 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 /* end store did related info into database */
 
 /* begin store did related info into database */
-void data_base::push_mit(const mit& mit, const short_hash& key,
+void data_base::push_mit(const asset_mit& mit, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value)
 {
-    if (mit.is_register_type()) {
+    if (mit.is_register_status()) {
         mits.store(mit);
         mits.sync();
     }
 
     address_mits.store_output(key, outpoint, output_height, value,
-        static_cast<typename std::underlying_type<business_kind>::type>(business_kind::identifiable_asset),
+        static_cast<typename std::underlying_type<business_kind>::type>(business_kind::asset_mit),
         timestamp_, mit);
     address_mits.sync();
 

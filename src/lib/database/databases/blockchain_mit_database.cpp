@@ -110,14 +110,14 @@ void blockchain_mit_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<mit> blockchain_mit_database::get(const hash_digest& hash) const
+std::shared_ptr<asset_mit> blockchain_mit_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<mit> detail(nullptr);
+    std::shared_ptr<asset_mit> detail(nullptr);
 
     const auto raw_memory = lookup_map_.find(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<mit>();
+        detail = std::make_shared<asset_mit>();
         auto deserial = make_deserializer_unsafe(memory);
         detail->from_data(deserial);
     }
@@ -125,9 +125,9 @@ std::shared_ptr<mit> blockchain_mit_database::get(const hash_digest& hash) const
     return detail;
 }
 
-std::shared_ptr<std::vector<mit>> blockchain_mit_database::get_blockchain_mits() const
+std::shared_ptr<std::vector<asset_mit>> blockchain_mit_database::get_blockchain_mits() const
 {
-    auto vec_acc = std::make_shared<std::vector<mit>>();
+    auto vec_acc = std::make_shared<std::vector<asset_mit>>();
     for( uint64_t i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
@@ -135,7 +135,7 @@ std::shared_ptr<std::vector<mit>> blockchain_mit_database::get_blockchain_mits()
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(mit::factory_from_data(deserial));
+                vec_acc->push_back(asset_mit::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -143,7 +143,7 @@ std::shared_ptr<std::vector<mit>> blockchain_mit_database::get_blockchain_mits()
     return vec_acc;
 }
 
-void blockchain_mit_database::store(const mit& mit)
+void blockchain_mit_database::store(const asset_mit& mit)
 {
     const auto& key_str = mit.get_symbol();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());

@@ -38,14 +38,14 @@ console_result listmits::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
 
-    std::shared_ptr<identifiable_asset::list> sh_vec;
+    std::shared_ptr<asset_mit::list> sh_vec;
     if (auth_.name.empty()) {
         // no account -- list whole assets in blockchain
-        sh_vec = blockchain.get_registered_identifiable_assets();
+        sh_vec = blockchain.get_registered_mits();
     }
     else {
         // list assets owned by account
-        sh_vec = blockchain.get_account_identifiable_assets(auth_.name);
+        sh_vec = blockchain.get_account_mits(auth_.name);
     }
 
     Json::Value json_value;
@@ -54,8 +54,8 @@ console_result listmits::invoke(Json::Value& jv_output,
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem : *sh_vec) {
             // update content if it's transfered from others
-            if (!elem.is_register_type()) {
-                auto asset = blockchain.get_registered_identifiable_asset(elem.get_symbol());
+            if (!elem.is_register_status()) {
+                auto asset = blockchain.get_registered_mit(elem.get_symbol());
                 if (nullptr != asset) {
                     elem.set_content(asset->get_content());
                 }

@@ -40,7 +40,7 @@ namespace commands{
 /// attachment_message       --> message
 /// attachment_did           --> did_register   |  did_transfer
 /// attachment_asset_cert    --> asset_cert
-/// attachment_identifiable_asset    --> identifiable_asset
+/// attachment_asset_mit     --> asset_mit
 /// -------------------------------------------------------------------
 /// utxo_attach_type is only used in explorer module
 /// utxo_attach_type will be used to generate attachment with attachment_type and content
@@ -69,8 +69,8 @@ enum class utxo_attach_type : uint32_t
     asset_cert_issue = 11,
     asset_cert_transfer = 12,
     asset_cert_autoissue = 13,
-    identifiable_asset = 14,
-    identifiable_asset_transfer = 15,
+    asset_mit = 14,
+    asset_mit_transfer = 15,
     invalid = 0xffffffff
 };
 
@@ -166,7 +166,7 @@ std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain);
 
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
-void check_identifiable_asset_symbol(const std::string& symbol, bool check_sensitive=false);
+void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
 
 class BCX_API base_transfer_common
@@ -268,8 +268,8 @@ protected:
     std::vector<asset_cert_type>      unspent_asset_cert_;
     uint8_t                           payment_did_{0};
     uint8_t                           unspent_did_{0};
-    uint8_t                           payment_identifiable_asset_{0};
-    uint8_t                           unspent_identifiable_asset_{0};
+    uint8_t                           payment_mit_{0};
+    uint8_t                           unspent_mit_{0};
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
 };
@@ -672,10 +672,10 @@ public:
         tx_.locktime = 0;
     };
 };
-class BCX_API registering_identifiable_asset : public base_transfer_helper
+class BCX_API registering_mit : public base_transfer_helper
 {
 public:
-    registering_identifiable_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, std::string&& content,
         receiver_record::list&& receiver_list, uint64_t fee)
@@ -684,7 +684,7 @@ public:
         , content_(content)
     {}
 
-    ~registering_identifiable_asset()
+    ~registering_mit()
     {}
 
     void populate_tx_header() override {
@@ -698,10 +698,10 @@ private:
     std::string content_;
 };
 
-class BCX_API transferring_identifiable_asset : public base_multisig_transfer_helper
+class BCX_API transferring_mit : public base_multisig_transfer_helper
 {
 public:
-    transferring_identifiable_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+    transferring_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         receiver_record::list&& receiver_list, uint64_t fee,
@@ -711,7 +711,7 @@ public:
             std::move(multisig_from))
     {}
 
-    ~transferring_identifiable_asset()
+    ~transferring_mit()
     {}
 
     void populate_tx_header() override {

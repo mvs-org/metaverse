@@ -79,9 +79,9 @@ public:
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
-    bool is_identifiable_asset() const;
-    bool is_identifiable_asset_register() const;
-    bool is_identifiable_asset_transfer() const;
+    bool is_asset_mit() const;
+    bool is_asset_mit_register() const;
+    bool is_asset_mit_transfer() const;
     bool is_asset_cert() const;
     bool is_asset_cert_issue() const;
     bool is_asset_cert_transfer() const;
@@ -96,7 +96,7 @@ public:
     asset_detail get_asset_detail() const;
     asset_transfer get_asset_transfer() const;
     asset_cert get_asset_cert() const;
-    identifiable_asset get_identifiable_asset() const;
+    asset_mit get_asset_mit() const;
     std::string get_did_symbol() const;
     std::string get_did_address() const;
     did get_did() const;

@@ -223,7 +223,7 @@ public:
         READWRITE(status);
         READWRITE(symbol);
         READWRITE(address);
-        if (status == IDENTIFIABLE_ASSET_REGISTER_TYPE) {
+        if (status == MIT_STATUS_REGISTER) {
             READWRITE(content);
         }
     }

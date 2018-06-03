@@ -252,11 +252,11 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "nova feature is not activated, it will be activated when block height is larger than 1270000";
 
         // mit errors
-        case error::identifiable_asset_error:
+        case error::mit_error:
             return "MIT token error";
-        case error::identifiable_asset_exist:
+        case error::mit_exist:
             return "MIT token already exists";
-        case error::identifiable_asset_register_error:
+        case error::mit_status_register_error:
             return "MIT token register error";
 
         // unknown errors

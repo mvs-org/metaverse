@@ -65,9 +65,9 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
-// output_height + timestamp + mit_transfer
-BC_CONSTEXPR size_t mit_transfer_record_size = 4 + 4 + IDENTIFIABLE_ASSET_TRANSFER_FIX_SIZE;
-BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(mit_transfer_record_size);
+// output_height + timestamp + mit_status_transfer
+BC_CONSTEXPR size_t mit_status_transfer_record_size = 4 + 4 + ASSET_MIT_TRANSFER_FIX_SIZE;
+BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(mit_status_transfer_record_size);
 
 mit_history_database::mit_history_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
@@ -159,7 +159,7 @@ mit_history_statinfo mit_history_database::statinfo() const
 }
 
 // ----------------------------------------------------------------------------
-void mit_history_database::store(const mit& mit, uint32_t output_height, uint32_t timestamp)
+void mit_history_database::store(const asset_mit& mit, uint32_t output_height, uint32_t timestamp)
 {
     const auto& key_str = mit.get_symbol();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
@@ -180,7 +180,7 @@ void mit_history_database::delete_last_row(const short_hash& key)
     rows_multimap_.delete_last_row(key);
 }
 
-std::shared_ptr<mit> mit_history_database::get(const short_hash& key) const
+std::shared_ptr<asset_mit> mit_history_database::get(const short_hash& key) const
 {
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -197,7 +197,7 @@ std::shared_ptr<mit> mit_history_database::get(const short_hash& key) const
     return nullptr;
 }
 
-std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_height(
+std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_by_height(
     const short_hash& key, uint32_t start_height, uint32_t end_height,
     uint64_t limit, uint64_t page_number) const
 {
@@ -241,14 +241,14 @@ std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_heig
         height_mit_map[height] = row;
     }
 
-    auto result = std::make_shared<std::vector<mit>>();
+    auto result = std::make_shared<std::vector<asset_mit>>();
     for (const auto& pair : height_mit_map) {
         result->emplace_back(std::move(pair.second));
     }
     return result;
 }
 
-std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_time(
+std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_by_time(
     const short_hash& key, uint32_t time_begin, uint32_t time_end,
     uint64_t limit, uint64_t page_number) const
 {
@@ -292,7 +292,7 @@ std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_time
         time_mit_map[time] = row;
     }
 
-    auto result = std::make_shared<std::vector<mit>>();
+    auto result = std::make_shared<std::vector<asset_mit>>();
     for (const auto& pair : time_mit_map) {
         result->emplace_back(std::move(pair.second));
     }

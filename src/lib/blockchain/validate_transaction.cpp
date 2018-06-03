@@ -300,10 +300,10 @@ void validate_transaction::check_fees()
             return;
         }
     }
-    else if (business_kind_in_ == business_kind::identifiable_asset) {
-        if (!check_identifiable_asset(*tx_)) {
+    else if (business_kind_in_ == business_kind::asset_mit) {
+        if (!check_asset_mit(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check MIT token." << tx_->to_string(1);
-            handle_validate_(error::identifiable_asset_error, tx_, {});
+            handle_validate_(error::mit_error, tx_, {});
             return;
         }
     }
@@ -784,37 +784,30 @@ code validate_transaction::check_asset_cert_issue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_mit_register_transaction(
+code validate_transaction::check_asset_mit_register_transaction(
     const chain::transaction& tx, blockchain::block_chain_impl& chain)
 {
-    bool is_mit_register{false};
+    bool is_asset_mit_register{false};
     for (auto& output : tx.outputs) {
-        if (output.is_identifiable_asset_register()) {
-            is_mit_register = true;
+        if (output.is_asset_mit_register()) {
+            is_asset_mit_register = true;
             break;
         }
     }
 
-    if (!is_mit_register) {
+    if (!is_asset_mit_register) {
         return error::success;
     }
 
-    int num_mit_register{0};
     std::string asset_symbol;
     for (auto& output : tx.outputs)
     {
-        if (output.is_identifiable_asset_register()) {
-            ++num_mit_register;
-            if (num_mit_register > 1) {
-                // can not register multiple mit at the same transaction
-                return error::identifiable_asset_register_error;
-            }
-
-            auto&& asset_info = output.get_identifiable_asset();
+        if (output.is_asset_mit_register()) {
+            auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
 
             // check asset not exists
-            if (nullptr != chain.get_registered_identifiable_asset(asset_symbol)) {
+            if (nullptr != chain.get_registered_mit(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
                                            << asset_info.get_symbol() << " already exists.";
                 return error::asset_cert_exist;
@@ -823,14 +816,6 @@ code validate_transaction::check_mit_register_transaction(
         else if (!output.is_etp()) {
             return error::asset_cert_issue_error;
         }
-    }
-
-    size_t max_outputs_size = 1 + num_mit_register;
-    if ((tx.outputs.size() > max_outputs_size)) {
-        log::debug(LOG_BLOCKCHAIN) << "register MIT: "
-                                   << "too many outputs: " << tx.outputs.size()
-                                   << ", max_outputs_size: " << max_outputs_size;
-        return error::identifiable_asset_register_error;
     }
 
     return error::success;
@@ -1015,7 +1000,7 @@ code validate_transaction::check_transaction(const transaction& tx, blockchain::
         return ret;
     }
 
-    if ((ret = check_mit_register_transaction(tx, chain)) != error::success) {
+    if ((ret = check_asset_mit_register_transaction(tx, chain)) != error::success) {
         return ret;
     }
 
@@ -1275,8 +1260,8 @@ bool validate_transaction::connect_input(const transaction& tx,
             return false;
         }
     }
-    else if (previous_output.is_identifiable_asset()) {
-        business_kind_in = business_kind::identifiable_asset;
+    else if (previous_output.is_asset_mit()) {
+        business_kind_in = business_kind::asset_mit;
         new_symbol_in = previous_output.get_asset_symbol();
 
         if (old_symbol_in.empty()) { // init old symbol
@@ -1440,16 +1425,16 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
     return asset_cert::test_certs(asset_certs_out, asset_certs_in_);
 }
 
-bool validate_transaction::check_identifiable_asset(const transaction& tx)
+bool validate_transaction::check_asset_mit(const transaction& tx)
 {
     size_t num_mit = 0;
     for (auto& output : tx.outputs) {
-        if (output.is_identifiable_asset_transfer()) {
+        if (output.is_asset_mit_transfer()) {
             if (++num_mit > 1) {
                 return false;
             }
 
-            auto&& asset_info = output.get_identifiable_asset();
+            auto&& asset_info = output.get_asset_mit();
             if (old_symbol_in_ != asset_info.get_symbol()) {
                 return false;
             }

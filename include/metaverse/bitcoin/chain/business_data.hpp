@@ -29,7 +29,7 @@
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/identifiable_asset.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_mit.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
@@ -54,7 +54,7 @@ enum class business_kind : uint16_t
     did_register = 5,
     did_transfer = 6,
     asset_cert = 7,
-    identifiable_asset = 8,
+    asset_mit = 8,
     unknown = 0xffff
 };
 
@@ -76,9 +76,10 @@ public:
         asset_detail,
         asset_transfer,
         asset_cert,
-        identifiable_asset,
+        asset_mit,
         blockchain_message,
         did_detail> business_data_type;
+
     static business_data factory_from_data(const data_chunk& data);
     static business_data factory_from_data(std::istream& stream);
     static business_data factory_from_data(reader& source);
@@ -250,7 +251,7 @@ public:
 
     std::string  address;
     uint8_t status; // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
-    identifiable_asset mit;
+    asset_mit mit;
 
 #ifdef MVS_DEBUG
     // just used for unit test in block_chain_impl_test.cpp

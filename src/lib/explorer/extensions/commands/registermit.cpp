@@ -38,19 +38,19 @@ console_result registermit::invoke (Json::Value& jv_output,
 
     // check symbol
     // reserve 4 bytes
-    if (argument_.symbol.size() > (IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE - 4)) {
+    if (argument_.symbol.size() > (ASSET_MIT_SYMBOL_FIX_SIZE - 4)) {
         throw asset_symbol_length_exception{"Symbol length must be less than "
-            + std::to_string(IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE - 4) + "."};
+            + std::to_string(ASSET_MIT_SYMBOL_FIX_SIZE - 4) + "."};
     }
 
     // check symbol
-    check_identifiable_asset_symbol(argument_.symbol);
+    check_mit_symbol(argument_.symbol);
 
     // check content
-    if (option_.content.size() > IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE) {
+    if (option_.content.size() > ASSET_MIT_CONTENT_FIX_SIZE) {
         throw argument_size_invalid_exception(
             "Content length must be less than "
-            + std::to_string(IDENTIFIABLE_ASSET_CONTENT_FIX_SIZE) + ".");
+            + std::to_string(ASSET_MIT_CONTENT_FIX_SIZE) + ".");
     }
 
     // check to did
@@ -64,11 +64,11 @@ console_result registermit::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {
             to_address, argument_.symbol, 0, 0, 0,
-            utxo_attach_type::identifiable_asset, attachment()
+            utxo_attach_type::asset_mit, attachment()
         }
     };
 
-    auto helper = registering_identifiable_asset(
+    auto helper = registering_mit(
                       *this, blockchain,
                       std::move(auth_.name), std::move(auth_.auth), "",
                       std::move(argument_.symbol), std::move(option_.content),

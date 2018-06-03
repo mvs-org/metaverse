@@ -39,7 +39,7 @@ console_result getmit::invoke(Json::Value& jv_output,
 
     if (!argument_.symbol.empty()) {
         // check symbol
-        check_identifiable_asset_symbol(argument_.symbol);
+        check_mit_symbol(argument_.symbol);
     }
 
     Json::Value json_value;
@@ -47,7 +47,7 @@ console_result getmit::invoke(Json::Value& jv_output,
 
     bool is_list = true;
     if (argument_.symbol.empty()) {
-        auto sh_vec = blockchain.get_registered_identifiable_assets();
+        auto sh_vec = blockchain.get_registered_mits();
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem : *sh_vec) {
             json_value.append(elem.get_symbol());
@@ -55,7 +55,7 @@ console_result getmit::invoke(Json::Value& jv_output,
     }
     else {
         if (option_.show_history) {
-            auto sh_vec = blockchain.get_identifiable_asset_history(argument_.symbol);
+            auto sh_vec = blockchain.get_mit_history(argument_.symbol);
             for (auto& elem : *sh_vec) {
                 Json::Value asset_data = json_helper.prop_list(elem, true);
                 asset_data["did"] = blockchain.get_did_from_address(elem.get_address());
@@ -63,7 +63,7 @@ console_result getmit::invoke(Json::Value& jv_output,
             }
         }
         else {
-            auto asset = blockchain.get_registered_identifiable_asset(argument_.symbol);
+            auto asset = blockchain.get_registered_mit(argument_.symbol);
             if (nullptr != asset) {
                 json_value = json_helper.prop_list(*asset);
                 json_value["did"] = blockchain.get_did_from_address(asset->get_address());

@@ -470,7 +470,7 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     return tree;
 }
 
-Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_info,
+Json::Value json_helper::prop_list(const bc::chain::asset_mit& asset_info,
     bool is_tracing, bool force_print)
 {
     Json::Value tree;
@@ -479,7 +479,7 @@ Json::Value json_helper::prop_list(const bc::chain::identifiable_asset& asset_in
 
     if (!is_tracing) {
         tree["status"] = asset_info.get_status_name();
-        if (force_print || asset_info.is_register_type()) {
+        if (force_print || asset_info.is_register_status()) {
             tree["content"] = asset_info.get_content();
         }
     }

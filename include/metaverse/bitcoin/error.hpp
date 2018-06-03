@@ -171,9 +171,9 @@ enum error_code_t
     nova_feature_not_activated,     // 85
 
     // identifier asset
-    identifiable_asset_error,
-    identifiable_asset_exist,
-    identifiable_asset_register_error
+    mit_error,
+    mit_exist,
+    mit_status_register_error
 
 };
 

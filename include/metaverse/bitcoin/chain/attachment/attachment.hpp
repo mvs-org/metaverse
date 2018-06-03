@@ -28,7 +28,7 @@
 #include <boost/variant.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
-#include <metaverse/bitcoin/chain/attachment/asset/identifiable_asset.hpp>
+#include <metaverse/bitcoin/chain/attachment/asset/asset_mit.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
@@ -44,7 +44,7 @@ using namespace libbitcoin::chain;
 #define MESSAGE_TYPE    TYPE2UINT32(attachment::attachment_type::attachment_message)
 #define DID_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_did)
 #define ASSET_CERT_TYPE TYPE2UINT32(attachment::attachment_type::attachment_asset_cert)
-#define IDENTIFIABLE_ASSET_TYPE TYPE2UINT32(attachment::attachment_type::attachment_identifiable_asset)
+#define ASSET_MIT_TYPE  TYPE2UINT32(attachment::attachment_type::attachment_asset_mit)
 
 #define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
 
@@ -64,7 +64,7 @@ public:
         attachment_message,
         attachment_did,
         attachment_asset_cert,
-        attachment_identifiable_asset
+        attachment_asset_mit
     };
 
     typedef boost::variant<
@@ -74,7 +74,7 @@ public:
         blockchain_message,
         did,
         asset_cert,
-        identifiable_asset
+        asset_mit
         > attachment_data_type;
 
     attachment();

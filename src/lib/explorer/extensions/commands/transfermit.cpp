@@ -37,7 +37,7 @@ console_result transfermit::invoke (Json::Value& jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     // check symbol
-    check_identifiable_asset_symbol(argument_.symbol);
+    check_mit_symbol(argument_.symbol);
 
     // check to did
     auto to_did = argument_.to;
@@ -47,7 +47,7 @@ console_result transfermit::invoke (Json::Value& jv_output,
     }
 
     // get identifiable asset
-    auto mits = blockchain.get_account_identifiable_assets(auth_.name, argument_.symbol);
+    auto mits = blockchain.get_account_mits(auth_.name, argument_.symbol);
     if (mits->size() == 0) {
         throw asset_lack_exception("Not enough asset '" + argument_.symbol +  "'");
     }
@@ -70,11 +70,11 @@ console_result transfermit::invoke (Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {
             to_address, argument_.symbol, 0, 0, 0,
-            utxo_attach_type::identifiable_asset_transfer, attachment()
+            utxo_attach_type::asset_mit_transfer, attachment()
         }
     };
 
-    auto helper = transferring_identifiable_asset(
+    auto helper = transferring_mit(
                       *this, blockchain,
                       std::move(auth_.name), std::move(auth_.auth),
                       is_multisig_address ? std::move(from_address) : "",

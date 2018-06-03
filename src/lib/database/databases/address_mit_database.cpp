@@ -42,8 +42,8 @@ BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_siz
 
 BC_CONSTEXPR size_t record_size = hash_table_multimap_record_size<short_hash>();
 
-BC_CONSTEXPR size_t mit_transfer_record_size = 1 + 36 + 4 + 8 + 2 + 4 + IDENTIFIABLE_ASSET_TRANSFER_FIX_SIZE;
-BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(mit_transfer_record_size);
+BC_CONSTEXPR size_t mit_status_transfer_record_size = 1 + 36 + 4 + 8 + 2 + 4 + ASSET_MIT_TRANSFER_FIX_SIZE;
+BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(mit_status_transfer_record_size);
 
 address_mit_database::address_mit_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
@@ -138,7 +138,7 @@ address_mit_statinfo address_mit_database::statinfo() const
 void address_mit_database::store_output(const short_hash& key,
     const output_point& outpoint, uint32_t output_height,
     uint64_t value, uint16_t business_kd,
-    uint32_t timestamp, const mit& mit)
+    uint32_t timestamp, const asset_mit& mit)
 {
     auto write = [&](memory_ptr data)
     {
@@ -310,7 +310,7 @@ std::shared_ptr<std::vector<business_record>> address_mit_database::get(const st
                 result->emplace_back(row);
             } else { // mit symbol utxo
                 // mit business process
-                auto transfer = boost::get<identifiable_asset>(row.data.get_data());
+                auto transfer = boost::get<asset_mit>(row.data.get_data());
                 mit_symbol = transfer.get_symbol();
 
                 if (symbol == mit_symbol) {
@@ -629,7 +629,7 @@ business_history::list address_mit_database::get_business_history(const std::str
  status -- // 0 -- unspent  1 -- confirmed
 */
 business_address_mit::list address_mit_database::get_mits(const std::string& address,
-    size_t from_height, mit_status kind) const
+    size_t from_height, asset_mit::mit_status kind) const
 {
     data_chunk data(address.begin(), address.end());
     auto key = ripemd160_hash(data);
@@ -649,8 +649,9 @@ business_address_mit::list address_mit_database::get_mits(const std::string& add
         if (status == business_status::unknown)
             continue;
 
-        auto mit = boost::get<identifiable_asset>(row.data.get_data());
-        if ((kind != mit_status::mit_none) && (kind != (mit_status)mit.get_status())) {
+        auto mit = boost::get<asset_mit>(row.data.get_data());
+        if ((kind != asset_mit::mit_status::mit_status_none)
+            && (kind != (asset_mit::mit_status)mit.get_status())) {
             continue;
         }
 

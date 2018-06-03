@@ -48,8 +48,8 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     if (output.is_asset_cert()) {
         return utxo_attach_type::asset_cert;
     }
-    if (output.is_identifiable_asset()) {
-        return utxo_attach_type::identifiable_asset;
+    if (output.is_asset_mit()) {
+        return utxo_attach_type::asset_mit;
     }
     if (output.is_did_register()) {
         return utxo_attach_type::did_register;
@@ -100,15 +100,15 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
     }
 }
 
-void check_identifiable_asset_symbol(const std::string& symbol, bool check_sensitive)
+void check_mit_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (symbol.empty()) {
         throw asset_symbol_length_exception{"Symbol cannot be empty."};
     }
 
-    if (symbol.length() > IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE) {
+    if (symbol.length() > ASSET_MIT_SYMBOL_FIX_SIZE) {
         throw asset_symbol_length_exception{"Symbol length must be less than "
-            + std::to_string(IDENTIFIABLE_ASSET_SYMBOL_FIX_SIZE) + "."};
+            + std::to_string(ASSET_MIT_SYMBOL_FIX_SIZE) + "."};
     }
 
     // char check
@@ -413,19 +413,19 @@ void base_transfer_common::sync_fetchutxo(
                 continue;
             }
         }
-        else if ((filter & FILTER_IDENTIFIABLE_ASSET) && output.is_identifiable_asset()) {
+        else if ((filter & FILTER_IDENTIFIABLE_ASSET) && output.is_asset_mit()) {
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
 
-            if (payment_identifiable_asset_ <= unspent_identifiable_asset_) {
+            if (payment_mit_ <= unspent_mit_) {
                 continue;
             }
 
             if (symbol_ != output.get_asset_symbol())
                 continue;
 
-            ++unspent_identifiable_asset_;
+            ++unspent_mit_;
         }
         else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);
@@ -563,9 +563,9 @@ void base_transfer_common::sum_payments()
             payment_asset_cert_.push_back(iter.asset_cert);
         }
 
-        if (iter.type == utxo_attach_type::identifiable_asset_transfer) {
-            ++payment_identifiable_asset_;
-            if (payment_identifiable_asset_ > 1) {
+        if (iter.type == utxo_attach_type::asset_mit_transfer) {
+            ++payment_mit_;
+            if (payment_mit_ > 1) {
                 throw std::logic_error{"maximum one identifiable asset can be transfered"};
             }
         }
@@ -600,7 +600,7 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
     if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_))
         return false;
 
-    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_identifiable_asset_ < payment_identifiable_asset_))
+    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_))
         return false;
 
     if ((filter & FILTER_ASSETCERT)
@@ -625,9 +625,9 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
             + std::to_string(unspent_asset_) + ", payment = " + std::to_string(payment_asset_)};
     }
 
-    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_identifiable_asset_ < payment_identifiable_asset_)) {
+    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_)) {
         throw asset_lack_exception{"not enough identifiable asset amount, unspent = "
-            + std::to_string(unspent_identifiable_asset_) + ", payment = " + std::to_string(payment_identifiable_asset_)};
+            + std::to_string(unspent_mit_) + ", payment = " + std::to_string(payment_mit_)};
     }
 
     if ((filter & FILTER_ASSETCERT)
@@ -957,9 +957,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
         }
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
     }
-    else if (record.type == utxo_attach_type::identifiable_asset
-        || record.type == utxo_attach_type::identifiable_asset_transfer) {
-        return attachment(IDENTIFIABLE_ASSET_TYPE, attach_version, identifiable_asset(/*set on subclass*/));
+    else if (record.type == utxo_attach_type::asset_mit
+        || record.type == utxo_attach_type::asset_mit_transfer) {
+        return attachment(ASSET_MIT_TYPE, attach_version, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{
@@ -1666,13 +1666,13 @@ void sending_did::populate_unspent_list()
     populate_change();
 }
 
-attachment registering_identifiable_asset::populate_output_attachment(const receiver_record& record)
+attachment registering_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
-    if (record.type == utxo_attach_type::identifiable_asset) {
-        auto ass = identifiable_asset(record.symbol, record.target, content_);
-        ass.set_status(IDENTIFIABLE_ASSET_REGISTER_TYPE);
+    if (record.type == utxo_attach_type::asset_mit) {
+        auto ass = asset_mit(record.symbol, record.target, content_);
+        ass.set_status(MIT_STATUS_REGISTER);
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid identifiable asset issue attachment"};
         }
@@ -1683,13 +1683,13 @@ attachment registering_identifiable_asset::populate_output_attachment(const rece
     return attach;
 }
 
-attachment transferring_identifiable_asset::populate_output_attachment(const receiver_record& record)
+attachment transferring_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
-    if (record.type == utxo_attach_type::identifiable_asset_transfer) {
-        auto ass = identifiable_asset(record.symbol, record.target, "");
-        ass.set_status(IDENTIFIABLE_ASSET_TRANSFER_TYPE);
+    if (record.type == utxo_attach_type::asset_mit_transfer) {
+        auto ass = asset_mit(record.symbol, record.target, "");
+        ass.set_status(MIT_STATUS_TRANSFER);
         if (!ass.is_valid()) {
             throw tx_attachment_value_exception{"invalid identifiable asset transfer attachment"};
         }

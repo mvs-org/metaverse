@@ -1456,31 +1456,31 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return database_.certs.get(key) != nullptr;
 }
 
-std::shared_ptr<identifiable_asset> block_chain_impl::get_registered_identifiable_asset(const std::string& symbol)
+std::shared_ptr<asset_mit> block_chain_impl::get_registered_mit(const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());
-    // return the registered identifiable asset, its status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    // return the registered identifiable asset, its status must be MIT_STATUS_REGISTER
     return database_.mits.get(get_hash(symbol));
 }
 
-std::shared_ptr<identifiable_asset::list> block_chain_impl::get_registered_identifiable_assets()
+std::shared_ptr<asset_mit::list> block_chain_impl::get_registered_mits()
 {
-    // return the registered identifiable assets, their status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    // return the registered identifiable assets, their status must be MIT_STATUS_REGISTER
     return database_.mits.get_blockchain_mits();
 }
 
-std::shared_ptr<identifiable_asset::list> block_chain_impl::get_identifiable_asset_history(
+std::shared_ptr<asset_mit::list> block_chain_impl::get_mit_history(
     const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());
-    // return the identifiable assets of specified symbol, the last item's status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
+    // return the identifiable assets of specified symbol, the last item's status must be ASSET_MIT_REGISTER_TYPE
     return database_.mit_history.get_history_mits_by_height(get_short_hash(symbol));
 }
 
-std::shared_ptr<identifiable_asset::list> block_chain_impl::get_account_identifiable_assets(
+std::shared_ptr<asset_mit::list> block_chain_impl::get_account_mits(
     const std::string& account, const std::string& symbol)
 {
-    auto sp_vec = std::make_shared<identifiable_asset::list>();
+    auto sp_vec = std::make_shared<asset_mit::list>();
 
     auto pvaddr = get_account_addresses(account);
     if (!pvaddr)
@@ -1500,8 +1500,8 @@ std::shared_ptr<identifiable_asset::list> block_chain_impl::get_account_identifi
             {
                 BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
                 const auto& output = tx_temp.outputs.at(row.output.index);
-                if (output.is_identifiable_asset()) {
-                    auto&& asset = output.get_identifiable_asset();
+                if (output.is_asset_mit()) {
+                    auto&& asset = output.get_asset_mit();
                     if (symbol.empty()) {
                         sp_vec->emplace_back(std::move(asset));
                     }

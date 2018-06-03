@@ -278,10 +278,10 @@ public:
         const std::string& address, const std::string& symbol, asset_cert_type cert_type);
 
     // identifiable asset
-    std::shared_ptr<identifiable_asset> get_registered_identifiable_asset(const std::string& symbol);
-    std::shared_ptr<identifiable_asset::list> get_registered_identifiable_assets();
-    std::shared_ptr<identifiable_asset::list> get_identifiable_asset_history(const std::string& symbol);
-    std::shared_ptr<identifiable_asset::list> get_account_identifiable_assets(
+    std::shared_ptr<asset_mit> get_registered_mit(const std::string& symbol);
+    std::shared_ptr<asset_mit::list> get_registered_mits();
+    std::shared_ptr<asset_mit::list> get_mit_history(const std::string& symbol);
+    std::shared_ptr<asset_mit::list> get_account_mits(
         const std::string& account, const std::string& symbol="");
 
     // account did api

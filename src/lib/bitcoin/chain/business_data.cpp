@@ -32,13 +32,13 @@
 #define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
 #define ASSET_CERT_TYPE     KIND2UINT16(business_kind::asset_cert)
 #define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
-#define DID_REGISTER_TYPE    	KIND2UINT16(business_kind::did_register)
-#define DID_TRANSFER_TYPE    	KIND2UINT16(business_kind::did_transfer)
-#define IDENTIFIABLE_ASSET_TYPE KIND2UINT16(business_kind::identifiable_asset)
+#define DID_REGISTER_TYPE   KIND2UINT16(business_kind::did_register)
+#define DID_TRANSFER_TYPE   KIND2UINT16(business_kind::did_transfer)
+#define ASSET_MIT_TYPE      KIND2UINT16(business_kind::asset_mit)
 
 namespace libbitcoin {
 namespace chain {
-	
+
 business_data business_data::factory_from_data(const data_chunk& data)
 {
     business_data instance;
@@ -82,7 +82,7 @@ bool business_data::is_valid_type() const
 		|| (MESSAGE_TYPE == KIND2UINT16(kind))
 		|| (DID_REGISTER_TYPE == KIND2UINT16(kind))
 		|| (DID_TRANSFER_TYPE == KIND2UINT16(kind))
-        || (IDENTIFIABLE_ASSET_TYPE == KIND2UINT16(kind)));
+        || (ASSET_MIT_TYPE == KIND2UINT16(kind)));
 }
 
 
@@ -104,10 +104,10 @@ bool business_data::from_data(reader& source)
     kind = static_cast<business_kind>(source.read_2_bytes_little_endian());
 	timestamp = source.read_4_bytes_little_endian();
     auto result = static_cast<bool>(source);
-	
-    if (result && is_valid_type()) 
+
+    if (result && is_valid_type())
 	{
-		switch(KIND2UINT16(kind)) 
+		switch(KIND2UINT16(kind))
 		{
 			case ETP_TYPE:
 			{
@@ -149,26 +149,26 @@ bool business_data::from_data(reader& source)
 				data = did_detail();
 				break;
 			}
-			case IDENTIFIABLE_ASSET_TYPE:
+			case ASSET_MIT_TYPE:
 			{
-				data = identifiable_asset();
+				data = asset_mit();
 				break;
 			}
 		}
 		auto visitor = from_data_visitor(source);
 		result = boost::apply_visitor(visitor, data);
     }
-	else 
+	else
 	{
 		result = false;
         reset();
 	}
 
     return result;
-	
+
 }
 
-data_chunk business_data::to_data() 
+data_chunk business_data::to_data()
 {
     data_chunk data;
     data_sink ostream(data);
@@ -177,13 +177,13 @@ data_chunk business_data::to_data()
     return data;
 }
 
-void business_data::to_data(std::ostream& stream) 
+void business_data::to_data(std::ostream& stream)
 {
     ostream_writer sink(stream);
     to_data(sink);
 }
 
-void business_data::to_data(writer& sink) 
+void business_data::to_data(writer& sink)
 {
     sink.write_2_bytes_little_endian(KIND2UINT16(kind));
     sink.write_4_bytes_little_endian(timestamp);
@@ -191,7 +191,7 @@ void business_data::to_data(writer& sink)
 	boost::apply_visitor(visitor, data);
 }
 
-uint64_t business_data::serialized_size() 
+uint64_t business_data::serialized_size()
 {
     uint64_t size = 2 + 4; // kind and timestamp
 	auto visitor = serialized_size_visitor();
@@ -201,7 +201,7 @@ uint64_t business_data::serialized_size()
 }
 
 #ifdef MVS_DEBUG
-std::string business_data::to_string() 
+std::string business_data::to_string()
 {
     std::ostringstream ss;
 
