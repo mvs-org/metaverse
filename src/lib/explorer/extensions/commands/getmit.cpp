@@ -78,7 +78,7 @@ console_result getmit::invoke(Json::Value& jv_output,
         if (option_.show_history) {
             auto sh_vec = blockchain.get_mit_history(argument_.symbol, option_.limit, option_.index);
             for (auto& elem : *sh_vec) {
-                Json::Value asset_data = json_helper.prop_list(elem, true);
+                Json::Value asset_data = json_helper.prop_list(elem);
                 json_value.append(asset_data);
             }
 
