@@ -42,6 +42,25 @@ console_result getmit::invoke(Json::Value& jv_output,
         check_mit_symbol(argument_.symbol);
     }
 
+    if (option_.show_history) {
+        if (argument_.symbol.empty()) {
+            throw argument_legality_exception("MIT symbol not privided when you want to trace history!");
+        }
+
+        // page limit & page index paramenter check
+        if (option_.index < 1) {
+            throw argument_legality_exception{"page index parameter cannot be zero"};
+        }
+
+        if (option_.limit < 1) {
+            throw argument_legality_exception{"page record limit parameter cannot be zero"};
+        }
+
+        if (option_.limit > 100) {
+            throw argument_legality_exception{"page record limit cannot be bigger than 100."};
+        }
+    }
+
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
 
@@ -57,7 +76,7 @@ console_result getmit::invoke(Json::Value& jv_output,
     }
     else {
         if (option_.show_history) {
-            auto sh_vec = blockchain.get_mit_history(argument_.symbol);
+            auto sh_vec = blockchain.get_mit_history(argument_.symbol, option_.limit, option_.index);
             for (auto& elem : *sh_vec) {
                 Json::Value asset_data = json_helper.prop_list(elem, true);
                 json_value.append(asset_data);

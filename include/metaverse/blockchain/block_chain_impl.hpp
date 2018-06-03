@@ -280,7 +280,8 @@ public:
     // identifiable asset
     std::shared_ptr<asset_mit> get_registered_mit(const std::string& symbol);
     std::shared_ptr<asset_mit::list> get_registered_mits();
-    std::shared_ptr<asset_mit::list> get_mit_history(const std::string& symbol);
+    std::shared_ptr<asset_mit::list> get_mit_history(const std::string& symbol,
+        uint64_t limit = 0, uint64_t page_number = 0);
     std::shared_ptr<asset_mit::list> get_account_mits(
         const std::string& account, const std::string& symbol="");
 

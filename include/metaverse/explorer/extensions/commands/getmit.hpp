@@ -72,7 +72,18 @@ public:
             "trace,t",
             value<bool>(&option_.show_history)->default_value(false)->zero_tokens(),
             "If specified, then only get related asset. Default is not specified."
-        );
+        )
+        (
+            "limit,l",
+            value<uint32_t>(&option_.limit)->default_value(100),
+            "MIT count per page."
+        )
+        (
+            "index,i",
+            value<uint32_t>(&option_.index)->default_value(1),
+            "Page index."
+        )
+        ;
 
         return options;
     }
@@ -97,6 +108,8 @@ public:
     struct option
     {
         bool show_history;
+        uint32_t index;
+        uint32_t limit;
     } option_;
 
 };

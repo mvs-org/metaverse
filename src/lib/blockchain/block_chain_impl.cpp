@@ -1470,11 +1470,11 @@ std::shared_ptr<asset_mit::list> block_chain_impl::get_registered_mits()
 }
 
 std::shared_ptr<asset_mit::list> block_chain_impl::get_mit_history(
-    const std::string& symbol)
+    const std::string& symbol, uint64_t limit, uint64_t page_number)
 {
     BITCOIN_ASSERT(!symbol.empty());
-    // return the identifiable assets of specified symbol, the last item's status must be ASSET_MIT_REGISTER_TYPE
-    return database_.mit_history.get_history_mits_by_height(get_short_hash(symbol));
+    // return the identifiable assets of specified symbol, the last item's status must be MIT_STATUS_REGISTER
+    return database_.mit_history.get_history_mits_by_height(get_short_hash(symbol), 0, 0, limit, page_number);
 }
 
 std::shared_ptr<asset_mit::list> block_chain_impl::get_account_mits(
