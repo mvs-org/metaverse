@@ -256,7 +256,7 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "MIT token error";
         case error::mit_exist:
             return "MIT token already exists";
-        case error::mit_status_register_error:
+        case error::mit_register_error:
             return "MIT token register error";
 
         // unknown errors

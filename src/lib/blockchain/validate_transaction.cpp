@@ -814,7 +814,7 @@ code validate_transaction::check_asset_mit_register_transaction(
             }
         }
         else if (!output.is_etp()) {
-            return error::mit_status_register_error;
+            return error::mit_register_error;
         }
     }
 
