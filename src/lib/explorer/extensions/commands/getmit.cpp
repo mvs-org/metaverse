@@ -52,6 +52,8 @@ console_result getmit::invoke(Json::Value& jv_output,
         for (auto& elem : *sh_vec) {
             json_value.append(elem.get_symbol());
         }
+
+        jv_output["mits"] = json_value;
     }
     else {
         if (option_.show_history) {
@@ -61,6 +63,8 @@ console_result getmit::invoke(Json::Value& jv_output,
                 asset_data["did"] = blockchain.get_did_from_address(elem.get_address());
                 json_value.append(asset_data);
             }
+
+            jv_output["mits"] = json_value;
         }
         else {
             auto asset = blockchain.get_registered_mit(argument_.symbol);
@@ -68,10 +72,10 @@ console_result getmit::invoke(Json::Value& jv_output,
                 json_value = json_helper.prop_list(*asset);
                 json_value["did"] = blockchain.get_did_from_address(asset->get_address());
             }
+
+            jv_output = json_value;
         }
     }
-
-    jv_output["mits"] = json_value;
 
     return console_result::okay;
 }

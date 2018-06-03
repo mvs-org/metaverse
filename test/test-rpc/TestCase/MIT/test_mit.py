@@ -68,12 +68,10 @@ class TestRegisterMIT(MVSTestCaseBase):
         # test get_mit with symbol
         ec, message = Alice.get_mit(symbol)
         self.assertEqual(ec, code.success, message)
-
-        mit = message['mits']
-        self.assertEqual(mit["symbol"], symbol)
-        self.assertEqual(mit["content"], content)
-        self.assertEqual(mit["status"], "registered")
-        self.assertEqual(mit["did"], Alice.did_symbol)
+        self.assertEqual(message["symbol"], symbol)
+        self.assertEqual(message["content"], content)
+        self.assertEqual(message["status"], "registered")
+        self.assertEqual(message["did"], Alice.did_symbol)
 
         # test get_mit without symbol
         ec, message = Alice.get_mit()
@@ -106,12 +104,10 @@ class TestRegisterMIT(MVSTestCaseBase):
         # test get_mit with symbol
         ec, message = Bob.get_mit(symbol)
         self.assertEqual(ec, code.success, message)
-
-        mit = message['mits']
-        self.assertEqual(mit["symbol"], symbol)
-        self.assertEqual(mit["content"], content)
-        self.assertEqual(mit["status"], "registered")
-        self.assertEqual(mit["did"], Alice.did_symbol)
+        self.assertEqual(message["symbol"], symbol)
+        self.assertEqual(message["content"], content)
+        self.assertEqual(message["status"], "registered")
+        self.assertEqual(message["did"], Alice.did_symbol)
 
         # test get_mit with symbol and history
         ec, message = Bob.get_mit(symbol, True)
