@@ -2337,8 +2337,8 @@ code block_chain_impl::validate_transaction(const chain::transaction& tx)
     mutex.lock();
     auto f = [&ret, &mutex](const code& ec, transaction_message::ptr tx_, chain::point::indexes idx_vec) -> void
     {
-        log::info("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
-        log::info("validate_transaction") << "ec.message=" << ec.message();
+        log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
+        log::debug("validate_transaction") << "ec.message=" << ec.message();
         //if((error::success == ec) && idx_vec.empty())
         ret = ec;
         mutex.unlock();

@@ -86,6 +86,7 @@ bool attachment::is_valid_type() const
     return ((ETP_TYPE == type)
         || (ASSET_TYPE == type)
         || (ASSET_CERT_TYPE == type)
+        || (ASSET_MIT_TYPE == type)
         || (MESSAGE_TYPE == type)
         || (ETP_AWARD_TYPE == type)
         || (DID_TYPE == type));
@@ -140,6 +141,11 @@ bool attachment::from_data(reader& source)
             case ASSET_CERT_TYPE:
             {
                 attach = asset_cert();
+                break;
+            }
+            case ASSET_MIT_TYPE:
+            {
+                attach = asset_mit();
                 break;
             }
             case MESSAGE_TYPE:

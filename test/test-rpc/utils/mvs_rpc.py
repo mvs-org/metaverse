@@ -663,7 +663,7 @@ def list_mits(account=None, password=None):
 @mvs_api
 def get_mit(symbol=None, tracing=False):
     positional = filter(None, [symbol])
-    if asset_symbol != None and tracing:
+    if symbol != None and tracing:
         positional.append("--trace")
     return "getmit", positional, {}, None
 

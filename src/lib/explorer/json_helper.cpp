@@ -476,9 +476,9 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit& asset_info,
     Json::Value tree;
     tree["symbol"] = asset_info.get_symbol();
     tree["address"] = asset_info.get_address();
+    tree["status"] = asset_info.get_status_name();
 
     if (!is_tracing) {
-        tree["status"] = asset_info.get_status_name();
         if (force_print || asset_info.is_register_status()) {
             tree["content"] = asset_info.get_content();
         }
@@ -545,6 +545,11 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
             tree["type"] = "asset-transfer";
         }
     }
+    else if (attach_data.get_type() == ASSET_MIT_TYPE) {
+        auto asset_info = boost::get<bc::chain::asset_mit>(attach_data.get_attach());
+        tree = prop_list(asset_info);
+        tree["type"] = "mit";
+    }
     else if (attach_data.get_type() == ASSET_CERT_TYPE) {
         auto cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
         tree = prop_list(cert_info);
@@ -572,6 +577,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
     }
     else {
         tree["type"] = "unknown business";
+        BITCOIN_ASSERT(false);
     }
 
     if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION) {

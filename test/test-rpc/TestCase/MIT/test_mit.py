@@ -18,11 +18,10 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(ec, code.asset_symbol_length_exception, message)
 
         # check invalid char in symbol
-        spec_char_lst = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<>/?"
+        spec_char_lst = "`~!#$%^&*()+[{]}\\|;:'\",<>/?"
         for char in spec_char_lst:
             ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol + char)
-            self.assertEqual(ec, 1000, message)
-            self.assertEqual(message, "symbol must be alpha or number or dot", message)
+            self.assertEqual(ec, code.asset_symbol_name_exception, message)
 
         # check content length
         ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X"*257)
@@ -70,12 +69,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Alice.get_mit(symbol)
         self.assertEqual(ec, code.success, message)
 
-        mits = message['mits']
-        self.assertGreater(len(mits), 0)
-        found_mits = filter(lambda a: a["symbol"] == symbol, mits)
-        self.assertEqual(len(found_mits), 1)
-
-        mit = found_mits[0]
+        mit = message['mits']
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["content"], content)
         self.assertEqual(mit["status"], "registered")
@@ -116,8 +110,8 @@ class TestRegisterMIT(MVSTestCaseBase):
         mit = message['mits']
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["content"], content)
-        self.assertEqual(mit["status"], "transfered")
-        self.assertEqual(mit["did"], Bob.did_symbol)
+        self.assertEqual(mit["status"], "registered")
+        self.assertEqual(mit["did"], Alice.did_symbol)
 
         # test get_mit with symbol and history
         ec, message = Bob.get_mit(symbol, True)
