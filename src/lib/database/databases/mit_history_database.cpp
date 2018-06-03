@@ -36,6 +36,29 @@ namespace database {
 using namespace boost::filesystem;
 using namespace bc::chain;
 
+namespace {
+    // Read the height value from the row.
+    uint32_t read_height(uint8_t* data)
+    {
+        return from_little_endian_unsafe<uint32_t>(data);
+    };
+
+    // Read the height value from the row.
+    uint32_t read_time(uint8_t* data)
+    {
+        return from_little_endian_unsafe<uint32_t>(data + 4);
+    };
+
+    // Read a row from the data for the history list.
+    mit read_row(uint8_t* data)
+    {
+        auto deserial = make_deserializer_unsafe(data);
+        deserial.read_4_bytes_little_endian(); // output_height
+        deserial.read_4_bytes_little_endian(); // timestamp
+        return mit::factory_from_data(deserial);
+    };
+} // end of namespace anonymous
+
 BC_CONSTEXPR size_t number_buckets = 99999989;
 BC_CONSTEXPR size_t header_size = record_hash_table_header_size(number_buckets);
 BC_CONSTEXPR size_t initial_lookup_file_size = header_size + minimum_records_size;
@@ -159,15 +182,6 @@ void mit_history_database::delete_last_row(const short_hash& key)
 
 std::shared_ptr<mit> mit_history_database::get(const short_hash& key) const
 {
-    // Read a row from the data for the history list.
-    const auto read_row = [](uint8_t* data)
-    {
-        auto deserial = make_deserializer_unsafe(data);
-        deserial.read_4_bytes_little_endian();
-        return mit::factory_from_data(deserial);
-    };
-
-    std::shared_ptr<mit> result;
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
 
@@ -177,33 +191,18 @@ std::shared_ptr<mit> mit_history_database::get(const short_hash& key) const
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
 
-        result = std::make_shared<mit>(read_row(address));
+        return std::make_shared<mit>(read_row(address));
     }
 
-    return result;
+    return nullptr;
 }
 
 std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_height(
     const short_hash& key, uint32_t start_height, uint32_t end_height,
     uint64_t limit, uint64_t page_number) const
 {
-    // Read the height value from the row.
-    const auto read_height = [](uint8_t* data)
-    {
-        return from_little_endian_unsafe<uint32_t>(data);
-    };
-
-    // Read a row from the data for the history list.
-    const auto read_row = [](uint8_t* data)
-    {
-        auto deserial = make_deserializer_unsafe(data);
-        deserial.read_4_bytes_little_endian();
-        deserial.read_4_bytes_little_endian();
-        return mit::factory_from_data(deserial);
-    };
-
-    // use map to sort by height
-    std::map<uint32_t, mit> height_mit_map;
+    // use map to sort by height, decreasely
+    std::map<uint32_t, mit, std::greater<uint32_t>> height_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -253,23 +252,8 @@ std::shared_ptr<std::vector<mit>> mit_history_database::get_history_mits_by_time
     const short_hash& key, uint32_t time_begin, uint32_t time_end,
     uint64_t limit, uint64_t page_number) const
 {
-    // Read the height value from the row.
-    const auto read_time = [](uint8_t* data)
-    {
-        return from_little_endian_unsafe<uint32_t>(data + 4);
-    };
-
-    // Read a row from the data for the history list.
-    const auto read_row = [](uint8_t* data)
-    {
-        auto deserial = make_deserializer_unsafe(data);
-        deserial.read_4_bytes_little_endian();
-        deserial.read_4_bytes_little_endian();
-        return mit::factory_from_data(deserial);
-    };
-
-    // use map to sort by time
-    std::map<uint32_t, mit> time_mit_map;
+    // use map to sort by time, decreasely
+    std::map<uint32_t, mit, std::greater<uint32_t>> time_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);

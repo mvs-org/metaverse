@@ -1472,10 +1472,9 @@ std::shared_ptr<identifiable_asset::list> block_chain_impl::get_registered_ident
 std::shared_ptr<identifiable_asset::list> block_chain_impl::get_identifiable_asset_history(
     const std::string& symbol)
 {
-    auto sp_vec = std::make_shared<identifiable_asset::list>();
-    // TODO:MIT
+    BITCOIN_ASSERT(!symbol.empty());
     // return the identifiable assets of specified symbol, the last item's status must be IDENTIFIABLE_ASSET_REGISTER_TYPE
-    return sp_vec;
+    return database_.mit_history.get_history_mits_by_height(get_short_hash(symbol));
 }
 
 std::shared_ptr<identifiable_asset::list> block_chain_impl::get_account_identifiable_assets(
