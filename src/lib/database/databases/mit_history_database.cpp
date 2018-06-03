@@ -50,12 +50,12 @@ namespace {
     };
 
     // Read a row from the data for the history list.
-    mit read_row(uint8_t* data)
+    asset_mit read_row(uint8_t* data)
     {
         auto deserial = make_deserializer_unsafe(data);
         deserial.read_4_bytes_little_endian(); // output_height
         deserial.read_4_bytes_little_endian(); // timestamp
-        return mit::factory_from_data(deserial);
+        return asset_mit::factory_from_data(deserial);
     };
 } // end of namespace anonymous
 
@@ -191,7 +191,7 @@ std::shared_ptr<asset_mit> mit_history_database::get(const short_hash& key) cons
         const auto record = rows_list_.get(index);
         const auto address = REMAP_ADDRESS(record);
 
-        return std::make_shared<mit>(read_row(address));
+        return std::make_shared<asset_mit>(read_row(address));
     }
 
     return nullptr;
@@ -202,7 +202,7 @@ std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_b
     uint64_t limit, uint64_t page_number) const
 {
     // use map to sort by height, decreasely
-    std::map<uint32_t, mit, std::greater<uint32_t>> height_mit_map;
+    std::map<uint32_t, asset_mit, std::greater<uint32_t>> height_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
@@ -253,7 +253,7 @@ std::shared_ptr<std::vector<asset_mit>> mit_history_database::get_history_mits_b
     uint64_t limit, uint64_t page_number) const
 {
     // use map to sort by time, decreasely
-    std::map<uint32_t, mit, std::greater<uint32_t>> time_mit_map;
+    std::map<uint32_t, asset_mit, std::greater<uint32_t>> time_mit_map;
 
     const auto start = rows_multimap_.lookup(key);
     const auto records = record_multimap_iterable(rows_list_, start);
