@@ -46,8 +46,7 @@ public:
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
             .add("TODID", 1)
-            .add("SYMBOL", 1)
-            .add("CONTENT", 1);
+            .add("SYMBOL", 1);
     }
 
     void load_fallbacks (std::istream& input,

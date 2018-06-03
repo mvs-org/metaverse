@@ -810,11 +810,11 @@ code validate_transaction::check_asset_mit_register_transaction(
             if (nullptr != chain.get_registered_mit(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
                                            << asset_info.get_symbol() << " already exists.";
-                return error::asset_cert_exist;
+                return error::mit_exist;
             }
         }
         else if (!output.is_etp()) {
-            return error::asset_cert_issue_error;
+            return error::mit_status_register_error;
         }
     }
 
