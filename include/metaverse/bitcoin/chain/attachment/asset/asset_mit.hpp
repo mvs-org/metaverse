@@ -107,8 +107,8 @@ public:
     bool is_invalid_status() const;
 
 private:
-    // NOTICE: ref CIdentifiableAsset in transaction.h
-    // asset_mit and CIdentifiableAsset should have the same size and order.
+    // NOTICE: ref CAssetMit in transaction.h
+    // asset_mit and CAssetMit should have the same size and order.
     uint8_t status_;        // asset status
     std::string symbol_;    // asset name/symbol
     std::string address_;   // address that owned asset cert

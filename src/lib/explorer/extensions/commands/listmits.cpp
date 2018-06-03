@@ -62,7 +62,6 @@ console_result listmits::invoke(Json::Value& jv_output,
             }
 
             Json::Value asset_data = json_helper.prop_list(elem, false, true);
-            asset_data["did"] = blockchain.get_did_from_address(elem.get_address());
             json_value.append(asset_data);
         }
     }

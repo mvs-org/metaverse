@@ -48,7 +48,6 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["content"], content)
         self.assertEqual(mit["status"], "registered")
-        self.assertEqual(mit["did"], Alice.did_symbol)
 
         # test list_mits without account
         ec, message = Alice.list_mits()
@@ -63,7 +62,6 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["content"], content)
         self.assertEqual(mit["status"], "registered")
-        self.assertEqual(mit["did"], Alice.did_symbol)
 
         # test get_mit with symbol
         ec, message = Alice.get_mit(symbol)
@@ -71,7 +69,6 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(message["symbol"], symbol)
         self.assertEqual(message["content"], content)
         self.assertEqual(message["status"], "registered")
-        self.assertEqual(message["did"], Alice.did_symbol)
 
         # test get_mit without symbol
         ec, message = Alice.get_mit()
@@ -107,7 +104,6 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(message["symbol"], symbol)
         self.assertEqual(message["content"], content)
         self.assertEqual(message["status"], "registered")
-        self.assertEqual(message["did"], Alice.did_symbol)
 
         # test get_mit with symbol and history
         ec, message = Bob.get_mit(symbol, True)
@@ -121,13 +117,11 @@ class TestRegisterMIT(MVSTestCaseBase):
         mit = found_mits[0]
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["status"], "transfered")
-        self.assertEqual(mit["did"], Bob.did_symbol)
 
         # root
         mit = found_mits[1]
         self.assertEqual(mit["symbol"], symbol)
         self.assertEqual(mit["status"], "registered")
-        self.assertEqual(mit["did"], Alice.did_symbol)
 
         # not enough mit
         ec, message = Alice.transfer_mit(Bob.did_symbol, symbol)

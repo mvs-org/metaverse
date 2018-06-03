@@ -208,7 +208,7 @@ public:
     }
 };
 
-class CIdentifiableAsset
+class CAssetMit
 {
 public:
     uint8_t status;
@@ -316,7 +316,7 @@ public:
 
     CAsset asset;
     CAssetCert assetcert;
-    CIdentifiableAsset mit;
+    CAssetMit mit;
     CDid did;
     CMessage message;
 
@@ -363,7 +363,7 @@ public:
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
                 break;
             case 6: // mit
-                (::SerReadWrite(s, (*(CIdentifiableAsset*)(&mit)), nType, nVersion, CSerActionSerialize()));
+                (::SerReadWrite(s, (*(CAssetMit*)(&mit)), nType, nVersion, CSerActionSerialize()));
                 break;
         };
     }
@@ -396,7 +396,7 @@ public:
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionUnserialize()));
                 break;
             case 6: // mit
-                (::SerReadWrite(s, (*(CIdentifiableAsset*)(&mit)), nType, nVersion, CSerActionUnserialize()));
+                (::SerReadWrite(s, (*(CAssetMit*)(&mit)), nType, nVersion, CSerActionUnserialize()));
                 break;
         };
     }
