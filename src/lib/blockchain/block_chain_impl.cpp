@@ -1336,22 +1336,16 @@ static history::list expand_history(history_compact::list& compact)
     // so sort by spend height decreasely can ensure this.
     // 2. for spend
     // spent height first, decreasely
-    // spend index second, increasely
+    // spend index second, decreasely
     // 3. for unspend
-    // output height first, increasely
-    // output index second, increasely
+    // output height first, decreasely
+    // output index second, decreasely
     std::sort(result.begin(), result.end(),
         [](const history& elem1, const history& elem2) {
-            if (elem1.spend_height == elem2.spend_height) {
-                if (elem1.spend_height != max_uint64) { // spend
-                    return elem1.spend.index < elem2.spend.index;
-                }
-                if (elem1.output_height == elem2.output_height) {
-                    return elem1.output.index < elem2.output.index;
-                }
-                return (elem1.output_height < elem2.output_height);
-            }
-            return (elem1.spend_height > elem2.spend_height);
+            typedef std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> cmp_tuple_t;
+            cmp_tuple_t tuple1(elem1.spend_height, elem1.spend.index, elem1.output_height, elem1.output.index);
+            cmp_tuple_t tuple2(elem2.spend_height, elem2.spend.index, elem2.output_height, elem2.output.index);
+            return tuple1 > tuple2;
         });
     return result;
 }
