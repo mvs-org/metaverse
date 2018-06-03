@@ -652,7 +652,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
             status = 1;
 		
 		business_address_did detail;
-		if(row.data.get_kind_value() == business_kind::did_register) // did issue
+		if(row.data.get_kind_value() == business_kind::did_register) // did register
 		{
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;
@@ -694,7 +694,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
             status = 1;
 		
 		business_address_did detail;
-		if(row.data.get_kind_value() == business_kind::did_register) // did issue
+		if(row.data.get_kind_value() == business_kind::did_register) // did register
 		{
 			auto issue_info = boost::get<did_detail>(row.data.get_data());
 			detail.detail = issue_info;
