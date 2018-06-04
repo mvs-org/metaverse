@@ -59,10 +59,6 @@ console_result getmit::invoke(Json::Value& jv_output,
         if (option_.limit > 100) {
             throw argument_legality_exception{"page record limit cannot be bigger than 100."};
         }
-
-        if (option_.index > option_.limit) {
-            throw argument_legality_exception{"page index cannot be bigger than page limit."};
-        }
     }
 
     Json::Value json_value;

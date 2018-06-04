@@ -112,10 +112,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Bob.get_mit(symbol, True, 0, 100)
         self.assertEqual(ec, code.argument_legality_exception, message)
 
-        ec, message = Bob.get_mit(symbol, True, 0, 101)
-        self.assertEqual(ec, code.argument_legality_exception, message)
-
-        ec, message = Bob.get_mit(symbol, True, 101, 100)
+        ec, message = Bob.get_mit(symbol, True, 1, 101)
         self.assertEqual(ec, code.argument_legality_exception, message)
 
         # success
