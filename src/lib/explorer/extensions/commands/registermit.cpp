@@ -70,7 +70,8 @@ console_result registermit::invoke (Json::Value& jv_output,
 
     auto helper = registering_mit(
                       *this, blockchain,
-                      std::move(auth_.name), std::move(auth_.auth), "",
+                      std::move(auth_.name), std::move(auth_.auth),
+                      std::move(to_address),
                       std::move(argument_.symbol), std::move(option_.content),
                       std::move(receiver), argument_.fee);
 
