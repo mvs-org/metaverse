@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "registermit";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "registermit"; }
+    const char* description() override { return "Register MIT"; }
 
     arguments_metadata& load_arguments() override
     {

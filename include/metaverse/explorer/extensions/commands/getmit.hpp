@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "getmit";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "Show identifiable asset from MVS blockchain."; }
+    const char* description() override { return "Get information of MIT."; }
 
     arguments_metadata& load_arguments() override
     {

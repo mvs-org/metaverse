@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "listmits";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "list assets."; }
+    const char* description() override { return "List MITs."; }
 
     arguments_metadata& load_arguments() override
     {
