@@ -1042,7 +1042,8 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
             }
         }
         else if (output.is_did_register()) {
-            if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), true)) {
+            auto is_test = chain.chain_settings().use_testnet_rules;
+            if (!chain::output::is_valid_did_symbol(output.get_did_symbol(), !is_test)) {
                 return error::did_symbol_invalid;
             }
         }
