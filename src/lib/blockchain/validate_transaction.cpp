@@ -772,16 +772,24 @@ code validate_transaction::check_asset_mit_register_transaction(
     }
 
     std::string asset_symbol;
+    std::string asset_address;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_mit_register()) {
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
 
+            if (!check_same(asset_address, asset_info.get_address())) {
+                log::debug(LOG_BLOCKCHAIN) << "register MIT: "
+                                           << " address is not same. "
+                                           << asset_address << " != " << asset_info.get_address();
+                return error::mit_exist;
+            }
+
             // check asset not exists
             if (nullptr != chain.get_registered_mit(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
-                                           << asset_info.get_symbol() << " already exists.";
+                                           << asset_symbol << " already exists.";
                 return error::mit_exist;
             }
         }
@@ -789,6 +797,24 @@ code validate_transaction::check_asset_mit_register_transaction(
             log::debug(LOG_BLOCKCHAIN) << "registermit: illega output, "
                                        << asset_symbol << " : " << output.to_string(1);
             return error::mit_register_error;
+        }
+    }
+
+    // check inputs etp address
+    for (const auto& input : tx.inputs) {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+            return error::input_not_found;
+        }
+        auto prev_output = prev_tx.outputs.at(input.previous_output.index);
+        if (prev_output.is_etp()) {
+            auto&& asset_address_in = prev_output.get_script_address();
+            if (asset_address != asset_address_in) {
+                log::debug(LOG_BLOCKCHAIN) << "registermit: invalid input address to pay fee, "
+                                            << asset_address_in << " != " << asset_address;
+                return error::validate_inputs_failed;
+            }
         }
     }
 
