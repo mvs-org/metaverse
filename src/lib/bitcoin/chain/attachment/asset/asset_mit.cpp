@@ -42,7 +42,7 @@ asset_mit::asset_mit()
 }
 
 asset_mit::asset_mit(const std::string& symbol,
-               const std::string& address, const std::string& content)
+                     const std::string& address, const std::string& content)
     : symbol_(symbol)
     , address_(address)
     , content_(content)
@@ -64,10 +64,8 @@ bool asset_mit::is_valid() const
              || address_.empty()
              || is_invalid_status()
              || (!is_register_status() && !content_.empty())
-             || ((symbol_.size() + 1) > ASSET_MIT_SYMBOL_FIX_SIZE)
-             || ((address_.size() + 1) > ASSET_MIT_ADDRESS_FIX_SIZE)
-             || ((content_.size() + 1) > ASSET_MIT_CONTENT_FIX_SIZE)
-            );
+             || (symbol_.size() + 1 + address_.size() + 1 + content_.size() + 1
+                 > ASSET_MIT_SYMBOL_FIX_SIZE + ASSET_MIT_ADDRESS_FIX_SIZE + ASSET_MIT_CONTENT_FIX_SIZE));
 }
 
 bool asset_mit::operator< (const asset_mit& other) const
