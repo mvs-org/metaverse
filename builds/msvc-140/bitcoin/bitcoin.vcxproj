@@ -16,6 +16,7 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_cert.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_detail.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_mit.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_transfer.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\attenuation_model.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\blockchain_asset.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_cert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_detail.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_interface.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_mit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_transfer.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\attenuation_model.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\blockchain_asset.hpp" />

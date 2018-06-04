@@ -581,6 +581,9 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\did\blockchain_did.cpp">
       <Filter>Source Files\chain\attachment\did</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\attachment\asset\asset_mit.cpp">
+      <Filter>Source Files\chain\attachment\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp">
@@ -1152,6 +1155,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\did\blockchain_did.hpp">
       <Filter>Header Files\chain\attachment\did</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset_mit.hpp">
+      <Filter>Header Files\chain\attachment\asset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
