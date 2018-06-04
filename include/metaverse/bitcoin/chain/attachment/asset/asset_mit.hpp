@@ -88,6 +88,8 @@ public:
 
     std::string to_string() const;
     uint64_t serialized_size() const;
+    uint64_t calc_size() const;
+    uint64_t get_max_serialized_size() const;
 
     const std::string& get_symbol() const;
     void set_symbol(const std::string& symbol);

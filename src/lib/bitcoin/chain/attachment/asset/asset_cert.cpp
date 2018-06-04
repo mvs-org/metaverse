@@ -60,10 +60,7 @@ bool asset_cert::is_valid() const
     return !(symbol_.empty()
              || owner_.empty()
              || (cert_type_ == asset_cert_ns::none)
-             || ((symbol_.size() + 1) > ASSET_CERT_SYMBOL_FIX_SIZE)
-             || ((owner_.size() + 1) > ASSET_CERT_OWNER_FIX_SIZE)
-             || ((address_.size() + 1) > ASSET_CERT_ADDRESS_FIX_SIZE)
-            );
+             || (calc_size() > ASSET_CERT_FIX_SIZE));
 }
 
 bool asset_cert::operator< (const asset_cert& other) const
@@ -170,11 +167,18 @@ void asset_cert::to_data(writer& sink) const
     sink.write_byte(status_);
 }
 
+uint64_t asset_cert::calc_size() const
+{
+    return (symbol_.size() + 1)
+        + (owner_.size() + 1)
+        + (address_.size() + 1)
+        + ASSET_CERT_TYPE_FIX_SIZE
+        + ASSET_CERT_STATUS_FIX_SIZE;
+}
+
 uint64_t asset_cert::serialized_size() const
 {
-    size_t len = (symbol_.size() + 1) + (owner_.size() + 1) + (address_.size() + 1)
-                 + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE;
-    return std::min(len, ASSET_CERT_FIX_SIZE);
+    return std::min(calc_size(), ASSET_CERT_FIX_SIZE);
 }
 
 std::string asset_cert::to_string() const
