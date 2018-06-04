@@ -661,11 +661,13 @@ def list_mits(account=None, password=None):
     return "listmits", positional, {}, None
 
 @mvs_api
-def get_mit(symbol=None, tracing=False):
+def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
     positional = filter(None, [symbol])
     if symbol != None and tracing:
         positional.append("--trace")
-    return "getmit", positional, {}, None
+        return "getmit", positional, {'--index':page_index, '--limit':page_limit}, None
+    else:
+        return "getmit", positional, {}, None
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")

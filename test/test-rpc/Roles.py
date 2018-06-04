@@ -331,8 +331,8 @@ class Role:
     def list_mits(self, name=None, password=None):
         return mvs_rpc.list_mits(name, password)
 
-    def get_mit(self, symbol=None, trace=False):
-        return mvs_rpc.get_mit(symbol, trace)
+    def get_mit(self, symbol=None, trace=False, page_index=1, page_limit=100):
+        return mvs_rpc.get_mit(symbol, trace, page_index, page_limit)
 
 class NewGuy(Role):
     '''

@@ -106,6 +106,19 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(message["status"], "registered")
 
         # test get_mit with symbol and history
+        ec, message = Bob.get_mit("", True)
+        self.assertEqual(ec, code.argument_legality_exception, message)
+
+        ec, message = Bob.get_mit(symbol, True, 0, 100)
+        self.assertEqual(ec, code.argument_legality_exception, message)
+
+        ec, message = Bob.get_mit(symbol, True, 0, 101)
+        self.assertEqual(ec, code.argument_legality_exception, message)
+
+        ec, message = Bob.get_mit(symbol, True, 101, 100)
+        self.assertEqual(ec, code.argument_legality_exception, message)
+
+        # success
         ec, message = Bob.get_mit(symbol, True)
         self.assertEqual(ec, code.success, message)
 

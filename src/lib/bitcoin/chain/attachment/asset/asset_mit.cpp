@@ -270,6 +270,7 @@ void asset_mit_info::reset()
 {
     output_height = 0;
     timestamp = 0;
+    from_did = "";
     to_did = "";
     mit.reset();
 }
@@ -281,6 +282,7 @@ asset_mit_info asset_mit_info::factory_from_data(reader& source)
 
     instance.output_height = source.read_4_bytes_little_endian();
     instance.timestamp = source.read_4_bytes_little_endian();
+    instance.from_did = source.read_string();
     instance.to_did = source.read_string();
     instance.mit = asset_mit::factory_from_data(source);
 
@@ -300,6 +302,7 @@ data_chunk asset_mit_info::to_data() const
 
     sink.write_4_bytes_little_endian(output_height);
     sink.write_4_bytes_little_endian(timestamp);
+    sink.write_string(from_did);
     sink.write_string(to_did);
     sink.write_data(mit.to_short_data());
 

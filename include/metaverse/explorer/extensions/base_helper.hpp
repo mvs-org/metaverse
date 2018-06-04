@@ -82,6 +82,7 @@ struct address_asset_record
     std::string addr;
     uint64_t    amount{0}; // spendable etp amount
     std::string symbol;
+    std::string from_did;
     uint64_t    asset_amount{0}; // spendable asset amount
     asset_cert_type asset_cert{asset_cert_ns::none};
     utxo_attach_type type{utxo_attach_type::invalid};

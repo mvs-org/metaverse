@@ -44,7 +44,7 @@ console_result getmit::invoke(Json::Value& jv_output,
 
     if (option_.show_history) {
         if (argument_.symbol.empty()) {
-            throw argument_legality_exception("MIT symbol not privided when you want to trace history!");
+            throw argument_legality_exception("MIT symbol not privided while tracing history!");
         }
 
         // page limit & page index paramenter check
@@ -58,6 +58,10 @@ console_result getmit::invoke(Json::Value& jv_output,
 
         if (option_.limit > 100) {
             throw argument_legality_exception{"page record limit cannot be bigger than 100."};
+        }
+
+        if (option_.index > option_.limit) {
+            throw argument_legality_exception{"page index cannot be bigger than page limit."};
         }
     }
 

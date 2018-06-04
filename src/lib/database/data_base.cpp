@@ -1227,7 +1227,7 @@ void data_base::push_mit(const asset_mit& mit, const short_hash& key,
         timestamp_, mit);
     address_mits.sync();
 
-    asset_mit_info mit_info{output_height, timestamp_, to_did, mit};
+    asset_mit_info mit_info{output_height, timestamp_, from_did, to_did, mit};
     mit_history.store(mit_info);
     mit_history.sync();
 }

@@ -470,18 +470,15 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     return tree;
 }
 
-Json::Value json_helper::prop_list(const bc::chain::asset_mit& asset_info,
-    bool is_tracing, bool force_print)
+Json::Value json_helper::prop_list(const bc::chain::asset_mit& mit_info, bool always_show_content)
 {
     Json::Value tree;
-    tree["symbol"] = asset_info.get_symbol();
-    tree["address"] = asset_info.get_address();
-    tree["status"] = asset_info.get_status_name();
+    tree["symbol"] = mit_info.get_symbol();
+    tree["address"] = mit_info.get_address();
+    tree["status"] = mit_info.get_status_name();
 
-    if (!is_tracing) {
-        if (force_print || asset_info.is_register_status()) {
-            tree["content"] = asset_info.get_content();
-        }
+    if (always_show_content || mit_info.is_register_status()) {
+        tree["content"] = mit_info.get_content();
     }
 
     return tree;
@@ -493,6 +490,7 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
 
     tree["height"] = mit_info.output_height;
     tree["time_stamp"] = mit_info.timestamp;
+    tree["from_did"] = mit_info.from_did;
     tree["to_did"] = mit_info.to_did;
 
     tree["symbol"] = mit_info.mit.get_symbol();

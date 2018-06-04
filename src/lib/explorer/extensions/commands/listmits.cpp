@@ -44,6 +44,8 @@ console_result listmits::invoke(Json::Value& jv_output,
         sh_vec = blockchain.get_registered_mits();
     }
     else {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+
         // list assets owned by account
         sh_vec = blockchain.get_account_mits(auth_.name);
     }
@@ -61,7 +63,7 @@ console_result listmits::invoke(Json::Value& jv_output,
                 }
             }
 
-            Json::Value asset_data = json_helper.prop_list(elem, false, true);
+            Json::Value asset_data = json_helper.prop_list(elem, true);
             json_value.append(asset_data);
         }
     }

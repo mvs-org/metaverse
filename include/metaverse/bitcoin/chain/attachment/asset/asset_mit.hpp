@@ -50,8 +50,8 @@ BC_CONSTEXPR size_t ASSET_MIT_FIX_SIZE = (ASSET_MIT_SYMBOL_FIX_SIZE
 BC_CONSTEXPR size_t ASSET_MIT_TRANSFER_FIX_SIZE = (
             ASSET_MIT_FIX_SIZE - ASSET_MIT_CONTENT_FIX_SIZE);
 
-// output_height; timestamp; to_did; mit;
-BC_CONSTEXPR size_t ASSET_MIT_INFO_FIX_SIZE = 4 + 4 + 64 + ASSET_MIT_TRANSFER_FIX_SIZE;
+// output_height; timestamp; from_did; to_did; mit;
+BC_CONSTEXPR size_t ASSET_MIT_INFO_FIX_SIZE = 4 + 4 + 64 + 64 + ASSET_MIT_TRANSFER_FIX_SIZE;
 
 class BC_API asset_mit
 {
@@ -122,6 +122,7 @@ struct BC_API asset_mit_info
     typedef std::vector<asset_mit_info> list;
     uint32_t output_height;
     uint32_t timestamp;
+    std::string from_did;
     std::string to_did;
     asset_mit mit;
 
