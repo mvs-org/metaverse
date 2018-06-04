@@ -63,9 +63,7 @@ bool asset_mit::is_valid() const
     return !(symbol_.empty()
              || address_.empty()
              || is_invalid_status()
-             || (!is_register_status() && !content_.empty())
-             || (symbol_.size() + 1 + address_.size() + 1 + content_.size() + 1
-                 > ASSET_MIT_SYMBOL_FIX_SIZE + ASSET_MIT_ADDRESS_FIX_SIZE + ASSET_MIT_CONTENT_FIX_SIZE));
+             || (calc_size() > get_max_serialized_size()));
 }
 
 bool asset_mit::operator< (const asset_mit& other) const
@@ -162,15 +160,23 @@ void asset_mit::to_data(writer& sink) const
     }
 }
 
+uint64_t asset_mit::get_max_serialized_size() const
+{
+    return is_register_status() ? ASSET_MIT_FIX_SIZE : ASSET_MIT_TRANSFER_FIX_SIZE;
+}
+
+uint64_t asset_mit::calc_size() const
+{
+    uint64_t len = (symbol_.size() + 1) + (address_.size() + 1) + ASSET_MIT_STATUS_FIX_SIZE;
+    if (is_register_status()) {
+        len += (content_.size() + 1);
+    }
+    return len;
+}
+
 uint64_t asset_mit::serialized_size() const
 {
-    if (is_register_status()) {
-        size_t len = (symbol_.size() + 1) + (address_.size() + 1) + (content_.size() + 1)
-                     + ASSET_MIT_STATUS_FIX_SIZE;
-        return std::min(len, ASSET_MIT_FIX_SIZE);
-    }
-    size_t len = (symbol_.size() + 1) + (address_.size() + 1) + ASSET_MIT_STATUS_FIX_SIZE;
-    return std::min(len, ASSET_MIT_TRANSFER_FIX_SIZE);
+    return std::min(calc_size(), get_max_serialized_size());
 }
 
 std::string asset_mit::to_string() const
