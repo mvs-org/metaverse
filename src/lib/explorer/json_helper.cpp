@@ -500,6 +500,22 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
     return tree;
 }
 
+Json::Value json_helper::prop_list(const bc::chain::asset_mit_register_info& mit_info)
+{
+    Json::Value tree;
+
+    tree["height"] = mit_info.output_height;
+    tree["time_stamp"] = mit_info.timestamp;
+    tree["to_did"] = mit_info.to_did;
+
+    tree["symbol"] = mit_info.mit.get_symbol();
+    tree["address"] = mit_info.mit.get_address();
+    tree["status"] = mit_info.mit.get_status_name();
+    tree["content"] = mit_info.mit.get_content();
+
+    return tree;
+}
+
 Json::Value json_helper::prop_list(const bc::chain::account_multisig& acc_multisig)
 {
     Json::Value tree, pubkeys;

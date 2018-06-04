@@ -110,32 +110,32 @@ void blockchain_mit_database::sync()
     lookup_manager_.sync();
 }
 
-std::shared_ptr<asset_mit> blockchain_mit_database::get(const hash_digest& hash) const
+std::shared_ptr<asset_mit_register_info> blockchain_mit_database::get(const hash_digest& hash) const
 {
-    std::shared_ptr<asset_mit> detail(nullptr);
+    std::shared_ptr<asset_mit_register_info> detail(nullptr);
 
     const auto raw_memory = lookup_map_.find(hash);
     if(raw_memory) {
         const auto memory = REMAP_ADDRESS(raw_memory);
-        detail = std::make_shared<asset_mit>();
+        detail = std::make_shared<asset_mit_register_info>();
         auto deserial = make_deserializer_unsafe(memory);
-        detail->from_data(deserial);
+        *detail = asset_mit_register_info::factory_from_data(deserial);
     }
 
     return detail;
 }
 
-std::shared_ptr<std::vector<asset_mit>> blockchain_mit_database::get_blockchain_mits() const
+std::shared_ptr<asset_mit_register_info::list> blockchain_mit_database::get_blockchain_mits() const
 {
-    auto vec_acc = std::make_shared<std::vector<asset_mit>>();
+    auto vec_acc = std::make_shared<std::vector<asset_mit_register_info>>();
     for( uint64_t i = 0; i < number_buckets; i++ ) {
         auto memo = lookup_map_.find(i);
         if (memo->size()) {
-            const auto action = [&](memory_ptr elem)
+            const auto action = [&vec_acc](memory_ptr elem)
             {
                 const auto memory = REMAP_ADDRESS(elem);
                 auto deserial = make_deserializer_unsafe(memory);
-                vec_acc->push_back(asset_mit::factory_from_data(deserial));
+                vec_acc->push_back(asset_mit_register_info::factory_from_data(deserial));
             };
             std::for_each(memo->begin(), memo->end(), action);
         }
@@ -143,25 +143,25 @@ std::shared_ptr<std::vector<asset_mit>> blockchain_mit_database::get_blockchain_
     return vec_acc;
 }
 
-void blockchain_mit_database::store(const asset_mit& mit)
+void blockchain_mit_database::store(const asset_mit_register_info& mit_info)
 {
-    const auto& key_str = mit.get_symbol();
+    const auto& key_str = mit_info.mit.get_symbol();
     const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
     const auto key = sha256_hash(data);
 
 #ifdef MVS_DEBUG
-    log::debug("blockchain_mit_database::store") << mit.to_string();
+    log::debug("blockchain_mit_database::store") << mit_info.mit.to_string();
 #endif
 
     // Write block data.
-    const auto sp_size = mit.serialized_size();
+    const auto sp_size = mit_info.serialized_size();
     BITCOIN_ASSERT(sp_size <= max_size_t);
     const auto value_size = static_cast<size_t>(sp_size);
 
-    auto write = [&mit](memory_ptr data)
+    auto write = [&mit_info](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_data(mit.to_data());
+        serial.write_data(mit_info.to_data());
     };
     lookup_map_.store(key, write, value_size);
 }

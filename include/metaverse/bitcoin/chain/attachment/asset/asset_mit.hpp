@@ -119,6 +119,22 @@ private:
     std::string content_;   // the content of the asset, only serialization in register.
 };
 
+struct BC_API asset_mit_register_info
+{
+    typedef std::vector<asset_mit_register_info> list;
+    uint32_t output_height;
+    uint32_t timestamp;
+    std::string to_did;
+    asset_mit mit;
+
+    uint64_t serialized_size() const;
+    void reset();
+    bool operator< (const asset_mit_register_info& other) const;
+
+    static asset_mit_register_info factory_from_data(reader& source);
+    data_chunk to_data() const;
+};
+
 struct BC_API asset_mit_info
 {
     typedef std::vector<asset_mit_info> list;
