@@ -395,6 +395,18 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmit.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmits.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registermit.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfermit.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
@@ -745,6 +757,18 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmit.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmits.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registermit.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfermit.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>

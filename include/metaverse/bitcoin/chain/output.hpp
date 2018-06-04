@@ -54,6 +54,7 @@ public:
     static uint64_t satoshi_fixed_size();
     static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
     static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
+    static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
@@ -79,6 +80,9 @@ public:
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
+    bool is_asset_mit() const;
+    bool is_asset_mit_register() const;
+    bool is_asset_mit_transfer() const;
     bool is_asset_cert() const;
     bool is_asset_cert_issue() const;
     bool is_asset_cert_transfer() const;
@@ -93,6 +97,7 @@ public:
     asset_detail get_asset_detail() const;
     asset_transfer get_asset_transfer() const;
     asset_cert get_asset_cert() const;
+    asset_mit get_asset_mit() const;
     std::string get_did_symbol() const;
     std::string get_did_address() const;
     did get_did() const;

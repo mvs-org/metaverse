@@ -70,6 +70,9 @@ public:
     static code check_secondaryissue_transaction(
         const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
+    static code check_asset_mit_register_transaction(
+        const chain::transaction& tx, blockchain::block_chain_impl& chain);
+
     static code check_did_transaction(
         const chain::transaction& tx, blockchain::block_chain_impl& chain);
 
@@ -93,6 +96,7 @@ public:
     bool check_asset_amount(const transaction& tx);
     bool check_asset_symbol(const transaction& tx);
     bool check_asset_certs(const transaction& tx);
+    bool check_asset_mit(const transaction& tx);
 
     //check input did match output did
     bool check_did_symbol_match(const transaction& tx);

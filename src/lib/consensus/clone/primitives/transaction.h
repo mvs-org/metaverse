@@ -208,6 +208,27 @@ public:
     }
 };
 
+class CAssetMit
+{
+public:
+    uint8_t status;
+    std::string symbol;
+    std::string address;
+    std::string content;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(status);
+        READWRITE(symbol);
+        READWRITE(address);
+        if (status == MIT_STATUS_REGISTER) {
+            READWRITE(content);
+        }
+    }
+};
+
 class CDidDetail
 {
 public:
@@ -295,6 +316,7 @@ public:
 
     CAsset asset;
     CAssetCert assetcert;
+    CAssetMit mit;
     CDid did;
     CMessage message;
 
@@ -340,6 +362,9 @@ public:
             case 5: // asset cert
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionSerialize()));
                 break;
+            case 6: // mit
+                (::SerReadWrite(s, (*(CAssetMit*)(&mit)), nType, nVersion, CSerActionSerialize()));
+                break;
         };
     }
     template<typename Stream>
@@ -369,6 +394,9 @@ public:
                 break;
             case 5: // asset cert
                 (::SerReadWrite(s, (*(CAssetCert*)(&assetcert)), nType, nVersion, CSerActionUnserialize()));
+                break;
+            case 6: // mit
+                (::SerReadWrite(s, (*(CAssetMit*)(&mit)), nType, nVersion, CSerActionUnserialize()));
                 break;
         };
     }

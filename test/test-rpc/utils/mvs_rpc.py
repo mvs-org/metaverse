@@ -639,6 +639,36 @@ def ban_node(peer):
     '''
     return 'addnode', [peer], {'-o':'ban'}, None
 
+@mvs_api
+def register_mit(account, password, to_did, symbol, content=None, fee=None):
+
+    '''
+    account          Account name required.
+    password         Account password(authorization) required.
+    to_did           Target did
+    symbol           MIT symbol
+    content          MIT content
+    '''
+    return "registermit", [account, password, to_did, symbol], {'--content':content, '--fee':fee}, None
+
+@mvs_api
+def transfer_mit(account, password, to_did, symbol, fee=None):
+    return "transfermit", [account, password, to_did, symbol], {"-f":fee}, None
+
+@mvs_api
+def list_mits(account=None, password=None):
+    positional = filter(None, [account, password])
+    return "listmits", positional, {}, None
+
+@mvs_api
+def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
+    positional = filter(None, [symbol])
+    if symbol != None and tracing:
+        positional.append("--trace")
+        return "getmit", positional, {'--index':page_index, '--limit':page_limit}, None
+    else:
+        return "getmit", positional, {}, None
+
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
     print rc.list_balances('lxf', '123')

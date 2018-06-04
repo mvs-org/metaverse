@@ -70,7 +70,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // check cert is owned by the account
     bool exist = blockchain.is_asset_cert_exist(argument_.symbol, cert_type);
     if (!exist) {
-        throw asset_cert_notfound_exception(
+        throw asset_lack_exception(
             cert_type_name + " cert '" + argument_.symbol + "' does not exist.");
     }
 

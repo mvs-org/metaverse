@@ -33,13 +33,6 @@
 #define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
 #define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_autoissue)
 
-// forward declaration
-namespace libbitcoin {
-namespace blockchain {
-    class block_chain_impl;
-}
-}
-
 namespace libbitcoin {
 namespace chain {
 

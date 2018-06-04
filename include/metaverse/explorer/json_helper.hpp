@@ -443,6 +443,14 @@ BCX_API Json::Value prop_list(const bc::chain::asset_transfer& trans_info, uint8
 BCX_API Json::Value prop_list(const bc::chain::asset_cert& cert_info);
 
 /**
+ * Generate a property list for an identifiable asset.
+ * @param[in]  cert_info        The identifiable asset.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_mit& mit_info, bool always_show_content=false);
+BCX_API Json::Value prop_list(const bc::chain::asset_mit_info& mit_info);
+
+/**
  * Generate a property list for a multisign.
  * @param[in]  multisign        The multisign.
  * @return             A property list.

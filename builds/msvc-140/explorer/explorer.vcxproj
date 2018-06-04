@@ -82,6 +82,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getinfo.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmemorypool.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmininginfo.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getnewaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getnewaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getnewmultisig.hpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importkeyfile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\issuecert.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmits.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registerdid.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listaddresses.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listassets.hpp" />
@@ -101,6 +103,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listdids.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listmultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
@@ -118,6 +121,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\startmining.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\stopmining.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\submitwork.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_assistant.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\command_extension.hpp" />
@@ -204,6 +208,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getinfo.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmemorypool.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmininginfo.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getmit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getnewmultisig.cpp" />
@@ -215,6 +220,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importkeyfile.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmits.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registerdid.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listaddresses.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listassets.cpp" />
@@ -223,6 +229,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listdids.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listmultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
@@ -240,6 +247,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\startmining.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\stopmining.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\submitwork.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_assistant.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\command_extension_func.cpp" />

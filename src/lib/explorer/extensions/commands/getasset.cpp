@@ -35,10 +35,10 @@ console_result getasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.uppercase_symbol(argument_.symbol);
 
     if (!argument_.symbol.empty()) {
         // check asset symbol
+        blockchain.uppercase_symbol(argument_.symbol);
         check_asset_symbol(argument_.symbol);
     }
 

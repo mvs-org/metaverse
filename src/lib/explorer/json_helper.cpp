@@ -466,11 +466,37 @@ Json::Value json_helper::prop_list(const bc::chain::asset_cert& cert_info)
     tree["symbol"] = cert_info.get_symbol();
     tree["owner"] = cert_info.get_owner();
     tree["address"] = cert_info.get_address();
-    if (version_ == 1) {
-        tree["cert"] += cert_info.get_type_name();
-    } else {
-        tree["cert"] = cert_info.get_type_name();
+    tree["cert"] = cert_info.get_type_name();
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::asset_mit& mit_info, bool always_show_content)
+{
+    Json::Value tree;
+    tree["symbol"] = mit_info.get_symbol();
+    tree["address"] = mit_info.get_address();
+    tree["status"] = mit_info.get_status_name();
+
+    if (always_show_content || mit_info.is_register_status()) {
+        tree["content"] = mit_info.get_content();
     }
+
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
+{
+    Json::Value tree;
+
+    tree["height"] = mit_info.output_height;
+    tree["time_stamp"] = mit_info.timestamp;
+    tree["from_did"] = mit_info.from_did;
+    tree["to_did"] = mit_info.to_did;
+
+    tree["symbol"] = mit_info.mit.get_symbol();
+    tree["address"] = mit_info.mit.get_address();
+    tree["status"] = mit_info.mit.get_status_name();
+
     return tree;
 }
 
@@ -532,6 +558,11 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
             tree["type"] = "asset-transfer";
         }
     }
+    else if (attach_data.get_type() == ASSET_MIT_TYPE) {
+        auto asset_info = boost::get<bc::chain::asset_mit>(attach_data.get_attach());
+        tree = prop_list(asset_info);
+        tree["type"] = "mit";
+    }
     else if (attach_data.get_type() == ASSET_CERT_TYPE) {
         auto cert_info = boost::get<bc::chain::asset_cert>(attach_data.get_attach());
         tree = prop_list(cert_info);
@@ -559,6 +590,7 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
     }
     else {
         tree["type"] = "unknown business";
+        BITCOIN_ASSERT(false);
     }
 
     if (attach_data.get_version() == DID_ATTACH_VERIFY_VERSION) {

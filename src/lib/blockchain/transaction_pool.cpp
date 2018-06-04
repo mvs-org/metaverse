@@ -158,7 +158,8 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
 code transaction_pool::check_symbol_repeat(transaction_ptr tx)
 {
     std::set<string> assets;
-    std::set<string> assetcerts;
+    std::set<string> asset_certs;
+    std::set<string> asset_mits;
     std::set<string> dids;
     std::set<string> didaddreses;
 
@@ -177,7 +178,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
             }
             else if (output.is_asset_cert()) {
                 auto&& key = output.get_asset_cert().get_key();
-                auto r = assetcerts.insert(key);
+                auto r = asset_certs.insert(key);
                 if (r.second == false) {
                     log::debug(LOG_BLOCKCHAIN)
                         << " cert " + output.get_asset_cert_symbol()
@@ -185,6 +186,16 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                         << " already exists in pool!"
                         << " " << tx->to_string(1);
                     return error::asset_cert_exist;
+                }
+            }
+            else if (output.is_asset_mit()) {
+                auto r = asset_mits.insert(output.get_asset_symbol());
+                if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << " mit " + output.get_asset_symbol()
+                        << " already exists in block!"
+                        << " " << tx->to_string(1);
+                    return error::mit_exist;
                 }
             }
             else if (output.is_did()) {
@@ -211,7 +222,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
         }
         else if (output.is_asset_cert()) {
             auto&& key = output.get_asset_cert().get_key();
-            auto r = assetcerts.insert(key);
+            auto r = asset_certs.insert(key);
             if (r.second == false) {
                 log::debug(LOG_BLOCKCHAIN)
                     << " cert " + output.get_asset_cert_symbol()
@@ -219,6 +230,16 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                     << " already exists!"
                     << " " << tx->to_string(1);
                 return error::asset_cert_exist;
+            }
+        }
+        else if (output.is_asset_mit()) {
+            auto r = asset_mits.insert(output.get_asset_symbol());
+            if (r.second == false) {
+                log::debug(LOG_BLOCKCHAIN)
+                    << " mit " + output.get_asset_symbol()
+                    << " already exists!"
+                    << " " << tx->to_string(1);
+                return error::mit_exist;
             }
         }
         else if (output.is_did()) {
