@@ -45,8 +45,8 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-			.add("DID/ADDRESS", 1)
-			.add("SYMBOL", 1)
+			.add("TODID/TOADDRESS", 1)
+			.add("ASSET", 1)
 			.add("AMOUNT", 1);
     }
 
@@ -56,8 +56,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.did, "DID/ADDRESS", variables, input, raw);
-        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.did, "TODID/TOADDRESS", variables, input, raw);
+        load_input(argument_.symbol, "ASSET", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -82,14 +82,14 @@ public:
 			BX_ACCOUNT_AUTH
 		)
 		(
-			"DID/ADDRESS",
+			"TODID/TOADDRESS",
 			value<std::string>(&argument_.did)->required(),
 			"Asset receiver did/address."
 		)
 		(
-			"SYMBOL",
+			"ASSET",
 			value<std::string>(&argument_.symbol)->required(),
-			"Asset symbol/name."
+			"Asset MST symbol."
 		)
 		(
 			"AMOUNT",
