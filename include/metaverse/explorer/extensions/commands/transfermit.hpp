@@ -87,7 +87,7 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "Asset symbol"
+            "Asset MIT symbol"
         )
         (
             "fee,f",
