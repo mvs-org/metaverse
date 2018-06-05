@@ -178,7 +178,7 @@ uint64_t asset_cert::calc_size() const
 
 uint64_t asset_cert::serialized_size() const
 {
-    return std::min(calc_size(), ASSET_CERT_FIX_SIZE);
+    return std::min<uint64_t>(calc_size(), ASSET_CERT_FIX_SIZE);
 }
 
 std::string asset_cert::to_string() const
