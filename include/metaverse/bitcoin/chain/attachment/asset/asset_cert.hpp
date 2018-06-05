@@ -21,8 +21,6 @@
 #define MVS_CHAIN_ATTACH_ASSET_CERT_HPP
 
 #include <cstdint>
-#include <istream>
-#include <set>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
@@ -34,13 +32,6 @@
 #define ASSET_CERT_ISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_issue)
 #define ASSET_CERT_TRANSFER_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_transfer)
 #define ASSET_CERT_AUTOISSUE_TYPE ASSET_CERT_STATUS2UINT32(asset_cert::asset_cert_status::asset_cert_autoissue)
-
-// forward declaration
-namespace libbitcoin {
-namespace blockchain {
-    class block_chain_impl;
-}
-}
 
 namespace libbitcoin {
 namespace chain {
@@ -97,6 +88,7 @@ public:
 
     std::string to_string() const;
     uint64_t serialized_size() const;
+    uint64_t calc_size() const;
 
     const std::string& get_symbol() const;
     void set_symbol(const std::string& symbol);
@@ -133,7 +125,6 @@ public:
 private:
     // NOTICE: ref CAssetCert in transaction.h
     // asset_cert and CAssetCert should have the same size and order.
-    // uint32_t asset_type in CAssetCert is divided into four uint8_t parts here.
     std::string symbol_; // asset name/symbol
     std::string owner_;  // asset cert owner, an digital identity
     std::string address_; // address that owned asset cert

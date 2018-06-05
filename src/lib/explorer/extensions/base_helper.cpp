@@ -48,6 +48,9 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     if (output.is_asset_cert()) {
         return utxo_attach_type::asset_cert;
     }
+    if (output.is_asset_mit()) {
+        return utxo_attach_type::asset_mit;
+    }
     if (output.is_did_register()) {
         return utxo_attach_type::did_register;
     }
@@ -97,10 +100,35 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
     }
 }
 
+void check_mit_symbol(const std::string& symbol, bool check_sensitive)
+{
+    if (symbol.empty()) {
+        throw asset_symbol_length_exception{"Symbol cannot be empty."};
+    }
+
+    if (symbol.length() > ASSET_MIT_SYMBOL_FIX_SIZE) {
+        throw asset_symbol_length_exception{"Symbol length must be less than "
+            + std::to_string(ASSET_MIT_SYMBOL_FIX_SIZE) + "."};
+    }
+
+    // char check
+    for (const auto& i : symbol) {
+        if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
+            throw asset_symbol_name_exception(
+                "Symbol " + symbol + " has invalid character.");
+    }
+
+    if (check_sensitive) {
+        auto upper = boost::to_upper_copy(symbol);
+        if (bc::wallet::symbol::is_sensitive(upper)) {
+            throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
+        }
+    }
+}
+
 std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain)
 {
-
     check_did_symbol(did);
 
     auto diddetail = blockchain.get_registered_did(did);
@@ -146,13 +174,10 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
     std::shared_ptr<asset_cert::list> sh_vec,
     asset_cert_type cert_type)
 {
-    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
-
     chain::transaction tx_temp;
     uint64_t tx_height;
-    uint64_t height = 0;
-    blockchain.get_last_height(height);
 
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
     for (auto& row: rows)
     {
         // spend unconfirmed (or no spend attempted)
@@ -388,6 +413,20 @@ void base_transfer_common::sync_fetchutxo(
                 continue;
             }
         }
+        else if ((filter & FILTER_IDENTIFIABLE_ASSET) && output.is_asset_mit()) {
+            BITCOIN_ASSERT(etp_amount == 0);
+            BITCOIN_ASSERT(asset_total_amount == 0);
+            BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
+
+            if (payment_mit_ <= unspent_mit_) {
+                continue;
+            }
+
+            if (symbol_ != output.get_asset_symbol())
+                continue;
+
+            ++unspent_mit_;
+        }
         else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
@@ -421,9 +460,15 @@ void base_transfer_common::sync_fetchutxo(
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
+
+            if (payment_did_ <= unspent_did_) {
+                continue;
+            }
+
             if (symbol_ != output.get_did_symbol())
                 continue;
-            unspent_did_flag = true;
+
+            ++unspent_did_;
         }
         else {
             continue;
@@ -513,14 +558,22 @@ void base_transfer_common::sum_payments()
     for (auto& iter : receiver_list_) {
         payment_etp_ += iter.amount;
         payment_asset_ += iter.asset_amount;
+
         if (iter.asset_cert != asset_cert_ns::none) {
             payment_asset_cert_.push_back(iter.asset_cert);
         }
-        if (iter.type == utxo_attach_type::did_transfer) {
-            if (payment_did_flag) {
+
+        if (iter.type == utxo_attach_type::asset_mit_transfer) {
+            ++payment_mit_;
+            if (payment_mit_ > 1) {
+                throw std::logic_error{"maximum one identifiable asset can be transfered"};
+            }
+        }
+        else if (iter.type == utxo_attach_type::did_transfer) {
+            ++payment_did_;
+            if (payment_did_ > 1) {
                 throw std::logic_error{"maximum one DID can be transfered"};
             }
-            payment_did_flag = true;
         }
     }
 }
@@ -547,11 +600,14 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
     if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_))
         return false;
 
+    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_))
+        return false;
+
     if ((filter & FILTER_ASSETCERT)
         && !asset_cert::test_certs(unspent_asset_cert_, payment_asset_cert_))
         return false;
 
-    if ((filter & FILTER_DID) && (unspent_did_flag != payment_did_flag))
+    if ((filter & FILTER_DID) && (unspent_did_ < payment_did_))
         return false;
 
     return true;
@@ -567,6 +623,11 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
     if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_)) {
         throw asset_lack_exception{"not enough asset amount, unspent = "
             + std::to_string(unspent_asset_) + ", payment = " + std::to_string(payment_asset_)};
+    }
+
+    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_)) {
+        throw asset_lack_exception{"not enough identifiable asset amount, unspent = "
+            + std::to_string(unspent_mit_) + ", payment = " + std::to_string(payment_mit_)};
     }
 
     if ((filter & FILTER_ASSETCERT)
@@ -586,7 +647,7 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
             + unspent + "), payment = (" + payment + ")"};
     }
 
-    if ((filter & FILTER_DID) && (unspent_did_flag != payment_did_flag)) {
+    if ((filter & FILTER_DID) && (unspent_did_ < payment_did_)) {
         throw tx_source_exception{"no did named " + symbol_ + " is found"};
     }
 }
@@ -841,6 +902,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
+        if (msg.get_content().size() > 128) {
+            throw tx_attachment_value_exception{"memo text length should be less than 128"};
+        }
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
@@ -895,6 +959,10 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
             throw tx_attachment_value_exception{"invalid cert attachment"};
         }
         return attachment(ASSET_CERT_TYPE, attach_version, cert_info);
+    }
+    else if (record.type == utxo_attach_type::asset_mit
+        || record.type == utxo_attach_type::asset_mit_transfer) {
+        return attachment(ASSET_MIT_TYPE, attach_version, asset_mit(/*set on subclass*/));
     }
 
     throw tx_attachment_value_exception{
@@ -1599,6 +1667,40 @@ void sending_did::populate_unspent_list()
     check_payment_satisfied();
 
     populate_change();
+}
+
+attachment registering_mit::populate_output_attachment(const receiver_record& record)
+{
+    auto&& attach = base_transfer_common::populate_output_attachment(record);
+
+    if (record.type == utxo_attach_type::asset_mit) {
+        auto ass = asset_mit(record.symbol, record.target, content_);
+        ass.set_status(MIT_STATUS_REGISTER);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid identifiable asset issue attachment"};
+        }
+
+        attach.set_attach(ass);
+    }
+
+    return attach;
+}
+
+attachment transferring_mit::populate_output_attachment(const receiver_record& record)
+{
+    auto&& attach = base_transfer_common::populate_output_attachment(record);
+
+    if (record.type == utxo_attach_type::asset_mit_transfer) {
+        auto ass = asset_mit(record.symbol, record.target, "");
+        ass.set_status(MIT_STATUS_TRANSFER);
+        if (!ass.is_valid()) {
+            throw tx_attachment_value_exception{"invalid identifiable asset transfer attachment"};
+        }
+
+        attach.set_attach(ass);
+    }
+
+    return attach;
 }
 
 } //commands

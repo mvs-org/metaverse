@@ -134,9 +134,9 @@ class Role:
         assert (result == 0)
         return cert_symbol
 
-    def issue_naming_cert(self, to_, domain_symbol):
-        cert_symbol = (domain_symbol + ".2%s." % to_.name + common.get_random_str()).upper()
-        result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
+    def issue_naming_cert(self, domain_symbol):
+        cert_symbol = (domain_symbol + "." + common.get_random_str()).upper()
+        result, message = mvs_rpc.issue_cert(self.name, self.password, self.did_symbol, cert_symbol, "NAMING")
         if result != 0:
             print("failed to issue_cert: {}".format(message))
         assert (result == 0)
@@ -316,6 +316,23 @@ class Role:
         assert(ec == 0)
         return message['addresses'][0]['address']
 
+    def register_mit(self, to_did, symbol=None, content=None, fee=None):
+        if None == symbol:
+            symbol = common.get_random_str()
+        if None == to_did:
+            to_did = self.did_symbol
+        ec, message = mvs_rpc.register_mit(self.name, self.password, to_did, symbol, content, fee)
+        assert(ec == 0)
+        return symbol
+
+    def transfer_mit(self, to_did, symbol, fee=None):
+        return mvs_rpc.transfer_mit(self.name, self.password, to_did, symbol, fee)
+
+    def list_mits(self, name=None, password=None):
+        return mvs_rpc.list_mits(name, password)
+
+    def get_mit(self, symbol=None, trace=False, page_index=1, page_limit=100):
+        return mvs_rpc.get_mit(symbol, trace, page_index, page_limit)
 
 class NewGuy(Role):
     '''

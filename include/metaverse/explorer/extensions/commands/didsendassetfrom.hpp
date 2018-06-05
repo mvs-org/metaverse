@@ -106,7 +106,7 @@ public:
         (
             "model,m",
             value<std::string>(&option_.attenuation_model_param),
-            "The asset attenuation model parameter, defaults to empty string. Examples: for fixed quantity model, TYPE=1;LQ=9000;LP=60000;UN=3 and for custom model, TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000"
+            BX_MST_OFFERING_CURVE
         )
         (
             "fee,f",

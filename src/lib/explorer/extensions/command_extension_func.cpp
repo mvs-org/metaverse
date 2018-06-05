@@ -63,6 +63,10 @@
 #include <metaverse/explorer/extensions/commands/getaddressasset.hpp>
 #include <metaverse/explorer/extensions/commands/getaccountasset.hpp>
 #include <metaverse/explorer/extensions/commands/createasset.hpp>
+#include <metaverse/explorer/extensions/commands/registermit.hpp>
+#include <metaverse/explorer/extensions/commands/transfermit.hpp>
+#include <metaverse/explorer/extensions/commands/listmits.hpp>
+#include <metaverse/explorer/extensions/commands/getmit.hpp>
 #include <metaverse/explorer/extensions/commands/registerdid.hpp>
 #include <metaverse/explorer/extensions/commands/didsend.hpp>
 #include <metaverse/explorer/extensions/commands/didsendasset.hpp>
@@ -190,6 +194,13 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     // cert
     func(make_shared<issuecert>());
     func(make_shared<transfercert>());
+
+    os <<"\r\n";
+    // mit
+    func(make_shared<registermit>());
+    func(make_shared<transfermit>());
+    func(make_shared<listmits>());
+    func(make_shared<getmit>());
 
     os <<"\r\n";
     //did
@@ -348,6 +359,16 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<transfercert>();
     if (symbol == issuecert::symbol())
         return make_shared<issuecert>();
+
+    // mit
+    if (symbol == registermit::symbol())
+        return make_shared<registermit>();
+    if (symbol == transfermit::symbol())
+        return make_shared<transfermit>();
+    if (symbol == listmits::symbol())
+        return make_shared<listmits>();
+    if (symbol == getmit::symbol())
+        return make_shared<getmit>();
 
     // did
     if (symbol == registerdid::symbol())

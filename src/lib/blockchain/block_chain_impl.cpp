@@ -1336,22 +1336,16 @@ static history::list expand_history(history_compact::list& compact)
     // so sort by spend height decreasely can ensure this.
     // 2. for spend
     // spent height first, decreasely
-    // spend index second, increasely
+    // spend index second, decreasely
     // 3. for unspend
-    // output height first, increasely
-    // output index second, increasely
+    // output height first, decreasely
+    // output index second, decreasely
     std::sort(result.begin(), result.end(),
         [](const history& elem1, const history& elem2) {
-            if (elem1.spend_height == elem2.spend_height) {
-                if (elem1.spend_height != max_uint64) { // spend
-                    return elem1.spend.index < elem2.spend.index;
-                }
-                if (elem1.output_height == elem2.output_height) {
-                    return elem1.output.index < elem2.output.index;
-                }
-                return (elem1.output_height < elem2.output_height);
-            }
-            return (elem1.spend_height > elem2.spend_height);
+            typedef std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> cmp_tuple_t;
+            cmp_tuple_t tuple1(elem1.spend_height, elem1.spend.index, elem1.output_height, elem1.output.index);
+            cmp_tuple_t tuple2(elem2.spend_height, elem2.spend.index, elem2.output_height, elem2.output.index);
+            return tuple1 > tuple2;
         });
     return result;
 }
@@ -1384,7 +1378,6 @@ std::shared_ptr<asset_cert> block_chain_impl::get_account_asset_cert(
     chain::transaction tx_temp;
     uint64_t tx_height;
 
-    auto sh_vec = std::make_shared<asset_cert::list>();
     for (auto& each : *pvaddr){
         wallet::payment_address payment_address(each.get_address());
         auto&& rows = get_address_history(payment_address);
@@ -1453,9 +1446,69 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     BITCOIN_ASSERT(!symbol.empty());
 
     auto&& key_str = asset_cert::get_key(symbol, cert_type);
-    const data_chunk& data = data_chunk(key_str.begin(), key_str.end());
-    const auto key = sha256_hash(data);
+    const auto key = get_hash(key_str);
     return database_.certs.get(key) != nullptr;
+}
+
+std::shared_ptr<asset_mit_info> block_chain_impl::get_registered_mit(const std::string& symbol)
+{
+    BITCOIN_ASSERT(!symbol.empty());
+    // return the registered identifiable asset, its status must be MIT_STATUS_REGISTER
+    return database_.mits.get(get_hash(symbol));
+}
+
+std::shared_ptr<asset_mit_info::list> block_chain_impl::get_registered_mits()
+{
+    // return the registered identifiable assets, their status must be MIT_STATUS_REGISTER
+    return database_.mits.get_blockchain_mits();
+}
+
+std::shared_ptr<asset_mit_info::list> block_chain_impl::get_mit_history(
+    const std::string& symbol, uint64_t limit, uint64_t page_number)
+{
+    BITCOIN_ASSERT(!symbol.empty());
+    // return the identifiable assets of specified symbol, the last item's status must be MIT_STATUS_REGISTER
+    return database_.mit_history.get_history_mits_by_height(get_short_hash(symbol), 0, 0, limit, page_number);
+}
+
+std::shared_ptr<asset_mit::list> block_chain_impl::get_account_mits(
+    const std::string& account, const std::string& symbol)
+{
+    auto sp_vec = std::make_shared<asset_mit::list>();
+
+    auto pvaddr = get_account_addresses(account);
+    if (!pvaddr)
+        return sp_vec;
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    for (auto& each : *pvaddr){
+        wallet::payment_address payment_address(each.get_address());
+        auto&& rows = get_address_history(payment_address);
+
+        for (auto& row: rows) {
+            // spend unconfirmed (or no spend attempted)
+            if ((row.spend.hash == null_hash)
+                    && get_transaction(row.output.hash, tx_temp, tx_height))
+            {
+                BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+                const auto& output = tx_temp.outputs.at(row.output.index);
+                if (output.is_asset_mit()) {
+                    auto&& asset = output.get_asset_mit();
+                    if (symbol.empty()) {
+                        sp_vec->emplace_back(std::move(asset));
+                    }
+                    else if (symbol == asset.get_symbol()) {
+                        sp_vec->emplace_back(std::move(asset));
+                        return sp_vec;
+                    }
+                }
+            }
+        }
+    }
+
+    return sp_vec;
 }
 
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)
@@ -2007,8 +2060,7 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool check_
 
 bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t& height)
 {
-    const data_chunk& data = data_chunk(asset_name.begin(), asset_name.end());
-    const auto hash = sha256_hash(data);
+    const auto hash = get_hash(asset_name);
 
     // std::shared_ptr<blockchain_asset>
     auto sp_asset = database_.assets.get(hash);
@@ -2021,8 +2073,7 @@ bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t&
 
 bool block_chain_impl::get_did_height(const std::string& did_name, uint64_t& height)
 {
-    const data_chunk& data = data_chunk(did_name.begin(), did_name.end());
-    const auto hash = sha256_hash(data);
+    const auto hash = get_hash(did_name);
 
     // std::shared_ptr<blockchain_asset>
     auto sp_did = database_.dids.get(hash);

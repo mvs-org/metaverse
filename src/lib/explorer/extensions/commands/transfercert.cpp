@@ -80,9 +80,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
             cert_type_name + " cert '" + argument_.symbol + "' is not owned by " + auth_.name);
     }
 
-    auto from_did = cert->get_owner();
     auto from_address = cert->get_address();
-
     account_multisig acc_multisig;
     bool is_multisig_address = blockchain.is_script_address(from_address);
     if (is_multisig_address) {
@@ -97,7 +95,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
-            cert_type, utxo_attach_type::asset_cert_transfer, attachment(from_did, to_did)}
+            cert_type, utxo_attach_type::asset_cert_transfer, attachment("", to_did)}
     };
 
     auto helper = transferring_asset_cert(*this, blockchain,

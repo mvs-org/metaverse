@@ -44,8 +44,12 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     auto to_did = argument_.to;
     auto to_address = get_address_from_did(to_did, blockchain);
-    if (!blockchain.is_valid_address(to_address))
+    if (!blockchain.is_valid_address(to_address)) {
         throw address_invalid_exception{"invalid did parameter! " + to_did};
+    }
+    if (!blockchain.get_account_address(auth_.name, to_address)) {
+        throw address_dismatch_account_exception{"target did does not match account. " + to_did};
+    }
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
@@ -57,8 +61,6 @@ console_result issuecert::invoke (Json::Value& jv_output,
     }
     auto certs_create = iter->second;
 
-    std::string domain_cert_addr;
-    std::string domain_cert_did;
     if (certs_create == asset_cert_ns::naming) {
         // check symbol is valid.
         auto pos = argument_.symbol.find(".");
@@ -95,30 +97,27 @@ console_result issuecert::invoke (Json::Value& jv_output,
         if (!cert) {
             throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + auth_.name);
         }
-
-        domain_cert_did = cert->get_owner();
-        domain_cert_addr = get_address_from_did(domain_cert_did, blockchain);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, 0,
             certs_create, utxo_attach_type::asset_cert_issue,
-            attachment(domain_cert_did, to_did)}
+            attachment("", to_did)}
     };
 
     if (certs_create == asset_cert_ns::naming) {
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         receiver.push_back(
-            {domain_cert_addr, domain, 0, 0,
+            {to_address, domain, 0, 0,
                 asset_cert_ns::domain, utxo_attach_type::asset_cert,
-                attachment(domain_cert_did, domain_cert_did)}
+                attachment("", to_did)}
         );
     }
 
     auto helper = issuing_asset_cert(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(argument_.symbol),
+        std::move(to_address), std::move(argument_.symbol),
         std::move(receiver), argument_.fee);
 
     helper.exec();

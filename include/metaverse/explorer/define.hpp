@@ -88,6 +88,17 @@
 #define BX_ADMIN_NAME "Administrator required.(administrator_required is true)"
 #define BX_ADMIN_AUTH "Administrator password required."
 
+#define BX_MST_OFFERING_CURVE  "The token offering model by block height. \
+    TYPE=1 - fixed quantity model; TYPE=2 - specify parameters; \
+    LQ - Locked Quantity each period; \
+    LP - Locked Period, numeber of how many blocks; \
+    UN - Unlock Number, number of how many LPs; \
+    eg: \
+        TYPE=1;LQ=9000;LP=60000;UN=3  \
+        TYPE=2;LQ=9000;LP=60000;UN=3;UC=20000,20000,20000;UQ=3000,3000,3000 \
+    defaults to disable. "
+
+
 /**
  * Space-saving namespaces.
  */
