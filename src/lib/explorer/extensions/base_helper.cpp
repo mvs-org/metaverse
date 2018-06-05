@@ -902,6 +902,9 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
+        if (msg.get_content().size() > 128) {
+            throw tx_attachment_value_exception{"memo text length should be less than 128"};
+        }
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};
         }
