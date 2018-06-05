@@ -274,9 +274,19 @@ void asset_mit_info::reset()
 {
     output_height = 0;
     timestamp = 0;
-    from_did = "";
     to_did = "";
     mit.reset();
+}
+
+bool asset_mit_info::operator< (const asset_mit_info& other) const
+{
+    return mit < other.mit;
+}
+
+uint64_t asset_mit_info::serialized_size() const
+{
+    // output_height; timestamp; to_did; mit;
+    return 4 + 4 + (to_did.size() +1) + mit.serialized_size();
 }
 
 asset_mit_info asset_mit_info::factory_from_data(reader& source)
@@ -286,7 +296,6 @@ asset_mit_info asset_mit_info::factory_from_data(reader& source)
 
     instance.output_height = source.read_4_bytes_little_endian();
     instance.timestamp = source.read_4_bytes_little_endian();
-    instance.from_did = source.read_string();
     instance.to_did = source.read_string();
     instance.mit = asset_mit::factory_from_data(source);
 
@@ -306,7 +315,21 @@ data_chunk asset_mit_info::to_data() const
 
     sink.write_4_bytes_little_endian(output_height);
     sink.write_4_bytes_little_endian(timestamp);
-    sink.write_string(from_did);
+    sink.write_string(to_did);
+    sink.write_data(mit.to_data());
+
+    ostream.flush();
+    return data;
+}
+
+data_chunk asset_mit_info::to_short_data() const
+{
+    data_chunk data;
+    data_sink ostream(data);
+    ostream_writer sink(ostream);
+
+    sink.write_4_bytes_little_endian(output_height);
+    sink.write_4_bytes_little_endian(timestamp);
     sink.write_string(to_did);
     sink.write_data(mit.to_short_data());
 

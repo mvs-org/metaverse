@@ -1212,13 +1212,15 @@ void data_base::push_did_detail(const did_detail& sp_detail, const short_hash& k
 
 /* end store did related info into database */
 
-/* begin store did related info into database */
+/* begin store mit related info into database */
 void data_base::push_mit(const asset_mit& mit, const short_hash& key,
     const output_point& outpoint, uint32_t output_height, uint64_t value,
     const std::string from_did, std::string to_did)
 {
+    asset_mit_info mit_info{output_height, timestamp_, to_did, mit};
+
     if (mit.is_register_status()) {
-        mits.store(mit);
+        mits.store(mit_info);
         mits.sync();
     }
 
@@ -1227,7 +1229,6 @@ void data_base::push_mit(const asset_mit& mit, const short_hash& key,
         timestamp_, mit);
     address_mits.sync();
 
-    asset_mit_info mit_info{output_height, timestamp_, from_did, to_did, mit};
     mit_history.store(mit_info);
     mit_history.sync();
 }

@@ -60,22 +60,15 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     if (!asset_detail::is_secondaryissue_legal(secondaryissue_threshold))
         throw asset_secondaryissue_threshold_exception{"asset is not allowed to do secondary issue, or the threshold is illegal."};
 
-    std::string cert_did;
-    std::string cert_address;
     if (blockchain.is_asset_cert_exist(argument_.symbol, asset_cert_ns::issue)) {
         // check whether it belongs to the account.
         auto cert = blockchain.get_account_asset_cert(auth_.name, argument_.symbol, asset_cert_ns::issue);
         if (!cert) {
             throw asset_cert_notowned_exception("no issue cert " + argument_.symbol + " owned by " + auth_.name);
         }
-
-        cert_did = cert->get_owner();
-        cert_address = get_address_from_did(cert_did, blockchain);
     }
     else if (blockchain.chain_settings().use_testnet_rules) {
         // if not exist, then issue one. only happen in testnet.
-        cert_did = to_did;
-        cert_address = to_address;
     }
     else {
         throw asset_cert_notfound_exception{"no issue cert '" + argument_.symbol + "' found!"};
@@ -94,8 +87,8 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, asset_volume_of_threshold,
             utxo_attach_type::asset_secondaryissue, attachment(to_did, to_did)},
-        {cert_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
-            utxo_attach_type::asset_cert, attachment(cert_did, cert_did)}
+        {to_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
+            utxo_attach_type::asset_cert, attachment("", to_did)}
     };
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,

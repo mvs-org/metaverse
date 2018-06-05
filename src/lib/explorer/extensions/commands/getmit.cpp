@@ -69,7 +69,7 @@ console_result getmit::invoke(Json::Value& jv_output,
         auto sh_vec = blockchain.get_registered_mits();
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem : *sh_vec) {
-            json_value.append(elem.get_symbol());
+            json_value.append(elem.mit.get_symbol());
         }
 
         jv_output["mits"] = json_value;
