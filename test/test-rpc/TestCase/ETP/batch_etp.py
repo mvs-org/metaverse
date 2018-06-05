@@ -4,7 +4,7 @@ import datetime
 
 
 class TestSendETP(MVSTestCaseBase):
-    def bt_0_send(self):
+    def test_0_send(self):
 
         before = time.clock()
         print "start send transaction:"
