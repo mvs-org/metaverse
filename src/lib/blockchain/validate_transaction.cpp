@@ -462,6 +462,7 @@ code validate_transaction::check_secondaryissue_transaction(
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+            log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid input: " << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -469,7 +470,8 @@ code validate_transaction::check_secondaryissue_transaction(
             auto&& asset_address_in = prev_output.get_script_address();
             if (prev_output.is_asset_cert()) {
                 auto&& prev_asset_cert = prev_output.get_asset_cert();
-                if (asset_cert_owner != prev_asset_cert.get_owner()) {
+                if (prev_asset_cert.get_symbol() != asset_symbol
+                    || prev_asset_cert.get_type() != asset_cert_ns::issue) {
                     log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid cert input, " << asset_symbol;
                     return error::validate_inputs_failed;
                 }
@@ -838,10 +840,10 @@ code validate_transaction::check_did_transaction(
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
 
-        //from_did (weak check) 
+        //from_did (weak check)
         if (!connect_input_address_match_did(tx, chain, output)) {
             return error::did_address_not_match;
-        }       
+        }
 
         if (output.is_did_register()) {
             if (chain.is_valid_address(output.get_did_symbol())) {

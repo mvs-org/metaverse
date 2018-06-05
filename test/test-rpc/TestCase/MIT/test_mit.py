@@ -27,6 +27,22 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X"*257)
         self.assertEqual(ec, code.argument_size_invalid_exception, message)
 
+        # check to did not exist
+        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol + "1", test_symbol)
+        self.assertEqual(ec, code.did_symbol_notfound_exception, message)
+
+        # check to did not owned
+        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Bob.did_symbol, test_symbol)
+        self.assertEqual(ec, code.address_dismatch_account_exception, message)
+
+        # check symbol already exist
+        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol)
+        self.assertEqual(ec, code.success, message)
+        Alice.mining()
+
+        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol)
+        self.assertEqual(ec, code.asset_symbol_existed_exception, message)
+
 
     def test_1_register_mit(self):
         symbol = ("MIT." + common.get_random_str()).upper()

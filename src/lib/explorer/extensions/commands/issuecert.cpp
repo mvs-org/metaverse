@@ -44,8 +44,12 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     auto to_did = argument_.to;
     auto to_address = get_address_from_did(to_did, blockchain);
-    if (!blockchain.is_valid_address(to_address))
+    if (!blockchain.is_valid_address(to_address)) {
         throw address_invalid_exception{"invalid did parameter! " + to_did};
+    }
+    if (!blockchain.get_account_address(auth_.name, to_address)) {
+        throw address_dismatch_account_exception{"target did does not match account. " + to_did};
+    }
 
     // check asset cert types
     std::map <std::string, asset_cert_type> cert_map = {
