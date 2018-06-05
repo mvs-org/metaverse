@@ -165,7 +165,7 @@ void mit_history_database::store(const asset_mit_info& mit_info)
     auto write = [&mit_info](memory_ptr data)
     {
         auto serial = make_serializer(REMAP_ADDRESS(data));
-        serial.write_data(mit_info.to_data());
+        serial.write_data(mit_info.to_short_data());
     };
     rows_multimap_.add_row(key, write);
 }

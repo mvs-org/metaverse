@@ -278,8 +278,8 @@ public:
         const std::string& address, const std::string& symbol, asset_cert_type cert_type);
 
     // identifiable asset
-    std::shared_ptr<asset_mit_register_info> get_registered_mit(const std::string& symbol);
-    std::shared_ptr<asset_mit_register_info::list> get_registered_mits();
+    std::shared_ptr<asset_mit_info> get_registered_mit(const std::string& symbol);
+    std::shared_ptr<asset_mit_info::list> get_registered_mits();
     std::shared_ptr<asset_mit_info::list> get_mit_history(const std::string& symbol,
         uint64_t limit = 0, uint64_t page_number = 0);
     std::shared_ptr<asset_mit::list> get_account_mits(

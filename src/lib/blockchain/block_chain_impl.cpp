@@ -1450,14 +1450,14 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return database_.certs.get(key) != nullptr;
 }
 
-std::shared_ptr<asset_mit_register_info> block_chain_impl::get_registered_mit(const std::string& symbol)
+std::shared_ptr<asset_mit_info> block_chain_impl::get_registered_mit(const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());
     // return the registered identifiable asset, its status must be MIT_STATUS_REGISTER
     return database_.mits.get(get_hash(symbol));
 }
 
-std::shared_ptr<asset_mit_register_info::list> block_chain_impl::get_registered_mits()
+std::shared_ptr<asset_mit_info::list> block_chain_impl::get_registered_mits()
 {
     // return the registered identifiable assets, their status must be MIT_STATUS_REGISTER
     return database_.mits.get_blockchain_mits();
