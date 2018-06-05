@@ -61,9 +61,7 @@ console_result issue::invoke (Json::Value& jv_output,
         throw address_invalid_exception{"invalid asset issuer " + to_did};
     }
 
-    std::string cert_address;
     std::string cert_symbol;
-    std::string cert_did;
     asset_cert_type cert_type = asset_cert_ns::none;
     bool is_domain_cert_exist = false;
 
@@ -74,10 +72,8 @@ console_result issue::invoke (Json::Value& jv_output,
         if (!exist) {
             // domain cert does not exist, issue new domain cert to this address
             is_domain_cert_exist = false;
-            cert_address = to_address;
             cert_type = asset_cert_ns::domain;
             cert_symbol = domain;
-            cert_did = to_did;
         }
         else {
             // if domain cert exists then check whether it belongs to the account.
@@ -86,8 +82,6 @@ console_result issue::invoke (Json::Value& jv_output,
             if (cert) {
                 cert_symbol = domain;
                 cert_type = cert->get_type();
-                cert_did = cert->get_owner();
-                cert_address = get_address_from_did(cert_did, blockchain);
             }
             else {
                 // if domain cert does not belong to the account then check naming cert
@@ -105,8 +99,6 @@ console_result issue::invoke (Json::Value& jv_output,
 
                     cert_symbol = argument_.symbol;
                     cert_type = cert->get_type();
-                    cert_did = cert->get_owner();
-                    cert_address = get_address_from_did(cert_did, blockchain);
                 }
             }
         }
@@ -128,9 +120,9 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // domain cert or naming cert
     if (asset_cert::is_valid_domain(domain)) {
-        receiver.push_back({cert_address, cert_symbol, 0, 0, cert_type,
+        receiver.push_back({to_address, cert_symbol, 0, 0, cert_type,
             (is_domain_cert_exist ? utxo_attach_type::asset_cert : utxo_attach_type::asset_cert_autoissue),
-            attachment(cert_did, cert_did)});
+            attachment("", to_did)});
     }
 
     auto issue_helper = issuing_asset(*this, blockchain,
