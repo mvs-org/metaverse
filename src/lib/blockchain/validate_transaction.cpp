@@ -834,14 +834,16 @@ code validate_transaction::check_did_transaction(
         if ((ret = output.check_attachment_address(chain)) != error::success)
             return ret;
 
+        //to_did check(strong check)
         if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
             return ret;
 
-        if (output.is_did_register()) {
-            if (!connect_input_address_match_did(tx, chain, output.attach_data)) {
-                return error::did_address_not_match;
-            }
+        //from_did (weak check) 
+        if (!connect_input_address_match_did(tx, chain, output)) {
+            return error::did_address_not_match;
+        }       
 
+        if (output.is_did_register()) {
             if (chain.is_valid_address(output.get_did_symbol())) {
                 return error::did_symbol_invalid;
             }
@@ -864,10 +866,6 @@ code validate_transaction::check_did_transaction(
             }
         }
         else if (output.is_did_transfer()) {
-            if (!connect_input_address_match_did(tx, chain, output.attach_data)) {
-                return error::did_address_not_match;
-            }
-
             //did transfer only for did is exist
             if (!chain.is_did_exist(output.get_did_symbol())) {
                 return error::did_not_exist;
@@ -955,9 +953,12 @@ bool validate_transaction::connect_did_input(
 bool validate_transaction::connect_input_address_match_did(
     const chain::transaction& tx,
     blockchain::block_chain_impl& chain,
-    const attachment& attach)
+    const output& output)
 {
-    if (attach.get_version() != DID_ATTACH_VERIFY_VERSION || attach.get_from_did().empty()) {
+
+    const attachment& attach = output.attach_data;
+
+    if (attach.get_from_did().empty()) {
         return true;
     }
 
