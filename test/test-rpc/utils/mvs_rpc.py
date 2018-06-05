@@ -669,6 +669,9 @@ def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
     else:
         return "getmit", positional, {}, None
 
+def get_memorypool():
+        return "getmemorypool", positional, {}, None
+
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
     print rc.list_balances('lxf', '123')

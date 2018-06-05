@@ -73,7 +73,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
                 Alice.mining()
 
 class ForkTestCase(MVSTestCaseBase):
-    remote_ip = "10.10.10.137"
+    remote_ip = "10.10.10.135"
     remote_ctrl = None
     @classmethod
     def setUpClass(cls):
