@@ -48,6 +48,10 @@ class TestCert(MVSTestCaseBase):
         ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol + "d", test_cert_symbol, 'naming')
         self.assertEqual(ec, 7006, message)
 
+        # did not owned
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, 'naming')
+        self.assertEqual(ec, 4003, message)
+
         # cert type error
         ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, test_cert_symbol, "naming1")
         self.assertEqual(ec, 5017, message)

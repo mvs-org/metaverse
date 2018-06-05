@@ -59,6 +59,14 @@ console_result registermit::invoke (Json::Value& jv_output,
     if (!blockchain.is_valid_address(to_address)) {
         throw address_invalid_exception{"invalid did parameter! " + to_did};
     }
+    if (!blockchain.get_account_address(auth_.name, to_address)) {
+        throw address_dismatch_account_exception{"target did does not match account. " + to_did};
+    }
+
+    // check symbol not registered
+    if (blockchain.get_registered_mit(argument_.symbol)) {
+        throw asset_symbol_existed_exception{"MIT is already exist in blockchain. " + argument_.symbol};
+    }
 
     // receiver
     std::vector<receiver_record> receiver{
