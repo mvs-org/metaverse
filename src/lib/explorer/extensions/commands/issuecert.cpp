@@ -113,7 +113,7 @@ console_result issuecert::invoke (Json::Value& jv_output,
 
     auto helper = issuing_asset_cert(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(argument_.symbol),
+        std::move(to_address), std::move(argument_.symbol),
         std::move(receiver), argument_.fee);
 
     helper.exec();

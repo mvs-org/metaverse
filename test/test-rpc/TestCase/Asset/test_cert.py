@@ -23,46 +23,46 @@ class TestCert(MVSTestCaseBase):
 
 
         #account password error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password + '1', Bob.did_symbol, test_cert_symbol, 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password + '1', Alice.did_symbol, test_cert_symbol, 'naming')
         self.assertEqual(ec, 1000, message)
         Alice.mining()
 
         #symbol check
         # 1 -- length
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, "X"*65, 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, "X"*65, 'naming')
         self.assertEqual(ec, 5011, message)
 
         # 2 -- invalid char
         spec_char_lst = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<>/?"
         for char in spec_char_lst:
-            ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol + char, 'naming')
+            ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, test_cert_symbol + char, 'naming')
             self.assertEqual(ec, 1000, message)
             self.assertEqual(message, "symbol must be alpha or number or dot", message)
 
         # check cert symbol -- invalid format
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, invalid_naming_cert, 'naming',
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, invalid_naming_cert, 'naming',
                                             fee=None)
         self.assertEqual(ec, 5012, message)
 
         # did not exist
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Zac.did_symbol, test_cert_symbol, 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol + "d", test_cert_symbol, 'naming')
         self.assertEqual(ec, 7006, message)
 
         # cert type error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming1")
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, test_cert_symbol, "naming1")
         self.assertEqual(ec, 5017, message)
 
         # no domain cert owned
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, invalid_naming_cert + ".2BOB2", 'naming')
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, invalid_naming_cert + ".2BOB2", 'naming')
         self.assertEqual(ec, 5019, message)
 
         # issue cert success
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming")
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, test_cert_symbol, "naming")
         self.assertEqual(ec, 0, message)
         Alice.mining()
 
         # cert already exist error
-        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Bob.did_symbol, test_cert_symbol, "naming")
+        ec, message = mvs_rpc.issue_cert(Alice.name, Alice.password, Alice.did_symbol, test_cert_symbol, "naming")
         self.assertEqual(ec, 5018, message)
 
 
@@ -76,7 +76,13 @@ class TestCert(MVSTestCaseBase):
         '''
         Alice issue cert to Bob.
         '''
-        cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
+        cert_symbol = Alice.issue_naming_cert(domain_symbol)
+        Alice.mining()
+
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, cert_symbol,
+                                            'naming',
+                                            fee=None)
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password, cert_symbol, True)
@@ -113,24 +119,26 @@ class TestCert(MVSTestCaseBase):
         domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
-        exist_asset = asset_symbol
-        exist_domain_cert = domain_symbol
+        naming_cert_symbol = Alice.issue_naming_cert(domain_symbol)
+        Alice.mining()
 
-        naming_cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, naming_cert_symbol,
+                                            'naming',
+                                            fee=None)
+        self.assertEqual(ec, 0, message)
         Alice.mining()
         '''
         '''
 
-        domain_cert_symbol = domain_symbol
-        not_issued_symbol = domain_cert_symbol+'.2ND'+common.get_random_str()
+        not_issued_symbol = domain_symbol+'.2ND'+common.get_random_str()
 
         # account password match error
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_cert_symbol, 'naming',
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password+'1', Bob.did_symbol, domain_symbol, 'naming',
                                             fee=None)
         self.assertEqual(ec, 1000, message)
 
         # did_symbol not exist
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, "InvalidDID", domain_cert_symbol, 'naming',
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, "InvalidDID", domain_symbol, 'naming',
                                             fee=None)
         self.assertEqual(ec, 7006, message)
 
@@ -152,7 +160,7 @@ class TestCert(MVSTestCaseBase):
         self.assertEqual(ec, 5020, message)
 
         # check fee
-        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, domain_cert_symbol,
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, domain_symbol,
                                             'domain',
                                             fee=0)
         self.assertEqual(ec, 5005, message)
@@ -165,7 +173,13 @@ class TestCert(MVSTestCaseBase):
         domain_symbol, asset_symbol = Alice.create_random_asset()
         Alice.mining()
 
-        naming_cert_symbol = Alice.issue_naming_cert(Bob, domain_symbol)
+        naming_cert_symbol = Alice.issue_naming_cert(domain_symbol)
+        Alice.mining()
+
+        ec, message = mvs_rpc.transfer_cert(Alice.name, Alice.password, Bob.did_symbol, naming_cert_symbol,
+                                            'naming',
+                                            fee=None)
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
         Alice.send_etp(Bob.mainaddress(), 20 * 10 ** 8)

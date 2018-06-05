@@ -134,9 +134,9 @@ class Role:
         assert (result == 0)
         return cert_symbol
 
-    def issue_naming_cert(self, to_, domain_symbol):
-        cert_symbol = (domain_symbol + ".2%s." % to_.name + common.get_random_str()).upper()
-        result, message = mvs_rpc.issue_cert(self.name, self.password, to_.did_symbol, cert_symbol, "NAMING")
+    def issue_naming_cert(self, domain_symbol):
+        cert_symbol = (domain_symbol + "." + common.get_random_str()).upper()
+        result, message = mvs_rpc.issue_cert(self.name, self.password, self.did_symbol, cert_symbol, "NAMING")
         if result != 0:
             print("failed to issue_cert: {}".format(message))
         assert (result == 0)
