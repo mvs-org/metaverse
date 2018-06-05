@@ -964,24 +964,23 @@ bool validate_transaction::connect_input_address_match_did(
         return true;
     }
 
-    if (tx.inputs.size() > 1) {
-        return false;
+    for ( auto & input : tx.inputs)
+    {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+            return false;
+        }
+
+        auto prev_output = prev_tx.outputs.at(input.previous_output.index);
+        auto address = prev_output.get_script_address();
+        if (attach.get_from_did() == chain.get_did_from_address(address)) {
+            return true;
+        }
     }
 
-    const auto& input = tx.inputs[0];
-    chain::transaction prev_tx;
-    uint64_t prev_height{0};
-    if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-        return false;
-    }
 
-    auto prev_output = prev_tx.outputs.at(input.previous_output.index);
-    auto address = prev_output.get_script_address();
-    if (attach.get_from_did() != chain.get_did_from_address(address)) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
