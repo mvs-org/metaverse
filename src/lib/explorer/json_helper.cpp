@@ -490,7 +490,6 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
 
     tree["height"] = mit_info.output_height;
     tree["time_stamp"] = mit_info.timestamp;
-    tree["from_did"] = mit_info.from_did;
     tree["to_did"] = mit_info.to_did;
 
     tree["symbol"] = mit_info.mit.get_symbol();

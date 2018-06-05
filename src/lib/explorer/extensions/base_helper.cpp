@@ -504,7 +504,6 @@ void base_transfer_common::sync_fetchutxo(
         record.asset_cert = cert_type;
         record.output = row.output;
         record.type = get_utxo_attach_type(output);
-        record.from_did = output.attach_data.get_to_did();
 
         from_list_.push_back(record);
 
@@ -875,12 +874,7 @@ void base_transfer_common::set_did_verify_attachment(const receiver_record& reco
     if (record.attach_elem.get_version() == DID_ATTACH_VERIFY_VERSION) {
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
         attach.set_to_did(record.attach_elem.get_to_did());
-        if (record.type == utxo_attach_type::asset_mit_transfer) {
-            // set from_did in transferring_mit::populate_output_attachment
-        }
-        else {
-            attach.set_from_did(record.attach_elem.get_from_did());
-        }
+        attach.set_from_did(record.attach_elem.get_from_did());
     }
 }
 
@@ -1701,15 +1695,6 @@ attachment transferring_mit::populate_output_attachment(const receiver_record& r
         }
 
         attach.set_attach(ass);
-
-        // set from_did
-        const auto match = [](const address_asset_record& record) {
-            return (record.type == utxo_attach_type::asset_mit
-                || record.type == utxo_attach_type::asset_mit_transfer);
-        };
-        auto iter = std::find_if(from_list_.begin(), from_list_.end(), match);
-        BITCOIN_ASSERT(iter != from_list_.end());
-        attach.set_from_did(iter->from_did);
     }
 
     return attach;
