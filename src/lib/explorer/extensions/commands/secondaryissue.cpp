@@ -86,7 +86,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, argument_.symbol, 0, asset_volume_of_threshold,
-            utxo_attach_type::asset_secondaryissue, attachment(to_did, to_did)},
+            utxo_attach_type::asset_secondaryissue, attachment("", to_did)},
         {to_address, argument_.symbol, 0, 0, asset_cert_ns::issue,
             utxo_attach_type::asset_cert, attachment("", to_did)}
     };

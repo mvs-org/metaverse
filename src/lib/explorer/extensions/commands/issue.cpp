@@ -106,7 +106,7 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // receiver
     std::vector<receiver_record> receiver{
-        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment(to_did, to_did)}
+        {to_address, argument_.symbol, 0, 0, utxo_attach_type::asset_issue, attachment("", to_did)}
     };
 
     // asset_cert utxo
@@ -114,7 +114,7 @@ console_result issue::invoke (Json::Value& jv_output,
     if (!certs.empty()) {
         for (auto each_cert_type : certs) {
             receiver.push_back({to_address, argument_.symbol, 0, 0,
-                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment(to_did, to_did)});
+                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment("", to_did)});
         }
     }
 
