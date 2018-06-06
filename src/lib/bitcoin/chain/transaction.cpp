@@ -79,7 +79,7 @@ transaction::transaction(uint32_t version, uint32_t locktime,
 }
 
 transaction::transaction(transaction&& other)
-  : transaction(other.version, other.locktime, 
+  : transaction(other.version, other.locktime,
         std::forward<input::list>(other.inputs),
         std::forward<output::list>(other.outputs))
 {
@@ -208,7 +208,7 @@ data_chunk transaction::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
+    BITCOIN_ASSERT(data.size() == serialized_size());
 
     return data;
 }
@@ -383,7 +383,7 @@ std::string transaction::get_did_transfer_old_address() const
 		if(elem.is_did_transfer()) {
             newdidstr = elem.get_script_address();
         }
-			
+
 	}
 
     if (newdidstr.empty()){
@@ -395,7 +395,7 @@ std::string transaction::get_did_transfer_old_address() const
             newdidstr = elem.get_script_address();
             return newdidstr;
         }
-			
+
 	}
 
 
