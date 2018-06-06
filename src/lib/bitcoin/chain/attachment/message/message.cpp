@@ -62,10 +62,26 @@ void blockchain_message::reset()
 {
     content_ = "";
 }
+
+static size_t get_string_serialized_size(const std::string& str)
+{
+    size_t length = str.size();
+    if (length < 0xfd) {
+        return length + 1;
+    }
+    if (length <= 0xffff) {
+        return length + 3;
+    }
+    if (length <= 0xffffffff) {
+        return length + 5;
+    }
+    return length + 9;
+}
+
 bool blockchain_message::is_valid() const
 {
     return !(content_.empty()
-            || content_.size()+1>BLOCKCHAIN_MESSAGE_FIX_SIZE);
+            || get_string_serialized_size(content_) + 1 > BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
 bool blockchain_message::from_data(const data_chunk& data)
@@ -107,16 +123,12 @@ void blockchain_message::to_data(std::ostream& stream) const
 
 void blockchain_message::to_data(writer& sink) const
 {
-    if (content_.size() < BLOCKCHAIN_MESSAGE_FIX_SIZE) {
-        sink.write_string(content_);
-    } else {
-        sink.write_string(content_.substr(0, BLOCKCHAIN_MESSAGE_FIX_SIZE));
-    }
+    sink.write_string(content_);
 }
 
 uint64_t blockchain_message::serialized_size() const
 {
-    size_t len = content_.size() + 1;
+    size_t len = get_string_serialized_size(content_) + 1;
     return std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
