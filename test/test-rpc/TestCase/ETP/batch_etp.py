@@ -11,7 +11,7 @@ class TestSendETP(MVSTestCaseBase):
 
         count = 20000
         while count > 0:
-            ec, message = mvs_rpc.send(Alice.Alice,Bob.password, Zac.mainaddress(), 10000, 10000, 'transaction no:'+str(count))
+            ec, message = mvs_rpc.send(Alice.name, Alice.password, Zac.mainaddress(), 10000, 10000, 'transaction no:'+str(count))
             if ec == 0:
                 count -=1
 
