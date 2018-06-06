@@ -165,11 +165,27 @@ uint64_t asset_mit::get_max_serialized_size() const
     return is_register_status() ? ASSET_MIT_FIX_SIZE : ASSET_MIT_TRANSFER_FIX_SIZE;
 }
 
+static size_t get_variable_string_length(size_t value)
+{
+    if (value < 0xfd) {
+        return 1;
+    }
+    else if (value <= 0xffff) {
+        return 3;
+    }
+    else if (value <= 0xffffffff) {
+        return 5;
+    }
+    else {
+        return 9;
+    }
+}
+
 uint64_t asset_mit::calc_size() const
 {
     uint64_t len = (symbol_.size() + 1) + (address_.size() + 1) + ASSET_MIT_STATUS_FIX_SIZE;
     if (is_register_status()) {
-        len += (content_.size() + 1);
+        len += get_variable_string_length(content_.size()) + content_.size();
     }
     return len;
 }
