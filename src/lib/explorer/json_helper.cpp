@@ -484,7 +484,7 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit& mit_info, bool al
     return tree;
 }
 
-Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
+Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info, bool always_show_content)
 {
     Json::Value tree;
 
@@ -496,7 +496,7 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info)
     tree["address"] = mit_info.mit.get_address();
     tree["status"] = mit_info.mit.get_status_name();
 
-    if (mit_info.mit.is_register_status()) {
+    if (always_show_content || mit_info.mit.is_register_status()) {
         tree["content"] = mit_info.mit.get_content();
     }
 

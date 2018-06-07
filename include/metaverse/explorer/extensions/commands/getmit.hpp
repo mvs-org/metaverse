@@ -66,12 +66,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol),
-            "Asset symbol. If not specified, will show whole network asset symbols."
+            "Asset symbol. If not specified then show whole network MIT symbols."
         )
         (
             "trace,t",
             value<bool>(&option_.show_history)->default_value(false)->zero_tokens(),
-            "If specified, then only get related asset. Default is not specified."
+            "If specified then trace the history. Default is not specified."
         )
         (
             "limit,l",
@@ -82,6 +82,11 @@ public:
             "index,i",
             value<uint32_t>(&option_.index)->default_value(1),
             "Page index."
+        )
+        (
+            "current,c",
+            value<bool>(&option_.show_current)->default_value(false)->zero_tokens(),
+            "If specified then show the lastest information of specified MIT. Default is not specified."
         )
         ;
 
@@ -108,6 +113,7 @@ public:
     struct option
     {
         bool show_history;
+        bool show_current;
         uint32_t index;
         uint32_t limit;
     } option_;
