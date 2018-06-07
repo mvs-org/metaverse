@@ -785,7 +785,7 @@ code validate_transaction::check_asset_mit_register_transaction(
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
                                            << " address is not same. "
                                            << asset_address << " != " << asset_info.get_address();
-                return error::mit_exist;
+                return error::mit_register_error;
             }
 
             // check asset not exists

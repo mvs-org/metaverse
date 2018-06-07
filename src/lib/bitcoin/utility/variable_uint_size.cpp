@@ -34,4 +34,12 @@ size_t variable_uint_size(uint64_t value)
         return 9;
 }
 
+size_t get_string_serialized_size(const std::string& str)
+{
+    size_t length = str.size();
+    length += variable_uint_size(length);
+    return length;
+}
+
+
 } // namespace libbitcoin
