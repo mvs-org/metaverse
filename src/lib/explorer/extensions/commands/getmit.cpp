@@ -42,6 +42,12 @@ console_result getmit::invoke(Json::Value& jv_output,
         check_mit_symbol(argument_.symbol);
     }
 
+    if (option_.show_current) {
+        if (argument_.symbol.empty()) {
+            throw argument_legality_exception("MIT symbol not privided while displaying the current status of MIT!");
+        }
+    }
+
     if (option_.show_history) {
         if (argument_.symbol.empty()) {
             throw argument_legality_exception("MIT symbol not privided while tracing history!");
@@ -85,9 +91,24 @@ console_result getmit::invoke(Json::Value& jv_output,
             jv_output["mits"] = json_value;
         }
         else {
-            auto asset = blockchain.get_registered_mit(argument_.symbol);
-            if (nullptr != asset) {
-                json_value = json_helper.prop_list(*asset);
+            if (option_.show_current) {
+                auto sh_vec = blockchain.get_mit_history(argument_.symbol, 1, 1);
+                if (nullptr != sh_vec && sh_vec->size() > 0) {
+                    auto last_iter = --(sh_vec->end());
+                    auto& mit_info = *last_iter;
+                    auto reg_mit = blockchain.get_registered_mit(argument_.symbol);
+                    if (nullptr != reg_mit) {
+                        mit_info.mit.set_content(reg_mit->mit.get_content());
+                    }
+
+                    json_value = json_helper.prop_list(mit_info, true);
+                }
+            }
+            else {
+                auto mit_info = blockchain.get_registered_mit(argument_.symbol);
+                if (nullptr != mit_info) {
+                    json_value = json_helper.prop_list(*mit_info);
+                }
             }
 
             jv_output = json_value;
