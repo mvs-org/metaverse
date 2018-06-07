@@ -144,7 +144,7 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
     bool is_asset = false;
     bool is_did = false;
     std::string attachment_address;
-    if (is_asset_issue() || is_asset_secondaryissue()) {
+    if (is_asset_issue() || is_asset_secondaryissue() || is_asset_mit()) {
         attachment_address = get_asset_address();
         is_asset = true;
     } else if (is_asset_cert()) {

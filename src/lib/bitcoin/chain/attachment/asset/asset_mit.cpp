@@ -169,7 +169,7 @@ uint64_t asset_mit::calc_size() const
 {
     uint64_t len = (symbol_.size() + 1) + (address_.size() + 1) + ASSET_MIT_STATUS_FIX_SIZE;
     if (is_register_status()) {
-        len += get_string_serialized_size(content_);
+        len += variable_string_size(content_);
     }
     return len;
 }
@@ -198,8 +198,7 @@ const std::string& asset_mit::get_symbol() const
 
 void asset_mit::set_symbol(const std::string& symbol)
 {
-    size_t len = std::min((symbol.size() + 1), ASSET_MIT_SYMBOL_FIX_SIZE);
-    symbol_ = symbol.substr(0, len);
+    symbol_ = limit_size_string(symbol, ASSET_MIT_SYMBOL_FIX_SIZE);
 }
 
 const std::string& asset_mit::get_address() const
@@ -209,8 +208,7 @@ const std::string& asset_mit::get_address() const
 
 void asset_mit::set_address(const std::string& address)
 {
-    size_t len = std::min((address.size() + 1), ASSET_MIT_ADDRESS_FIX_SIZE);
-    address_ = address.substr(0, len);
+    address_ = limit_size_string(address, ASSET_MIT_ADDRESS_FIX_SIZE);
 }
 
 const std::string& asset_mit::get_content() const
@@ -220,8 +218,7 @@ const std::string& asset_mit::get_content() const
 
 void asset_mit::set_content(const std::string& content)
 {
-    size_t len = std::min((content.size() + 1), ASSET_MIT_CONTENT_FIX_SIZE);
-    content_ = content.substr(0, len);
+    content_ = limit_size_string(content, ASSET_MIT_CONTENT_FIX_SIZE);
 }
 
 uint8_t asset_mit::get_status() const

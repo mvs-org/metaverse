@@ -67,7 +67,7 @@ bool blockchain_message::is_valid() const
 {
     return !(content_.empty()
             // add 1 here to prevent content_'s size == 253
-            || get_string_serialized_size(content_) + 1 > BLOCKCHAIN_MESSAGE_FIX_SIZE);
+            || variable_string_size(content_) + 1 > BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
 bool blockchain_message::from_data(const data_chunk& data)
@@ -114,7 +114,7 @@ void blockchain_message::to_data(writer& sink) const
 
 uint64_t blockchain_message::serialized_size() const
 {
-    size_t len = get_string_serialized_size(content_);
+    size_t len = variable_string_size(content_);
     return std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
@@ -132,8 +132,7 @@ const std::string& blockchain_message::get_content() const
 
 void blockchain_message::set_content(const std::string& content)
 {
-    size_t len = std::min((content_.size() + 1), BLOCKCHAIN_MESSAGE_FIX_SIZE);
-    this->content_ = content.substr(0, len);
+    content_ = limit_size_string(content, BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
 } // namspace chain

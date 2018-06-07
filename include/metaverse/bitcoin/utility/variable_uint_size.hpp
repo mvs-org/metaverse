@@ -28,7 +28,8 @@
 namespace libbitcoin {
 
 BC_API size_t variable_uint_size(uint64_t value);
-BC_API size_t get_string_serialized_size(const std::string& str);
+BC_API size_t variable_string_size(const std::string& str);
+BC_API std::string limit_size_string(const std::string& str, size_t limit_size);
 
 } // namespace libbitcoin
 
