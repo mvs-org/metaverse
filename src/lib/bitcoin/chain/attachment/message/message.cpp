@@ -81,6 +81,7 @@ static size_t get_string_serialized_size(const std::string& str)
 bool blockchain_message::is_valid() const
 {
     return !(content_.empty()
+            // add 1 here to prevent content_'s size == 253
             || get_string_serialized_size(content_) + 1 > BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
@@ -111,7 +112,7 @@ data_chunk blockchain_message::to_data() const
     data_sink ostream(data);
     to_data(ostream);
     ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
+    BITCOIN_ASSERT(data.size() == serialized_size());
     return data;
 }
 
@@ -128,7 +129,7 @@ void blockchain_message::to_data(writer& sink) const
 
 uint64_t blockchain_message::serialized_size() const
 {
-    size_t len = get_string_serialized_size(content_) + 1;
+    size_t len = get_string_serialized_size(content_);
     return std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
 }
 
@@ -146,7 +147,8 @@ const std::string& blockchain_message::get_content() const
 
 void blockchain_message::set_content(const std::string& content)
 {
-    size_t len = std::min(content.size()+1, BLOCKCHAIN_MESSAGE_FIX_SIZE);
+    size_t len = get_string_serialized_size(content_);
+    len = std::min(len, BLOCKCHAIN_MESSAGE_FIX_SIZE);
     this->content_ = content.substr(0, len);
 }
 
