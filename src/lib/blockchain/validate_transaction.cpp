@@ -236,7 +236,6 @@ void validate_transaction::handle_previous_tx(const code& ec,
                        asset_amount_in_, asset_certs_in_,
                        old_symbol_in_, new_symbol_in_, business_kind_in_))
     {
-        log::info("validate_transaction") << " >> connect_input failed";
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
         return;

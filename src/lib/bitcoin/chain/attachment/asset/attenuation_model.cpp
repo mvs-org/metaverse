@@ -168,7 +168,7 @@ public:
 private:
     bool validate_keys(model_type model, const std::vector<std::string>& keys) {
         if (map_.size() != keys.size()) {
-            log::info(LOG_HEADER) << "The size of keys " << map_.size()
+            log::debug(LOG_HEADER) << "The size of keys " << map_.size()
                 << " for model type " << std::to_string(to_index(model))
                 << " does not equal " << keys.size();
             return false;
@@ -176,7 +176,7 @@ private:
 
         for (size_t i = 0; i < keys.size(); ++i) {
             if (map_.find(keys[i]) == map_.end()) {
-                log::info(LOG_HEADER) << "model type " << std::to_string(to_index(model))
+                log::debug(LOG_HEADER) << "model type " << std::to_string(to_index(model))
                     << " needs key " << keys[i] << " but missed.";
                 return false;
             }
@@ -218,28 +218,28 @@ private:
         auto is_illegal_char = [](auto c){ return ! (std::isalnum(c) || (c == ',') || (c == ';') || (c == '=')); };
         auto iter = std::find_if(model_param_.begin(), model_param_.end(), is_illegal_char);
         if (iter != model_param_.end()) {
-            log::info(LOG_HEADER) << "illegal char found at pos "
+            log::debug(LOG_HEADER) << "illegal char found at pos "
                 << std::distance(model_param_.begin(), iter) << " : " << *iter;
             return false;
         }
 
         if (model_param_.find(",,") != std::string::npos) {
-            log::info(LOG_HEADER) << "',,' is not allowed.";
+            log::debug(LOG_HEADER) << "',,' is not allowed.";
             return false;
         }
 
         const auto& kv_vec = bc::split(model_param_, ";", true);
         if (kv_vec.size() < 6) {
-            log::info(LOG_HEADER) << "model param is " << model_param_
+            log::debug(LOG_HEADER) << "model param is " << model_param_
                 << ", the model param should at least contain keys of PN, LH, TYPE, LQ, LP, UN";
             return false;
         }
         if (kv_vec[0].find("PN=") != 0) {
-            log::info(LOG_HEADER) << "the model param first key must be PN";
+            log::debug(LOG_HEADER) << "the model param first key must be PN";
             return false;
         }
         if (kv_vec[1].find("LH=") != 0) {
-            log::info(LOG_HEADER) << "the model param second key must be LH";
+            log::debug(LOG_HEADER) << "the model param second key must be LH";
             return false;
         }
 
@@ -249,12 +249,12 @@ private:
                 auto key = vec[0];
                 auto values = vec[1];
                 if (key.empty()) {
-                    log::info(LOG_HEADER) << "key-value format is wrong, key is empty in " << kv;
+                    log::debug(LOG_HEADER) << "key-value format is wrong, key is empty in " << kv;
                     return false;
                 }
 
                 if (map_.find(key) != map_.end()) {
-                    log::info(LOG_HEADER) << "key-value format is wrong, duplicate key : " << key;
+                    log::debug(LOG_HEADER) << "key-value format is wrong, duplicate key : " << key;
                     return false;
                 }
 
@@ -272,7 +272,7 @@ private:
                                 num_vec.emplace_back(num);
                             }
                             else {
-                                log::info(LOG_HEADER) << "value is not a number: " << item;
+                                log::debug(LOG_HEADER) << "value is not a number: " << item;
                                 return false;
                             }
                         }
@@ -282,7 +282,7 @@ private:
                             num_vec.emplace_back(num);
                         }
                         else {
-                            log::info(LOG_HEADER) << "value is not a number: " << values;
+                            log::debug(LOG_HEADER) << "value is not a number: " << values;
                             return false;
                         }
                     }
@@ -290,18 +290,18 @@ private:
                     map_[key] = std::move(num_vec);
                 }
                 catch (const std::exception& e) {
-                    log::info(LOG_HEADER) << "exception caught: " << e.what();
+                    log::debug(LOG_HEADER) << "exception caught: " << e.what();
                     return false;
                 }
             } else {
-                log::info(LOG_HEADER) << "key-value format is wrong, should be key=value format. " << model_param_;
+                log::debug(LOG_HEADER) << "key-value format is wrong, should be key=value format. " << model_param_;
                 return false;
             }
         }
 
         // check keys after map is constructed
         if (!check_keys(is_init)) {
-            log::info(LOG_HEADER) << "check keys of model param failed ";
+            log::debug(LOG_HEADER) << "check keys of model param failed ";
             return false;
         }
         return true;
@@ -450,7 +450,7 @@ uint8_t attenuation_model::to_index(attenuation_model::model_type model)
 attenuation_model::model_type attenuation_model::from_index(uint32_t index)
 {
     if (!check_model_index(index)) {
-        log::info(LOG_HEADER) << "model index is wrong: index = " << index;
+        log::debug(LOG_HEADER) << "model index is wrong: index = " << index;
         return model_type::none;
     }
     return (model_type)index;
@@ -483,7 +483,7 @@ bool attenuation_model::check_model_param_format(const data_chunk& param)
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
         if (!param.empty()) {
-            log::info(LOG_HEADER)
+            log::debug(LOG_HEADER)
                 << "check_model_param, wrong model param format : "
                 << parser.get_model_param();
         }
@@ -511,7 +511,7 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
         if (!param.empty()) {
-            log::info(LOG_HEADER)
+            log::debug(LOG_HEADER)
                 << "check_model_param, wrong model param in intial : "
                 << parser.get_model_param();
         }
@@ -527,13 +527,13 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
 
     // common condition : initial PN = 0
     if (PN != 0) {
-        log::info(LOG_HEADER) << "common initial param error: PN != 0";
+        log::debug(LOG_HEADER) << "common initial param error: PN != 0";
         return false;
     }
 
     // common condition : LQ <= IQ (utxo's asset amount)
     if (LQ > total_amount) {
-        log::info(LOG_HEADER) << "common initial param error: LQ > IQ";
+        log::debug(LOG_HEADER) << "common initial param error: LQ > IQ";
         return false;
     }
 
@@ -551,7 +551,7 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
             }
         }
         else if (LH != initial_lock_height) {
-            log::info(LOG_HEADER) << "common initial param error: LH != " << initial_lock_height;
+            log::debug(LOG_HEADER) << "common initial param error: LH != " << initial_lock_height;
             return false;
         }
     }
@@ -566,7 +566,7 @@ bool attenuation_model::check_model_param_initial(std::string& param, uint64_t t
         return check_model_param_uc_uq(parser);
     }
 
-    log::info(LOG_HEADER) << "check_model_param_initial, Unsupported attenuation model: "
+    log::debug(LOG_HEADER) << "check_model_param_initial, Unsupported attenuation model: "
         << std::to_string(to_index(model));
     return false;
 }
@@ -580,25 +580,25 @@ bool attenuation_model::check_model_param_common(attenuation_model& parser)
 
     // common condition : PN < UN
     if (PN >= UN) {
-        log::info(LOG_HEADER) << "common param error: PN >= UN";
+        log::debug(LOG_HEADER) << "common param error: PN >= UN";
         return false;
     }
 
     // common condition : LQ > 0
     if (!is_positive_number(LQ)) {
-        log::info(LOG_HEADER) << "attenuation param error: LQ <= 0";
+        log::debug(LOG_HEADER) << "attenuation param error: LQ <= 0";
         return false;
     }
 
     // common condition : LP > 0
     if (!is_positive_number(LP)) {
-        log::info(LOG_HEADER) << "attenuation param error: LP <= 0";
+        log::debug(LOG_HEADER) << "attenuation param error: LP <= 0";
         return false;
     }
 
     // UN > 0
     if (!is_positive_number(UN)) {
-        log::info(LOG_HEADER) << "attenuation param error: UN <= 0";
+        log::debug(LOG_HEADER) << "attenuation param error: UN <= 0";
         return false;
     }
 
@@ -614,11 +614,11 @@ bool attenuation_model::check_model_param_un(attenuation_model& parser)
     // given LQ, LP, UN, then
     // LP >= UN and LQ >= UN
     if (LP < UN) {
-        log::info(LOG_HEADER) << "attenuation param error: LP < UN";
+        log::debug(LOG_HEADER) << "attenuation param error: LP < UN";
         return false;
     }
     if (LQ < UN) {
-        log::info(LOG_HEADER) << "attenuation param error: LQ < UN";
+        log::debug(LOG_HEADER) << "attenuation param error: LQ < UN";
         return false;
     }
 
@@ -632,7 +632,7 @@ bool attenuation_model::check_model_param_uc_uq(attenuation_model& parser)
     auto UN = parser.get_unlock_number();
 
     if (UN > max_unlock_number) {
-        log::info(LOG_HEADER) << "attenuation param error: UN > 100, at most 100 cycles is supported.";
+        log::debug(LOG_HEADER) << "attenuation param error: UN > 100, at most 100 cycles is supported.";
         return false;
     }
 
@@ -642,19 +642,19 @@ bool attenuation_model::check_model_param_uc_uq(attenuation_model& parser)
     const auto& UCs = parser.get_unlock_cycles();
     const auto& UQs = parser.get_unlocked_quantities();
     if (UCs.size() != UN) {
-        log::info(LOG_HEADER) << "attenuation param error: UC.size() != UN";
+        log::debug(LOG_HEADER) << "attenuation param error: UC.size() != UN";
         return false;
     }
     if (UQs.size() != UN) {
-        log::info(LOG_HEADER) << "attenuation param error: UQ.size() != UN";
+        log::debug(LOG_HEADER) << "attenuation param error: UQ.size() != UN";
         return false;
     }
     if (sum_and_check_numbers(UCs, is_positive_number) != LP) {
-        log::info(LOG_HEADER) << "attenuation param error: LP != sum(UC) or exist UC <= 0";
+        log::debug(LOG_HEADER) << "attenuation param error: LP != sum(UC) or exist UC <= 0";
         return false;
     }
     if (sum_and_check_numbers(UQs, is_positive_number) != LQ) {
-        log::info(LOG_HEADER) << "attenuation param error: LQ != sum(UQ) or exist UQ <= 0";
+        log::debug(LOG_HEADER) << "attenuation param error: LQ != sum(UQ) or exist UQ <= 0";
         return false;
     }
     return true;
@@ -671,18 +671,18 @@ bool attenuation_model::check_model_param_inflation(attenuation_model& parser, u
     auto IR = parser.get_inflation_rate();
 
     if (LQ != total_amount) {
-        log::info(LOG_HEADER) << "fixed inflation param error: partial lock is not supported!";
+        log::debug(LOG_HEADER) << "fixed inflation param error: partial lock is not supported!";
         return false;
     }
 
     if (UN > max_unlock_number) {
-        log::info(LOG_HEADER) << "fixed inflation param error: UN > 100, at most 100 cycles is supported.";
+        log::debug(LOG_HEADER) << "fixed inflation param error: UN > 100, at most 100 cycles is supported.";
         return false;
     }
 
     // IR > 0
     if (IR <= 0 || IR > max_inflation_rate) {
-        log::info(LOG_HEADER) << "fixed inflation param error: IR not in [1, " << max_inflation_rate << "]";
+        log::debug(LOG_HEADER) << "fixed inflation param error: IR not in [1, " << max_inflation_rate << "]";
         return false;
     }
 
@@ -712,7 +712,7 @@ bool attenuation_model::check_model_param_initial_fixed_inflation(
             LH = IP;
         }
         else if (LH != IP) {
-            log::info(LOG_HEADER) << "fixed inflation param error: LH != " << IP;
+            log::debug(LOG_HEADER) << "fixed inflation param error: LH != " << IP;
             return false;
         }
 
@@ -799,7 +799,7 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
         if (!param.empty()) {
-            log::info(LOG_HEADER)
+            log::debug(LOG_HEADER)
                 << "check_model_param, wrong model param : "
                 << parser.get_model_param();
         }
@@ -818,7 +818,7 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
 
     // common condition : LH > 0
     if (!is_positive_number(LH)) {
-        log::info(LOG_HEADER) << "common param error: LH <= 0";
+        log::debug(LOG_HEADER) << "common param error: LH <= 0";
         return false;
     }
 
@@ -826,12 +826,12 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
         uint64_t UC = LP / UN;
         if (PN + 1 == UN) { // last cycle
             if (PN * UC + LH > LP) {
-                log::info(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
+                log::debug(LOG_HEADER) << "fixed cycle param error: last cycle PN * UC + LH > LP";
                 return false;
             }
         } else {
             if (LH > UC) {
-                log::info(LOG_HEADER) << "fixed cycle param error: LH > UC";
+                log::debug(LOG_HEADER) << "fixed cycle param error: LH > UC";
                 return false;
             }
         }
@@ -840,7 +840,7 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
     else if (model == model_type::custom) {
         const auto& UCs = parser.get_unlock_cycles();
         if (LH > UCs[PN]) {
-            log::info(LOG_HEADER) << "custom param error: LH > UC";
+            log::debug(LOG_HEADER) << "custom param error: LH > UC";
             return false;
         }
     }
@@ -856,7 +856,7 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
 
         const auto& UCs = parser.get_unlock_cycles();
         if (LH > UCs[PN]) {
-            log::info(LOG_HEADER) << "fixed inflation param error: LH > UC";
+            log::debug(LOG_HEADER) << "fixed inflation param error: LH > UC";
             return false;
         }
     }
@@ -912,7 +912,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
 
         const auto& model_param = output.get_attenuation_model_param();
         if (!attenuation_model::validate_model_param(model_param, output.get_asset_amount())) {
-            log::info(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
+            log::debug(LOG_HEADER) << "check param failed, " << chunk_to_string(model_param);
             return error::attenuation_model_param_error;
         }
 
@@ -921,7 +921,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         chain::input_point input_point = chain::point::factory_from_data(input_point_data);
         if (input_point.is_null()) {
             if (!check_model_param(model_param, output.get_asset_amount())) {
-                log::info(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
+                log::debug(LOG_HEADER) << "input is null, " << chunk_to_string(model_param);
                 return error::attenuation_model_param_error;
             }
             continue;
@@ -933,14 +933,14 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
             });
 
         if (iter == vec_prev_input.end()) {
-            log::info(LOG_HEADER) << "input not found for " << input_point.to_string();
+            log::debug(LOG_HEADER) << "input not found for " << input_point.to_string();
             return error::attenuation_model_param_error;
         }
 
         const auto& prev_model_param = iter->prev_output_.get_attenuation_model_param();
 
         if (!check_model_param_immutable(prev_model_param, model_param)) {
-            log::info(LOG_HEADER) << "check immutable failed, "
+            log::debug(LOG_HEADER) << "check immutable failed, "
                 << "prev is " << chunk_to_string(prev_model_param)
                 << ", new is " << chunk_to_string(model_param);
             return error::attenuation_model_param_error;
@@ -950,7 +950,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         auto real_diff_height = get_diff_height(prev_model_param, model_param);
 
         if (real_diff_height > curr_diff_height) {
-            log::info(LOG_HEADER) << "check diff height failed, "
+            log::debug(LOG_HEADER) << "check diff height failed, "
                 << real_diff_height << ", curr diff is" << curr_diff_height;
             return error::attenuation_model_param_error;
         }
@@ -962,14 +962,14 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
                 prev_model_param, new_model_param_ptr);
 
         if (asset_total_amount != (asset_amount + output.get_asset_amount())) {
-            log::info(LOG_HEADER) << "check amount failed, "
+            log::debug(LOG_HEADER) << "check amount failed, "
                 << "locked shoule be " << asset_total_amount - asset_amount
                 << ", but real locked is " << output.get_asset_amount();
             return error::attenuation_model_param_error;
         }
 
         if (!new_model_param_ptr || (*new_model_param_ptr != model_param)) {
-            log::info(LOG_HEADER) << "check model new param failed, "
+            log::debug(LOG_HEADER) << "check model new param failed, "
                 << "prev is " << chunk_to_string(model_param) << ", new is "
                 << (new_model_param_ptr ? chunk_to_string(*new_model_param_ptr) : std::string("empty"));
             return error::attenuation_model_param_error;
@@ -985,7 +985,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
         auto curr_diff_height = current_blockheight - ext_input.prev_blockheight_;
         auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
         if (real_diff_height > curr_diff_height) {
-            log::info(LOG_HEADER) << "check diff height failed for all spendable, "
+            log::debug(LOG_HEADER) << "check diff height failed for all spendable, "
                 << real_diff_height << ", curr diff is" << curr_diff_height;
             return error::attenuation_model_param_error;
         }
@@ -1066,7 +1066,7 @@ uint64_t attenuation_model::get_available_asset_amount(
     // the scrpit pattern is not pay_key_hash_with_attenuation_model
     if (model == model_type::none) {
         if (!param.empty()) {
-            log::info(LOG_HEADER)
+            log::debug(LOG_HEADER)
                 << "get_available_asset_amount, wrong model param : "
                 << parser.get_model_param();
         }
@@ -1134,7 +1134,7 @@ uint64_t attenuation_model::get_available_asset_amount(
         return available;
     }
 
-    log::info(LOG_HEADER) << "get_available_asset_amount, Unsupported attenuation model: "
+    log::debug(LOG_HEADER) << "get_available_asset_amount, Unsupported attenuation model: "
         << std::to_string(to_index(model));
     return asset_amount;
 }
