@@ -841,8 +841,8 @@ code validate_transaction::check_did_transaction(
             return ret;
 
         //from_did (weak check)
-        if (!connect_input_address_match_did(tx, chain, output)) {
-            return error::did_address_not_match;
+        if ((ret = connect_input_address_match_did(tx, chain, output)) != error::success) {
+            return ret;
         }
 
         if (output.is_did_register()) {
@@ -952,16 +952,15 @@ bool validate_transaction::connect_did_input(
            || (found_address_info && info.get_status() ==  DID_DETAIL_TYPE);
 }
 
-bool validate_transaction::connect_input_address_match_did(
+code validate_transaction::connect_input_address_match_did(
     const chain::transaction& tx,
     blockchain::block_chain_impl& chain,
     const output& output)
 {
-
     const attachment& attach = output.attach_data;
 
     if (attach.get_from_did().empty()) {
-        return true;
+        return error::success;
     }
 
     for ( auto & input : tx.inputs)
@@ -969,18 +968,18 @@ bool validate_transaction::connect_input_address_match_did(
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-            return false;
+             return error::success;
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
         if (attach.get_from_did() == chain.get_did_from_address(address)) {
-            return true;
+            return error::success;     
         }
     }
 
 
-    return false;
+    return error::did_address_not_match;
 }
 
 code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)

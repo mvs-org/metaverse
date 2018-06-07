@@ -80,7 +80,7 @@ public:
         const chain::transaction& tx, blockchain::block_chain_impl& chain,
         did info);
 
-    static bool connect_input_address_match_did(
+    static code connect_input_address_match_did(
         const chain::transaction& tx, blockchain::block_chain_impl& chain,
         const output& output);
 
