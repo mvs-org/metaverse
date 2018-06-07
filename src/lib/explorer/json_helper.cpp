@@ -332,7 +332,6 @@ Json::Value json_helper::prop_attenuation_model_param(const data_chunk& chunk)
                 catch (const std::exception& e) {
                     uc_vec.clear();
                     uq_vec.clear();
-                    log::info("json_helper") << "invalid attenuation_model_param: " << param_str;
                 }
             }
             else {
