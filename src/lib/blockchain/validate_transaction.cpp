@@ -1240,7 +1240,7 @@ bool validate_transaction::connect_input(const transaction& tx,
         if (previous_output.is_asset_issue() || previous_output.is_asset_secondaryissue())
             business_kind_in = business_kind::asset_issue;
         else if (previous_output.is_asset_transfer())
-            business_kind_in = business_kind::did_transfer;
+            business_kind_in = business_kind::asset_transfer;
     }
     else if (previous_output.is_asset_cert()) {
         business_kind_in = business_kind::asset_cert;
