@@ -155,7 +155,6 @@ void connections::stop(const config::authority& address)
         if ( (*it)->authority().ip() == address.ip())
         {
             (*it)->stop(error::address_blocked);
-            log::info(LOG_NETWORK) << "actively disconnect from blocked address: " << (*it)->authority().to_string();
         }
     }
 }

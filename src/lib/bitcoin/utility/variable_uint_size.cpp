@@ -34,4 +34,20 @@ size_t variable_uint_size(uint64_t value)
         return 9;
 }
 
+size_t variable_string_size(const std::string& str)
+{
+    size_t length = str.size();
+    length += variable_uint_size(length);
+    return length;
+}
+
+std::string limit_size_string(const std::string& str, size_t limit_size)
+{
+    if (str.size() > limit_size) {
+        return str.substr(0, limit_size);
+    }
+
+    return str;
+}
+
 } // namespace libbitcoin

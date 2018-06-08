@@ -45,10 +45,10 @@ public:
         chain::point::indexes)> validate_handler;
 
     validate_transaction(block_chain& chain, transaction_ptr tx,
-        const transaction_pool& pool, dispatcher& dispatch);
+        const transaction_pool* pool, dispatcher* dispatch);
 
     validate_transaction(block_chain& chain, const chain::transaction& tx,
-        const transaction_pool& pool, dispatcher& dispatch);
+        const transaction_pool* pool, dispatcher* dispatch);
 
     void start(validate_handler handler);
 
@@ -56,33 +56,15 @@ public:
         const chain::transaction& current_tx, size_t input_index,
         uint32_t flags);
 
-    static code check_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-    static code check_transaction_basic(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static code check_asset_issue_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static code check_asset_cert_issue_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static code check_secondaryissue_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static code check_asset_mit_register_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static code check_did_transaction(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain);
-
-    static bool connect_did_input(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain,
-        did info);
-
-    static bool connect_input_address_match_did(
-        const chain::transaction& tx, blockchain::block_chain_impl& chain,
-        const output& output);
+    code check_transaction() const;
+    code check_transaction_basic() const;
+    code check_asset_issue_transaction() const;
+    code check_asset_cert_issue_transaction() const;
+    code check_secondaryissue_transaction() const;
+    code check_asset_mit_register_transaction() const;
+    code check_did_transaction() const;
+    bool connect_did_input(const did& info) const;
+    code connect_input_address_match_did(const output& output) const;
 
     static bool connect_input(const chain::transaction& tx,
         size_t current_input, const chain::transaction& previous_tx,
@@ -93,18 +75,26 @@ public:
 
     static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
         uint64_t& fees);
-    bool check_asset_amount(const transaction& tx);
-    bool check_asset_symbol(const transaction& tx);
-    bool check_asset_certs(const transaction& tx);
-    bool check_asset_mit(const transaction& tx);
+
+    bool check_asset_amount(const transaction& tx) const;
+    bool check_asset_symbol(const transaction& tx) const;
+    bool check_asset_certs(const transaction& tx) const;
+    bool check_asset_mit(const transaction& tx) const;
 
     //check input did match output did
-    bool check_did_symbol_match(const transaction& tx);
+    bool check_did_symbol_match(const transaction& tx) const;
 
     static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
 
+    int get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
+
+    transaction& get_tx() { return *tx_; }
+    const transaction& get_tx() const { return *tx_; }
+    blockchain::block_chain_impl& get_blockchain() { return blockchain_; }
+    const blockchain::block_chain_impl& get_blockchain() const { return blockchain_; }
+
 private:
-    code basic_checks(blockchain::block_chain_impl& chain) const;
+    code basic_checks() const;
     bool is_standard() const;
     void handle_duplicate_check(const code& ec);
 
@@ -124,12 +114,12 @@ private:
     // output was not already spent by another input in the blockchain.
     // is_spent() earlier already checked in the pool.
     void check_double_spend(const code& ec, const chain::input_point& point);
-    void check_fees();
+    void check_fees() const;
 
-    block_chain& blockchain_;
+    block_chain_impl& blockchain_;
     const transaction_ptr tx_;
-    const transaction_pool& pool_;
-    dispatcher& dispatch_;
+    const transaction_pool* const pool_;
+    dispatcher* const dispatch_;
 
     const hash_digest tx_hash_;
     size_t last_block_height_;

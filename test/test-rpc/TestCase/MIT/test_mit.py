@@ -43,6 +43,11 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol)
         self.assertEqual(ec, code.asset_symbol_existed_exception, message)
 
+        # check max length of content 256
+        test_symbol = common.get_random_str()
+        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X"*256)
+        self.assertEqual(ec, code.success, message)
+
 
     def test_1_register_mit(self):
         symbol = ("MIT." + common.get_random_str()).upper()

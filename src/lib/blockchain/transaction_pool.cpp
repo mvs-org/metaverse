@@ -109,7 +109,7 @@ void transaction_pool::do_validate(transaction_ptr tx,
     }
 
     const auto validate = std::make_shared<validate_transaction>(
-                              blockchain_, *tx, *this, dispatch_);
+                              blockchain_, *tx, this, &dispatch_);
 
     validate->start(
         dispatch_.ordered_delegate(&transaction_pool::handle_validated,

@@ -32,6 +32,7 @@ using namespace libbitcoin::chain;
 namespace libbitcoin {
 namespace blockchain {
     class block_chain_impl;
+    class validate_transaction;
 }
 }
 
@@ -62,7 +63,7 @@ public:
 
     static bool check_model_index(uint32_t index);
     static bool validate_model_param(const data_chunk& param, uint64_t total_amount);
-    static code check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain);
+    static code check_model_param(const blockchain::validate_transaction&);
     static bool check_model_param_format(const data_chunk& param);
     static bool check_model_param(const data_chunk& param, uint64_t total_amount);
     static bool check_model_param_initial(std::string& param, uint64_t total_amount, bool is_init=false);
