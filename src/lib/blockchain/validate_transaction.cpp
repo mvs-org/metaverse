@@ -45,9 +45,9 @@ using namespace std::placeholders;
 static constexpr uint32_t max_transaction_size = 1000000;
 
 validate_transaction::validate_transaction(block_chain& chain,
-        transaction_ptr tx, const transaction_pool& pool,
-        dispatcher& dispatch)
-    : blockchain_(chain),
+        transaction_ptr tx, const transaction_pool* pool,
+        dispatcher* dispatch)
+    : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
       tx_(tx),
       pool_(pool),
       dispatch_(dispatch),
@@ -56,17 +56,18 @@ validate_transaction::validate_transaction(block_chain& chain,
 }
 
 validate_transaction::validate_transaction(block_chain& chain,
-        const chain::transaction& tx, const transaction_pool& pool,
-        dispatcher& dispatch)
-    : validate_transaction(chain,
-                           std::make_shared<message::transaction_message>(tx), pool, dispatch)
+    const chain::transaction& tx, const transaction_pool* pool,
+        dispatcher* dispatch)
+    : validate_transaction(chain, std::make_shared<message::transaction_message>(tx), pool, dispatch)
 {
 }
 
 void validate_transaction::start(validate_handler handler)
 {
+    BITCOIN_ASSERT(tx_ && pool_ && dispatch_);
+
     handle_validate_ = handler;
-    const auto ec = basic_checks(static_cast<blockchain::block_chain_impl&>(this->blockchain_));
+    const auto ec = basic_checks();
 
     if (ec) {
         if (ec == error::input_not_found) {
@@ -83,14 +84,14 @@ void validate_transaction::start(validate_handler handler)
     ///////////////////////////////////////////////////////////////////////////
     // Check for duplicates in the blockchain.
     blockchain_.fetch_transaction(tx_hash_,
-                                  dispatch_.unordered_delegate(
+                                  dispatch_->unordered_delegate(
                                       &validate_transaction::handle_duplicate_check,
                                       shared_from_this(), _1));
 }
 
-code validate_transaction::basic_checks(blockchain::block_chain_impl& chain) const
+code validate_transaction::basic_checks() const
 {
-    const auto ec = check_transaction(*tx_, chain);
+    const auto ec = check_transaction();
 
     if (ec)
         return ec;
@@ -105,7 +106,7 @@ code validate_transaction::basic_checks(blockchain::block_chain_impl& chain) con
     if (!is_standard())
         return error::is_not_standard;
 
-    if (pool_.is_in_pool(tx_hash_))
+    if (pool_->is_in_pool(tx_hash_))
         return error::duplicate;
 
     // Check for blockchain duplicates in start (after this returns).
@@ -130,7 +131,7 @@ void validate_transaction::handle_duplicate_check(
     }
 
     // TODO: we may want to allow spent-in-pool (RBF).
-    if (pool_.is_spent_in_pool(tx_))
+    if (pool_->is_spent_in_pool(tx_))
     {
         handle_validate_(error::double_spend, tx_, {});
         return;
@@ -138,7 +139,7 @@ void validate_transaction::handle_duplicate_check(
 
     // Check inputs, we already know it is not a coinbase tx.
     blockchain_.fetch_last_height(
-        dispatch_.unordered_delegate(&validate_transaction::set_last_height,
+        dispatch_->unordered_delegate(&validate_transaction::set_last_height,
                                      shared_from_this(), _1, _2));
 }
 
@@ -174,7 +175,7 @@ void validate_transaction::next_previous_transaction()
     // Needed for checking the coinbase maturity.
     blockchain_.fetch_transaction_index(
         tx_->inputs[current_input_].previous_output.hash,
-        dispatch_.unordered_delegate(
+        dispatch_->unordered_delegate(
             &validate_transaction::previous_tx_index,
             shared_from_this(), _1, _2));
 }
@@ -193,8 +194,20 @@ void validate_transaction::previous_tx_index(const code& ec,
 
     // Now fetch actual transaction body
     blockchain_.fetch_transaction(prev_tx_hash,
-                                  dispatch_.unordered_delegate(&validate_transaction::handle_previous_tx,
+                                  dispatch_->unordered_delegate(&validate_transaction::handle_previous_tx,
                                           shared_from_this(), _1, _2, parent_height));
+}
+
+int validate_transaction::get_previous_tx(chain::transaction& prev_tx,
+    uint64_t& prev_height, const chain::input& input) const
+{
+    if (blockchain_.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+        return 1; // find in transactions database
+    }
+    if (pool_ && pool_->find(prev_tx, input.previous_output.hash)) {
+        return 2; // find in memory pool
+    }
+    return 0; // failed
 }
 
 void validate_transaction::search_pool_previous_tx()
@@ -202,7 +215,7 @@ void validate_transaction::search_pool_previous_tx()
     transaction previous_tx;
     const auto& current_input = tx_->inputs[current_input_];
 
-    if (!pool_.find(previous_tx, current_input.previous_output.hash))
+    if (!pool_->find(previous_tx, current_input.previous_output.hash))
     {
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::input_not_found, tx_, list);
@@ -243,7 +256,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
 
     // Search for double spends...
     blockchain_.fetch_spend(tx_->inputs[current_input_].previous_output,
-                            dispatch_.unordered_delegate(&validate_transaction::check_double_spend,
+                            dispatch_->unordered_delegate(&validate_transaction::check_double_spend,
                                     shared_from_this(), _1, _2));
 }
 
@@ -268,7 +281,7 @@ void validate_transaction::check_double_spend(const code& ec,
     check_fees();
 }
 
-void validate_transaction::check_fees()
+void validate_transaction::check_fees() const
 {
     uint64_t fee = 0;
 
@@ -333,10 +346,11 @@ static bool check_same(std::string& dest, const std::string& src)
     return true;
 }
 
-code validate_transaction::check_secondaryissue_transaction(
-    const chain::transaction& tx,
-    blockchain::block_chain_impl& blockchain)
+code validate_transaction::check_secondaryissue_transaction() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& blockchain = blockchain_;
+
     bool is_asset_secondaryissue{false};
     for (auto& output : tx.outputs) {
         if (output.is_asset_secondaryissue()) {
@@ -460,8 +474,9 @@ code validate_transaction::check_secondaryissue_transaction(
     for (const auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!blockchain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-            log::debug(LOG_BLOCKCHAIN) << "secondaryissue: invalid input: " << encode_hash(input.previous_output.hash);
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "secondaryissue: input not found: "
+                                       << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -484,9 +499,11 @@ code validate_transaction::check_secondaryissue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_asset_issue_transaction(
-    const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_asset_issue_transaction() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     bool is_asset_issue{false};
     for (auto& output : tx.outputs) {
         if (output.is_asset_issue()) {
@@ -632,9 +649,11 @@ code validate_transaction::check_asset_issue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_asset_cert_issue_transaction(
-    const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_asset_cert_issue_transaction() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     bool is_cert_issue{false};
     for (auto& output : tx.outputs) {
         if (output.is_asset_cert_issue()) {
@@ -757,9 +776,11 @@ code validate_transaction::check_asset_cert_issue_transaction(
     return error::success;
 }
 
-code validate_transaction::check_asset_mit_register_transaction(
-    const chain::transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_asset_mit_register_transaction() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     bool is_asset_mit_register{false};
     for (auto& output : tx.outputs) {
         if (output.is_asset_mit_register()) {
@@ -805,7 +826,9 @@ code validate_transaction::check_asset_mit_register_transaction(
     for (const auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "registermit: input not found: "
+                                       << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -822,10 +845,11 @@ code validate_transaction::check_asset_mit_register_transaction(
     return error::success;
 }
 
-code validate_transaction::check_did_transaction(
-    const chain::transaction& tx,
-    blockchain::block_chain_impl& chain)
+code validate_transaction::check_did_transaction() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     code ret = error::success;
 
     uint8_t type = 255;
@@ -840,7 +864,7 @@ code validate_transaction::check_did_transaction(
             return ret;
 
         //from_did (weak check)
-        if ((ret = connect_input_address_match_did(tx, chain, output)) != error::success) {
+        if ((ret = connect_input_address_match_did(output)) != error::success) {
             return ret;
         }
 
@@ -862,7 +886,7 @@ code validate_transaction::check_did_transaction(
             }
             type = DID_DETAIL_TYPE;
 
-            if (!connect_did_input(tx, chain, boost::get<did>(output.get_did()))) {
+            if (!connect_did_input(boost::get<did>(output.get_did()))) {
                 return error::did_input_error;
             }
         }
@@ -881,7 +905,7 @@ code validate_transaction::check_did_transaction(
             }
             type = DID_TRANSFERABLE_TYPE;
 
-            if (!connect_did_input(tx, chain, boost::get<did>(output.get_did()))) {
+            if (!connect_did_input(boost::get<did>(output.get_did()))) {
                 return error::did_input_error;
             }
         }
@@ -911,10 +935,11 @@ code validate_transaction::check_did_transaction(
     return ret;
 }
 
-bool validate_transaction::connect_did_input(
-    const chain::transaction& tx,
-    blockchain::block_chain_impl& chain,
-    did info) {
+bool validate_transaction::connect_did_input(const did& info) const
+{
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     if (info.get_status() ==  DID_TRANSFERABLE_TYPE && tx.inputs.size() != 2) {
         return false;
     }
@@ -926,7 +951,9 @@ bool validate_transaction::connect_did_input(
     for (const auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "connect_did_input: input not found: "
+                                       << encode_hash(input.previous_output.hash);
             return false;
         }
 
@@ -951,11 +978,11 @@ bool validate_transaction::connect_did_input(
            || (found_address_info && info.get_status() ==  DID_DETAIL_TYPE);
 }
 
-code validate_transaction::connect_input_address_match_did(
-    const chain::transaction& tx,
-    blockchain::block_chain_impl& chain,
-    const output& output)
+code validate_transaction::connect_input_address_match_did(const output& output) const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     const attachment& attach = output.attach_data;
 
     if (attach.get_from_did().empty()) {
@@ -966,8 +993,10 @@ code validate_transaction::connect_input_address_match_did(
     {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
-        if (!chain.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-             return error::success;
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "connect_input_address_match_did: input not found: "
+                                       << encode_hash(input.previous_output.hash);
+            return error::input_not_found;
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -981,38 +1010,42 @@ code validate_transaction::connect_input_address_match_did(
     return error::did_address_not_match;
 }
 
-code validate_transaction::check_transaction(const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_transaction() const
 {
     code ret = error::success;
-    if ((ret = check_transaction_basic(tx, chain)) != error::success) {
+
+    if ((ret = check_transaction_basic()) != error::success) {
         return ret;
     }
 
-    if ((ret = check_asset_issue_transaction(tx, chain)) != error::success) {
+    if ((ret = check_asset_issue_transaction()) != error::success) {
         return ret;
     }
 
-    if ((ret = check_asset_cert_issue_transaction(tx, chain)) != error::success) {
+    if ((ret = check_asset_cert_issue_transaction()) != error::success) {
         return ret;
     }
 
-    if ((ret = check_secondaryissue_transaction(tx, chain)) != error::success) {
+    if ((ret = check_secondaryissue_transaction()) != error::success) {
         return ret;
     }
 
-    if ((ret = check_asset_mit_register_transaction(tx, chain)) != error::success) {
+    if ((ret = check_asset_mit_register_transaction()) != error::success) {
         return ret;
     }
 
-    if ((ret = check_did_transaction(tx, chain)) != error::success) {
+    if ((ret = check_did_transaction()) != error::success) {
         return ret;
     }
 
     return ret;
 }
 
-code validate_transaction::check_transaction_basic(const transaction& tx, blockchain::block_chain_impl& chain)
+code validate_transaction::check_transaction_basic() const
 {
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+
     if (tx.version >= transaction_version::max_version) {
         return error::transaction_version_error;
     }
@@ -1108,7 +1141,9 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
                 uint64_t current_blockheight = 0;
 
                 chain.get_last_height(current_blockheight);
-                if (chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash) == false) {
+                if (!get_previous_tx(prev_tx, prev_output_blockheight, input)) {
+                    log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic deposit : input not found: "
+                                               << encode_hash(input.previous_output.hash);
                     return error::input_not_found;
                 }
 
@@ -1131,7 +1166,7 @@ code validate_transaction::check_transaction_basic(const transaction& tx, blockc
         }
 
         if (tx.version >= transaction_version::check_nova_feature) {
-            code err_code = attenuation_model::check_model_param(tx, chain);
+            code err_code = attenuation_model::check_model_param(*this);
             if (err_code != error::success) {
                 if (err_code == error::attenuation_model_param_error) {
                     log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic: model param check failed" << tx.to_string(1);
@@ -1345,7 +1380,7 @@ bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
     return total_fees <= max_money();
 }
 
-bool validate_transaction::check_asset_amount(const transaction& tx)
+bool validate_transaction::check_asset_amount(const transaction& tx) const
 {
     const auto asset_amount_out = tx.total_output_transfer_amount();
     if (asset_amount_in_ != asset_amount_out) // asset amount must be equal
@@ -1354,7 +1389,7 @@ bool validate_transaction::check_asset_amount(const transaction& tx)
     return true;
 }
 
-bool validate_transaction::check_asset_symbol(const transaction& tx)
+bool validate_transaction::check_asset_symbol(const transaction& tx) const
 {
     // check asset symbol in out
     std::string old_symbol = "";
@@ -1375,7 +1410,7 @@ bool validate_transaction::check_asset_symbol(const transaction& tx)
     return true;
 }
 
-bool validate_transaction::check_asset_certs(const transaction& tx)
+bool validate_transaction::check_asset_certs(const transaction& tx) const
 {
     bool is_cert_transfer = false;
     std::vector<asset_cert_type> asset_certs_out;
@@ -1432,7 +1467,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx)
     return asset_cert::test_certs(asset_certs_out, asset_certs_in_);
 }
 
-bool validate_transaction::check_asset_mit(const transaction& tx)
+bool validate_transaction::check_asset_mit(const transaction& tx) const
 {
     size_t num_mit = 0;
     for (auto& output : tx.outputs) {
@@ -1454,7 +1489,7 @@ bool validate_transaction::check_asset_mit(const transaction& tx)
     return (num_mit == 1);
 }
 
-bool validate_transaction::check_did_symbol_match(const transaction& tx)
+bool validate_transaction::check_did_symbol_match(const transaction& tx) const
 {
     // check did symbol in out
     std::string old_symbol = "";

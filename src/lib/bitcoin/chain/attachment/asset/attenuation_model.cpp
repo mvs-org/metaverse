@@ -21,6 +21,7 @@
 #include <metaverse/bitcoin/chain/attachment/asset/attenuation_model.hpp>
 #include <metaverse/bitcoin/utility/string.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/blockchain/validate_transaction.hpp>
 #include <unordered_map>
 #include <memory>
 
@@ -864,8 +865,11 @@ bool attenuation_model::validate_model_param(const data_chunk& param, uint64_t t
     return true;
 }
 
-code attenuation_model::check_model_param(const transaction& tx, const blockchain::block_chain_impl& chain)
+code attenuation_model::check_model_param(const blockchain::validate_transaction& validate_tx)
 {
+    const transaction& tx = validate_tx.get_tx();
+    const blockchain::block_chain_impl& chain = validate_tx.get_blockchain();
+
     if (tx.version < transaction_version::check_nova_feature) {
         return error::success;
     }
@@ -883,9 +887,9 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
             return error::previous_output_null;
         }
 
-        uint64_t prev_output_blockheight = 0;
         chain::transaction prev_tx;
-        if (!chain.get_transaction(prev_tx, prev_output_blockheight, input.previous_output.hash)) {
+        uint64_t prev_height = 0;
+        if (!validate_tx.get_previous_tx(prev_tx, prev_height, input)) {
             continue;
         }
 
@@ -894,7 +898,7 @@ code attenuation_model::check_model_param(const transaction& tx, const blockchai
             continue;
         }
 
-        ext_input_point prev{input.previous_output, prev_output, prev_output_blockheight};
+        ext_input_point prev{input.previous_output, prev_output, prev_height};
         vec_prev_input.emplace_back(prev);
     }
 
