@@ -677,11 +677,11 @@ class BCX_API registering_mit : public base_transfer_helper
 public:
     registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, std::string&& content,
+        std::string&& from, std::string&& symbol, std::map<std::string, std::string>&& mit_map,
         receiver_record::list&& receiver_list, uint64_t fee)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
-        , content_(content)
+        , mit_map_(mit_map)
     {}
 
     ~registering_mit()
@@ -695,7 +695,7 @@ public:
     attachment populate_output_attachment(const receiver_record& record) override;
 
 private:
-    std::string content_;
+    std::map<std::string, std::string> mit_map_;
 };
 
 class BCX_API transferring_mit : public base_multisig_transfer_helper

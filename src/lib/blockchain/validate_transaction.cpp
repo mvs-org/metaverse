@@ -27,6 +27,7 @@
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
+#include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
@@ -45,20 +46,24 @@ using namespace std::placeholders;
 static constexpr uint32_t max_transaction_size = 1000000;
 
 validate_transaction::validate_transaction(block_chain& chain,
-        transaction_ptr tx, const transaction_pool* pool,
-        dispatcher* dispatch)
+    const chain::transaction& tx, const validate_block& validate_block)
     : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
-      tx_(tx),
-      pool_(pool),
-      dispatch_(dispatch),
-      tx_hash_(tx->hash())
+      tx_(std::make_shared<message::transaction_message>(tx)),
+      pool_(nullptr),
+      dispatch_(nullptr),
+      validate_block_(&validate_block),
+      tx_hash_(tx.hash())
 {
 }
 
 validate_transaction::validate_transaction(block_chain& chain,
-    const chain::transaction& tx, const transaction_pool* pool,
-        dispatcher* dispatch)
-    : validate_transaction(chain, std::make_shared<message::transaction_message>(tx), pool, dispatch)
+    const chain::transaction& tx, const transaction_pool& pool, dispatcher& dispatch)
+    : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
+      tx_(std::make_shared<message::transaction_message>(tx)),
+      pool_(&pool),
+      dispatch_(&dispatch),
+      validate_block_(nullptr),
+      tx_hash_(tx.hash())
 {
 }
 
@@ -143,15 +148,8 @@ void validate_transaction::handle_duplicate_check(
                                      shared_from_this(), _1, _2));
 }
 
-void validate_transaction::set_last_height(const code& ec,
-        size_t last_height)
+void validate_transaction::reset(size_t last_height)
 {
-    if (ec)
-    {
-        handle_validate_(ec, tx_, {});
-        return;
-    }
-
     // Used for checking coinbase maturity
     last_block_height_ = last_height;
     current_input_ = 0;
@@ -161,6 +159,18 @@ void validate_transaction::set_last_height(const code& ec,
     old_symbol_in_ = "";
     new_symbol_in_ = "";
     business_kind_in_ = business_kind::etp;
+}
+
+void validate_transaction::set_last_height(const code& ec,
+        size_t last_height)
+{
+    if (ec)
+    {
+        handle_validate_(ec, tx_, {});
+        return;
+    }
+
+    reset(last_height);
 
     // Begin looping through the inputs, fetching the previous tx.
     if (!tx_->inputs.empty())
@@ -198,16 +208,24 @@ void validate_transaction::previous_tx_index(const code& ec,
                                           shared_from_this(), _1, _2, parent_height));
 }
 
-int validate_transaction::get_previous_tx(chain::transaction& prev_tx,
+bool validate_transaction::get_previous_tx(chain::transaction& prev_tx,
     uint64_t& prev_height, const chain::input& input) const
 {
-    if (blockchain_.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-        return 1; // find in transactions database
+    prev_height = 0;
+    if (pool_) {
+        if (blockchain_.get_transaction(input.previous_output.hash, prev_tx, prev_height)) {
+            return true; // find in block chain or memory pool
+        }
     }
-    if (pool_ && pool_->find(prev_tx, input.previous_output.hash)) {
-        return 2; // find in memory pool
+    else {
+        size_t temp_height = 0;
+        if (validate_block_ &&
+            validate_block_->get_transaction(input.previous_output.hash, prev_tx, temp_height)) {
+            prev_height = temp_height;
+            return true; // find in block chain or orphan pool
+        }
     }
-    return 0; // failed
+    return false; // failed
 }
 
 void validate_transaction::search_pool_previous_tx()
@@ -244,10 +262,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
     ///////////////////////////////////////////////////////////////////////////
 
     // Should check if inputs are standard here...
-    if (!connect_input(*tx_, current_input_, previous_tx, parent_height,
-                       last_block_height_, value_in_, script_context::all_enabled,
-                       asset_amount_in_, asset_certs_in_,
-                       old_symbol_in_, new_symbol_in_, business_kind_in_))
+    if (!connect_input(previous_tx, parent_height))
     {
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
@@ -283,12 +298,24 @@ void validate_transaction::check_double_spend(const code& ec,
 
 void validate_transaction::check_fees() const
 {
+    code ec = check_tx_connect_input();
+    if (ec != error::success) {
+        handle_validate_(ec, tx_, {});
+        return;
+    }
+
+    // Who cares?
+    // Fuck the police
+    // Every tx equal!
+    handle_validate_(error::success, tx_, unconfirmed_);
+}
+
+code validate_transaction::check_tx_connect_input() const
+{
     uint64_t fee = 0;
 
-    if (!tally_fees(*tx_, value_in_, fee))
-    {
-        handle_validate_(error::fees_out_of_range, tx_, {});
-        return;
+    if (!tally_fees(*tx_, value_in_, fee)) {
+        return error::fees_out_of_range;
     }
 
     auto is_asset_type = (business_kind_in_ == business_kind::asset_issue)
@@ -296,27 +323,23 @@ void validate_transaction::check_fees() const
     if (is_asset_type) {
         if (tx_->has_asset_transfer()) {
             if (!check_asset_amount(*tx_)) {
-                handle_validate_(error::asset_amount_not_equal, tx_, {});
-                return;
+                return error::asset_amount_not_equal;
             }
             if (!check_asset_symbol(*tx_)) {
-                handle_validate_(error::asset_symbol_not_match, tx_, {});
-                return;
+                return error::asset_symbol_not_match;
             }
         }
     }
     else if (business_kind_in_ == business_kind::asset_cert) {
         if (!check_asset_certs(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check asset cert." << tx_->to_string(1);
-            handle_validate_(error::asset_cert_error, tx_, {});
-            return;
+            return error::asset_cert_error;
         }
     }
     else if (business_kind_in_ == business_kind::asset_mit) {
         if (!check_asset_mit(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check MIT token." << tx_->to_string(1);
-            handle_validate_(error::mit_error, tx_, {});
-            return;
+            return error::mit_error;
         }
     }
 
@@ -324,15 +347,11 @@ void validate_transaction::check_fees() const
                        || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
         if (!check_did_symbol_match(*tx_)) {
-            handle_validate_(error::did_symbol_not_match, tx_, {});
-            return;
+            return error::did_symbol_not_match;
         }
     }
 
-    // Who cares?
-    // Fuck the police
-    // Every tx equal!
-    handle_validate_(error::success, tx_, unconfirmed_);
+    return error::success;
 }
 
 static bool check_same(std::string& dest, const std::string& src)
@@ -776,28 +795,32 @@ code validate_transaction::check_asset_cert_issue_transaction() const
     return error::success;
 }
 
-code validate_transaction::check_asset_mit_register_transaction() const
+code validate_transaction::check_asset_mit_transaction() const
 {
     const chain::transaction& tx = *tx_;
     blockchain::block_chain_impl& chain = blockchain_;
 
-    bool is_asset_mit_register{false};
+    bool is_asset_mit{false};
     for (auto& output : tx.outputs) {
-        if (output.is_asset_mit_register()) {
-            is_asset_mit_register = true;
+        if (output.is_asset_mit()) {
+            is_asset_mit = true;
             break;
         }
     }
 
-    if (!is_asset_mit_register) {
+    if (!is_asset_mit) {
         return error::success;
     }
 
     std::string asset_symbol;
     std::string asset_address;
+    size_t num_mit_transfer = 0;
+    size_t num_mit_register = 0;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_mit_register()) {
+            ++num_mit_register;
+
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
 
@@ -815,31 +838,78 @@ code validate_transaction::check_asset_mit_register_transaction() const
                 return error::mit_exist;
             }
         }
-        else if (!output.is_etp() && !output.is_message()) {
-            log::debug(LOG_BLOCKCHAIN) << "registermit: illega output, "
+        else if (output.is_asset_mit_transfer()) {
+            if (++num_mit_transfer > 1) {
+                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: more than on MIT output." << output.to_string(1);
+                return error::mit_error;
+            }
+
+            auto&& asset_info = output.get_asset_mit();
+            asset_symbol = asset_info.get_symbol();
+
+            // check asset exists
+            if (nullptr == chain.get_registered_mit(asset_symbol)) {
+                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
+                                           << asset_symbol << " not exists.";
+                return error::mit_exist;
+            }
+        }
+        else if (output.is_etp()) {
+            if (!check_same(asset_address, output.get_script_address())) {
+                log::debug(LOG_BLOCKCHAIN) << "MIT: "
+                                           << " address is not same. "
+                                           << asset_address << " != " << output.get_script_address();
+                return error::mit_register_error;
+            }
+        }
+        else if (!output.is_message()) {
+            log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
                                        << asset_symbol << " : " << output.to_string(1);
-            return error::mit_register_error;
+            return error::mit_error;
         }
     }
 
-    // check inputs etp address
+    if ((num_mit_register == 0 && num_mit_transfer == 0)
+        || (num_mit_register > 0 && num_mit_transfer > 0)) {
+        log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output.";
+        return error::mit_error;
+    }
+
+    // check inputs
+    bool has_input_transfer = false;
     for (const auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "registermit: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "mit: input not found: "
                                        << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
+
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         if (prev_output.is_etp()) {
             auto&& asset_address_in = prev_output.get_script_address();
             if (asset_address != asset_address_in) {
-                log::debug(LOG_BLOCKCHAIN) << "registermit: invalid input address to pay fee, "
+                log::debug(LOG_BLOCKCHAIN) << "mit: invalid input address to pay fee: "
                                             << asset_address_in << " != " << asset_address;
                 return error::validate_inputs_failed;
             }
         }
+        else if (prev_output.is_asset_mit()) {
+            auto&& asset_info = prev_output.get_asset_mit();
+            if (asset_symbol != asset_info.get_symbol()) {
+                log::debug(LOG_BLOCKCHAIN) << "mit: invalid MIT to transfer: "
+                                            << asset_info.get_symbol() << " != " << asset_symbol;
+                return error::validate_inputs_failed;
+            }
+
+            has_input_transfer = true;
+        }
+    }
+
+    if (num_mit_transfer > 0 && !has_input_transfer) {
+        log::debug(LOG_BLOCKCHAIN) << "mit: not input MIT to transfer " << asset_symbol;
+        return error::validate_inputs_failed;
     }
 
     return error::success;
@@ -1002,12 +1072,37 @@ code validate_transaction::connect_input_address_match_did(const output& output)
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
         if (attach.get_from_did() == chain.get_did_from_address(address)) {
-            return error::success;     
+            return error::success;
         }
     }
 
 
     return error::did_address_not_match;
+}
+
+code validate_transaction::check_transaction_connect_input(size_t last_height)
+{
+    if (last_height == 0 || tx_->is_coinbase()) {
+        return error::success;
+    }
+
+    reset(last_height);
+
+    for (const auto& input : tx_->inputs) {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "check_transaction_connect_input: input not found: "
+                                       << encode_hash(input.previous_output.hash);
+            return error::input_not_found;
+        }
+        if (!connect_input(prev_tx, prev_height)) {
+            return error::validate_inputs_failed;
+        }
+        ++current_input_;
+    }
+
+    return check_tx_connect_input();
 }
 
 code validate_transaction::check_transaction() const
@@ -1022,20 +1117,26 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
-    if ((ret = check_asset_cert_issue_transaction()) != error::success) {
-        return ret;
-    }
+    if (tx_->version >= transaction_version::check_nova_feature) {
+        if ((ret = check_asset_cert_issue_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_secondaryissue_transaction()) != error::success) {
-        return ret;
-    }
+        if ((ret = check_secondaryissue_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_asset_mit_register_transaction()) != error::success) {
-        return ret;
-    }
+        if ((ret = check_asset_mit_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_did_transaction()) != error::success) {
-        return ret;
+        if ((ret = check_did_transaction()) != error::success) {
+            return ret;
+        }
+
+        if ((ret = attenuation_model::check_model_param(*this)) != error::success) {
+            return ret;
+        }
     }
 
     return ret;
@@ -1164,16 +1265,6 @@ code validate_transaction::check_transaction_basic() const
                 }
             }
         }
-
-        if (tx.version >= transaction_version::check_nova_feature) {
-            code err_code = attenuation_model::check_model_param(*this);
-            if (err_code != error::success) {
-                if (err_code == error::attenuation_model_param_error) {
-                    log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic: model param check failed" << tx.to_string(1);
-                }
-                return err_code;
-            }
-        }
     }
 
     return error::success;
@@ -1230,15 +1321,10 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     return valid;
 }
 
-bool validate_transaction::connect_input(const transaction& tx,
-        size_t current_input, const transaction& previous_tx,
-        size_t parent_height, size_t last_block_height, uint64_t& value_in,
-        uint32_t flags, uint64_t& asset_amount_in,
-        std::vector<asset_cert_type>& asset_certs_in,
-        std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in)
+bool validate_transaction::connect_input( const transaction& previous_tx, size_t parent_height)
 {
-    const auto& input = tx.inputs[current_input];
-    const auto& previous_outpoint = tx.inputs[current_input].previous_output;
+    const auto& input = tx_->inputs[current_input_];
+    const auto& previous_outpoint = input.previous_output;
 
     if (previous_outpoint.index >= previous_tx.outputs.size()) {
         log::debug(LOG_BLOCKCHAIN) << "output point index outof bounds!";
@@ -1255,114 +1341,88 @@ bool validate_transaction::connect_input(const transaction& tx,
     asset_cert_type asset_certs = asset_cert_ns::none;
     uint64_t asset_transfer_amount = 0;
     if (previous_output.is_asset()) {
+        auto new_symbol_in = previous_output.get_asset_symbol();
         // 1. do asset transfer amount check
         asset_transfer_amount = previous_output.get_asset_amount();
 
         // 2. do asset symbol check
-        new_symbol_in = previous_output.get_asset_symbol();
-        if (!new_symbol_in.empty()) { // asset input
-            if (old_symbol_in.empty()) { // init old symbol
-                old_symbol_in = new_symbol_in;
-            }
-            else {
-                // there are different asset symbol in this transaction
-                if (old_symbol_in != new_symbol_in)
-                    return false;
-            }
+        if (!check_same(old_symbol_in_, new_symbol_in)) {
+            return false;
+        }
+        // check forbidden symbol
+        if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
+            return false;
         }
 
         // 3. set business type
         if (previous_output.is_asset_issue() || previous_output.is_asset_secondaryissue())
-            business_kind_in = business_kind::asset_issue;
+            business_kind_in_ = business_kind::asset_issue;
         else if (previous_output.is_asset_transfer())
-            business_kind_in = business_kind::asset_transfer;
+            business_kind_in_ = business_kind::asset_transfer;
     }
     else if (previous_output.is_asset_cert()) {
-        business_kind_in = business_kind::asset_cert;
-        new_symbol_in = previous_output.get_asset_symbol();
+        business_kind_in_ = business_kind::asset_cert;
+        auto new_symbol_in = previous_output.get_asset_symbol();
         asset_certs = previous_output.get_asset_cert_type();
 
-        if (old_symbol_in.empty()) { // init old symbol
-            old_symbol_in = new_symbol_in;
+        if (old_symbol_in_.empty()) { // init old symbol
+            old_symbol_in_ = new_symbol_in;
         }
         else {
-            if (asset_cert::test_certs(asset_certs_in, asset_cert_ns::domain)) {
-                auto&& domain = asset_cert::get_domain(old_symbol_in);
+            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
+                auto&& domain = asset_cert::get_domain(old_symbol_in_);
                 if (domain != previous_output.get_asset_cert_symbol()) {
                     return false;
                 }
             }
-            else if (old_symbol_in != new_symbol_in) { // asset symbol must be same
+            else if (old_symbol_in_ != new_symbol_in) { // asset symbol must be same
                 return false;
             }
         }
 
-        if (asset_cert::test_certs(asset_certs_in, asset_certs)) { // double certs exists
+        if (asset_cert::test_certs(asset_certs_in_, asset_certs)) { // double certs exists
             return false;
         }
     }
     else if (previous_output.is_asset_mit()) {
-        business_kind_in = business_kind::asset_mit;
-        new_symbol_in = previous_output.get_asset_symbol();
-
-        if (old_symbol_in.empty()) { // init old symbol
-            old_symbol_in = new_symbol_in;
-        }
-        else {
-            if (old_symbol_in != new_symbol_in) { // asset symbol must be same
-                return false;
-            }
+        business_kind_in_ = business_kind::asset_mit;
+        if (!check_same(old_symbol_in_, previous_output.get_asset_symbol())) {
+            return false;
         }
     }
     else if (previous_output.is_did()) {
-        // 2. do did symbol check
-        new_symbol_in = previous_output.get_did_symbol();
-        if (!new_symbol_in.empty()) { // did input
-            if (old_symbol_in.empty()) { // init old symbol
-                old_symbol_in = new_symbol_in;
-            }
-            else {
-                // there are different did symbol in this transaction
-                if (old_symbol_in != new_symbol_in) {
-                    return false;
-                }
-            }
+        // 1. do did symbol check
+        if (!check_same(old_symbol_in_, previous_output.get_did_symbol())) {
+            return false;
         }
 
-        // 3. set business type
+        // 2. set business type
         if (previous_output.is_did_register()) {
-            business_kind_in = business_kind::did_register;
+            business_kind_in_ = business_kind::did_register;
         }
         else if (previous_output.is_did_transfer()) {
-            business_kind_in = business_kind::did_transfer;
+            business_kind_in_ = business_kind::did_transfer;
         }
     }
 
     if (previous_tx.is_coinbase()) {
-        const auto height_difference = last_block_height - parent_height;
+        const auto height_difference = last_block_height_ - parent_height;
         if (height_difference < coinbase_maturity) {
             return false;
         }
     }
 
-    // check forbidden symbol
-    if (previous_output.is_asset()) {
-        if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
-            return false;
-        }
-    }
-
-    if (!check_consensus(previous_output.script, tx, current_input, flags)) {
+    if (!check_consensus(previous_output.script, *tx_, current_input_, script_context::all_enabled)) {
         log::debug(LOG_BLOCKCHAIN) << "check_consensus failed";
         return false;
     }
 
-    value_in += output_value;
-    asset_amount_in += asset_transfer_amount;
+    value_in_ += output_value;
+    asset_amount_in_ += asset_transfer_amount;
     if (asset_certs != asset_cert_ns::none) {
-        asset_certs_in.push_back(asset_certs);
+        asset_certs_in_.push_back(asset_certs);
     }
-    return value_in <= max_money();
+    return value_in_ <= max_money();
 }
 
 bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,

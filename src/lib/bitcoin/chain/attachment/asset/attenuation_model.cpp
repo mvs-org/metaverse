@@ -890,7 +890,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
         chain::transaction prev_tx;
         uint64_t prev_height = 0;
         if (!validate_tx.get_previous_tx(prev_tx, prev_height, input)) {
-            continue;
+            return error::input_not_found;
         }
 
         const auto& prev_output = prev_tx.outputs.at(input.previous_output.index);
@@ -955,7 +955,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
 
         if (real_diff_height > curr_diff_height) {
             log::debug(LOG_HEADER) << "check diff height failed, "
-                << real_diff_height << ", curr diff is" << curr_diff_height;
+                << real_diff_height << ", curr diff is " << curr_diff_height;
             return error::attenuation_model_param_error;
         }
 
@@ -990,7 +990,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
         auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
         if (real_diff_height > curr_diff_height) {
             log::debug(LOG_HEADER) << "check diff height failed for all spendable, "
-                << real_diff_height << ", curr diff is" << curr_diff_height;
+                << real_diff_height << ", curr diff is " << curr_diff_height;
             return error::attenuation_model_param_error;
         }
     }
@@ -1027,7 +1027,7 @@ uint64_t attenuation_model::get_diff_height(const data_chunk& prev_param, const 
     }
 
     if (PN == PN2) {
-        if (LH <= LH2) {
+        if (LH < LH2) {
             return max_uint64;
         }
         return LH - LH2;

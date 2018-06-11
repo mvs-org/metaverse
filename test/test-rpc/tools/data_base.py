@@ -129,7 +129,7 @@ class RowsManager:
         next = read_index
         while next <> 0xFFFFFFFF:
             assert (next < self.max_record_count)
-            self.rows += 1
+
 
             self.fr.seek( 4 + self.record_size * next )
             next_ = str2int( self.fr.read(4) )
@@ -140,20 +140,12 @@ class RowsManager:
             else:
                 next = next_
 
-            if next <> 0xFFFFFFFF:
-                self.fw.write(int2str(self.rows, 4))
+            self.rows += 1
+            if next == 0xFFFFFFFF:
+                self.fw.write(int2str(0xFFFFFFFF, 4))
             else:
-                self.fw.write(int2str(next, 4))
+                self.fw.write(int2str(self.rows, 4))
             self.fw.write(value)
-
-
-
-    #def write(self):
-    #    self.fw.write(int2str(len(self.rows), 4))
-    #    for row in self.rows:
-    #        self.fr.seek(4 + self.record_size * row)
-    #        value = self.fr.read(self.record_size)
-    #        self.fw.write(value)
 
 class account_table:
     def __init__(self):
@@ -315,6 +307,43 @@ class asset_table(account_table):
         description_len = get_var_len(ff, extra_padding.append)
         assert (0 <= description_len <= 100) # optional
         description = ff.read(description_len)
+
+        end = ff.tell()
+        return begin, end
+
+class mit_table(account_table):
+    def __init__(self):
+        self.filename = 'mit_table'
+        self.header = Header(8, 4)
+        self.slab = Slab(32, 8, self.parse_value_func)
+
+    @classmethod
+    def parse_value_func(cls, ff):
+        begin = ff.tell()
+        extra_padding = []
+
+        output_height =  ff.read(4)
+        timestamp = ff.read(4)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        to_did = ff.read(length)
+
+        status_ = str2int( ff.read(1) )
+        assert (0<= status_ < 4)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        symbol_ = ff.read(length)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        address_ = ff.read(length)
+
+        if status_ == 1:
+            length = get_var_len(ff, extra_padding.append)
+            assert (0 <= length <= 256)
+            content_ = ff.read(length)
 
         end = ff.tell()
         return begin, end
@@ -558,6 +587,40 @@ class transaction_table(account_table):
         end = ff.tell()
         return begin, end
 
+class block_table(account_table):
+    def __init__(self):
+        self.filename = 'block_table'
+        self.header = Header(8, 4)
+        self.slab = Slab(32, 8, self.parse_value_func)
+
+    @classmethod
+    def parse_value_func(cls, ff):
+        begin = ff.tell()
+
+        extra_padding = []
+        # header
+        #### 4 byte version
+        version = ff.read(4)
+        previous_block_hash = ff.read(32)
+        merkle = ff.read(32)
+        timestamp = ff.read(4)
+        bits = ff.read(32)
+        nonce = ff.read(8)
+        mixhash = ff.read(32)
+
+        number = ff.read(4)
+        # header end
+
+        height32 = ff.read(4)
+        tx_count32 = str2int( ff.read(4) )
+
+        # transactions
+        for i in xrange(tx_count32):
+            tx_hash = ff.read(32)
+
+        end = ff.tell()
+        return begin, end
+
 class address_did_table:
     def __init__(self):
         self.table_filename = 'address_did_table'
@@ -594,7 +657,6 @@ class address_did_table:
 
             next = offset
 
-            buffer = []
             while next != hm.INT_OFFSET_NULL:
                 assert (next < self.header.payload_size)
 
@@ -602,13 +664,8 @@ class address_did_table:
                 key = fr_table.read(self.record.size_of_key)
                 next = str2int( fr_table.read(self.record.size_of_next) )
 
-                value=  fr_table.read(self.record.size_of_value)
+                value = fr_table.read(self.record.size_of_value)
 
-                buffer.append( (key, next, value) )
-
-            buffer.sort(key = lambda x: x[0])
-
-            for key, next, value in buffer:
                 payload_size += 1
 
                 fw_body.write(key)
@@ -620,6 +677,7 @@ class address_did_table:
                 fw_body.write( int2str(rm.rows, self.record.size_of_value) )
                 rm.append_row(str2int(value))
         print 'total rows:', rm.rows
+        assert (rm.rows <= rm.max_record_count)
 
         hm.append_slot(self.header.bucket_size - 1, hm.INT_OFFSET_NULL)
         fw_head.write('\x00' * self.header.extra_bytes)
@@ -651,6 +709,16 @@ class address_asset_table(address_did_table):
         self.header = Header(4, 0)
         self.record = Record(20, 4, 4)
 
+class address_mit_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'address_mit_table'
+        self.row_filename = 'address_mit_row'
+
+        self.size_of_record = 220  # record row size
+
+        self.header = Header(4, 0)
+        self.record = Record(20, 4, 4)
+
 class history_table(address_did_table):
     def __init__(self):
         self.table_filename = 'history_table'
@@ -661,11 +729,42 @@ class history_table(address_did_table):
         self.header = Header(4, 0)
         self.record = Record(20, 4, 4)
 
+class mit_history_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'mit_history_table'
+        self.row_filename = 'mit_history_row'
 
-all_tables = [account_table, asset_table, cert_table, did_table, transaction_table,
-              address_did_table, account_address_table, address_asset_table, history_table]
+        self.size_of_record = 237  # record row size
 
+        self.header = Header(4, 0)
+        self.record = Record(20, 4, 4)
 
+class spend_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'spend_table'
+        self.row_filename = ''
+
+        self.size_of_record = 0  # record row size
+
+        self.header = Header(4, 0)
+        self.record = Record(36, 4, 36)
+
+all_tables = [account_table, asset_table, cert_table, did_table, transaction_table, block_table, mit_table,
+              address_did_table, account_address_table, address_asset_table, address_mit_table, history_table, mit_history_table]
+
+def GetFileMd5(filename):
+    import hashlib
+    if not os.path.isfile(filename):
+        return
+    myhash = hashlib.md5()
+    f = file(filename,'rb')
+    while True:
+        b = f.read(8096)
+        if not b :
+            break
+        myhash.update(b)
+    f.close()
+    return myhash.hexdigest()
 
 def crc32(filepath):
     block_size = 1024 * 1024
@@ -698,7 +797,7 @@ if __name__ == "__main__":
     #data = at.query("422e2ea8ac1d333b61672044ad7e83b384c7ee621632fbe83dca0510278f7616", mainnet_dir)
     #print to_string(data)
 
-    for table in [address_asset_table]:#all_tables:
+    for table in all_tables: #[address_asset_table]:
         t = table()
         print "begin to re_arrage: ", t.__class__
         t.re_arrange(mainnet_dir)
@@ -706,5 +805,5 @@ if __name__ == "__main__":
     ret = {}
     for i in os.listdir('.'):
         if i[-5:] in ("_head", "_body", "_rows"):
-            ret[i] = crc32(i)
+            ret[i] = GetFileMd5(i)
     print ret

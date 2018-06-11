@@ -1028,9 +1028,14 @@ void data_base::pop_outputs(const output::list& outputs, size_t height)
             auto address_str = address.encoded();
             data_chunk data(address_str.begin(), address_str.end());
             short_hash hash = ripemd160_hash(data);
-            address_assets.delete_last_row(hash);
-            // remove asset or did from database
             bc::chain::output op = *output;
+            // NOTICE: pop only the pushed row, at present did and mit is
+            // not stored in address_asset, but stored separately
+            // in address_did and address_did
+            if (!op.is_did() && !op.is_asset_mit()) {
+                address_assets.delete_last_row(hash);
+            }
+            // remove asset or did from database
             if (op.is_asset_issue() || op.is_asset_secondaryissue()) {
                 auto symbol = op.get_asset_symbol();
                 const data_chunk& symbol_data = data_chunk(symbol.begin(), symbol.end());
