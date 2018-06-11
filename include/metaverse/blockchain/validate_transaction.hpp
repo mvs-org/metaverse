@@ -58,6 +58,7 @@ public:
         const chain::transaction& current_tx, size_t input_index,
         uint32_t flags);
 
+    code check_transaction_connect_input(size_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
     code check_asset_issue_transaction() const;
@@ -94,6 +95,7 @@ private:
     code basic_checks() const;
     bool is_standard() const;
     void handle_duplicate_check(const code& ec);
+    void reset(size_t last_height);
 
     // Last height used for checking coinbase maturity.
     void set_last_height(const code& ec, size_t last_height);
@@ -112,6 +114,7 @@ private:
     // is_spent() earlier already checked in the pool.
     void check_double_spend(const code& ec, const chain::input_point& point);
     void check_fees() const;
+    code check_tx_connect_input() const;
 
     block_chain_impl& blockchain_;
     const transaction_ptr tx_;

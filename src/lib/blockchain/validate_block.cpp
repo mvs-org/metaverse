@@ -276,8 +276,12 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     {
         RETURN_IF_STOPPED();
 
-        const auto validate = std::make_shared<validate_transaction>(chain, tx, *this);
-        const auto ec = validate->check_transaction();
+        const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
+        auto ec = validate_tx->check_transaction();
+        if (ec)
+            return ec;
+
+        ec = validate_tx->check_transaction_connect_input(header.number);
         if (ec)
             return ec;
 

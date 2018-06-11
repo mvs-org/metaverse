@@ -148,15 +148,8 @@ void validate_transaction::handle_duplicate_check(
                                      shared_from_this(), _1, _2));
 }
 
-void validate_transaction::set_last_height(const code& ec,
-        size_t last_height)
+void validate_transaction::reset(size_t last_height)
 {
-    if (ec)
-    {
-        handle_validate_(ec, tx_, {});
-        return;
-    }
-
     // Used for checking coinbase maturity
     last_block_height_ = last_height;
     current_input_ = 0;
@@ -166,6 +159,18 @@ void validate_transaction::set_last_height(const code& ec,
     old_symbol_in_ = "";
     new_symbol_in_ = "";
     business_kind_in_ = business_kind::etp;
+}
+
+void validate_transaction::set_last_height(const code& ec,
+        size_t last_height)
+{
+    if (ec)
+    {
+        handle_validate_(ec, tx_, {});
+        return;
+    }
+
+    reset(last_height);
 
     // Begin looping through the inputs, fetching the previous tx.
     if (!tx_->inputs.empty())
@@ -291,12 +296,24 @@ void validate_transaction::check_double_spend(const code& ec,
 
 void validate_transaction::check_fees() const
 {
+    code ec = check_tx_connect_input();
+    if (ec != error::success) {
+        handle_validate_(ec, tx_, {});
+        return;
+    }
+
+    // Who cares?
+    // Fuck the police
+    // Every tx equal!
+    handle_validate_(error::success, tx_, unconfirmed_);
+}
+
+code validate_transaction::check_tx_connect_input() const
+{
     uint64_t fee = 0;
 
-    if (!tally_fees(*tx_, value_in_, fee))
-    {
-        handle_validate_(error::fees_out_of_range, tx_, {});
-        return;
+    if (!tally_fees(*tx_, value_in_, fee)) {
+        return error::fees_out_of_range;
     }
 
     auto is_asset_type = (business_kind_in_ == business_kind::asset_issue)
@@ -304,27 +321,23 @@ void validate_transaction::check_fees() const
     if (is_asset_type) {
         if (tx_->has_asset_transfer()) {
             if (!check_asset_amount(*tx_)) {
-                handle_validate_(error::asset_amount_not_equal, tx_, {});
-                return;
+                return error::asset_amount_not_equal;
             }
             if (!check_asset_symbol(*tx_)) {
-                handle_validate_(error::asset_symbol_not_match, tx_, {});
-                return;
+                return error::asset_symbol_not_match;
             }
         }
     }
     else if (business_kind_in_ == business_kind::asset_cert) {
         if (!check_asset_certs(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check asset cert." << tx_->to_string(1);
-            handle_validate_(error::asset_cert_error, tx_, {});
-            return;
+            return error::asset_cert_error;
         }
     }
     else if (business_kind_in_ == business_kind::asset_mit) {
         if (!check_asset_mit(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check MIT token." << tx_->to_string(1);
-            handle_validate_(error::mit_error, tx_, {});
-            return;
+            return error::mit_error;
         }
     }
 
@@ -332,15 +345,11 @@ void validate_transaction::check_fees() const
                        || (business_kind_in_ == business_kind::did_transfer);
     if (is_did_type && tx_->has_did_transfer()) {
         if (!check_did_symbol_match(*tx_)) {
-            handle_validate_(error::did_symbol_not_match, tx_, {});
-            return;
+            return error::did_symbol_not_match;
         }
     }
 
-    // Who cares?
-    // Fuck the police
-    // Every tx equal!
-    handle_validate_(error::success, tx_, unconfirmed_);
+    return error::success;
 }
 
 static bool check_same(std::string& dest, const std::string& src)
@@ -1067,6 +1076,31 @@ code validate_transaction::connect_input_address_match_did(const output& output)
 
 
     return error::did_address_not_match;
+}
+
+code validate_transaction::check_transaction_connect_input(size_t last_height)
+{
+    if (last_height == 0 || tx_->is_coinbase()) {
+        return error::success;
+    }
+
+    reset(last_height);
+
+    for (const auto& input : tx_->inputs) {
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::debug(LOG_BLOCKCHAIN) << "check_transaction_connect_input: input not found: "
+                                       << encode_hash(input.previous_output.hash);
+            return error::input_not_found;
+        }
+        if (!connect_input(prev_tx, prev_height)) {
+            return error::validate_inputs_failed;
+        }
+        ++current_input_;
+    }
+
+    return check_tx_connect_input();
 }
 
 code validate_transaction::check_transaction() const
