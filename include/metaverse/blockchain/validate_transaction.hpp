@@ -33,6 +33,8 @@
 namespace libbitcoin {
 namespace blockchain {
 
+class validate_block;
+
 /// This class is not thread safe.
 /// This is a utility for transaction_pool::validate and validate_block.
 class BCB_API validate_transaction
@@ -44,11 +46,11 @@ public:
     typedef std::function<void(const code&, transaction_ptr,
         chain::point::indexes)> validate_handler;
 
-    validate_transaction(block_chain& chain, transaction_ptr tx,
-        const transaction_pool* pool, dispatcher* dispatch);
+    validate_transaction(block_chain& chain, const chain::transaction& tx,
+        const transaction_pool& pool, dispatcher& dispatch);
 
     validate_transaction(block_chain& chain, const chain::transaction& tx,
-        const transaction_pool* pool, dispatcher* dispatch);
+        const validate_block& validate_block);
 
     void start(validate_handler handler);
 
@@ -86,7 +88,7 @@ public:
 
     static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
 
-    int get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
+    bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
     transaction& get_tx() { return *tx_; }
     const transaction& get_tx() const { return *tx_; }
@@ -120,6 +122,7 @@ private:
     const transaction_ptr tx_;
     const transaction_pool* const pool_;
     dispatcher* const dispatch_;
+    const validate_block* const validate_block_;
 
     const hash_digest tx_hash_;
     size_t last_block_height_;

@@ -27,6 +27,7 @@
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
+#include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
@@ -45,20 +46,24 @@ using namespace std::placeholders;
 static constexpr uint32_t max_transaction_size = 1000000;
 
 validate_transaction::validate_transaction(block_chain& chain,
-        transaction_ptr tx, const transaction_pool* pool,
-        dispatcher* dispatch)
+    const chain::transaction& tx, const validate_block& validate_block)
     : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
-      tx_(tx),
-      pool_(pool),
-      dispatch_(dispatch),
-      tx_hash_(tx->hash())
+      tx_(std::make_shared<message::transaction_message>(tx)),
+      pool_(nullptr),
+      dispatch_(nullptr),
+      validate_block_(&validate_block),
+      tx_hash_(tx.hash())
 {
 }
 
 validate_transaction::validate_transaction(block_chain& chain,
-    const chain::transaction& tx, const transaction_pool* pool,
-        dispatcher* dispatch)
-    : validate_transaction(chain, std::make_shared<message::transaction_message>(tx), pool, dispatch)
+    const chain::transaction& tx, const transaction_pool& pool, dispatcher& dispatch)
+    : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
+      tx_(std::make_shared<message::transaction_message>(tx)),
+      pool_(&pool),
+      dispatch_(&dispatch),
+      validate_block_(nullptr),
+      tx_hash_(tx.hash())
 {
 }
 
@@ -198,16 +203,22 @@ void validate_transaction::previous_tx_index(const code& ec,
                                           shared_from_this(), _1, _2, parent_height));
 }
 
-int validate_transaction::get_previous_tx(chain::transaction& prev_tx,
+bool validate_transaction::get_previous_tx(chain::transaction& prev_tx,
     uint64_t& prev_height, const chain::input& input) const
 {
-    if (blockchain_.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
-        return 1; // find in transactions database
+    prev_height = 0;
+    if (pool_) {
+        if (blockchain_.get_transaction(input.previous_output.hash, prev_tx, prev_height)) {
+            return true; // find in block chain or memory pool
+        }
     }
-    if (pool_ && pool_->find(prev_tx, input.previous_output.hash)) {
-        return 2; // find in memory pool
+    else {
+        if (validate_block_ &&
+            validate_block_->get_transaction(input.previous_output.hash, prev_tx, prev_height)) {
+            return true; // find in block chain or orphan pool
+        }
     }
-    return 0; // failed
+    return false; // failed
 }
 
 void validate_transaction::search_pool_previous_tx()
@@ -1073,20 +1084,26 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
-    if ((ret = check_asset_cert_issue_transaction()) != error::success) {
-        return ret;
-    }
+    if (tx_->version >= transaction_version::check_nova_feature) {
+        if ((ret = check_asset_cert_issue_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_secondaryissue_transaction()) != error::success) {
-        return ret;
-    }
+        if ((ret = check_secondaryissue_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_asset_mit_transaction()) != error::success) {
-        return ret;
-    }
+        if ((ret = check_asset_mit_transaction()) != error::success) {
+            return ret;
+        }
 
-    if ((ret = check_did_transaction()) != error::success) {
-        return ret;
+        if ((ret = check_did_transaction()) != error::success) {
+            return ret;
+        }
+
+        if ((ret = attenuation_model::check_model_param(*this)) != error::success) {
+            return ret;
+        }
     }
 
     return ret;
@@ -1213,16 +1230,6 @@ code validate_transaction::check_transaction_basic() const
                         || consensus::miner::get_lock_heights_index(lock_height) < 0) {
                     return error::invalid_output_script_lock_height;
                 }
-            }
-        }
-
-        if (tx.version >= transaction_version::check_nova_feature) {
-            code err_code = attenuation_model::check_model_param(*this);
-            if (err_code != error::success) {
-                if (err_code == error::attenuation_model_param_error) {
-                    log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic: model param check failed" << tx.to_string(1);
-                }
-                return err_code;
             }
         }
     }
