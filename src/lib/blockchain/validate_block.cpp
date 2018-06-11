@@ -695,7 +695,7 @@ bool validate_block::script_hash_signature_operations_count(size_t& out_count,
 }
 
 bool validate_block::get_transaction(const hash_digest& tx_hash,
-                                     chain::transaction& prev_tx, uint64_t& prev_height) const
+                                     chain::transaction& prev_tx, size_t& prev_height) const
 {
     return fetch_transaction(prev_tx, prev_height, tx_hash);
 }
