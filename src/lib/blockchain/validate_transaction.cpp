@@ -776,28 +776,32 @@ code validate_transaction::check_asset_cert_issue_transaction() const
     return error::success;
 }
 
-code validate_transaction::check_asset_mit_register_transaction() const
+code validate_transaction::check_asset_mit_transaction() const
 {
     const chain::transaction& tx = *tx_;
     blockchain::block_chain_impl& chain = blockchain_;
 
-    bool is_asset_mit_register{false};
+    bool is_asset_mit{false};
     for (auto& output : tx.outputs) {
-        if (output.is_asset_mit_register()) {
-            is_asset_mit_register = true;
+        if (output.is_asset_mit()) {
+            is_asset_mit = true;
             break;
         }
     }
 
-    if (!is_asset_mit_register) {
+    if (!is_asset_mit) {
         return error::success;
     }
 
     std::string asset_symbol;
     std::string asset_address;
+    size_t num_mit_transfer = 0;
+    size_t num_mit_register = 0;
     for (auto& output : tx.outputs)
     {
         if (output.is_asset_mit_register()) {
+            ++num_mit_register;
+
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
 
@@ -815,31 +819,78 @@ code validate_transaction::check_asset_mit_register_transaction() const
                 return error::mit_exist;
             }
         }
-        else if (!output.is_etp() && !output.is_message()) {
-            log::debug(LOG_BLOCKCHAIN) << "registermit: illega output, "
+        else if (output.is_asset_mit_transfer()) {
+            if (++num_mit_transfer > 1) {
+                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: more than on MIT output." << output.to_string(1);
+                return error::mit_error;
+            }
+
+            auto&& asset_info = output.get_asset_mit();
+            asset_symbol = asset_info.get_symbol();
+
+            // check asset exists
+            if (nullptr == chain.get_registered_mit(asset_symbol)) {
+                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
+                                           << asset_symbol << " not exists.";
+                return error::mit_exist;
+            }
+        }
+        else if (output.is_etp()) {
+            if (!check_same(asset_address, output.get_script_address())) {
+                log::debug(LOG_BLOCKCHAIN) << "MIT: "
+                                           << " address is not same. "
+                                           << asset_address << " != " << output.get_script_address();
+                return error::mit_register_error;
+            }
+        }
+        else if (!output.is_message()) {
+            log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
                                        << asset_symbol << " : " << output.to_string(1);
-            return error::mit_register_error;
+            return error::mit_error;
         }
     }
 
-    // check inputs etp address
+    if ((num_mit_register == 0 && num_mit_transfer == 0)
+        || (num_mit_register > 0 && num_mit_transfer > 0)) {
+        log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output.";
+        return error::mit_error;
+    }
+
+    // check inputs
+    bool has_input_transfer = false;
     for (const auto& input : tx.inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "registermit: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "mit: input not found: "
                                        << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
+
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         if (prev_output.is_etp()) {
             auto&& asset_address_in = prev_output.get_script_address();
             if (asset_address != asset_address_in) {
-                log::debug(LOG_BLOCKCHAIN) << "registermit: invalid input address to pay fee, "
+                log::debug(LOG_BLOCKCHAIN) << "mit: invalid input address to pay fee: "
                                             << asset_address_in << " != " << asset_address;
                 return error::validate_inputs_failed;
             }
         }
+        else if (prev_output.is_asset_mit()) {
+            auto&& asset_info = prev_output.get_asset_mit();
+            if (asset_symbol != asset_info.get_symbol()) {
+                log::debug(LOG_BLOCKCHAIN) << "mit: invalid MIT to transfer: "
+                                            << asset_info.get_symbol() << " != " << asset_symbol;
+                return error::validate_inputs_failed;
+            }
+
+            has_input_transfer = true;
+        }
+    }
+
+    if (num_mit_transfer > 0 && !has_input_transfer) {
+        log::debug(LOG_BLOCKCHAIN) << "mit: not input MIT to transfer " << asset_symbol;
+        return error::validate_inputs_failed;
     }
 
     return error::success;
@@ -1002,7 +1053,7 @@ code validate_transaction::connect_input_address_match_did(const output& output)
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
         if (attach.get_from_did() == chain.get_did_from_address(address)) {
-            return error::success;     
+            return error::success;
         }
     }
 
@@ -1030,7 +1081,7 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
-    if ((ret = check_asset_mit_register_transaction()) != error::success) {
+    if ((ret = check_asset_mit_transaction()) != error::success) {
         return ret;
     }
 

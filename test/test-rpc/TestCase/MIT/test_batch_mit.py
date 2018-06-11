@@ -56,7 +56,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         # set max_paramters in Mongoose.hpp to 208
         max_mit_count = 100
 
-        mits[:] = []
+        mits = []
         for i in range(0, max_mit_count):
             mits.append("{}@{}:content of {}".format(common.get_random_str(), i, i))
         ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, mits=mits)
