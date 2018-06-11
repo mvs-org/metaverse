@@ -669,8 +669,16 @@ def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
     else:
         return "getmit", positional, {}, None
 
+@mvs_api
 def get_memorypool():
-        return "getmemorypool", positional, {}, None
+    return "getmemorypool", [], {}, None
+
+@mvs_api
+def pop_block(height):
+    '''
+    pop blocks with height >= [height].
+    '''
+    return "popblock", [height], {}, None
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")

@@ -129,7 +129,7 @@ class RowsManager:
         next = read_index
         while next <> 0xFFFFFFFF:
             assert (next < self.max_record_count)
-            self.rows += 1
+
 
             self.fr.seek( 4 + self.record_size * next )
             next_ = str2int( self.fr.read(4) )
@@ -140,20 +140,12 @@ class RowsManager:
             else:
                 next = next_
 
-            if next <> 0xFFFFFFFF:
-                self.fw.write(int2str(self.rows, 4))
+            self.rows += 1
+            if next == 0xFFFFFFFF:
+                self.fw.write(int2str(0xFFFFFFFF, 4))
             else:
-                self.fw.write(int2str(next, 4))
+                self.fw.write(int2str(self.rows, 4))
             self.fw.write(value)
-
-
-
-    #def write(self):
-    #    self.fw.write(int2str(len(self.rows), 4))
-    #    for row in self.rows:
-    #        self.fr.seek(4 + self.record_size * row)
-    #        value = self.fr.read(self.record_size)
-    #        self.fw.write(value)
 
 class account_table:
     def __init__(self):
@@ -665,7 +657,19 @@ class history_table(address_did_table):
 all_tables = [account_table, asset_table, cert_table, did_table, transaction_table,
               address_did_table, account_address_table, address_asset_table, history_table]
 
-
+def GetFileMd5(filename):
+    import hashlib
+    if not os.path.isfile(filename):
+        return
+    myhash = hashlib.md5()
+    f = file(filename,'rb')
+    while True:
+        b = f.read(8096)
+        if not b :
+            break
+        myhash.update(b)
+    f.close()
+    return myhash.hexdigest()
 
 def crc32(filepath):
     block_size = 1024 * 1024
@@ -698,7 +702,7 @@ if __name__ == "__main__":
     #data = at.query("422e2ea8ac1d333b61672044ad7e83b384c7ee621632fbe83dca0510278f7616", mainnet_dir)
     #print to_string(data)
 
-    for table in [address_asset_table]:#all_tables:
+    for table in all_tables: #[address_asset_table]:
         t = table()
         print "begin to re_arrage: ", t.__class__
         t.re_arrange(mainnet_dir)
@@ -706,5 +710,5 @@ if __name__ == "__main__":
     ret = {}
     for i in os.listdir('.'):
         if i[-5:] in ("_head", "_body", "_rows"):
-            ret[i] = crc32(i)
+            ret[i] = GetFileMd5(i)
     print ret
