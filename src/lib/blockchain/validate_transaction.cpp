@@ -218,8 +218,10 @@ bool validate_transaction::get_previous_tx(chain::transaction& prev_tx,
         }
     }
     else {
+        size_t temp_height = 0;
         if (validate_block_ &&
-            validate_block_->get_transaction(input.previous_output.hash, prev_tx, prev_height)) {
+            validate_block_->get_transaction(input.previous_output.hash, prev_tx, temp_height)) {
+            prev_height = temp_height;
             return true; // find in block chain or orphan pool
         }
     }
