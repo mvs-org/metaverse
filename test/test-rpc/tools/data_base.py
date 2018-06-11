@@ -657,7 +657,6 @@ class address_did_table:
 
             next = offset
 
-            buffer = []
             while next != hm.INT_OFFSET_NULL:
                 assert (next < self.header.payload_size)
 
@@ -665,13 +664,8 @@ class address_did_table:
                 key = fr_table.read(self.record.size_of_key)
                 next = str2int( fr_table.read(self.record.size_of_next) )
 
-                value=  fr_table.read(self.record.size_of_value)
+                value = fr_table.read(self.record.size_of_value)
 
-                buffer.append( (key, next, value) )
-
-            buffer.sort(key = lambda x: x[0])
-
-            for key, next, value in buffer:
                 payload_size += 1
 
                 fw_body.write(key)
