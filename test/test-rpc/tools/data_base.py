@@ -311,6 +311,43 @@ class asset_table(account_table):
         end = ff.tell()
         return begin, end
 
+class mit_table(account_table):
+    def __init__(self):
+        self.filename = 'mit_table'
+        self.header = Header(8, 4)
+        self.slab = Slab(32, 8, self.parse_value_func)
+
+    @classmethod
+    def parse_value_func(cls, ff):
+        begin = ff.tell()
+        extra_padding = []
+
+        output_height =  ff.read(4)
+        timestamp = ff.read(4)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        to_did = ff.read(length)
+
+        status_ = str2int( ff.read(1) )
+        assert (0<= status_ < 4)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        symbol_ = ff.read(length)
+
+        length = get_var_len(ff, extra_padding.append)
+        assert (0 < length <= 64)
+        address_ = ff.read(length)
+
+        if status_ == 1:
+            length = get_var_len(ff, extra_padding.append)
+            assert (0 <= length <= 256)
+            content_ = ff.read(length)
+
+        end = ff.tell()
+        return begin, end
+
 class cert_table(account_table):
     def __init__(self):
         self.filename = 'cert_table'
@@ -550,6 +587,40 @@ class transaction_table(account_table):
         end = ff.tell()
         return begin, end
 
+class block_table(account_table):
+    def __init__(self):
+        self.filename = 'block_table'
+        self.header = Header(8, 4)
+        self.slab = Slab(32, 8, self.parse_value_func)
+
+    @classmethod
+    def parse_value_func(cls, ff):
+        begin = ff.tell()
+
+        extra_padding = []
+        # header
+        #### 4 byte version
+        version = ff.read(4)
+        previous_block_hash = ff.read(32)
+        merkle = ff.read(32)
+        timestamp = ff.read(4)
+        bits = ff.read(32)
+        nonce = ff.read(8)
+        mixhash = ff.read(32)
+
+        number = ff.read(4)
+        # header end
+
+        height32 = ff.read(4)
+        tx_count32 = str2int( ff.read(4) )
+
+        # transactions
+        for i in xrange(tx_count32):
+            tx_hash = ff.read(32)
+
+        end = ff.tell()
+        return begin, end
+
 class address_did_table:
     def __init__(self):
         self.table_filename = 'address_did_table'
@@ -612,6 +683,7 @@ class address_did_table:
                 fw_body.write( int2str(rm.rows, self.record.size_of_value) )
                 rm.append_row(str2int(value))
         print 'total rows:', rm.rows
+        assert (rm.rows <= rm.max_record_count)
 
         hm.append_slot(self.header.bucket_size - 1, hm.INT_OFFSET_NULL)
         fw_head.write('\x00' * self.header.extra_bytes)
@@ -643,6 +715,16 @@ class address_asset_table(address_did_table):
         self.header = Header(4, 0)
         self.record = Record(20, 4, 4)
 
+class address_mit_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'address_mit_table'
+        self.row_filename = 'address_mit_row'
+
+        self.size_of_record = 220  # record row size
+
+        self.header = Header(4, 0)
+        self.record = Record(20, 4, 4)
+
 class history_table(address_did_table):
     def __init__(self):
         self.table_filename = 'history_table'
@@ -653,9 +735,28 @@ class history_table(address_did_table):
         self.header = Header(4, 0)
         self.record = Record(20, 4, 4)
 
+class mit_history_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'mit_history_table'
+        self.row_filename = 'mit_history_row'
 
-all_tables = [account_table, asset_table, cert_table, did_table, transaction_table,
-              address_did_table, account_address_table, address_asset_table, history_table]
+        self.size_of_record = 237  # record row size
+
+        self.header = Header(4, 0)
+        self.record = Record(20, 4, 4)
+
+class spend_table(address_did_table):
+    def __init__(self):
+        self.table_filename = 'spend_table'
+        self.row_filename = ''
+
+        self.size_of_record = 0  # record row size
+
+        self.header = Header(4, 0)
+        self.record = Record(36, 4, 36)
+
+all_tables = [account_table, asset_table, cert_table, did_table, transaction_table, block_table, mit_table,
+              address_did_table, account_address_table, address_asset_table, address_mit_table, history_table, mit_history_table]
 
 def GetFileMd5(filename):
     import hashlib
