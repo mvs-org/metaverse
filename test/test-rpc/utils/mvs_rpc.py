@@ -640,7 +640,7 @@ def ban_node(peer):
     return 'addnode', [peer], {'-o':'ban'}, None
 
 @mvs_api
-def register_mit(account, password, to_did, symbol, content=None, fee=None):
+def register_mit(account, password, to_did, symbol=None, content=None, mits=None, fee=None):
 
     '''
     account          Account name required.
@@ -649,7 +649,7 @@ def register_mit(account, password, to_did, symbol, content=None, fee=None):
     symbol           MIT symbol
     content          MIT content
     '''
-    return "registermit", [account, password, to_did, symbol], {'--content':content, '--fee':fee}, None
+    return "registermit", [account, password, to_did, symbol], {'--content':content, '--fee':fee, '--mits':mits}, None
 
 @mvs_api
 def transfer_mit(account, password, to_did, symbol, fee=None):

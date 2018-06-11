@@ -316,12 +316,10 @@ class Role:
         assert(ec == 0)
         return message['addresses'][0]['address']
 
-    def register_mit(self, to_did, symbol=None, content=None, fee=None):
-        if None == symbol:
-            symbol = common.get_random_str()
+    def register_mit(self, to_did, symbol=None, content=None, mits=None, fee=None):
         if None == to_did:
             to_did = self.did_symbol
-        ec, message = mvs_rpc.register_mit(self.name, self.password, to_did, symbol, content, fee)
+        ec, message = mvs_rpc.register_mit(self.name, self.password, to_did, symbol, content, mits, fee)
         assert(ec == 0)
         return symbol
 
