@@ -82,8 +82,6 @@ def fork_test(  ):
     origin = "origin"
     popback = "popback"
     # backup check point
-    import pdb
-    pdb.set_trace()
     _, (height, _) = mvs_rpc.get_info()
     data_base_script(origin)
 
@@ -107,7 +105,20 @@ def fork_test(  ):
         for peer in peers:
             mvs_rpc.add_node(peer)
 
+    # check origin and popback
+    f_origin = open('./tools/%s/result.txt' % origin)
+    f_popback= open('./tools/%s/result.txt' % popback)
+    while True:
+        line1 = f_origin.readline()
+        line2 = f_popback.readline()
+        assert (line1 == line2)
 
+        if not (line1 or line2):
+            break
+
+    f_origin.close()
+    f_popback.close()
+    print "fork test passed!"
 
 
 
