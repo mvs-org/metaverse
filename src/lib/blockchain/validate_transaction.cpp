@@ -255,10 +255,7 @@ void validate_transaction::handle_previous_tx(const code& ec,
     ///////////////////////////////////////////////////////////////////////////
 
     // Should check if inputs are standard here...
-    if (!connect_input(*tx_, current_input_, previous_tx, parent_height,
-                       last_block_height_, value_in_, script_context::all_enabled,
-                       asset_amount_in_, asset_certs_in_,
-                       old_symbol_in_, new_symbol_in_, business_kind_in_))
+    if (!connect_input(previous_tx, parent_height))
     {
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
@@ -1288,15 +1285,10 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     return valid;
 }
 
-bool validate_transaction::connect_input(const transaction& tx,
-        size_t current_input, const transaction& previous_tx,
-        size_t parent_height, size_t last_block_height, uint64_t& value_in,
-        uint32_t flags, uint64_t& asset_amount_in,
-        std::vector<asset_cert_type>& asset_certs_in,
-        std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in)
+bool validate_transaction::connect_input( const transaction& previous_tx, size_t parent_height)
 {
-    const auto& input = tx.inputs[current_input];
-    const auto& previous_outpoint = tx.inputs[current_input].previous_output;
+    const auto& input = tx_->inputs[current_input_];
+    const auto& previous_outpoint = input.previous_output;
 
     if (previous_outpoint.index >= previous_tx.outputs.size()) {
         log::debug(LOG_BLOCKCHAIN) << "output point index outof bounds!";
@@ -1313,114 +1305,88 @@ bool validate_transaction::connect_input(const transaction& tx,
     asset_cert_type asset_certs = asset_cert_ns::none;
     uint64_t asset_transfer_amount = 0;
     if (previous_output.is_asset()) {
+        auto new_symbol_in = previous_output.get_asset_symbol();
         // 1. do asset transfer amount check
         asset_transfer_amount = previous_output.get_asset_amount();
 
         // 2. do asset symbol check
-        new_symbol_in = previous_output.get_asset_symbol();
-        if (!new_symbol_in.empty()) { // asset input
-            if (old_symbol_in.empty()) { // init old symbol
-                old_symbol_in = new_symbol_in;
-            }
-            else {
-                // there are different asset symbol in this transaction
-                if (old_symbol_in != new_symbol_in)
-                    return false;
-            }
+        if (!check_same(old_symbol_in_, new_symbol_in)) {
+            return false;
+        }
+        // check forbidden symbol
+        if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
+            return false;
         }
 
         // 3. set business type
         if (previous_output.is_asset_issue() || previous_output.is_asset_secondaryissue())
-            business_kind_in = business_kind::asset_issue;
+            business_kind_in_ = business_kind::asset_issue;
         else if (previous_output.is_asset_transfer())
-            business_kind_in = business_kind::asset_transfer;
+            business_kind_in_ = business_kind::asset_transfer;
     }
     else if (previous_output.is_asset_cert()) {
-        business_kind_in = business_kind::asset_cert;
-        new_symbol_in = previous_output.get_asset_symbol();
+        business_kind_in_ = business_kind::asset_cert;
+        auto new_symbol_in = previous_output.get_asset_symbol();
         asset_certs = previous_output.get_asset_cert_type();
 
-        if (old_symbol_in.empty()) { // init old symbol
-            old_symbol_in = new_symbol_in;
+        if (old_symbol_in_.empty()) { // init old symbol
+            old_symbol_in_ = new_symbol_in;
         }
         else {
-            if (asset_cert::test_certs(asset_certs_in, asset_cert_ns::domain)) {
-                auto&& domain = asset_cert::get_domain(old_symbol_in);
+            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
+                auto&& domain = asset_cert::get_domain(old_symbol_in_);
                 if (domain != previous_output.get_asset_cert_symbol()) {
                     return false;
                 }
             }
-            else if (old_symbol_in != new_symbol_in) { // asset symbol must be same
+            else if (old_symbol_in_ != new_symbol_in) { // asset symbol must be same
                 return false;
             }
         }
 
-        if (asset_cert::test_certs(asset_certs_in, asset_certs)) { // double certs exists
+        if (asset_cert::test_certs(asset_certs_in_, asset_certs)) { // double certs exists
             return false;
         }
     }
     else if (previous_output.is_asset_mit()) {
-        business_kind_in = business_kind::asset_mit;
-        new_symbol_in = previous_output.get_asset_symbol();
-
-        if (old_symbol_in.empty()) { // init old symbol
-            old_symbol_in = new_symbol_in;
-        }
-        else {
-            if (old_symbol_in != new_symbol_in) { // asset symbol must be same
-                return false;
-            }
+        business_kind_in_ = business_kind::asset_mit;
+        if (!check_same(old_symbol_in_, previous_output.get_asset_symbol())) {
+            return false;
         }
     }
     else if (previous_output.is_did()) {
-        // 2. do did symbol check
-        new_symbol_in = previous_output.get_did_symbol();
-        if (!new_symbol_in.empty()) { // did input
-            if (old_symbol_in.empty()) { // init old symbol
-                old_symbol_in = new_symbol_in;
-            }
-            else {
-                // there are different did symbol in this transaction
-                if (old_symbol_in != new_symbol_in) {
-                    return false;
-                }
-            }
+        // 1. do did symbol check
+        if (!check_same(old_symbol_in_, previous_output.get_did_symbol())) {
+            return false;
         }
 
-        // 3. set business type
+        // 2. set business type
         if (previous_output.is_did_register()) {
-            business_kind_in = business_kind::did_register;
+            business_kind_in_ = business_kind::did_register;
         }
         else if (previous_output.is_did_transfer()) {
-            business_kind_in = business_kind::did_transfer;
+            business_kind_in_ = business_kind::did_transfer;
         }
     }
 
     if (previous_tx.is_coinbase()) {
-        const auto height_difference = last_block_height - parent_height;
+        const auto height_difference = last_block_height_ - parent_height;
         if (height_difference < coinbase_maturity) {
             return false;
         }
     }
 
-    // check forbidden symbol
-    if (previous_output.is_asset()) {
-        if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
-            return false;
-        }
-    }
-
-    if (!check_consensus(previous_output.script, tx, current_input, flags)) {
+    if (!check_consensus(previous_output.script, *tx_, current_input_, script_context::all_enabled)) {
         log::debug(LOG_BLOCKCHAIN) << "check_consensus failed";
         return false;
     }
 
-    value_in += output_value;
-    asset_amount_in += asset_transfer_amount;
+    value_in_ += output_value;
+    asset_amount_in_ += asset_transfer_amount;
     if (asset_certs != asset_cert_ns::none) {
-        asset_certs_in.push_back(asset_certs);
+        asset_certs_in_.push_back(asset_certs);
     }
-    return value_in <= max_money();
+    return value_in_ <= max_money();
 }
 
 bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,

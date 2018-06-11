@@ -68,12 +68,7 @@ public:
     bool connect_did_input(const did& info) const;
     code connect_input_address_match_did(const output& output) const;
 
-    static bool connect_input(const chain::transaction& tx,
-        size_t current_input, const chain::transaction& previous_tx,
-        size_t parent_height, size_t last_block_height, uint64_t& value_in,
-        uint32_t flags, uint64_t& asset_amount_in,
-        std::vector<asset_cert_type>& asset_certs_in,
-        std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in);
+    bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
 
     static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
         uint64_t& fees);
