@@ -768,7 +768,7 @@ code validate_transaction::check_asset_cert_issue_transaction() const
         }
         else if (!output.is_etp() && !output.is_message())
         {
-            log::debug(LOG_BLOCKCHAIN) << "issuecert: illega output, "
+            log::debug(LOG_BLOCKCHAIN) << "issue cert: illegal output, "
                                        << cert_symbol << " : " << output.to_string(1);
             return error::asset_cert_issue_error;
         }
@@ -853,7 +853,7 @@ code validate_transaction::check_asset_mit_transaction() const
             if (nullptr == chain.get_registered_mit(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
                                            << asset_symbol << " not exists.";
-                return error::mit_exist;
+                return error::mit_not_exist;
             }
         }
         else if (output.is_etp()) {
@@ -883,7 +883,7 @@ code validate_transaction::check_asset_mit_transaction() const
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "mit: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "MIT: input not found: "
                                        << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
@@ -892,7 +892,7 @@ code validate_transaction::check_asset_mit_transaction() const
         if (prev_output.is_etp()) {
             auto&& asset_address_in = prev_output.get_script_address();
             if (asset_address != asset_address_in) {
-                log::debug(LOG_BLOCKCHAIN) << "mit: invalid input address to pay fee: "
+                log::debug(LOG_BLOCKCHAIN) << "MIT: invalid input address to pay fee: "
                                             << asset_address_in << " != " << asset_address;
                 return error::validate_inputs_failed;
             }
@@ -900,7 +900,7 @@ code validate_transaction::check_asset_mit_transaction() const
         else if (prev_output.is_asset_mit()) {
             auto&& asset_info = prev_output.get_asset_mit();
             if (asset_symbol != asset_info.get_symbol()) {
-                log::debug(LOG_BLOCKCHAIN) << "mit: invalid MIT to transfer: "
+                log::debug(LOG_BLOCKCHAIN) << "MIT: invalid MIT to transfer: "
                                             << asset_info.get_symbol() << " != " << asset_symbol;
                 return error::validate_inputs_failed;
             }
@@ -910,7 +910,7 @@ code validate_transaction::check_asset_mit_transaction() const
     }
 
     if (num_mit_transfer > 0 && !has_input_transfer) {
-        log::debug(LOG_BLOCKCHAIN) << "mit: not input MIT to transfer " << asset_symbol;
+        log::debug(LOG_BLOCKCHAIN) << "MIT: no input MIT to transfer " << asset_symbol;
         return error::validate_inputs_failed;
     }
 

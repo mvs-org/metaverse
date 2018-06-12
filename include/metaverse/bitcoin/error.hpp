@@ -174,7 +174,8 @@ enum error_code_t
     mit_error,
     mit_exist,
     mit_register_error,
-    mit_symbol_invalid
+    mit_symbol_invalid,
+    mit_not_exist,
 
 };
 
