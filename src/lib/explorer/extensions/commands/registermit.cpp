@@ -43,7 +43,7 @@ void registermit::check_symbol_content(const std::string& symbol, const std::str
     }
 
     // check symbol
-    check_mit_symbol(symbol);
+    check_mit_symbol(symbol, true);
 
     // check content
     if (content.size() > ASSET_MIT_CONTENT_FIX_SIZE) {
