@@ -53,7 +53,7 @@ public:
     static size_t legacy_sigops_count(const chain::transaction& tx);
     static bool script_hash_signature_operations_count(size_t& out_count, const chain::script& output_script, const chain::script& input_script);
 
-    bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, uint64_t& prev_height) const;
+    bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, size_t& prev_height) const;
 
 protected:
     typedef std::vector<uint8_t> versions;
