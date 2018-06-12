@@ -62,7 +62,7 @@ public:
     code check_transaction() const;
     code check_transaction_basic() const;
     code check_asset_issue_transaction() const;
-    code check_asset_cert_issue_transaction() const;
+    code check_asset_cert_transaction() const;
     code check_secondaryissue_transaction() const;
     code check_asset_mit_transaction() const;
     code check_did_transaction() const;
