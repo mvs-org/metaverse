@@ -566,7 +566,7 @@ void base_transfer_common::sum_payments()
         if (iter.type == utxo_attach_type::asset_mit_transfer) {
             ++payment_mit_;
             if (payment_mit_ > 1) {
-                throw std::logic_error{"maximum one identifiable asset can be transfered"};
+                throw std::logic_error{"maximum one MIT can be transfered"};
             }
         }
         else if (iter.type == utxo_attach_type::did_transfer) {
@@ -626,7 +626,7 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
     }
 
     if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_)) {
-        throw asset_lack_exception{"not enough identifiable asset amount, unspent = "
+        throw asset_lack_exception{"not enough MIT amount, unspent = "
             + std::to_string(unspent_mit_) + ", payment = " + std::to_string(payment_mit_)};
     }
 
@@ -1674,10 +1674,15 @@ attachment registering_mit::populate_output_attachment(const receiver_record& re
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
     if (record.type == utxo_attach_type::asset_mit) {
-        auto ass = asset_mit(record.symbol, record.target, content_);
+        auto iter = mit_map_.find(record.symbol);
+        if (iter == mit_map_.end()) {
+            throw tx_attachment_value_exception{"invalid MIT issue attachment"};
+        }
+
+        auto ass = asset_mit(record.symbol, record.target, iter->second);
         ass.set_status(MIT_STATUS_REGISTER);
         if (!ass.is_valid()) {
-            throw tx_attachment_value_exception{"invalid identifiable asset issue attachment"};
+            throw tx_attachment_value_exception{"invalid MIT issue attachment"};
         }
 
         attach.set_attach(ass);
@@ -1694,7 +1699,7 @@ attachment transferring_mit::populate_output_attachment(const receiver_record& r
         auto ass = asset_mit(record.symbol, record.target, "");
         ass.set_status(MIT_STATUS_TRANSFER);
         if (!ass.is_valid()) {
-            throw tx_attachment_value_exception{"invalid identifiable asset transfer attachment"};
+            throw tx_attachment_value_exception{"invalid MIT transfer attachment"};
         }
 
         attach.set_attach(ass);

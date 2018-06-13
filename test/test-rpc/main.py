@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, sys, time, re
 import unittest
 import TestCase
 from Roles import *
@@ -70,9 +70,67 @@ def run_testcase():
         f.seek(0)
         runner.generateReport(None, result)
 
+def data_base_script(tag):
+    workdir = "./tools/%s" % tag
+    if os.path.isdir(workdir):
+        os.system("rm -rf " + workdir)
+    os.makedirs(workdir)
+    ret = os.system("cd %s && python ../data_base.py > result.txt" % workdir)
+    assert (ret == 0)
+
+def fork_test(  ):
+    origin = "origin"
+    popback = "popback"
+    # backup check point
+    _, (height, _) = mvs_rpc.get_info()
+    data_base_script(origin)
+
+    # run testcase
+    run_testcase()
+
+    # make this node partion with the others
+    peers = mvs_rpc.getpeerinfo()[1]
+    for peer in peers:
+        mvs_rpc.ban_node(peer)
+    try:
+        # popblock
+        ec, _ = mvs_rpc.pop_block(height + 1)
+        assert (ec == 0)
+        assert( mvs_rpc.get_info()[1][0] == height)
+
+        # check database
+        data_base_script(popback)
+
+    finally:
+        for peer in peers:
+            mvs_rpc.add_node(peer)
+
+    # check origin and popback
+    f_origin = open('./tools/%s/result.txt' % origin)
+    f_popback= open('./tools/%s/result.txt' % popback)
+    while True:
+        line1 = f_origin.readline()
+        line2 = f_popback.readline()
+        assert (line1 == line2)
+
+        if not (line1 or line2):
+            break
+
+    f_origin.close()
+    f_popback.close()
+    print "fork test passed!"
+
+
+
 
 
 if __name__ == '__main__':
     clear_account()
     ensure_Alice_balance()
-    run_testcase()
+    if len(sys.argv) >= 2 and sys.argv[1] == "fork":
+        print 'backup check point -> run testcase -> popblock -> check database '
+        fork_test()
+    else:
+        print 'run testcase'
+        run_testcase()
+

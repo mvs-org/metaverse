@@ -86,13 +86,18 @@ public:
         )
         (
             "SYMBOL",
-            value<std::string>(&argument_.symbol)->required(),
-            "Asset symbol"
+            value<std::string>(&argument_.symbol)->default_value(""),
+            "MIT symbol"
         )
         (
             "content,c",
             value<std::string>(&option_.content)->default_value(""),
-            "Content of asset."
+            "Content of MIT"
+        )
+        (
+            "mits,m",
+            value<std::vector<std::string>>(&option_.multimits),
+            "List of symbol and content pair. Symbol and content are separated by a ':'"
         )
         (
             "fee,f",
@@ -120,8 +125,11 @@ public:
     struct option
     {
         std::string content;
+        std::vector<std::string> multimits;
     } option_;
 
+private:
+    void check_symbol_content(const std::string& symbol, const std::string& content);
 };
 
 

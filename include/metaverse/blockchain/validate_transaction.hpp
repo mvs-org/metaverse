@@ -33,6 +33,8 @@
 namespace libbitcoin {
 namespace blockchain {
 
+class validate_block;
+
 /// This class is not thread safe.
 /// This is a utility for transaction_pool::validate and validate_block.
 class BCB_API validate_transaction
@@ -44,11 +46,11 @@ public:
     typedef std::function<void(const code&, transaction_ptr,
         chain::point::indexes)> validate_handler;
 
-    validate_transaction(block_chain& chain, transaction_ptr tx,
-        const transaction_pool* pool, dispatcher* dispatch);
+    validate_transaction(block_chain& chain, const chain::transaction& tx,
+        const transaction_pool& pool, dispatcher& dispatch);
 
     validate_transaction(block_chain& chain, const chain::transaction& tx,
-        const transaction_pool* pool, dispatcher* dispatch);
+        const validate_block& validate_block);
 
     void start(validate_handler handler);
 
@@ -56,22 +58,18 @@ public:
         const chain::transaction& current_tx, size_t input_index,
         uint32_t flags);
 
+    code check_transaction_connect_input(size_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
     code check_asset_issue_transaction() const;
-    code check_asset_cert_issue_transaction() const;
+    code check_asset_cert_transaction() const;
     code check_secondaryissue_transaction() const;
-    code check_asset_mit_register_transaction() const;
+    code check_asset_mit_transaction() const;
     code check_did_transaction() const;
     bool connect_did_input(const did& info) const;
     code connect_input_address_match_did(const output& output) const;
 
-    static bool connect_input(const chain::transaction& tx,
-        size_t current_input, const chain::transaction& previous_tx,
-        size_t parent_height, size_t last_block_height, uint64_t& value_in,
-        uint32_t flags, uint64_t& asset_amount_in,
-        std::vector<asset_cert_type>& asset_certs_in,
-        std::string& old_symbol_in, std::string& new_symbol_in, business_kind& business_kind_in);
+    bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
 
     static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
         uint64_t& fees);
@@ -86,7 +84,7 @@ public:
 
     static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
 
-    int get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
+    bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
     transaction& get_tx() { return *tx_; }
     const transaction& get_tx() const { return *tx_; }
@@ -97,6 +95,7 @@ private:
     code basic_checks() const;
     bool is_standard() const;
     void handle_duplicate_check(const code& ec);
+    void reset(size_t last_height);
 
     // Last height used for checking coinbase maturity.
     void set_last_height(const code& ec, size_t last_height);
@@ -115,20 +114,21 @@ private:
     // is_spent() earlier already checked in the pool.
     void check_double_spend(const code& ec, const chain::input_point& point);
     void check_fees() const;
+    code check_tx_connect_input() const;
 
     block_chain_impl& blockchain_;
     const transaction_ptr tx_;
     const transaction_pool* const pool_;
     dispatcher* const dispatch_;
+    const validate_block* const validate_block_;
 
     const hash_digest tx_hash_;
     size_t last_block_height_;
     uint64_t value_in_;
     uint64_t asset_amount_in_;
     std::vector<asset_cert_type> asset_certs_in_;
-    std::string old_symbol_in_; // just used for check same asset symbol in previous outputs
-    std::string new_symbol_in_;
-    business_kind business_kind_in_;
+    std::string old_symbol_in_; // used for check same asset/did/mit symbol in previous outputs
+    std::string old_cert_symbol_in_; // used for check same cert symbol in previous outputs
     uint32_t current_input_;
     chain::point::indexes unconfirmed_;
     validate_handler handle_validate_;

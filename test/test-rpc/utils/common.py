@@ -4,6 +4,42 @@ import time
 import random
 
 from datetime import datetime
+import struct
+
+str2int_map = {
+    1: '!B',
+    2: '!H',
+    4: '!L',
+    8: '!Q',
+}
+
+def str2int(s):
+    global str2int_map
+    return struct.unpack(str2int_map[len(s)], s)[0]
+
+def int2str(i, size):
+    global str2int_map
+    return struct.pack(str2int_map[size], i)
+
+hex_string='0123456789abcdef'
+char2i = {}
+for i, char in enumerate(hex_string):
+    char2i[char] = i
+
+def to_string(s):
+    def to_hex(i):
+        global hex_string
+        h,l =divmod(i, 16)
+        return hex_string[h] + hex_string[l]
+    t = [ to_hex(ord(i)) for i in s ]
+    return ''.join(t)
+
+
+def to_bin(ss):
+    global char2i
+    bin_lst = [chr(char2i[ss[i]] * 16 + char2i[ss[i + 1]]) for i in range(0, len(ss), 2)]
+    bin_lst.reverse()
+    return ''.join( bin_lst )
 
 def remove_file(file_path):
     if os.path.exists(file_path):

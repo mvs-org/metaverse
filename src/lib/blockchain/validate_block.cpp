@@ -276,8 +276,12 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     {
         RETURN_IF_STOPPED();
 
-        validate_transaction validate(chain, tx, nullptr, nullptr);
-        const auto ec = validate.check_transaction_basic();
+        const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
+        auto ec = validate_tx->check_transaction();
+        if (ec)
+            return ec;
+
+        ec = validate_tx->check_transaction_connect_input(header.number);
         if (ec)
             return ec;
 
@@ -688,6 +692,12 @@ bool validate_block::script_hash_signature_operations_count(size_t& out_count,
 
     out_count = count_script_sigops(eval_script.operations, true);
     return true;
+}
+
+bool validate_block::get_transaction(const hash_digest& tx_hash,
+                                     chain::transaction& prev_tx, size_t& prev_height) const
+{
+    return fetch_transaction(prev_tx, prev_height, tx_hash);
 }
 
 bool validate_block::connect_input(size_t index_in_parent,

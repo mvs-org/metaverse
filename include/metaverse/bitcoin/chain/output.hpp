@@ -73,6 +73,7 @@ public:
     std::string get_asset_issuer() const;
     std::string get_asset_address() const;
     std::string get_asset_cert_symbol() const;
+    std::string get_asset_mit_symbol() const;
     std::string get_asset_cert_owner() const;
     std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;
@@ -80,6 +81,7 @@ public:
     bool is_asset() const;
     bool is_asset_transfer() const;
     bool is_asset_issue() const;
+    bool is_asset_secondaryissue() const;
     bool is_asset_mit() const;
     bool is_asset_mit_register() const;
     bool is_asset_mit_transfer() const;
@@ -93,7 +95,6 @@ public:
     bool is_did() const;
     bool is_did_register() const;
     bool is_did_transfer() const;
-    bool is_asset_secondaryissue() const;
     asset_detail get_asset_detail() const;
     asset_transfer get_asset_transfer() const;
     asset_cert get_asset_cert() const;

@@ -44,15 +44,15 @@ class ToCommandArg{
 public:
     auto argv() const noexcept { return argv_; }
     auto argc() const noexcept { return argc_; }
-    const auto& get_command() const { 
-        if(!vargv_.empty()) 
-            return vargv_[0]; 
+    const auto& get_command() const {
+        if(!vargv_.empty())
+            return vargv_[0];
         throw std::logic_error{"no command found"};
     }
 
     void add_arg(std::string&& outside);
 
-    static const int max_paramters{32};
+    static const int max_paramters{208};
 protected:
 
     virtual void data_to_arg(uint8_t api_version) = 0;
@@ -66,16 +66,16 @@ class HttpMessage : public ToCommandArg{
 public:
     HttpMessage(http_message* impl) noexcept : impl_{impl}, jsonrpc_id_(-1){}
     ~HttpMessage() noexcept = default;
-    
+
     // Copy.
     // http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1778
     HttpMessage(const HttpMessage&) = default;
     HttpMessage& operator=(const HttpMessage&) = default;
-    
+
     // Move.
     HttpMessage(HttpMessage&&) = default;
     HttpMessage& operator=(HttpMessage&&) = default;
-    
+
     auto get() const noexcept { return impl_; }
     auto method() const noexcept { return +impl_->method; }
     auto uri() const noexcept { return +impl_->uri; }
@@ -91,7 +91,7 @@ public:
     const int64_t jsonrpc_id() const noexcept { return jsonrpc_id_; }
 
     void data_to_arg(uint8_t rpc_version) override;
-    
+
 private:
     int64_t jsonrpc_id_;
     http_message* impl_;
@@ -101,19 +101,19 @@ class WebsocketMessage:public ToCommandArg { // connect to bx command-tool
 public:
     WebsocketMessage(websocket_message* impl) noexcept : impl_{impl} {}
     ~WebsocketMessage() noexcept = default;
-    
+
     // Copy.
     WebsocketMessage(const WebsocketMessage&) = default;
     WebsocketMessage& operator=(const WebsocketMessage&) = default;
-    
+
     // Move.
     WebsocketMessage(WebsocketMessage&&) = default;
     WebsocketMessage& operator=(WebsocketMessage&&) = default;
-    
+
     auto get() const noexcept { return impl_; }
     auto data() const noexcept { return reinterpret_cast<char*>(impl_->data); }
     auto size() const noexcept { return impl_->size; }
-   
+
     void data_to_arg(uint8_t api_version = 1) override;
 private:
     websocket_message* impl_;
