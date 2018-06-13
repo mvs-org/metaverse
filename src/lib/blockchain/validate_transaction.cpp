@@ -326,7 +326,7 @@ code validate_transaction::check_tx_connect_input() const
         }
     }
 
-    if (tx_->has_asset_cert_transfer()) {
+    if (tx_->has_asset_cert()) {
         if (!check_asset_certs(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check asset cert." << tx_->to_string(1);
             return error::asset_cert_error;
@@ -1386,7 +1386,8 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
         }
     }
     else if (previous_output.is_asset_cert()) {
-        if (!check_same(old_symbol_in_, previous_output.get_asset_cert_symbol())) {
+        asset_certs = previous_output.get_asset_cert_type();
+        if (!check_same(old_cert_symbol_in_, previous_output.get_asset_cert_symbol())) {
             return false;
         }
     }
@@ -1468,6 +1469,10 @@ bool validate_transaction::check_asset_symbol(const transaction& tx) const
 bool validate_transaction::check_asset_certs(const transaction& tx) const
 {
     bool is_cert_transfer = false;
+    bool is_cert_issue = false;
+    bool has_cert_autoissue = false;
+    bool has_asset_issue = false;
+    bool has_asset_output = false;
     std::vector<asset_cert_type> asset_certs_out;
     for (auto& output : tx.outputs) {
         if (output.is_asset_cert()) {
@@ -1477,26 +1482,39 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
             if (asset_cert.get_status() == ASSET_CERT_TRANSFER_TYPE) {
                 is_cert_transfer = true;
             }
+            else if (asset_cert.get_status() == ASSET_CERT_ISSUE_TYPE) {
+                is_cert_issue = true;
+            }
+            else if (asset_cert.get_status() == ASSET_CERT_AUTOISSUE_TYPE) {
+                has_cert_autoissue = true;
+            }
 
             if (asset_cert::test_certs(asset_certs_out, cert_type)) { // double certs exists
                 return false;
             }
 
             // check asset cert symbol
-            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
+            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)
+                && (cert_type == asset_cert_ns::naming)) {
                 auto&& domain = asset_cert::get_domain(asset_cert.get_symbol());
                 if (domain != old_cert_symbol_in_) {
+                    log::debug(LOG_BLOCKCHAIN) << "cert domain error: "
+                        << "symbol : " << asset_cert.get_symbol() << "; "
+                        << old_cert_symbol_in_ << " != " << domain;
                     return false;
                 }
             }
-            else {
+            else if (!asset_cert.is_newly_generated()) {
                 if (old_cert_symbol_in_ != asset_cert.get_symbol()) {
+                    log::debug(LOG_BLOCKCHAIN) << "cert symbol error: "
+                        << old_cert_symbol_in_ << " != " << asset_cert.get_symbol();
                     return false;
                 }
             }
 
-            if (!output.is_asset_cert_issue() && !output.is_asset_cert_autoissue()) {
+            if (!asset_cert.is_newly_generated()) {
                 if (!asset_cert::test_certs(asset_certs_in_, cert_type)) {
+                    log::debug(LOG_BLOCKCHAIN) << "input lack of cert: " << asset_cert.get_type_name();
                     return false;
                 }
             }
@@ -1504,12 +1522,26 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
             asset_certs_out.push_back(cert_type);
         }
         else if (output.is_asset()) { // asset related
-            continue;
+            has_asset_output = true;
+            if (output.is_asset_issue()) {
+                has_asset_issue = true;
+            }
         }
         else if (!output.is_etp() && !output.is_message()) {
             // asset cert transfer tx only related to asset_cert and etp output
+            log::debug(LOG_BLOCKCHAIN) << "cert tx mix other illegal output";
             return false;
         }
+    }
+
+    if ((is_cert_issue || is_cert_transfer) && has_asset_output) {
+        log::debug(LOG_BLOCKCHAIN) << "issue/transfer cert can not mix with asset output";
+        return false;
+    }
+
+    if (has_cert_autoissue && !has_asset_issue) {
+        log::debug(LOG_BLOCKCHAIN) << "only issue command can has cert with autoissue status";
+        return false;
     }
 
     if (is_cert_transfer) {
@@ -1525,7 +1557,11 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
         }
     }
 
-    return asset_cert::test_certs(asset_certs_out, asset_certs_in_);
+    if (!asset_cert::test_certs(asset_certs_out, asset_certs_in_)) {
+        log::debug(LOG_BLOCKCHAIN) << "some inputed certs is missed in outputs";
+        return false;
+    }
+    return true;
 }
 
 bool validate_transaction::check_asset_mit(const transaction& tx) const

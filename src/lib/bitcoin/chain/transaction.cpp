@@ -359,27 +359,44 @@ uint64_t transaction::total_output_transfer_amount() const
     return std::accumulate(outputs.begin(), outputs.end(), uint64_t(0), value);
 }
 
-bool transaction::has_asset_transfer()
-{
-	for (auto& elem: outputs) {
-		if(elem.is_asset_transfer())
-			return true;
-	}
-	return false;
-}
-
-bool transaction::has_asset_cert_transfer()
+bool transaction::has_asset_issue() const
 {
     for (auto& elem: outputs) {
-        if(elem.is_asset_cert()
-            && !elem.is_asset_cert_issue()
-            && !elem.is_asset_cert_autoissue())
+        if(elem.is_asset_issue())
             return true;
     }
     return false;
 }
 
-bool transaction::has_asset_mit_transfer()
+bool transaction::has_asset_secondary_issue() const
+{
+    for (auto& elem: outputs) {
+        if(elem.is_asset_secondaryissue())
+            return true;
+    }
+    return false;
+}
+
+
+bool transaction::has_asset_transfer() const
+{
+    for (auto& elem: outputs) {
+        if(elem.is_asset_transfer())
+            return true;
+    }
+    return false;
+}
+
+bool transaction::has_asset_cert() const
+{
+    for (auto& elem: outputs) {
+        if(elem.is_asset_cert())
+            return true;
+    }
+    return false;
+}
+
+bool transaction::has_asset_mit_transfer() const
 {
     for (auto& elem: outputs) {
         if(elem.is_asset_mit_transfer())
@@ -388,7 +405,16 @@ bool transaction::has_asset_mit_transfer()
     return false;
 }
 
-bool transaction::has_did_transfer()
+bool transaction::has_did_register() const
+{
+    for (auto& elem: outputs) {
+        if(elem.is_did_register())
+            return true;
+    }
+    return false;
+}
+
+bool transaction::has_did_transfer() const
 {
 	for (auto& elem: outputs) {
 		if(elem.is_did_transfer())
