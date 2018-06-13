@@ -381,7 +381,8 @@ bool transaction::has_asset_secondary_issue() const
 bool transaction::has_asset_transfer() const
 {
     for (auto& elem: outputs) {
-        if(elem.is_asset_transfer())
+        if(elem.is_asset_transfer()
+            && elem.get_asset_amount()) // block #810376 has 0 asset transfer without input
             return true;
     }
     return false;
