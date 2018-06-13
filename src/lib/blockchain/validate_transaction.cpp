@@ -158,7 +158,6 @@ void validate_transaction::reset(size_t last_height)
     asset_certs_in_.clear();
     old_symbol_in_ = "";
     old_cert_symbol_in_ = "";
-    business_kind_in_.clear();
 }
 
 void validate_transaction::set_last_height(const code& ec,
@@ -318,36 +317,30 @@ code validate_transaction::check_tx_connect_input() const
         return error::fees_out_of_range;
     }
 
-    auto is_asset_type = (business_kind_in_.count( business_kind::asset_issue))
-                         || (business_kind_in_.count(business_kind::asset_transfer));
-    if (is_asset_type) {
-        if (tx_->has_asset_transfer()) {
-            if (!check_asset_amount(*tx_)) {
-                return error::asset_amount_not_equal;
-            }
-            if (!check_asset_symbol(*tx_)) {
-                return error::asset_symbol_not_match;
-            }
+    if (tx_->has_asset_transfer()) {
+        if (!check_asset_amount(*tx_)) {
+            return error::asset_amount_not_equal;
+        }
+        if (!check_asset_symbol(*tx_)) {
+            return error::asset_symbol_not_match;
         }
     }
 
-    if (business_kind_in_.count(business_kind::asset_cert)) {
+    if (tx_->has_asset_cert_transfer()) {
         if (!check_asset_certs(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check asset cert." << tx_->to_string(1);
             return error::asset_cert_error;
         }
     }
 
-    if (business_kind_in_.count(business_kind::asset_mit)) {
+    if (tx_->has_asset_mit_transfer()) {
         if (!check_asset_mit(*tx_)) {
             log::debug(LOG_BLOCKCHAIN) << "failed to check MIT token." << tx_->to_string(1);
             return error::mit_error;
         }
     }
 
-    auto is_did_type = (business_kind_in_.count(business_kind::did_register))
-                       || (business_kind_in_.count(business_kind::did_transfer));
-    if (is_did_type && tx_->has_did_transfer()) {
+    if (tx_->has_did_transfer()) {
         if (!check_did_symbol_match(*tx_)) {
             return error::did_symbol_not_match;
         }
@@ -1355,40 +1348,14 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
         if (bc::wallet::symbol::is_forbidden(new_symbol_in)) {
             return false;
         }
-
-        // 3. set business type
-        if (previous_output.is_asset_issue() || previous_output.is_asset_secondaryissue())
-            business_kind_in_.insert(business_kind::asset_issue);
-        else if (previous_output.is_asset_transfer())
-            business_kind_in_.insert(business_kind::asset_transfer);
     }
     else if (previous_output.is_asset_cert()) {
-        business_kind_in_.insert(business_kind::asset_cert);
-        auto new_symbol_in = previous_output.get_asset_symbol();
-        asset_certs = previous_output.get_asset_cert_type();
-
-        if (old_cert_symbol_in_.empty()) { // init old symbol
-            old_cert_symbol_in_ = new_symbol_in;
-        }
-        else {
-            if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
-                auto&& domain = asset_cert::get_domain(old_cert_symbol_in_);
-                if (domain != previous_output.get_asset_cert_symbol()) {
-                    return false;
-                }
-            }
-            else if (old_cert_symbol_in_ != new_symbol_in) { // asset symbol must be same
-                return false;
-            }
-        }
-
-        if (asset_cert::test_certs(asset_certs_in_, asset_certs)) { // double certs exists
+        if (!check_same(old_symbol_in_, previous_output.get_asset_cert_symbol())) {
             return false;
         }
     }
     else if (previous_output.is_asset_mit()) {
-        business_kind_in_.insert(business_kind::asset_mit);
-        if (!check_same(old_symbol_in_, previous_output.get_asset_symbol())) {
+        if (!check_same(old_symbol_in_, previous_output.get_asset_mit_symbol())) {
             return false;
         }
     }
@@ -1396,14 +1363,6 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
         // 1. do did symbol check
         if (!check_same(old_symbol_in_, previous_output.get_did_symbol())) {
             return false;
-        }
-
-        // 2. set business type
-        if (previous_output.is_did_register()) {
-            business_kind_in_.insert(business_kind::did_register);
-        }
-        else if (previous_output.is_did_transfer()) {
-            business_kind_in_.insert(business_kind::did_transfer);
         }
     }
 
@@ -1453,22 +1412,20 @@ bool validate_transaction::check_asset_amount(const transaction& tx) const
 
 bool validate_transaction::check_asset_symbol(const transaction& tx) const
 {
-    // check asset symbol in out
-    std::string old_symbol = "";
-    std::string new_symbol = "";
-    for (auto elem : tx.outputs) {
-        new_symbol = elem.get_asset_symbol();
-        if (!new_symbol.empty()) {
-            if (old_symbol.empty()) {
-                old_symbol = new_symbol;
-            } else {
-                if (old_symbol != new_symbol)
-                    return false; // different asset in outputs
+    for (const auto& output : tx.outputs) {
+        if (output.is_asset()) {
+            if (old_symbol_in_ != output.get_asset_symbol()) {
+                return false;
             }
         }
+        else if (output.is_asset_cert()) { // asset cert related
+            continue;
+        }
+        else if (!output.is_etp() && !output.is_message()) {
+            // asset tx only related to asset_cert and etp output
+            return false;
+        }
     }
-    if (old_symbol != old_symbol_in_) // symbol in input and output not match
-        return false;
     return true;
 }
 
@@ -1492,7 +1449,7 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
             // check asset cert symbol
             if (asset_cert::test_certs(asset_certs_in_, asset_cert_ns::domain)) {
                 auto&& domain = asset_cert::get_domain(asset_cert.get_symbol());
-                if (domain != asset_cert::get_domain(old_cert_symbol_in_)) {
+                if (domain != old_cert_symbol_in_) {
                     return false;
                 }
             }
@@ -1502,9 +1459,15 @@ bool validate_transaction::check_asset_certs(const transaction& tx) const
                 }
             }
 
+            if (!output.is_asset_cert_issue() && !output.is_asset_cert_autoissue()) {
+                if (!asset_cert::test_certs(asset_certs_in_, cert_type)) {
+                    return false;
+                }
+            }
+
             asset_certs_out.push_back(cert_type);
         }
-        else if (!output.get_asset_symbol().empty()) { // asset related
+        else if (output.is_asset()) { // asset related
             continue;
         }
         else if (!output.is_etp() && !output.is_message()) {

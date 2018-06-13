@@ -73,6 +73,7 @@ public:
     std::string get_asset_issuer() const;
     std::string get_asset_address() const;
     std::string get_asset_cert_symbol() const;
+    std::string get_asset_mit_symbol() const;
     std::string get_asset_cert_owner() const;
     std::string get_asset_cert_address() const;
     asset_cert_type get_asset_cert_type() const;

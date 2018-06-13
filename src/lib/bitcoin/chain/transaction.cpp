@@ -368,6 +368,26 @@ bool transaction::has_asset_transfer()
 	return false;
 }
 
+bool transaction::has_asset_cert_transfer()
+{
+    for (auto& elem: outputs) {
+        if(elem.is_asset_cert()
+            && !elem.is_asset_cert_issue()
+            && !elem.is_asset_cert_autoissue())
+            return true;
+    }
+    return false;
+}
+
+bool transaction::has_asset_mit_transfer()
+{
+    for (auto& elem: outputs) {
+        if(elem.is_asset_mit_transfer())
+            return true;
+    }
+    return false;
+}
+
 bool transaction::has_did_transfer()
 {
 	for (auto& elem: outputs) {

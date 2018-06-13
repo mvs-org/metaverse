@@ -93,6 +93,8 @@ public:
     uint64_t serialized_size() const;
 	uint64_t total_output_transfer_amount() const;
 	bool has_asset_transfer();
+	bool has_asset_cert_transfer();
+	bool has_asset_mit_transfer();
 
     bool has_did_register();
 	bool has_did_transfer();

@@ -129,7 +129,6 @@ private:
     std::vector<asset_cert_type> asset_certs_in_;
     std::string old_symbol_in_; // used for check same asset/did/mit symbol in previous outputs
     std::string old_cert_symbol_in_; // used for check same cert symbol in previous outputs
-    std::set<business_kind> business_kind_in_;
     uint32_t current_input_;
     chain::point::indexes unconfirmed_;
     validate_handler handle_validate_;
