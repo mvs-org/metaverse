@@ -212,8 +212,11 @@ bool validate_transaction::get_previous_tx(chain::transaction& prev_tx,
 {
     prev_height = 0;
     if (pool_) {
-        if (blockchain_.get_transaction(input.previous_output.hash, prev_tx, prev_height)) {
-            return true; // find in block chain or memory pool
+        if (blockchain_.get_transaction(prev_tx, prev_height, input.previous_output.hash)) {
+            return true; // find in block chain
+        }
+        if (pool_->find(prev_tx, input.previous_output.hash)) {
+            return true; // find in memory pool
         }
     }
     else {
