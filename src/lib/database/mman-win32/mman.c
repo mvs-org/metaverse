@@ -210,9 +210,9 @@ int ftruncate(int fd, oft__ size)
     big.QuadPart = (LONGLONG)size;
 
     const HANDLE handle = (HANDLE)_get_osfhandle(fd);
-    const position = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
+    const BOOL ret = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
 
-    if (position == INVALID_SET_FILE_POINTER || SetEndOfFile(handle) == FALSE)
+    if (!ret || !SetEndOfFile(handle))
     {
         const DWORD error = GetLastError();
 
