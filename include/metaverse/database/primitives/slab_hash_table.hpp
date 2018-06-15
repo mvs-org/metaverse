@@ -79,7 +79,7 @@ public:
 private:
 
     // What is the bucket given a hash.
-    array_index bucket_index(const KeyType& key) const;
+    virtual array_index bucket_index(const KeyType& key) const;
 
     // What is the slab start position for a chain.
     file_offset read_bucket_value(const KeyType& key) const;

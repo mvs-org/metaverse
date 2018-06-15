@@ -68,7 +68,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // address option check
     if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
@@ -171,6 +171,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
             tx_item["timestamp"] = each.get_timestamp();
         }
         tx_item["direction"] = "send";
+
+        tx_item["remark"] = blockchain.get_account_remark(*acc, each.get_hash());
 
         // set inputs content
         Json::Value input_addrs;

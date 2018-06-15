@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin/formats/base_64.hpp>
 #include <cryptojs/cryptojs_impl.h>
+#include <metaverse/bitcoin/config/hash256.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -53,7 +54,15 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
     file_root["algo"] = "aes";
     file_root["index"] = uint32_t(pvaddr->size() - acc->get_multisig_vec().size());
     file_root["mnemonic"] = libbitcoin::encode_base64( cryptojs::encrypt("\"" + mnemonic + "\"", auth_.auth) );
-    //file_root["accounts"] =  ss.str();
+
+    if (option_.with_remark) {
+        Json::Value remarks;
+        const std::map<hash_digest, std::string>&& tx_remarks = blockchain.get_account_remarks(*acc);
+        for (auto iter = tx_remarks.begin(); iter != tx_remarks.end(); ++iter) {
+            remarks[libbitcoin::config::hash256(iter->first).to_string()] = iter->second;
+        }
+        file_root["remarks"] = remarks;
+    }
 
     Json::Value multisig_lst;
     for (auto ms : acc->get_multisig_vec()) {

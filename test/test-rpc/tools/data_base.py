@@ -1,6 +1,13 @@
 import struct
 import zlib
+import hashlib
 import os, sys
+import getpass
+
+user = getpass.getuser()
+mainnet_dir = '/home/%s/.metaverse/mainnet/' % user
+
+
 str2int_map = {
     1: '<B',
     2: '<H',
@@ -36,7 +43,9 @@ def to_bin(ss):
     bin_lst.reverse()
     return ''.join( bin_lst )
 
-
+def bitcoin_hash(s):
+    sha256 = hashlib.sha256(s)
+    return hashlib.sha256( sha256.digest() ).digest()
 
 def get_var_len(ff, sum):
     a = ord( ff.read(1) )
@@ -165,12 +174,17 @@ class account_table:
         fw_head.write(int2str(self.header.bucket_size, 4))
 
         payload_size = self.header.size_of_offset
+
         for index, offset in account_info:
             hm.append_slot(index, payload_size)
 
             next = offset
 
             while next != hm.INT_OFFSET_NULL:
+                if next >= self.header.payload_size:
+                    print 'invalid offset', index, hex(next)
+                    break
+
                 fr_table.seek(self.header.offset_begin + next)
                 key = fr_table.read(self.slab.size_of_key)
                 next = str2int( fr_table.read(self.slab.size_of_next) )
@@ -184,8 +198,6 @@ class account_table:
                 else:
                     fw_body.write(hm.STR_OFFSET_NULL)
 
-
-
                 fr_table.seek( begin )
                 fw_body.write( fr_table.read( end - begin ) )
         hm.append_slot(self.header.bucket_size - 1, hm.INT_OFFSET_NULL)
@@ -197,7 +209,7 @@ class account_table:
         fw_body.close()
 
     @classmethod
-    def parse_value_func(cls, ff):
+    def parse_value_func(cls, ff, result={}):
         begin = ff.tell()
 
         extra_padding = []
@@ -213,14 +225,19 @@ class account_table:
         passwd_hash = ff.read(32)
         hd_index = str2int(ff.read(4))
         # print 'hd_index:', hd_index
-        priority = ff.read(1)
-        type = ff.read(1)
-        status = ff.read(1)
+        priority = str2int(ff.read(1))
+        type = str2int(ff.read(1))
+        status = str2int(ff.read(1))
+        if type >= 128:
+            result['account_index'] = str2int(ff.read(2))
 
-        if type == 1:  # multisig account
+        if type in (1, 129):  # multisig account
             vec_size = str2int(ff.read(4))
+
+            result['multisigs'] = []
             #print '\tvec_size', vec_size
             for i in range(vec_size):
+
                 hd = str2int(ff.read(4))
                 id = str2int(ff.read(4))
                 m = ord(ff.read(1))
@@ -228,13 +245,41 @@ class account_table:
                 l = get_var_len(ff, extra_padding.append)
                 pubkey = ff.read(l)
                 size_ = ord(ff.read(1))
+
+                cosigners = []
                 for j in range(size_):
                     l = get_var_len(ff, extra_padding.append)
                     cosigner_pubkey = ff.read(l)
+                    cosigners.append(cosigner_pubkey)
                 desc = ff.read(get_var_len(ff, extra_padding.append))
                 address = ff.read(get_var_len(ff, extra_padding.append))
 
+                result['multisigs'].append(
+                    {
+                        'hd':hd,
+                        'id':id,
+                        'm':m,
+                        'n':n,
+                        'pubkey':pubkey,
+                        'desc':desc,
+                        'address':address,
+                        'cosigners':cosigners
+                    }
+                )
+
         end = ff.tell() + sum(extra_padding)
+
+        result.update(
+            {
+                'name':account_name,
+                'password':passwd_hash,
+                'mnemonic':mnemonic,
+                'hd_index':hd_index,
+                'priority':priority,
+                'type':type,
+                'status':status,
+            }
+        )
 
         return begin, end
 
@@ -247,7 +292,7 @@ class account_table:
                 seed &= 0xFFFFFFFFFFFFFFFF
             return seed
         #print std_hash(hash_)
-        key = to_bin(key)
+        #key = to_bin(key)
 
         with open(table_dir + '/' + self.filename, 'rb') as fr_table:
             self.header.parse_header(fr_table, False)
@@ -263,9 +308,11 @@ class account_table:
                 fr_table.seek(self.header.offset_begin + offset)
                 key_, next_ = fr_table.read(self.slab.size_of_key), fr_table.read(self.slab.size_of_next)
                 if key_ == key:
-                    begin, end = self.parse_value_func(fr_table)
+                    result = {}
+                    begin, end = self.parse_value_func(fr_table, result)
                     fr_table.seek(begin)
-                    return fr_table.read(end - begin)
+                    #return fr_table.read(end - begin)
+                    return result
                 offset = next_
 
 
@@ -464,7 +511,8 @@ class transaction_table(account_table):
     def parse_message(cls, ff):
         extra_padding = []
         var_len = get_var_len(ff, extra_padding.append)
-        assert (0 <= var_len <= 300)
+        if not (0 <= var_len <= 300):
+            print 'unexpect var_len:', var_len
         message = ff.read(var_len)
 
     @classmethod
@@ -585,6 +633,8 @@ class transaction_table(account_table):
 
         locktime = str2int( ff.read(4) )
         end = ff.tell()
+        if hight == 1211234:
+            print index, begin, end
         return begin, end
 
 class block_table(account_table):
@@ -611,13 +661,14 @@ class block_table(account_table):
         number = ff.read(4)
         # header end
 
-        height32 = ff.read(4)
+        height32 = str2int( ff.read(4) )
         tx_count32 = str2int( ff.read(4) )
 
         # transactions
         for i in xrange(tx_count32):
             tx_hash = ff.read(32)
-
+            if height32 == 1211549:
+                print to_string(tx_hash)
         end = ff.tell()
         return begin, end
 
@@ -788,16 +839,13 @@ def crc32(filepath):
         return 0, error
 
 if __name__ == "__main__":
-    import getpass
-    user = getpass.getuser()
-    mainnet_dir = '/home/%s/.metaverse/mainnet/' % user
     #at = transaction_table()
     #at.re_arrange('/home/czp/.metaverse/mainnet/')
     #import pdb;pdb.set_trace()
     #data = at.query("422e2ea8ac1d333b61672044ad7e83b384c7ee621632fbe83dca0510278f7616", mainnet_dir)
     #print to_string(data)
 
-    for table in all_tables: #[address_asset_table]:
+    for table in [account_table]: #[address_asset_table]:all_tables
         t = table()
         print "begin to re_arrage: ", t.__class__
         t.re_arrange(mainnet_dir)

@@ -216,6 +216,7 @@ data_base::store::store(const path& prefix)
     address_dids_rows = prefix / "address_did_row"; // for blockchain
     account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
+    accounts_remark_lookup = prefix / "account_remark_table";
     /* end database for account, asset, address_asset relationship */
     mits_lookup = prefix / "mit_table";
     address_mits_lookup = prefix / "address_mit_table"; // for blockchain
@@ -258,6 +259,7 @@ bool data_base::store::touch_all() const
         touch_file(address_dids_rows) &&
         touch_file(account_addresses_lookup) &&
         touch_file(account_addresses_rows) &&
+        touch_file(accounts_remark_lookup) &&
         /* end database for account, asset, address_asset relationship */
         touch_file(mits_lookup) &&
         touch_file(address_mits_lookup) &&
@@ -468,6 +470,7 @@ data_base::data_base(const store& paths, size_t history_height,
     dids(paths.dids_lookup, mutex_),
     address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
+    account_remarks(paths.accounts_remark_lookup, mutex_),
     /* end database for account, asset, address_asset, did relationship */
     mits(paths.mits_lookup, mutex_),
     address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_),
@@ -528,6 +531,7 @@ bool data_base::create()
         dids.create() &&
         address_dids.create() &&
         account_addresses.create() &&
+        account_remarks.create() &&
         /* end database for account, asset, address_asset relationship */
         mits.create() &&
         address_mits.create() &&
@@ -590,6 +594,7 @@ bool data_base::start()
         dids.start() &&
         address_dids.start() &&
         account_addresses.start() &&
+        account_remarks.start() &&
         /* end database for account, asset, address_asset relationship */
         mits.start() &&
         address_mits.start() &&
@@ -619,6 +624,7 @@ bool data_base::stop()
     const auto dids_stop = dids.stop();
     const auto address_dids_stop = address_dids.stop();
     const auto account_addresses_stop = account_addresses.stop();
+    const auto account_remarks_stop = account_remarks.stop();
     /* end database for account, asset, address_asset relationship */
     const auto mits_stop = mits.stop();
     const auto address_mits_stop = address_mits.stop();
@@ -647,6 +653,7 @@ bool data_base::stop()
         dids_stop &&
         address_dids_stop &&
         account_addresses_stop &&
+        account_remarks_stop &&
         /* end database for account, asset, address_asset relationship */
         mits_stop &&
         address_mits_stop &&
@@ -671,6 +678,7 @@ bool data_base::close()
     const auto certs_close = certs.close();
     const auto dids_close = dids.close();
     const auto account_addresses_close = account_addresses.close();
+    const auto account_remarks_close = account_remarks.close();
     /* end database for account, asset, address_asset relationship */
     const auto mits_close = mits.close();
     const auto address_mits_close = address_mits.close();
@@ -692,6 +700,7 @@ bool data_base::close()
         certs_close &&
         dids_close &&
         account_addresses_close &&
+        account_remarks_close &&
         /* end database for account, asset, address_asset relationship */
         mits_close &&
         address_mits_close &&
@@ -765,6 +774,7 @@ void data_base::synchronize()
     dids.sync();
     address_dids.sync();
     account_addresses.sync();
+    account_remarks.sync();
     /* end database for account, asset, address_asset relationship */
     mits.sync();
     address_mits.sync();

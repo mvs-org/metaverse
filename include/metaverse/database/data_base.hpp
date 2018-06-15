@@ -57,6 +57,7 @@
 #include <metaverse/database/databases/blockchain_mit_database.hpp>
 #include <metaverse/database/databases/address_mit_database.hpp>
 #include <metaverse/database/databases/mit_history_database.hpp>
+#include <metaverse/database/databases/account_remark_database.hpp>
 
 using namespace libbitcoin::wallet;
 using namespace libbitcoin::chain;
@@ -104,6 +105,7 @@ public:
         path address_dids_rows;
         path account_addresses_lookup;
         path account_addresses_rows;
+        path accounts_remark_lookup;
         /* end database for account, asset, address_asset, did ,address_did relationship */
         path mits_lookup;
         path address_mits_lookup;
@@ -367,6 +369,7 @@ public:
     blockchain_did_database dids;
     address_did_database address_dids;
     account_address_database account_addresses;
+    account_remark_database account_remarks;
     /* end database for account, asset, address_asset relationship */
     blockchain_mit_database mits;
     address_mit_database address_mits;

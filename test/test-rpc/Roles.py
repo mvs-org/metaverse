@@ -342,6 +342,7 @@ class NewGuy(Role):
 
     def __init__(self, name):
         Role.__init__(self, name, "", [], "")
+        self.profile = os.path.dirname(os.path.abspath(__file__)) + '/Zac.txt'
 
 
     def create(self):
@@ -354,7 +355,9 @@ class NewGuy(Role):
         result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
         assert (result == 0)
 
-        f = open('./Zac.txt', 'w')
+
+
+        f = open(self.profile, 'w')
         print >> f, self.lastword()
         f.close()
 
@@ -367,8 +370,8 @@ class NewGuy(Role):
         return 0, "success"
 
     def delete(self):
-        if (not self.mnemonic) and os.path.exists('./Zac.txt'):
-            with open('./Zac.txt') as f:
+        if (not self.mnemonic) and os.path.exists(self.profile):
+            with open(self.profile) as f:
                 lastword = f.read()
                 self.mnemonic = [lastword.strip()]
         return Role.delete(self)

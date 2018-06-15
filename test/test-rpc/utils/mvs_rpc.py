@@ -137,6 +137,10 @@ def dump_keyfile(account, password, lastword, keyfile=""):
     return "dumpkeyfile", [account, password, lastword, keyfile], {}, None
 
 @mvs_api
+def dump_keyfile_v2(account, password, lastword):
+    return "dumpkeyfile", [account, password, lastword, '-w', '-d'], {}, None
+
+@mvs_api
 def import_keyfile(account, password, keystore_file, keyfile_content=None):
     if keyfile_content:
         args = [account, password, "omitted", keyfile_content]

@@ -92,6 +92,11 @@ public:
             value<std::string>(&argument_.memo),
             "Attached memo for this transaction."
         )
+        (
+            "remark,r",
+            value<std::string>(&argument_.remark),
+            "Attach remark for this transaction. Note: remarks only stores on your wallet."
+        )
 	    (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
@@ -110,12 +115,13 @@ public:
 
     struct argument
     {
-        argument():address(""), memo("")
+        argument():address(""), memo(""), remark("")
 		{};
         std::string address;
         uint64_t amount;
         uint64_t fee;
         std::string memo;
+        std::string remark;
     } argument_;
 
     struct option

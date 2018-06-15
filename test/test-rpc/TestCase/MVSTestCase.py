@@ -36,9 +36,14 @@ class MVSTestCaseBase(unittest.TestCase):
             print "current block height=[%s], hash=[%s]" % (height, hash)
 
     def tearDown(self):
-        for role in self.roles:
-            result, message = role.delete()
-            self.assertEqual(result, 0, message)
+        '''
+        Since the account will be delete and create in the setUp, tearDown donot need to delete accounts any more.
+        And the developers can use these accounts directly after run these test cases. No longer need to import them manually.
+        '''
+        pass
+        #for role in self.roles:
+        #    result, message = role.delete()
+        #    self.assertEqual(result, 0, message)
 
 class MultiSigDIDTestCase(MVSTestCaseBase):
     def setUp(self):

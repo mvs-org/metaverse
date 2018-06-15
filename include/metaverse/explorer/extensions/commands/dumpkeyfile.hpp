@@ -92,7 +92,12 @@ public:
             "data,d",
             value<bool>(&option_.is_data)->default_value(false)->zero_tokens(),
             "If specified, the keyfile content will be append to the report, rather than to local file specified by DESTINATION."
-        );
+        )
+        (
+            "with-remark,w",
+            value<bool>(&option_.with_remark)->default_value(false)->zero_tokens(),
+            "Determine whether to export keyfile with remarks."
+        )
         ;
 
         return options;
@@ -114,6 +119,7 @@ public:
     struct option
     {
         bool is_data;
+        bool with_remark;
     } option_;
 
 };
