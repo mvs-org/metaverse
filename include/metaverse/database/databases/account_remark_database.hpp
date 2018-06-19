@@ -27,17 +27,18 @@
 
 namespace libbitcoin {
     namespace database {
-        class BCD_API account_remark_base_database: public base_database
-        {
-        public:
-            using base_database::base_database;
-
-            slab_map& get_lookup_map() {return lookup_map_;};
-
-            void remove(const hash_digest& hash) {lookup_map_.unlink(hash);};
-        };
-
         class BCD_API account_remark_database {
+
+            class BCD_API account_remark_base_database: public base_database
+            {
+            public:
+                using base_database::base_database;
+
+                slab_map& get_lookup_map() {return lookup_map_;};
+
+                void remove(const hash_digest& hash) {lookup_map_.unlink(hash);};
+            };
+
         public:
             /// Construct the database.
             account_remark_database(const boost::filesystem::path& lookup_filename,

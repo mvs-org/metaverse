@@ -2431,6 +2431,10 @@ void block_chain_impl::store_account_remark(const std::string& account_name, con
     if (stopped())
         return;
 
+    if(!remark.empty()) {
+        return;
+    }
+
     database_.account_remarks.store(account_name, hash, remark);
     database_.account_remarks.sync();
 }
