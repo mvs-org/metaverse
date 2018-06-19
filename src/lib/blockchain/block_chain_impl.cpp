@@ -2415,64 +2415,40 @@ bool block_chain_impl::get_history(const wallet::payment_address& address,
     return true;
 }
 
-operation_result block_chain_impl::delete_account_remarks(const uint16_t& account_index)
+operation_result block_chain_impl::delete_account_remarks(const std::string& account_name)
 {
     if (stopped()) {
         return operation_result::failure;
     }
 
-    if (account_index == max_uint16)
-        return operation_result::okay;
-
-    database_.account_remarks.free_index(account_index);
+    database_.account_remarks.remove(account_name);
     database_.account_remarks.sync();
     return operation_result::okay;
 }
 
-void block_chain_impl::store_account_remark(account& acc, const hash_digest& hash, const std::string& remark)
+void block_chain_impl::store_account_remark(const std::string& account_name, const hash_digest& hash, const std::string& remark)
 {
     if (stopped())
         return;
-    if (!acc.has_account_index())
-    {
-        const auto account_index = database_.account_remarks.allocate_index();
-        if (account_index == max_uint16) {
-            //TODO: add log here
-            return;
-        }
-        acc.set_account_index(account_index);
-        BITCOIN_ASSERT(account_index == acc.get_account_index());
 
-        //account has been updated, store to db
-        database_.accounts.store(acc);
-        database_.accounts.sync();
-    }
-    const auto account_index = acc.get_account_index();
-    BITCOIN_ASSERT(account_index < max_uint16);
-    database_.account_remarks.store(account_index, hash, remark);
+    database_.account_remarks.store(account_name, hash, remark);
     database_.account_remarks.sync();
 }
 
-std::string block_chain_impl::get_account_remark(account& acc, const hash_digest& hash)
+std::string block_chain_impl::get_account_remark(const std::string& account_name, const hash_digest& hash)
 {
     if (stopped())
         return "";
 
-    const auto account_index = acc.get_account_index();
-    if (account_index == max_uint16)
-        return "";
-
-    return database_.account_remarks.get(account_index, hash);
+    return database_.account_remarks.get(account_name, hash);
 }
 
-std::map<hash_digest, std::string> block_chain_impl::get_account_remarks(const account& acc)
+std::map<hash_digest, std::string> block_chain_impl::get_account_remarks(const std::string& account_name)
 {
     if (stopped())
         return {};
-    const auto account_index = acc.get_account_index();
-    if (account_index == max_uint16)
-        return {};
-    return database_.account_remarks.get_all(account_index);
+
+    return database_.account_remarks.get_all(account_name);
 }
 
 bool block_chain_impl::get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val)

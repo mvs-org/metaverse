@@ -26,16 +26,11 @@ namespace libbitcoin {
     namespace database {
         using namespace boost::filesystem;
 
-        BC_CONSTEXPR size_t number_buckets = 65500; //65535 means invalid index
-        BC_CONSTEXPR size_t header_size = slab_hash_table_header_size(number_buckets);
-        BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
-
-        account_remark_database::account_remark_database(const path& map_filename,
+        account_remark_database::account_remark_database(const boost::filesystem::path& lookup_filename,
+                                                         const boost::filesystem::path& rows_filename,
                                                          std::shared_ptr<shared_mutex> mutex)
-                : lookup_file_(map_filename, mutex),
-                  lookup_header_(lookup_file_, number_buckets),
-                  lookup_manager_(lookup_file_, header_size),
-                  lookup_map_(lookup_header_, lookup_manager_)
+                : account_remark_table(lookup_filename, mutex),
+                  account_remark_rows(rows_filename, mutex)
         {}
 
         account_remark_database::~account_remark_database()
@@ -49,21 +44,7 @@ namespace libbitcoin {
         // Initialize files and start.
         bool account_remark_database::create()
         {
-            // Resize and create require a started file.
-            if (!lookup_file_.start())
-                return false;
-
-            // This will throw if insufficient disk space.
-            lookup_file_.resize(initial_map_file_size);
-
-            if (!lookup_header_.create() ||
-                !lookup_manager_.create())
-                return false;
-
-            // Should not call start after create, already started.
-            return
-                    lookup_header_.start() &&
-                    lookup_manager_.start();
+            return account_remark_table.create() && account_remark_rows.create();
         }
 
         // Startup and shutdown.
@@ -72,79 +53,103 @@ namespace libbitcoin {
         // Start files and primitives.
         bool account_remark_database::start()
         {
-            return
-                    lookup_file_.start() &&
-                    lookup_header_.start() &&
-                    lookup_manager_.start();
+            return account_remark_table.start() && account_remark_rows.start();
         }
 
         // Stop files.
         bool account_remark_database::stop()
         {
-            return lookup_file_.stop();
+            return account_remark_table.stop() && account_remark_rows.stop();
         }
 
         // Close files.
         bool account_remark_database::close()
         {
-            return lookup_file_.close();
+            return account_remark_table.close() && account_remark_rows.close();
         }
 
         void account_remark_database::sync()
         {
-            lookup_manager_.sync();
+            account_remark_table.sync();
+            account_remark_rows.sync();
         }
 
-        const uint16_t account_remark_database::allocate_index()
+        void account_remark_database::remove(const std::string& account_name)
         {
-            return lookup_map_.allocate_index();
+            const hash_digest&& hash = get_hash(account_name);
+            account_remark_table.remove(hash);
         }
 
-        void account_remark_database::free_index(const uint16_t& index )
+        void account_remark_database::store(const std::string& account_name, const hash_digest& tx_hash, const std::string& remark)
         {
-            lookup_map_.free_index(index);
-        }
+            const hash_digest&& hash = get_hash(account_name);
+            file_offset position = max_uint64;
+            {
+                const auto memory = account_remark_table.get_lookup_map().find(hash);
+                if (memory) {
+                    auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
+                    position = deserial.read_8_bytes_little_endian();
+                }
+            }
 
-        void account_remark_database::store(const uint16_t& account_index, const hash_digest& tx_hash, const std::string& remark)
-        {
-
-            const auto && key = get_key(account_index, tx_hash);
-
-            auto write = [&remark](memory_ptr data)
+            auto write_row = [&remark](memory_ptr data)
             {
                 auto serial = make_serializer(REMAP_ADDRESS(data));
                 serial.write_string(remark);
             };
-
             const auto value_size = variable_uint_size(remark.size()) + remark.size() + 1; // reserve 1 byte for future extension
 
-            lookup_map_.store(key, write, value_size);
-        }
+            const file_offset new_position = account_remark_rows.get_lookup_map().store(tx_hash, position, write_row, value_size);
 
-        const std::string account_remark_database::get(const uint16_t& account_index, const hash_digest& tx_hash) const
-        {
-            const auto && key = get_key(account_index, tx_hash);
-
-            const auto memory = lookup_map_.find(key);
-            if (memory) {
-                auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
-                return deserial.read_string();
+            auto write_table = [&new_position](memory_ptr data)
+            {
+                auto serial = make_serializer(REMAP_ADDRESS(data));
+                serial.write_8_bytes_little_endian(new_position);
+            };
+            if (position != max_uint64) {
+                account_remark_table.get_lookup_map().restore(hash, write_table, value_size);
             } else {
-                return "";
+                account_remark_table.get_lookup_map().store(hash, write_table, value_size);
             }
         }
 
-        const std::map<hash_digest, std::string> account_remark_database::get_all(const uint16_t& account_index) const
+        const std::string account_remark_database::get(const std::string& account_name, const hash_digest& tx_hash)
+        {
+            const hash_digest&& hash = get_hash(account_name);
+
+            const auto memory = account_remark_table.get_lookup_map().find(hash);
+            if (memory) {
+                auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
+                const file_offset position = deserial.read_8_bytes_little_endian();
+                {
+                    const auto memory = account_remark_rows.get_lookup_map().find(tx_hash, position);
+                    auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
+                    return deserial.read_string();
+                }
+            }
+            return "";
+        }
+
+        const std::map<hash_digest, std::string> account_remark_database::get_all(const std::string& account_name)
         {
             std::map<hash_digest, std::string> ret;
 
-            std::vector<memory_ptr> data;
-            lookup_map_.finds_by_index(account_index, data);
-            for (const auto &memory: data) {
+            const hash_digest&& hash = get_hash(account_name);
+
+            const auto memory = account_remark_table.get_lookup_map().find(hash);
+            if (memory) {
                 auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
-                const hash_digest&& tx_hash = deserial.read_hash();
-                deserial.read_bytes<sizeof(file_offset)>(); // discard next
-                ret[tx_hash] = deserial.read_string();
+                const file_offset position = deserial.read_8_bytes_little_endian();
+                {
+                    const auto vec_memory_ptr = account_remark_rows.get_lookup_map().finds(position);
+                    for (const auto &memory: vec_memory_ptr) {
+                        auto deserial = make_deserializer_unsafe(REMAP_ADDRESS(memory));
+                        const hash_digest&& tx_hash = deserial.read_hash();
+                        deserial.read_bytes<sizeof(file_offset)>(); // discard next
+                        ret[tx_hash] = deserial.read_string();
+                    }
+
+                }
             }
 
             return ret;

@@ -73,6 +73,10 @@ public:
 	const memory_ptr rfind(const KeyType& key) const;
 	std::vector<memory_ptr> finds(const KeyType& key) const;
 
+    file_offset store(const KeyType& key, const uint64_t &position, write_function write, const size_t value_size);
+    const memory_ptr find(const KeyType& key, const uint64_t &position) const;
+    std::vector<memory_ptr> finds(const uint64_t &position) const;
+
     /// Delete a key-value pair from the hashtable by unlinking the node.
     bool unlink(const KeyType& key);
 

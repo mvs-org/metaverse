@@ -23,24 +23,31 @@
 #define METAVERSE_ACCOUNT_REMARK_DATABASE_HPP
 #include <boost/filesystem.hpp>
 #include <metaverse/database/define.hpp>
-#include <metaverse/database/primitives/slab_index_table.hpp>
-#include <metaverse/database/primitives/slab_manager.hpp>
+#include <metaverse/database/databases/base_database.hpp>
 
 namespace libbitcoin {
     namespace database {
-        static BC_CONSTEXPR size_t account_remark_key_size = 2 + 32 ; //32-tx_hash, 2-account_index
-        typedef byte_array<account_remark_key_size> account_remark_key;
+        class BCD_API account_remark_base_database: public base_database
+        {
+        public:
+            using base_database::base_database;
+
+            slab_map& get_lookup_map() {return lookup_map_;};
+
+            void remove(const hash_digest& hash) {lookup_map_.unlink(hash);};
+        };
 
         class BCD_API account_remark_database {
         public:
             /// Construct the database.
             account_remark_database(const boost::filesystem::path& lookup_filename,
+                                    const boost::filesystem::path& rows_filename,
                                     std::shared_ptr<shared_mutex> mutex=nullptr);
 
             /// Close the database (all threads must first be stopped).
             ~account_remark_database();
 
-            /// Initialize a new transaction database.
+            /// Initialize a new base database.
             bool create();
 
             /// Call before using the database.
@@ -56,35 +63,23 @@ namespace libbitcoin {
             /// Should be done at the end of every block write.
             void sync();
 
-            const uint16_t allocate_index();
+            void remove(const std::string& account_name);
 
-            void free_index(const uint16_t& index );
+            void store(const std::string& account_name, const hash_digest& tx_hash, const std::string& remark);
 
-            void store(const uint16_t& account_index, const hash_digest& tx_hash, const std::string& remark);
+            const std::string get(const std::string& account_name, const hash_digest& tx_hash);
 
-            const std::string get(const uint16_t& account_index, const hash_digest& tx_hash) const;
-
-            const std::map<hash_digest, std::string> get_all(const uint16_t& account_index) const;
+            const std::map<hash_digest, std::string> get_all(const std::string& account_name);
 
         private:
-            account_remark_key get_key(const uint16_t& account_index, const hash_digest& tx_hash) const {
-                account_remark_key key;
+            account_remark_base_database account_remark_table;
+            account_remark_base_database account_remark_rows;
 
-                const auto &&acc_id = to_little_endian<uint16_t>(account_index);
-                std::copy(acc_id.begin(), acc_id.end(), key.begin());
-                std::copy(tx_hash.begin(), tx_hash.end(), key.begin() + acc_id.size());
-                return key;
-            };
-
-
-            typedef slab_index_table<account_remark_key, uint16_t> slab_map;
-
-            // Hash table used for looking up txs by hash.
-            memory_map lookup_file_;
-            slab_hash_table_header lookup_header_;
-            slab_manager lookup_manager_;
-            slab_map lookup_map_;
-
+            inline hash_digest get_hash(const std::string& str) const
+            {
+                data_chunk data(str.begin(), str.end());
+                return sha256_hash(data);
+            }
         };
 
     }

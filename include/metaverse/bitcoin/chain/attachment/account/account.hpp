@@ -29,7 +29,6 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
-#include <metaverse/bitcoin/constants.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -57,9 +56,6 @@ enum account_type : uint8_t
 {
     common = 0,
     multisignature,
-
-
-    index_bit = 0x80,
 };
 
 /// used for store account related information
@@ -127,7 +123,7 @@ class BC_API account
 public:
     account();
     account(const std::string& name, const std::string& mnemonic, const hash_digest& passwd,
-        uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type, const uint16_t& account_index);
+        uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type);
 
     static account factory_from_data(const data_chunk& data);
     static account factory_from_data(std::istream& stream);
@@ -193,9 +189,7 @@ public:
 
     void set_type(uint8_t type);
     uint8_t get_type() const;
-    bool has_account_index() const {return (type & account_type::index_bit) == account_type::index_bit;};
-    void set_account_index(const uint16_t &account_index);
-    const uint16_t get_account_index() const { return has_account_index() ? account_index : max_uint16; };
+
     const account_multisig::list& get_multisig_vec() const;
     void set_multisig_vec(account_multisig::list&& multisig);
 
@@ -215,8 +209,6 @@ private:
     uint8_t type;
     uint8_t status;
     uint8_t priority;
-
-    uint16_t account_index; // add the account index
 
     // multisig fields
     account_multisig::list multisig_vec;

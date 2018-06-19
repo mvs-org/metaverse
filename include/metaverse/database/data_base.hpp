@@ -106,6 +106,7 @@ public:
         path account_addresses_lookup;
         path account_addresses_rows;
         path accounts_remark_lookup;
+        path accounts_remark_rows;
         /* end database for account, asset, address_asset, did ,address_did relationship */
         path mits_lookup;
         path address_mits_lookup;

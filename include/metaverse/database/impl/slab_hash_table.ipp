@@ -215,6 +215,88 @@ std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t
     return vec_memo;
 }
 
+template <typename KeyType>
+file_offset slab_hash_table<KeyType>::store(const KeyType& key, const uint64_t &position, write_function write, const size_t value_size)
+{
+    mutex_.lock();
+    // Store current bucket value.
+    const auto old_begin = position;//read_bucket_value(key);
+    slab_row<KeyType> item(manager_, 0);
+    const auto new_begin = item.create(key, value_size, old_begin);
+    write(item.data());
+
+    // Link record to header.
+    //link(key, new_begin);
+
+    mutex_.unlock();
+
+    // Return position,
+    return new_begin;// + item.value_begin; -- not only value is needed, but also the key!
+}
+
+template <typename KeyType>
+const memory_ptr slab_hash_table<KeyType>::find(const KeyType& key, const uint64_t &position) const
+{
+    // Find start item...
+    auto current = position;//read_bucket_value(key);
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        if(item.out_of_memory())
+            break;
+
+        // Found.
+        if (item.compare(key))
+            return item.data();
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            return nullptr;
+    }
+
+    return nullptr;
+}
+
+template <typename KeyType>
+std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const uint64_t &position) const
+{
+    std::vector<memory_ptr> vec_memo;
+    // find first item
+    auto current = position;//header_.read(index);
+    static_assert(sizeof(current) == sizeof(file_offset), "Invalid size");
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        if(item.out_of_memory())
+            break;
+
+        // memory_ptr point to (key, next, value), not only value.
+        vec_memo.push_back( manager_.get(current) );
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return vec_memo;
+}
+
 
 // This is limited to unlinking the first of multiple matching key values.
 template <typename KeyType>

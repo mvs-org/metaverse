@@ -342,10 +342,10 @@ public:
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
     void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
 
-    operation_result delete_account_remarks(const uint16_t& account_index);
-    void store_account_remark(account& acc, const hash_digest& hash, const std::string& remark);
-    std::string get_account_remark(account& acc, const hash_digest& hash);
-    std::map<hash_digest, std::string> get_account_remarks(const account& acc);
+    operation_result delete_account_remarks(const std::string& account_name);
+    void store_account_remark(const std::string& account_name, const hash_digest& hash, const std::string& remark);
+    std::string get_account_remark(const std::string& account_name, const hash_digest& hash);
+    std::map<hash_digest, std::string> get_account_remarks(const std::string& account_name);
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 

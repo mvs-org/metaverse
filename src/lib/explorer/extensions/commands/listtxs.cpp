@@ -172,7 +172,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
         }
         tx_item["direction"] = "send";
 
-        tx_item["remark"] = blockchain.get_account_remark(*acc, each.get_hash());
+        tx_item["remark"] = blockchain.get_account_remark(acc->get_name(), each.get_hash());
 
         // set inputs content
         Json::Value input_addrs;

@@ -55,7 +55,7 @@ console_result send::invoke(Json::Value& jv_output,
     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     if(!argument_.remark.empty()) {
-        blockchain.store_account_remark(*acc, tx.hash(), argument_.remark);
+        blockchain.store_account_remark(acc->get_name(), tx.hash(), argument_.remark);
     }
 
     return console_result::okay;

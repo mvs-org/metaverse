@@ -240,9 +240,9 @@ account::account()
 
 account::account(
     const std::string& name, const std::string& mnemonic, const hash_digest& passwd,
-    uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type, const uint16_t &account_index)
+    uint32_t hd_index, uint8_t priority, uint8_t status, uint8_t type)
     : name(name), mnemonic(mnemonic), passwd(passwd)
-    , hd_index(hd_index), priority(priority), status(status), type(type), account_index(account_index)
+    , hd_index(hd_index), priority(priority), status(status), type(type)
 {
 }
 
@@ -281,7 +281,6 @@ void account::reset()
     this->priority = account_priority::common_user; // 0 -- admin user  1 -- common user
     this->type = account_type::common;
     this->status = account_status::normal;
-    this->account_index = 0;
 }
 
 bool account::from_data(const data_chunk& data)
@@ -314,11 +313,7 @@ bool account::from_data(reader& source)
     //status = source.read_2_bytes_little_endian();
     type = source.read_byte();
     status = source.read_byte();
-    if (has_account_index()) {
-        account_index = source.read_2_bytes_little_endian();
-    }
-
-    if (get_type() == account_type::multisignature) {
+    if (type == account_type::multisignature) {
         //multisig.from_data(source);
         account_multisig multisig;
         uint32_t size = source.read_4_bytes_little_endian();
@@ -357,12 +352,7 @@ void account::to_data(writer& sink) const
     //sink.write_2_bytes_little_endian(status);
     sink.write_byte(type);
     sink.write_byte(status);
-
-    if (has_account_index()) {
-        sink.write_2_bytes_little_endian(account_index);
-    }
-
-    if (get_type() == account_type::multisignature) {
+    if (type == account_type::multisignature) {
         //multisig.to_data(sink);
         sink.write_4_bytes_little_endian(multisig_vec.size());
         if (multisig_vec.size()) {
@@ -376,10 +366,7 @@ void account::to_data(writer& sink) const
 uint64_t account::serialized_size() const
 {
     uint64_t size = name.size() + mnemonic.size() + passwd.size() + 4 + 1 + 2 + 2 * 9; // 2 string len
-    if (has_account_index()) {
-        size += 2;
-    }
-    if (get_type() == account_type::multisignature) {
+    if (type == account_type::multisignature) {
         //size += multisig.serialized_size();
         size += 4; // vector size
         for (auto& each : multisig_vec)
@@ -413,7 +400,7 @@ std::string account::to_string()
        << "\t priority = " << priority << "\n"
        << "\t type = " << type << "\n"
        << "\t status = " << status << "\n";
-    if (get_type() == account_type::multisignature) {
+    if (type == account_type::multisignature) {
         for (auto& each : multisig_vec)
             ss << "\t\t" << each.to_string();
     }
@@ -476,15 +463,12 @@ void account::set_hd_index(uint32_t hd_index)
 
 uint8_t account::get_type() const
 {
-    return type & ~account_type::index_bit;
+    return type;
 }
 
 void account::set_type(uint8_t type)
 {
-    //only change the last 7 bits, the high 1 bit remains
-    const auto lower7bit = (type & ~account_type::index_bit);
-    const auto high1bit  = this->type & account_type::index_bit;
-    this->type = high1bit ^ lower7bit;
+    this->type = type;
 }
 
 uint8_t account::get_status() const
@@ -584,14 +568,5 @@ void account::modify_multisig(const account_multisig& multisig)
     }
 }
 
-void account::set_account_index(const uint16_t &acc_index)
-{
-    if (has_account_index()) {
-        throw std::logic_error{"account_index has been set!"};
-    }
-
-    type ^= account_type::index_bit;
-    account_index = acc_index;
-}
 } // namspace chain
 } // namspace libbitcoin

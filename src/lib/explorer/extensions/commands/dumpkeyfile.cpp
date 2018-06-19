@@ -57,7 +57,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
 
     if (option_.with_remark) {
         Json::Value remarks;
-        const std::map<hash_digest, std::string>&& tx_remarks = blockchain.get_account_remarks(*acc);
+        const std::map<hash_digest, std::string>&& tx_remarks = blockchain.get_account_remarks(acc->get_name());
         for (auto iter = tx_remarks.begin(); iter != tx_remarks.end(); ++iter) {
             remarks[libbitcoin::config::hash256(iter->first).to_string()] = iter->second;
         }

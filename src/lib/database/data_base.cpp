@@ -217,6 +217,7 @@ data_base::store::store(const path& prefix)
     account_addresses_lookup = prefix / "account_address_table";
     account_addresses_rows = prefix / "account_address_rows";
     accounts_remark_lookup = prefix / "account_remark_table";
+    accounts_remark_rows = prefix / "account_remark_rows";
     /* end database for account, asset, address_asset relationship */
     mits_lookup = prefix / "mit_table";
     address_mits_lookup = prefix / "address_mit_table"; // for blockchain
@@ -259,7 +260,7 @@ bool data_base::store::touch_all() const
         touch_file(address_dids_rows) &&
         touch_file(account_addresses_lookup) &&
         touch_file(account_addresses_rows) &&
-        touch_file(accounts_remark_lookup) &&
+        touch_file(accounts_remark_lookup) && touch_file(accounts_remark_rows) &&
         /* end database for account, asset, address_asset relationship */
         touch_file(mits_lookup) &&
         touch_file(address_mits_lookup) &&
@@ -470,7 +471,7 @@ data_base::data_base(const store& paths, size_t history_height,
     dids(paths.dids_lookup, mutex_),
     address_dids(paths.address_dids_lookup, paths.address_dids_rows, mutex_),
     account_addresses(paths.account_addresses_lookup, paths.account_addresses_rows, mutex_),
-    account_remarks(paths.accounts_remark_lookup, mutex_),
+    account_remarks(paths.accounts_remark_lookup, paths.accounts_remark_rows, mutex_),
     /* end database for account, asset, address_asset, did relationship */
     mits(paths.mits_lookup, mutex_),
     address_mits(paths.address_mits_lookup, paths.address_mits_rows, mutex_),

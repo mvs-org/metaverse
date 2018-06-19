@@ -45,7 +45,7 @@ console_result deleteaccount::invoke(Json::Value& jv_output,
     blockchain.delete_account_asset(acc->get_name());
 
     // delete account remarks
-    blockchain.delete_account_remarks(acc->get_account_index());
+    blockchain.delete_account_remarks(acc->get_name());
 
     // delete account
     blockchain.delete_account(acc->get_name());
