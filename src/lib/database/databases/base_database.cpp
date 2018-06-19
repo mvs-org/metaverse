@@ -39,7 +39,7 @@ BC_CONSTEXPR size_t initial_map_file_size = header_size + minimum_slabs_size;
 
 base_database::base_database(const path& map_filename,
     std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(map_filename, mutex), 
+  : lookup_file_(map_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size),
     lookup_map_(lookup_header_, lookup_manager_)

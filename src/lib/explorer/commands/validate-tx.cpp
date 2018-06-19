@@ -79,6 +79,6 @@ console_result validate_tx::invoke(std::ostream& output,
     return state.get_result();
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

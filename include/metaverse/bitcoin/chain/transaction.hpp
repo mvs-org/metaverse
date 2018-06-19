@@ -91,15 +91,15 @@ public:
     bool is_locktime_conflict() const;
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;
-	uint64_t total_output_transfer_amount() const;
-	bool has_asset_issue() const;
-	bool has_asset_secondary_issue() const;
-	bool has_asset_transfer() const;
-	bool has_asset_cert() const;
-	bool has_asset_mit_transfer() const;
+    uint64_t total_output_transfer_amount() const;
+    bool has_asset_issue() const;
+    bool has_asset_secondary_issue() const;
+    bool has_asset_transfer() const;
+    bool has_asset_cert() const;
+    bool has_asset_mit_transfer() const;
 
     bool has_did_register() const;
-	bool has_did_transfer() const;
+    bool has_did_transfer() const;
     std::string get_did_transfer_old_address() const;
 
     uint32_t version;

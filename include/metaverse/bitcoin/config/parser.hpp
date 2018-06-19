@@ -58,7 +58,7 @@ public:
 
     /// Load configuration file settings.
     virtual options_metadata load_settings() = 0;
-    
+
 protected:
     virtual void load_command_variables(variables_map& variables,
         int argc, const char* argv[]);

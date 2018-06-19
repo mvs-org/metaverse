@@ -96,7 +96,7 @@ void* mmap(void* addr, size_t len, int prot, int flags, int fildes, oft__ off)
         return MAP_FAILED;
     }
 
-    const HANDLE handle = ((flags & MAP_ANONYMOUS) == 0) ? 
+    const HANDLE handle = ((flags & MAP_ANONYMOUS) == 0) ?
         (HANDLE)_get_osfhandle(fildes) : INVALID_HANDLE_VALUE;
 
     if ((flags & MAP_ANONYMOUS) == 0 && handle == INVALID_HANDLE_VALUE)

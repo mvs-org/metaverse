@@ -41,10 +41,10 @@ public:
         address_current,
         address_history
     };
-	typedef std::vector<blockchain_did> list;
-	blockchain_did();
-	blockchain_did( uint32_t version, const output_point& tx_point,
-			uint64_t height, uint32_t status, const did_detail& did);
+    typedef std::vector<blockchain_did> list;
+    blockchain_did();
+    blockchain_did( uint32_t version, const output_point& tx_point,
+            uint64_t height, uint32_t status, const did_detail& did);
     static blockchain_did factory_from_data(const data_chunk& data);
     static blockchain_did factory_from_data(std::istream& stream);
     static blockchain_did factory_from_data(reader& source);
@@ -64,23 +64,23 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const uint32_t& get_version() const;
-	void set_version(const uint32_t& version_);
-	const output_point& get_tx_point() const;
-	void set_tx_point(const output_point& tx_point_);
-	const uint64_t& get_height() const;
-	void set_height(const uint64_t& height_);
-	const did_detail& get_did() const;
-	void set_did(const did_detail& did_);
+    const uint32_t& get_version() const;
+    void set_version(const uint32_t& version_);
+    const output_point& get_tx_point() const;
+    void set_tx_point(const output_point& tx_point_);
+    const uint64_t& get_height() const;
+    void set_height(const uint64_t& height_);
+    const did_detail& get_did() const;
+    void set_did(const did_detail& did_);
     void set_status(const uint32_t & status);
-	const uint32_t& get_status() const;
+    const uint32_t& get_status() const;
     std::string get_status_string() const;
 private:
     uint32_t version_;
     output_point tx_point_;
-	uint64_t height_;
-    uint32_t status_;    
-	did_detail did_;
+    uint64_t height_;
+    uint32_t status_;
+    did_detail did_;
 };
 
 } // namespace chain

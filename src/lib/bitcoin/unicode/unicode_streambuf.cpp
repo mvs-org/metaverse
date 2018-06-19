@@ -87,7 +87,7 @@ std::streambuf::int_type unicode_streambuf::underflow()
 // We compensate for character-splitting. This is necessary because
 // MSVC does not support a UTF8 locale and as such streams interpret
 // narrow characters in the default locale. This implementation
-// assumes the stream will treat each byte of a multibyte narrow 
+// assumes the stream will treat each byte of a multibyte narrow
 // chracter as an individual single byte character.
 std::streambuf::int_type unicode_streambuf::overflow(
     std::streambuf::int_type character)
@@ -101,7 +101,7 @@ std::streambuf::int_type unicode_streambuf::overflow(
     }
 
     // This will be in the range 0..4, indicating the number of bytes that were
-    // not written in the conversion. A nonzero value results when the buffer 
+    // not written in the conversion. A nonzero value results when the buffer
     // terminates within a utf8 multiple byte character.
     uint8_t unwritten = 0;
 
@@ -120,7 +120,7 @@ std::streambuf::int_type unicode_streambuf::overflow(
         // Handle write failure as an EOF.
         if (static_cast<size_t>(written) != chars){
             return traits_type::eof();
-		}
+        }
     }
 
     // Copy the fractional character to the beginning of the buffer.

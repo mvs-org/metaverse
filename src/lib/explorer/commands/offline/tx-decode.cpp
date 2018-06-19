@@ -46,6 +46,6 @@ console_result tx_decode::invoke(std::ostream& output, std::ostream& error)
     return console_result::okay;
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

@@ -1,6 +1,6 @@
 /**
  *   Byte-oriented AES-256 implementation.
- *   All lookup tables replaced with 'on the fly' calculations. 
+ *   All lookup tables replaced with 'on the fly' calculations.
  *
  *   Copyright (c) 2007-2009 Ilya O. Levin, http://www.literatecode.com
  *   Other contributors: Hal Finney
@@ -139,7 +139,7 @@ uint8_t rj_sbox(uint8_t x)
     uint8_t y, sb;
 
     sb = y = gf_mulinv(x);
-    y = (y<<1)|(y>>7); sb ^= y;  y = (y<<1)|(y>>7); sb ^= y; 
+    y = (y<<1)|(y>>7); sb ^= y;  y = (y<<1)|(y>>7); sb ^= y;
     y = (y<<1)|(y>>7); sb ^= y;  y = (y<<1)|(y>>7); sb ^= y;
 
     return (sb ^ 0x63);
@@ -160,7 +160,7 @@ uint8_t rj_sbox_inv(uint8_t x)
 #endif
 
 /* -------------------------------------------------------------------------- */
-uint8_t rj_xtime(uint8_t x) 
+uint8_t rj_xtime(uint8_t x)
 {
     return (x & 0x80) ? ((x << 1) ^ 0x1b) : (x << 1);
 } /* rj_xtime */
@@ -253,7 +253,7 @@ void aes_mixColumns_inv(uint8_t* buf)
 } /* aes_mixColumns_inv */
 
 /* -------------------------------------------------------------------------- */
-void aes_expandEncKey(uint8_t* k, uint8_t* rc) 
+void aes_expandEncKey(uint8_t* k, uint8_t* rc)
 {
     register uint8_t i;
 
@@ -276,11 +276,11 @@ void aes_expandEncKey(uint8_t* k, uint8_t* rc)
 } /* aes_expandEncKey */
 
 /* -------------------------------------------------------------------------- */
-void aes_expandDecKey(uint8_t* k, uint8_t* rc) 
+void aes_expandDecKey(uint8_t* k, uint8_t* rc)
 {
     uint8_t i;
 
-    for(i = 28; i > 16; i -= 4) k[i+0] ^= k[i-4], k[i+1] ^= k[i-3], 
+    for(i = 28; i > 16; i -= 4) k[i+0] ^= k[i-4], k[i+1] ^= k[i-3],
         k[i+2] ^= k[i-2], k[i+3] ^= k[i-1];
 
     k[16] ^= rj_sbox(k[12]);
@@ -314,7 +314,7 @@ void aes256_done(aes256_context* context)
 {
     register uint8_t i;
 
-    for (i = 0; i < sizeof(context->key); i++) 
+    for (i = 0; i < sizeof(context->key); i++)
         context->key[i] = context->enckey[i] = context->deckey[i] = 0;
 } /* aes256_done */
 
@@ -334,7 +334,7 @@ void aes256_encrypt_ecb(aes256_context* context, uint8_t* buf)
     }
     aes_subBytes(buf);
     aes_shiftRows(buf);
-    aes_expandEncKey(context->key, &rcon); 
+    aes_expandEncKey(context->key, &rcon);
     aes_addRoundKey(buf, context->key);
 } /* aes256_encrypt */
 
@@ -349,7 +349,7 @@ void aes256_decrypt_ecb(aes256_context* context, uint8_t* buf)
 
     for (i = 14, rcon = 0x80; --i;)
     {
-        if( ( i & 1 ) )           
+        if( ( i & 1 ) )
         {
             aes_expandDecKey(context->key, &rcon);
             aes_addRoundKey(buf, &context->key[16]);
@@ -359,5 +359,5 @@ void aes256_decrypt_ecb(aes256_context* context, uint8_t* buf)
         aes_shiftRows_inv(buf);
         aes_subBytes_inv(buf);
     }
-    aes_addRoundKey( buf, context->key); 
+    aes_addRoundKey( buf, context->key);
 } /* aes256_decrypt */

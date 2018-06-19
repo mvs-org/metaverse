@@ -257,7 +257,7 @@ session_outbound::ptr p2p::attach_outbound_session()
 // IOW queued shutdown operations must not enqueue additional work.
 
 // This is not short-circuited by a stopped test because we need to ensure it
-// completes at least once before returning. This requires a unique lock be 
+// completes at least once before returning. This requires a unique lock be
 // taken around the entire section, which poses a deadlock risk. Instead this
 // is thread safe and idempotent, allowing it to be unguarded.
 bool p2p::stop()
@@ -279,7 +279,7 @@ bool p2p::stop()
 
     // Stop accepting channels and stop those that exist (self-clearing).
     connections_->stop(error::service_stopped);
-    
+
     //shutdown upnp
     map_port(false);
 
@@ -399,7 +399,7 @@ void p2p::handle_new_connection(const code& ec, channel::ptr channel,
 {
     // Connection-in-use indicated here by error::address_in_use.
     handler(ec);
-    
+
     if (!ec && channel->notify())
         channel_subscriber_->relay(error::success, channel);
 }
@@ -480,7 +480,7 @@ void p2p::thread_map_port(uint16_t map_port)
     /* miniupnpc 1.9.20150730 */
     int error = 0;
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
-    
+
 #endif
 
     struct UPNPUrls urls;
@@ -496,7 +496,7 @@ void p2p::thread_map_port(uint16_t map_port)
     if (r == 1)
     {
         std::string strDesc = std::string("ETP v") + MVS_VERSION;
-        
+
 
         try {
             while (true) {
@@ -595,7 +595,7 @@ config::authority::ptr p2p::get_out_address() {
     freeUPNPDevlist(devlist); devlist = nullptr;
     if (r != 0)
         FreeUPNPUrls(&urls);
-    
+
     return std::make_shared<config::authority>(settings_.self);
 }
 

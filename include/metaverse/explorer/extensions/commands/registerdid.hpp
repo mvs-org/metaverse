@@ -64,36 +64,36 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"ADDRESS",
-			value<std::string>(&argument_.address)->required(),
-			"The address will be bound to, can change to other addresses later."
-		)
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"The symbol of global unique MVS Digital Identity Destination/Index, supports alphabets/numbers/(“@”, “.”, “_”, “-“), case-sensitive, maximum length is 64."
-		)
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(100000000),
-			"The fee of tx. defaults to 1 etp."
-		);
+        )
+        (
+            "ADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "The address will be bound to, can change to other addresses later."
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "The symbol of global unique MVS Digital Identity Destination/Index, supports alphabets/numbers/(“@”, “.”, “_”, “-“), case-sensitive, maximum length is 64."
+        )
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(100000000),
+            "The fee of tx. defaults to 1 etp."
+        );
 
         return options;
     }
@@ -107,9 +107,9 @@ public:
 
     struct argument
     {
-    	std::string address;
-    	std::string symbol;
-    	uint64_t fee;
+        std::string address;
+        std::string symbol;
+        uint64_t fee;
     } argument_;
 
     struct option

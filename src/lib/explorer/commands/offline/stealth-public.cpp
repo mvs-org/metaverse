@@ -49,6 +49,6 @@ console_result stealth_public::invoke(std::ostream& output,
     return console_result::okay;
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

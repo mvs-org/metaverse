@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 mvs developers 
+ * Copyright (c) 2016-2018 mvs developers
  *
  * This file is part of metaverse-explorer.
  *
@@ -27,16 +27,16 @@ namespace commands {
 
 // ----------------------------- checker methods ------------------------------
 
-void administrator_required_checker(bc::server::server_node& node, 
+void administrator_required_checker(bc::server::server_node& node,
         const std::string& name, const std::string& auth)
 {
     auto& blockchain = node.chain_impl();
-    // administrator_required option is true                                    
-    if (node.server_settings().administrator_required) {                        
-        if(!blockchain.is_admin_account(name))                            
+    // administrator_required option is true
+    if (node.server_settings().administrator_required) {
+        if(!blockchain.is_admin_account(name))
             throw account_authority_exception{"Administrator name must be [administerator],incorrect vocabulary @_@."};
 
-        blockchain.is_account_passwd_valid(name, auth);             
+        blockchain.is_account_passwd_valid(name, auth);
     }
 }
 

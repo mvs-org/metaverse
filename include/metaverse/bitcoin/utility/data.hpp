@@ -128,7 +128,7 @@ data_chunk to_chunk(const Source& bytes);
 
 /**
  * Perform an exclusive or (xor) across two buffers to the length specified.
- * Return the resulting buffer. Caller must ensure length does not exceed 
+ * Return the resulting buffer. Caller must ensure length does not exceed
  * either buffer.
  */
 template <size_t Size>

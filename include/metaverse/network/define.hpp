@@ -23,9 +23,9 @@
 
 #include <metaverse/bitcoin.hpp>
 
-// We use the generic helper definitions in libbitcoin to define BCT_API 
+// We use the generic helper definitions in libbitcoin to define BCT_API
 // and BCT_INTERNAL. BCT_API is used for the public API symbols. It either DLL
-// imports or DLL exports (or does nothing for static build) BCT_INTERNAL is 
+// imports or DLL exports (or does nothing for static build) BCT_INTERNAL is
 // used for non-api symbols.
 
 #if defined BCT_STATIC
@@ -42,7 +42,7 @@
 // Log name.
 #define LOG_NETWORK "network"
 
-// Avoid namespace conflict between boost::placeholders and std::placeholders. 
+// Avoid namespace conflict between boost::placeholders and std::placeholders.
 #define BOOST_BIND_NO_PLACEHOLDERS
 
 // Include boost only here, so placeholders exclusion works.

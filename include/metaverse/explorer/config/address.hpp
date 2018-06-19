@@ -52,7 +52,7 @@ public:
      * @param[in]  base58  The value to initialize with.
      */
     address(const std::string& base58);
-    
+
     /**
      * Overload cast to internal type.
      * @return  This object's value cast to internal type reference.

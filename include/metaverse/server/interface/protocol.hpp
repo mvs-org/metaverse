@@ -28,7 +28,7 @@
 
 namespace libbitcoin {
 namespace server {
-    
+
 /// Protocol interface.
 /// Class and method names are published and mapped to the zeromq interface.
 class BCS_API protocol

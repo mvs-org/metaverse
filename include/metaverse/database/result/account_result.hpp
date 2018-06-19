@@ -34,7 +34,7 @@ using namespace std;
 
 namespace libbitcoin {
 namespace database {
-    
+
 /// read account detail information from account database.
 class BCD_API account_result : public base_result
 {
@@ -43,7 +43,7 @@ public:
 
     /// The account.
     //account get_account_detail() const;
-	std::shared_ptr<account> get_account_detail() const;
+    std::shared_ptr<account> get_account_detail() const;
 };
 
 } // namespace database

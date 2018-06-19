@@ -88,8 +88,8 @@ void protocol_block_in::start()
     blockchain_.subscribe_reorganize(
         BIND4(handle_reorganized, _1, _2, _3, _4));
     if (channel_stopped()) {
-		blockchain_.fired();
-	}
+        blockchain_.fired();
+    }
 
     // Send initial get_[blocks|headers] message by simulating first heartbeat.
 //    set_event(error::success);
@@ -119,14 +119,14 @@ void protocol_block_in::get_block_inventory(const code& ec)
     }
 
     auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-	uint64_t top;
-	auto is_got = blockchain.get_last_height(top);
-	int64_t block_interval = 20000;
-	auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
-	if (!is_got || res > 0)
-	{
-		return ;
-	}
+    uint64_t top;
+    auto is_got = blockchain.get_last_height(top);
+    int64_t block_interval = 20000;
+    auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
+    if (!is_got || res > 0)
+    {
+        return ;
+    }
 
     static uint32_t num = 0;
     // This is also sent after each reorg.
@@ -155,7 +155,7 @@ void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
 }
 
 void protocol_block_in::send_get_blocks(const hash_digest& from_hash, const hash_digest& to_hash)
-{ 
+{
     hash_list locator;
     locator.push_back(from_hash);
     code code;
@@ -390,14 +390,14 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
             << "Redundant block from [" << authority() << "] "
             << ec.message();
         return;
-    } 
+    }
 
     if(ec == (code)error::fetch_more_block)
     {
         log::trace(LOG_NODE)
             << "fetch more blocks start_hash:"
             << encode_hash(message->header.hash());
-        send_get_blocks(message->header.hash(), null_hash); 
+        send_get_blocks(message->header.hash(), null_hash);
         return;
     }
 

@@ -69,7 +69,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         data.data_to_arg(rpc_version);
 
         Json::Value jv_output;
-                
+
         auto retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
             jv_output, node_, rpc_version);
 
@@ -107,7 +107,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             root["id"] = data.jsonrpc_id();
             root["error"]["code"] = (int32_t)e.code();
             root["error"]["message"] = e.what();
-           
+
             out_ << root.toStyledString();
         }
     }

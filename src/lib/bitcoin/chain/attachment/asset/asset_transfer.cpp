@@ -36,7 +36,7 @@ bool asset_balances::operator< (const asset_balances& other) const
     return cmp_tuple(symbol, address, unspent_asset, locked_asset)
         < cmp_tuple(other.symbol, other.address, other.unspent_asset, other.locked_asset);
 }
-    
+
 asset_transfer::asset_transfer()
 {
     reset();

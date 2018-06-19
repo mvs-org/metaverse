@@ -36,7 +36,7 @@ BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
 
 namespace libbitcoin {
 namespace node {
-    
+
 using namespace boost::filesystem;
 using namespace boost::program_options;
 using namespace bc::config;
@@ -88,12 +88,12 @@ options_metadata parser::load_options()
             default_value(false)->zero_tokens(),
         "Display version information."
     )
-	(
-		"daemon,d",
-		value<bool>(&configured.daemon)->
-			default_value(false)->zero_tokens(),
-		"Run in daemon mode or not"
-	)
+    (
+        "daemon,d",
+        value<bool>(&configured.daemon)->
+            default_value(false)->zero_tokens(),
+        "Run in daemon mode or not"
+    )
 //   (
 //        BS_UI_VARIABLE "ui,u",
 //        value<bool>(&configured.ui)->
@@ -253,7 +253,7 @@ options_metadata parser::load_settings()
         "network.upnp_map_port",
         value<bool>(&configured.network.upnp_map_port),
         "Persistent host:port channels, multiple entries allowed."
-	)
+    )
     (
         "network.be_found",
         value<bool>(&configured.network.be_found),
@@ -339,7 +339,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         load_environment_variables(variables, BN_ENVIRONMENT_VARIABLE_PREFIX);
 
         // Don't load the rest if any of these options are specified.
-        if (!get_option(variables, BN_VERSION_VARIABLE) && 
+        if (!get_option(variables, BN_VERSION_VARIABLE) &&
             !get_option(variables, BN_SETTINGS_VARIABLE) &&
             !get_option(variables, BN_HELP_VARIABLE))
         {

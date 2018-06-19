@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 namespace node {
-    
+
 using namespace bc::blockchain;
 using namespace bc::network;
 using namespace std::placeholders;
@@ -76,7 +76,7 @@ void session_inbound::attach_handshake_protocols(channel::ptr channel,
 
         if (stopped() || ec)
         {
-        	channel->invoke_protocol_start_handler(error::channel_stopped);
+            channel->invoke_protocol_start_handler(error::channel_stopped);
         }
         handle_started(ec);
     });

@@ -74,8 +74,8 @@ void protocol_timer::reset_timer()
     timer_->start(BIND1(handle_timer, _1));
     if (stopped())
     {
-    	timer_->stop();
-		return;
+        timer_->stop();
+        return;
     }
 }
 

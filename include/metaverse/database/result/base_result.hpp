@@ -29,24 +29,24 @@
 
 namespace libbitcoin {
 namespace database {
-    
+
 /// Deferred read base result.
 class BCD_API base_result
 {
 public:
     base_result(const memory_ptr slab): slab_(slab)
-	{
-	}
+    {
+    }
 
     /// True if this base result is valid (found).
     operator bool() const
-	{
-		return slab_ != nullptr;
-	}
-	memory_ptr get_slab() const
-	{
-		return slab_;
-	}
+    {
+        return slab_ != nullptr;
+    }
+    memory_ptr get_slab() const
+    {
+        return slab_;
+    }
 private:
     const memory_ptr slab_;
 };
@@ -63,7 +63,7 @@ base_result::operator bool() const
 
 memory_ptr base_result::get_slab() const
 {
-	return slab_;
+    return slab_;
 }
 #endif
 

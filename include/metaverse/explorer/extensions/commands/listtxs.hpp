@@ -60,27 +60,27 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
-		(
-			"ACCOUNTAUTH",
-			value<std::string>(&auth_.auth)->required(),
-			BX_ACCOUNT_AUTH
-		)
+        )
+        (
+            "ACCOUNTAUTH",
+            value<std::string>(&auth_.auth)->required(),
+            BX_ACCOUNT_AUTH
+        )
         (
             "address,a",
             value<std::string>(&argument_.address),
             "Address."
-	    )
-	    (
+        )
+        (
             "height,e",
             value<libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>>(&option_.height),
             "Get tx according height eg: -e start-height:end-height will return tx between [start-height, end-height)"
@@ -115,19 +115,19 @@ public:
 
     struct argument
     {
-    	argument():address(""), symbol(""), limit(100), index(0)
-		{};
-    	std::string address;
-		std::string symbol;
+        argument():address(""), symbol(""), limit(100), index(0)
+        {};
+        std::string address;
+        std::string symbol;
         uint64_t limit;
         uint64_t index;
     } argument_;
 
     struct option
     {
-    	option():height(0, 0)
-		{};
-    	libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t> height;
+        option():height(0, 0)
+        {};
+        libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t> height;
     } option_;
 
 };

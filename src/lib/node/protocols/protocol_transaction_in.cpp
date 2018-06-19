@@ -82,8 +82,8 @@ void protocol_transaction_in::start()
         blockchain_.subscribe_reorganize(
             BIND4(handle_reorganized, _1, _2, _3, _4));
         if (channel_stopped()) {
-			blockchain_.fired();
-		}
+            blockchain_.fired();
+        }
     }
 
 }
@@ -152,7 +152,7 @@ void protocol_transaction_in::handle_filter_floaters(const code& ec,
 void protocol_transaction_in::send_get_data(const code& ec,
     get_data_ptr message)
 {
-    if (stopped() || ec == (code)error::service_stopped || 
+    if (stopped() || ec == (code)error::service_stopped ||
         message->inventories.empty())
         return;
 

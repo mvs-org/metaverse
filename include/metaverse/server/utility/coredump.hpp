@@ -57,7 +57,7 @@ LONG WINAPI exp_filter(struct _EXCEPTION_POINTERS *pExp)
 void start_unhandled_exception_filter()
 {
 #ifdef _MSC_VER
-	::SetUnhandledExceptionFilter(exp_filter);
+    ::SetUnhandledExceptionFilter(exp_filter);
 #endif
 }
 

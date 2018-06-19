@@ -34,7 +34,7 @@ namespace libbitcoin {
 #define ORDERED "ordered"
 #define UNORDERED "unordered"
 #define CONCURRENT "concurrent"
-    
+
 #define FORWARD_ARGS(args) \
     std::forward<Args>(args)...
 #define FORWARD_HANDLER(handler) \

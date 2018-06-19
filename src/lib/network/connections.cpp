@@ -55,7 +55,7 @@ void connections::stop(const code& ec)
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         mutex_.unlock_upgrade_and_lock();
         stopped_ = true;
-        mutex_.unlock_and_lock_upgrade(); 
+        mutex_.unlock_and_lock_upgrade();
         //---------------------------------------------------------------------
 
         // Once stopped this list cannot change, but must copy to escape lock.
@@ -103,15 +103,15 @@ void connections::exists(const authority& address, truth_handler handler) const
 
 config::authority::list connections::authority_list()
 {
-	config::authority::list address_list;
-	address_list.reserve(channels_.size());
-	mutex_.lock_upgrade();
-	std::find_if(channels_.begin(), channels_.end(), [&address_list](channel::ptr channel){
-		address_list.push_back(channel->authority());
-		return false;
-	});
-	mutex_.unlock_upgrade();
-	return address_list;
+    config::authority::list address_list;
+    address_list.reserve(channels_.size());
+    mutex_.lock_upgrade();
+    std::find_if(channels_.begin(), channels_.end(), [&address_list](channel::ptr channel){
+        address_list.push_back(channel->authority());
+        return false;
+    });
+    mutex_.unlock_upgrade();
+    return address_list;
 }
 
 bool connections::safe_remove(channel::ptr channel)

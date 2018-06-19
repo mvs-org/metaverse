@@ -160,7 +160,7 @@ void version::to_data(uint32_t version, writer& sink) const
 
 uint64_t version::serialized_size(uint32_t version) const
 {
-    auto size = 
+    auto size =
         sizeof(value) +
         sizeof(services) +
         sizeof(timestamp) +

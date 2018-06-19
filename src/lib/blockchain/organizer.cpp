@@ -207,12 +207,12 @@ void organizer::process(block_detail::ptr process_block)
         header.previous_block_hash;
 
         // Verify the blocks in the orphan chain.
-        if (chain_.get_height(fork_index, hash)) 
+        if (chain_.get_height(fork_index, hash))
         {
             replace_chain(fork_index, orphan_chain);
-            if(orphan_chain.empty() == false) 
+            if(orphan_chain.empty() == false)
             {
-                const auto hash = orphan_chain.back()->actual()->header.hash();    
+                const auto hash = orphan_chain.back()->actual()->header.hash();
                 block_detail::ptr block;
                 while((block = orphan_pool_.delete_pending_block(hash)))
                 {
@@ -220,8 +220,8 @@ void organizer::process(block_detail::ptr process_block)
                     log::warning(LOG_BLOCKCHAIN) << "pop pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(block->actual()->header.hash());
                 }
             }
-        } 
-        else 
+        }
+        else
         {
             orphan_pool_.add_pending_block(hash, orphan_chain.back());
             log::warning(LOG_BLOCKCHAIN) << "push pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(orphan_chain.back()->actual()->header.hash());
@@ -242,7 +242,9 @@ static std::set<std::pair<uint64_t, std::string>> exception_blocks {
     // because it exist a too long memo text which is more than 300 bytes.
     // memo text length should be less than 256 bytes limited by the database record design.
     // we will add this length verification in the transaction validation after nova version.
-    {1211234, "3a17c696ba0d506b07e85b8440a99d868ae93c985064eaf4c616d13911bd97cb"}
+    {1211234, "3a17c696ba0d506b07e85b8440a99d868ae93c985064eaf4c616d13911bd97cb"},
+    // this block does not satisfy new consensus verify of input/output
+    {1258192, "d7d5d80c8cb760b794f156c36b519ad9b4b10b9dfcd4e123c8f54be3c71432d3"}
 };
 
 void organizer::replace_chain(uint64_t fork_index,
@@ -278,16 +280,16 @@ void organizer::replace_chain(uint64_t fork_index,
 
                 // Block is invalid, clip the orphans.
                 clip_orphans(orphan_chain, orphan, ec);
-                if(orphan_chain.empty()) 
+                if(orphan_chain.empty())
                 {
-                    log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()"; 
+                    log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()";
                     return;
                 }
 
                 // Stop summing work once we discover an invalid block
                 break;
-            } 
-            else 
+            }
+            else
             {
                 orphan_chain[orphan]->set_is_checked_work_proof(true);
             }
@@ -322,8 +324,8 @@ void organizer::replace_chain(uint64_t fork_index,
     auto success = chain_.pop_from(released_blocks, begin_index);
 
     if (!released_blocks.empty())
-        log::warning(LOG_BLOCKCHAIN) 
-            << " blockchain fork at height:" << released_blocks.front()->actual()->header.number 
+        log::warning(LOG_BLOCKCHAIN)
+            << " blockchain fork at height:" << released_blocks.front()->actual()->header.number
             << " begin_index:"  << encode_hash(released_blocks.front()->actual()->header.hash())
             << " size:"  << released_blocks.size();
 
@@ -375,10 +377,10 @@ void organizer::replace_chain(uint64_t fork_index,
         orphan_pool_.add(replaced_block);
 
         log::warning(LOG_BLOCKCHAIN)
-            << " blockchain fork old block number:" << replaced_block->actual()->header.number 
+            << " blockchain fork old block number:" << replaced_block->actual()->header.number
             << " hash_index:"  << encode_hash(replaced_block->actual()->header.hash())
             << " miner address:"  << wallet::payment_address::extract(replaced_block->actual()->transactions[0].outputs[0].script);
-        for(auto& tx : replaced_block->actual()->transactions) 
+        for(auto& tx : replaced_block->actual()->transactions)
         {
             log::warning(LOG_BLOCKCHAIN) << " forked transaction hash:" << encode_hash(tx.hash()) << " data:" << tx.to_string(0);
         }

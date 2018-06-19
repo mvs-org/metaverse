@@ -53,9 +53,9 @@
 // Regarding Unicode in console applications:
 //
 // BC_USE_MVS_MAIN should be declared prior to bc::main() in a console
-// application. This enables Unicode argument and environment processing in 
-// Windows. This macro implements main() and forwards to bc::main(), which 
-// should be implemented as if it was main() with the expectation that argv 
+// application. This enables Unicode argument and environment processing in
+// Windows. This macro implements main() and forwards to bc::main(), which
+// should be implemented as if it was main() with the expectation that argv
 // is utf8.
 //
 // Do not use std::cout|std::cerr|std::cin (aborts on assertion):
@@ -72,7 +72,7 @@
 //
 // When working with boost and utf8 narrow characters on Windows the thread
 // must be configured for utf8. When working with boost::filesystem::path the
-// static path object must be imbued with the utf8 locale or paths will be 
+// static path object must be imbued with the utf8 locale or paths will be
 // incorrectly translated.
 
 #define BC_LOCALE_BACKEND "icu"

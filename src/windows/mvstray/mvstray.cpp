@@ -19,7 +19,7 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define WIN32_LEAN_AND_MEAN 
+#define WIN32_LEAN_AND_MEAN
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -190,11 +190,11 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
 
     HICON hMainIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_MVSTRAY));
 
-    nidApp.cbSize = sizeof(NOTIFYICONDATA); // sizeof the struct in bytes 
-    nidApp.hWnd = (HWND)hWnd;              //handle of the window which will process this app. messages 
-    nidApp.uID = IDI_MVSTRAY;           //ID of the icon that will appear in the system tray 
-    nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP; //ORing of all the flags 
-    nidApp.hIcon = hMainIcon; // handle of the Icon to be displayed, obtained from LoadIcon 
+    nidApp.cbSize = sizeof(NOTIFYICONDATA); // sizeof the struct in bytes
+    nidApp.hWnd = (HWND)hWnd;              //handle of the window which will process this app. messages
+    nidApp.uID = IDI_MVSTRAY;           //ID of the icon that will appear in the system tray
+    nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP; //ORing of all the flags
+    nidApp.hIcon = hMainIcon; // handle of the Icon to be displayed, obtained from LoadIcon
     nidApp.uCallbackMessage = WM_USER_SHELLICON;
     LoadString(hInstance, IDS_CONTROL_METAVERSE, nidApp.szTip, MAX_LOADSTRING);
     Shell_NotifyIcon(NIM_ADD, &nidApp);
@@ -203,7 +203,7 @@ bool InitInstance(HINSTANCE hInstance, int nCmdShow, LPWSTR cmdLine)
     if (!bUIOpened) {
         SetTimer(hWnd, WM_TIMER_OPEN, 1000, nullptr);
     }
-    
+
     return true;
 
 }
@@ -213,7 +213,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_USER_SHELLICON:
-        // systray msg callback 
+        // systray msg callback
         POINT lpClickPoint;
         switch (LOWORD(lParam))
         {
@@ -276,7 +276,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     else if (!MetaverseIsRunning()) {
         DestroyWindow(hWnd);
     }
-    }    
+    }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -336,7 +336,7 @@ void EnableAutostart(bool enable) {
     if (lRes != ERROR_SUCCESS)
         return;
 
-    if (enable) 
+    if (enable)
     {
         LPWSTR args = new WCHAR[lstrlen(commandLineFiltered) + MAX_PATH + 2];
         if (GetTrayExePath(args, MAX_PATH))

@@ -27,7 +27,7 @@
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <string.h>
 
-#define	INADDR_NONE		((in_addr_t) 0xffffffff)
+#define    INADDR_NONE        ((in_addr_t) 0xffffffff)
 
 namespace libbitcoin {
 namespace message {
@@ -73,37 +73,37 @@ bool network_address::is_valid() const
         || (ip != null_address);
 #else
     // Cleanup 3-byte shifted addresses caused by garbage in size field
-	// of addr messages from versions before 0.2.9 checksum.
-	// Two consecutive addr messages look like this:
-	// header20 vectorlen3 addr26 addr26 addr26 header20 vectorlen3 addr26 addr26 addr26...
-	// so if the first length field is garbled, it reads the second batch
-	// of addr misaligned by 3 bytes.
-	if (memcmp(ip.data(), pchIPv4+3, sizeof(pchIPv4)-3) == 0)
-		return false;
+    // of addr messages from versions before 0.2.9 checksum.
+    // Two consecutive addr messages look like this:
+    // header20 vectorlen3 addr26 addr26 addr26 header20 vectorlen3 addr26 addr26 addr26...
+    // so if the first length field is garbled, it reads the second batch
+    // of addr misaligned by 3 bytes.
+    if (memcmp(ip.data(), pchIPv4+3, sizeof(pchIPv4)-3) == 0)
+        return false;
 
-	// unspecified IPv6 address (::/128)
-	unsigned char ipNone[16] = {};
-	if (memcmp(ip.data(), ipNone, 16) == 0)
-		return false;
+    // unspecified IPv6 address (::/128)
+    unsigned char ipNone[16] = {};
+    if (memcmp(ip.data(), ipNone, 16) == 0)
+        return false;
 
-	// documentation IPv6 address
-	if (is_RFC3849())
-		return false;
+    // documentation IPv6 address
+    if (is_RFC3849())
+        return false;
 
-	if (is_ipv4())
-	{
-		// INADDR_NONE
-		uint32_t ipNone = 0;
-		if (memcmp(&ip[12], &ipNone, 4) == 0)
-			return false;
+    if (is_ipv4())
+    {
+        // INADDR_NONE
+        uint32_t ipNone = 0;
+        if (memcmp(&ip[12], &ipNone, 4) == 0)
+            return false;
 
-		// 0
-		ipNone = 0;
-		if (memcmp(&ip[12], &ipNone, 4) == 0)
-			return false;
-	}
+        // 0
+        ipNone = 0;
+        if (memcmp(&ip[12], &ipNone, 4) == 0)
+            return false;
+    }
 
-	return true;
+    return true;
 #endif
 }
 
@@ -214,7 +214,7 @@ bool network_address::is_ipv6() const
 
 bool network_address::is_private_network()
 {
-	return is_RFC1918();
+    return is_RFC1918();
 }
 
 bool network_address::is_RFC1918() const
@@ -223,7 +223,7 @@ bool network_address::is_RFC1918() const
         get_byte(3) == 10 ||
         (get_byte(3) == 192 && get_byte(2) == 168) ||
         (get_byte(3) == 172 && (get_byte(2) >= 16 && get_byte(2) <= 31)));
-	return false;
+    return false;
 }
 
 bool network_address::is_RFC3927() const

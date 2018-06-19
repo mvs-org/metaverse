@@ -52,8 +52,8 @@ typedef struct ethash_h256 { uint8_t b[32]; } ethash_h256_t;
 // ethash_h256_t a = ethash_h256_static_init(1, 2, 3, ... )
 // have to provide all 32 values. If you don't provide all the rest
 // will simply be unitialized (not guranteed to be 0)
-#define ethash_h256_static_init(...)			\
-	{ {__VA_ARGS__} }
+#define ethash_h256_static_init(...)            \
+    { {__VA_ARGS__} }
 
 struct ethash_light;
 typedef struct ethash_light* ethash_light_t;
@@ -62,9 +62,9 @@ typedef struct ethash_full* ethash_full_t;
 typedef int(*ethash_callback_t)(unsigned);
 
 typedef struct ethash_return_value {
-	ethash_h256_t result;
-	ethash_h256_t mix_hash;
-	bool success;
+    ethash_h256_t result;
+    ethash_h256_t mix_hash;
+    bool success;
 } ethash_return_value_t;
 
 /**
@@ -89,9 +89,9 @@ void ethash_light_delete(ethash_light_t light);
  * @return               an object of ethash_return_value_t holding the return values
  */
 ethash_return_value_t ethash_light_compute(
-	ethash_light_t light,
-	ethash_h256_t const header_hash,
-	uint64_t nonce
+    ethash_light_t light,
+    ethash_h256_t const header_hash,
+    uint64_t nonce
 );
 
 /**
@@ -124,9 +124,9 @@ void ethash_full_delete(ethash_full_t full);
  * @return               An object of ethash_return_value to hold the return value
  */
 ethash_return_value_t ethash_full_compute(
-	ethash_full_t full,
-	ethash_h256_t const header_hash,
-	uint64_t nonce
+    ethash_full_t full,
+    ethash_h256_t const header_hash,
+    uint64_t nonce
 );
 /**
  * Get a pointer to the full DAG data

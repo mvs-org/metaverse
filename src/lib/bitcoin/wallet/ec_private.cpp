@@ -83,7 +83,7 @@ bool ec_private::is_wif(data_slice decoded)
     if (!verify_checksum(decoded))
         return false;
 
-    return (size == wif_uncompressed_size) || 
+    return (size == wif_uncompressed_size) ||
         decoded.data()[1 + ec_secret_size] == compressed_sentinel;
 }
 
@@ -195,7 +195,7 @@ const bool ec_private::compressed() const
 ec_public ec_private::to_public() const
 {
     ec_compressed point;
-    return valid_ && secret_to_public(point, secret_) ?  
+    return valid_ && secret_to_public(point, secret_) ?
         ec_public(point, compressed()) : ec_public();
 }
 

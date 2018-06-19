@@ -30,7 +30,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 /// A constant used in key derivation.
 static BC_CONSTEXPR uint32_t hd_first_hardened_key = 1 << 31;
 

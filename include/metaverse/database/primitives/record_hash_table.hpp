@@ -74,7 +74,7 @@ public:
     /// Find the record for a given hash.
     /// Returns a null pointer if not found.
     const memory_ptr find(const KeyType& key) const;
-	std::shared_ptr<std::vector<memory_ptr>> find(array_index index) const;
+    std::shared_ptr<std::vector<memory_ptr>> find(array_index index) const;
     /// Delete a key-value pair from the hashtable by unlinking the node.
     bool unlink(const KeyType& key);
 

@@ -128,7 +128,7 @@ duration settings::channel_expiration() const
 duration settings::channel_germination() const
 {
     return seconds(channel_germination_seconds);
-} 
+}
 
 } // namespace network
 } // namespace libbitcoin

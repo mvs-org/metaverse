@@ -44,7 +44,7 @@ template <typename KeyType>
 file_offset slab_hash_table<KeyType>::store(const KeyType& key,
     write_function write, const size_t value_size)
 {
-	mutex_.lock();
+    mutex_.lock();
     // Store current bucket value.
     const auto old_begin = read_bucket_value(key);
     slab_row<KeyType> item(manager_, 0);
@@ -53,7 +53,7 @@ file_offset slab_hash_table<KeyType>::store(const KeyType& key,
 
     // Link record to header.
     link(key, new_begin);
-    
+
     mutex_.unlock();
 
     // Return position,
@@ -68,7 +68,7 @@ template <typename KeyType>
 file_offset slab_hash_table<KeyType>::restore(const KeyType& key,
     write_function write, const size_t value_size)
 {
-	mutex_.lock();
+    mutex_.lock();
     // Store current bucket value.
     const auto old_begin = read_bucket_value(key);
     slab_row<KeyType> item(manager_, old_begin);
@@ -77,7 +77,7 @@ file_offset slab_hash_table<KeyType>::restore(const KeyType& key,
 
     // Link record to header.
     //link(key, new_begin);
-    
+
     mutex_.unlock();
 
     // Return position,
@@ -186,8 +186,8 @@ std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const KeyType& key) cons
 template <typename KeyType>
 std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t index) const
 {
-	auto vec_memo = std::make_shared<std::vector<memory_ptr>>();
-	// find first item
+    auto vec_memo = std::make_shared<std::vector<memory_ptr>>();
+    // find first item
     auto current = header_.read(index);
     static_assert(sizeof(current) == sizeof(file_offset), "Invalid size");
 
@@ -223,7 +223,7 @@ bool slab_hash_table<KeyType>::unlink(const KeyType& key)
     // Find start item...
     const auto begin = read_bucket_value(key);
     const slab_row<KeyType> begin_item(manager_, begin);
-    
+
     if (begin_item.out_of_memory())
         return false;
 
@@ -245,7 +245,7 @@ bool slab_hash_table<KeyType>::unlink(const KeyType& key)
 
         if (item.out_of_memory())
             return false;
-            
+
         // Found, unlink current item from previous.
         if (item.compare(key))
         {

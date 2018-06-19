@@ -23,9 +23,9 @@
 
 #include <metaverse/bitcoin.hpp>
 
-// We use the generic helper definitions in libbitcoin to define BCX_API 
+// We use the generic helper definitions in libbitcoin to define BCX_API
 // and BCX_INTERNAL. BCX_API is used for the public API symbols. It either DLL
-// imports or DLL exports (or does nothing for static build) BCX_INTERNAL is 
+// imports or DLL exports (or does nothing for static build) BCX_INTERNAL is
 // used for non-api symbols.
 
 #if defined BCC_STATIC

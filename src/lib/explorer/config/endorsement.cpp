@@ -40,7 +40,7 @@ static bool decode_endorsement(bc::endorsement& endorsement,
     const std::string& encoded)
 {
     bc::endorsement decoded;
-    if (!decode_base16(decoded, encoded) || 
+    if (!decode_base16(decoded, encoded) ||
         (decoded.size() > max_endorsement_size))
         return false;
 

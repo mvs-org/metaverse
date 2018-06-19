@@ -48,7 +48,7 @@ void WsPushServ::run() {
     node_.subscribe_transaction_pool(
         std::bind(&WsPushServ::handle_transaction_pool,
             this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    
+
     node_.subscribe_blockchain(
         std::bind(&WsPushServ::handle_blockchain_reorganization,
             this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -113,7 +113,7 @@ void WsPushServ::notify_blocks(uint32_t fork_point, const block_list& blocks)
 {
     if (stopped())
         return;
-    
+
     auto height = fork_point;
 
     for (const auto block : blocks)
@@ -229,7 +229,7 @@ void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message
         result["data"] = data;
     root["event"]  = EV_MG_ERROR;
     root["result"] = result;
-    
+
     auto&& tmp = root.toStyledString();
     send_frame(nc, tmp.c_str(), tmp.size());
 }
@@ -287,7 +287,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
     try {
         const char* begin = (const char*)msg.data;
         const char* end = begin + msg.size;
-        if (!reader.parse(begin, end, root) || !root.isObject() 
+        if (!reader.parse(begin, end, root) || !root.isObject()
             || !root["event"].isString() || !root["channel"].isString() || !root["address"].isString()) {
             stringstream ss;
             ss << "parse request error, "

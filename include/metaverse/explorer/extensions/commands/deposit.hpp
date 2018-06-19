@@ -60,41 +60,41 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
             "ETP integer bits."
         )
-		(
-			"address,a",
-			value<std::string>(&argument_.address),
-			"The deposit target address."
-		)
-	    (
+        (
+            "address,a",
+            value<std::string>(&argument_.address),
+            "The deposit target address."
+        )
+        (
             "deposit,d",
             value<uint16_t>(&argument_.deposit)->default_value(7),
             "Deposits support [7, 30, 90, 182, 365] days. defaluts to 7 days"
-	    )
-	    (
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
-	    );
+        );
 
         return options;
     }
@@ -111,7 +111,7 @@ public:
         uint64_t amount;
         uint64_t fee;
         uint16_t deposit;
-		std::string address;
+        std::string address;
     } argument_;
 
     struct option

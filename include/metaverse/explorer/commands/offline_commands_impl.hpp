@@ -22,7 +22,7 @@
 #pragma once
 
 #include <metaverse/bitcoin.hpp>
-#include <metaverse/explorer/define.hpp> 
+#include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/utility.hpp>
 
 namespace libbitcoin {
@@ -69,7 +69,7 @@ data_chunk get_seed(uint16_t bit_length = 256u);
 
 bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_chunk& entropy);
 
-data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,            
+data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
             const bw::word_list& words,
             std::string passphrase = "");
 

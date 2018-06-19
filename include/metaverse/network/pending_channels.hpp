@@ -37,7 +37,7 @@ class BCT_API pending_channels
 public:
     typedef std::function<void(bool)> truth_handler;
     typedef std::function<void(const code&)> result_handler;
-    
+
     pending_channels();
     ~pending_channels();
 

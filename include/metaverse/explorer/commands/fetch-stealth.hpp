@@ -66,7 +66,7 @@ namespace commands {
 /**
  * Class to implement the fetch-stealth command.
  */
-class BCX_API fetch_stealth 
+class BCX_API fetch_stealth
   : public command
 {
 public:
@@ -115,12 +115,12 @@ public:
             .add("FILTER", 1);
     }
 
-	/**
+    /**
      * Load parameter fallbacks from file or input as appropriate.
      * @param[in]  input  The input stream for loading the parameters.
      * @param[in]         The loaded variables.
      */
-    virtual void load_fallbacks(std::istream& input, 
+    virtual void load_fallbacks(std::istream& input,
         po::variables_map& variables)
     {
     }

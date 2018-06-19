@@ -53,7 +53,7 @@ private:
     void do_settings();
     void do_version();
     bool do_initchain();
-	void set_admin();
+    void set_admin();
     void set_blackhole_did();
 
     void initialize_output();

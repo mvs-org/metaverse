@@ -31,7 +31,7 @@ namespace libbitcoin {
 
 const static char pad = '=';
 
-const static char table[] = 
+const static char table[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 std::string encode_base64(data_slice unencoded)

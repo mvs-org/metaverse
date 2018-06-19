@@ -93,7 +93,7 @@ public:
     /// This class is not copyable.
     message_subscriber(const message_subscriber&) = delete;
     void operator=(const message_subscriber&) = delete;
-    
+
     /**
      * Subscribe to receive a notification when a message of type is received.
      * The handler is unregistered when the call is made.
@@ -105,7 +105,7 @@ public:
     {
         subscribe(Message(), std::forward<Handler>(handler));
     }
-        
+
     /**
      * Load a stream into a message instance and notify subscribers.
      * @param[in]  stream      The stream from which to load the message.

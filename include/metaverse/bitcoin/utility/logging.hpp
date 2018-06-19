@@ -42,14 +42,14 @@ public:
         initialize_logging(debug_log_, error_log_, std::cout, std::cerr);
     }
 
-	self(const self&) = delete;
-	self(const self&&) = delete;
+    self(const self&) = delete;
+    self(const self&&) = delete;
 
     ~self() noexcept
     {
         log::clear();
-		debug_log_.close();
-		error_log_.close();
+        debug_log_.close();
+        error_log_.close();
     }
 
 public:

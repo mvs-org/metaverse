@@ -72,7 +72,7 @@ public:
      */
     printer(const boost::program_options::options_description& options,
         const boost::program_options::positional_options_description& arguments,
-        const std::string& application, const std::string& description="", 
+        const std::string& application, const std::string& description="",
         const std::string& command="");
 
     /**
@@ -91,14 +91,14 @@ public:
      * @return  The command description.
      */
     virtual std::string format_description();
-    
+
     /**
      * Format the parameters table.
      * @param[in]  positional  True for positional otherwize named.
      * @return                 The formatted help arguments table.
      */
     virtual std::string format_parameters_table(bool positional);
-    
+
     /**
      * Format the settings table.
      * @return  The formatted settings table.
@@ -107,7 +107,7 @@ public:
 
     /**
      * Format a paragraph.
-     * @param[in]  paragraph  The text to format. 
+     * @param[in]  paragraph  The text to format.
      * @return                The formatted paragraph.
      */
     virtual std::string format_paragraph(const std::string& paragraph);
@@ -123,7 +123,7 @@ public:
      * @return  The formatted command line parameters.
      */
     virtual std::string format_usage_parameters();
-    
+
     /**
      * Build the list of argument name/count tuples.
      */
@@ -141,13 +141,13 @@ public:
 
     /**
      * Serialize command line help (full details).
-     * @param[out] output  Stream that is sink for output. 
+     * @param[out] output  Stream that is sink for output.
      */
     virtual void commandline(std::ostream& output);
 
     /**
      * Serialize as config settings (full details).
-     * @param[out] output  Stream that is sink for output. 
+     * @param[out] output  Stream that is sink for output.
      */
     virtual void settings(std::ostream& output);
 

@@ -29,7 +29,7 @@ using namespace chain;
 
 u256 block_work(u256 bits)
 {
-	return bits;
+    return bits;
 }
 
 block::indexes block_locator_indexes(size_t top_height)

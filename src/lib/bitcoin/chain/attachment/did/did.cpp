@@ -32,10 +32,10 @@ namespace chain {
 
 did::did()
 {
-	reset();
+    reset();
 }
 did::did(uint32_t status, const did_detail& detail):
-	status(status), data(detail)
+    status(status), data(detail)
 {
 }
 
@@ -74,7 +74,7 @@ bool did::is_valid() const
 bool did::is_valid_type() const
 {
     return ((DID_DETAIL_TYPE == status)
-		|| (DID_TRANSFERABLE_TYPE == status));
+        || (DID_TRANSFERABLE_TYPE == status));
 }
 
 bool did::from_data(const data_chunk& data)
@@ -95,15 +95,15 @@ bool did::from_data(reader& source)
 
     status = source.read_4_bytes_little_endian();
     auto result = static_cast<bool>(source);
-	
+
     if (result && is_valid_type()) {
         result = data.from_data(source);
     }
-	else {
-		result = false;
-		reset();
-	}
-		
+    else {
+        result = false;
+        reset();
+    }
+
     return result;
 }
 
@@ -131,7 +131,7 @@ void did::to_data(writer& sink) const
 
 uint64_t did::serialized_size() const
 {
-	return 4 + data.serialized_size();
+    return 4 + data.serialized_size();
 }
 
 std::string did::to_string() const
@@ -144,20 +144,20 @@ std::string did::to_string() const
 
 uint32_t did::get_status() const
 {
-	return status;
+    return status;
 }
 void did::set_status(uint32_t status)
 {
-	this->status = status;
+    this->status = status;
 }
 void did::set_data(const did_detail& detail)
 {
-	this->data = detail;
+    this->data = detail;
 }
 
 const did_detail& did::get_data() const
 {
-	return this->data;
+    return this->data;
 }
 
 } // namspace chain

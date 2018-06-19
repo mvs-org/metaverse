@@ -35,22 +35,22 @@ namespace node
 {
 
 class BCN_API protocol_miner:
-		public network::protocol_events, track<protocol_miner>
+        public network::protocol_events, track<protocol_miner>
 {
 public:
-	using ptr = std::shared_ptr<protocol_miner>;
-	using indexes = chain::point::indexes;
-	using transaction_ptr = message::transaction_message::ptr;
-	protocol_miner(network::p2p& network, network::channel::ptr channel
-			, blockchain::block_chain& blockchain
-			/*, blockchain::transaction_pool& pool*/);
-	virtual void start();
+    using ptr = std::shared_ptr<protocol_miner>;
+    using indexes = chain::point::indexes;
+    using transaction_ptr = message::transaction_message::ptr;
+    protocol_miner(network::p2p& network, network::channel::ptr channel
+            , blockchain::block_chain& blockchain
+            /*, blockchain::transaction_pool& pool*/);
+    virtual void start();
 private:
-	void handle_stop(const code& ec);
-//	bool handle_accept_transaction(const code&, const indexes&, transaction_ptr);
+    void handle_stop(const code& ec);
+//    bool handle_accept_transaction(const code&, const indexes&, transaction_ptr);
 private:
-	blockchain::block_chain& blockchain_;
-//	blockchain::transaction_pool& pool_;
+    blockchain::block_chain& blockchain_;
+//    blockchain::transaction_pool& pool_;
 };
 
 }// namespace node

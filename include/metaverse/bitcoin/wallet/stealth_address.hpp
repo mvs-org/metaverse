@@ -32,7 +32,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 /// A class for working with stealth payment addresses.
 class BC_API stealth_address
 {

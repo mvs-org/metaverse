@@ -142,7 +142,7 @@ template <typename Item>
 data_chunk serialize_satoshi_item(const Item& item);
 
 /**
- * Write a value to a file in the specified path and otherwise to the 
+ * Write a value to a file in the specified path and otherwise to the
  * specified stream. Not unit testable due to embedded file i/o.
  * @param      Instance   The type of the instance to write.
  * @param[out] output     The fallback out stream.

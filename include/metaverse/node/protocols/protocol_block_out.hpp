@@ -71,7 +71,7 @@ private:
     bool handle_receive_send_headers(const code& ec, send_headers_ptr message);
 
     void handle_fetch_locator_hashes(const code& ec, const hash_list& hashes);
-    void handle_fetch_locator_headers(const code& ec, 
+    void handle_fetch_locator_headers(const code& ec,
         const header_list& headers);
 
     void handle_stop(const code&);

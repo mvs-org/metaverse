@@ -30,7 +30,7 @@ namespace node {
 
 #define NAME "transaction"
 #define CLASS protocol_transaction_out
-    
+
 using namespace bc::blockchain;
 using namespace bc::message;
 using namespace bc::network;
@@ -74,8 +74,8 @@ void protocol_transaction_out::start()
         // Subscribe to transaction pool notifications and relay txs.
         pool_.subscribe_transaction(BIND3(handle_floated, _1, _2, _3));
         if (channel_stopped()) {
-			pool_.fired();
-		}
+            pool_.fired();
+        }
     }
 
     // TODO: move fee filter to a derived class protocol_transaction_out_70013.

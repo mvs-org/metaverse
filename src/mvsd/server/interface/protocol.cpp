@@ -39,8 +39,8 @@ using namespace std::placeholders;
 void protocol::broadcast_transaction(server_node& node, const message& request,
     send_handler handler)
 {
-	using transaction_ptr = libbitcoin::blockchain::transaction_pool::transaction_ptr;
-	using indexes = libbitcoin::blockchain::transaction_pool::indexes;
+    using transaction_ptr = libbitcoin::blockchain::transaction_pool::transaction_ptr;
+    using indexes = libbitcoin::blockchain::transaction_pool::indexes;
     static const auto version = bc::message::version::level::maximum;
     transaction_ptr tx = std::make_shared<bc::message::transaction_message>();;
 //    bc::message::transaction_message tx;
@@ -58,10 +58,10 @@ void protocol::broadcast_transaction(server_node& node, const message& request,
 //    node.broadcast(tx, ignore_send, ignore_complete);
 
     node.pool().store(tx, [tx](const code& ec, transaction_ptr){
-    	log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " confirmed";
+        log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " confirmed";
     }, [handler, request, tx](const code& ec, transaction_ptr, indexes){
-    	log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " validated";
-    	handler(message(request, ec));
+        log::debug(LOG_SERVER) << encode_hash(tx->hash()) << " validated";
+        handler(message(request, ec));
     });
 
     // Tell the user everything is fine.

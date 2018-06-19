@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 namespace database {
-    
+
 /// Deferred read transaction result.
 class BCD_API transaction_result
 {

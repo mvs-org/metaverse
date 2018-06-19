@@ -96,10 +96,10 @@ void executor::do_version()
 
 void executor::set_admin()
 {
-	data_base db(metadata_.configured.database);
-	db.start();
-	db.set_admin("administerator", "mvsgo");
-	db.stop();
+    data_base db(metadata_.configured.database);
+    db.start();
+    db.set_admin("administerator", "mvsgo");
+    db.stop();
 }
 
 void executor::set_blackhole_did()
@@ -135,8 +135,8 @@ bool executor::do_initchain()
             remove_all(data_path);
             throw std::runtime_error{ "initialize chain failed" };
         }
-		// init admin account
-		set_admin();
+        // init admin account
+        set_admin();
         // init blackhole DID
         set_blackhole_did();
         log::info(LOG_SERVER) << BS_INITCHAIN_COMPLETE;
@@ -184,9 +184,9 @@ bool executor::menu()
         return true;
     }
 
-	try
-	{
-	    log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
+    try
+    {
+        log::info(LOG_SERVER) << "mvsd version " << MVS_VERSION;
         // set block data absolute path
         const auto& directory = metadata_.configured.database.directory ;
         if (!directory.is_absolute()) {
@@ -197,18 +197,18 @@ bool executor::menu()
             metadata_.configured.database.directory = directory / default_directory;
         }
 
-	    auto result = do_initchain(); // false means no need to initial chain
+        auto result = do_initchain(); // false means no need to initial chain
 
-	    if (config.initchain)
-	    {
-	    	return result;
-	    }
-	}
-	catch(const std::exception& e){ // initialize failed
-		//log::error(LOG_SERVER) << format(BS_INITCHAIN_EXISTS) % data_path;
-		log::error(LOG_SERVER) << "initialize chain failed," << e.what();
-		return false;
-	}
+        if (config.initchain)
+        {
+            return result;
+        }
+    }
+    catch(const std::exception& e){ // initialize failed
+        //log::error(LOG_SERVER) << format(BS_INITCHAIN_EXISTS) % data_path;
+        log::error(LOG_SERVER) << "initialize chain failed," << e.what();
+        return false;
+    }
 
     // There are no command line arguments, just run the server.
     return run();
@@ -308,7 +308,7 @@ void executor::handle_stop(int code)
 
     if(SIGINT != code)
     {
-    	do_backtrace("signal.out");
+        do_backtrace("signal.out");
     }
 
     log::info(LOG_SERVER) << format(BS_NODE_SIGNALED) % code;

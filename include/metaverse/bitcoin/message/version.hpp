@@ -33,7 +33,7 @@
 
 namespace libbitcoin {
 namespace message {
-    
+
 // The checksum is ignored by the version command.
 class BC_API version
 {

@@ -62,26 +62,26 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "PAYMENT_ADDRESS",
             value<bc::wallet::payment_address>(&argument_.payment_address)->required(),
             "the payment address of this account."
-	    );
+        );
 
         return options;
     }

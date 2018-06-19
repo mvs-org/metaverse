@@ -30,7 +30,7 @@
 
 namespace libbitcoin {
 namespace explorer {
-   
+
 /**
  * Dispatch the command with the raw arguments as provided on the command line.
  * @param[in]  argc    The number of elements in the argv array.
@@ -66,7 +66,7 @@ BCX_API console_result dispatch_command(int argc, const char* argv[],
  * @return            The appropriate console return code { -1, 0, 1 }.
  */
 BCX_API console_result dispatch_command(int argc, const char* argv[],
-    Json::Value& jv_output, 
+    Json::Value& jv_output,
     bc::server::server_node& node, uint8_t api_version = 1);
 
 } // namespace explorer

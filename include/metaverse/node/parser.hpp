@@ -55,7 +55,7 @@ public:
 
     /// The populated configuration settings values.
     configuration configured;
-};  
+};
 
 } // namespace node
 } // namespace libbitcoin

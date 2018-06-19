@@ -42,10 +42,10 @@ namespace network {
 /// Duplicate addresses and those with zero-valued ports are disacarded.
 
 struct address_compare{
-	bool operator()(const libbitcoin::message::network_address& lhs, const libbitcoin::message::network_address& rhs) const
-	{
-		return lhs.ip < rhs.ip ? true : (lhs.ip > rhs.ip ? false : lhs.port < rhs.port);
-	}
+    bool operator()(const libbitcoin::message::network_address& lhs, const libbitcoin::message::network_address& rhs) const
+    {
+        return lhs.ip < rhs.ip ? true : (lhs.ip > rhs.ip ? false : lhs.port < rhs.port);
+    }
 };
 
 class BCT_API hosts

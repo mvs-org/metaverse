@@ -61,36 +61,36 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Send to more target. "
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "receivers,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
             "Send to [did/address:etp_bits]."
-	    )
+        )
         (
             "mychange,m",
             value<std::string>(&argument_.mychange_address),
             "Mychange to this did/address"
-	    )
-	    (
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
-	    );
+        );
 
 
         return options;

@@ -122,7 +122,7 @@ code message::receive(zmq::socket& socket)
 
     if (ec)
         return ec;
-    
+
     if (message.size() < 5 || message.size() > 6)
         return error::bad_stream;
 
