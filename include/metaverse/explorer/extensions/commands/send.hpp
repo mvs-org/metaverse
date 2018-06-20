@@ -88,14 +88,14 @@ public:
             "ETP integer bits."
         )
         (
+            "remark,r",
+            value<std::string>(&argument_.remark),
+            BX_ACCOUNT_REMARK
+        )
+        (
             "memo,m",
             value<std::string>(&argument_.memo),
             "Attached memo for this transaction."
-        )
-        (
-            "remark,r",
-            value<std::string>(&argument_.remark),
-            "Attach remark for this transaction. Note: remarks only stores on your wallet."
         )
 	    (
             "fee,f",
@@ -120,8 +120,8 @@ public:
         std::string address;
         uint64_t amount;
         uint64_t fee;
-        std::string memo;
         std::string remark;
+        std::string memo;
     } argument_;
 
     struct option

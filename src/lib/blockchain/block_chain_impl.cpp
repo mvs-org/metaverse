@@ -2431,7 +2431,7 @@ void block_chain_impl::store_account_remark(const std::string& account_name, con
     if (stopped())
         return;
 
-    if(!remark.empty()) {
+    if(remark.empty()) {
         return;
     }
 

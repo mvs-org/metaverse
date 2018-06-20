@@ -88,6 +88,11 @@ public:
             "ETP integer bits."
         )
         (
+            "remark,r",
+            value<std::string>(&argument_.remark),
+            BX_ACCOUNT_REMARK
+        )
+        (
             "memo,m",
             value<std::string>(&argument_.memo),
             "Attached memo for this transaction."
@@ -115,6 +120,7 @@ public:
         std::string did;
         uint64_t amount;
         uint64_t fee;
+        std::string remark;
         std::string memo;
     } argument_;
 

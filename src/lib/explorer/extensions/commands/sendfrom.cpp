@@ -34,7 +34,7 @@ console_result sendfrom::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     if(!blockchain.is_valid_address(argument_.from))
         throw fromaddress_invalid_exception{"invalid from address!"};
     if(!blockchain.is_valid_address(argument_.to))
@@ -54,7 +54,9 @@ console_result sendfrom::invoke(Json::Value& jv_output,
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+
+    blockchain.store_account_remark(acc->get_name(), tx.hash(), argument_.remark);
 
     return console_result::okay;
 }

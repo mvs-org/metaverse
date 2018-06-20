@@ -428,11 +428,12 @@ def send(account, password, to_, amount, fee=None, desc=None, remark=None):
     return "send", positional, optional, None
 
 @mvs_api
-def sendfrom(account, password, from_, to_, amount, fee=None, desc=None):
+def sendfrom(account, password, from_, to_, amount, fee=None, desc=None, remark=None):
     positional = [account, password, from_, to_, amount]
     optional = {
         '-f': fee,
         '-m': desc,
+        '-r': remark,
     }
 
     return "sendfrom", positional, optional, None
@@ -457,8 +458,8 @@ def sendmore(account, password, receivers, mychange=None, fee=None):
     return "sendmore", positional, optional, None
 
 @mvs_api
-def didsend(account, password, to_, amount, fee=None, desc=None):
-    return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc}, None
+def didsend(account, password, to_, amount, fee=None, desc=None, remark=None):
+    return "didsend", [account, password, to_, amount], {'-f': fee, '-m': desc, '-r': remark}, None
 
 @mvs_api
 def didsendmore(account, password, receivers, mychange=None, fee=None):
@@ -474,8 +475,8 @@ def didsendmore(account, password, receivers, mychange=None, fee=None):
 
 
 @mvs_api
-def didsend_from(account, password, from_, to_, amount, fee=None, desc=None):
-    return "didsendfrom", [account, password, from_, to_, amount], {'-f': fee, '-m': desc}, None
+def didsend_from(account, password, from_, to_, amount, fee=None, desc=None, remark=None):
+    return "didsendfrom", [account, password, from_, to_, amount], {'-f': fee, '-m': desc, '-r': remark}, None
 
 @mvs_api
 def didsend_asset(account, password, to_, symbol, amount, fee=None):

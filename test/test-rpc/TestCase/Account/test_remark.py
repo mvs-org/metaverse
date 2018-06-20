@@ -15,13 +15,34 @@ class TestAccountRemark(MVSTestCaseBase):
         expect = {}
 
         remark_template = "test_2_dumpXimport_remark@%s"
-        for i in range(10):
-            expect_remark = remark_template % i
-            ec, message = mvs_rpc.send(Alice.name, Alice.password, Alice.addresslist[1], 10 ** 8, remark=expect_remark)
-            self.assertEqual(ec, 0, message)
-            expect_tx_hash = message["transaction"]["hash"]
 
-            expect[expect_tx_hash] = expect_remark
+        # send
+        expect_remark = remark_template % "send"
+        ec, message = mvs_rpc.send(Alice.name, Alice.password, Alice.addresslist[1], 10 ** 8, remark=expect_remark)
+        self.assertEqual(ec, 0, message)
+        expect_tx_hash = message["transaction"]["hash"]
+        expect[expect_tx_hash] = expect_remark
+
+        # sendfrom
+        expect_remark = remark_template % "sendfrom"
+        ec, message = mvs_rpc.sendfrom(Alice.name, Alice.password, Alice.mainaddress(), Alice.addresslist[1], 10 ** 8, remark=expect_remark)
+        self.assertEqual(ec, 0, message)
+        expect_tx_hash = message["transaction"]["hash"]
+        expect[expect_tx_hash] = expect_remark
+
+        # didsend
+        expect_remark = remark_template % "didsend"
+        ec, message = mvs_rpc.didsend(Alice.name, Alice.password, Bob.did_symbol, 10 ** 8, remark=expect_remark)
+        self.assertEqual(ec, 0, message)
+        expect_tx_hash = message["transaction"]["hash"]
+        expect[expect_tx_hash] = expect_remark
+
+        # didsendfrom
+        expect_remark = remark_template % "didsendfrom"
+        ec, message = mvs_rpc.didsend_from(Alice.name, Alice.password, Alice.did_symbol, Bob.did_symbol, 10 ** 8, remark=expect_remark)
+        self.assertEqual(ec, 0, message)
+        expect_tx_hash = message["transaction"]["hash"]
+        expect[expect_tx_hash] = expect_remark
 
         ec, message = mvs_rpc.dump_keyfile_v2(Alice.name, Alice.password, Alice.lastword())
         self.assertEqual(ec, 0, message)
