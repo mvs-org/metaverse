@@ -1,7 +1,7 @@
 import os
 import re
 
-cmd_dir = '/home/lxf/projects/metaverse/metaverse-nova/include/metaverse/explorer/extensions/commands'
+cmd_dir = '/home/czp/GitHub/nova/metaverse/include/metaverse/explorer/extensions/commands'
 
 def get_paraname(line):
     pattern = '"([/\w]+)(,\w+){0,1}"'
@@ -156,7 +156,7 @@ def %(cmdname)s(%(argument_defines)s):
     argument_defines_1 = [] # with no default valie
     argument_defines_2 = [] #  with default value
     optional_arguments = []
-    positional_arguments = pos_params
+    positional_arguments = []
     for param_name, param_def, param_desc in params:
         comments.append("    :param: %s(%s): %s" % (param_name, cpp2py_type(param_def["para_type"]), param_desc))
         if param_def.get("must_give", False) == False:
@@ -165,6 +165,10 @@ def %(cmdname)s(%(argument_defines)s):
             argument_defines_1.append('%s' % param_name)
 
         if param_name in pos_params:
+            if param_def["para_type"] == 'std::vector<std::string>':
+                positional_arguments.append("' '.join(%s)" % param_name)
+            else:
+                positional_arguments.append(param_name)
             continue
 
         if "colon_delimited2_item" in param_def["para_type"]:
@@ -244,12 +248,16 @@ func (r *RPCClient) %(func_name)s(%(argument_defines)s) (*JSONRpcResp, error) {
     comments = []
     argument_defines = []
     optional_arguments = []
-    positional_arguments = pos_params
+    positional_arguments = []
     for param_name, param_def, param_desc in params:
         comments.append("    :param: %s(%s): %s" % (param_name, special_type_desc( param_def["para_type"] ), param_desc) )
         argument_defines.append( '%s %s' % (param_name, cpp2go_type( param_def["para_type"] ) ) )
 
         if param_name in pos_params:
+            if param_def["para_type"] == 'std::vector<std::string>':
+                positional_arguments.append('strings.Join(%s, " ")' % param_name)
+            else:
+                positional_arguments.append(param_name)
             continue
         if "colon_delimited2_item" in param_def["para_type"]:
             optional_arguments.append('"%s" : strings.Join([]string{strconv.FormatUint(uint64(%s[0]), 10), strconv.FormatUint(uint64(%s[1]), 10)}, ":"),' % (param_name, param_name, param_name))
@@ -331,6 +339,8 @@ public String %(func_name)s(%(argument_defines)s)
         if param_name in pos_params:
             if cpp2dotnet_type(param_def["para_type"]) == 'String':
                 positional_arguments.append(param_name)
+            elif cpp2dotnet_type(param_def["para_type"]) == 'List<String>':
+                positional_arguments.append('String.Join(" ", %s.ToArray())' % param_name)
             else:
                 positional_arguments.append('%s.ToString()' % param_name)
             continue
