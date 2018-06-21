@@ -35,11 +35,11 @@
 #define SHA512_DIGEST_LENGTH 64U
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
-typedef struct SHA512CTX 
+typedef struct SHA512CTX
 {
     uint64_t state[SHA512_STATE_LENGTH];
     uint64_t count[SHA512_COUNT_LENGTH];

@@ -51,7 +51,7 @@ console_result didsendasset::invoke(Json::Value& jv_output,
         tempaddress = argument_.did;
     }
     else {
-        tempaddress = get_address_from_did(argument_.did,blockchain);   
+        tempaddress = get_address_from_did(argument_.did,blockchain);
         attach.set_to_did(argument_.did);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }

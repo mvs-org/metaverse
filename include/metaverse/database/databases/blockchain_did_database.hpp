@@ -60,14 +60,14 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-	std::shared_ptr<blockchain_did> get(const hash_digest& hash) const;
-	
+    std::shared_ptr<blockchain_did> get(const hash_digest& hash) const;
+
     ///
     std::shared_ptr<std::vector<blockchain_did> > get_history_dids(const hash_digest& hash) const;
-	/// 
-	std::shared_ptr<std::vector<blockchain_did> > get_blockchain_dids() const;
-	
-	void store(const hash_digest& hash, const blockchain_did& sp_detail);
+    ///
+    std::shared_ptr<std::vector<blockchain_did> > get_blockchain_dids() const;
+
+    void store(const hash_digest& hash, const blockchain_did& sp_detail);
 
     /// Delete a transaction from database.
     void remove(const hash_digest& hash);

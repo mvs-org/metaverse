@@ -32,7 +32,7 @@ namespace network {
 /// Class to manage a pending socket pool, thread and lock safe.
 class BCT_API pending_sockets
 {
-public:    
+public:
     pending_sockets();
     ~pending_sockets();
 

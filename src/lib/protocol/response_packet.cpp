@@ -33,7 +33,7 @@ namespace libbitcoin {
 namespace protocol {
 
 response_packet::response_packet()
-  : response_(nullptr) 
+  : response_(nullptr)
 {
 }
 

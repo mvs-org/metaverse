@@ -50,7 +50,7 @@ static void be32enc(void* pp, uint32_t x)
 static void be32enc_vect(uint8_t* dst, const uint32_t* src, size_t len)
 {
     size_t i;
-    for (i = 0; i < len / 4; i++) 
+    for (i = 0; i < len / 4; i++)
     {
         be32enc(dst + i * 4, src[i]);
     }
@@ -59,7 +59,7 @@ static void be32enc_vect(uint8_t* dst, const uint32_t* src, size_t len)
 static void be32dec_vect(uint32_t* dst, const uint8_t* src, size_t len)
 {
     size_t i;
-    for (i = 0; i < len / 4; i++) 
+    for (i = 0; i < len / 4; i++)
     {
         dst[i] = be32dec(src + i * 4);
     }
@@ -221,7 +221,7 @@ void SHA256Transform(uint32_t state[SHA256_STATE_LENGTH],
     RNDr(S, W, 62, 0xbef9a3f7);
     RNDr(S, W, 63, 0xc67178f2);
 
-    for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++)
     {
         state[i] += S[i];
     }

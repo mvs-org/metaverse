@@ -67,6 +67,6 @@ console_result send_tx::invoke(std::ostream& output, std::ostream& error)
     return state.get_result();
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

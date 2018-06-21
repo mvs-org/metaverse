@@ -32,12 +32,12 @@
 
 namespace libbitcoin {
 namespace explorer {
-    
+
 callback_state::callback_state(std::ostream& error, std::ostream& output,
     const encoding_engine engine)
-  : stopped_(true), refcount_(0), result_(console_result::okay), 
+  : stopped_(true), refcount_(0), result_(console_result::okay),
     engine_(engine), error_(error), output_(output)
-    
+
 {
 }
 

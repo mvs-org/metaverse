@@ -31,7 +31,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 // This prefix results in the prefix "cfrm" in the base58 encoding but is
 // modified when the payment address is Bitcoin mainnet (0).
 const byte_array<parse_encrypted_public::magic_size>

@@ -39,7 +39,7 @@ class BC_API sodium
 public:
     /**
      * A list of base85 values.
-     * This must provide operator<< for ostream in order to be used as a 
+     * This must provide operator<< for ostream in order to be used as a
      * boost::program_options default_value.
      */
     typedef std::vector<sodium> list;
@@ -76,7 +76,7 @@ public:
     /**
      * Overload cast to internal type.
      * @return  This object's value cast to internal type.
-	 * chenhao
+     * chenhao
      */
     operator hash_digest() const;
 

@@ -1,18 +1,18 @@
 /*
-	This file is part of cpp-ethereum.
+    This file is part of cpp-ethereum.
 
-	cpp-ethereum is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    cpp-ethereum is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	cpp-ethereum is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    cpp-ethereum is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @file Guards.h
  * @author Gav Wood <i@gavwood.com>
@@ -49,35 +49,35 @@ using WriteGuard = boost::unique_lock<boost::shared_mutex>;
 template <class GuardType, class MutexType>
 struct GenericGuardBool: GuardType
 {
-	GenericGuardBool(MutexType& _m): GuardType(_m) {}
-	bool b = true;
+    GenericGuardBool(MutexType& _m): GuardType(_m) {}
+    bool b = true;
 };
 template <class MutexType>
 struct GenericUnguardBool
 {
-	GenericUnguardBool(MutexType& _m): m(_m) { m.unlock(); }
-	~GenericUnguardBool() { m.lock(); }
-	bool b = true;
-	MutexType& m;
+    GenericUnguardBool(MutexType& _m): m(_m) { m.unlock(); }
+    ~GenericUnguardBool() { m.lock(); }
+    bool b = true;
+    MutexType& m;
 };
 template <class MutexType>
 struct GenericUnguardSharedBool
 {
-	GenericUnguardSharedBool(MutexType& _m): m(_m) { m.unlock_shared(); }
-	~GenericUnguardSharedBool() { m.lock_shared(); }
-	bool b = true;
-	MutexType& m;
+    GenericUnguardSharedBool(MutexType& _m): m(_m) { m.unlock_shared(); }
+    ~GenericUnguardSharedBool() { m.lock_shared(); }
+    bool b = true;
+    MutexType& m;
 };
 
 /** @brief Simple lock that waits for release without making context switch */
 class SpinLock
 {
 public:
-	SpinLock() { m_lock.clear(); }
-	void lock() { while (m_lock.test_and_set(std::memory_order_acquire)) {} }
-	void unlock() { m_lock.clear(std::memory_order_release); }
+    SpinLock() { m_lock.clear(); }
+    void lock() { while (m_lock.test_and_set(std::memory_order_acquire)) {} }
+    void unlock() { m_lock.clear(std::memory_order_release); }
 private:
-	std::atomic_flag m_lock;
+    std::atomic_flag m_lock;
 };
 using SpinGuard = std::lock_guard<SpinLock>;
 
@@ -85,27 +85,27 @@ template <class N>
 class Notified
 {
 public:
-	Notified() {}
-	Notified(N const& _v): m_value(_v) {}
-	Notified(Notified const&) = delete;
-	Notified& operator=(N const& _v) { UniqueGuard l(m_mutex); m_value = _v; m_cv.notify_all(); return *this; }
+    Notified() {}
+    Notified(N const& _v): m_value(_v) {}
+    Notified(Notified const&) = delete;
+    Notified& operator=(N const& _v) { UniqueGuard l(m_mutex); m_value = _v; m_cv.notify_all(); return *this; }
 
-	operator N() const { UniqueGuard l(m_mutex); return m_value; }
+    operator N() const { UniqueGuard l(m_mutex); return m_value; }
 
-	void wait() const { N old; { UniqueGuard l(m_mutex); old = m_value; } waitNot(old); }
-	void wait(N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait(l, [&](){return m_value == _v;}); }
-	void waitNot(N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait(l, [&](){return m_value != _v;}); }
-	template <class F> void wait(F const& _f) const { UniqueGuard l(m_mutex); m_cv.wait(l, _f); }
+    void wait() const { N old; { UniqueGuard l(m_mutex); old = m_value; } waitNot(old); }
+    void wait(N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait(l, [&](){return m_value == _v;}); }
+    void waitNot(N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait(l, [&](){return m_value != _v;}); }
+    template <class F> void wait(F const& _f) const { UniqueGuard l(m_mutex); m_cv.wait(l, _f); }
 
-	template <class R, class P> void wait(std::chrono::duration<R, P> _d) const { N old; { UniqueGuard l(m_mutex); old = m_value; } waitNot(_d, old); }
-	template <class R, class P> void wait(std::chrono::duration<R, P> _d, N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, [&](){return m_value == _v;}); }
-	template <class R, class P> void waitNot(std::chrono::duration<R, P> _d, N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, [&](){return m_value != _v;}); }
-	template <class R, class P, class F> void wait(std::chrono::duration<R, P> _d, F const& _f) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, _f); }
+    template <class R, class P> void wait(std::chrono::duration<R, P> _d) const { N old; { UniqueGuard l(m_mutex); old = m_value; } waitNot(_d, old); }
+    template <class R, class P> void wait(std::chrono::duration<R, P> _d, N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, [&](){return m_value == _v;}); }
+    template <class R, class P> void waitNot(std::chrono::duration<R, P> _d, N const& _v) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, [&](){return m_value != _v;}); }
+    template <class R, class P, class F> void wait(std::chrono::duration<R, P> _d, F const& _f) const { UniqueGuard l(m_mutex); m_cv.wait_for(l, _d, _f); }
 
 private:
-	mutable Mutex m_mutex;
-	mutable std::condition_variable m_cv;
-	N m_value;
+    mutable Mutex m_mutex;
+    mutable std::condition_variable m_cv;
+    N m_value;
 };
 
 /** @brief Simple block guard.
@@ -142,18 +142,18 @@ private:
  */
 
 #define DEV_GUARDED(MUTEX) \
-	for (GenericGuardBool<Guard, Mutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericGuardBool<Guard, Mutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_READ_GUARDED(MUTEX) \
-	for (GenericGuardBool<ReadGuard, SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericGuardBool<ReadGuard, SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_WRITE_GUARDED(MUTEX) \
-	for (GenericGuardBool<WriteGuard, SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericGuardBool<WriteGuard, SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_RECURSIVE_GUARDED(MUTEX) \
-	for (GenericGuardBool<RecursiveGuard, RecursiveMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericGuardBool<RecursiveGuard, RecursiveMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_UNGUARDED(MUTEX) \
-	for (GenericUnguardBool<Mutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericUnguardBool<Mutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_READ_UNGUARDED(MUTEX) \
-	for (GenericUnguardSharedBool<SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericUnguardSharedBool<SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 #define DEV_WRITE_UNGUARDED(MUTEX) \
-	for (GenericUnguardBool<SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
+    for (GenericUnguardBool<SharedMutex> __eth_l(MUTEX); __eth_l.b; __eth_l.b = false)
 
 }

@@ -94,39 +94,39 @@ static void output_ignore(bc::ofstream& file, log::level level,
 static void output_file(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
-	do_logging(file, level, domain, body);	
+    do_logging(file, level, domain, body);
 }
 
 static void output_both(bc::ofstream& file, std::ostream& output,
     log::level level, const std::string& domain, const std::string& body)
 {
-	do_logging(file, level, domain, body);	
-	do_logging(output, level, domain, body);	
+    do_logging(file, level, domain, body);
+    do_logging(output, level, domain, body);
 }
 
 static void error_file(bc::ofstream& file, log::level level,
     const std::string& domain, const std::string& body)
 {
-	do_logging(file, level, domain, body);	
+    do_logging(file, level, domain, body);
 }
 
 static void error_both(bc::ofstream& file, std::ostream& error,
     log::level level, const std::string& domain, const std::string& body)
 {
-	do_logging(file, level, domain, body);	
-	do_logging(error, level, domain, body);	
+    do_logging(file, level, domain, body);
+    do_logging(error, level, domain, body);
 }
 
 void initialize_logging(bc::ofstream& debug, bc::ofstream& error,
-    std::ostream& output_stream, std::ostream& error_stream, 
+    std::ostream& output_stream, std::ostream& error_stream,
     std::string level)
 {
     using namespace std::placeholders;
 
     auto debug_log_level = log::level::debug;
-    if (level == "INFO" || level == "info") 
+    if (level == "INFO" || level == "info")
         debug_log_level = log::level::info;
-    else if (level == "TRACE" || level == "trace") 
+    else if (level == "TRACE" || level == "trace")
         debug_log_level = log::level::trace;
 
     // setup log level for debug_log

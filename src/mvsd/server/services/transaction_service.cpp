@@ -153,9 +153,9 @@ bool transaction_service::handle_transaction(const code& ec, const index_list&,
         return false;
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {

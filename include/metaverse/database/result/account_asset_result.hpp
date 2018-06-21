@@ -32,7 +32,7 @@ using namespace libbitcoin::chain;
 
 namespace libbitcoin {
 namespace database {
-    
+
 /// read asset detail information from asset database.
 class BCD_API account_asset_result : public base_result
 {
@@ -40,7 +40,7 @@ public:
     account_asset_result(const memory_ptr slab);
 
     /// The asset account relationship.
-	asset_transfer get_account_asset_transfer() const;
+    asset_transfer get_account_asset_transfer() const;
 };
 
 } // namespace database

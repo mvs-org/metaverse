@@ -31,7 +31,7 @@ extern "C" {
 
 static inline uint32_t fnv_hash(uint32_t const x, uint32_t const y)
 {
-	return x * FNV_PRIME ^ y;
+    return x * FNV_PRIME ^ y;
 }
 
 #ifdef __cplusplus

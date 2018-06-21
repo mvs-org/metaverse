@@ -34,7 +34,7 @@ namespace explorer {
 namespace config {
 
 /**
- * Serialization helper to convert between serialized and deserialized satoshi 
+ * Serialization helper to convert between serialized and deserialized satoshi
  * transaction.
  */
 class BCX_API transaction

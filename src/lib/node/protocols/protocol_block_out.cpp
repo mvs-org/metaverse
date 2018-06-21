@@ -89,8 +89,8 @@ void protocol_block_out::start()
     blockchain_.subscribe_reorganize(
         BIND4(handle_reorganized, _1, _2, _3, _4));
     if (channel_stopped()) {
-		blockchain_.fired();
-	}
+        blockchain_.fired();
+    }
 }
 
 // Receive send_headers.
@@ -170,24 +170,24 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     auto need_to_locate = true;
     if (locator_size > 0)
     {
-    	auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
-    	uint64_t height{0};
-    	auto ok = blockchain.get_height(height, message->start_hashes.back());
-    	if (!ok)
-    	{
-    		need_to_locate = false;
-    	}
+        auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
+        uint64_t height{0};
+        auto ok = blockchain.get_height(height, message->start_hashes.back());
+        if (!ok)
+        {
+            need_to_locate = false;
+        }
     }
 
     if (need_to_locate)
     {
-    	auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
-		uint64_t top;
-		auto is_got = blockchain.get_last_height(top);
-		int64_t block_interval = 2000;
-		auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
-		blockchain_.fetch_locator_block_headers(*message, threshold, res>0?locator_cap:10,
-			BIND2(handle_fetch_locator_headers, _1, _2));
+        auto& blockchain = static_cast<simple_chain&>(static_cast<block_chain_impl&>(blockchain_));
+        uint64_t top;
+        auto is_got = blockchain.get_last_height(top);
+        int64_t block_interval = 2000;
+        auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
+        blockchain_.fetch_locator_block_headers(*message, threshold, res>0?locator_cap:10,
+            BIND2(handle_fetch_locator_headers, _1, _2));
     }
 
     return true;
@@ -257,10 +257,10 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     // that case we would not respond but our peer's other peer should.
     const auto threshold = last_locator_top_.load();
     auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-	uint64_t top;
-	auto is_got = blockchain.get_last_height(top);
-	int64_t block_interval = 2000;
-	auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
+    uint64_t top;
+    auto is_got = blockchain.get_last_height(top);
+    int64_t block_interval = 2000;
+    auto res = static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()) - block_interval;
 
     blockchain_.fetch_locator_block_hashes(*message, threshold, res>0?locator_cap:10,
         BIND2(handle_fetch_locator_hashes, _1, _2));
@@ -428,15 +428,15 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
         if (!announcement.elements.empty())
         {
-        	auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-			uint64_t top;
-			auto is_got = blockchain.get_last_height(top);
-			int64_t block_interval = 20000;
-			auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
-			if (!is_got || res > block_interval)
-			{
-				return true;
-			}
+            auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
+            uint64_t top;
+            auto is_got = blockchain.get_last_height(top);
+            int64_t block_interval = 20000;
+            auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
+            if (!is_got || res > block_interval)
+            {
+                return true;
+            }
             SEND2(announcement, handle_send, _1, announcement.command);
         }
         return true;
@@ -451,15 +451,15 @@ bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
 
     if (!announcement.inventories.empty())
     {
-    	auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
-		uint64_t top;
-		auto is_got = blockchain.get_last_height(top);
-		int64_t block_interval = 20000;
-		auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
-		if (!is_got || res > block_interval)
-		{
-			return true;
-		}
+        auto& blockchain = static_cast<block_chain_impl&>(blockchain_);
+        uint64_t top;
+        auto is_got = blockchain.get_last_height(top);
+        int64_t block_interval = 20000;
+        auto res = std::abs(static_cast<int64_t>(top) - static_cast<int64_t>(peer_start_height()));
+        if (!is_got || res > block_interval)
+        {
+            return true;
+        }
         SEND2(announcement, handle_send, _1, announcement.command);
     }
     return true;

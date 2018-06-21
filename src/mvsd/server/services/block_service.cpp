@@ -151,7 +151,7 @@ bool block_service::handle_reorganization(const code& ec, uint64_t fork_point,
         return false;
 
     if (ec == error::mock)
-    	return true;
+        return true;
 
     if (ec)
     {

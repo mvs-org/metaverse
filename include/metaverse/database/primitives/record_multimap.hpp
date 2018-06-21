@@ -57,7 +57,7 @@ public:
 
     /// Lookup a key, returning an iterable result with multiple values.
     array_index lookup(const KeyType& key) const;
-	std::shared_ptr<std::vector<array_index>> lookup(array_index index) const;
+    std::shared_ptr<std::vector<array_index>> lookup(array_index index) const;
     /// Add a new row for a key. If the key doesn't exist, it will be created.
     /// If it does exist, the value will be added at the start of the chain.
     void add_row(const KeyType& key, write_function write);

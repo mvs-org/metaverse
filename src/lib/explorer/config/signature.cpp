@@ -41,7 +41,7 @@ static bool decode_signature(wallet::message_signature& signature,
 {
     // There is no bc::decode_base64 array-based override.
     data_chunk decoded;
-    if (!decode_base64(decoded, encoded) || 
+    if (!decode_base64(decoded, encoded) ||
         (decoded.size() != wallet::message_signature_size))
         return false;
 

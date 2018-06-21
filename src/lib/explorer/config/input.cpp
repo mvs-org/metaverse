@@ -88,7 +88,7 @@ input::input(const chain::input_point& value)
 
 input::operator const tx_input_type&() const
 {
-    return value_; 
+    return value_;
 }
 
 std::istream& operator>>(std::istream& stream, input& argument)

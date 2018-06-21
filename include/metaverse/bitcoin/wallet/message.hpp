@@ -30,7 +30,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 /**
  * A message signature is an EC signature with one prefix byte.
  */

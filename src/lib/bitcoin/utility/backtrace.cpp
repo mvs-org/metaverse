@@ -33,27 +33,27 @@ void back_trace(std::ostream& os)
 {
 #ifndef _WIN32
 #ifndef __ANDROID__
-	int size = 1024;
-	int j = 0, nptrs = 0;
+    int size = 1024;
+    int j = 0, nptrs = 0;
 
-	void *buffer[1024];
-	char **strings;
+    void *buffer[1024];
+    char **strings;
 
-	nptrs = backtrace(buffer, size);
-	os << "backtrace() returned " << nptrs << " addresses\n";
+    nptrs = backtrace(buffer, size);
+    os << "backtrace() returned " << nptrs << " addresses\n";
 
-	strings = backtrace_symbols(buffer, nptrs);
-	if (strings == nullptr) {
-		os << "backtrace_symbols failed" << '\n';
-		exit (EXIT_FAILURE);
-	}
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings == nullptr) {
+        os << "backtrace_symbols failed" << '\n';
+        exit (EXIT_FAILURE);
+    }
 
-	for (j = 0; j < nptrs; j++)
-	{
-		os << strings[j] << '\n';
-	}
+    for (j = 0; j < nptrs; j++)
+    {
+        os << strings[j] << '\n';
+    }
 
-	free(strings);
+    free(strings);
 #endif
 #endif
 }
@@ -61,15 +61,15 @@ void back_trace(std::ostream& os)
 
 void do_backtrace(const std::string& name)
 {
-	std::fstream fout;
-	fout.open(name, std::ios_base::ate|std::ios_base::out);
-	if(! fout.good())
-	{
-		boost::format fmt{"open file %s failed"};
-		auto msg = fmt % name;
-		throw std::runtime_error{ msg.str() };
-	}
-	back_trace(fout);
+    std::fstream fout;
+    fout.open(name, std::ios_base::ate|std::ios_base::out);
+    if(! fout.good())
+    {
+        boost::format fmt{"open file %s failed"};
+        auto msg = fmt % name;
+        throw std::runtime_error{ msg.str() };
+    }
+    back_trace(fout);
 }
 
 }//namespace libbitcoin

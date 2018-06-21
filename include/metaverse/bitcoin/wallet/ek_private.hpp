@@ -46,7 +46,7 @@ public:
     ek_private& operator=(const ek_private& other);
     friend std::istream& operator>>(std::istream& in, ek_private& to);
     friend std::ostream& operator<<(std::ostream& out, const ek_private& of);
-    
+
     /// Cast operators.
     operator const bool() const;
     operator const encrypted_private&() const;

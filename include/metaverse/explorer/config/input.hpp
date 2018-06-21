@@ -44,7 +44,7 @@ public:
      * Default constructor.
      */
     input();
-    
+
     /**
      * Initialization constructor.
      * @param[in]  tuple  The value to initialize with.

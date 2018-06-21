@@ -43,7 +43,7 @@ class BC_API deadline
 public:
     typedef std::shared_ptr<deadline> ptr;
     typedef std::function<void(const code&)> handler;
-    
+
     /**
      * Construct a deadline timer.
      * @param[in]  pool      The thread pool used by the timer.

@@ -71,23 +71,23 @@
     (cp)[0] = (uint8_t)((value) >> (byte_length * 0)); \
 } while (0)
 
-#define	H0 0x67452301U
-#define	H1 0xEFCDAB89U
-#define	H2 0x98BADCFEU
-#define	H3 0x10325476U
-#define	H4 0xC3D2E1F0U
+#define    H0 0x67452301U
+#define    H1 0xEFCDAB89U
+#define    H2 0x98BADCFEU
+#define    H3 0x10325476U
+#define    H4 0xC3D2E1F0U
 
-#define	K0 0x00000000U
-#define	K1 0x5A827999U
-#define	K2 0x6ED9EBA1U
-#define	K3 0x8F1BBCDCU
-#define	K4 0xA953FD4EU
+#define    K0 0x00000000U
+#define    K1 0x5A827999U
+#define    K2 0x6ED9EBA1U
+#define    K3 0x8F1BBCDCU
+#define    K4 0xA953FD4EU
 
-#define	KK0 0x50A28BE6U
-#define	KK1 0x5C4DD124U
-#define	KK2 0x6D703EF3U
-#define	KK3 0x7A6D76E9U
-#define	KK4 0x00000000U
+#define    KK0 0x50A28BE6U
+#define    KK1 0x5C4DD124U
+#define    KK2 0x6D703EF3U
+#define    KK3 0x7A6D76E9U
+#define    KK4 0x00000000U
 
 #define ROL(n, x) (((x) << (n)) | ((x) >> (32-(n))))
 
@@ -105,7 +105,7 @@
 
 #define X(i) x[i]
 
-static uint8_t PAD[RMD160_BLOCK_LENGTH] = 
+static uint8_t PAD[RMD160_BLOCK_LENGTH] =
 {
     0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -393,7 +393,7 @@ void RMD160Update(RMD160CTX* context, const uint8_t* input, size_t length)
             have = 0;
         }
 
-        while (off + RMD160_BLOCK_LENGTH <= length) 
+        while (off + RMD160_BLOCK_LENGTH <= length)
         {
             RMD160Transform(context->state, input + off);
             off += RMD160_BLOCK_LENGTH;

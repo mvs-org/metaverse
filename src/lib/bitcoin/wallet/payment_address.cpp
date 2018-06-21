@@ -350,22 +350,22 @@ payment_address payment_address::extract(const chain::script& script,
             // extract address from multisig payment script
             // zero sig1 sig2 ... encoded-multisig
             const auto& redeem_data = ops.back().data;
-            
+
             if (redeem_data.empty())
                 return payment_address(); //throw std::logic_error{"empty redeem script."};
-            
+
             if (!redeem_script.from_data(redeem_data, false, bc::chain::script::parse_mode::strict))
                 return payment_address(); //throw std::logic_error{"error occured when parse redeem script data."};
-            
+
             // Is the redeem script a standard pay (output) script?
             const auto redeem_script_pattern = redeem_script.pattern();
             if(redeem_script_pattern != chain::script_pattern::pay_multisig)
                 return payment_address(); //throw std::logic_error{"redeem script is not pay multisig pattern."};
-            
+
             const payment_address address(redeem_script, 5);
             //auto addr_str = address.encoded(); // pay address
             //log::trace("input_addr")<<redeem_script.to_string(false);
-            //log::trace("input_addr")<<addr_str;            
+            //log::trace("input_addr")<<addr_str;
             return address;
         }
 

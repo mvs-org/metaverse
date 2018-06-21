@@ -1,6 +1,6 @@
 /**
  *   Byte-oriented AES-256 implementation.
- *   All lookup tables replaced with 'on the fly' calculations. 
+ *   All lookup tables replaced with 'on the fly' calculations.
  *
  *   Copyright (c) 2007-2009 Ilya O. Levin, http://www.literatecode.com
  *   Other contributors: Hal Finney
@@ -27,16 +27,16 @@
 #define AES256_BLOCK_LENGTH 16U
 
 #ifdef __cplusplus
-extern "C" { 
+extern "C" {
 #endif
 
 typedef struct {
     uint8_t key[AES256_KEY_LENGTH];
     uint8_t enckey[AES256_KEY_LENGTH];
     uint8_t deckey[AES256_KEY_LENGTH];
-} aes256_context; 
+} aes256_context;
 
-void aes256_init(aes256_context* context, 
+void aes256_init(aes256_context* context,
     const uint8_t key[AES256_KEY_LENGTH]);
 
 void aes256_done(aes256_context* context);

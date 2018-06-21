@@ -26,7 +26,7 @@
 #include <metaverse/bitcoin/define.hpp>
 
 namespace libbitcoin {
-    
+
 /**
  * Class to expose a narrowing input stream.
  * std::wcin must be patched by console_streambuf if used for Windows input.
@@ -43,7 +43,7 @@ public:
      */
     unicode_istream(std::istream& narrow_stream, std::wistream& wide_stream,
         size_t size);
-    
+
     /**
      * Delete the unicode_streambuf that wraps wide_stream.
      */

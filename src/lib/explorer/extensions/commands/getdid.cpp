@@ -34,7 +34,7 @@ console_result getdid::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     Json::Value json_value;
-    
+
     auto& blockchain = node.chain_impl();
 
     if(option_.symbol.empty())
@@ -42,8 +42,8 @@ console_result getdid::invoke (Json::Value& jv_output,
         auto sh_vec = blockchain.get_registered_dids();
 
         // add blockchain dids
-        for (auto& elem: *sh_vec) 
-            json_value.append(elem.get_symbol());  
+        for (auto& elem: *sh_vec)
+            json_value.append(elem.get_symbol());
 
         if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
             jv_output["dids"] = "";
@@ -60,7 +60,7 @@ console_result getdid::invoke (Json::Value& jv_output,
         {
             didSymbol = blockchain.get_did_from_address(didSymbol);
             if(didSymbol.empty())
-                throw address_not_bound_did_exception{"address is not binded with some did on the blockchain"};        
+                throw address_not_bound_did_exception{"address is not binded with some did on the blockchain"};
         }
 
         // check did symbol
@@ -86,7 +86,7 @@ console_result getdid::invoke (Json::Value& jv_output,
                 jv_output["addresses"] = "";
             }
             else {
-                jv_output["did"] = didSymbol;            
+                jv_output["did"] = didSymbol;
                 jv_output["addresses"] = json_value;
             }
 

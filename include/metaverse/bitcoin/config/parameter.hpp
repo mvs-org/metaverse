@@ -106,7 +106,7 @@ public:
         const argument_list& arguments);
 
     /**
-     * Determine if the option is an argument by testing for it by name in the 
+     * Determine if the option is an argument by testing for it by name in the
      * positional options collection and if so return the position.
      * @param[in]  option     The metadata of the option to position.
      * @param[in]  arguments  The list of supported positional arguments.
@@ -123,7 +123,7 @@ public:
      * @param[in]  arguments  The argument names list.
      * @return                The arguments limit value for the option.
      */
-    unsigned arguments_limit(int position, 
+    unsigned arguments_limit(int position,
         const boost::program_options::option_description& option,
         const argument_list& arguments) const;
 

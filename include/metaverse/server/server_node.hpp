@@ -117,7 +117,7 @@ private:
     bool start_block_services();
     bool start_transaction_services();
     bool start_query_workers(bool secure);
-    
+
     bool open_ui();
 
     std::atomic<bool> under_blockchain_sync_;

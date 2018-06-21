@@ -97,7 +97,7 @@ public:
      */
     template <typename T>
     void write_little_endian(T n);
-    
+
     /**
      * Encodes a list of bytes.
      */

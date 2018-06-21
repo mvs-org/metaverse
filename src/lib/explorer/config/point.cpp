@@ -85,7 +85,7 @@ point::point(const point& other)
 
 point::operator const chain::output_point&() const
 {
-    return value_; 
+    return value_;
 }
 
 std::istream& operator>>(std::istream& input, point& argument)

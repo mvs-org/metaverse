@@ -73,7 +73,7 @@ void protocol_address::start()
             self_ = address({ { nt_address } });
             SEND2(self_, handle_send, _1, self_.command);
         }
-        
+
     }
 
 #ifdef USE_UPNP
@@ -97,7 +97,7 @@ void protocol_address::start()
     }
 
 #endif
-    
+
 
     // If we can't store addresses we don't ask for or handle them.
     if (settings.host_pool_capacity == 0)

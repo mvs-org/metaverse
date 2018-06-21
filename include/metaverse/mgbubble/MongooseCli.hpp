@@ -37,33 +37,33 @@ public:
     MgrCli(MgrCli&&) = delete;
     MgrCli& operator=(MgrCli&&) = delete;
 
-	inline time_t poll(int milli) { return mg_mgr_poll(&mgr_, milli); }
+    inline time_t poll(int milli) { return mg_mgr_poll(&mgr_, milli); }
 
 protected:
     MgrCli() noexcept { mg_mgr_init(&mgr_, this); }
     ~MgrCli() noexcept { mg_mgr_free(&mgr_); }
 
-	static void ev_handler(mg_connection* nc, int ev, void *ev_data) {
+    static void ev_handler(mg_connection* nc, int ev, void *ev_data) {
        auto* hm = static_cast<http_message*>(ev_data);
        auto* self = static_cast<DerivedT*>(nc->user_data);//this
 
-	  switch (ev) {
-	    case MG_EV_CONNECT:
-	        if (* (int *) ev_data != 0) {
-	            fprintf(stderr, "connect[%s] failed: %s\n", 
+      switch (ev) {
+        case MG_EV_CONNECT:
+            if (* (int *) ev_data != 0) {
+                fprintf(stderr, "connect[%s] failed: %s\n", 
                         self->get_url().c_str(), strerror(* (int *) ev_data));
                 self->exit();
-	        }
-	        break;
-	    case MG_EV_HTTP_REPLY:
+            }
+            break;
+        case MG_EV_HTTP_REPLY:
             nc->flags |= MG_F_CLOSE_IMMEDIATELY;
             self->reply(hm);
             self->exit();
-	        break;
-	    default:
-	        break;
-	  }
-	}
+            break;
+        default:
+            break;
+      }
+    }
 
     mg_mgr mgr_;
 };
@@ -71,7 +71,7 @@ protected:
 class HttpReq : public MgrCli<HttpReq>
 {
 public:
-	explicit HttpReq(const std::string& url, int milli, reply_handler&& oreply)
+    explicit HttpReq(const std::string& url, int milli, reply_handler&& oreply)
         :url_(url), reply(oreply){
             memset(&opts_, 0x00, sizeof(opts_));
             opts_.user_data = reinterpret_cast<void*>(this);
@@ -79,7 +79,7 @@ public:
             if (milli > 0) 
                 milli_ = milli;
         }
-	~HttpReq() noexcept {}
+    ~HttpReq() noexcept {}
 
     //void got_reply(http_message* msg) { reply(msg); }
 

@@ -42,7 +42,7 @@ BCX_API void display_command_names(std::ostream& stream);
  * @param[in]  stream  The stream to write into.
  * @param[in]  url     The server url.
  */
-BCX_API void display_connection_failure(std::ostream& stream, 
+BCX_API void display_connection_failure(std::ostream& stream,
     const bc::config::endpoint& url);
 
 /**
@@ -52,7 +52,7 @@ BCX_API void display_connection_failure(std::ostream& stream,
  * @param[in]  command      The value that was attempted as a command.
  * @param[in]  superseding  The superseding command, defaults to empty.
  */
-BCX_API void display_invalid_command(std::ostream& stream, 
+BCX_API void display_invalid_command(std::ostream& stream,
     const std::string& command, const std::string& superseding="");
 
 /**

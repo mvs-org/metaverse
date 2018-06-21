@@ -32,7 +32,7 @@
 namespace libbitcoin {
 namespace wallet {
 
-const byte_array<parse_encrypted_private::magic_size> 
+const byte_array<parse_encrypted_private::magic_size>
 parse_encrypted_private::magic_
 {
     { 0x01 }

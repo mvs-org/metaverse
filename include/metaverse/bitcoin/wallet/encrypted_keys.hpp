@@ -119,7 +119,7 @@ BC_API bool create_token(encrypted_token& out_token,
 
 /**
  * Create an encrypted private key from an intermediate passphrase.
- * The `out_point` paramter is always compressed, so to use it it should be 
+ * The `out_point` paramter is always compressed, so to use it it should be
  * decompressed as necessary to match the state of the `compressed` parameter.
  * @param[out] out_private  The new encrypted private key.
  * @param[out] out_point    The ec compressed public key of the new key pair.
@@ -136,7 +136,7 @@ BC_API bool create_key_pair(encrypted_private& out_private,
 /**
  * DEPRECATED
  * Create an encrypted key pair from an intermediate passphrase.
- * The `out_point` paramter is always compressed, so to use it it should be 
+ * The `out_point` paramter is always compressed, so to use it it should be
  * decompressed as necessary to match the state of the `compressed` parameter.
  * @param[out] out_private  The new encrypted private key.
  * @param[out] out_public   The new encrypted public key.
@@ -155,11 +155,11 @@ BC_API bool create_key_pair(encrypted_private& out_private,
 void aes256_common_encrypt(data_chunk& mnemonic, data_chunk& passphrase, data_chunk& encry_output);
 void aes256_common_decrypt(const data_chunk& mnemonic, data_chunk& passphrase, data_chunk& decry_output);
 
-void encrypt_string(const std::string& mnemonic, 
-	std::string& passphrase, std::string& encry_output);
+void encrypt_string(const std::string& mnemonic,
+    std::string& passphrase, std::string& encry_output);
 
-void decrypt_string(const std::string& mnemonic, 
-	std::string& passphrase, std::string& decry_output);
+void decrypt_string(const std::string& mnemonic,
+    std::string& passphrase, std::string& decry_output);
 
 #ifdef WITH_ICU
 

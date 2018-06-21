@@ -76,10 +76,10 @@ public:
 
     /// Unlink all blocks upwards from (and including) from_height.
     void unlink(size_t from_height);
-	
-	/// Remove block from block hash table
-	void remove(const hash_digest& hash);
-	
+
+    /// Remove block from block hash table
+    void remove(const hash_digest& hash);
+
     /// Synchronise storage with disk so things are consistent.
     /// Should be done at the end of every block write.
     void sync();

@@ -35,7 +35,7 @@
 #define SHA256_DIGEST_LENGTH 32U
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 

@@ -44,7 +44,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 // Alias commonly-used constants for brevity.
 static constexpr auto half = half_hash_size;
 static constexpr auto quarter = quarter_hash_size;
@@ -279,127 +279,127 @@ bool create_key_pair(encrypted_private& out_private, ec_compressed& out_point,
 }
 /* encrypt string with extra 0 value */
 void aes256_common_encrypt(data_chunk& mnemonic, data_chunk& passphrase, data_chunk& encry_output)
-{ 
-	aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
-	
-	encry_output.clear();
+{
+    aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
 
-	data_chunk& data = mnemonic;
-	uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
-	
-	encry_output.push_back(static_cast<uint8_t>(left)); // bytes counts which not be encrypted
+    encry_output.clear();
 
-	while(left--)
-		data.push_back(uint8_t(0)); // data must to be multiple blocksize
-		
-	auto mnem_encrypt = [&encry_output](aes_secret& sec, data_chunk& data){
-		uint64_t start = 0, i = 0;
-		aes_block block;
-		while( start < data.size() ) {
-			for( i = 0; i < aes256_block_size; i++)
-				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
-			
-			aes256_encrypt(sec, block);
-			
-			for( auto x : block )
-				encry_output.push_back(static_cast<char>(x));
-			
-			start += aes256_block_size;
-		}
-	};
-	mnem_encrypt(sec, data);
+    data_chunk& data = mnemonic;
+    uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
+
+    encry_output.push_back(static_cast<uint8_t>(left)); // bytes counts which not be encrypted
+
+    while(left--)
+        data.push_back(uint8_t(0)); // data must to be multiple blocksize
+
+    auto mnem_encrypt = [&encry_output](aes_secret& sec, data_chunk& data){
+        uint64_t start = 0, i = 0;
+        aes_block block;
+        while( start < data.size() ) {
+            for( i = 0; i < aes256_block_size; i++)
+                block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+
+            aes256_encrypt(sec, block);
+
+            for( auto x : block )
+                encry_output.push_back(static_cast<char>(x));
+
+            start += aes256_block_size;
+        }
+    };
+    mnem_encrypt(sec, data);
 }
 
 /* decrypt string */
 void aes256_common_decrypt(const data_chunk& mnemonic, data_chunk& passphrase, data_chunk& decry_output)
-{ 
-	aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
-	
-	decry_output.clear();
-	
-	uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
-	
-	auto mnem_decrypt = [&decry_output](aes_secret& sec, const data_chunk& data){
-		uint32_t start = 1, i = 0; // escape first byte
-		aes_block block;
-		while( start < data.size() ) {
-			for( i = 0; i < aes256_block_size; i++)
-				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
-			
-			aes256_decrypt(sec, block);
-			
-			for( auto x : block )
-				decry_output.push_back(static_cast<char>(x));
-			
-			start += aes256_block_size;
-		}
-	};
-	mnem_decrypt(sec, mnemonic);
+{
+    aes_secret sec = sha256_hash(ripemd160_hash(passphrase));
+
+    decry_output.clear();
+
+    uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
+
+    auto mnem_decrypt = [&decry_output](aes_secret& sec, const data_chunk& data){
+        uint32_t start = 1, i = 0; // escape first byte
+        aes_block block;
+        while( start < data.size() ) {
+            for( i = 0; i < aes256_block_size; i++)
+                block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+
+            aes256_decrypt(sec, block);
+
+            for( auto x : block )
+                decry_output.push_back(static_cast<char>(x));
+
+            start += aes256_block_size;
+        }
+    };
+    mnem_decrypt(sec, mnemonic);
     while(left--)
         decry_output.pop_back(); // remove left bytes
 }
 
 /* encrypt string with extra 0 value */
 void encrypt_string(const std::string& mnemonic, std::string& passphrase, std::string& encry_output)
-{ 
-	data_chunk pass_chunk(passphrase.begin(), passphrase.end());
-	aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
-	
-	encry_output.clear();
+{
+    data_chunk pass_chunk(passphrase.begin(), passphrase.end());
+    aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
 
-	std::string data = mnemonic;
-	uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
-	
-	encry_output.push_back(static_cast<char>(left)); // bytes counts which not be encrypted
+    encry_output.clear();
 
-	while(left--)
-		data.push_back(uint8_t(0)); // data must to be multiple blocksize
-		
-	auto mnem_encrypt = [&encry_output](aes_secret& sec, std::string& data){
-		uint32_t start = 0, i = 0;
-		aes_block block;
-		while( start < data.size() ) {
-			for( i = 0; i < aes256_block_size; i++)
-				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
-			
-			aes256_encrypt(sec, block);
-			
-			for( auto x : block )
-				encry_output.push_back(static_cast<char>(x));
-			
-			start += aes256_block_size;
-		}
-	};
-	mnem_encrypt(sec, data);
+    std::string data = mnemonic;
+    uint32_t start = 0, left = aes256_block_size - (data.size() % aes256_block_size);
+
+    encry_output.push_back(static_cast<char>(left)); // bytes counts which not be encrypted
+
+    while(left--)
+        data.push_back(uint8_t(0)); // data must to be multiple blocksize
+
+    auto mnem_encrypt = [&encry_output](aes_secret& sec, std::string& data){
+        uint32_t start = 0, i = 0;
+        aes_block block;
+        while( start < data.size() ) {
+            for( i = 0; i < aes256_block_size; i++)
+                block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+
+            aes256_encrypt(sec, block);
+
+            for( auto x : block )
+                encry_output.push_back(static_cast<char>(x));
+
+            start += aes256_block_size;
+        }
+    };
+    mnem_encrypt(sec, data);
 }
 
 /* decrypt string */
 void decrypt_string(const std::string& mnemonic, std::string& passphrase, std::string& decry_output)
-{ 
-	data_chunk pass_chunk(passphrase.begin(), passphrase.end());
-	aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
-	
-	decry_output.clear();
-	
-	uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
-	
-	auto mnem_decrypt = [&decry_output](aes_secret& sec, const std::string& data){
-		uint32_t start = 1, i = 0; // escape first byte
-		aes_block block;
-		while( start < data.size() ) {
-			for( i = 0; i < aes256_block_size; i++)
-				block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
-			
-			aes256_decrypt(sec, block);
-			
-			for( auto x : block )
-				decry_output.push_back(static_cast<char>(x));
-			
-			start += aes256_block_size;
-		}
-	};
-	mnem_decrypt(sec, mnemonic);
-	decry_output = decry_output.substr(0, decry_output.size() - left); // remove left bytes
+{
+    data_chunk pass_chunk(passphrase.begin(), passphrase.end());
+    aes_secret sec = sha256_hash(ripemd160_hash(pass_chunk));
+
+    decry_output.clear();
+
+    uint8_t left = static_cast<uint8_t>(*mnemonic.begin());
+
+    auto mnem_decrypt = [&decry_output](aes_secret& sec, const std::string& data){
+        uint32_t start = 1, i = 0; // escape first byte
+        aes_block block;
+        while( start < data.size() ) {
+            for( i = 0; i < aes256_block_size; i++)
+                block[i] = static_cast<uint8_t>(*(data.begin()+start+i));
+
+            aes256_decrypt(sec, block);
+
+            for( auto x : block )
+                decry_output.push_back(static_cast<char>(x));
+
+            start += aes256_block_size;
+        }
+    };
+    mnem_decrypt(sec, mnemonic);
+    decry_output = decry_output.substr(0, decry_output.size() - left); // remove left bytes
 }
 
 #ifdef WITH_ICU

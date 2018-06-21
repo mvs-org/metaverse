@@ -47,7 +47,7 @@ public:
      * @param[in]  channel   The channel on which to start the protocol.
      */
     protocol_version(p2p& network, channel::ptr channel);
-    
+
     /**
      * Start the protocol.
      * @param[in]  handler  Invoked upon stop or receipt of version and verack.

@@ -34,7 +34,7 @@ class BC_API log
 public:
     enum class level
     {
-    	trace,
+        trace,
         debug,
         info,
         warning,

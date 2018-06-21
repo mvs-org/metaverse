@@ -34,7 +34,7 @@
 
 namespace libbitcoin {
 namespace network {
-    
+
 class p2p;
 
 /// Manual connections session, thread safe.
@@ -63,7 +63,7 @@ protected:
     virtual void attach_protocols(channel::ptr channel);
 
     void delay_new_connection(const std::string& hostname, uint16_t port
-    		, channel_handler handler, uint32_t retries);
+            , channel_handler handler, uint32_t retries);
 
 private:
     void handle_started(const code& ec, result_handler handler);

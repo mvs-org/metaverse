@@ -40,7 +40,7 @@ private:
 
 protected:
     int flags_;
-    
+
     /**
      * Construct a signing context initializer of the specified context.
      * @param[in]  flags  { SECP256K1_CONTEXT_SIGN, SECP256K1_CONTEXT_VERIFY }

@@ -30,14 +30,14 @@
 
 namespace libbitcoin {
 namespace chain {
-	
+
 BC_CONSTEXPR size_t ETP_FIX_SIZE = 8;
 
 class BC_API etp
 {
 public:
-	etp();
-	etp(uint64_t value);
+    etp();
+    etp(uint64_t value);
     static etp factory_from_data(const data_chunk& data);
     static etp factory_from_data(std::istream& stream);
     static etp factory_from_data(reader& source);
@@ -53,9 +53,9 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	uint64_t get_value() const;
-	void set_value(uint64_t value);
-	
+    uint64_t get_value() const;
+    void set_value(uint64_t value);
+
 private:
     uint64_t value;
 };

@@ -26,7 +26,7 @@
 
 namespace libbitcoin {
 namespace delegates {
-    
+
 #define FORWARD_ARGS(args) \
     std::forward<Args>(args)...
 #define FORWARD_HANDLER(handler) \

@@ -6,7 +6,7 @@
  * metaverse-protocol is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) 
+ * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
@@ -199,7 +199,7 @@ bool socket::set_private_key(const config::sodium& key)
 // This must be called on the socket thread.
 bool socket::set_certificate(const certificate& certificate)
 {
-    return certificate && 
+    return certificate &&
         set_public_key(certificate.public_key().to_string()) &&
         set_private_key(certificate.private_key().to_string());
 }

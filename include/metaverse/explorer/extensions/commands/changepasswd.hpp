@@ -60,26 +60,26 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"password,p",
-			value<std::string>(&option_.passwd)->required(),
-			"The new password."
-		);
+        )
+        (
+            "password,p",
+            value<std::string>(&option_.passwd)->required(),
+            "The new password."
+        );
 
         return options;
     }

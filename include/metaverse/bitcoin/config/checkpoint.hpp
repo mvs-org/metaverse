@@ -40,7 +40,7 @@ class BC_API checkpoint
 public:
     /**
      * A list of checkpoints.
-     * This must provide operator<< for ostream in order to be used as a 
+     * This must provide operator<< for ostream in order to be used as a
      * boost::program_options default_value.
      */
     typedef std::vector<checkpoint> list;
@@ -51,7 +51,7 @@ public:
      * @return             The sorted list of checkpoints.
      */
     static list sort(const list& checks);
-    
+
     /**
      * Validate a checkpoint against a list of checkpoints.
      * @param[in]  hash    The hash of the checkpoint.
@@ -60,51 +60,51 @@ public:
      */
     static bool validate(const hash_digest& hash, size_t height,
         const list& checks);
-    
+
     /**
      * Default constructor.
      */
     checkpoint();
-    
+
     /**
      * Copy constructor.
      * @param[in]  other  The object to copy into self on construct.
      */
     checkpoint(const checkpoint& other);
-    
+
     /**
      * Initialization constructor.
      * The height is optional and will be set to zero if not provided.
      * @param[in]  value  The value of the hash[:height] form.
      */
     checkpoint(const std::string& value);
-    
+
     /**
      * Initialization constructor.
      * @param[in]  hash    The string block hash for the checkpoint.
      * @param[in]  height  The height of the hash.
      */
     checkpoint(const std::string& hash, size_t height);
-    
+
     /**
      * Initialization constructor.
      * @param[in]  hash    The block hash for the checkpoint.
      * @param[in]  height  The height of the hash.
      */
     checkpoint(const hash_digest& hash, size_t height);
-    
+
     /**
      * Getter.
      * @return The block hash of the checkpoint.
      */
     hash_digest hash() const;
-        
+
     /**
      * Getter.
      * @return The block height of the checkpoint.
      */
     size_t height() const;
-    
+
     /**
      * Get the checkpoint as a string.
      * @return The ip address of the authority in the hash:height form.
@@ -116,7 +116,7 @@ public:
      * @param[in]  other  The other object with which to compare.
      */
     bool operator==(const checkpoint& other) const;
-    
+
     /**
      * Define stream in. Throws if input is invalid.
      * @param[in]   input     The input stream to read the value from.

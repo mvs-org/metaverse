@@ -29,7 +29,7 @@
 namespace libbitcoin {
 namespace database {
 
-// This VC++ workaround is OK because ValueType must be unsigned. 
+// This VC++ workaround is OK because ValueType must be unsigned.
 //static constexpr ValueType empty = std::numeric_limits<ValueType>::max();
 template <typename IndexType, typename ValueType>
 const ValueType hash_table_header<IndexType, ValueType>::empty =
@@ -101,7 +101,7 @@ ValueType hash_table_header<IndexType, ValueType>::read(IndexType index) const
 {
     // This is not runtime safe but test is avoided as an optimization.
     BITCOIN_ASSERT(index < buckets_);
-    
+
     // The accessor must remain in scope until the end of the block.
     const auto memory = file_.access();
     const auto value_address = REMAP_ADDRESS(memory) + item_position(index);
@@ -119,7 +119,7 @@ void hash_table_header<IndexType, ValueType>::write(IndexType index,
 {
     // This is not runtime safe but test is avoided as an optimization.
     BITCOIN_ASSERT(index < buckets_);
-    
+
     // The accessor must remain in scope until the end of the block.
     const auto memory = file_.access();
     const auto value_address = REMAP_ADDRESS(memory) + item_position(index);

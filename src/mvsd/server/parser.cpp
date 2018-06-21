@@ -60,7 +60,7 @@ options_metadata parser::load_options()
     (
         BS_CONFIG_VARIABLE ",c",
         value<path>(&configured.file)->
-		default_value("mvs.conf"),
+        default_value("mvs.conf"),
         "Specify path to a configuration settings file based on path ~/.metaverse"
     )
     (
@@ -87,18 +87,18 @@ options_metadata parser::load_options()
             default_value(false)->zero_tokens(),
         "Display version information."
     )
-	(
-		BS_DAEMON_VARIABLE ",d",
-		value<bool>(&configured.daemon)->
-			default_value(false)->zero_tokens(),
-		"Run in daemon mode (unix/apple)."
-	)
-	(
-		"testnet,t",
-		value<bool>(&configured.use_testnet_rules)->
-			default_value(false)->zero_tokens(),
-		"Use testnet rules for determination of work required, defaults to false."
-	)
+    (
+        BS_DAEMON_VARIABLE ",d",
+        value<bool>(&configured.daemon)->
+            default_value(false)->zero_tokens(),
+        "Run in daemon mode (unix/apple)."
+    )
+    (
+        "testnet,t",
+        value<bool>(&configured.use_testnet_rules)->
+            default_value(false)->zero_tokens(),
+        "Use testnet rules for determination of work required, defaults to false."
+    )
     (
         BS_DATADIR_VARIABLE ",D",
         value<path>(&configured.data_dir)->
@@ -117,7 +117,7 @@ options_metadata parser::load_options()
         default_value(true)->zero_tokens(),
         "Add a upnp map port in your router which has a extern address to allow connections to your local address."
     )
-	;
+    ;
 
     return description;
 }
@@ -277,7 +277,7 @@ options_metadata parser::load_settings()
         "If broadcast your upnp extern address on the network to allow others find you and connect you."
     )
     (
-		"network.seed",
+        "network.seed",
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )
@@ -344,11 +344,11 @@ options_metadata parser::load_settings()
     )
 
     /* [server] */
-	(
-	    "server.administrator_required",
-	    value<bool>(&configured.server.administrator_required),
-	    "Whether wallet needs administrator to execute non-account commands(shutdown/getinfo...), defaults to false."
-	)
+    (
+        "server.administrator_required",
+        value<bool>(&configured.server.administrator_required),
+        "Whether wallet needs administrator to execute non-account commands(shutdown/getinfo...), defaults to false."
+    )
     (
         "server.mongoose_listen",
         value<std::string>(&configured.server.mongoose_listen),
@@ -483,15 +483,15 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         load_environment_variables(variables, BS_ENVIRONMENT_VARIABLE_PREFIX);
 
         // Don't load the rest if any of these options are specified.
-        if (!get_option(variables, BS_VERSION_VARIABLE) && 
+        if (!get_option(variables, BS_VERSION_VARIABLE) &&
             !get_option(variables, BS_SETTINGS_VARIABLE) &&
             !get_option(variables, BS_HELP_VARIABLE))
         {
-        	if (get_option(variables, BS_TESTNET_VARIABLE))
-			{
-				configured.network.hosts_file = "hosts-test.cache";
-				const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
-			}
+            if (get_option(variables, BS_TESTNET_VARIABLE))
+            {
+                configured.network.hosts_file = "hosts-test.cache";
+                const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
+            }
             auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
             if (!data_dir.empty())
             {

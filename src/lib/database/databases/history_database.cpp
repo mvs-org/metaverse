@@ -46,7 +46,7 @@ BC_CONSTEXPR size_t row_record_size = hash_table_record_size<hash_digest>(value_
 
 history_database::history_database(const path& lookup_filename,
     const path& rows_filename, std::shared_ptr<shared_mutex> mutex)
-  : lookup_file_(lookup_filename, mutex), 
+  : lookup_file_(lookup_filename, mutex),
     lookup_header_(lookup_file_, number_buckets),
     lookup_manager_(lookup_file_, header_size, record_size),
     lookup_map_(lookup_header_, lookup_manager_),

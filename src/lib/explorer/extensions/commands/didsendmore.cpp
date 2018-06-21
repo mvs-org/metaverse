@@ -41,8 +41,8 @@ console_result didsendmore::invoke (Json::Value& jv_output,
     if (!changesymbol.empty())
     {
         auto address = changesymbol;
-        if(!blockchain.is_valid_address(changesymbol))     
-            address = get_address_from_did(changesymbol,blockchain);            
+        if(!blockchain.is_valid_address(changesymbol))
+            address = get_address_from_did(changesymbol,blockchain);
     }
 
     // receiver

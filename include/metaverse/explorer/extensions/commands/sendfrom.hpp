@@ -66,46 +66,46 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"Send from this address"
-		)
-		(
-			"TOADDRESS",
-			value<std::string>(&argument_.to)->required(),
-			"Send to this address"
-		)
-		(
-			"AMOUNT",
-			value<uint64_t>(&argument_.amount)->required(),
-			"ETP integer bits."
-		)
+        )
+        (
+            "FROMADDRESS",
+            value<std::string>(&argument_.from)->required(),
+            "Send from this address"
+        )
+        (
+            "TOADDRESS",
+            value<std::string>(&argument_.to)->required(),
+            "Send to this address"
+        )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "ETP integer bits."
+        )
         (
             "memo,m",
             value<std::string>(&argument_.memo),
             "The memo to descript transaction"
         )
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		);
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
+        );
 
         return options;
     }
@@ -122,10 +122,10 @@ public:
 
         argument():from(""), to(""), memo("")
         {};
-    	std::string from;
-		std::string to;
-		uint64_t amount;
-		uint64_t fee;
+        std::string from;
+        std::string to;
+        uint64_t amount;
+        uint64_t fee;
         std::string memo;
     } argument_;
 

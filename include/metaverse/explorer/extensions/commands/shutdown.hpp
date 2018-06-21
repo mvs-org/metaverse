@@ -58,21 +58,21 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ADMINNAME",
             value<std::string>(&auth_.name),
             "admin name."
-	    )
+        )
         (
             "ADMINAUTH",
             value<std::string>(&auth_.auth),
             "admin password/authorization."
-	    );
+        );
 
         return options;
     }

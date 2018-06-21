@@ -56,7 +56,7 @@ size_t base2::size() const
 
 base2::operator const binary&() const
 {
-    return value_; 
+    return value_;
 }
 
 std::istream& operator>>(std::istream& input, base2& argument)

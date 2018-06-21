@@ -46,7 +46,7 @@ public:
     hd_key()
     {
     }
-    
+
     /**
      * Initialization constructor.
      * @param[in]  base58  The value to initialize with.

@@ -82,7 +82,7 @@ std::istream& operator>>(std::istream& input, wrapper& argument)
 {
     std::string hexcode;
     input >> hexcode;
-    
+
     // The checksum is validated here.
     if (!unwrap(argument.value_, base16(hexcode)))
     {

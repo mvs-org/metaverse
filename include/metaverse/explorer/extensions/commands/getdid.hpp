@@ -58,16 +58,16 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"DID/ADDRESS",
-			value<std::string>(&option_.symbol),
-			"Did symbol or standard address; If no input parameters, then display whole network DIDs."
-		);
+        (
+            "DID/ADDRESS",
+            value<std::string>(&option_.symbol),
+            "Did symbol or standard address; If no input parameters, then display whole network DIDs."
+        );
 
         return options;
     }
@@ -85,7 +85,7 @@ public:
 
     struct option
     {
-		std::string symbol;        
+        std::string symbol;
     } option_;
 
 };

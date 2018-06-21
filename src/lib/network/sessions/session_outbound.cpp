@@ -74,7 +74,7 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     const auto connect = create_connector();
     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
     {
-    	log::debug(LOG_NETWORK) << "new connection";
+        log::debug(LOG_NETWORK) << "new connection";
         new_connection(connect);
     }
 
@@ -100,19 +100,19 @@ void session_outbound::new_connection(connector::ptr connect)
 
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
-	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
-	auto self = shared_from_this();
-	timer->start([this, connect, timer, self](const code& ec){
-		if (stopped())
-		{
-			return;
-		}
-		auto pThis = shared_from_this();
-		auto action = [this, pThis, connect](){
-			new_connection(connect);
-		};
-		pool_.service().post(action);
-	});
+    auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
+    auto self = shared_from_this();
+    timer->start([this, connect, timer, self](const code& ec){
+        if (stopped())
+        {
+            return;
+        }
+        auto pThis = shared_from_this();
+        auto action = [this, pThis, connect](){
+            new_connection(connect);
+        };
+        pool_.service().post(action);
+    });
 }
 
 void session_outbound::delay_reseeding()
@@ -120,7 +120,7 @@ void session_outbound::delay_reseeding()
     if (!network__.network_settings().enable_re_seeding) {
         return;
     }
-    
+
     if (in_reseeding) {
         return;
     }
@@ -162,7 +162,7 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     log::trace(LOG_NETWORK)
         << "Connected to outbound channel [" << channel->authority() << "]";
     ++outbound_counter;
-    register_channel(channel, 
+    register_channel(channel,
         BIND3(handle_channel_start, _1, connect, channel),
         BIND3(handle_channel_stop, _1, connect, channel));
 }

@@ -56,37 +56,37 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-		(
-			"WORD",
-			value<std::vector<std::string>>(&argument_.words)->required(),
-			"The set of words that that make up the mnemonic. If not specified the words are read from STDIN."
-		)
-		(
-			"language,l",
-			value<explorer::config::language>(&option_.language),
-			"The language identifier of the dictionary of the mnemonic. Options are 'en', 'es', 'ja', 'zh_Hans', 'zh_Hant' and 'any', defaults to 'any'."
-		)
-		(
-			"accountname,n",
-			value<std::string>(&auth_.name)->required(),
-			BX_ACCOUNT_NAME
-		)
-		(
-			"password,p",
-			value<std::string>(&option_.passwd)->required(),
-			BX_ACCOUNT_AUTH
-		)
-		(
-			"hd_index,i",
-			value<std::uint32_t>(&option_.hd_index),
-			"The HD index for the account."
-		)
-		;
+        (
+            "WORD",
+            value<std::vector<std::string>>(&argument_.words)->required(),
+            "The set of words that that make up the mnemonic. If not specified the words are read from STDIN."
+        )
+        (
+            "language,l",
+            value<explorer::config::language>(&option_.language),
+            "The language identifier of the dictionary of the mnemonic. Options are 'en', 'es', 'ja', 'zh_Hans', 'zh_Hant' and 'any', defaults to 'any'."
+        )
+        (
+            "accountname,n",
+            value<std::string>(&auth_.name)->required(),
+            BX_ACCOUNT_NAME
+        )
+        (
+            "password,p",
+            value<std::string>(&option_.passwd)->required(),
+            BX_ACCOUNT_AUTH
+        )
+        (
+            "hd_index,i",
+            value<std::uint32_t>(&option_.hd_index),
+            "The HD index for the account."
+        )
+        ;
 
         return options;
     }
@@ -104,7 +104,7 @@ public:
           : words()
         {
         }
-		std::vector<std::string> words;
+        std::vector<std::string> words;
     } argument_;
 
     struct option
@@ -115,8 +115,8 @@ public:
         }
 
         explorer::config::language language;
-		std::string passwd;
-		uint32_t hd_index;
+        std::string passwd;
+        uint32_t hd_index;
     } option_;
 
 };

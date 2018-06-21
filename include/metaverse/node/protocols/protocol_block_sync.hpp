@@ -30,7 +30,7 @@
 
 namespace libbitcoin {
 namespace node {
-        
+
 /// Blocks sync protocol, thread safe.
 class BCN_API protocol_block_sync
   : public network::protocol_timer, public track<protocol_block_sync>

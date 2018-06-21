@@ -56,7 +56,7 @@ void protocol_events::start(event_handler handler)
     handler_.store(handler);
     SUBSCRIBE_STOP1(handle_stopped, _1);
     if (channel_stopped())
-    	set_event(error::channel_stopped);
+        set_event(error::channel_stopped);
 }
 
 // Stop.
@@ -67,7 +67,7 @@ void protocol_events::handle_stopped(const code& ec)
     log::trace(LOG_NETWORK)
         << "Stop protocol_" << name() << " on [" << authority() << "] "
         << ec.message();
-    
+
     // Event handlers can depend on this code for channel stop.
     set_event(error::channel_stopped);
 }

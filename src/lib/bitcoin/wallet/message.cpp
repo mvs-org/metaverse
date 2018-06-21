@@ -124,7 +124,7 @@ bool sign_message(message_signature& signature, data_slice message,
     const std::string& wif)
 {
     ec_private secret(wif);
-    return (secret && 
+    return (secret &&
         sign_message(signature, message, secret, secret.compressed()));
 }
 

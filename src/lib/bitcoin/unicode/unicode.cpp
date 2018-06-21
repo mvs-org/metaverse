@@ -102,8 +102,8 @@ static std::string normal_form(const std::string& value, norm_type form)
     return normalize(value, form, locale(BC_LOCALE_UTF8));
 }
 
-// One time verifier of the localization backend manager. This is 
-// necessary because boost::normalize will fail silently to perform 
+// One time verifier of the localization backend manager. This is
+// necessary because boost::normalize will fail silently to perform
 // normalization if the ICU dependency is missing.
 static void validate_localization()
 {
@@ -235,22 +235,22 @@ static bool is_utf8_character_sequence(const char sequence[], uint8_t bytes)
     {
         case 1:
             // 0xxxxxxx
-            return 
+            return
                 ((0x80 & sequence[0]) == 0x00);
         case 2:
             // 110xxxxx 10xxxxxx
-            return 
+            return
                 ((0xE0 & sequence[0]) == 0xC0) &&
                 is_utf8_trailing_byte(sequence[1]);
         case 3:
             // 1110xxxx 10xxxxxx 10xxxxxx
-            return 
+            return
                 ((0xF0 & sequence[0]) == 0xE0) &&
                 is_utf8_trailing_byte(sequence[1]) &&
                 is_utf8_trailing_byte(sequence[2]);
         case 4:
             // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-            return 
+            return
                 ((0xF8 & sequence[0]) == 0xF0) &&
                 is_utf8_trailing_byte(sequence[1]) &&
                 is_utf8_trailing_byte(sequence[2]) &&

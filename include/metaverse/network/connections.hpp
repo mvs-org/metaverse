@@ -87,8 +87,8 @@ public:
     {
         for (const auto channel: safe_copy())
         {
-        	auto handler_copy = handler;
-        	channel->subscribe(std::move(handler_copy));//by jianglh
+            auto handler_copy = handler;
+            channel->subscribe(std::move(handler_copy));//by jianglh
 //            channel->subscribe(
 //                std::forward<message_handler<Message>>(handler));
         }

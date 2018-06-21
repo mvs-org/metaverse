@@ -12,13 +12,13 @@
  * For interpretation of the versioning scheme see: http://semver.org
  */
 /*           chenhao     init value  0.6.0
- * 2017.6.11 wangdongyun modify from 0.6.0 to 0.6.1 
- * 1. replace asset with blockchain_asset, to contain asset blockchain height 
- * 	  to resolve block not sync when same asset exist
+ * 2017.6.11 wangdongyun modify from 0.6.0 to 0.6.1
+ * 1. replace asset with blockchain_asset, to contain asset blockchain height
+ *       to resolve block not sync when same asset exist
  *
  * 2017.7.7 wangdongyun modify to 0.6.2
  * 1. modification in 0.6.1 must let user to resync block data from height 1. this will waste too long time.
- *    this version is enhanced to read block data from local block database not resysn block data from p2p network. 
+ *    this version is enhanced to read block data from local block database not resysn block data from p2p network.
  *
  * 2018.3.21 jowenshaw modify to 0.6.3
  * 1. for DID (Digital IDentities) support, adding some new tables.

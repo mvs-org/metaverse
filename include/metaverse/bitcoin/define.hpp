@@ -78,7 +78,7 @@ namespace mvs = libbitcoin; // for mvs
 // Log name.
 #define LOG_SYSTEM "system"
 
-// Avoid namespace conflict between boost::placeholders and std::placeholders. 
+// Avoid namespace conflict between boost::placeholders and std::placeholders.
 #define BOOST_BIND_NO_PLACEHOLDERS
 
 // Define so we can have better visibility of lcov exclusion ranges.

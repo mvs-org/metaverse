@@ -37,7 +37,7 @@ class BC_API hash256
 public:
     /**
      * A list of bitcoin 256 bit hashes.
-     * This must provide operator<< for ostream in order to be used as a 
+     * This must provide operator<< for ostream in order to be used as a
      * boost::program_options default_value.
      */
     typedef std::vector<hash256> list;
@@ -64,7 +64,7 @@ public:
      * @param[in]  value  The hash value to initialize with.
      */
     hash256(const hash_digest& value);
-    
+
     /**
      * Get the hash as a string.
      * @return The hash in the string hexidecimal form.

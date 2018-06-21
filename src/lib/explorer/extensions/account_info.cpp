@@ -42,8 +42,8 @@ account_info::account_info(blockchain::block_chain_impl& blockchain, std::string
 {
 }
 account_info::account_info(blockchain::block_chain_impl& blockchain, std::string& passphrase,
-    account& meta, std::vector<account_address>& addr_vec,	std::vector<asset_detail>& asset_vec):
-		blockchain_(blockchain), passphrase_(passphrase), meta_(meta), addr_vec_(addr_vec), asset_vec_(asset_vec)
+    account& meta, std::vector<account_address>& addr_vec,    std::vector<asset_detail>& asset_vec):
+        blockchain_(blockchain), passphrase_(passphrase), meta_(meta), addr_vec_(addr_vec), asset_vec_(asset_vec)
 {
 }
 
@@ -64,20 +64,20 @@ bool account_info::from_data(reader& source)
     meta_.from_data(source);
 
     account_address addr;
-	uint32_t addr_size = source.read_4_bytes_little_endian();
-	while(addr_size--) {
-		addr.reset();
-		addr.from_data(source);
-		addr_vec_.push_back(addr);
-	}
+    uint32_t addr_size = source.read_4_bytes_little_endian();
+    while(addr_size--) {
+        addr.reset();
+        addr.from_data(source);
+        addr_vec_.push_back(addr);
+    }
 
     asset_detail detail;
-	uint32_t asset_size = source.read_4_bytes_little_endian();
-	while(asset_size--) {
-		detail.reset();
-		detail.from_data(source);
-		asset_vec_.push_back(detail);
-	}
+    uint32_t asset_size = source.read_4_bytes_little_endian();
+    while(asset_size--) {
+        detail.reset();
+        detail.from_data(source);
+        asset_vec_.push_back(detail);
+    }
 
     return true;
 }
@@ -102,19 +102,19 @@ void account_info::to_data(writer& sink) const
 {
     meta_.to_data(sink);
     // account_address vector
-	sink.write_4_bytes_little_endian(addr_vec_.size());
-	if(addr_vec_.size()){
-		for(auto& each : addr_vec_) {
-			each.to_data(sink);
-		}
-	}
+    sink.write_4_bytes_little_endian(addr_vec_.size());
+    if(addr_vec_.size()){
+        for(auto& each : addr_vec_) {
+            each.to_data(sink);
+        }
+    }
     // account asset vector
-	sink.write_4_bytes_little_endian(asset_vec_.size());
-	if(asset_vec_.size()) {
-		for(auto& each : asset_vec_) {
-			each.to_data(sink);
-		}
-	}
+    sink.write_4_bytes_little_endian(asset_vec_.size());
+    if(asset_vec_.size()) {
+        for(auto& each : asset_vec_) {
+            each.to_data(sink);
+        }
+    }
 }
 account account_info::get_account() const
 {
@@ -159,12 +159,12 @@ void account_info::encrypt()
 {
     auto src_data = to_data();
     append_checksum(src_data);
-	data_chunk pass_chunk(passphrase_.begin(), passphrase_.end());
+    data_chunk pass_chunk(passphrase_.begin(), passphrase_.end());
     aes256_common_encrypt(src_data, pass_chunk, data_);
 }
 void account_info::decrypt(std::string& hexcode)
 {
-	data_chunk pass_chunk(passphrase_.begin(), passphrase_.end());
+    data_chunk pass_chunk(passphrase_.begin(), passphrase_.end());
     data_chunk encrypt_data = base16(hexcode);
     aes256_common_decrypt(encrypt_data, pass_chunk, data_);
     if(!verify_checksum(data_))

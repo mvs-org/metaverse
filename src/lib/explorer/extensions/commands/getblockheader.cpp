@@ -66,15 +66,15 @@ console_result getblockheader::invoke(Json::Value& jv_output,
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
-    	if( !jheader.isObject()
-    	    || !jheader["result"].isObject()
-    	    || !jheader["result"]["hash"].isString()) {
+        if( !jheader.isObject()
+            || !jheader["result"].isObject()
+            || !jheader["result"]["hash"].isString()) {
 
-        	throw block_hash_get_exception{"getbestblockhash got parser exception."};
-	    }
+            throw block_hash_get_exception{"getbestblockhash got parser exception."};
+        }
 
         if (option_.is_getbestblockhash) {
-    	    auto&& blockhash = jheader["result"]["hash"].asString();
+            auto&& blockhash = jheader["result"]["hash"].asString();
             jv_output = blockhash;
         } else {
             if (get_api_version() == 1) {

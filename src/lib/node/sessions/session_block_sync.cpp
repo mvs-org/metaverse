@@ -49,7 +49,7 @@ session_block_sync::session_block_sync(p2p& network, header_queue& hashes,
     simple_chain& chain, const settings& settings)
   : session_batch(network, false),
     blockchain_(chain),
-	reservations_count_{0},
+    reservations_count_{0},
     settings_(settings),
     reservations_(hashes, chain, settings),
     CONSTRUCT_TRACK(session_block_sync)
@@ -93,7 +93,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
     // This is the end of the start sequence.
     for (const auto row: table)
         new_connection(connector, row, [func](const code& ec){
-    	func(ec);
+        func(ec);
     });
     log::info(LOG_NODE)
             << "table size," << table.size();
@@ -133,9 +133,9 @@ void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
             << ec.message();
         if(ec.value() == error::not_satisfied)
         {
-        	log::debug(LOG_NETWORK) << "session block sync handle connect, not satified";
-        	handle_complete(ec, channel, connect, row, handler);
-        	return;
+            log::debug(LOG_NETWORK) << "session block sync handle connect, not satified";
+            handle_complete(ec, channel, connect, row, handler);
+            return;
         }
         new_connection(connect, row, handler);
         return;
@@ -175,8 +175,8 @@ void session_block_sync::attach_protocols(channel::ptr channel,
 {
     attach<protocol_ping>(channel)->start();
     attach<protocol_address>(channel)->start();
-	attach<protocol_block_sync>(channel, row)->start(
-		BIND5(handle_complete, _1, channel, connect, row, handler));
+    attach<protocol_block_sync>(channel, row)->start(
+        BIND5(handle_complete, _1, channel, connect, row, handler));
 }
 
 void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
@@ -199,13 +199,13 @@ void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
 
     if(ec.value() == error::not_satisfied)
     {
-    	scoped_lock lock{mutex_};
-    	if(reservations_count_ != 1)
-    	{
-    		--reservations_count_;
-			handler(error::success);
-			return;
-    	}
+        scoped_lock lock{mutex_};
+        if(reservations_count_ != 1)
+        {
+            --reservations_count_;
+            handler(error::success);
+            return;
+        }
     }
 
     // There is no failure scenario, we ignore the result code here.
@@ -213,7 +213,7 @@ void session_block_sync::handle_complete(const code& ec, channel::ptr channel,
 }
 
 void session_block_sync::handle_channel_stop(const code& ec,
-		network::connector::ptr connect, reservation::ptr row, result_handler handler)
+        network::connector::ptr connect, reservation::ptr row, result_handler handler)
 {
     log::info(LOG_NODE)
         << "Channel stopped on slot (" << row->slot() << ") " << ec.message();

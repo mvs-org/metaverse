@@ -45,7 +45,7 @@ public:
 
     /**
      * Initialization constructor.
-     * 
+     *
      * @param[in]  wrapped  The value to initialize with.
      */
     wrapper(const std::string& wrapped);
