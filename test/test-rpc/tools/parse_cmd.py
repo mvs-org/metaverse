@@ -1,7 +1,7 @@
 import os
 import re
 
-cmd_dir = '/home/czp/GitHub/nova/metaverse/include/metaverse/explorer/extensions/commands'
+cmd_dir = '/home/lxf/projects/metaverse/metaverse-nova/include/metaverse/explorer/extensions/commands'
 
 def get_paraname(line):
     pattern = '"([/\w]+)(,\w+){0,1}"'
@@ -273,13 +273,11 @@ def generate_DotNet_SDK(cmdname, pos_params, params):
 /*
 %(comments)s
 */
-public template %(func_name)s(%(argument_defines)s)
+public String %(func_name)s(%(argument_defines)s)
 {
     List<String> parameters = new List<String>() { %(positional_arguments)s };
-    
     %(add_optional_parameters)s
-    
-    return getResult<template>("%(func_name)s", parameters);
+    return getResult<String>("%(func_name)s", parameters);
 }
 '''
     def cpp2dotnet_type(cpp_type):
@@ -304,7 +302,7 @@ public template %(func_name)s(%(argument_defines)s)
             'std::vector<std::string>' : 'List<String>',
             'explorer::config::language' : 'String',
 
-            'libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>' : "Tuple<UInt64>",
+            'libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t>' : "Tuple<UInt64,UInt64>",
             'bc::config::hash256' : "String",
             'boost::filesystem::path': 'String',
             'bc::wallet::payment_address': 'String',
@@ -325,12 +323,16 @@ public template %(func_name)s(%(argument_defines)s)
     comments = []
     argument_defines = []
     optional_arguments = []
-    positional_arguments = pos_params
+    positional_arguments = []
     for param_name, param_def, param_desc in params:
         comments.append("    :param: %s(%s): %s" % (param_name, special_type_desc(param_def["para_type"]), param_desc))
         argument_defines.append('%s %s' % (cpp2dotnet_type(param_def["para_type"]), param_name))
 
         if param_name in pos_params:
+            if cpp2dotnet_type(param_def["para_type"]) == 'String':
+                positional_arguments.append(param_name)
+            else:
+                positional_arguments.append('%s.ToString()' % param_name)
             continue
         if "vector<" in param_def["para_type"]:
             optional_arguments.append('foreach (var i in %s) {' % param_name)
@@ -338,7 +340,7 @@ public template %(func_name)s(%(argument_defines)s)
             optional_arguments.append('}')
         else:
             if "colon_delimited2_item" in param_def["para_type"]:
-                value = 'parameters.AddRange(new List<String>{"--%s", String.Format("{0}:{1}", %s.item0, %s.item1});' % (param_name, param_name, param_name)
+                value = 'parameters.AddRange(new List<String>{"--%s", String.Format("{0}:{1}", %s.Item1, %s.Item2)});' % (param_name, param_name, param_name)
             else:
                 value = 'parameters.AddRange(new List<String>{"--%s", %s.ToString()});' % (param_name, param_name)
             optional_arguments.append(value)
@@ -348,7 +350,7 @@ public template %(func_name)s(%(argument_defines)s)
         'func_name': cmdname,
         'argument_defines': ', '.join(argument_defines),
         'add_optional_parameters': '\n    '.join(optional_arguments),
-        'positional_arguments': ' '.join([i + ',' for i in positional_arguments]),
+        'positional_arguments': ', '.join(positional_arguments),
     }
 
     print template % paras
