@@ -36,9 +36,10 @@ class MVSTestCaseBase(unittest.TestCase):
             print "current block height=[%s], hash=[%s]" % (height, hash)
 
     def tearDown(self):
-        for role in self.roles:
-            result, message = role.delete()
-            self.assertEqual(result, 0, message)
+        pass
+        #for role in self.roles:
+        #    result, message = role.delete()
+        #    self.assertEqual(result, 0, message)
 
 class MultiSigDIDTestCase(MVSTestCaseBase):
     def setUp(self):

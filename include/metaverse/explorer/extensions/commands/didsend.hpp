@@ -43,7 +43,7 @@ public:
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("TODID/TOADDRESS", 1)
+            .add("TO_", 1)
             .add("AMOUNT", 1);
     }
 
@@ -53,7 +53,7 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.did, "TODID/TOADDRESS", variables, input, raw);
+        load_input(argument_.did, "TO_", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -78,7 +78,7 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "TODID/TOADDRESS",
+            "TO_",
             value<std::string>(&argument_.did)->required(),
             "Send to this did/address"
         )
