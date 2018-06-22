@@ -165,6 +165,11 @@ std::string get_random_payment_address(std::shared_ptr<std::vector<account_addre
 std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain);
 
+std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
+
+uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
+    const std::string& account_name);
+
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);

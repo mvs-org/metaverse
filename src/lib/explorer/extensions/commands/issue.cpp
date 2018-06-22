@@ -35,7 +35,7 @@ namespace commands {
 
 
 console_result issue::invoke (Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                              libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
 
@@ -45,15 +45,30 @@ console_result issue::invoke (Json::Value& jv_output,
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
-    if (argument_.fee < 1000000000)
-        throw asset_issue_poundage_exception{"issue asset fee less than 1000000000!"};
+    // check fee
+    auto fee_of_issue = get_fee_of_issue_asset(blockchain, auth_.name);
+    if (argument_.fee == -1) {
+        argument_.fee = fee_of_issue;
+    }
+    else if (argument_.fee < fee_of_issue) {
+        throw asset_issue_poundage_exception{
+            "issue asset fee less than "
+            + std::to_string(fee_of_issue) + " that's "
+            + std::to_string(fee_of_issue / 100000000) + " ETPs"};
+    }
+
     // fail if asset is already in blockchain
-    if (blockchain.is_asset_exist(argument_.symbol, false))
-        throw asset_symbol_existed_exception{"asset symbol is already exist in blockchain"};
+    if (blockchain.is_asset_exist(argument_.symbol, false)) {
+        throw asset_symbol_existed_exception{
+            "asset " + argument_.symbol
+            + " already exists in blockchain"};
+    }
+
     // local database asset check
     auto sh_asset = blockchain.get_account_unissued_asset(auth_.name, argument_.symbol);
-    if (!sh_asset)
-        throw asset_symbol_notfound_exception{argument_.symbol + " not found"};
+    if (!sh_asset) {
+        throw asset_symbol_notfound_exception{"asset " + argument_.symbol + " not found"};
+    }
 
     auto to_did = sh_asset->get_issuer();
     auto to_address = get_address_from_did(to_did, blockchain);
@@ -113,23 +128,28 @@ console_result issue::invoke (Json::Value& jv_output,
     auto certs = sh_asset->get_asset_cert_mask();
     if (!certs.empty()) {
         for (auto each_cert_type : certs) {
-            receiver.push_back({to_address, argument_.symbol, 0, 0,
-                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment("", to_did)});
+            receiver.push_back(
+            {   to_address, argument_.symbol, 0, 0,
+                each_cert_type, utxo_attach_type::asset_cert_autoissue, attachment("", to_did)
+            });
         }
     }
 
     // domain cert or naming cert
     if (asset_cert::is_valid_domain(domain)) {
-        receiver.push_back({to_address, cert_symbol, 0, 0, cert_type,
+        receiver.push_back(
+        {   to_address, cert_symbol, 0, 0, cert_type,
             (is_domain_cert_exist ? utxo_attach_type::asset_cert : utxo_attach_type::asset_cert_autoissue),
-            attachment("", to_did)});
+            attachment("", to_did)
+        });
     }
 
-    auto issue_helper = issuing_asset(*this, blockchain,
-        std::move(auth_.name), std::move(auth_.auth),
-        "", std::move(argument_.symbol),
-        std::move(option_.attenuation_model_param),
-        std::move(receiver), argument_.fee);
+    auto issue_helper = issuing_asset(
+                            *this, blockchain,
+                            std::move(auth_.name), std::move(auth_.auth),
+                            "", std::move(argument_.symbol),
+                            std::move(option_.attenuation_model_param),
+                            std::move(receiver), argument_.fee);
 
     issue_helper.exec();
 

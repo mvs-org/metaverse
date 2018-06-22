@@ -30,6 +30,8 @@ namespace commands {
 using bc::chain::blockchain_message;
 using bc::blockchain::validate_transaction;
 
+static BC_CONSTEXPR double fee_dividend_rate = 0.8;
+
 utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 {
     auto& output = const_cast<chain::output&>(output_);
@@ -254,6 +256,47 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
             }
         }
     }
+}
+
+std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain)
+{
+#ifdef NDEBUG
+    std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // Foundation Address for mainnet
+#else
+    std::string address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");  // Genesis Address for debug
+#endif
+    if (blockchain.chain_settings().use_testnet_rules) {
+        address = "tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR"; // Genesis address for test net
+    }
+    return address;
+}
+
+static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockchain,
+    const std::string& account_name)
+{
+    auto pvaddr = blockchain.get_account_addresses(account_name);
+    if (!pvaddr) {
+        return 0;
+    }
+
+    auto sh_vec = std::make_shared<asset_cert::list>();
+    for (auto& each : *pvaddr){
+        sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec, asset_cert_ns::domain);
+    }
+
+    return sh_vec->size();
+}
+
+uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
+    const std::string& account_name)
+{
+    uint32_t asset_count = get_domain_cert_count(blockchain, account_name);
+    uint64_t etp_amount = (uint64_t)std::pow(asset_count, 2);
+    if (etp_amount < 10) {
+        etp_amount = 10;    // minimal 10 etp
+    }
+
+    return coin_price(etp_amount);
 }
 
 void sync_fetchbalance(wallet::payment_address& address,
@@ -1385,13 +1428,21 @@ void issuing_asset::sum_payment_amount()
         throw asset_symbol_notfound_exception{symbol_ + " not created"};
     }
 
-    if (payment_etp_ < 1000000000) { // 10 etp now
-        throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
+    uint64_t min_fee = get_fee_of_issue_asset(blockchain_, name_);
+    if (payment_etp_ < min_fee) {
+        throw asset_issue_poundage_exception("fee must at least "
+            + std::to_string(min_fee) + " satoshi == "
+            + std::to_string(min_fee/100000000) + " etp");
     }
 
     if (!attenuation_model_param_.empty()) {
         check_model_param_initial(attenuation_model_param_, unissued_asset_->get_maximum_supply());
     }
+
+    auto&& address = get_fee_dividend_address(blockchain_);
+    uint64_t amount = (uint64_t)(payment_etp_ * fee_dividend_rate);
+    receiver_list_.push_back(
+        {address, "", amount, 0, utxo_attach_type::etp, attachment()});
 }
 
 chain::operation::stack
@@ -1544,9 +1595,14 @@ void issuing_asset_cert::sum_payment_amount()
 void registering_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
-    if (payment_etp_ < 100000000) {
+    if (payment_etp_ < coin_price(1)) {
         throw did_register_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
     }
+
+    auto&& address = get_fee_dividend_address(blockchain_);
+    uint64_t amount = (uint64_t)(payment_etp_ * fee_dividend_rate);
+    receiver_list_.push_back(
+        {address, "", amount, 0, utxo_attach_type::etp, attachment()});
 }
 
 std::string sending_multisig_did::get_sign_tx_multisig_script(const address_asset_record& from) const
