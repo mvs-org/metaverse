@@ -72,15 +72,15 @@ public:
     /// Call to unload the memory map.
     bool close();
 
-	/// store account address into database
-	void store(const short_hash& key, const account_address& account_address);
-	
-	/// get account address vector by key
-	account_address::list get(const short_hash& key) const;
-	
-	/// get account address according by key and address
-	std::shared_ptr<account_address> get(const short_hash& key, const std::string& address) const;
-	
+    /// store account address into database
+    void store(const short_hash& key, const account_address& account_address);
+
+    /// get account address vector by key
+    account_address::list get(const short_hash& key) const;
+
+    /// get account address according by key and address
+    std::shared_ptr<account_address> get(const short_hash& key, const std::string& address) const;
+
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 

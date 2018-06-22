@@ -147,7 +147,7 @@ bool is_public_key(data_slice point);
 
 /// Parse a DER encoded signature with optional strict DER enforcement.
 /// Treat an empty DER signature as invalid, in accordance with BIP66.
-BC_API bool parse_signature(ec_signature& out, 
+BC_API bool parse_signature(ec_signature& out,
     const der_signature& der_signature, bool strict);
 
 /// Encode an EC signature as DER (strict).

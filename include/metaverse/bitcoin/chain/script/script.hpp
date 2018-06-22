@@ -46,14 +46,14 @@ enum signature_hash_algorithm : uint32_t
     all = 0x01,
 
     /// Signs all of the inputs but none of the outputs, allowing anyone to
-    /// change where the satoshis are going unless other signatures using 
+    /// change where the satoshis are going unless other signatures using
     /// other signature hash flags protect the outputs.
     none = 0x02,
 
     /// The only output signed is the one corresponding to this input (the
     /// output with the same output index number as this input), ensuring
-    /// nobody can change your part of the transaction but allowing other 
-    /// signers to change their part of the transaction. The corresponding 
+    /// nobody can change your part of the transaction but allowing other
+    /// signers to change their part of the transaction. The corresponding
     /// output must exist or the value '1' will be signed, breaking the
     /// security scheme. This input, as well as other inputs, are included
     /// in the signature. The sequence numbers of other inputs are not

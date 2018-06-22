@@ -42,9 +42,9 @@ console_result importaccount::invoke(Json::Value& jv_output,
         throw account_existed_exception{"account already exist"};
 
 #ifdef NDEBUG
-	if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
-	    option_.passwd.length() > 128 || option_.passwd.length() < 6)
-	    throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
+    if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
+        option_.passwd.length() > 128 || option_.passwd.length() < 6)
+        throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
 
     if (argument_.words.size() == 1)

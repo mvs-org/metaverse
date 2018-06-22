@@ -33,7 +33,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 static const auto bitcoin_scheme = "bitcoin";
 static const auto parameter_amount = "amount";
 static const auto parameter_label = "label";
@@ -244,7 +244,7 @@ bool bitcoin_uri::set_parameter(const std::string& key,
         set_message(value);
     else if (key == parameter_r)
         set_r(value);
-    
+
     // Fail on any required parameter that we don't support.
     return !required(key);
 }

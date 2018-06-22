@@ -35,10 +35,10 @@ namespace chain {
 class BC_API blockchain_asset
 {
 public:
-	typedef std::vector<blockchain_asset> list;
-	blockchain_asset();
-	blockchain_asset(uint32_t version, const output_point& tx_point,
-			uint64_t height, const asset_detail& asset);
+    typedef std::vector<blockchain_asset> list;
+    blockchain_asset();
+    blockchain_asset(uint32_t version, const output_point& tx_point,
+            uint64_t height, const asset_detail& asset);
     static blockchain_asset factory_from_data(const data_chunk& data);
     static blockchain_asset factory_from_data(std::istream& stream);
     static blockchain_asset factory_from_data(reader& source);
@@ -58,20 +58,20 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const uint32_t& get_version() const;
-	void set_version(const uint32_t& version_);
-	const output_point& get_tx_point() const;
-	void set_tx_point(const output_point& tx_point_);
-	const uint64_t& get_height() const;
-	void set_height(const uint64_t& height_);
-	const asset_detail& get_asset() const;
-	void set_asset(const asset_detail& asset_);
+    const uint32_t& get_version() const;
+    void set_version(const uint32_t& version_);
+    const output_point& get_tx_point() const;
+    void set_tx_point(const output_point& tx_point_);
+    const uint64_t& get_height() const;
+    void set_height(const uint64_t& height_);
+    const asset_detail& get_asset() const;
+    void set_asset(const asset_detail& asset_);
 
-private:    
+private:
     uint32_t version_;
     output_point tx_point_;
-	uint64_t height_;
-	asset_detail asset_;
+    uint64_t height_;
+    asset_detail asset_;
 };
 
 } // namespace chain

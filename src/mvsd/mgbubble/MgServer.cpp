@@ -189,7 +189,7 @@ void MgServer::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
         break;
     }
     case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST: {
-        struct http_message *msg = (struct http_message *)ev_data;   
+        struct http_message *msg = (struct http_message *)ev_data;
         self->on_ws_handshake_req_handler(*nc, *msg);
         break;
     }

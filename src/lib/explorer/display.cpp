@@ -69,7 +69,7 @@ static std::string fixup_boost_po_what_en(const std::string& what)
     return message;
 }
 
-void display_invalid_parameter(std::ostream& stream, 
+void display_invalid_parameter(std::ostream& stream,
     const std::string& message)
 {
     stream << format(BX_INVALID_PARAMETER) % fixup_boost_po_what_en(message);
@@ -77,9 +77,9 @@ void display_invalid_parameter(std::ostream& stream,
 
 void display_usage(std::ostream& stream)
 {
-    stream 
+    stream
         << std::endl << BX_COMMAND_USAGE << std::endl
-        << format(BX_VERSION_MESSAGE) % 
+        << format(BX_VERSION_MESSAGE) %
             MVS_EXPLORER_VERSION << std::endl
         << BX_COMMANDS_HEADER << std::endl
         << std::endl;

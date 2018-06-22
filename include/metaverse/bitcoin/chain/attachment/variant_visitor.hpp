@@ -30,95 +30,95 @@ namespace chain {
 class from_data_visitor : public boost::static_visitor<bool>
 {
 public:
-	from_data_visitor(reader& src): source(src)
-	{
+    from_data_visitor(reader& src): source(src)
+    {
 
-	}
-	
-	template <class T>
-	bool operator()(T &t)
-	{
-	  return t.from_data(source);
-	}
-	
-	reader& source;
+    }
+
+    template <class T>
+    bool operator()(T &t)
+    {
+      return t.from_data(source);
+    }
+
+    reader& source;
 };
 
 class to_data_visitor : public boost::static_visitor<void>
 {
 public:
-	to_data_visitor(writer& dst): sink(dst)
-	{
+    to_data_visitor(writer& dst): sink(dst)
+    {
 
-	}
-	
-	template <class T>
-	void operator()(T &t) const
-	{
-	  return t.to_data(sink);
-	}
-	
-	writer& sink;
+    }
+
+    template <class T>
+    void operator()(T &t) const
+    {
+      return t.to_data(sink);
+    }
+
+    writer& sink;
 };
 
 class serialized_size_visitor : public boost::static_visitor<uint64_t>
 {
 public:
-	serialized_size_visitor()
-	{
+    serialized_size_visitor()
+    {
 
-	}
-	
-	template <class T>
-	uint64_t operator()(T &t) const
-	{
-	  return t.serialized_size();
-	}
+    }
+
+    template <class T>
+    uint64_t operator()(T &t) const
+    {
+      return t.serialized_size();
+    }
 };
 
 class to_string_visitor : public boost::static_visitor<std::string>
 {
 public:
-	to_string_visitor()
-	{
+    to_string_visitor()
+    {
 
-	}
-	
-	template <class T>
-	std::string operator()(T &t) const
-	{
-	  return t.to_string();
-	}
+    }
+
+    template <class T>
+    std::string operator()(T &t) const
+    {
+      return t.to_string();
+    }
 };
 
 class reset_visitor : public boost::static_visitor<void>
 {
 public:
-	reset_visitor()
-	{
+    reset_visitor()
+    {
 
-	}
-	
-	template <class T>
-	void operator()(T &t)
-	{
-	  return t.reset();
-	}
+    }
+
+    template <class T>
+    void operator()(T &t)
+    {
+      return t.reset();
+    }
 };
 
 class is_valid_visitor : public boost::static_visitor<bool>
 {
 public:
-	is_valid_visitor()
-	{
+    is_valid_visitor()
+    {
 
-	}
-	
-	template <class T>
-	bool operator()(T &t) const
-	{
-	  return t.is_valid();
-	}
+    }
+
+    template <class T>
+    bool operator()(T &t) const
+    {
+      return t.is_valid();
+    }
 };
 
 } // namespace chain

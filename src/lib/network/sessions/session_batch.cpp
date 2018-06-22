@@ -153,9 +153,9 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
             << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
         if (ec == error::channel_timeout) // if connect is not aviliable, change it into inactive state
-        	remove(host.to_network_address(), [](const code&){});
-		else
-			store(host.to_network_address());
+            remove(host.to_network_address(), [](const code&){});
+        else
+            store(host.to_network_address());
         handler(ec, channel);
         return;
     }

@@ -50,7 +50,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -60,16 +60,16 @@ public:
             value<bool>(&option_.json)->default_value(true),
             "Json format or Raw format, default is Json(true)."
         )
-	    (
+        (
             "ADMINNAME",
             value<std::string>(&auth_.name),
             BX_ADMIN_NAME
-	    )
+        )
         (
             "ADMINAUTH",
             value<std::string>(&auth_.auth),
             BX_ADMIN_AUTH
-	    );
+        );
 
 
         return options;

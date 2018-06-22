@@ -149,7 +149,7 @@ bool server_node::close()
 /// Get miner.
 consensus::miner& server_node::miner()
 {
-	return miner_;
+    return miner_;
 }
 
 // Notification.
@@ -223,7 +223,7 @@ bool server_node::start_query_services()
         (settings.subscription_limit > 0 && !public_notification_worker_.start()) ||
         !start_query_workers(false)))
             return false;
-    
+
     return true;
 }
 

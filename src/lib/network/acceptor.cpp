@@ -134,14 +134,14 @@ void acceptor::accept(accept_handler handler)
 void acceptor::safe_accept(socket::ptr socket, accept_handler handler)
 {
     // Critical Section (external)
-    /////////////////////////////////////////////////////////////////////////// 
+    ///////////////////////////////////////////////////////////////////////////
     const auto locked = socket->get_socket();
 
     // async_accept will not invoke the handler within this function.
     acceptor_->async_accept(locked->get(),
         std::bind(&acceptor::handle_accept,
             shared_from_this(), _1, socket, handler));
-    /////////////////////////////////////////////////////////////////////////// 
+    ///////////////////////////////////////////////////////////////////////////
 }
 
 void acceptor::handle_accept(const boost_code& ec, socket::ptr socket,

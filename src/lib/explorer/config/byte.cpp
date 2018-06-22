@@ -56,14 +56,14 @@ byte::byte(const byte& other)
 
 byte::operator uint8_t() const
 {
-    return value_; 
+    return value_;
 }
 
 std::istream& operator>>(std::istream& input, byte& argument)
 {
     std::string decimal;
     input >> decimal;
-        
+
     // We have this byte class only because deserialization doesn't
     // treat 8 bit values as decimal numbers (unlike 16+ bit numbers).
 

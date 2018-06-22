@@ -63,7 +63,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -73,7 +73,7 @@ public:
             value<bool>(&option_.json)->default_value(true),
             "Json/Raw format, default is '--json=true'."
         )
-	    (
+        (
             "HASH",
             value<bc::config::hash256>(&argument_.hash)->required(),
             "The Base16 transaction hash of the transaction to get. If not specified the transaction hash is read from STDIN."
@@ -86,8 +86,8 @@ public:
     {
     }
 
-	console_result invoke (Json::Value& jv_output,
-			 libbitcoin::server::server_node& node) override;
+    console_result invoke (Json::Value& jv_output,
+             libbitcoin::server::server_node& node) override;
 
     struct argument
     {

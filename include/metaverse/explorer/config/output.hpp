@@ -33,7 +33,7 @@ namespace explorer {
 namespace config {
 
 /**
- * Serialization helper to convert between a base58-string:number and 
+ * Serialization helper to convert between a base58-string:number and
  * a vector of tx_output_type.
  */
 class BCX_API output

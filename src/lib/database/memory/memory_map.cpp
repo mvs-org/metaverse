@@ -46,7 +46,7 @@
 #include <metaverse/database/memory/allocator.hpp>
 #include <metaverse/database/memory/memory.hpp>
 
-// memory_map is be able to support 32 bit but because the database 
+// memory_map is be able to support 32 bit but because the database
 // requires a larger file this is not validated or supported.
 #ifndef __ANDROID__
 static_assert(sizeof(void*) == sizeof(uint64_t), "Not a 64 bit system!");

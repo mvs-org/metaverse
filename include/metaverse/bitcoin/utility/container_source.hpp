@@ -55,7 +55,7 @@ public:
             return -1;
 
         const auto value = static_cast<typename Container::size_type>(result);
-        DEBUG_ONLY(const auto maximum = 
+        DEBUG_ONLY(const auto maximum =
             std::numeric_limits<typename Container::size_type>::max());
         BITCOIN_ASSERT(value < maximum);
         BITCOIN_ASSERT(position_ + value < maximum);

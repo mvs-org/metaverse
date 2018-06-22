@@ -105,7 +105,7 @@ std::string encode_base58(data_slice unencoded)
 
     // Translate the result into a string.
     std::string encoded;
-    const size_t estimated_size = leading_zeros + 
+    const size_t estimated_size = leading_zeros +
         (indexes.end() - first_nonzero);
     encoded.reserve(estimated_size);
     encoded.assign(leading_zeros, '1');

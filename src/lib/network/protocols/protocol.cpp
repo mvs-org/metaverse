@@ -63,7 +63,7 @@ void protocol::set_peer_version(message::version::ptr value)
 
 uint32_t protocol::peer_start_height()
 {
-	return channel_->peer_start_height();
+    return channel_->peer_start_height();
 }
 
 threadpool& protocol::pool()
@@ -79,7 +79,7 @@ void protocol::stop(const code& ec)
 
 bool protocol::misbehaving(int32_t howmuch)
 {
-	return channel_->misbehaving(howmuch);
+    return channel_->misbehaving(howmuch);
 }
 
 } // namespace network

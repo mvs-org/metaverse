@@ -40,7 +40,7 @@ public:
      * @param[in]  path  The utf8 path to the file.
      * @param[in]  mode  The file opening mode.
      */
-    ifstream(const std::string& path, 
+    ifstream(const std::string& path,
         std::ifstream::openmode mode=std::ifstream::in);
 };
 

@@ -18,7 +18,7 @@
 
 namespace libbitcoin {
 
-class BC_API uint_error 
+class BC_API uint_error
     : public std::runtime_error
 {
 public:
@@ -32,8 +32,8 @@ template <unsigned int BITS>
 class BC_API base_uint
 {
 protected:
-    enum 
-    { 
+    enum
+    {
         WIDTH = BITS / 32
     };
 
@@ -301,7 +301,7 @@ public:
     {
     }
 
-    explicit uint256_t(const std::vector<unsigned char>& vch) 
+    explicit uint256_t(const std::vector<unsigned char>& vch)
         : base_uint<256>(vch)
     {
     }

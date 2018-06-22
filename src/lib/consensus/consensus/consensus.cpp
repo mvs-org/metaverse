@@ -37,7 +37,7 @@
 namespace libbitcoin {
 namespace consensus {
 
-// Static initialization of libsecp256k1 initialization context. 
+// Static initialization of libsecp256k1 initialization context.
 ECCVerifyHandle TxInputStream::secp256k1_context_ = ECCVerifyHandle();
 
 TxInputStream::TxInputStream(const unsigned char* transaction,
@@ -180,9 +180,9 @@ unsigned int verify_flags_to_script_flags(unsigned int flags)
 }
 
 // This function is published. The implementation exposes no satoshi internals.
-verify_result_type verify_script(const unsigned char* transaction, 
-    size_t transaction_size, const unsigned char* prevout_script, 
-    size_t prevout_script_size, unsigned int tx_input_index, 
+verify_result_type verify_script(const unsigned char* transaction,
+    size_t transaction_size, const unsigned char* prevout_script,
+    size_t prevout_script_size, unsigned int tx_input_index,
     unsigned int flags)
 {
     if (transaction_size > 0 && transaction == NULL)
@@ -192,7 +192,7 @@ verify_result_type verify_script(const unsigned char* transaction,
         throw std::invalid_argument("prevout_script");
 
     CTransaction tx;
-    try 
+    try
     {
         TxInputStream stream(transaction, transaction_size);
         Unserialize(stream, tx, SER_NETWORK, PROTOCOL_VERSION);

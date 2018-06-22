@@ -32,7 +32,7 @@ using namespace libbitcoin::chain;
 
 namespace libbitcoin {
 namespace database {
-    
+
 /// read account_address detail information from account_address database.
 class BCD_API account_address_result : public base_result
 {
@@ -40,7 +40,7 @@ public:
     account_address_result(const memory_ptr slab);
 
     /// The account_address.
-	std::shared_ptr<account_address> get_account_address_detail() const;
+    std::shared_ptr<account_address> get_account_address_detail() const;
 };
 
 } // namespace database

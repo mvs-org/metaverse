@@ -36,7 +36,7 @@ namespace libbitcoin {
 namespace network {
 
 #define NAME "connector"
-    
+
 using namespace bc::config;
 using namespace std::placeholders;
 
@@ -101,7 +101,7 @@ bool connector::stopped()
 
 // public:
 void connector::connect(const endpoint& endpoint, connect_handler handler
-		, resolve_handler h)
+        , resolve_handler h)
 {
     connect(endpoint.host(), endpoint.port(), handler, h);
 }
@@ -161,12 +161,12 @@ static asio::ipv6 to_boost_address(const message::ip_address& in)
 
 // public:
 void connector::connect(const authority& authority, connect_handler handler
-		, resolve_handler h)
+        , resolve_handler h)
 {
 //    connect(authority.to_hostname(), authority.port(), handler, h);
-	auto ip = to_boost_address(authority.ip());
-	auto ipv4_hostname = to_ipv4_hostname(ip);
-	connect(ipv4_hostname.empty() ? to_ipv6_hostname(ip) : ipv4_hostname, authority.port(), handler, h);
+    auto ip = to_boost_address(authority.ip());
+    auto ipv4_hostname = to_ipv4_hostname(ip);
+    connect(ipv4_hostname.empty() ? to_ipv6_hostname(ip) : ipv4_hostname, authority.port(), handler, h);
 }
 
 // public:
@@ -203,15 +203,15 @@ void connector::connect(const std::string& hostname, uint16_t port,
 void connector::handle_resolve(const boost_code& ec, asio::iterator iterator,
     connect_handler handler, resolve_handler h)
 {
-	auto it = iterator;
-	asio::iterator end;
-	if (h)
-	{
-		while(it != end){
-			h(*it);
-			++it;
-		}
-	}
+    auto it = iterator;
+    asio::iterator end;
+    if (h)
+    {
+        while(it != end){
+            h(*it);
+            ++it;
+        }
+    }
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     mutex_.lock_shared();
@@ -237,23 +237,23 @@ void connector::handle_resolve(const boost_code& ec, asio::iterator iterator,
         const auto timeout = settings_.connect_timeout();
         const auto timer = std::make_shared<deadline>(pool_, timeout);
         const auto socket = std::make_shared<network::socket>(pool_);
-    
+
         // Retain a socket reference until connected, allowing connect cancelation.
         pending_.store(socket);
-    
+
         // Manage the socket-timer race, terminating if either fails.
         const auto handle_connect = synchronize(handler, 1, NAME, false);
-    
+
         // This is branch #1 of the connnect sequence.
         timer->start(
             std::bind(&connector::handle_timer,
                 shared_from_this(), _1, socket, handle_connect));
         safe_connect(resolver_iterator, socket, timer, handle_connect);
     };
-    
+
     // Get all hosts under one DNS record.
     for (asio::iterator end; iterator != end; ++iterator)
-    {  
+    {
         do_connecting(iterator);
         break; // FIXME. chenhao, can not query all hosts, caused by loop fastly
     }
@@ -266,17 +266,17 @@ void connector::safe_connect(asio::iterator iterator, socket::ptr socket,
     deadline::ptr timer, connect_handler handler)
 {
     // Critical Section (external)
-    /////////////////////////////////////////////////////////////////////////// 
+    ///////////////////////////////////////////////////////////////////////////
     const auto locked = socket->get_socket();
 
     // This is branch #2 of the connnect sequence.
     using namespace boost::asio;
-	ip::tcp::endpoint endpoint = *iterator;
+    ip::tcp::endpoint endpoint = *iterator;
 
-	locked->get().async_connect(endpoint,
+    locked->get().async_connect(endpoint,
         std::bind(&connector::handle_connect,
             shared_from_this(), _1, socket, timer, handler));
-    /////////////////////////////////////////////////////////////////////////// 
+    ///////////////////////////////////////////////////////////////////////////
 }
 
 // Timer sequence.

@@ -39,8 +39,8 @@ namespace chain {
 class BC_API account_info
 {
 public:
-	account_info(libbitcoin::blockchain::block_chain_impl& blockchain, std::string& passphrase);
-	account_info(libbitcoin::blockchain::block_chain_impl& blockchain, std::string& passphrase,
+    account_info(libbitcoin::blockchain::block_chain_impl& blockchain, std::string& passphrase);
+    account_info(libbitcoin::blockchain::block_chain_impl& blockchain, std::string& passphrase,
         account& meta, std::vector<account_address>& addr_vec, std::vector<asset_detail>& asset_vec);
 
     bool from_data(const data_chunk& data);
@@ -60,9 +60,9 @@ public:
 
 private:
     libbitcoin::blockchain::block_chain_impl& blockchain_;
-	account meta_;
-	std::vector<account_address> addr_vec_;
-	std::vector<asset_detail> asset_vec_;
+    account meta_;
+    std::vector<account_address> addr_vec_;
+    std::vector<asset_detail> asset_vec_;
     // encrypt/decrypt
     data_chunk data_;
     std::string passphrase_;

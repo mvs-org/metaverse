@@ -42,10 +42,10 @@ extern "C" {
 #define DAG_MUTABLE_NAME_MAX_SIZE (6 + 10 + 1 + 16 + 1)
 /// Possible return values of @see ethash_io_prepare
 enum ethash_io_rc {
-	ETHASH_IO_FAIL = 0,           ///< There has been an IO failure
-	ETHASH_IO_MEMO_SIZE_MISMATCH, ///< DAG with revision/hash match, but file size was wrong.
-	ETHASH_IO_MEMO_MISMATCH,      ///< The DAG file did not exist or there was revision/hash mismatch
-	ETHASH_IO_MEMO_MATCH,         ///< DAG file existed and revision/hash matched. No need to do anything
+    ETHASH_IO_FAIL = 0,           ///< There has been an IO failure
+    ETHASH_IO_MEMO_SIZE_MISMATCH, ///< DAG with revision/hash match, but file size was wrong.
+    ETHASH_IO_MEMO_MISMATCH,      ///< The DAG file did not exist or there was revision/hash mismatch
+    ETHASH_IO_MEMO_MATCH,         ///< DAG file existed and revision/hash matched. No need to do anything
 };
 
 // small hack for windows. I don't feel I should use va_args and forward just
@@ -60,15 +60,15 @@ enum ethash_io_rc {
  * ethash_full_t
  */
 #ifdef ETHASH_PRINT_CRITICAL_OUTPUT
-#define ETHASH_CRITICAL(...)							\
-	do													\
-	{													\
-		printf("ETHASH CRITICAL ERROR: "__VA_ARGS__);	\
-		printf("\n");									\
-		fflush(stdout);									\
-	} while (0)
+#define ETHASH_CRITICAL(...)                            \
+    do                                                    \
+    {                                                    \
+        printf("ETHASH CRITICAL ERROR: "__VA_ARGS__);    \
+        printf("\n");                                    \
+        fflush(stdout);                                    \
+    } while (0)
 #else
-#define ETHASH_CRITICAL(...)          
+#define ETHASH_CRITICAL(...)
 #endif
 
 /**
@@ -92,11 +92,11 @@ enum ethash_io_rc {
  * @return                   For possible return values @see enum ethash_io_rc
  */
 enum ethash_io_rc ethash_io_prepare(
-	char const* dirname,
-	ethash_h256_t const seedhash,
-	FILE** output_file,
-	uint64_t file_size,
-	bool force_create
+    char const* dirname,
+    ethash_h256_t const seedhash,
+    FILE** output_file,
+    uint64_t file_size,
+    bool force_create
 );
 
 /**
@@ -167,9 +167,9 @@ int ethash_fileno(FILE* f);
  * @return                   A char* containing the full name. User must deallocate.
  */
 char* ethash_io_create_filename(
-	char const* dirname,
-	char const* filename,
-	size_t filename_length
+    char const* dirname,
+    char const* filename,
+    size_t filename_length
 );
 
 /**
@@ -185,9 +185,9 @@ char* ethash_io_create_filename(
 bool ethash_get_default_dirname(char* strbuf, size_t buffsize);
 
 static inline bool ethash_io_mutable_name(
-	uint32_t revision,
-	ethash_h256_t const* seed_hash,
-	char* output
+    uint32_t revision,
+    ethash_h256_t const* seed_hash,
+    char* output
 )
 {
     uint64_t hash = *((uint64_t*)seed_hash);

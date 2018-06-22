@@ -31,10 +31,10 @@ namespace chain {
 
 blockchain_asset::blockchain_asset()
 {
-	reset();
+    reset();
 }
 blockchain_asset::blockchain_asset(uint32_t version, const output_point& tx_point,
-			uint64_t height, const asset_detail& asset):
+            uint64_t height, const asset_detail& asset):
     version_(version), tx_point_(tx_point), height_(height), asset_(asset)
 {
 }
@@ -65,11 +65,11 @@ bool blockchain_asset::is_valid() const
 }
 
 void blockchain_asset::reset()
-{	
+{
     version_ = 0;
     tx_point_ = output_point();
-	height_ = 0;
-	asset_ = asset_detail();
+    height_ = 0;
+    asset_ = asset_detail();
 }
 
 bool blockchain_asset::from_data(const data_chunk& data)
@@ -89,11 +89,11 @@ bool blockchain_asset::from_data(reader& source)
     reset();
 
     version_ = source.read_4_bytes_little_endian();
-	tx_point_.from_data(source);
+    tx_point_.from_data(source);
     height_ = source.read_8_bytes_little_endian();
-	asset_.from_data(source);
+    asset_.from_data(source);
 
-    return true;	
+    return true;
 }
 
 data_chunk blockchain_asset::to_data() const
@@ -115,9 +115,9 @@ void blockchain_asset::to_data(std::ostream& stream) const
 void blockchain_asset::to_data(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version_);
-	tx_point_.to_data(sink);
+    tx_point_.to_data(sink);
     sink.write_8_bytes_little_endian(height_);
-	asset_.to_data(sink);
+    asset_.to_data(sink);
 }
 
 uint64_t blockchain_asset::serialized_size() const
@@ -131,47 +131,47 @@ std::string blockchain_asset::to_string() const
     std::ostringstream ss;
 
     ss << "\t version = " << version_ << "\n"
-		<< "\t tx_point = " << tx_point_.to_string() << "\n"
-		<< "\t height = " << height_ << "\n"
-		<< "\t asset = " << asset_.to_string() << "\n";
+        << "\t tx_point = " << tx_point_.to_string() << "\n"
+        << "\t height = " << height_ << "\n"
+        << "\t asset = " << asset_.to_string() << "\n";
 
     return ss.str();
 }
 
 #endif
 const uint32_t& blockchain_asset::get_version() const
-{ 
+{
     return version_;
 }
 void blockchain_asset::set_version(const uint32_t& version_)
-{ 
+{
      this->version_ = version_;
 }
 
 const output_point& blockchain_asset::get_tx_point() const
-{ 
+{
     return tx_point_;
 }
 void blockchain_asset::set_tx_point(const output_point& tx_point_)
-{ 
+{
      this->tx_point_ = tx_point_;
 }
 
 const uint64_t& blockchain_asset::get_height() const
-{ 
+{
     return height_;
 }
 void blockchain_asset::set_height(const uint64_t& height_)
-{ 
+{
      this->height_ = height_;
 }
 
 const asset_detail& blockchain_asset::get_asset() const
-{ 
+{
     return asset_;
 }
 void blockchain_asset::set_asset(const asset_detail& asset_)
-{ 
+{
      this->asset_ = asset_;
 }
 

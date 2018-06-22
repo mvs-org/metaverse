@@ -96,7 +96,7 @@ void* mmap(void* addr, size_t len, int prot, int flags, int fildes, oft__ off)
         return MAP_FAILED;
     }
 
-    const HANDLE handle = ((flags & MAP_ANONYMOUS) == 0) ? 
+    const HANDLE handle = ((flags & MAP_ANONYMOUS) == 0) ?
         (HANDLE)_get_osfhandle(fildes) : INVALID_HANDLE_VALUE;
 
     if ((flags & MAP_ANONYMOUS) == 0 && handle == INVALID_HANDLE_VALUE)
@@ -210,9 +210,9 @@ int ftruncate(int fd, oft__ size)
     big.QuadPart = (LONGLONG)size;
 
     const HANDLE handle = (HANDLE)_get_osfhandle(fd);
-    const position = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
+    const BOOL ret = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
 
-    if (position == INVALID_SET_FILE_POINTER || SetEndOfFile(handle) == FALSE)
+    if (!ret || !SetEndOfFile(handle))
     {
         const DWORD error = GetLastError();
 

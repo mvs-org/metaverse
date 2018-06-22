@@ -11,7 +11,7 @@
 
 namespace libbitcoin{
 namespace server{
-	class server_node;
+    class server_node;
 }
 }
 
@@ -66,7 +66,7 @@ private:
       MethodDelete = 1 << 3,
       // Method value mask.
       MethodMask = MethodGet | MethodPost | MethodPut | MethodDelete,
-    
+
       // Subsequent bits represent matching components.
       MatchMethod = 1 << 4,
       MatchUri = 1 << 5,

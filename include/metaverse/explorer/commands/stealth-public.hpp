@@ -66,7 +66,7 @@ namespace commands {
 /**
  * Class to implement the stealth-public command.
  */
-class BCX_API stealth_public 
+class BCX_API stealth_public
   : public command
 {
 public:
@@ -123,12 +123,12 @@ public:
             .add("SHARED_SECRET", 1);
     }
 
-	/**
+    /**
      * Load parameter fallbacks from file or input as appropriate.
      * @param[in]  input  The input stream for loading the parameters.
      * @param[in]         The loaded variables.
      */
-    virtual void load_fallbacks(std::istream& input, 
+    virtual void load_fallbacks(std::istream& input,
         po::variables_map& variables)
     {
         const auto raw = requires_raw_input();

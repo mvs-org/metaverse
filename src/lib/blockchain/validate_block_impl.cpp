@@ -30,7 +30,7 @@
 
 namespace libbitcoin {
 namespace blockchain {
-    
+
 // Value used to define median time past.
 static constexpr size_t median_time_past_blocks = 11;
 
@@ -139,7 +139,7 @@ bool validate_block_impl::transaction_exists(const hash_digest& tx_hash) const
     const auto result = chain_.get_transaction(unused, out_height, tx_hash);
     if (!result)
         return false;
-    
+
     BITCOIN_ASSERT(out_height <= max_size_t);
     const auto tx_height = static_cast<size_t>(out_height);
     return tx_height <= fork_index_;
@@ -254,7 +254,7 @@ bool validate_block_impl::check_get_coinage_reward_transaction(const chain::tran
     wallet::payment_address addr2 = wallet::payment_address::extract(output.script);
     uint64_t coinage_reward_value = libbitcoin::consensus::miner::calculate_lockblock_reward(lock_height, output.value);
 
-    if(addr1 == addr2 
+    if(addr1 == addr2
         && lock_height == coinbase_lock_height
         && coinage_reward_value == coinage_reward_coinbase.outputs[0].value) {
         return true;

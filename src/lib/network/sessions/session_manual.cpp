@@ -114,10 +114,10 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
 
         auto shared_this = shared_from_base<session_manual>();
         const auto timer = std::make_shared<deadline>(pool_, asio::seconds(3));
-        
+
         // Retry logic.
         if (settings_.manual_attempt_limit == 0)
-        	delay_new_connection(hostname, port, handler, 0);
+            delay_new_connection(hostname, port, handler, 0);
         else if (retries > 0)
             delay_new_connection(hostname, port, handler, retries);
         else
@@ -130,7 +130,7 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
         << "Connected manual channel [" << config::endpoint(hostname, port)
         << "] as [" << channel->authority() << "]";
 
-    register_channel(channel, 
+    register_channel(channel,
         BIND5(handle_channel_start, _1, hostname, port, channel, handler),
         BIND3(handle_channel_stop, _1, hostname, port));
 }
@@ -170,21 +170,21 @@ void session_manual::attach_protocols(channel::ptr channel)
 }
 
 void session_manual::delay_new_connection(const std::string& hostname, uint16_t port
-		, channel_handler handler, uint32_t retries)
+        , channel_handler handler, uint32_t retries)
 {
-	auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
-	auto self = shared_from_this();
-	timer->start([this, timer, self, hostname, port, handler, retries](const code& ec){
-		if (stopped())
-		{
-			return;
-		}
-		auto pThis = shared_from_this();
-		auto action = [this, pThis, hostname, port, handler, retries](){
-			start_connect(hostname, port, handler, retries);
-		};
-		pool_.service().post(action);
-	});
+    auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
+    auto self = shared_from_this();
+    timer->start([this, timer, self, hostname, port, handler, retries](const code& ec){
+        if (stopped())
+        {
+            return;
+        }
+        auto pThis = shared_from_this();
+        auto action = [this, pThis, hostname, port, handler, retries](){
+            start_connect(hostname, port, handler, retries);
+        };
+        pool_.service().post(action);
+    });
 }
 
 // After a stop we don't use the caller's start handler, but keep connecting.

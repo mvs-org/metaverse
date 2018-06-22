@@ -58,7 +58,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -67,7 +67,7 @@ public:
             "PAYMENT_ADDRESS",
             value<bc::wallet::payment_address>(&argument_.address)->required(),
             "The payment address. If not specified the address is read from STDIN."
-	    );
+        );
 
         return options;
     }

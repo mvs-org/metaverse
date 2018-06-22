@@ -81,6 +81,6 @@ console_result fetch_stealth::invoke(std::ostream& output, std::ostream& error)
     return state.get_result();
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

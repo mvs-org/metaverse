@@ -44,7 +44,7 @@ static deadline::ptr alarm(threadpool& pool, const asio::duration& duration)
 
 // TODO: configure settings.protocol_maximum and settings.protocol_minimum.
 // Limit to version::limit::maximum and version::limit::minimum respectively
-// and if protocol_maximum is then below protocol_minimum return a failure. 
+// and if protocol_maximum is then below protocol_minimum return a failure.
 // On handshake send peer version.maxiumum and on receipt of protocol_peer
 // if it is below protocol_minimum drop the channel, otherwise set
 // protocol_version to the lesser of protocol_maximum and protocol_peer.
@@ -114,8 +114,8 @@ void channel::invoke_protocol_start_handler(const code& ec)
         if (!protocol_start_handler_)
             return;
         if (ec) {
-    	    protocol_start_handler_ = nullptr;
-    	    return;
+            protocol_start_handler_ = nullptr;
+            return;
         }
 
         func = std::move(protocol_start_handler_);
@@ -130,7 +130,7 @@ void channel::invoke_protocol_start_handler(const code& ec)
 // It is possible that this may be called multiple times.
 void channel::handle_stopping()
 {
-	invoke_protocol_start_handler(error::channel_stopped);
+    invoke_protocol_start_handler(error::channel_stopped);
     expiration_->stop();
     inactivity_->stop();
 }
@@ -152,7 +152,7 @@ void channel::start_expiration()
         std::bind(&channel::handle_expiration,
             shared_from_base<channel>(), _1));
     if (stopped())
-    	expiration_->stop();
+        expiration_->stop();
 }
 
 void channel::handle_expiration(const code& ec)
@@ -177,7 +177,7 @@ void channel::start_inactivity()
         std::bind(&channel::handle_inactivity,
             shared_from_base<channel>(), _1));
     if (stopped())
-    	inactivity_->stop();
+        inactivity_->stop();
 }
 
 void channel::handle_inactivity(const code& ec)

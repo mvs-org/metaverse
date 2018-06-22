@@ -30,15 +30,15 @@
 
 namespace libbitcoin {
 namespace chain {
-	
+
 BC_CONSTEXPR size_t  BLOCKCHAIN_MESSAGE_FIX_SIZE = 256;
 class BC_API blockchain_message
 {
 public:
     //BC_CONSTEXPR static size_t blockchain_message_FIX_SIZE = 64;
 
-	blockchain_message();
-	blockchain_message(std::string content);
+    blockchain_message();
+    blockchain_message(std::string content);
     static blockchain_message factory_from_data(const data_chunk& data);
     static blockchain_message factory_from_data(std::istream& stream);
     static blockchain_message factory_from_data(reader& source);
@@ -54,9 +54,9 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	const std::string& get_content() const;
-	void set_content(const std::string& content);
-	
+    const std::string& get_content() const;
+    void set_content(const std::string& content);
+
 private:
     std::string content_;
 };

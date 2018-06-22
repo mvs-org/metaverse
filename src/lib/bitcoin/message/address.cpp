@@ -129,7 +129,7 @@ void address::to_data(uint32_t version, writer& sink) const
 
 uint64_t address::serialized_size(uint32_t version) const
 {
-    return variable_uint_size(addresses.size()) + 
+    return variable_uint_size(addresses.size()) +
         (addresses.size() * network_address::satoshi_fixed_size(version, true));
 }
 

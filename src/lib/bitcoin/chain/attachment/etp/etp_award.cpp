@@ -30,10 +30,10 @@ namespace chain {
 
 etp_award::etp_award()
 {
-	height = 0;
+    height = 0;
 }
 etp_award::etp_award(uint64_t height):
-	height(height)
+    height(height)
 {
 
 }
@@ -61,7 +61,7 @@ etp_award etp_award::factory_from_data(reader& source)
 
 void etp_award::reset()
 {
-	height= 0;
+    height= 0;
 }
 bool etp_award::is_valid() const
 {
@@ -85,7 +85,7 @@ bool etp_award::from_data(reader& source)
     reset();
     height = source.read_8_bytes_little_endian();
     auto result = static_cast<bool>(source);
-	
+
     return result;
 }
 
@@ -107,30 +107,30 @@ void etp_award::to_data(std::ostream& stream) const
 
 void etp_award::to_data(writer& sink) const
 {
-	sink.write_8_bytes_little_endian(height);
+    sink.write_8_bytes_little_endian(height);
 }
 
 uint64_t etp_award::serialized_size() const
 {
     //uint64_t size = 8;
-	return 8;
+    return 8;
 }
 
 std::string etp_award::to_string() const
 {
     std::ostringstream ss;
-	ss << "\t height = " << height << "\n";
+    ss << "\t height = " << height << "\n";
 
     return ss.str();
 }
 uint64_t etp_award::get_height() const
 {
-	return height;
+    return height;
 }
 
 void etp_award::set_height(uint64_t height)
 {
-	this->height = height;
+    this->height = height;
 }
 
 } // namspace chain

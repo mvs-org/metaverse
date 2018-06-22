@@ -59,7 +59,7 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
@@ -97,7 +97,7 @@ public:
         {}
 
         bool is_getbestblockhash{false};
-	    bc::config::hash256 hash;
+        bc::config::hash256 hash;
         uint32_t height;
     } option_;
 

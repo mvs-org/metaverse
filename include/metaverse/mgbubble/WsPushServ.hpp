@@ -36,7 +36,7 @@ namespace mgbubble {
 
 class WsEvent : public std::enable_shared_from_this<WsEvent> {
 public:
-    explicit WsEvent(const std::function<void(uint64_t)>&& handler) 
+    explicit WsEvent(const std::function<void(uint64_t)>&& handler)
         :callback_(std::move(handler))
     {}
 
@@ -51,7 +51,7 @@ public:
         self_.reset();
     }
 
-    virtual void operator()(uint64_t id) 
+    virtual void operator()(uint64_t id)
     {
         callback_(id);
         self_.reset();

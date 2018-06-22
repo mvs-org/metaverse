@@ -151,7 +151,7 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
     // If we completed the last height the sync is complete/success.
     if (next > last_.height())
     {
-    	log::trace(LOG_NODE) << "protocol header sync handle receive complete";
+        log::trace(LOG_NODE) << "protocol header sync handle receive complete";
         complete(error::success);
         return false;
     }
@@ -159,7 +159,7 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
     // If we received fewer than 2000 the peer is exhausted, try another.
     if (message->elements.size() < max_header_response)
     {
-    	log::trace(LOG_NODE) << "protocol header sync handle receive message size < max header response";
+        log::trace(LOG_NODE) << "protocol header sync handle receive message size < max header response";
         complete(error::operation_failed);
         return false;
     }
@@ -205,7 +205,7 @@ void protocol_header_sync::headers_complete(const code& ec,
     event_handler handler)
 {
 
-	// This is end of the header sync sequence.
+    // This is end of the header sync sequence.
     handler(ec);
 
     // The session does not need to handle the stop.

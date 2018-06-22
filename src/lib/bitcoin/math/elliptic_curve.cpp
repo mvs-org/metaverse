@@ -30,7 +30,7 @@
 #include "secp256k1_initializer.hpp"
 
 namespace libbitcoin {
-    
+
 static constexpr uint8_t compressed_even = 0x02;
 static constexpr uint8_t compressed_odd = 0x03;
 static constexpr uint8_t uncompressed = 0x04;

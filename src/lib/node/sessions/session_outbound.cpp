@@ -48,7 +48,7 @@ session_outbound::session_outbound(p2p& network, block_chain& blockchain,
 void session_outbound::attach_handshake_protocols(channel::ptr channel,
         result_handler handle_started)
 {
-	auto self = shared_from_this();
+    auto self = shared_from_this();
     attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
         if (!ec) {
             auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
@@ -68,10 +68,10 @@ void session_outbound::attach_handshake_protocols(channel::ptr channel,
         }
 
         if (stopped() || ec)
-		{
-			channel->invoke_protocol_start_handler(error::channel_stopped);
-			channel->stop(error::channel_stopped);
-		}
+        {
+            channel->invoke_protocol_start_handler(error::channel_stopped);
+            channel->stop(error::channel_stopped);
+        }
 
         handle_started(ec);
     });

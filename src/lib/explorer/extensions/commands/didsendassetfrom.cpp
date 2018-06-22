@@ -49,7 +49,7 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
         fromaddress = argument_.fromdid;
     }
     else {
-        fromaddress = get_address_from_did(argument_.fromdid, blockchain);      
+        fromaddress = get_address_from_did(argument_.fromdid, blockchain);
         attach.set_from_did(argument_.fromdid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
@@ -59,7 +59,7 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
         toaddress = argument_.todid;
     }
     else {
-        toaddress = get_address_from_did(argument_.todid,blockchain);              
+        toaddress = get_address_from_did(argument_.todid,blockchain);
         attach.set_to_did(argument_.todid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }

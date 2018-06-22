@@ -97,8 +97,8 @@ std::string log::to_text(level value)
     {
         case level::trace:
             return "TRACE";
-		case level::debug:
-			return "DEBUG";
+        case level::debug:
+            return "DEBUG";
         case level::info:
             return "INFO";
         case level::warning:

@@ -28,7 +28,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 template<size_t Size>
 parse_encrypted_prefix<Size>::parse_encrypted_prefix(
     const byte_array<Size>& value)

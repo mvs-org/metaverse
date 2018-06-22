@@ -23,47 +23,47 @@ extern "C" {
 #include <stdint.h>
 
 typedef union node {
-	uint8_t bytes[NODE_WORDS * 4];
-	uint32_t words[NODE_WORDS];
-	uint64_t double_words[NODE_WORDS / 2];
+    uint8_t bytes[NODE_WORDS * 4];
+    uint32_t words[NODE_WORDS];
+    uint64_t double_words[NODE_WORDS / 2];
 
 #if defined(_M_X64) && ENABLE_SSE
-	__m128i xmm[NODE_WORDS/4];
+    __m128i xmm[NODE_WORDS/4];
 #elif defined(__MIC__)
-	__m512i zmm[NODE_WORDS/16];
+    __m512i zmm[NODE_WORDS/16];
 #endif
 
 } node;
 
 static inline uint8_t ethash_h256_get(ethash_h256_t const* hash, unsigned int i)
 {
-	return hash->b[i];
+    return hash->b[i];
 }
 
 static inline void ethash_h256_set(ethash_h256_t* hash, unsigned int i, uint8_t v)
 {
-	hash->b[i] = v;
+    hash->b[i] = v;
 }
 
 static inline void ethash_h256_reset(ethash_h256_t* hash)
 {
-	memset(hash, 0, 32);
+    memset(hash, 0, 32);
 }
 
 // Returns if hash is less than or equal to boundary (2^256/difficulty)
 static inline bool ethash_check_difficulty(
-	ethash_h256_t const* hash,
-	ethash_h256_t const* boundary
+    ethash_h256_t const* hash,
+    ethash_h256_t const* boundary
 )
 {
-	// Boundary is big endian
-	for (int i = 0; i < 32; i++) {
-		if (ethash_h256_get(hash, i) == ethash_h256_get(boundary, i)) {
-			continue;
-		}
-		return ethash_h256_get(hash, i) < ethash_h256_get(boundary, i);
-	}
-	return true;
+    // Boundary is big endian
+    for (int i = 0; i < 32; i++) {
+        if (ethash_h256_get(hash, i) == ethash_h256_get(boundary, i)) {
+            continue;
+        }
+        return ethash_h256_get(hash, i) < ethash_h256_get(boundary, i);
+    }
+    return true;
 }
 
 /**
@@ -76,16 +76,16 @@ static inline bool ethash_check_difficulty(
  * @return                 true for succesful pre-verification and false otherwise
  */
 bool ethash_quick_check_difficulty(
-	ethash_h256_t const* header_hash,
-	uint64_t const nonce,
-	ethash_h256_t const* mix_hash,
-	ethash_h256_t const* boundary
+    ethash_h256_t const* header_hash,
+    uint64_t const nonce,
+    ethash_h256_t const* mix_hash,
+    ethash_h256_t const* boundary
 );
 
 struct ethash_light {
-	void* cache;
-	uint64_t cache_size;
-	uint64_t block_number;
+    void* cache;
+    uint64_t cache_size;
+    uint64_t block_number;
 };
 
 /**
@@ -109,16 +109,16 @@ ethash_light_t ethash_light_new_internal(uint64_t cache_size, ethash_h256_t cons
  * @return               The resulting hash.
  */
 ethash_return_value_t ethash_light_compute_internal(
-	ethash_light_t light,
-	uint64_t full_size,
-	ethash_h256_t const header_hash,
-	uint64_t nonce
+    ethash_light_t light,
+    uint64_t full_size,
+    ethash_h256_t const header_hash,
+    uint64_t nonce
 );
 
 struct ethash_full {
-	FILE* file;
-	uint64_t file_size;
-	node* data;
+    FILE* file;
+    uint64_t file_size;
+    node* data;
 };
 
 /**
@@ -139,24 +139,24 @@ struct ethash_full {
  *                       ERRNOMEM or invalid parameters used for @ref ethash_compute_full_data()
  */
 ethash_full_t ethash_full_new_internal(
-	char const* dirname,
-	ethash_h256_t const seed_hash,
-	uint64_t full_size,
-	ethash_light_t const light,
-	ethash_callback_t callback
+    char const* dirname,
+    ethash_h256_t const seed_hash,
+    uint64_t full_size,
+    ethash_light_t const light,
+    ethash_callback_t callback
 );
 
 void ethash_calculate_dag_item(
-	node* const ret,
-	uint32_t node_index,
-	ethash_light_t const cache
+    node* const ret,
+    uint32_t node_index,
+    ethash_light_t const cache
 );
 
 void ethash_quick_hash(
-	ethash_h256_t* return_hash,
-	ethash_h256_t const* header_hash,
-	const uint64_t nonce,
-	ethash_h256_t const* mix_hash
+    ethash_h256_t* return_hash,
+    ethash_h256_t const* header_hash,
+    const uint64_t nonce,
+    ethash_h256_t const* mix_hash
 );
 
 uint64_t ethash_get_datasize(uint64_t const block_number);
@@ -172,10 +172,10 @@ uint64_t ethash_get_cachesize(uint64_t const block_number);
  * @return            true if all went fine and false for invalid parameters
  */
 bool ethash_compute_full_data(
-	void* mem,
-	uint64_t full_size,
-	ethash_light_t const light,
-	ethash_callback_t callback
+    void* mem,
+    uint64_t full_size,
+    ethash_light_t const light,
+    ethash_callback_t callback
 );
 
 #ifdef __cplusplus

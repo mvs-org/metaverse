@@ -56,7 +56,7 @@ static void be64enc(void *pp, uint64_t x)
 static void be64enc_vect(unsigned char* dst, const uint64_t* src, size_t len)
 {
     size_t i;
-    for (i = 0; i < len / 8; i++) 
+    for (i = 0; i < len / 8; i++)
     {
         be64enc(dst + i * 8, src[i]);
     }
@@ -65,7 +65,7 @@ static void be64enc_vect(unsigned char* dst, const uint64_t* src, size_t len)
 static void be64dec_vect(uint64_t* dst, const unsigned char* src, size_t len)
 {
     size_t i;
-    for (i = 0; i < len / 8; i++) 
+    for (i = 0; i < len / 8; i++)
     {
         dst[i] = be64dec(src + i * 8);
     }
@@ -246,7 +246,7 @@ void SHA512Transform(uint64_t state[SHA512_STATE_LENGTH],
     RNDr(S, W, 78, 0x5fcb6fab3ad6faecULL);
     RNDr(S, W, 79, 0x6c44198c4a475817ULL);
 
-    for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++)
     {
         state[i] += S[i];
     }
@@ -265,14 +265,14 @@ void SHA512Update(SHA512CTX* context, const uint8_t* input, size_t length)
     bitlen[1] = ((uint64_t)length) << 3;
     bitlen[0] = ((uint64_t)length) >> 61;
 
-    if ((context->count[1] += bitlen[1]) < bitlen[1]) 
+    if ((context->count[1] += bitlen[1]) < bitlen[1])
     {
         context->count[0]++;
     }
 
     context->count[0] += bitlen[0];
 
-    if (length < 128 - r) 
+    if (length < 128 - r)
     {
         memcpy(&context->buf[r], input, length);
         return;
@@ -284,7 +284,7 @@ void SHA512Update(SHA512CTX* context, const uint8_t* input, size_t length)
     input += 128 - r;
     length -= 128 - r;
 
-    while (length >= 128) 
+    while (length >= 128)
     {
         SHA512Transform(context->state, input);
         input += 128;

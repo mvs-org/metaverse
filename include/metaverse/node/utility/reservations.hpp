@@ -74,8 +74,8 @@ public:
     void set_max_request(size_t value);
 
     std::size_t size() {
-    	shared_lock lock(mutex_);
-    	return table_.size();
+        shared_lock lock(mutex_);
+        return table_.size();
     }
 
 private:

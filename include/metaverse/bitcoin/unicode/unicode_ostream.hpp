@@ -42,7 +42,7 @@ public:
      */
     unicode_ostream(std::ostream& narrow_stream, std::wostream& wide_stream,
         size_t size);
-    
+
     /**
      * Delete the unicode_streambuf that wraps wide_stream.
      */

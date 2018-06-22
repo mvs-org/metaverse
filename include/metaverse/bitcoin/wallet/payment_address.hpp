@@ -36,7 +36,7 @@
 
 namespace libbitcoin {
 namespace wallet {
-    
+
 static BC_CONSTEXPR size_t payment_size = 1u + short_hash_size + checksum_size;
 typedef byte_array<payment_size> payment;
 

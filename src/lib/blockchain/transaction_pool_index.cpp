@@ -32,7 +32,7 @@ namespace libbitcoin {
 namespace blockchain {
 
 #define NAME "index"
-    
+
 using namespace bc::blockchain;
 using namespace bc::chain;
 using namespace bc::wallet;
@@ -74,7 +74,7 @@ void erase(const payment_address& key, const Point& value_point, Multimap& map)
 
     const auto range = map.equal_range(key);
     const auto it = std::find_if(range.first, range.second, match);
-    
+
     if (it != range.second)
         map.erase(it);
 }

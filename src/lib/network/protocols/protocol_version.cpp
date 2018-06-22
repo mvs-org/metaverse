@@ -100,10 +100,10 @@ void protocol_version::start(event_handler handler)
 
 void protocol_version::handle_complete(const code& ec)
 {
-	if (!complete_handler_)
-		return;
-	complete_handler_(ec);
-	complete_handler_ = nullptr;
+    if (!complete_handler_)
+        return;
+    complete_handler_(ec);
+    complete_handler_ = nullptr;
 }
 
 void protocol_version::send_version(const message::version& self)

@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 namespace server {
-    
+
 /// Blockchain interface.
 /// These queries results do NOT include transaction pool information.
 /// Class and method names are published and mapped to the zeromq interface.
@@ -103,7 +103,7 @@ private:
     static void transaction_index_fetched(const code& ec, size_t block_height,
         size_t index, const message& request, send_handler handler);
 
-    static void spend_fetched(const code& ec, 
+    static void spend_fetched(const code& ec,
         const chain::input_point& inpoint, const message& request,
         send_handler handler);
 

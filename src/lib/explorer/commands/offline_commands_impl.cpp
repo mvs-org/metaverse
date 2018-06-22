@@ -59,7 +59,7 @@ bw::word_list get_mnemonic_new(const bw::dictionary_list& language, const data_c
 
 
 //mnemonic-to-seed
-data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language, 
+data_chunk get_mnemonic_to_seed(const bw::dictionary_list& language,
     const bw::word_list& words,
     std::string passphrase)
 {
@@ -151,6 +151,6 @@ bw::hd_private get_hd_new(const data_chunk& seed, uint32_t version)
     return private_key;
 }
 
-} //namespace commands 
-} //namespace explorer 
-} //namespace libbitcoin 
+} //namespace commands
+} //namespace explorer
+} //namespace libbitcoin

@@ -44,15 +44,15 @@ namespace chain {
 class BC_API did
 {
 public:
-	enum class did_status : uint32_t
-	{
-		did_none,
-		did_locked,
-		did_transferable,
-	};
+    enum class did_status : uint32_t
+    {
+        did_none,
+        did_locked,
+        did_transferable,
+    };
 
-	did();
-	did(uint32_t status, const did_detail& detail);
+    did();
+    did(uint32_t status, const did_detail& detail);
     static did factory_from_data(const data_chunk& data);
     static did factory_from_data(std::istream& stream);
     static did factory_from_data(reader& source);
@@ -65,15 +65,15 @@ public:
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
     std::string to_string() const;
-	bool is_valid_type() const;
+    bool is_valid_type() const;
     bool is_valid() const;
     void reset();
     uint64_t serialized_size() const;
-	uint32_t get_status() const;
-	void set_status(uint32_t status);
-	void set_data(const did_detail& detail);
-	const did_detail& get_data() const;
-	
+    uint32_t get_status() const;
+    void set_status(uint32_t status);
+    void set_data(const did_detail& detail);
+    const did_detail& get_data() const;
+
 private:
     uint32_t status;
     did_detail data;

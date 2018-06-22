@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 namespace node {
-    
+
 using namespace bc::blockchain;
 using namespace bc::network;
 using namespace std::placeholders;
@@ -47,7 +47,7 @@ session_manual::session_manual(p2p& network, block_chain& blockchain,
 void session_manual::attach_handshake_protocols(channel::ptr channel,
         result_handler handle_started)
 {
-	auto self = shared_from_this();
+    auto self = shared_from_this();
     attach<protocol_version>(channel)->start([channel, handle_started, this, self](const code& ec){
         if (!ec) {
             auto pt_ping = attach<protocol_ping>(channel)->do_subscribe();
@@ -67,18 +67,18 @@ void session_manual::attach_handshake_protocols(channel::ptr channel,
         }
         else
         {
-        	channel->invoke_protocol_start_handler(error::channel_stopped);
+            channel->invoke_protocol_start_handler(error::channel_stopped);
         }
         handle_started(ec);
         if(stopped())
-        	channel->invoke_protocol_start_handler(error::channel_stopped);
+            channel->invoke_protocol_start_handler(error::channel_stopped);
     });
 
 }
 
 void session_manual::attach_protocols(channel::ptr channel)
 {
-	channel->invoke_protocol_start_handler(error::success);
+    channel->invoke_protocol_start_handler(error::success);
 }
 
 } // namespace node

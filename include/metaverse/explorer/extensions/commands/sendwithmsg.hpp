@@ -66,41 +66,41 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "TOADDRESS",
             value<std::string>(&argument_.address)->required(),
             "Send to this address"
-	    )
+        )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
             "ETP integer bits."
         )
-		(
-			"MESSAGE",
-			value<std::string>(&argument_.message)->required(),
-			"Message attached to the transaction"
-		)
-	    (
+        (
+            "MESSAGE",
+            value<std::string>(&argument_.message)->required(),
+            "Message attached to the transaction"
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
-	    );
+        );
 
         return options;
     }
@@ -116,7 +116,7 @@ public:
     {
         std::string address;
         uint64_t amount;
-		std::string message;
+        std::string message;
         uint64_t fee;
     } argument_;
 

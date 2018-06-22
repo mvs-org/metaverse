@@ -330,6 +330,15 @@ bool output::is_asset_mit() const
     return (attach_data.get_type() == ASSET_MIT_TYPE);
 }
 
+std::string output::get_asset_mit_symbol() const
+{
+    if (is_asset_mit()) {
+        auto mit_info = boost::get<asset_mit>(attach_data.get_attach());
+        return mit_info.get_symbol();
+    }
+    return std::string("");
+}
+
 bool output::is_asset_mit_register() const
 {
     if (is_asset_mit()) {

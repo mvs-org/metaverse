@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& out, const explorer_exception& ex)
 }
 
 void relay_exception(std::stringstream& ss)
-{    
+{
     try
     {
         Json::Reader reader;

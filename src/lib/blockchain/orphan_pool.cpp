@@ -158,7 +158,7 @@ block_detail::list orphan_pool::unprocessed() const
 bool orphan_pool::add_pending_block(const hash_digest& needed_block, const block_detail::ptr& pending_block)
 {
     auto hash = pending_block->actual()->header.hash();
-    if(pending_blocks_hash_.find(hash) != pending_blocks_hash_.end()) 
+    if(pending_blocks_hash_.find(hash) != pending_blocks_hash_.end())
     {
         return false;
     }

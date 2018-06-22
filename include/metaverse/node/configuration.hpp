@@ -45,7 +45,7 @@ namespace node {
 
 // This must match the case of the env var.
 #define BN_ENVIRONMENT_VARIABLE_PREFIX "BN_"
-    
+
 /// Full node configuration, thread safe.
 class BCN_API configuration
 {

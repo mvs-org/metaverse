@@ -134,7 +134,7 @@ static std::string format_row_name(const parameter& value)
     // wants to be upper case but must match in case with the env var option.
 
     if (value.get_position() != parameter::not_positional)
-        return (format(BC_PRINTER_TABLE_ARGUMENT_FORMAT) % 
+        return (format(BC_PRINTER_TABLE_ARGUMENT_FORMAT) %
             boost::to_upper_copy(value.get_long_name())).str();
     else if (value.get_short_name() == parameter::no_short_name)
         return (format(BC_PRINTER_TABLE_OPTION_LONG_FORMAT) %
@@ -277,7 +277,7 @@ std::string printer::format_settings_table()
 
 std::string printer::format_usage()
 {
-    // USAGE: bx COMMAND [-hvt] -n VALUE [-m VALUE] [-w VALUE]... REQUIRED 
+    // USAGE: bx COMMAND [-hvt] -n VALUE [-m VALUE] [-w VALUE]... REQUIRED
     // [OPTIONAL] [MULTIPLE]...
     auto usage = format(BC_PRINTER_USAGE_FORMAT) % get_application() %
         get_command() % format_usage_parameters();
@@ -306,7 +306,7 @@ std::string printer::format_usage_parameters()
     std::vector<std::string> multiple_arguments;
 
     const auto& parameters = get_parameters();
-    
+
     for (const auto& parameter: parameters)
     {
         // A required argument may only be preceeded by required arguments.
@@ -364,7 +364,7 @@ std::string printer::format_usage_parameters()
     for (const auto& required_option: required_options)
         usage << format(BC_PRINTER_USAGE_OPTION_REQUIRED_FORMAT) %
             required_option % BC_PRINTER_VALUE_TEXT;
-    
+
     for (const auto& toggle_long_option: toggle_long_options)
         usage << format(BC_PRINTER_USAGE_OPTION_TOGGLE_LONG_FORMAT) %
             toggle_long_option;
@@ -424,7 +424,7 @@ void printer::generate_argument_names()
     int max_previous_argument = 0;
 
     // We must enumerate all arguments to get the full set of names and counts.
-    for (unsigned int position = 0; position < max_total_arguments && 
+    for (unsigned int position = 0; position < max_total_arguments &&
         max_previous_argument <= max_arguments; ++position)
     {
         argument_name = arguments.name_for_position(position);

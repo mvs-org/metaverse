@@ -62,7 +62,7 @@ console_result didsendfrom::invoke(Json::Value& jv_output,
     if (blockchain.is_valid_address(argument_.todid)) {
         toaddress = argument_.todid;
     }
-    else {  
+    else {
         toaddress = get_address_from_did(argument_.todid,blockchain);
         attach.set_to_did(argument_.todid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);

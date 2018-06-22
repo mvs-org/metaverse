@@ -134,7 +134,7 @@ void session_inbound::handle_accept(const code& ec, channel::ptr channel,
 void session_inbound::handle_connection_count(size_t connections,
     channel::ptr channel)
 {
-    const auto connection_limit = settings_.inbound_connections + 
+    const auto connection_limit = settings_.inbound_connections +
         settings_.outbound_connections;
 
     if (connections >= connection_limit)
@@ -144,11 +144,11 @@ void session_inbound::handle_connection_count(size_t connections,
             << channel->authority() << "] due to connection limit.";
         return;
     }
-   
+
     log::trace(LOG_NETWORK)
         << "Connected inbound channel [" << channel->authority() << "]";
 
-    register_channel(channel, 
+    register_channel(channel,
         BIND2(handle_channel_start, _1, channel),
         BIND1(handle_channel_stop, _1));
 }
@@ -161,7 +161,7 @@ void session_inbound::handle_channel_start(const code& ec,
         log::trace(LOG_NETWORK)
             << "Inbound channel failed to start [" << channel->authority()
             << "] " << ec.message();
-		channel->stop(ec);
+        channel->stop(ec);
         return;
     }
 

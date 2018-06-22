@@ -198,7 +198,7 @@ void proxy::handle_read_heading(const boost_code& ec, size_t)
 
     if (!head.is_valid())
     {
-        log::warning(LOG_NETWORK) 
+        log::warning(LOG_NETWORK)
             << "Invalid heading from [" << authority() << "]";
         stop(error::bad_stream);
         return;
@@ -276,7 +276,7 @@ void proxy::handle_read_payload(const boost_code& ec, size_t payload_size,
         stop(error::bad_stream);
         return;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     // TODO: we aren't getting a stream benefit if we read the full payload
     // before parsing the message. Should just make this a message parse.

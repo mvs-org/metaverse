@@ -58,9 +58,9 @@ public:
     /// Write a new next position.
     void write_next_position(file_offset next);
 
-    //whether cross the memory 
+    //whether cross the memory
     bool out_of_memory() const;
-    
+
 private:
     const memory_ptr raw_next_data() const;
     const memory_ptr raw_data(file_offset offset) const;

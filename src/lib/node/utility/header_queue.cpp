@@ -101,7 +101,7 @@ void header_queue::initialize(const hash_digest& hash, size_t height)
     ///////////////////////////////////////////////////////////////////////////
     mutex_.lock_upgrade();
 
-    const auto size = 
+    const auto size =
         (checkpoints_.empty() || height > checkpoints_.back().height()) ? 1 :
         (checkpoints_.back().height() - height + 1);
 
@@ -187,7 +187,7 @@ bool header_queue::dequeue(size_t count)
         //---------------------------------------------------------------------
         return false;
     }
-    
+
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     mutex_.unlock_upgrade_and_lock();
 

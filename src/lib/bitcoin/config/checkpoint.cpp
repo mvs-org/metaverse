@@ -33,7 +33,7 @@
 
 namespace libbitcoin {
 namespace config {
-    
+
 using namespace boost;
 using namespace boost::program_options;
 

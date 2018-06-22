@@ -62,26 +62,26 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
+        )
         (
             "TODID/TOADDRESS",
             value<std::string>(&argument_.did)->required(),
             "Send to this did/address"
-	    )
+        )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
@@ -92,11 +92,11 @@ public:
             value<std::string>(&argument_.memo),
             "Attached memo for this transaction."
         )
-	    (
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 etp bits"
-	    );
+        );
 
         return options;
     }
@@ -111,7 +111,7 @@ public:
     struct argument
     {
         argument():did(""), memo("")
-		{};
+        {};
         std::string did;
         uint64_t amount;
         uint64_t fee;

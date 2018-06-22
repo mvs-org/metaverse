@@ -83,10 +83,10 @@ bool notification_worker::start()
 
     if(settings_.block_service_enabled)
     {
-		// Subscribe to blockchain reorganizations.
-		node_.subscribe_blockchain(
-			std::bind(&notification_worker::handle_blockchain_reorganization,
-				this, _1, _2, _3, _4));
+        // Subscribe to blockchain reorganizations.
+        node_.subscribe_blockchain(
+            std::bind(&notification_worker::handle_blockchain_reorganization,
+                this, _1, _2, _3, _4));
     }
 
     // Subscribe to transaction pool acceptances.
@@ -264,7 +264,7 @@ void notification_worker::send_payment(const route& reply_to, uint32_t id,
         block_hash,
         tx.to_data()
     });
-    
+
     send(reply_to, address_update, id, payload);
 }
 
@@ -572,9 +572,9 @@ bool notification_worker::handle_transaction_pool(const code& ec,
         return false;
 
     if (ec == (code)error::mock)
-	{
-		return true;
-	}
+    {
+        return true;
+    }
 
     if (ec)
     {

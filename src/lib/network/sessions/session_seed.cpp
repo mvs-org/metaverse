@@ -40,7 +40,7 @@ using namespace std::placeholders;
 session_seed::session_seed(p2p& network)
   : session(network, true, false),
     CONSTRUCT_TRACK(session_seed),
-	network_{network}
+    network_{network}
 {
 }
 
@@ -81,7 +81,7 @@ void session_seed::handle_count(size_t start_size, result_handler handler)
     if (start_size != 0)
     {
         log::debug(LOG_NETWORK)
-            << "Seeding is not required because there are " 
+            << "Seeding is not required because there are "
             << start_size << " cached addresses.";
         handler(error::success);
         return;
@@ -94,7 +94,7 @@ void session_seed::handle_count(size_t start_size, result_handler handler)
         handler(error::operation_failed);
         return;
     }
-    
+
     // This is NOT technically the end of the start sequence, since the handler
     // is not invoked until seeding operations are complete.
     start_seeding(start_size, create_connector(), handler);
@@ -133,8 +133,8 @@ void session_seed::start_seed(const config::endpoint& seed,
 
     // OUTBOUND CONNECT
     connect->connect(seed, BIND4(handle_connect, _1, _2, seed, handler), [this](const asio::endpoint& endpoint){
-    	network_.store(config::authority{endpoint}.to_network_address(), [](const code& ec){});
-    	log::debug(LOG_NETWORK) << "session seed store," << endpoint ;
+        network_.store(config::authority{endpoint}.to_network_address(), [](const code& ec){});
+        log::debug(LOG_NETWORK) << "session seed store," << endpoint ;
     });
 }
 
@@ -161,7 +161,7 @@ void session_seed::handle_connect(const code& ec, channel::ptr channel,
     log::info(LOG_NETWORK)
         << "Connected seed [" << seed << "] as " << channel->authority();
 
-    register_channel(channel, 
+    register_channel(channel,
         BIND3(handle_channel_start, _1, channel, handler),
         BIND1(handle_channel_stop, _1));
 }

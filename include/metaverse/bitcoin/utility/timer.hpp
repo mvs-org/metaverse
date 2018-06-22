@@ -31,7 +31,7 @@ namespace libbitcoin {
 // From: github.com/picanumber/bureaucrat/blob/master/time_lapse.h
 
 /// Class to measure the execution time of a callable.
-template <typename Time = asio::milliseconds, class Clock=asio::steady_clock> 
+template <typename Time = asio::milliseconds, class Clock=asio::steady_clock>
 struct timer
 {
     /// Returns the quantity (count) of the elapsed time as TimeT units.

@@ -66,14 +66,14 @@ char parameter::short_name(const po::option_description& option) const
 
     // This is a substitute that allows us to use boost 1.49 for libbitcoin.
     const auto name = split(option.format_name()).front();
-    auto is_short_name = name[0] == option_prefix_char && 
+    auto is_short_name = name[0] == option_prefix_char &&
         name[1] != option_prefix_char;
 
     return is_short_name ? name[1] : no_short_name;
 }
 
 // 100% component coverage
-unsigned parameter::arguments_limit(int position, 
+unsigned parameter::arguments_limit(int position,
     const po::option_description& option, const argument_list& arguments) const
 {
     if (position == parameter::not_positional)

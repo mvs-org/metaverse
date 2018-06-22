@@ -68,51 +68,51 @@ public:
         using namespace po;
         options_description& options = get_option_metadata();
         options.add_options()
-		(
+        (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
             "Get a description and instructions for this command."
         )
-	    (
+        (
             "ACCOUNTNAME",
             value<std::string>(&auth_.name)->required(),
             BX_ACCOUNT_NAME
-	    )
+        )
         (
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth)->required(),
             BX_ACCOUNT_AUTH
-	    )
-		(
-			"FROMADDRESS",
-			value<std::string>(&argument_.from)->required(),
-			"From address"
-		)
-		(
-			"TOADDRESS",
-			value<std::string>(&argument_.to)->required(),
-			"Target address"
-		)
-		(
-			"SYMBOL",
-			value<std::string>(&argument_.symbol)->required(),
-			"Asset symbol"
-		)
-		(
-			"AMOUNT",
-			value<uint64_t>(&argument_.amount)->required(),
-			"Asset integer bits. see asset <decimal_number>."
-		)
+        )
+        (
+            "FROMADDRESS",
+            value<std::string>(&argument_.from)->required(),
+            "From address"
+        )
+        (
+            "TOADDRESS",
+            value<std::string>(&argument_.to)->required(),
+            "Target address"
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "Asset symbol"
+        )
+        (
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "Asset integer bits. see asset <decimal_number>."
+        )
         (
             "model,m",
             value<std::string>(&option_.attenuation_model_param),
             BX_MST_OFFERING_CURVE
         )
-		(
-			"fee,f",
-			value<uint64_t>(&argument_.fee)->default_value(10000),
-			"Transaction fee. defaults to 10000 ETP bits"
-		);
+        (
+            "fee,f",
+            value<uint64_t>(&argument_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 ETP bits"
+        );
 
         return options;
     }
@@ -126,11 +126,11 @@ public:
 
     struct argument
     {
-		std::string from;
-		std::string to;
-		std::string symbol;
-		uint64_t amount;
-		uint64_t fee;
+        std::string from;
+        std::string to;
+        std::string symbol;
+        uint64_t amount;
+        uint64_t fee;
     } argument_;
 
     struct option

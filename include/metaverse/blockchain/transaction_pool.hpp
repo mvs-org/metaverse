@@ -105,7 +105,7 @@ protected:
 
     bool stopped();
     const_iterator find(const hash_digest& tx_hash) const;
-    
+
     bool handle_reorganized(const code& ec, size_t fork_point,
         const block_list& new_blocks, const block_list& replaced_blocks);
     void handle_validated(const code& ec, transaction_ptr tx,

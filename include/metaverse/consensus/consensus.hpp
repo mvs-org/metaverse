@@ -29,7 +29,7 @@
 
 namespace libbitcoin {
 namespace consensus {
-    
+
 // Helper class, not published. This is tested internal to verify_script.
 class BCK_API TxInputStream
 {

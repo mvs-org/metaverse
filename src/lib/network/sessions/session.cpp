@@ -106,12 +106,12 @@ bool session::blacklisted(const authority& authority) const
 
 void session::remove(const message::network_address& address, result_handler handler)
 {
-	network_.remove(address, handler);
+    network_.remove(address, handler);
 }
 
 void session::store(const message::network_address& address)
 {
-	network_.store(address, [](const code&){});
+    network_.store(address, [](const code&){});
 }
 
 // Socket creators.
@@ -270,7 +270,7 @@ void session::handle_handshake(const code& ec, channel::ptr channel,
         return;
     }
 
-    truth_handler handler = 
+    truth_handler handler =
         BIND_3(handle_is_pending, _1, channel, handle_started);
 
     // The loopback test is for incoming channels only.
