@@ -185,9 +185,9 @@ def parse_cmd(filename):
         param_details.append( (param_name, param_def, param_desc) )
 
     # generate SDK
-    #generate_py_SDK(cmdname, pos_params, param_details)
+    generate_py_SDK(cmdname, pos_params, param_details)
     #generate_go_SDK(cmdname, pos_params, param_details)
-    generate_DotNet_SDK(cmdname, pos_params, param_details)
+    #generate_DotNet_SDK(cmdname, pos_params, param_details)
 
 def generate_py_SDK(cmdname, pos_params, params):
     template = '''
@@ -273,7 +273,7 @@ def %(cmdname)s(%(argument_defines)s):
         'argument_defines': ', '.join(argument_defines_1 + argument_defines_2),
         'optional_arguments': '\n        '.join(optional_arguments),
         'positional_arguments': ', '.join(positional_arguments),
-        'token_arguments': '\n    '.join('if %s == True: positional.append("--%s")' % (i, i) for i in token_arguments)
+        'token_arguments': '\n    '.join('if %s == True: positional.append("--%s")' % (i, i) for i in token_arguments),
     }
 
     print template % paras
@@ -374,6 +374,7 @@ def generate_DotNet_SDK(cmdname, pos_params, params):
 public %(rettype)s %(func_name)s(%(argument_defines)s)
 {
     List<String> parameters = new List<String>() { %(positional_arguments)s };
+    %(positional_arguments_with_default_value)s
     %(token_arguments)s
     %(add_optional_parameters)s
     return getResult<%(rettype)s>("%(func_name)s", parameters);
@@ -424,6 +425,7 @@ public %(rettype)s %(func_name)s(%(argument_defines)s)
     argument_defines_2 = [] #  with default value
     optional_arguments = []
     positional_arguments = []
+    positional_arguments_with_default_value = []
     token_arguments = []
     for param_name, param_def, param_desc in params:
         comments.append("    :param: %s(%s): %s" % (param_name, special_type_desc(param_def["para_type"]), param_desc))
@@ -434,12 +436,17 @@ public %(rettype)s %(func_name)s(%(argument_defines)s)
             argument_defines_1.append('%s %s' %  (cpp2dotnet_type(param_def["para_type"]).replace('?', ''), param_name) )
 
         if param_name in pos_params:
-            if cpp2dotnet_type(param_def["para_type"]) == 'String':
-                positional_arguments.append(param_name)
-            elif cpp2dotnet_type(param_def["para_type"]) == 'List<String>':
-                positional_arguments.append('String.Join(" ", %s.ToArray())' % param_name)
+            if param_def.get("must_give", False) == False:
+                target = positional_arguments_with_default_value
             else:
-                positional_arguments.append('%s.ToString()' % param_name)
+                target = positional_arguments
+
+            if cpp2dotnet_type(param_def["para_type"]) == 'String':
+                target.append((param_name, param_name))
+            elif cpp2dotnet_type(param_def["para_type"]) == 'List<String>':
+                target.append((param_name, 'String.Join(" ", %s.ToArray())' % param_name))
+            else:
+                target.append((param_name, '%s.ToString()' % param_name))
             continue
 
         if param_def.get("just_token", False) == True:
@@ -467,7 +474,8 @@ public %(rettype)s %(func_name)s(%(argument_defines)s)
         'func_name': cmdname,
         'argument_defines': ', '.join(argument_defines_1 + argument_defines_2),
         'add_optional_parameters': '\n    '.join(optional_arguments),
-        'positional_arguments': ', '.join(positional_arguments),
+        'positional_arguments': ', '.join([i[1] for i in positional_arguments]),
+        'positional_arguments_with_default_value' : '\n    '.join([ 'if (%s != null) parameters.Add(%s);' % (i[0], i[1]) for i in positional_arguments_with_default_value ] ),
         'rettype' : func2type[cmdname],
         'token_arguments': '\n    '.join([ 'if (%s == true) parameters.Add("--%s");' % (i, i) for i in token_arguments ])
     }
