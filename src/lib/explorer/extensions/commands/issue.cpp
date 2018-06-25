@@ -47,7 +47,7 @@ console_result issue::invoke (Json::Value& jv_output,
 
     // check fee
     auto fee_of_issue = get_fee_of_issue_asset(blockchain, auth_.name);
-    if (argument_.fee == -1) {
+    if (argument_.fee == (uint64_t)-1) {
         argument_.fee = fee_of_issue;
     }
     else if (argument_.fee < fee_of_issue) {
