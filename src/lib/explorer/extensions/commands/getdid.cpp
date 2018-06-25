@@ -79,6 +79,9 @@ console_result getdid::invoke (Json::Value& jv_output,
             for (auto &did : *blockchain_dids) {
                 did_data["address"] = did.get_did().get_address();
                 did_data["status"] = did.get_status_string();
+                if (get_api_version() >= 3) {
+                    did_data["symbol"] = didSymbol;
+                }
                 json_value.append(did_data);
             }
 
