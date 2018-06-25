@@ -529,14 +529,25 @@ Json::Value json_helper::prop_list(const bc::chain::account_multisig& acc_multis
     if (version_ == 1 && pubkeys.isNull()) { //compatible for v1
         tree["public-keys"] = "";
     }
-    else {
+    else if (version_ <= 2) {
         tree["public-keys"] = pubkeys;
+    }
+    else {
+        tree["public_keys"] = pubkeys;
     }
 
     tree["address"] = acc_multisig.get_address();
-    tree["self-publickey"] = acc_multisig.get_pub_key();
-    tree["multisig-script"] = acc_multisig.get_multisig_script();
     tree["description"] = acc_multisig.get_description();
+
+    if (version_ <= 2) {
+        tree["self-publickey"] = acc_multisig.get_pub_key();
+        tree["multisig-script"] = acc_multisig.get_multisig_script();
+    }
+    else {
+        tree["self_publickey"] = acc_multisig.get_pub_key();
+        tree["multisig_script"] = acc_multisig.get_multisig_script();
+    }
+
     return tree;
 }
 
