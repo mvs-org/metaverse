@@ -895,6 +895,16 @@ Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
     return tree;
 }
 
+Json::Value json_helper::prop_list(const account_info& acc)
+{
+    Json::Value tree;
+    tree["name"] = std::get<0>(acc);
+    tree["mnemonic"] = std::get<1>(acc);
+    tree["addresses"] = std::get<2>(acc);
+
+    return tree;
+}
+
 } // namespace config
 } // namespace explorer
 } // namespace libbitcoin

@@ -144,6 +144,16 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
             }
         }
 
+        Json::Value jv_temp;
+        std::vector<const char *> vec_cmds = {"listaddresses", auth_.name.c_str(), auth_.auth.c_str()};
+        if (dispatch_command(vec_cmds.size(), vec_cmds.data(), jv_temp, node, get_api_version()) != console_result::okay) {
+            throw account_address_get_exception{std::string("Failed to list account addresses.")};
+        }
+
+        auto& root = jv_output;
+        config::json_helper::account_info acc(auth_.name, "", jv_temp);
+        root = config::json_helper(get_api_version()).prop_list(acc);
+
         return console_result::okay;
     }
     else {

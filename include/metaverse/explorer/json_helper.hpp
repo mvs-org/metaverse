@@ -464,6 +464,14 @@ BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
  */
 BCX_API Json::Value prop_attenuation_model_param(const data_chunk& param);
 
+/**
+ * Generate a property list for an account.
+ * @param[in]  acc        The account.
+ * @return             A property list.
+ */
+typedef std::tuple<std::string, std::string, Json::Value> account_info;
+BCX_API Json::Value prop_list(const account_info& acc);
+
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;
 };
