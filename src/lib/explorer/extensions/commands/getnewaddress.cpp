@@ -108,8 +108,11 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && option_.count == 1) {
         jv_output = addresses[0];
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output["addresses"] = addresses;
+    }
+    else {
+        jv_output = addresses;
     }
 
     return console_result::okay;

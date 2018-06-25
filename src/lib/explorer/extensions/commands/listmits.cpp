@@ -73,7 +73,12 @@ console_result listmits::invoke(Json::Value& jv_output,
         }
     }
 
-    jv_output["mits"] = json_value;
+    if (get_api_version() <= 2) {
+        jv_output["mits"] = json_value;
+    }
+    else {
+        jv_output = json_value;
+    }
 
     return console_result::okay;
 }

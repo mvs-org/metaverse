@@ -296,6 +296,12 @@ uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
         etp_amount = 10;    // minimal 10 etp
     }
 
+#ifdef NDEBUG
+    // nothing
+#else
+    etp_amount = 12;
+#endif
+
     return coin_price(etp_amount);
 }
 

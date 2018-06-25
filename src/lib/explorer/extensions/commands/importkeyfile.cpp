@@ -102,7 +102,7 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
             const char *cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str(), "--number",
                                 address_count.c_str()};
 
-            if (dispatch_command(5, cmds2, jv_temp, node, 2) != console_result::okay) {
+            if (dispatch_command(5, cmds2, jv_temp, node, get_api_version()) != console_result::okay) {
                 throw address_generate_exception{std::string("Failed to generate address.")};
             }
         }
@@ -138,11 +138,9 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
                     vec_cmds.push_back(s.c_str());
                 }
 
-                if (dispatch_command(vec_cmds.size(), vec_cmds.data(), jv_temp, node, 2) != console_result::okay) {
+                if (dispatch_command(vec_cmds.size(), vec_cmds.data(), jv_temp, node, get_api_version()) != console_result::okay) {
                     throw address_generate_exception{std::string("Failed to generate address.")};
                 }
-
-
             }
         }
 
@@ -170,13 +168,17 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
         if (get_api_version() == 1) {
             root["address-count"] += acc.get_hd_index();
             root["unissued-asset-count"] += all_info.get_account_asset().size();
-        } else {
+        }
+        else if (get_api_version() <= 2) {
             root["address-count"] = acc.get_hd_index();
             root["unissued-asset-count"] = static_cast<uint64_t>(all_info.get_account_asset().size());
         }
+        else {
+            root["address_count"] = acc.get_hd_index();
+            root["unissued_asset_count"] = static_cast<uint64_t>(all_info.get_account_asset().size());
+        }
 
         return console_result::okay;
-
     }
 }
 

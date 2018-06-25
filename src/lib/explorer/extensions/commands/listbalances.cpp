@@ -90,9 +90,14 @@ console_result listbalances::invoke(Json::Value& jv_output,
 
     if (get_api_version() == 1 && all_balances.isNull()) { //compatible for v1
         aroot["balances"] = "";
-    } else {
+    }
+    else if (get_api_version() <= 2) {
         aroot["balances"] = all_balances;
     }
+    else {
+        aroot = all_balances;
+    }
+
     return console_result::okay;
 
 }

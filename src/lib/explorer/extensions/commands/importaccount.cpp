@@ -84,11 +84,16 @@ console_result importaccount::invoke(Json::Value& jv_output,
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-n", str_idx.c_str()};
     Json::Value addresses;
 
-    if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
+    if (dispatch_command(5, cmds2, addresses, node, get_api_version()) != console_result::okay) {
         throw address_generate_exception{"getnewaddress got exception."};
     }
 
-    root["addresses"] = addresses["addresses"];
+    if (get_api_version() <= 2) {
+        root["addresses"] = addresses["addresses"];
+    }
+    else {
+        root["addresses"] = addresses;
+    }
 
     return console_result::okay;
 }

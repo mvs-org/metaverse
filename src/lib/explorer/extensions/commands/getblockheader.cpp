@@ -38,13 +38,14 @@ using namespace bc::explorer::config;
 /************************ getblockheader *************************/
 
 console_result getblockheader::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                                      libbitcoin::server::server_node& node)
 {
 
     uint64_t height = 0;
     auto& blockchain = node.chain_impl();
-    if(!blockchain.get_last_height(height))
+    if (!blockchain.get_last_height(height)) {
         throw block_last_height_get_exception{"query last height failure."};
+    }
 
     if (option_.height != std::numeric_limits<uint32_t>::max()) {
         height = option_.height;
@@ -54,21 +55,21 @@ console_result getblockheader::invoke(Json::Value& jv_output,
 
     obelisk_client client(connection);
 
-    if (!client.connect(connection))
-    {
+    if (!client.connect(connection)) {
         throw connection_exception{"Could not connect to mvsd port 9921."};
     }
+
     encoding json_format{"json"};
     std::ostringstream output;
     callback_state state(output, output, json_format);
 
-    auto on_done = [this, &jv_output](const chain::header& header)
+    auto on_done = [this, &jv_output](const chain::header & header)
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
-        if( !jheader.isObject()
-            || !jheader["result"].isObject()
-            || !jheader["result"]["hash"].isString()) {
+        if ( !jheader.isObject()
+                || !jheader["result"].isObject()
+                || !jheader["result"]["hash"].isString()) {
 
             throw block_hash_get_exception{"getbestblockhash got parser exception."};
         }
@@ -85,7 +86,7 @@ console_result getblockheader::invoke(Json::Value& jv_output,
         }
     };
 
-    auto on_error = [&state](const code& error)
+    auto on_error = [&state](const code & error)
     {
         state.succeeded(error);
     };

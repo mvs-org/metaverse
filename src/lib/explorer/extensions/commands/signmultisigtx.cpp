@@ -218,8 +218,8 @@ console_result signmultisigtx::invoke(
         jv_output = tx_buf.str();
     }
     else {
-        // TODO support restful API format
-        jv_output["raw"] = tx_buf.str();
+        jv_output["hash"] = encode_hash(tx_.hash());
+        jv_output["hex"] = tx_buf.str();
     }
 
     if (option_.broadcast_flag /* TODO && fullfilled */) {

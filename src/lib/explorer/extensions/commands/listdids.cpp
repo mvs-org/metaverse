@@ -64,8 +64,11 @@ console_result listdids::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && dids.isNull()) { //compatible for v1
         jv_output["dids"] = "";
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output["dids"] = dids;
+    }
+    else {
+        jv_output = dids;
     }
 
     return console_result::okay;

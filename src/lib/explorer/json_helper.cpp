@@ -78,7 +78,8 @@ Json::Value json_helper::prop_list(const header& header)
         tree["version"] += block_header.version;
         tree["number"] += block_header.number;
         tree["transaction_count"] += block_header.transaction_count;
-    } else {
+    }
+    else {
         tree["time_stamp"] = block_header.timestamp;
         tree["version"] = block_header.version;
         tree["number"] = block_header.number;
@@ -199,7 +200,12 @@ Json::Value json_helper::prop_tree(const chain::history::list& rows,
     const payment_address& balance_address)
 {
     Json::Value tree;
-    tree["balance"] = prop_list(rows, balance_address);
+    if (version_ <= 2) {
+        tree["balance"] = prop_list(rows, balance_address);
+    }
+    else {
+        tree = prop_list(rows, balance_address);
+    }
     return tree;
 }
 

@@ -53,21 +53,20 @@ console_result submitwork::invoke(Json::Value& jv_output,
     auto& root = jv_output;
 
     if (ret) {
-
         if (get_api_version() == 1) {
             root["result"] = "true"; // boost json parser output as string, for compatible.
-        } else {
+        }
+        else {
             root = true;
         }
-
-    } else {
-
+    }
+    else {
         if (get_api_version() == 1) {
             root["result"] = "false"; // boost json parser output as string, for compatible.
-        } else {
+        }
+        else {
             root = false;
         }
-
     }
 
     return console_result::okay;

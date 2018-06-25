@@ -34,20 +34,25 @@ using namespace bc::explorer::config;
 /************************ getpeerinfo *************************/
 
 console_result getpeerinfo::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                                   libbitcoin::server::server_node& node)
 {
-
     administrator_required_checker(node, auth_.name, auth_.auth);
 
-    auto& root = jv_output;
     Json::Value array;
-    for(auto authority : node.connections_ptr()->authority_list()) {
+    for (auto authority : node.connections_ptr()->authority_list()) {
         // invalid authority
         if (authority.to_hostname() == "[::]" && authority.port() == 0)
             continue;
         array.append(authority.to_string());
     }
-    root["peers"] = array;
+
+    if (get_api_version() <= 2) {
+        auto& root = jv_output;
+        root["peers"] = array;
+    }
+    else {
+        jv_output = array;
+    }
 
     return console_result::okay;
 }

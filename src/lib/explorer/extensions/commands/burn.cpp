@@ -45,7 +45,7 @@ console_result burn::invoke(Json::Value& jv_output,
     std::stringstream sout("");
     const char* cmds[]{"didsendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()};
 
-    if (dispatch_command(6, cmds, jv_output, node, 2) != console_result::okay) {
+    if (dispatch_command(6, cmds, jv_output, node, get_api_version()) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
 

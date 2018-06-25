@@ -73,7 +73,7 @@ class TestAssetBoundary(MVSTestCaseBase):
             self.assertEqual(ec, 5009, message)
 
     def test_2_issue_asset(self):
-        ten_etp = 10 * (10 ** 8)
+        ten_etp = 12 * (10 ** 8)
         # account password match error
         ec, message = mvs_rpc.issue_asset(Zac.name, Zac.password + '2', Zac.asset_symbol, 1)
         self.assertEqual(ec, 1000, message)
