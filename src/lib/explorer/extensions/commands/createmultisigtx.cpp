@@ -96,13 +96,7 @@ console_result createmultisigtx::invoke(
     auto && tx = sp_send_helper->get_transaction();
     std::ostringstream tx_buf;
     tx_buf << config::transaction(tx);
-    if (get_api_version() <= 2) {
-        jv_output = tx_buf.str();
-    }
-    else {
-        // TODO support restful API format
-        jv_output["raw"] = tx_buf.str();
-    }
+    jv_output = tx_buf.str();
 
     return console_result::okay;
 }

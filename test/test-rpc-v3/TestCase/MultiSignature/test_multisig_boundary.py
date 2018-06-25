@@ -43,14 +43,14 @@ class TestMultiSig(MVSTestCaseBase):
         # no multisig addr
         ec, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message["multisig"], None)
+        self.assertEqual(message, None)
 
         # create 1 multi add
         addr = Alice.new_multisigaddress('A&B&C', [Bob, Cindy], 2)
         ec, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(len(message["multisig"]), 1, message)
-        self.assertEqual(message["multisig"][0]["address"], addr, message)
+        self.assertEqual(len(message), 1, message)
+        self.assertEqual(message[0]["address"], addr, message)
 
     def test_2_delete(self):
         '''test delete multisig addr'''
@@ -69,7 +69,7 @@ class TestMultiSig(MVSTestCaseBase):
         #confirm by list
         ec, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message["multisig"], None)
+        self.assertEqual(message, None)
 
     def test_3_multi_sendasset(self):
         domain_symbol, asset_symbol = Alice.create_random_asset()
@@ -115,14 +115,14 @@ class TestMultiSig(MVSTestCaseBase):
         result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , asset_symbol)
         self.assertEqual(result, 0 , message)
 
-        result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx, True)
+        result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message, True)
         self.assertEqual(result, 5304 , message)
 
         #success test case
         result, message = mvs_rpc.create_multisigtx(group[0].name, group[0].password, address, Alice.mainaddress(), 100, 3 , asset_symbol)
         self.assertEqual(result, 0 , message)
 
-        result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx)
+        result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
         self.assertEqual(result, 0 , message)
 
         tx = message["hex"]

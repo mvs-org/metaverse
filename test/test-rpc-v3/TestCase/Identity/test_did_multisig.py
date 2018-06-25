@@ -24,7 +24,7 @@ class TestDIDMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids()
         self.assertEqual(ec, 0, message)
 
-        for did_ in message['dids']:
+        for did_ in message:
             if did_['symbol'] == did_symbol and did_["address"] == addr:
                 break
         else:

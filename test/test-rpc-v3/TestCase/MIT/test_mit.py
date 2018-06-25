@@ -60,7 +60,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Alice.list_mits(Alice.name, Alice.password)
         self.assertEqual(ec, code.success, message)
 
-        mits = message['mits']
+        mits = message
         self.assertGreater(len(mits), 0)
         found_mits = filter(lambda a: a["symbol"] == symbol, mits)
         self.assertEqual(len(found_mits), 1)
@@ -74,7 +74,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Alice.list_mits()
         self.assertEqual(ec, code.success, message)
 
-        mits = message['mits']
+        mits = message
         self.assertGreater(len(mits), 0)
         found_mits = filter(lambda a: a["symbol"] == symbol, mits)
         self.assertEqual(len(found_mits), 1)
@@ -95,7 +95,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Alice.get_mit()
         self.assertEqual(ec, code.success, message)
 
-        mits = message['mits']
+        mits = message
         self.assertGreater(len(mits), 0)
         found_mits = filter(lambda a: a == symbol, mits)
         self.assertEqual(len(found_mits), 1)
@@ -140,7 +140,7 @@ class TestRegisterMIT(MVSTestCaseBase):
         ec, message = Bob.get_mit(symbol, True)
         self.assertEqual(ec, code.success, message)
 
-        mits = message['mits']
+        mits = message
         self.assertGreater(len(mits), 0)
         found_mits = filter(lambda a: a["symbol"] == symbol, mits)
         self.assertEqual(len(found_mits), 2)

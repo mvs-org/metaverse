@@ -10,7 +10,7 @@ class TestDIDSend(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids()
         if ec != 0:
             return
-        exist_symbols = [i["symbol"] for i in message['dids']]
+        exist_symbols = [i["symbol"] for i in message]
 
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)
@@ -98,7 +98,7 @@ class TestDIDSendAsset(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids()
         if ec != 0:
             return
-        exist_symbols = [i["symbol"] for i in message['dids']]
+        exist_symbols = [i["symbol"] for i in message]
 
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)
@@ -194,13 +194,13 @@ class TestdidUTXOcommon(MVSTestCaseBase):
         Alice.mining()
 
         ##registerdid
-        did_symbol = 'Zac@'+common.get_random_str()        
+        did_symbol = 'Zac@'+common.get_random_str()
         ec, message = Zac.register_did(symbol=did_symbol)
         self.assertEqual(ec, 0, message)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        
+
         #didsendfrom
         ec, message = mvs_rpc.didsend_from(Zac.name,Zac.password, did_symbol, Alice.mainaddress(),10000)
         self.assertEqual(ec, 0, message)
@@ -231,21 +231,21 @@ class TestdidUTXOcommon(MVSTestCaseBase):
         #create asset
         domain_symbol, asset_symbol = Zac.create_random_asset(did_symbol=did_symbol)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
-        #sendasset 
+        #sendasset
         ec, message = mvs_rpc.didsend_asset(Zac.name,Zac.password, Alice.did_symbol,asset_symbol, 100)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
-        
+
         #sendassetfrom
         ec, message = mvs_rpc.didsend_asset_from(Zac.name,Zac.password, did_symbol,Alice.did_symbol,asset_symbol, 100)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
         #register mit
@@ -254,14 +254,14 @@ class TestdidUTXOcommon(MVSTestCaseBase):
         ec, message = mvs_rpc.register_mit(Zac.name, Zac.password, did_symbol, mit_symbol, content)
         self.assertEqual(ec, code.success, message)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
         # transfer mit
         ec, message = Zac.transfer_mit(Bob.did_symbol, mit_symbol)
         self.assertEqual(ec, code.success, message)
         ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
-        self.assertEqual(ec, 0, message)  
+        self.assertEqual(ec, 0, message)
         Alice.mining()
 
 

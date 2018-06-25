@@ -18,8 +18,8 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids(Zac.name, Zac.password)
         self.assertEqual(ec, code.success, message)
 
-        if message['dids']:
-            dids = [MOCs.Did.init(i) for i in message["dids"] if i]
+        if message:
+            dids = [MOCs.Did.init(i) for i in message if i]
             used_addresses = [did.address for did in dids if did]
 
         addresslist =  list(set(addresslist) ^ set(used_addresses))

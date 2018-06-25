@@ -17,7 +17,7 @@ class MVSTestCaseBase(unittest.TestCase):
         # register did for role A~F, if not registered
         for role in self.roles[:-1]:
             ec, message = mvs_rpc.list_dids(role.name, role.password)
-            if ec == 0 and message['dids']:
+            if ec == 0 and message:
                 pass
             else:
                 if role != Alice:
@@ -56,7 +56,7 @@ class MultiSigDIDTestCase(MVSTestCaseBase):
         for roles, addr, attr_name in [(self.group_ABC, self.addr_ABC, "did_ABC"), (self.group_DEF, self.addr_DEF, "did_DEF")]:
             ec, message = mvs_rpc.list_dids(roles[-1].name, roles[-1].password)
             self.assertEqual(ec, 0, message)
-            for did_info in message["dids"]:
+            for did_info in message:
                 if did_info["address"] == addr:
                     setattr(self, attr_name, did_info["symbol"])
                     break

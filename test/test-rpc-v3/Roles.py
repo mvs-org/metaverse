@@ -36,8 +36,8 @@ class Role:
         if None == self.did_address:
             ec, message = mvs_rpc.list_dids(self.name, self.password)
             assert (ec == 0)
-            if message['dids']:
-                dids = [MOCs.Did.init(i) for i in message["dids"] if i]
+            if message:
+                dids = [MOCs.Did.init(i) for i in message if i]
                 found_dids = filter(lambda a: a.symbol == self.did_symbol, dids)
                 assert(len(found_dids) == 1)
                 self.did_address = found_dids[0].address
@@ -158,11 +158,11 @@ class Role:
         result, message = mvs_rpc.get_asset(asset_symbol)
         assert (result == 0)
         if cert:
-            if message["assetcerts"]:
-                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+            if message:
+                return [MOCs.Cert.init(i) for i in message if i]
         else:
-            if message["assets"]:
-                return [MOCs.Asset.init(i) for i in message["assets"] if i]
+            if message:
+                return [MOCs.Asset.init(i) for i in message if i]
         return []
 
     def get_accountasset(self, asset_symbol=None, cert=False):
@@ -171,11 +171,11 @@ class Role:
         result, message = mvs_rpc.get_accountasset(self.name, self.password, asset_symbol)
         assert (result == 0)
         if cert:
-            if message["assetcerts"]:
-                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+            if message:
+                return [MOCs.Cert.init(i) for i in message if i]
         else:
-            if message["assets"]:
-                return [MOCs.Asset.init(i) for i in message["assets"] if i]
+            if message:
+                return [MOCs.Asset.init(i) for i in message if i]
         return []
 
     @classmethod
@@ -183,11 +183,11 @@ class Role:
         result, message = mvs_rpc.get_addressasset(address, cert)
         assert (result == 0)
         if cert:
-            if message["assetcerts"]:
-                return [MOCs.Cert.init(i) for i in message["assetcerts"] if i]
+            if message:
+                return [MOCs.Cert.init(i) for i in message if i]
         else:
-            if message["assets"]:
-                return [MOCs.Asset.init(i) for i in message["assets"] if i]
+            if message:
+                return [MOCs.Asset.init(i) for i in message if i]
         return []
 
     def send_asset(self, to_, amount, asset_symbol=None):
@@ -319,7 +319,7 @@ class Role:
     def get_didaddress(self, symbol):
         ec, message = mvs_rpc.list_didaddresses(symbol)
         assert(ec == 0)
-        return message['addresses'][0]['address']
+        return message[0]['address']
 
     def register_mit(self, to_did, symbol=None, content=None, mits=None, fee=None):
         if None == to_did:
@@ -357,6 +357,8 @@ class NewGuy(Role):
         self.asset_symbol = (self.name + ".AST." + common.get_random_str()).upper()
 
         result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
+        if result != 0:
+            print("create_new_account: {}".format(message))
         assert (result == 0)
 
         f = open('./Zac.txt', 'w')

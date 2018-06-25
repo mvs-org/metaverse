@@ -86,9 +86,12 @@ console_result getdid::invoke (Json::Value& jv_output,
                 jv_output["did"] = didSymbol;
                 jv_output["addresses"] = "";
             }
-            else {
+            else if (get_api_version() <= 2) {
                 jv_output["did"] = didSymbol;
                 jv_output["addresses"] = json_value;
+            }
+            else {
+                jv_output = json_value;
             }
         }
     }

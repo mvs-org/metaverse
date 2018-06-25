@@ -15,7 +15,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         ec, message = mvs_rpc.get_asset()
         self.assertEqual(ec, 0, message)
 
-        exist_assets = message["assets"]
+        exist_assets = message
         if not exist_assets:
             return None
         # pickup existing asset symbol by random
@@ -100,7 +100,7 @@ class TestAssetBoundary(MVSTestCaseBase):
             ec, message = mvs_rpc.get_asset()
             self.assertEqual(ec, 0, message)
 
-            exist_assets = message["assets"]
+            exist_assets = message
             if not exist_assets:
                 return False
             for i in exist_assets:
@@ -136,7 +136,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         #asset not exist
         ec, message = mvs_rpc.get_asset("JZM.xxx")
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message['assets'], None, message)
+        self.assertEqual(message, None, message)
 
         #get cert
         ec, message = mvs_rpc.get_asset(cert=True)
@@ -171,19 +171,19 @@ class TestAssetBoundary(MVSTestCaseBase):
         # no asset
         ec, message = mvs_rpc.get_accountasset(Zac.name, Zac.password, Zac.asset_symbol)
         self.assertEqual(ec, 0, message)
-        self.assertEqual({u'assets': None}, message)
+        self.assertEqual(message, None, message)
 
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password)
         self.assertEqual(ec, 0, message)
         orign = 0
-        if message[u'assets']:
-            orign = len(message[u'assets'])
+        if message:
+            orign = len(message)
 
         # with +1 asset
         Bob.create_asset(False)
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(len(message["assets"]), orign+1, message)
+        self.assertEqual(len(message), orign+1, message)
 
         # with +2 assets
         ec, message = mvs_rpc.create_asset(Bob.name, Bob.password, Bob.asset_symbol + '1', 100, Bob.did_symbol)
@@ -191,17 +191,17 @@ class TestAssetBoundary(MVSTestCaseBase):
 
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(len(message["assets"]), orign+2, message)
+        self.assertEqual(len(message), orign+2, message)
 
         # asset_symbol sepecified
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password, Bob.asset_symbol)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(len(message["assets"]), 1, message)
+        self.assertEqual(len(message), 1, message)
 
         # --cert specified
         ec, message = mvs_rpc.get_accountasset(Zac.name, Zac.password, cert=True)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message["assetcerts"], None, message)
+        self.assertEqual(message, None, message)
 
     def test_7_getaddressasset(self):
         # invalid address
@@ -211,7 +211,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         # no asset
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress())
         self.assertEqual(ec, 0, message)
-        self.assertEqual({u'assets': None}, message)
+        self.assertEqual(message, None, message)
 
         # --cert specified
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress(), cert=True)

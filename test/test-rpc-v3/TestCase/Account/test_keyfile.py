@@ -47,7 +47,7 @@ class TestKeyfile(MVSTestCaseBase):
 
         result, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(result, 0, message)
-        multisig = message['multisig']
+        multisig = message
         self.assertEqual(len(multisig), 1, message)
         self.assertEqual(multisig[0]['self_publickey'], Alice.get_publickey(Alice.mainaddress()))
         self.assertEqual(multisig[0]['description'], description, "decription not match!")

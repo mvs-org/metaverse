@@ -71,12 +71,12 @@ class TestRawTx(MVSTestCaseBase):
 
         ec, message = mvs_rpc.create_rawtx(0, senders, single_receiver, mychange=Alice.mainaddress());
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
         ec, message = mvs_rpc.create_rawtx(0, senders, multi_receivers, mychange=Alice.mainaddress());
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
 
@@ -87,7 +87,7 @@ class TestRawTx(MVSTestCaseBase):
 
         ec, message = mvs_rpc.create_rawtx(1, senders, single_receiver, mychange=Alice.mainaddress());
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
 
@@ -102,12 +102,12 @@ class TestRawTx(MVSTestCaseBase):
 
         ec, message = mvs_rpc.create_rawtx(3, senders, single_receiver, symbol=asset_symbol);
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
         ec, message = mvs_rpc.create_rawtx(3, senders, multi_receivers, symbol=asset_symbol);
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
     def test_4_rawtx(self):
@@ -118,10 +118,10 @@ class TestRawTx(MVSTestCaseBase):
         # create rawtx
         ec, message = mvs_rpc.create_rawtx(0, senders, single_receiver, mychange=Alice.mainaddress());
         self.assertEqual(ec, code.success, message)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message), 0)
         Alice.mining()
 
-        rawtx = message["hex"]
+        rawtx = message
 
         # invalid password
         ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password + '1', rawtx)

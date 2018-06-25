@@ -143,8 +143,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         jv_output["hex"] = tx_buf.str();
     }
     else {
-        // TODO support restful API format
-        jv_output["raw"] = tx_buf.str();
+        jv_output = tx_buf.str();
     }
 
     return console_result::okay;

@@ -130,18 +130,18 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        self.assertEqual(message['dids'][0]['symbol'], temp_did, message)
-        self.assertEqual(message['dids'][0]['address'], Zac.addresslist[1], message)
+        self.assertEqual(message[0]['symbol'], temp_did, message)
+        self.assertEqual(message[0]['address'], Zac.addresslist[1], message)
 
         # confirm the modification procedure by list_didaddresses
         ec, message = mvs_rpc.list_didaddresses(temp_did)
         self.assertEqual(ec, 0, message)
 
-        self.assertEqual(message['addresses'][0]["address"], Zac.addresslist[1])
-        self.assertEqual(message['addresses'][0]["status"], "current")
+        self.assertEqual(message[0]["address"], Zac.addresslist[1])
+        self.assertEqual(message[0]["status"], "current")
 
-        self.assertEqual(message['addresses'][1]["address"], Zac.addresslist[0])
-        self.assertEqual(message['addresses'][1]["status"], "history")
+        self.assertEqual(message[1]["address"], Zac.addresslist[0])
+        self.assertEqual(message[1]["status"], "history")
 
 
     def test_8_list_didaddresses_boundary(self):

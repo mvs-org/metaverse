@@ -96,8 +96,8 @@ class TestCert(MVSTestCaseBase):
                   u'symbol': cert_symbol,
                   u'cert': u'naming',
                   u'address': Bob.mainaddress()}
-        self.assertEqual(len(message['assetcerts']), 1, message)
-        self.assertIn(expect, message['assetcerts'])
+        self.assertEqual(len(message), 1, message)
+        self.assertIn(expect, message)
 
         # Bob issue asset with naming cert
         Alice.send_etp(Bob.mainaddress(), 12 * 10 ** 8);
@@ -110,8 +110,8 @@ class TestCert(MVSTestCaseBase):
         # check asset
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password, cert_symbol, False)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(len(message['assets']), 1, message)
-        asset = MOCs.Asset.init(message['assets'][0])
+        self.assertEqual(len(message), 1, message)
+        asset = MOCs.Asset.init(message[0])
         self.assertEqual(asset.issuer, Bob.did_symbol)
         self.assertEqual(asset.address, Bob.mainaddress())
         self.assertEqual(asset.status, "unspent")
@@ -203,8 +203,8 @@ class TestCert(MVSTestCaseBase):
                   u'symbol': naming_cert_symbol,
                   u'cert': u'naming',
                   u'address': Cindy.mainaddress()}
-        self.assertEqual(len(message['assetcerts']), 1, message)
-        self.assertEqual(expect, message['assetcerts'][0])
+        self.assertEqual(len(message), 1, message)
+        self.assertEqual(expect, message[0])
 
 
     def test_4_secondaryissue(self):
