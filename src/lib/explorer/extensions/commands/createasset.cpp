@@ -107,9 +107,15 @@ console_result createasset::invoke(Json::Value& jv_output,
 
     blockchain.store_account_asset(acc, auth_.name);
 
-    Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
-    asset_data["status"] = "unissued";
-    jv_output["asset"] = asset_data;
+    if (get_api_version() <= 2) {
+        Json::Value asset_data = config::json_helper(get_api_version()).prop_list(*acc, true);
+        asset_data["status"] = "unissued";
+        jv_output["asset"] = asset_data;
+    }
+    else {
+        jv_output = config::json_helper(get_api_version()).prop_list(*acc, true);
+        jv_output["status"] = "unissued";
+    }
 
     return console_result::okay;
 }

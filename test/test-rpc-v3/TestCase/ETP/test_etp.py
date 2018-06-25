@@ -195,19 +195,15 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance =filter(lambda x: x["balance"]["address"] == address, message)
+        balance =filter(lambda x: x["address"] == address, message)
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
-            "balance":
-                {
-                    "address": address,
-                    "available": 0,
-                    "confirmed": 100095890,
-                    "frozen": 100095890,
-                    "received": 100095890,
-                    "unspent": 100095890
-                }
-
+            "address": address,
+            "available": 0,
+            "confirmed": 100095890,
+            "frozen": 100095890,
+            "received": 100095890,
+            "unspent": 100095890
         })
 
         # not enough balance
@@ -225,25 +221,17 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance = filter(lambda x: x["balance"]["address"] == address, message)
+        balance = filter(lambda x: x["address"] == address, message)
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
-            "balance":
-                {
-                    "address": address,
-                    "available": 0,
-                    "confirmed": 100095890,
-                    "frozen": 100095890,
-                    "received": 100095890,
-                    "unspent": 100095890
-                }
-
+            "address": address,
+            "available": 0,
+            "confirmed": 100095890,
+            "frozen": 100095890,
+            "received": 100095890,
+            "unspent": 100095890
         })
 
         # get_balance will not cause coredump
         ec, message = mvs_rpc.get_balance(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
-
-
-
-

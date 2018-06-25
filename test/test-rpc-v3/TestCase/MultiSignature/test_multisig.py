@@ -13,7 +13,7 @@ class TestMultiSig(MVSTestCaseBase):
         amount = 10**8
         fee = 10 ** 4
 
-        filter_balances = lambda x: x['balance']['address'] == addr_z
+        filter_balances = lambda x: x['address'] == addr_z
 
         #send to multisig-addr
         Alice.send_etp(addr_z, amount)
@@ -25,8 +25,8 @@ class TestMultiSig(MVSTestCaseBase):
         self.assertNotEqual(balances, None, balances)
         self.assertEqual(len(balances), 1)
 
-        self.assertEqual(balances[0]['balance']['address'], addr_z)
-        self.assertEqual(balances[0]['balance']['unspent'], amount)
+        self.assertEqual(balances[0]['address'], addr_z)
+        self.assertEqual(balances[0]['unspent'], amount)
 
         #send from multisig-addr
         ec, tx = mvs_rpc.create_multisigtx(Alice.name, Alice.password, addr_a, Zac.mainaddress(), amount-fee)
@@ -42,7 +42,7 @@ class TestMultiSig(MVSTestCaseBase):
 
         balances = filter(filter_balances, message)
         self.assertEqual(len(balances), 1)
-        self.assertEqual(balances[0]['balance']['unspent'], 0)
+        self.assertEqual(balances[0]['unspent'], 0)
 
 
     def test_1_multisig_3p3(self):
@@ -55,7 +55,7 @@ class TestMultiSig(MVSTestCaseBase):
         amount = 10 ** 8
         fee = 10 ** 4
 
-        filter_balances = lambda x: x['balance']['address'] == addr_z
+        filter_balances = lambda x: x['address'] == addr_z
 
         #send to multisig-addr
         Alice.send_etp(addr_z, amount)
@@ -67,8 +67,8 @@ class TestMultiSig(MVSTestCaseBase):
         self.assertNotEqual(balances, None, balances)
         self.assertEqual(len(balances), 1)
 
-        self.assertEqual(balances[0]['balance']['address'], addr_z)
-        self.assertEqual(balances[0]['balance']['unspent'], amount)
+        self.assertEqual(balances[0]['address'], addr_z)
+        self.assertEqual(balances[0]['unspent'], amount)
 
         # send from multisig-addr
         ec, tx = mvs_rpc.create_multisigtx(Alice.name, Alice.password, addr_a, Zac.mainaddress(), amount - fee)
@@ -91,4 +91,4 @@ class TestMultiSig(MVSTestCaseBase):
 
         balances = filter(filter_balances, message)
         self.assertEqual(len(balances), 1)
-        self.assertEqual(balances[0]['balance']['unspent'], 0)
+        self.assertEqual(balances[0]['unspent'], 0)

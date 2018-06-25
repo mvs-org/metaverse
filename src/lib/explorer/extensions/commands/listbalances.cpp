@@ -60,7 +60,8 @@ console_result listbalances::invoke(Json::Value& jv_output,
             address_balance["unspent"] += addr_balance.unspent_balance;
             address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
             address_balance["frozen"] += addr_balance.frozen_balance;
-        } else {
+        }
+        else {
             address_balance["confirmed"] = addr_balance.confirmed_balance;
             address_balance["received"] = addr_balance.total_received;
             address_balance["unspent"] = addr_balance.unspent_balance;
@@ -68,22 +69,34 @@ console_result listbalances::invoke(Json::Value& jv_output,
             address_balance["frozen"] = addr_balance.frozen_balance;
         }
 
-        Json::Value target_balance;
-
         if (!option_.greater && option_.non_zero) {
             option_.greater = 1;
         }
+
         // non-zero lesser
         if (option_.lesser){
             if (addr_balance.unspent_balance <= option_.lesser &&
-                addr_balance.unspent_balance >= option_.greater){
-                target_balance["balance"] = address_balance;
-                all_balances.append(target_balance);
+                addr_balance.unspent_balance >= option_.greater) {
+                if (get_api_version() <= 2) {
+                    Json::Value target_balance;
+                    target_balance["balance"] = address_balance;
+                    all_balances.append(target_balance);
+                }
+                else {
+                    all_balances.append(address_balance);
+                }
             }
-        } else {
-            if (addr_balance.unspent_balance >= option_.greater){
-            target_balance["balance"] = address_balance;
-            all_balances.append(target_balance);
+        }
+        else {
+            if (addr_balance.unspent_balance >= option_.greater) {
+                if (get_api_version() <= 2) {
+                    Json::Value target_balance;
+                    target_balance["balance"] = address_balance;
+                    all_balances.append(target_balance);
+                }
+                else {
+                    all_balances.append(address_balance);
+                }
             }
         }
     }

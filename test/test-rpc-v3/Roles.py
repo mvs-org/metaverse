@@ -358,7 +358,7 @@ class NewGuy(Role):
 
         result, self.mnemonic = mvs_rpc.new_account(self.name, self.password)
         if result != 0:
-            print("create_new_account: {}".format(message))
+            print("create_new_account: {}".format(self.mnemonic))
         assert (result == 0)
 
         f = open('./Zac.txt', 'w')
