@@ -74,7 +74,7 @@ console_result getinfo::invoke(Json::Value& jv_output,
         jv["testnet"] = blockchain.chain_settings().use_testnet_rules;
         jv["peers"] = get_connections_count(node);
 
-        jv["network_assets_count"] = static_cast<uint64_t>(symbols.size());
+        jv["asset_count"] = static_cast<uint64_t>(symbols.size());
         jv["wallet_account_count"] = static_cast<uint64_t>(blockchain.get_accounts()->size());
 
         jv["height"] = height;

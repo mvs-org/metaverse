@@ -66,7 +66,7 @@ console_result validateaddress::invoke(Json::Value& jv_output,
     }
     else {
         jv["address_type"] = version_info;
-        jv["test_net"] = use_testnet_rules;
+        jv["testnet"] = use_testnet_rules;
         jv["is_valid"] = is_valid;
         jv["message"] = message;
     }
