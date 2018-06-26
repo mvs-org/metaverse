@@ -88,17 +88,29 @@ Json::Value json_helper::prop_list(const header& header)
 
     return tree;
 }
+
 Json::Value json_helper::prop_tree(const header& header)
 {
-    Json::Value tree;
-    tree["result"] = prop_list(header);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["result"] = prop_list(header);
+        return tree;
+    }
+    else {
+        return prop_list(header);
+    }
 }
+
 Json::Value json_helper::prop_tree(const std::vector<header>& headers, bool json)
 {
-    Json::Value tree;
-    tree["headers"] = prop_tree_list("header", headers, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["headers"] = prop_tree_list("header", headers, json);
+        return tree;
+    }
+    else {
+        return prop_tree_list("header", headers, json);
+    }
 }
 
 // transfers
@@ -684,13 +696,20 @@ Json::Value json_helper::prop_list(const transaction& transaction, bool json)
         tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
         tree["version"] += tx.version;
         return tree;
-    }else {
+    }
+    else {
         std::ostringstream sout;
         sout << base16(tx.to_data());
-        tree["raw"] = sout.str();
+        if (version_ <= 2) {
+            tree["raw"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
     }
     return tree;
 }
+
 Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_height, bool json)
 {
     const tx_type& tx = transaction;
@@ -715,12 +734,17 @@ Json::Value json_helper::prop_tree(const transaction& transaction, bool json)
     tree["transaction"] = prop_list(transaction, json);
     return tree;
 }
+
 Json::Value json_helper::prop_tree(const std::vector<transaction>& transactions, bool json)
 {
-    Json::Value tree;
-    tree["transactions"] =
-        prop_tree_list_of_lists("transaction", transactions, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["transactions"] = prop_tree_list_of_lists("transaction", transactions, json);
+        return tree;
+    }
+    else {
+        return prop_tree_list_of_lists("transaction", transactions, json);
+    }
 }
 
 // wrapper
@@ -881,15 +905,27 @@ Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
     Json::Value tree;
 
     if (json) {
-        tree["header"] = prop_tree(block.header);
         std::vector<transaction> txs;
         txs.resize(block.transactions.size());
         std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
-        tree["txs"] = prop_tree(txs, tx_json);
-    } else {
+        if (version_ <= 2) {
+            tree["header"] = prop_tree(block.header);
+            tree["txs"] = prop_tree(txs, tx_json);
+        }
+        else {
+            tree = prop_tree(block.header);
+            tree["transactions"] = prop_tree(txs, tx_json);
+        }
+    }
+    else {
         std::ostringstream sout;
         sout << encode_base16(block.to_data());
-        tree["raw"] = sout.str();
+        if (version_ <= 2) {
+            tree["raw"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
     }
 
     return tree;

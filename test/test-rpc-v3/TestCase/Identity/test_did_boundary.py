@@ -177,7 +177,7 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
         self.assertEqual(ec, 0, message)
 
-        tx = message["hex"]
+        tx = message["rawtx"]
         ec, message = mvs_rpc.sign_multisigtx(group[2].name, group[2].password, tx, True)
         self.assertEqual(ec, 0, message)
         Alice.mining()
@@ -235,7 +235,7 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.sign_multisigtx(group[0].name, group[0].password, message)
         self.assertEqual(ec, 0, message)
 
-        tx = message["hex"]
+        tx = message["rawtx"]
         ec, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, tx, True)
         self.assertEqual(ec, 0, message)
         self.assertNotEqual(Zac.get_didaddress(symbol=did_symbol), Zac.addresslist[1], "Failed where modify did address from multi_signature to multi_signature address")

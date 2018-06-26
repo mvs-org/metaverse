@@ -139,11 +139,11 @@ class TestRawTx(MVSTestCaseBase):
         ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, rawtx)
         self.assertEqual(ec, code.success, message)
         self.assertGreater(len(message["hash"]), 0)
-        self.assertGreater(len(message["hex"]), 0)
+        self.assertGreater(len(message["rawtx"]), 0)
         Alice.mining()
 
         hash2 = message["hash"]
-        rawtx2 = message["hex"]
+        rawtx2 = message["rawtx"]
 
         #
         # decode rawtx

@@ -80,7 +80,7 @@ class TestMultiSig(MVSTestCaseBase):
         ec, message = mvs_rpc.sign_multisigtx(Bob.name, Bob.password, tx, False)
         self.assertEqual(ec, 0, tx)
 
-        tx = message["hex"]
+        tx = message["rawtx"]
         ec, message = mvs_rpc.sign_multisigtx(Zac.name, Zac.password, tx, True)
         self.assertEqual(ec, 0, tx)
 

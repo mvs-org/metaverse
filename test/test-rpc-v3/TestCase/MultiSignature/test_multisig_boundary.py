@@ -125,7 +125,7 @@ class TestMultiSig(MVSTestCaseBase):
         result, message = mvs_rpc.sign_multisigtx(group[1].name, group[1].password, message)
         self.assertEqual(result, 0 , message)
 
-        tx = message["hex"]
+        tx = message["rawtx"]
         result, message = mvs_rpc.sign_multisigtx(group[2].name, group[2].password, tx, True)
         self.assertEqual(result, 0 , message)
         Alice.mining()

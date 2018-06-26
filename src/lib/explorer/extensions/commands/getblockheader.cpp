@@ -67,21 +67,37 @@ console_result getblockheader::invoke(Json::Value& jv_output,
     {
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
-        if ( !jheader.isObject()
-                || !jheader["result"].isObject()
-                || !jheader["result"]["hash"].isString()) {
+        if (get_api_version() <= 2) {
+            if ( !jheader.isObject()
+                    || !jheader["result"].isObject()
+                    || !jheader["result"]["hash"].isString()) {
+                throw block_hash_get_exception{"getbestblockhash got parser exception."};
+            }
 
-            throw block_hash_get_exception{"getbestblockhash got parser exception."};
+            if (option_.is_getbestblockhash) {
+                auto&& blockhash = jheader["result"]["hash"].asString();
+                jv_output = blockhash;
+            }
+            else {
+                if (get_api_version() == 1) {
+                    jv_output = jheader;
+                }
+                else {
+                    jv_output = jheader["result"];
+                }
+            }
         }
+        else {
+            if (!jheader.isObject() || !jheader["hash"].isString()) {
+                throw block_hash_get_exception{"getbestblockhash parser exception."};
+            }
 
-        if (option_.is_getbestblockhash) {
-            auto&& blockhash = jheader["result"]["hash"].asString();
-            jv_output = blockhash;
-        } else {
-            if (get_api_version() == 1) {
+            if (option_.is_getbestblockhash) {
+                auto&& blockhash = jheader["hash"].asString();
+                jv_output = blockhash;
+            }
+            else {
                 jv_output = jheader;
-            } else {
-                jv_output = jheader["result"];
             }
         }
     };
@@ -94,10 +110,12 @@ console_result getblockheader::invoke(Json::Value& jv_output,
     // Height is ignored if both are specified.
     // Use the null_hash as sentinel to determine whether to use height or hash.
     const hash_digest& hash = option_.hash;
-    if (hash == null_hash)
+    if (hash == null_hash) {
         client.blockchain_fetch_block_header(on_error, on_done, height);
-    else
+    }
+    else {
         client.blockchain_fetch_block_header(on_error, on_done, hash);
+    }
 
     client.wait();
 
