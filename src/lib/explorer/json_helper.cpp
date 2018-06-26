@@ -935,7 +935,7 @@ Json::Value json_helper::prop_list(const account_info& acc)
 {
     Json::Value tree;
     tree["name"] = std::get<0>(acc);
-    tree["mnemonic"] = std::get<1>(acc);
+    if (std::get<1>(acc).size() > 0) tree["mnemonic"] = std::get<1>(acc);
     tree["addresses"] = std::get<2>(acc);
 
     return tree;
