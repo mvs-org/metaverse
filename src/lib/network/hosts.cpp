@@ -297,7 +297,14 @@ code hosts::clear()
 
 
     mutex_.unlock_upgrade_and_lock();
-    backup_ = std::move( buffer_ );
+
+    // if the buffer is already moved to backup, call this function again will lead to the loss of backup.
+    // backup_ = std::move( buffer_ );
+    for (auto &host : buffer_) {
+        backup_.insert(host);
+    }
+    buffer_.clear();
+
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
@@ -322,6 +329,17 @@ code hosts::after_reseeding()
         log::warning(LOG_NETWORK) << "Reseeding finished, but got address list: " << buffer_.size() << ", less than seed count: "
                                 << seed_count << ", roll back the hosts cache.";
         buffer_ = std::move(backup_);
+    } else {
+        // filter inactive hosts
+        for (auto &host : inactive_) {
+            auto iter = buffer_.find(host);
+            if (iter != buffer_.end()) {
+                buffer_.erase(iter);
+            }
+        }
+
+        // clear the backup
+        backup_.clear();
     }
 
     log::debug(LOG_NETWORK) << "Reseeding finished, and got addresses of count: " << buffer_.size();
