@@ -104,17 +104,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
         throw tx_validate_exception{"validate transaction failure"};
     }
 
-    std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx_);
-
-    if (get_api_version() <= 2) {
-        jv_output["hash"] = encode_hash(tx_.hash());
-        jv_output["hex"] = tx_buf.str();
-    }
-    else {
-        jv_output["hash"] = encode_hash(tx_.hash());
-        jv_output["rawtx"] = tx_buf.str();
-    }
+    jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx_, true);
 
     return console_result::okay;
 }

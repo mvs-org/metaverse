@@ -213,7 +213,7 @@ class Role:
     def send_etp(self, to_, amount):
         result, message = mvs_rpc.send(self.name, self.password, to_, amount)
         assert (result == 0)
-        return message["transaction"]["hash"]
+        return message["hash"]
 
     def sendmore_etp(self, receivers):
         result, message = mvs_rpc.sendmore(self.name, self.password, receivers)
@@ -225,7 +225,7 @@ class Role:
         '''
         result, message = mvs_rpc.didsend(self.name, self.password, to_, amount)
         assert (result == 0)
-        return message["transaction"]["hash"]
+        return message["hash"]
 
     def didsend_etp_from(self, from_, to_, amount):
         '''
@@ -234,17 +234,17 @@ class Role:
         '''
         result, message = mvs_rpc.didsend_from(self.name, self.password, from_, to_, amount)
         assert (result == 0)
-        return message["transaction"]["hash"]
+        return message["hash"]
 
     def didsend_asset(self, to_, amount, symbol):
         result, message = mvs_rpc.didsend_asset(self.name, self.password, to_, symbol, amount)
         assert (result == 0)
-        return message["transaction"]["hash"]
+        return message["hash"]
 
     def didsend_asset_from(self, from_, to_, amount, symbol):
         result, message = mvs_rpc.didsend_asset_from(self.name, self.password, from_, to_, symbol, amount)
         assert (result == 0)
-        return message["transaction"]["hash"]
+        return message["hash"]
 
     def mining(self, times=1):
         '''

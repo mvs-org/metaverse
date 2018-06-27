@@ -82,8 +82,7 @@ console_result getblock::invoke(Json::Value& jv_output,
             if (json) {
                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
             }
-            else
-            {
+            else {
                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
             }
             p.set_value(error::success);
@@ -93,7 +92,6 @@ console_result getblock::invoke(Json::Value& jv_output,
         if (result) {
             throw block_height_get_exception{ result.message() };
         }
-
     }
 
     return console_result::okay;

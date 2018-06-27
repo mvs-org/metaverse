@@ -86,14 +86,11 @@ console_result registerdid::invoke(Json::Value &jv_output,
     register_helper.exec();
 
     // output json
+    auto && tx = register_helper.get_transaction();
     if (is_multisig_address) {
-        auto && tx = register_helper.get_transaction();
-        std::ostringstream tx_buf;
-        tx_buf << config::transaction(tx);
-        jv_output = tx_buf.str();
+        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false, true);
     }
     else {
-        auto &&tx = register_helper.get_transaction();
         jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
     }
 

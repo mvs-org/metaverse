@@ -13,7 +13,7 @@ class TestSendETP(MVSTestCaseBase):
         self.assertEqual(ec, 0, message)
 
         Alice.mining()
-        hash = message["transaction"]["hash"]
+        hash = message["hash"]
         ec, message = mvs_rpc.gettx(hash)
         self.assertEqual(ec, 0, message)
 
@@ -63,7 +63,7 @@ class TestSendETP(MVSTestCaseBase):
                                    desc=specific_desc)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        hash = message["transaction"]["hash"]
+        hash = message["hash"]
         ec, message = mvs_rpc.gettx(hash)
         self.assertEqual(ec, 0, message)
 
@@ -117,7 +117,7 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.sendmore(Alice.name, Alice.password, receivers, Alice.addresslist[1], specific_fee)
         self.assertEqual(ec, 0, message)
         Alice.mining()
-        hash = message["transaction"]["hash"]
+        hash = message["hash"]
         ec, message = mvs_rpc.gettx(hash)
         self.assertEqual(ec, 0, message)
 

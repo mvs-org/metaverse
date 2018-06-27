@@ -1987,48 +1987,6 @@ std::shared_ptr<business_address_message::list> block_chain_impl::get_account_me
     return sp_asset_vec;
 }
 
-account_status block_chain_impl::get_account_user_status(const std::string& name)
-{
-    account_status ret_val = account_status::error;
-    auto account = get_account(name);
-    if (account) // account exist
-        ret_val = static_cast<account_status>(account->get_user_status());
-    return ret_val;
-}
-
-account_status block_chain_impl::get_account_system_status(const std::string& name)
-{
-    account_status ret_val = account_status::error;
-    auto account = get_account(name);
-    if (account) // account exist
-        ret_val = static_cast<account_status>(account->get_system_status());
-    return ret_val;
-}
-
-bool block_chain_impl::set_account_user_status(const std::string& name, uint8_t status)
-{
-    bool ret_val = false;
-    auto account = get_account(name);
-    if (account) // account exist
-    {
-        account->set_user_status(status);
-        ret_val = true;
-    }
-    return ret_val;
-}
-
-bool block_chain_impl::set_account_system_status(const std::string& name, uint8_t status)
-{
-    bool ret_val = false;
-    auto account = get_account(name);
-    if (account) // account exist
-    {
-        account->set_system_status(status);
-        ret_val = true;
-    }
-    return ret_val;
-}
-
 void block_chain_impl::fired()
 {
     organizer_.fired();

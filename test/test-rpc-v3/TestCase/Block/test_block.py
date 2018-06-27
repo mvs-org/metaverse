@@ -26,13 +26,10 @@ class TestBlock(MVSTestCaseBase):
     def test_1_getblockheader(self):
         ec, message = mvs_rpc.get_blockheader()
         self.assertEqual(ec, 0, message)
-        # check keys
-        expect_keys = ["bits", "hash", "merkle_tree_hash", "mixhash", "nonce", "number", "previous_block_hash", "time_stamp", "transaction_count", "version"]
-        expect_keys.sort()
 
-        actual_keys = message.keys()
-        actual_keys.sort()
-        self.assertEqual(actual_keys, expect_keys)
+        # check keys
+        expect_keys = ["bits", "hash", "merkle_tree_hash", "mixhash", "nonce", "number", "previous_block_hash", "timestamp", "transaction_count", "version"]
+        self.checkResponseKeys(message, expect_keys)
 
         hash = message["hash"]
         height = message["number"]

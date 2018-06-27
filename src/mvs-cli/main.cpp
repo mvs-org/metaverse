@@ -101,7 +101,7 @@ int bc::main(int argc, char* argv[])
 
     Json::Value jsonvar;
     Json::Value jsonopt;
-    jsonvar["jsonrpc"] = "3.0";
+    jsonvar["jsonrpc"] = "2.0";
     jsonvar["id"] = 1;
     jsonvar["method"] = (argc > 1) ? argv[1] : "help";
     jsonvar["params"] = Json::arrayValue;

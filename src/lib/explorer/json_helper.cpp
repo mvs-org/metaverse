@@ -80,7 +80,12 @@ Json::Value json_helper::prop_list(const header& header)
         tree["transaction_count"] += block_header.transaction_count;
     }
     else {
-        tree["time_stamp"] = block_header.timestamp;
+        if (version_ <= 2) {
+            tree["time_stamp"] = block_header.timestamp;
+        }
+        else {
+            tree["timestamp"] = block_header.timestamp;
+        }
         tree["version"] = block_header.version;
         tree["number"] = block_header.number;
         tree["transaction_count"] = block_header.transaction_count;
@@ -506,9 +511,14 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info, bo
     Json::Value tree;
 
     tree["height"] = mit_info.output_height;
-    tree["time_stamp"] = mit_info.timestamp;
-    tree["to_did"] = mit_info.to_did;
+    if (version_ <= 2) {
+        tree["time_stamp"] = mit_info.timestamp;
+    }
+    else {
+        tree["timestamp"] = mit_info.timestamp;
+    }
 
+    tree["to_did"] = mit_info.to_did;
     tree["symbol"] = mit_info.mit.get_symbol();
     tree["address"] = mit_info.mit.get_address();
     tree["status"] = mit_info.mit.get_status_name();
@@ -684,6 +694,31 @@ Json::Value json_helper::prop_tree(const chain::points_info& points_info, bool j
 
 // transactions
 
+Json::Value json_helper::prop_list_of_rawtx(const transaction& transaction, bool with_hash, bool ignore_compatibility)
+{
+    const tx_type& tx = transaction;
+    std::ostringstream sout;
+    sout << base16(tx.to_data());
+
+    Json::Value tree;
+    if (!ignore_compatibility && version_ <= 2) {
+        if (with_hash) {
+            tree["hash"] += hash256(tx.hash());
+        }
+        tree["hex"] = sout.str();
+    }
+    else {
+        if (with_hash) {
+            tree["hash"] += hash256(tx.hash());
+            tree["rawtx"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
+    }
+    return tree;
+}
+
 Json::Value json_helper::prop_list(const transaction& transaction, bool json)
 {
     const tx_type& tx = transaction;
@@ -730,9 +765,14 @@ Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_h
 
 Json::Value json_helper::prop_tree(const transaction& transaction, bool json)
 {
-    Json::Value tree;
-    tree["transaction"] = prop_list(transaction, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["transaction"] = prop_list(transaction, json);
+        return tree;
+    }
+    else {
+        return prop_list(transaction, json);
+    }
 }
 
 Json::Value json_helper::prop_tree(const std::vector<transaction>& transactions, bool json)

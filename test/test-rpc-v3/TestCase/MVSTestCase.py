@@ -41,6 +41,13 @@ class MVSTestCaseBase(unittest.TestCase):
         #    result, message = role.delete()
         #    self.assertEqual(result, 0, message)
 
+    def checkResponseKeys(self, result, expect_keys):
+        if result != None and isinstance(result, dict):
+            expect_keys.sort()
+            actual_keys = result.keys()
+            actual_keys.sort()
+            self.assertEqual(actual_keys, expect_keys)
+
 class MultiSigDIDTestCase(MVSTestCaseBase):
     def setUp(self):
         MVSTestCaseBase.setUp(self)

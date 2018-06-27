@@ -275,6 +275,9 @@ BCX_API Json::Value prop_tree(const chain::points_info& points_info, bool json);
  */
 BCX_API Json::Value prop_list(const transaction& transaction, bool json);
 BCX_API Json::Value prop_list(const transaction& transaction, uint64_t tx_height, bool json);
+
+BCX_API Json::Value prop_list_of_rawtx(const transaction& transaction, bool with_hash, bool ignore_compatibility=false);
+
 /**
  * Generate a property tree for a transaction.
  * @param[in]  transaction  The transaction.

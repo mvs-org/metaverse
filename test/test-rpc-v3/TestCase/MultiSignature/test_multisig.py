@@ -32,6 +32,15 @@ class TestMultiSig(MVSTestCaseBase):
         ec, tx = mvs_rpc.create_multisigtx(Alice.name, Alice.password, addr_a, Zac.mainaddress(), amount-fee)
         self.assertEqual(ec, 0 , tx)
 
+        ec, txs = mvs_rpc.delete_multisig(Alice.name, Alice.password, addr_a)
+        self.assertEqual(ec, 0 , txs)
+        self.assertEqual(len(txs), 1 , txs)
+
+        addr_a = Alice.new_multisigaddress("A&B&Z", [Bob, Zac], 2)
+
+        ec, tx = mvs_rpc.create_multisigtx(Alice.name, Alice.password, addr_a, Zac.mainaddress(), amount-fee)
+        self.assertEqual(ec, 0 , tx)
+
         ec, message = mvs_rpc.sign_multisigtx(Bob.name, Bob.password, tx, True)
         self.assertEqual(ec, 0, message)
 

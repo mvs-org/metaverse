@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -70,13 +70,13 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
         throw address_generate_exception(sout.str());
     }
 
-    auto& root = jv_output;
-    root["mnemonic"] = words;
     if (get_api_version() <= 2) {
-        root["default-address"] = jv_temp["addresses"][0].asString();
+        jv_output["mnemonic"] = words;
+        jv_output["default-address"] = jv_temp["addresses"][0].asString();
     }
     else {
-        root["default_address"] = jv_temp[0].asString();
+        config::json_helper::account_info acc(auth_.name, words, jv_temp);
+        jv_output = config::json_helper(get_api_version()).prop_list(acc);
     }
 
     return console_result::okay;

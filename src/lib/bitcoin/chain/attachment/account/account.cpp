@@ -491,26 +491,6 @@ void account::set_priority(uint8_t priority)
     this->priority = priority;
 }
 
-void account::set_user_status(uint8_t status)
-{
-    this->status |= status;
-}
-
-void account::set_system_status(uint8_t status)
-{
-    this->status |= (status << sizeof(uint8_t));
-}
-
-uint8_t account::get_user_status() const
-{
-    return static_cast<uint8_t>(status & 0xff);
-}
-
-uint8_t account::get_system_status() const
-{
-    return static_cast<uint8_t>(status >> sizeof(uint8_t));
-}
-
 const account_multisig::list& account::get_multisig_vec() const
 {
     return multisig_vec;

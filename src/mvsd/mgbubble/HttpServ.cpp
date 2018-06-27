@@ -89,7 +89,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             }
             else if (checkAPIVer(api20_ver_list, rpc_version)) {
                 Json::Value jv_root;
-                jv_root["jsonrpc"] = std::to_string(rpc_version) + ".0";
+                jv_root["jsonrpc"] = "2.0";
                 jv_root["id"] = data.jsonrpc_id();
                 jv_root["result"] = jv_output;
 
@@ -103,7 +103,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         }
         else if (checkAPIVer(api20_ver_list, rpc_version)) {
             Json::Value root;
-            root["jsonrpc"] = std::to_string(rpc_version) + ".0";
+            root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
             root["error"]["code"] = (int32_t)e.code();
             root["error"]["message"] = e.what();
@@ -118,7 +118,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         }
         else if (checkAPIVer(api20_ver_list, rpc_version)) {
             Json::Value root;
-            root["jsonrpc"] = std::to_string(rpc_version) + ".0";
+            root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
             root["error"]["code"] = 1000;
             root["error"]["message"] = e.what();

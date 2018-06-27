@@ -161,8 +161,7 @@ class TestRawTx(MVSTestCaseBase):
         ec, message = mvs_rpc.decode_rawtx(rawtx2)
         self.assertEqual(ec, code.success, message)
 
-        transaction = message["transaction"]
-        self.assertEqual(transaction["hash"], hash2, message)
+        self.assertEqual(message["hash"], hash2, message)
 
         #
         # sendrawtx
@@ -176,4 +175,4 @@ class TestRawTx(MVSTestCaseBase):
         self.assertEqual(ec, code.success, message)
         Alice.mining()
 
-        self.assertEqual(message["hash"], hash2, message)
+        self.assertEqual(message, hash2, message)

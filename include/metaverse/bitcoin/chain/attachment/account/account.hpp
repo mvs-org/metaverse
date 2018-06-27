@@ -181,12 +181,6 @@ public:
     uint8_t get_priority() const;
     void set_priority(const uint8_t priority);
 
-    void set_user_status(const uint8_t status);
-    uint8_t get_user_status() const;
-
-    void set_system_status(const uint8_t status);
-    uint8_t get_system_status() const;
-
     void set_type(uint8_t type);
     uint8_t get_type() const;
 

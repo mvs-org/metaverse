@@ -94,9 +94,7 @@ console_result createmultisigtx::invoke(
 
     // output json
     auto && tx = sp_send_helper->get_transaction();
-    std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx);
-    jv_output = tx_buf.str();
+    jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false, true);
 
     return console_result::okay;
 }
