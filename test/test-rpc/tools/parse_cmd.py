@@ -1,4 +1,4 @@
-import os
+import os, sys
 import re
 
 cmd_dir = '/home/czp/GitHub/nova/metaverse/include/metaverse/explorer/extensions/commands'
@@ -131,6 +131,8 @@ def macro_expand(input):
 
     return convert.get(input, input)
 
+special_cmds = []
+
 def parse_cmd(filename):
     starts = 'BX_HELP_VARIABLE ",h",'
 
@@ -185,11 +187,12 @@ def parse_cmd(filename):
         param_details.append( (param_name, param_def, param_desc) )
 
     # generate SDK
-    generate_py_SDK(cmdname, pos_params, param_details)
-    #generate_go_SDK(cmdname, pos_params, param_details)
+    #generate_py_SDK(cmdname, pos_params, param_details)
+    generate_go_SDK(cmdname, pos_params, param_details)
     #generate_DotNet_SDK(cmdname, pos_params, param_details)
 
 def generate_py_SDK(cmdname, pos_params, params):
+    global special_cmds
     template = '''
 @mvs_api_v2
 def %(cmdname)s(%(argument_defines)s):
@@ -243,6 +246,7 @@ def %(cmdname)s(%(argument_defines)s):
         if param_def.get("must_give", False) == False:
             if "colon_delimited2_item" in param_def["para_type"]:
                 argument_defines_2.append('%s=(0,0)' % param_name)
+                special_cmds.append(cmdname)
             else:
                 argument_defines_2.append('%s=None' % param_name)
         else:
@@ -251,6 +255,7 @@ def %(cmdname)s(%(argument_defines)s):
         if param_name in pos_params:
             if param_def["para_type"] == 'std::vector<std::string>':
                 positional_arguments.append("' '.join(%s)" % param_name)
+                special_cmds.append(cmdname)
             else:
                 positional_arguments.append(param_name)
             continue
@@ -258,6 +263,7 @@ def %(cmdname)s(%(argument_defines)s):
         if param_def.get("just_token", False) == True:
             assert param_def["para_type"] == "bool"
             token_arguments.append(param_name)
+            special_cmds.append(cmdname)
             continue
 
         if "colon_delimited2_item" in param_def["para_type"]:
@@ -285,11 +291,14 @@ def generate_go_SDK(cmdname, pos_params, params):
 */
 func (r *RPCClient) %(func_name)s(%(argument_defines)s) (*JSONRpcResp, error) {
     cmd := "%(cmdname)s"
-
+    positional := []interface{}{%(positional_arguments)s}
+    %(positional_defaults)s
     optional := map[string]interface{}{
-        %(optional_arguments)s
+        %(optional_mustgive)s
     }
-    args := []interface{}{%(positional_arguments)s optional}
+    %(token_arguments)s
+    %(optional_arguments)s
+    args := append(positional, optional)
     return r.doPost(r.Url, cmd, args)
 }
 '''
@@ -334,33 +343,67 @@ func (r *RPCClient) %(func_name)s(%(argument_defines)s) (*JSONRpcResp, error) {
 
         return convert.get(cpp_type, cpp_type)
 
-
+    def get_zero(go_type):
+        if '[2]uint64' == go_type:
+            return '[2]uint64{0, 0}'
+        if 'int' in go_type:
+            return '0'
+        if 'string' == go_type:
+            return '""'
+        if 'bool' == go_type:
+            return 'false'
+        if '[]string'== go_type:
+            return 'nil'
+        print go_type
+        assert (False)
     comments = []
     argument_defines = []
+    token_arguments = []
     optional_arguments = []
+    optional_mustgive = []
     positional_arguments = []
+    positional_defaults = []
     for param_name, param_def, param_desc in params:
+        #print cmdname, param_name
         comments.append("    :param: %s(%s): %s" % (param_name, special_type_desc( param_def["para_type"] ), param_desc) )
         argument_defines.append( '%s %s' % (param_name, cpp2go_type( param_def["para_type"] ) ) )
 
         if param_name in pos_params:
+            if param_def.get("must_give", False) == False:
+                zero = get_zero(cpp2go_type(param_def["para_type"]))
+                if param_def.has_key("default_value"):
+                    if param_def["default_value"] == zero:
+                        positional_defaults.append('if %s != %s {\n        positional = append(positional, %s)\n    }' % (
+                        param_name, zero, param_name))
+                        continue
+
             if param_def["para_type"] == 'std::vector<std::string>':
                 positional_arguments.append('strings.Join(%s, " ")' % param_name)
             else:
                 positional_arguments.append(param_name)
             continue
-        if "colon_delimited2_item" in param_def["para_type"]:
-            optional_arguments.append('"%s" : strings.Join([]string{strconv.FormatUint(uint64(%s[0]), 10), strconv.FormatUint(uint64(%s[1]), 10)}, ":"),' % (param_name, param_name, param_name))
-        else:
-            optional_arguments.append('"%s" : %s,' % (param_name, param_name) )
+        if param_def.get("just_token", False) == True:
+            assert param_def["para_type"] == "bool"
+            token_arguments.append(param_name)
+            continue
 
+        if param_def.get("must_give", False) == False:
+            if "colon_delimited2_item" in param_def["para_type"]:
+                optional_arguments.append( (param_name, get_zero(cpp2go_type(param_def["para_type"])), 'strings.Join([]string{strconv.FormatUint(uint64(%s[0]), 10), strconv.FormatUint(uint64(%s[1]), 10)}, ":")' % ( param_name, param_name)))
+            else:
+                optional_arguments.append( (param_name, get_zero(cpp2go_type(param_def["para_type"])), param_name) )
+        else:
+            optional_mustgive.append('"%s":%s,' % (param_name, param_name))
     paras = {
         'comments' : '\n'.join(comments),
         'func_name' : cmdname.title(),
         'cmdname' : cmdname,
         'argument_defines' : ', '.join(argument_defines),
-        'optional_arguments' : '\n        '.join(optional_arguments),
-        'positional_arguments' : ' '.join([i+',' for i in positional_arguments]),
+        'token_arguments' : '\n    '.join('if %s == true{\n        positional=append(positional, "--%s")\n    }' % (i, i) for i in token_arguments),
+        'optional_arguments' : '\n    '.join(['if %s != %s {\n        optional["%s"] = %s\n    }' % (key, zero, key, value) for key, zero, value in optional_arguments]),
+        'optional_mustgive' : '\n        '.join(optional_mustgive),
+        'positional_arguments' : ', '.join(positional_arguments),
+        'positional_defaults' : '\n    '.join(positional_defaults),
     }
 
     print template % paras
@@ -486,3 +529,4 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(cmd_dir):
         for file in files:
             parse_cmd(root + '/' + file)
+    print >> sys.stderr, set(special_cmds)
