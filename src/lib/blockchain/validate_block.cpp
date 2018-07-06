@@ -272,24 +272,24 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     std::set<string> asset_mits;
     std::set<string> dids;
     std::set<string> didaddreses;
+    code first_tx_ec = error::success;
     for (const auto& tx : transactions)
     {
         RETURN_IF_STOPPED();
 
         const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
         auto ec = validate_tx->check_transaction();
-        if (ec)
-            return ec;
+        if (!ec) {
+            ec = validate_tx->check_transaction_connect_input(header.number);
+        }
 
-        ec = validate_tx->check_transaction_connect_input(header.number);
-        if (ec)
-            return ec;
-
-        for (auto& output : const_cast<transaction&>(tx).outputs) {
+        for (size_t i = 0; (!ec) && (i < tx.outputs.size()); ++i) {
+            const auto& output = tx.outputs[i];
             if (output.is_asset_issue()) {
                 auto r = assets.insert(output.get_asset_symbol());
                 if (r.second == false) {
-                    return error::asset_exist;
+                    ec = error::asset_exist;
+                    break;
                 }
             }
             else if (output.is_asset_cert()) {
@@ -301,7 +301,8 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                         << " with type " << output.get_asset_cert_type()
                         << " already exists in block!"
                         << " " << tx.to_string(1);
-                    return error::asset_cert_exist;
+                    ec = error::asset_cert_exist;
+                    break;
                 }
             }
             else if (output.is_asset_mit()) {
@@ -311,21 +312,35 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                         << " mit " + output.get_asset_symbol()
                         << " already exists in block!"
                         << " " << tx.to_string(1);
-                    return error::mit_exist;
+                    ec = error::mit_exist;
+                    break;
                 }
             }
             else if (output.is_did()) {
                 auto didexist = dids.insert(output.get_did_symbol());
                 if (didexist.second == false) {
-                    return error::did_exist;
+                    ec = error::did_exist;
+                    break;
                 }
 
                 auto didaddress = didaddreses.insert(output.get_did_address());
                 if (didaddress.second == false ) {
-                    return error::address_registered_did;
+                    ec = error::address_registered_did;
+                    break;
                 }
             }
         }
+
+        if (ec) {
+            if (!first_tx_ec) {
+                first_tx_ec = ec;
+            }
+            chain.pool().delete_tx(tx.hash());
+        }
+    }
+
+    if (first_tx_ec) {
+        return first_tx_ec;
     }
 
     RETURN_IF_STOPPED();
