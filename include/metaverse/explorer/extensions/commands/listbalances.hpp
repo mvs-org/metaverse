@@ -66,9 +66,14 @@ public:
             "Get a description and instructions for this command."
         )
         (
+            "deposited,d",
+            value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
+            "list deposited ETPs, default is false."
+        )
+        (
             "nozero,n",
             value<bool>(&option_.non_zero)->zero_tokens()->default_value(false),
-            "Defaults to false."
+            "Default is false."
         )
         (
             "greater_equal,g",
@@ -108,6 +113,7 @@ public:
     struct option
     {
         bool non_zero;
+        bool deposited;
         uint64_t greater;
         uint64_t lesser;
     } option_;

@@ -40,67 +40,95 @@ console_result listbalances::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    auto& aroot = jv_output;
     Json::Value all_balances;
-    Json::Value address_balances;
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
+    if(!vaddr) {
+        throw address_list_nullptr_exception{"nullptr for address list"};
+    }
 
-    for (auto& i: *vaddr){
-        Json::Value address_balance;
-        balances addr_balance{0, 0, 0, 0};
-        auto waddr = wallet::payment_address(i.get_address());
-        sync_fetchbalance(waddr, blockchain, addr_balance);
-        address_balance["address"] = i.get_address();
+    if (!option_.greater && option_.non_zero) {
+        option_.greater = 1;
+    }
 
-        if (get_api_version() == 1) {
-            address_balance["confirmed"] += addr_balance.confirmed_balance;
-            address_balance["received"] += addr_balance.total_received;
-            address_balance["unspent"] += addr_balance.unspent_balance;
-            address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
-            address_balance["frozen"] += addr_balance.frozen_balance;
-        }
-        else {
-            address_balance["confirmed"] = addr_balance.confirmed_balance;
-            address_balance["received"] = addr_balance.total_received;
-            address_balance["unspent"] = addr_balance.unspent_balance;
-            address_balance["available"] = (addr_balance.unspent_balance - addr_balance.frozen_balance);
-            address_balance["frozen"] = addr_balance.frozen_balance;
+    if (option_.deposited) {
+        auto deposited_balances = std::make_shared<deposited_balance::list>();
+
+        for (auto& i: *vaddr){
+            auto waddr = wallet::payment_address(i.get_address());
+            sync_fetch_deposited_balance(waddr, blockchain, deposited_balances);
         }
 
-        if (!option_.greater && option_.non_zero) {
-            option_.greater = 1;
-        }
-
-        // non-zero lesser
-        if (option_.lesser){
-            if (addr_balance.unspent_balance <= option_.lesser &&
-                addr_balance.unspent_balance >= option_.greater) {
-                if (get_api_version() <= 2) {
-                    Json::Value target_balance;
-                    target_balance["balance"] = address_balance;
-                    all_balances.append(target_balance);
-                }
-                else {
-                    all_balances.append(address_balance);
+        for (auto& balance : *deposited_balances) {
+            // non-zero lesser
+            if (option_.lesser) {
+                if (balance.balance > option_.lesser || balance.balance < option_.greater) {
+                    continue;
                 }
             }
+            else {
+                if (balance.balance < option_.greater) {
+                    continue;
+                }
+            }
+
+            Json::Value json_balance;
+            json_balance["address"] = balance.address;
+            json_balance["deposited_balance"] = balance.balance;
+            json_balance["deposited_height"] = balance.deposited_height;
+            json_balance["expiration_height"] = balance.expiration_height;
+
+            all_balances.append(json_balance);
         }
-        else {
-            if (addr_balance.unspent_balance >= option_.greater) {
-                if (get_api_version() <= 2) {
-                    Json::Value target_balance;
-                    target_balance["balance"] = address_balance;
-                    all_balances.append(target_balance);
+    }
+    else {
+        for (auto& i: *vaddr){
+            balances addr_balance{0, 0, 0, 0};
+            auto waddr = wallet::payment_address(i.get_address());
+            sync_fetchbalance(waddr, blockchain, addr_balance);
+
+            // non-zero lesser
+            if (option_.lesser) {
+                if (addr_balance.unspent_balance > option_.lesser || addr_balance.unspent_balance < option_.greater) {
+                    continue;
                 }
-                else {
-                    all_balances.append(address_balance);
+            }
+            else {
+                if (addr_balance.unspent_balance < option_.greater) {
+                    continue;
                 }
+            }
+
+            Json::Value address_balance;
+            address_balance["address"] = i.get_address();
+
+            if (get_api_version() == 1) {
+                address_balance["confirmed"] += addr_balance.confirmed_balance;
+                address_balance["received"] += addr_balance.total_received;
+                address_balance["unspent"] += addr_balance.unspent_balance;
+                address_balance["available"] += (addr_balance.unspent_balance - addr_balance.frozen_balance);
+                address_balance["frozen"] += addr_balance.frozen_balance;
+            }
+            else {
+                address_balance["confirmed"] = addr_balance.confirmed_balance;
+                address_balance["received"] = addr_balance.total_received;
+                address_balance["unspent"] = addr_balance.unspent_balance;
+                address_balance["available"] = (addr_balance.unspent_balance - addr_balance.frozen_balance);
+                address_balance["frozen"] = addr_balance.frozen_balance;
+            }
+
+            if (get_api_version() <= 2) {
+                Json::Value target_balance;
+                target_balance["balance"] = address_balance;
+                all_balances.append(target_balance);
+            }
+            else {
+                all_balances.append(address_balance);
             }
         }
     }
 
+    auto& aroot = jv_output;
     if (get_api_version() == 1 && all_balances.isNull()) { //compatible for v1
         aroot["balances"] = "";
     }
@@ -112,7 +140,6 @@ console_result listbalances::invoke(Json::Value& jv_output,
     }
 
     return console_result::okay;
-
 }
 
 
