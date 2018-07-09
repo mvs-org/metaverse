@@ -30,7 +30,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         fst_did_address = addresslist[length - 1]
         fst_did_symbol = u"zacfirstdiid." + common.get_random_str()
 
-        result, message = mvs_rpc.send(Alice.name, Alice.password, fst_did_address, 22 * 10 ** 8)
+        result, message = mvs_rpc.send(Alice.name, Alice.password, fst_did_address, 30 * 10 ** 8)
         self.assertEqual(result, code.success, message)
         Zac.mining()
 
