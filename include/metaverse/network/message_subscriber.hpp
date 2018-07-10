@@ -57,7 +57,6 @@ class BCT_API message_subscriber
 {
 public:
     DEFINE_SUBSCRIBER_TYPE(address);
-    DEFINE_SUBSCRIBER_TYPE(alert);
     DEFINE_SUBSCRIBER_TYPE(block_message);
     DEFINE_SUBSCRIBER_TYPE(block_transactions);
     DEFINE_SUBSCRIBER_TYPE(compact_block);
@@ -172,7 +171,6 @@ public:
 
 private:
     DEFINE_SUBSCRIBER_OVERLOAD(address);
-    DEFINE_SUBSCRIBER_OVERLOAD(alert);
     DEFINE_SUBSCRIBER_OVERLOAD(block_message);
     DEFINE_SUBSCRIBER_OVERLOAD(block_transactions);
     DEFINE_SUBSCRIBER_OVERLOAD(compact_block);
@@ -200,7 +198,6 @@ private:
     DEFINE_SUBSCRIBER_OVERLOAD(version);
 
     DECLARE_SUBSCRIBER(address);
-    DECLARE_SUBSCRIBER(alert);
     DECLARE_SUBSCRIBER(block_message);
     DECLARE_SUBSCRIBER(block_transactions);
     DECLARE_SUBSCRIBER(compact_block);
