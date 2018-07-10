@@ -164,7 +164,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
     std::set<string> didaddreses;
     std::set<string> didattaches;
 
-    auto check_outputs = [&](transaction_ptr txs)->code 
+    auto check_outputs = [&](transaction_ptr txs)->code
     {
         for (auto &output : txs->outputs)
         {
@@ -175,8 +175,8 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                     if (!attach_did.empty() && dids.find(attach_did) != dids.end())
                     {
                         log::debug(LOG_BLOCKCHAIN)
-                        << " attachment did: " + attach_did
-                        << " already transfer in memorypool!";
+                        << "check_symbol_repeat attachment did: " + attach_did
+                        << " already exists in memorypool!";
                         return false;
                     }
 
@@ -185,8 +185,14 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 };
 
                 if (!check_did(output.attach_data.get_from_did())
-                 || !check_did(output.attach_data.get_to_did()))
+                 || !check_did(output.attach_data.get_to_did())) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat from_did " + output.attach_data.get_from_did()
+                        << " to_did " + output.attach_data.get_to_did()
+                        << " check failed!"
+                        << " " << tx->to_string(1);
                     return error::did_exist;
+                }
             }
 
             if (output.is_asset_issue())
@@ -194,6 +200,10 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 auto r = assets.insert(output.get_asset_symbol());
                 if (r.second == false)
                 {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat asset " + output.get_asset_symbol()
+                        << " already exists in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::asset_exist;
                 }
             }
@@ -204,9 +214,9 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 if (r.second == false)
                 {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " cert " + output.get_asset_cert_symbol()
+                        << "check_symbol_repeat cert " + output.get_asset_cert_symbol()
                         << " with type " << output.get_asset_cert_type()
-                        << " already exists in pool!"
+                        << " already exists in memorypool!"
                         << " " << tx->to_string(1);
                     return error::asset_cert_exist;
                 }
@@ -217,8 +227,8 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 if (r.second == false)
                 {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " mit " + output.get_asset_symbol()
-                        << " already exists in block!"
+                        << "check_symbol_repeat mit " + output.get_asset_symbol()
+                        << " already exists in memorypool!"
                         << " " << tx->to_string(1);
                     return error::mit_exist;
                 }
@@ -227,8 +237,11 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
             {
                 auto didsymbol = output.get_did_symbol();
                 auto didexist = dids.insert(didsymbol);
-                if (didexist.second == false)
-                {
+                if (didexist.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat did " + output.get_did_symbol()
+                        << " already exists in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::did_exist;
                 }
 
@@ -241,7 +254,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 if (didattaches.find(didsymbol) != didattaches.end())
                 {
                     log::debug(LOG_BLOCKCHAIN)
-                    << " attachment did: " + didsymbol
+                    << "check_symbol_repeat attachment did: " + didsymbol
                     << " already transfer in memorypool!";
                     return error::did_exist;
                 }

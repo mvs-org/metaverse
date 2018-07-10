@@ -288,6 +288,10 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             if (output.is_asset_issue()) {
                 auto r = assets.insert(output.get_asset_symbol());
                 if (r.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block asset " + output.get_asset_symbol()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
                     ec = error::asset_exist;
                     break;
                 }
@@ -297,7 +301,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                 auto r = asset_certs.insert(key);
                 if (r.second == false) {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " cert " + output.get_asset_cert_symbol()
+                        << "check_block cert " + output.get_asset_cert_symbol()
                         << " with type " << output.get_asset_cert_type()
                         << " already exists in block!"
                         << " " << tx.to_string(1);
@@ -309,7 +313,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
                 auto r = asset_mits.insert(output.get_asset_symbol());
                 if (r.second == false) {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " mit " + output.get_asset_symbol()
+                        << "check_block mit " + output.get_asset_symbol()
                         << " already exists in block!"
                         << " " << tx.to_string(1);
                     ec = error::mit_exist;
@@ -319,12 +323,20 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             else if (output.is_did()) {
                 auto didexist = dids.insert(output.get_did_symbol());
                 if (didexist.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block did " + output.get_did_symbol()
+                        << " already exists in block!"
+                        << " " << tx.to_string(1);
                     ec = error::did_exist;
                     break;
                 }
 
                 auto didaddress = didaddreses.insert(output.get_did_address());
                 if (didaddress.second == false ) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_block did " + output.get_did_address()
+                        << " address_registered_did!"
+                        << " " << tx.to_string(1);
                     ec = error::address_registered_did;
                     break;
                 }

@@ -117,6 +117,7 @@ private:
     void check_double_spend(const code& ec, const chain::input_point& point);
     void check_fees() const;
     code check_tx_connect_input() const;
+    bool check_did_exist(const std::string& did) const;
 
     block_chain_impl& blockchain_;
     const transaction_ptr tx_;

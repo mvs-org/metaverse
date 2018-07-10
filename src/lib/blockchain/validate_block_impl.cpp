@@ -193,14 +193,14 @@ bool validate_block_impl::fetch_orphan_transaction(chain::transaction& tx,
 bool validate_block_impl::is_did_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());
-    BITCOIN_ASSERT(!address.empty());
 
     for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (auto& output : orphan_tx.outputs) {
                 if (output.is_did_register() || output.is_did_transfer()) {
-                    if (did == output.get_did_symbol() && address == output.get_did_address()) {
+                    if (did == output.get_did_symbol() &&
+                        (address.empty() || address == output.get_did_address())) {
                         return true;
                     }
                 }

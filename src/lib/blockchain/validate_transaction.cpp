@@ -881,7 +881,7 @@ code validate_transaction::check_asset_mit_transaction() const
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
 
-            // check asset exists
+            // check mit exists
             if (nullptr == chain.get_registered_mit(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
                                            << asset_symbol << " not exists.";
@@ -949,6 +949,19 @@ code validate_transaction::check_asset_mit_transaction() const
     return error::success;
 }
 
+bool validate_transaction::check_did_exist(const std::string& did) const
+{
+    if (blockchain_.is_did_exist(did)) {
+        return true;
+    }
+
+    if (is_did_in_orphan_chain(did, "")) {
+        return true;
+    }
+
+    return false;
+}
+
 code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
@@ -978,6 +991,8 @@ code validate_transaction::check_did_transaction() const
             }
 
             if (chain.is_did_exist(output.get_did_symbol())) {
+                log::debug(LOG_BLOCKCHAIN) << "did_register: "
+                    << output.get_did_symbol() << " already exists";
                 return error::did_exist;
             }
 
@@ -1085,8 +1100,13 @@ bool validate_transaction::connect_did_input(const did& info) const
 bool validate_transaction::is_did_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     if (validate_block_ && validate_block_->is_did_in_orphan_chain(did, address)) {
-        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
-            << did << ", address: " << address;
+        if (address.empty()) {
+            log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: " << did;
+        }
+        else {
+            log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
+                << did << ", address: " << address;
+        }
         return true;
     }
 
@@ -1264,7 +1284,7 @@ code validate_transaction::check_transaction_basic() const
         }
         else if (output.is_asset_cert()) {
             auto&& asset_cert = output.get_asset_cert();
-            if (!chain.is_did_exist(asset_cert.get_owner())) {
+            if (!check_did_exist(asset_cert.get_owner())) {
                 return error::did_address_needed;
             }
         }
