@@ -147,9 +147,38 @@ struct balances {
     uint64_t frozen_balance;
 };
 
+struct deposited_balance {
+    deposited_balance(const std::string& address_, const string& tx_hash_, const string& row_hash_,
+        uint64_t balance_, uint64_t deposited_, uint64_t expiration_)
+        : address(address_)
+        , tx_hash(tx_hash_)
+        , row_hash(row_hash_)
+        , balance(balance_)
+        , deposited_height(deposited_)
+        , expiration_height(expiration_)
+    {}
+
+    std::string address;
+    std::string tx_hash;
+    std::string row_hash;
+    uint64_t balance;
+    uint64_t deposited_height;
+    uint64_t expiration_height;
+
+    // for sort
+    bool operator< (const deposited_balance& other) const {
+        return expiration_height < other.expiration_height;
+    }
+
+    typedef std::vector<deposited_balance> list;
+};
+
 // helper function
 void sync_fetchbalance(wallet::payment_address& address,
     bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
+
+void sync_fetch_deposited_balance(wallet::payment_address& address,
+    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<deposited_balance::list> sh_vec);
 
 void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     bc::blockchain::block_chain_impl& blockchain,
@@ -164,6 +193,11 @@ std::string get_random_payment_address(std::shared_ptr<std::vector<account_addre
 
 std::string get_address_from_did(const std::string& did,
     bc::blockchain::block_chain_impl& blockchain);
+
+std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
+
+uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
+    const std::string& account_name);
 
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);

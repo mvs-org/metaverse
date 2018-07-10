@@ -1,0 +1,234 @@
+{
+    "burn": [
+        "transaction"
+    ], 
+    "changepasswd": [
+        "name", 
+        "status"
+    ], 
+    "createasset": [
+        "asset"
+    ], 
+    "createrawtx": [
+        "hex"
+    ], 
+    "decoderawtx": [
+        "transaction"
+    ], 
+    "deleteaccount": [
+        "name", 
+        "status"
+    ], 
+    "deletelocalasset": [
+        "operate", 
+        "result", 
+        "symbol"
+    ], 
+    "deletemultisig": [
+        "address", 
+        "description", 
+        "index", 
+        "m", 
+        "multisig-script", 
+        "n", 
+        "public-keys", 
+        "self-publickey"
+    ], 
+    "deposit": [
+        "transaction"
+    ], 
+    "didchangeaddress": [
+        "transaction"
+    ], 
+    "didsend": [
+        "transaction"
+    ], 
+    "didsendasset": [
+        "transaction"
+    ], 
+    "didsendassetfrom": [
+        "transaction"
+    ], 
+    "didsendfrom": [
+        "transaction"
+    ], 
+    "didsendmore": [
+        "transaction"
+    ], 
+    "getaccount": [
+        "address-count", 
+        "mnemonic-key", 
+        "name", 
+        "user-status"
+    ], 
+    "getaccountasset": [
+        "assets"
+    ], 
+    "getaddressasset": [
+        "assets"
+    ], 
+    "getasset": [
+        "assets"
+    ], 
+    "getbalance": [
+        "total-available", 
+        "total-confirmed", 
+        "total-frozen", 
+        "total-received", 
+        "total-unspent"
+    ], 
+    "getblock": [
+        "header", 
+        "txs"
+    ], 
+    "getblockheader": [
+        "bits", 
+        "hash", 
+        "merkle_tree_hash", 
+        "mixhash", 
+        "nonce", 
+        "number", 
+        "previous_block_hash", 
+        "time_stamp", 
+        "transaction_count", 
+        "version"
+    ], 
+    "getdid": [
+        "addresses", 
+        "did"
+    ], 
+    "getinfo": [
+        "database-version", 
+        "difficulty", 
+        "hash-rate", 
+        "height", 
+        "is-mining", 
+        "network-assets-count", 
+        "peers", 
+        "protocol-version", 
+        "testnet", 
+        "wallet-account-count", 
+        "wallet-version"
+    ], 
+    "getmit": [
+        "address", 
+        "content", 
+        "height", 
+        "status", 
+        "symbol", 
+        "time_stamp", 
+        "to_did"
+    ], 
+    "getnewaccount": [
+        "default-address", 
+        "mnemonic"
+    ], 
+    "getnewaddress": [
+        "addresses"
+    ], 
+    "getnewmultisig": [
+        "address", 
+        "description", 
+        "index", 
+        "m", 
+        "multisig-script", 
+        "n", 
+        "public-keys", 
+        "self-publickey"
+    ], 
+    "getpublickey": [
+        "address", 
+        "public-key"
+    ], 
+    "gettx": [
+        "hash", 
+        "height", 
+        "inputs", 
+        "lock_time", 
+        "outputs", 
+        "version"
+    ], 
+    "importaccount": [
+        "addresses", 
+        "hd_index", 
+        "mnemonic", 
+        "name"
+    ], 
+    "importkeyfile": [
+        "addresses", 
+        "name"
+    ], 
+    "issue": [
+        "transaction"
+    ], 
+    "issuecert": [
+        "transaction"
+    ], 
+    "listaddresses": [
+        "addresses"
+    ], 
+    "listassets": [
+        "assets"
+    ], 
+    "listbalances": [
+        "balances"
+    ], 
+    "listdids": [
+        "dids"
+    ], 
+    "listmits": [
+        "mits"
+    ], 
+    "listmultisig": [
+        "multisig"
+    ], 
+    "listtxs": [
+        "current_page", 
+        "total_page", 
+        "transaction_count", 
+        "transactions"
+    ], 
+    "registerdid": [
+        "transaction"
+    ], 
+    "registermit": [
+        "transaction"
+    ], 
+    "secondaryissue": [
+        "transaction"
+    ], 
+    "send": [
+        "transaction"
+    ], 
+    "sendasset": [
+        "transaction"
+    ], 
+    "sendassetfrom": [
+        "transaction"
+    ], 
+    "sendfrom": [
+        "transaction"
+    ], 
+    "sendmore": [
+        "transaction"
+    ], 
+    "sendrawtx": [
+        "hash"
+    ], 
+    "signrawtx": [
+        "hash", 
+        "hex"
+    ], 
+    "transfercert": [
+        "transaction"
+    ], 
+    "transfermit": [
+        "transaction"
+    ], 
+    "validateaddress": [
+        "address-type", 
+        "is-valid", 
+        "message", 
+        "test-net"
+    ]
+}

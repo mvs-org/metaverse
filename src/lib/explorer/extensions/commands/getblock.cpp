@@ -33,7 +33,7 @@ namespace commands {
 /************************ getblock *************************/
 
 console_result getblock::invoke(Json::Value& jv_output,
-     libbitcoin::server::server_node& node)
+                                libbitcoin::server::server_node& node)
 {
     auto json = option_.json;
     auto tx_json = option_.tx_json;
@@ -46,18 +46,17 @@ console_result getblock::invoke(Json::Value& jv_output,
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_height, [&p, &jv_output, json, tx_json, this](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_height, [&p, &jv_output, json, tx_json, this](const code & ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
+                jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
             }
-            else
-            {
-                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
+            else {
+                jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
             }
             p.set_value(error::success);
         });
@@ -66,27 +65,25 @@ console_result getblock::invoke(Json::Value& jv_output,
         if (result) {
             throw block_height_get_exception{ result.message() };
         }
-
     }
-    else {
 
+    else {
         // fetch_block via hash
         bc::config::hash256 block_hash(argument_.hash_or_height);
 
         std::promise<code> p;
         auto& blockchain = node.chain_impl();
-        blockchain.fetch_block(block_hash, [&p, &jv_output, json, tx_json, this](const code& ec, chain::block::ptr block) {
+        blockchain.fetch_block(block_hash, [&p, &jv_output, json, tx_json, this](const code & ec, chain::block::ptr block) {
             if (ec) {
                 p.set_value(ec);
                 return;
             }
 
             if (json) {
-                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
+                jv_output =  config::json_helper(get_api_version()).prop_tree(*block, json, tx_json);
             }
-            else
-            {
-                 jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
+            else {
+                jv_output =  config::json_helper(get_api_version()).prop_tree(*block, false, false);
             }
             p.set_value(error::success);
         });
@@ -95,7 +92,6 @@ console_result getblock::invoke(Json::Value& jv_output,
         if (result) {
             throw block_height_get_exception{ result.message() };
         }
-
     }
 
     return console_result::okay;

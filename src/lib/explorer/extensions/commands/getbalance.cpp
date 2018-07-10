@@ -60,18 +60,26 @@ console_result getbalance::invoke(Json::Value& jv_output,
         total_frozen += addr_balance.frozen_balance;
     }
 
-    if (get_api_version() == 1){
+    if (get_api_version() == 1) {
         aroot["total-confirmed"] += total_confirmed;
         aroot["total-received"] += total_received;
         aroot["total-unspent"] += total_unspent;
         aroot["total-available"] += (total_unspent - total_frozen);
         aroot["total-frozen"] += total_frozen;
-    } else {
+    }
+    else if (get_api_version() == 2) {
         aroot["total-confirmed"] = total_confirmed;
         aroot["total-received"] = total_received;
         aroot["total-unspent"] = total_unspent;
         aroot["total-available"] = (total_unspent - total_frozen);
         aroot["total-frozen"] = total_frozen;
+    }
+    else {
+        aroot["total_confirmed"] = total_confirmed;
+        aroot["total_received"] = total_received;
+        aroot["total_unspent"] = total_unspent;
+        aroot["total_available"] = (total_unspent - total_frozen);
+        aroot["total_frozen"] = total_frozen;
     }
 
     return console_result::okay;

@@ -86,12 +86,15 @@ console_result deletelocalasset::invoke(Json::Value& jv_output,
         throw asset_notfound_exception{"asset " + option_.symbol + " does not existed or do not belong to " + auth_.name + "."};
     }
 
-    Json::Value result;
-    result["symbol"] = option_.symbol;
-    result["operate"] = "delete";
-    result["result"] = "success";
-
-    jv_output = result;
+    if (get_api_version() <= 2) {
+        jv_output["symbol"] = option_.symbol;
+        jv_output["operate"] = "delete";
+        jv_output["result"] = "success";
+    }
+    else {
+        jv_output["symbol"] = option_.symbol;
+        jv_output["status"]= "deleted successfully";
+    }
 
     return console_result::okay;
 }

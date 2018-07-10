@@ -58,10 +58,18 @@ console_result validateaddress::invoke(Json::Value& jv_output,
     }
 
     auto& jv = jv_output;
-    jv["address-type"] = version_info;
-    jv["test-net"] = use_testnet_rules;
-    jv["is-valid"] = is_valid;
-    jv["message"] = message;
+    if (get_api_version() <= 2) {
+        jv["address-type"] = version_info;
+        jv["test-net"] = use_testnet_rules;
+        jv["is-valid"] = is_valid;
+        jv["message"] = message;
+    }
+    else {
+        jv["address_type"] = version_info;
+        jv["testnet"] = use_testnet_rules;
+        jv["is_valid"] = is_valid;
+        jv["message"] = message;
+    }
 
     return console_result::okay;
 }

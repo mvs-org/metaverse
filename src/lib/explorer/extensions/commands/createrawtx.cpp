@@ -19,6 +19,7 @@
  */
 
 
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/createrawtx.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -137,15 +138,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     auto&& tx = sp_send_helper->get_transaction();
 
     // output json
-    std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx);
-    if (get_api_version() <= 2) {
-        jv_output["hex"] = tx_buf.str();
-    }
-    else {
-        // TODO support restful API format
-        jv_output["raw"] = tx_buf.str();
-    }
+    jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false);
 
     return console_result::okay;
 }

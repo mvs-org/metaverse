@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from utils import common
@@ -10,6 +11,7 @@ class RPC:
     url="http://127.0.0.1:8820/rpc/v2"
 
     method_time = {}
+    method_keys = {}
 
     def __init__(self, method):
         self.method = method
@@ -49,7 +51,49 @@ class RPC:
             else:
                 self.method_time[self.method] = [after - before]
 
+            result = rpc_rsp.json()['result']
+            if result != None and isinstance(result, dict):
+                if self.method not in self.method_keys:
+                    keys = result.keys()
+                    keys.sort()
+                    self.method_keys[self.method] = keys
+
         return rpc_rsp
+
+    @classmethod
+    def check_method_response_keys(cls):
+        path = "./json_rpc_v2_keys.txt"
+        if (os.path.isfile(path)):
+            same = True
+            with open(path, 'r') as handle:
+                target_keys = json.load(handle)
+                if len(target_keys) != len(cls.method_keys):
+                    same = False
+                else:
+                    for k in target_keys:
+                        if k in cls.method_keys:
+                            key1 = target_keys[k]
+                            key1.sort()
+                            key2 = cls.method_keys[k]
+                            key2.sort()
+
+                            if key1 != key2:
+                                same = False
+                                break
+                        else:
+                            same = False
+                            break
+
+            if not same:
+                path = "./json_rpc_v2_keys_error.txt"
+                if (os.path.isfile(path)):
+                    os.remove(path)
+                with open(path, 'w') as f:
+                    f.write(json.dumps(cls.method_keys, sort_keys=True, indent=4))
+                assert(False and "Json RPC v2 keys do not match!")
+        else:
+            with open(path, 'w') as handle:
+                handle.write(json.dumps(cls.method_keys, sort_keys=True, indent=4))
 
     @classmethod
     def export_method_time(cls):
@@ -64,6 +108,9 @@ class RPC:
             lambda x,y: cmp(x[3], y[3]),
             reverse=True
         )
+
+        cls.check_method_response_keys()
+
         return ret
 
 def remote_call(remote_ip, func):
@@ -94,9 +141,11 @@ def mvs_api(func):
         if "error" in rpc_rsp.json():
             print(rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message'])
             return rpc_rsp.json()['error']['code'], rpc_rsp.json()['error']['message']
+
+        result = rpc_rsp.json()['result']
         if result_handler:
-            return 0, result_handler(rpc_rsp.json()['result'])
-        return 0, rpc_rsp.json()['result']
+            return 0, result_handler(result)
+        return 0, result
     return wrapper
 
 def mvs_api_v3(func):

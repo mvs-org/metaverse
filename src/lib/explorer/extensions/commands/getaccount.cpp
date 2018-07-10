@@ -33,7 +33,7 @@ using namespace bc::explorer::config;
 /************************ getaccount *************************/
 
 console_result getaccount::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                                  libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -42,14 +42,23 @@ console_result getaccount::invoke(Json::Value& jv_output,
     std::string&& mnemonic = blockchain.is_account_lastwd_valid(*acc, auth_.auth, argument_.last_word);
 
     auto& root = jv_output;
-    root["name"] = acc->get_name();
-    root["mnemonic-key"] = mnemonic;
+
     if (get_api_version() == 1) {
-        root["address-count"] += acc->get_hd_index();
-        root["user-status"] += acc->get_user_status();
-    } else {
-        root["address-count"] = acc->get_hd_index();
-        root["user-status"] = acc->get_user_status();
+        root["name"] = acc->get_name();
+        root["mnemonic-key"] = mnemonic;
+        root["address-count"] += acc->get_hd_index() + 1;
+        root["user-status"] += (uint8_t)account_status::normal;
+    }
+    else if (get_api_version() == 2) {
+        root["name"] = acc->get_name();
+        root["mnemonic-key"] = mnemonic;
+        root["address-count"] = acc->get_hd_index() + 1;
+        root["user-status"] = (uint8_t)account_status::normal;
+    }
+    else {
+        root["name"] = acc->get_name();
+        root["mnemonic"] = mnemonic;
+        root["address_count"] = acc->get_hd_index() + 1;
     }
 
     return console_result::okay;

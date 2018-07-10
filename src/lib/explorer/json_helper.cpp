@@ -78,8 +78,14 @@ Json::Value json_helper::prop_list(const header& header)
         tree["version"] += block_header.version;
         tree["number"] += block_header.number;
         tree["transaction_count"] += block_header.transaction_count;
-    } else {
-        tree["time_stamp"] = block_header.timestamp;
+    }
+    else {
+        if (version_ <= 2) {
+            tree["time_stamp"] = block_header.timestamp;
+        }
+        else {
+            tree["timestamp"] = block_header.timestamp;
+        }
         tree["version"] = block_header.version;
         tree["number"] = block_header.number;
         tree["transaction_count"] = block_header.transaction_count;
@@ -87,17 +93,29 @@ Json::Value json_helper::prop_list(const header& header)
 
     return tree;
 }
+
 Json::Value json_helper::prop_tree(const header& header)
 {
-    Json::Value tree;
-    tree["result"] = prop_list(header);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["result"] = prop_list(header);
+        return tree;
+    }
+    else {
+        return prop_list(header);
+    }
 }
+
 Json::Value json_helper::prop_tree(const std::vector<header>& headers, bool json)
 {
-    Json::Value tree;
-    tree["headers"] = prop_tree_list("header", headers, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["headers"] = prop_tree_list("header", headers, json);
+        return tree;
+    }
+    else {
+        return prop_tree_list("header", headers, json);
+    }
 }
 
 // transfers
@@ -199,7 +217,12 @@ Json::Value json_helper::prop_tree(const chain::history::list& rows,
     const payment_address& balance_address)
 {
     Json::Value tree;
-    tree["balance"] = prop_list(rows, balance_address);
+    if (version_ <= 2) {
+        tree["balance"] = prop_list(rows, balance_address);
+    }
+    else {
+        tree = prop_list(rows, balance_address);
+    }
     return tree;
 }
 
@@ -488,9 +511,14 @@ Json::Value json_helper::prop_list(const bc::chain::asset_mit_info& mit_info, bo
     Json::Value tree;
 
     tree["height"] = mit_info.output_height;
-    tree["time_stamp"] = mit_info.timestamp;
-    tree["to_did"] = mit_info.to_did;
+    if (version_ <= 2) {
+        tree["time_stamp"] = mit_info.timestamp;
+    }
+    else {
+        tree["timestamp"] = mit_info.timestamp;
+    }
 
+    tree["to_did"] = mit_info.to_did;
     tree["symbol"] = mit_info.mit.get_symbol();
     tree["address"] = mit_info.mit.get_address();
     tree["status"] = mit_info.mit.get_status_name();
@@ -523,14 +551,25 @@ Json::Value json_helper::prop_list(const bc::chain::account_multisig& acc_multis
     if (version_ == 1 && pubkeys.isNull()) { //compatible for v1
         tree["public-keys"] = "";
     }
-    else {
+    else if (version_ <= 2) {
         tree["public-keys"] = pubkeys;
+    }
+    else {
+        tree["public_keys"] = pubkeys;
     }
 
     tree["address"] = acc_multisig.get_address();
-    tree["self-publickey"] = acc_multisig.get_pub_key();
-    tree["multisig-script"] = acc_multisig.get_multisig_script();
     tree["description"] = acc_multisig.get_description();
+
+    if (version_ <= 2) {
+        tree["self-publickey"] = acc_multisig.get_pub_key();
+        tree["multisig-script"] = acc_multisig.get_multisig_script();
+    }
+    else {
+        tree["self_publickey"] = acc_multisig.get_pub_key();
+        tree["multisig_script"] = acc_multisig.get_multisig_script();
+    }
+
     return tree;
 }
 
@@ -655,6 +694,31 @@ Json::Value json_helper::prop_tree(const chain::points_info& points_info, bool j
 
 // transactions
 
+Json::Value json_helper::prop_list_of_rawtx(const transaction& transaction, bool with_hash, bool ignore_compatibility)
+{
+    const tx_type& tx = transaction;
+    std::ostringstream sout;
+    sout << base16(tx.to_data());
+
+    Json::Value tree;
+    if (!ignore_compatibility && version_ <= 2) {
+        if (with_hash) {
+            tree["hash"] += hash256(tx.hash());
+        }
+        tree["hex"] = sout.str();
+    }
+    else {
+        if (with_hash) {
+            tree["hash"] += hash256(tx.hash());
+            tree["rawtx"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
+    }
+    return tree;
+}
+
 Json::Value json_helper::prop_list(const transaction& transaction, bool json)
 {
     const tx_type& tx = transaction;
@@ -667,13 +731,20 @@ Json::Value json_helper::prop_list(const transaction& transaction, bool json)
         tree["outputs"] = prop_tree(tx.outputs, json); // only used for output to add new field "index"
         tree["version"] += tx.version;
         return tree;
-    }else {
+    }
+    else {
         std::ostringstream sout;
         sout << base16(tx.to_data());
-        tree["raw"] = sout.str();
+        if (version_ <= 2) {
+            tree["raw"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
     }
     return tree;
 }
+
 Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_height, bool json)
 {
     const tx_type& tx = transaction;
@@ -694,16 +765,26 @@ Json::Value json_helper::prop_list(const transaction& transaction, uint64_t tx_h
 
 Json::Value json_helper::prop_tree(const transaction& transaction, bool json)
 {
-    Json::Value tree;
-    tree["transaction"] = prop_list(transaction, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["transaction"] = prop_list(transaction, json);
+        return tree;
+    }
+    else {
+        return prop_list(transaction, json);
+    }
 }
+
 Json::Value json_helper::prop_tree(const std::vector<transaction>& transactions, bool json)
 {
-    Json::Value tree;
-    tree["transactions"] =
-        prop_tree_list_of_lists("transaction", transactions, json);
-    return tree;
+    if (version_ <= 2) {
+        Json::Value tree;
+        tree["transactions"] = prop_tree_list_of_lists("transaction", transactions, json);
+        return tree;
+    }
+    else {
+        return prop_tree_list_of_lists("transaction", transactions, json);
+    }
 }
 
 // wrapper
@@ -864,16 +945,38 @@ Json::Value json_helper::prop_tree(const block& block, bool json, bool tx_json)
     Json::Value tree;
 
     if (json) {
-        tree["header"] = prop_tree(block.header);
         std::vector<transaction> txs;
         txs.resize(block.transactions.size());
         std::copy(block.transactions.begin(), block.transactions.end(), txs.begin());
-        tree["txs"] = prop_tree(txs, tx_json);
-    } else {
+        if (version_ <= 2) {
+            tree["header"] = prop_tree(block.header);
+            tree["txs"] = prop_tree(txs, tx_json);
+        }
+        else {
+            tree = prop_tree(block.header);
+            tree["transactions"] = prop_tree(txs, tx_json);
+        }
+    }
+    else {
         std::ostringstream sout;
         sout << encode_base16(block.to_data());
-        tree["raw"] = sout.str();
+        if (version_ <= 2) {
+            tree["raw"] = sout.str();
+        }
+        else {
+            tree = sout.str();
+        }
     }
+
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const account_info& acc)
+{
+    Json::Value tree;
+    tree["name"] = std::get<0>(acc);
+    if (std::get<1>(acc).size() > 0) tree["mnemonic"] = std::get<1>(acc);
+    tree["addresses"] = std::get<2>(acc);
 
     return tree;
 }

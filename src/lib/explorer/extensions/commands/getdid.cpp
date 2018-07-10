@@ -31,72 +31,73 @@ namespace explorer {
 namespace commands {
 
 console_result getdid::invoke (Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                               libbitcoin::server::server_node& node)
 {
     Json::Value json_value;
 
     auto& blockchain = node.chain_impl();
 
-    if(option_.symbol.empty())
-    {
+    if (option_.symbol.empty()) {
         auto sh_vec = blockchain.get_registered_dids();
 
         // add blockchain dids
-        for (auto& elem: *sh_vec)
+        for (auto& elem : *sh_vec) {
             json_value.append(elem.get_symbol());
+        }
 
         if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
             jv_output["dids"] = "";
         }
-        else {
+        else if (get_api_version() <= 2) {
             jv_output["dids"] = json_value;
         }
+        else {
+            jv_output = json_value;
+        }
     }
-    else
-    {
-
+    else {
         auto didSymbol = option_.symbol;
-        if(blockchain.is_valid_address(didSymbol))
-        {
+        if (blockchain.is_valid_address(didSymbol)) {
             didSymbol = blockchain.get_did_from_address(didSymbol);
-            if(didSymbol.empty())
+            if (didSymbol.empty()) {
                 throw address_not_bound_did_exception{"address is not binded with some did on the blockchain"};
+            }
         }
 
         // check did symbol
         check_did_symbol(didSymbol);
 
         // check did exists
-        if (!blockchain.is_did_exist(didSymbol))
+        if (!blockchain.is_did_exist(didSymbol)) {
             throw did_symbol_notfound_exception{"did symbol does not exist on the blockchain"};
+        }
 
         auto blockchain_dids = blockchain.get_did_history_addresses(didSymbol);
         if (blockchain_dids) {
             Json::Value json_address;
             Json::Value did_data;
-            for (auto &did : *blockchain_dids){
+            for (auto &did : *blockchain_dids) {
                 did_data["address"] = did.get_did().get_address();
                 did_data["status"] = did.get_status_string();
+                if (get_api_version() >= 3) {
+                    did_data["symbol"] = didSymbol;
+                }
                 json_value.append(did_data);
             }
-
 
             if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
                 jv_output["did"] = didSymbol;
                 jv_output["addresses"] = "";
             }
-            else {
+            else if (get_api_version() <= 2) {
                 jv_output["did"] = didSymbol;
                 jv_output["addresses"] = json_value;
             }
-
+            else {
+                jv_output = json_value;
+            }
         }
-
-
     }
-
-
-
 
     return console_result::okay;
 }

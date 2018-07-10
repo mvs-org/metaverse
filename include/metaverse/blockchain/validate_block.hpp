@@ -55,6 +55,11 @@ public:
 
     bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, size_t& prev_height) const;
 
+    virtual bool is_did_in_orphan_chain(const std::string& did, const std::string& address) const
+    {
+        return false;
+    }
+
 protected:
     typedef std::vector<uint8_t> versions;
     typedef std::function<bool()> stopped_callback;

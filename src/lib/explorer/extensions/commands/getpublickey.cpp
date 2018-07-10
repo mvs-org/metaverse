@@ -71,8 +71,14 @@ console_result getpublickey::invoke(Json::Value& jv_output,
     }
 
     auto& root = jv_output;
-    root["public-key"] = pub_key;
-    root["address"] = argument_.address;
+    if (get_api_version() <= 2) {
+        root["public-key"] = pub_key;
+        root["address"] = argument_.address;
+    }
+    else {
+        root["public_key"] = pub_key;
+        root["address"] = argument_.address;
+    }
 
     return console_result::okay;
 }

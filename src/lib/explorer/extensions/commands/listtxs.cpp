@@ -198,7 +198,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
         if (get_api_version() == 1 && input_addrs.isNull()) { // compatible for v1
             tx_item["inputs"] = "";
-        } else {
+        }
+        else {
             tx_item["inputs"] = input_addrs;
         }
 
@@ -234,9 +235,14 @@ console_result listtxs::invoke(Json::Value& jv_output,
             if (get_api_version() == 1) {
                 pt_output["locked_height_range"] += lock_height;
                 pt_output["etp-value"] += op.value;
-            } else {
+            }
+            else if (get_api_version() == 2) {
                 pt_output["locked_height_range"] = lock_height;
                 pt_output["etp-value"] = op.value;
+            }
+            else {
+                pt_output["locked_height_range"] = lock_height;
+                pt_output["etp_value"] = op.value;
             }
 
             if (chain::operation::is_pay_key_hash_with_attenuation_model_pattern(op.script.operations)) {
@@ -274,7 +280,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
         if (get_api_version() == 1 && pt_outputs.isNull()) { // compatible for v1
             tx_item["outputs"] = "";
-        } else {
+        }
+        else {
             tx_item["outputs"] = pt_outputs;
         }
 
@@ -304,8 +311,12 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
     if (get_api_version() == 1 && balances.isNull()) { // compatible for v1
         aroot["transactions"] = "";
-    } else {
+    }
+    else if (get_api_version() <= 2) {
         aroot["transactions"] = balances;
+    }
+    else {
+        aroot = balances;
     }
 
     return console_result::okay;

@@ -150,8 +150,6 @@ message_type heading::type() const
     // TODO: convert to static map.
     if (command == address::command)
         return message_type::address;
-    if (command == alert::command)
-        return message_type::alert;
     if (command == block_transactions::command)
         return message_type::block_transactions;
     if (command == block_message::command)

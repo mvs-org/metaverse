@@ -47,8 +47,7 @@ console_result importaccount::invoke(Json::Value& jv_output,
         throw argument_exceed_limit_exception{"name length in [3, 128], password length in [6, 128]"};
 #endif
 
-    if (argument_.words.size() == 1)
-    {
+    if (argument_.words.size() == 1) {
        argument_.words = bc::split(argument_.words[0], " ", true);
     }
 
@@ -70,25 +69,31 @@ console_result importaccount::invoke(Json::Value& jv_output,
     blockchain.store_account(acc);
 
     // generate all account address
-    auto& root = jv_output;
-    root["name"] = auth_.name;
-    root["mnemonic"] = mnemonic;
-    if (get_api_version() == 1) {
-        root["hd_index"] += option_.hd_index;
-    } else {
-        root["hd_index"] = option_.hd_index;
-    }
-
     uint32_t idx = 0;
     auto&& str_idx = std::to_string(option_.hd_index);
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-n", str_idx.c_str()};
     Json::Value addresses;
 
-    if (dispatch_command(5, cmds2, addresses, node, 2) != console_result::okay) {
+    if (dispatch_command(5, cmds2, addresses, node, get_api_version()) != console_result::okay) {
         throw address_generate_exception{"getnewaddress got exception."};
     }
 
-    root["addresses"] = addresses["addresses"];
+    if (get_api_version() <= 2) {
+        if (get_api_version() == 1) {
+            jv_output["hd_index"] += option_.hd_index;
+        }
+        else if (get_api_version() == 2) {
+            jv_output["hd_index"] = option_.hd_index;
+        }
+
+        jv_output["name"] = auth_.name;
+        jv_output["mnemonic"] = mnemonic;
+        jv_output["addresses"] = addresses["addresses"];
+    }
+    else {
+        config::json_helper::account_info acc(auth_.name, mnemonic, addresses);
+        jv_output = config::json_helper(get_api_version()).prop_list(acc);
+    }
 
     return console_result::okay;
 }

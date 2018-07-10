@@ -43,6 +43,7 @@ public:
         stopped_callback stopped);
     virtual bool is_valid_proof_of_work(const chain::header& header) const;
     virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
+    virtual bool is_did_in_orphan_chain(const std::string& did, const std::string& address) const;
 
 protected:
     uint64_t median_time_past() const;

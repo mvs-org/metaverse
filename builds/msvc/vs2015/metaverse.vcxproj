@@ -509,8 +509,6 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\send_compact_blocks.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_transactions.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\ping.cpp" />
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert_payload.cpp" />
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\memory_pool.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\get_address.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_message.cpp" />
@@ -1080,13 +1078,11 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\send_compact_blocks.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\fee_filter.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\transaction_message.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\pong.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\compact_block.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\version.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\header_message.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\headers.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\filter_add.hpp" />

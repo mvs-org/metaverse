@@ -212,18 +212,15 @@ console_result signmultisigtx::invoke(
     }
 
     // output json
-    std::ostringstream tx_buf;
-    tx_buf << config::transaction(tx_);
     if (get_api_version() <= 2) {
-        jv_output = tx_buf.str();
+        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx_, false, true);
     }
     else {
-        // TODO support restful API format
-        jv_output["raw"] = tx_buf.str();
+        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx_, true);
     }
 
     if (option_.broadcast_flag /* TODO && fullfilled */) {
-        log::trace("multisig") << "validate and broadcast multisig transaction: " << tx_buf.str();
+        log::trace("multisig") << "validate and broadcast multisig transaction." << tx_.to_string(1);
 
         if (blockchain.validate_transaction(tx_)) {
             throw tx_validate_exception{"validate transaction failure"};

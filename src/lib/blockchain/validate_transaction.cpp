@@ -964,11 +964,11 @@ code validate_transaction::check_did_transaction() const
             return ret;
 
         //to_did check(strong check)
-        if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
+        if ((ret = check_attachment_to_did(output)) != error::success)
             return ret;
 
         //from_did (weak check)
-        if ((ret = connect_input_address_match_did(output)) != error::success) {
+        if ((ret = connect_attachment_from_did(output)) != error::success) {
             return ret;
         }
 
@@ -1082,35 +1082,68 @@ bool validate_transaction::connect_did_input(const did& info) const
            || (found_address_info && info.get_status() ==  DID_DETAIL_TYPE);
 }
 
-code validate_transaction::connect_input_address_match_did(const output& output) const
+bool validate_transaction::is_did_in_orphan_chain(const std::string& did, const std::string& address) const
 {
-    const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    if (validate_block_ && validate_block_->is_did_in_orphan_chain(did, address)) {
+        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
+            << did << ", address: " << address;
+        return true;
+    }
 
-    const attachment& attach = output.attach_data;
+    return false;
+}
 
-    if (attach.get_from_did().empty()) {
+code validate_transaction::check_attachment_to_did(const output& output) const
+{
+    auto todid = output.attach_data.get_to_did();
+    if (todid.empty()) {
         return error::success;
     }
 
-    for ( auto & input : tx.inputs)
-    {
+    auto address = output.get_script_address();
+    auto did = blockchain_.get_did_from_address(address);
+    if (todid == did) {
+        return error::success;
+    }
+
+    if (is_did_in_orphan_chain(todid, address)) {
+        return error::success;
+    }
+
+    log::debug(LOG_BLOCKCHAIN) << "check_attachment_to_did: "
+        << todid << ", address: " << address;
+    return error::did_address_not_match;
+}
+
+code validate_transaction::connect_attachment_from_did(const output& output) const
+{
+    auto from_did = output.attach_data.get_from_did();
+    if (from_did.empty()) {
+        return error::success;
+    }
+
+    for (auto& input : tx_->inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "connect_input_address_match_did: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "connect_attachment_from_did: input not found: "
                                        << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
-        if (attach.get_from_did() == chain.get_did_from_address(address)) {
+        if (from_did == blockchain_.get_did_from_address(address)) {
+            return error::success;
+        }
+
+        if (is_did_in_orphan_chain(from_did, address)) {
             return error::success;
         }
     }
 
-
+    log::debug(LOG_BLOCKCHAIN) << "connect_attachment_from_did: input not found for from_did: "
+                               << from_did;
     return error::did_address_not_match;
 }
 

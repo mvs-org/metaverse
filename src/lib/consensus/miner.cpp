@@ -42,6 +42,8 @@ namespace libbitcoin {
 namespace consensus {
 
 static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
+static BC_CONSTEXPR uint64_t min_fee_of_issue_asset = coin_price(10) - (uint64_t)(coin_price(10) * 0.8);
+static BC_CONSTEXPR uint64_t min_fee_of_register_did = coin_price(1) - (uint64_t)(coin_price(1) * 0.8);
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
 typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
@@ -82,7 +84,7 @@ miner::~miner()
 }
 
 bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions,
-    uint64_t& total_inputs, previous_out_map_t& previous_out_map) const
+                          uint64_t& total_inputs, previous_out_map_t& previous_out_map) const
 {
     total_inputs = 0;
     block_chain_impl& block_chain = node_.chain_impl();
@@ -122,7 +124,7 @@ bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_p
 }
 
 bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
-    previous_out_map_t& previous_out_map, tx_fee_map_t& tx_fee_map) const
+                            previous_out_map_t& previous_out_map, tx_fee_map_t& tx_fee_map) const
 {
     boost::mutex mutex;
     mutex.lock();
@@ -140,13 +142,30 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
         for (auto i = transactions.begin(); i != transactions.end(); ) {
             auto& tx = **i;
             auto hash = tx.hash();
+
+            uint64_t total_input_value = 0;
+            bool ready = get_input_etp(tx, transactions, total_input_value, previous_out_map);
+            if (!ready) {
+                // erase tx but not delete it from pool if parent tx is not ready
+                i = transactions.erase(i);
+                break;
+            }
+
+            uint64_t total_output_value = tx.total_output_value();
+            uint64_t fee = total_input_value - total_output_value;
+
+            // check normal fee
+            if (fee < min_tx_fee) {
+                i = transactions.erase(i);
+                // delete it from pool if not enough fee
+                node_.pool().delete_tx(hash);
+                break;
+            }
+
             auto transaction_is_ok = true;
-
-            uint64_t fee = 0;
-
             for (auto& output : tx.outputs) {
                 if (tx.version >= transaction_version::check_output_script
-                    && output.script.pattern() == script_pattern::non_standard) {
+                        && output.script.pattern() == script_pattern::non_standard) {
 #ifdef MVS_DEBUG
                     log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
 #endif
@@ -155,39 +174,27 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                     break;
                 }
 
-                uint64_t total_input_value = 0;
-                bool ready = get_input_etp(tx, transactions, total_input_value, previous_out_map);
-                if (!ready) {
-                    // erase tx but not delete it from pool if parent tx is not ready
-                    transaction_is_ok = false;
-                    break;
-                }
-
-                uint64_t total_output_value = tx.total_output_value();
-
-                // check normal fee
-                if (total_input_value < total_output_value + min_tx_fee) {
-                    transaction_is_ok = false;
-                }
-                else {
-                    fee = total_input_value - total_output_value;
-                    // check fee for issue asset
-                    if (output.is_asset_issue() && fee < coin_price(10)) {
+                // check fee for issue asset
+                if (output.is_asset_issue()) {
+                    if (fee < min_fee_of_issue_asset) {
                         transaction_is_ok = false;
                     }
-                    // check fee for issue did
-                    else if (output.is_did_register() && fee < coin_price(1)) {
+                }
+                // check fee for issue did
+                else if (output.is_did_register()) {
+                    if (fee < min_fee_of_register_did) {
                         transaction_is_ok = false;
                     }
                 }
 
                 if (!transaction_is_ok) {
 #ifdef MVS_DEBUG
-                    log::debug(LOG_HEADER) << "not enough fee! input: "
-                                           << total_input_value << ", output: " << total_output_value
+                    log::debug(LOG_HEADER) << "not enough fee: " << std::to_string(fee)
+                                           << ", input: " << std::to_string(total_input_value)
+                                           << ", output: " << std::to_string(total_output_value)
                                            << ", tx: " << tx.to_string(1);
 #endif
-                    // delete ifrom pool if not enough fee
+                    // delete it from pool if not enough fee
                     node_.pool().delete_tx(hash);
                     break;
                 }

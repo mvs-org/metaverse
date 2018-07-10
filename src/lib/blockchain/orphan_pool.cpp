@@ -88,7 +88,7 @@ void orphan_pool::remove(block_detail::ptr block)
 
     log::debug(LOG_BLOCKCHAIN)
         << "Orphan pool removed block [" << encode_hash(block->hash())
-        << "] old size (" << old_size << ").";
+        << "] old size (" << old_size << "). with status: " << block->error().message();
 }
 
 // TODO: use hash table pool to eliminate this O(n^2) search.
