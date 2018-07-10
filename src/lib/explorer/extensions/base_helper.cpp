@@ -290,19 +290,7 @@ static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockcha
 uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
     const std::string& account_name)
 {
-    uint32_t asset_count = get_domain_cert_count(blockchain, account_name);
-    uint64_t etp_amount = (uint64_t)std::pow(asset_count, 2);
-    if (etp_amount < 10) {
-        etp_amount = 10;    // minimal 10 etp
-    }
-
-#ifdef NDEBUG
-    // nothing
-#else
-    etp_amount = 12;
-#endif
-
-    return coin_price(etp_amount);
+    return coin_price(10);
 }
 
 void sync_fetch_deposited_balance(wallet::payment_address& address,
