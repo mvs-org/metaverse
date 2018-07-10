@@ -166,24 +166,6 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
     return error::success;
 }
 
-code output::check_attachment_did_match_address(bc::blockchain::block_chain_impl& chain) const
-{
-    auto todid = attach_data.get_to_did();
-    if (!todid.empty())
-    {
-        auto address = get_script_address();
-        auto did = chain.get_did_from_address(address);
-        if (todid != did)
-        {
-            log::debug(LOG_BLOCKCHAIN) << "check_attachment_did_match_address: "
-                << todid << " VS " << did;
-            return error::did_address_not_match;
-        }
-    }
-
-    return error::success;
-}
-
 void output::reset()
 {
     value = 0;
