@@ -559,7 +559,7 @@ code validate_transaction::check_asset_issue_transaction() const
             if (!check_same(asset_address, detail.get_address())) {
                 return error::asset_issue_error;
             }
-            if (chain.is_asset_exist(asset_symbol, false)) {
+            if (check_asset_exist(asset_symbol)) {
                 return error::asset_exist;
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
@@ -710,7 +710,7 @@ code validate_transaction::check_asset_cert_transaction() const
             }
 
             // check cert not exists
-            if (chain.is_asset_cert_exist(cert_symbol, cur_cert_type)) {
+            if (check_asset_cert_exist(cert_symbol, cur_cert_type)) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                                            << cert_info.get_symbol() << " already exists.";
                 return error::asset_cert_exist;
@@ -810,7 +810,7 @@ code validate_transaction::check_asset_cert_transaction() const
             }
 
             // check asset not exist.
-            if (chain.is_asset_exist(cert_symbol, false)) {
+            if (check_asset_exist(cert_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                                            << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
                 return error::asset_exist;
@@ -858,7 +858,7 @@ code validate_transaction::check_asset_mit_transaction() const
             }
 
             // check asset not exists
-            if (nullptr != chain.get_registered_mit(asset_symbol)) {
+            if (check_asset_mit_exist(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
                                            << asset_symbol << " already exists.";
                 return error::mit_exist;
@@ -947,6 +947,45 @@ bool validate_transaction::check_did_exist(const std::string& did) const
     return false;
 }
 
+bool validate_transaction::check_asset_exist(const std::string& symbol) const
+{
+    if (blockchain_.is_asset_exist(symbol, false)) {
+        return true;
+    }
+
+    if (validate_block_ && validate_block_->is_asset_in_orphan_chain(symbol)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool validate_transaction::check_asset_cert_exist(const std::string& cert, asset_cert_type cert_type) const
+{
+    if (blockchain_.is_asset_cert_exist(cert, cert_type)) {
+        return true;
+    }
+
+    if (validate_block_ && validate_block_->is_asset_cert_in_orphan_chain(cert, cert_type)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool validate_transaction::check_asset_mit_exist(const std::string& mit) const
+{
+    if (blockchain_.is_asset_mit_exist(mit)) {
+        return true;
+    }
+
+    if (validate_block_ && validate_block_->is_asset_mit_in_orphan_chain(mit)) {
+        return true;
+    }
+
+    return false;
+}
+
 code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
@@ -975,7 +1014,7 @@ code validate_transaction::check_did_transaction() const
                 return error::did_symbol_invalid;
             }
 
-            if (chain.is_did_exist(output.get_did_symbol())) {
+            if (check_did_exist(output.get_did_symbol())) {
                 log::debug(LOG_BLOCKCHAIN) << "did_register: "
                     << output.get_did_symbol() << " already exists";
                 return error::did_exist;

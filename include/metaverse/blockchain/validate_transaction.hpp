@@ -119,6 +119,9 @@ private:
     void check_fees() const;
     code check_tx_connect_input() const;
     bool check_did_exist(const std::string& did) const;
+    bool check_asset_exist(const std::string& symbol) const;
+    bool check_asset_cert_exist(const std::string& cert, asset_cert_type cert_type) const;
+    bool check_asset_mit_exist(const std::string& mit) const;
 
     block_chain_impl& blockchain_;
     const transaction_ptr tx_;

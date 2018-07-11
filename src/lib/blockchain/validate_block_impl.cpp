@@ -211,6 +211,66 @@ bool validate_block_impl::is_did_in_orphan_chain(const std::string& did, const s
     return false;
 }
 
+bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) const
+{
+    BITCOIN_ASSERT(!symbol.empty());
+
+    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (const auto& output : orphan_tx.outputs) {
+                if (output.is_asset_issue()) {
+                    if (symbol == output.get_asset_symbol()) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const
+{
+    BITCOIN_ASSERT(!symbol.empty());
+
+    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (const auto& output : orphan_tx.outputs) {
+                if (output.is_asset_cert_issue() || output.is_asset_cert_autoissue()) {
+                    if (symbol == output.get_asset_cert_symbol()) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol) const
+{
+    BITCOIN_ASSERT(!symbol.empty());
+
+    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (const auto& output : orphan_tx.outputs) {
+                if (output.is_asset_mit_register()) {
+                    if (symbol == output.get_asset_mit_symbol()) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 bool validate_block_impl::is_output_spent(
     const chain::output_point& previous_output,
     size_t index_in_parent, size_t input_index) const

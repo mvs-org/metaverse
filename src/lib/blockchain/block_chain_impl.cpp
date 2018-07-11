@@ -1450,6 +1450,11 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return database_.certs.get(key) != nullptr;
 }
 
+bool block_chain_impl::is_asset_mit_exist(const std::string& symbol)
+{
+    return get_registered_mit(symbol) != nullptr;
+}
+
 std::shared_ptr<asset_mit_info> block_chain_impl::get_registered_mit(const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());
