@@ -63,7 +63,6 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
         multisig["n"] = ms.get_n();
         multisig["s"] = ms.get_pub_key();
         multisig["d"] = ms.get_description();
-        multisig["k"].resize(0);
         for (const auto &cosigner_pubkey : ms.get_cosigner_pubkeys()) {
             multisig["k"].append( cosigner_pubkey );
         }
