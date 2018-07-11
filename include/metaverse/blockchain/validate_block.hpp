@@ -46,7 +46,7 @@ class BCB_API validate_block
 public:
     code check_block(blockchain::block_chain_impl& chain) const;
     code accept_block() const;
-    code connect_block(hash_digest& err_tx) const;
+    code connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const;
 
     /// Required to call before calling accept_block or connect_block.
     void initialize_context();

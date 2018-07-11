@@ -143,7 +143,7 @@ code organizer::verify(uint64_t fork_point,
     {
         hash_digest err_tx;
         // Checks that include input->output traversal.
-        ec = validate.connect_block(err_tx);
+        ec = validate.connect_block(err_tx, static_cast<blockchain::block_chain_impl&>(this->chain_));
         if(ec && err_tx != null_hash) {
             dynamic_cast<block_chain_impl&>(chain_).pool().delete_tx(err_tx);
         }

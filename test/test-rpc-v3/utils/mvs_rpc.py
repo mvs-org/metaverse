@@ -310,8 +310,8 @@ def list_balances(account, password, range_=[None, None]):
     }, None
 
 @mvs_api
-def register_did(account, password, address, did_symbol, fee=None):
-    return "registerdid", [account, password, address, did_symbol], {'--fee' : fee}, None
+def register_did(account, password, address, did_symbol, fee=None, percentage=20):
+    return "registerdid", [account, password, address, did_symbol], {'--fee' : fee, '--percentage' : percentage}, None
 
 @mvs_api
 def list_dids(account=None, password=None):
@@ -364,8 +364,8 @@ def delete_localasset(account, password, symbol):
     return "deletelocalasset", [account, password], {'--symbol' : symbol}, None
 
 @mvs_api
-def issue_asset(account, password, symbol, fee=None, model=None):
-    return "issue", [account, password, symbol], {"--fee":fee, "--model":model}, None
+def issue_asset(account, password, symbol, fee=None, model=None, percentage=20):
+    return "issue", [account, password, symbol], {"--fee":fee, "--model":model, "--percentage":percentage}, None
 
 @mvs_api
 def issue_asset_from(account, password, symbol, from_):

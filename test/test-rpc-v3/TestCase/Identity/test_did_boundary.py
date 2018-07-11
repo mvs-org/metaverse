@@ -15,9 +15,15 @@ class TestDID(MVSTestCaseBase):
         ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.addresslist[1])
         self.assertEqual(ec, 4010, message)
 
-
         #not enough fee
         ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8 -1)
+        self.assertEqual(ec, 7005, message)
+
+        #invalid percentage
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8, 19)
+        self.assertEqual(ec, 7005, message)
+
+        ec, message = mvs_rpc.register_did(Zac.name, Zac.password, Zac.mainaddress(), Zac.did_symbol, 10 ** 8, 101)
         self.assertEqual(ec, 7005, message)
 
         #not enough balance

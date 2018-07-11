@@ -34,6 +34,7 @@
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
+#include <metaverse/blockchain/validate_transaction.hpp>
 
 #define LOG_HEADER "consensus"
 using namespace std;
@@ -42,8 +43,6 @@ namespace libbitcoin {
 namespace consensus {
 
 static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
-static BC_CONSTEXPR uint64_t min_fee_of_issue_asset = coin_price(10) - (uint64_t)(coin_price(10) * 0.8);
-static BC_CONSTEXPR uint64_t min_fee_of_register_did = coin_price(1) - (uint64_t)(coin_price(1) * 0.8);
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
 typedef boost::tuple<double, double, uint64_t, miner::transaction_ptr> transaction_priority;
@@ -154,8 +153,8 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
             uint64_t total_output_value = tx.total_output_value();
             uint64_t fee = total_input_value - total_output_value;
 
-            // check normal fee
-            if (fee < min_tx_fee) {
+            // check fees
+            if (fee < min_tx_fee || !blockchain::validate_transaction::check_special_fees(setting_.use_testnet_rules, tx, fee)) {
                 i = transactions.erase(i);
                 // delete it from pool if not enough fee
                 node_.pool().delete_tx(hash);
@@ -171,31 +170,6 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
 #endif
                     node_.pool().delete_tx(hash);
                     transaction_is_ok = false;
-                    break;
-                }
-
-                // check fee for issue asset
-                if (output.is_asset_issue()) {
-                    if (fee < min_fee_of_issue_asset) {
-                        transaction_is_ok = false;
-                    }
-                }
-                // check fee for issue did
-                else if (output.is_did_register()) {
-                    if (fee < min_fee_of_register_did) {
-                        transaction_is_ok = false;
-                    }
-                }
-
-                if (!transaction_is_ok) {
-#ifdef MVS_DEBUG
-                    log::debug(LOG_HEADER) << "not enough fee: " << std::to_string(fee)
-                                           << ", input: " << std::to_string(total_input_value)
-                                           << ", output: " << std::to_string(total_output_value)
-                                           << ", tx: " << tx.to_string(1);
-#endif
-                    // delete it from pool if not enough fee
-                    node_.pool().delete_tx(hash);
                     break;
                 }
             }

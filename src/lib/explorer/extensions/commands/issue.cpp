@@ -46,22 +46,24 @@ console_result issue::invoke (Json::Value& jv_output,
     check_asset_symbol(argument_.symbol);
 
     // check fee
-    auto fee_of_issue = get_fee_of_issue_asset(blockchain, auth_.name);
-    if (argument_.fee == (uint64_t)-1) {
-        argument_.fee = fee_of_issue;
-    }
-    else if (argument_.fee < fee_of_issue) {
+    if (argument_.fee < bc::min_fee_to_issue_asset) {
         throw asset_issue_poundage_exception{
             "issue asset fee less than "
-            + std::to_string(fee_of_issue) + " that's "
-            + std::to_string(fee_of_issue / 100000000) + " ETPs"};
+            + std::to_string(bc::min_fee_to_issue_asset) + " that's "
+            + std::to_string(bc::min_fee_to_issue_asset / 100000000) + " ETPs"};
+    }
+
+    if (argument_.percentage < bc::min_fee_percentage_to_miner || argument_.percentage > 100) {
+        throw asset_issue_poundage_exception{
+            "issue asset minimum percentage of fee to miner less than "
+            + std::to_string(bc::min_fee_percentage_to_miner)
+            + " or greater than 100."};
     }
 
     // fail if asset is already in blockchain
     if (blockchain.is_asset_exist(argument_.symbol, false)) {
         throw asset_symbol_existed_exception{
-            "asset " + argument_.symbol
-            + " already exists in blockchain"};
+            "asset " + argument_.symbol + " already exists in blockchain"};
     }
 
     // local database asset check
@@ -149,7 +151,7 @@ console_result issue::invoke (Json::Value& jv_output,
                             std::move(auth_.name), std::move(auth_.auth),
                             "", std::move(argument_.symbol),
                             std::move(option_.attenuation_model_param),
-                            std::move(receiver), argument_.fee);
+                            std::move(receiver), argument_.fee, argument_.percentage);
 
     issue_helper.exec();
 

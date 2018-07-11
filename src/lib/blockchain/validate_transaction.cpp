@@ -316,7 +316,7 @@ code validate_transaction::check_tx_connect_input() const
 {
     uint64_t fee = 0;
 
-    if (!tally_fees(*tx_, value_in_, fee)) {
+    if (!tally_fees(blockchain_, *tx_, value_in_, fee)) {
         return error::fees_out_of_range;
     }
 
@@ -731,14 +731,6 @@ code validate_transaction::check_asset_cert_transaction() const
                                            << cert_info.get_symbol() << " does not match.";
                 return error::asset_cert_error;
             }
-
-            // check cert exists
-            auto cur_cert_type = cert_info.get_type();
-            if (!chain.is_asset_cert_exist(cert_symbol, cur_cert_type)) {
-                log::debug(LOG_BLOCKCHAIN) << "transfer cert: "
-                                           << cert_info.get_symbol() << " not exists.";
-                return error::asset_cert_not_exist;
-            }
         }
         else if (output.is_asset_cert()) {
             asset_cert&& cert_info = output.get_asset_cert();
@@ -880,13 +872,6 @@ code validate_transaction::check_asset_mit_transaction() const
 
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
-
-            // check mit exists
-            if (nullptr == chain.get_registered_mit(asset_symbol)) {
-                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
-                                           << asset_symbol << " not exists.";
-                return error::mit_not_exist;
-            }
         }
         else if (output.is_etp()) {
             if (!check_same(asset_address, output.get_script_address())) {
@@ -1010,11 +995,6 @@ code validate_transaction::check_did_transaction() const
             }
         }
         else if (output.is_did_transfer()) {
-            //did transfer only for did is exist
-            if (!chain.is_did_exist(output.get_did_symbol())) {
-                return error::did_not_exist;
-            }
-
             if (chain.is_address_registered_did(output.get_did_address())) {
                 return error::address_registered_did;
             }
@@ -1479,8 +1459,81 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
     return value_in_ <= max_money();
 }
 
-bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
-                                      uint64_t& total_fees)
+bool validate_transaction::check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fee)
+{
+    // check fee of issue asset or register did
+    auto developer_community_address = bc::get_developer_community_address(is_testnet);
+    std::vector<uint64_t> etp_vec;
+    uint32_t special_fee_type = 0;
+    for (auto& output: tx.outputs) {
+        if (output.is_etp()) {
+            if (output.get_script_address() == developer_community_address) {
+                etp_vec.push_back(output.value);
+            }
+            else {
+                etp_vec.push_back(0);
+            }
+        }
+        else if (output.is_asset_issue()) {
+            special_fee_type = 1;
+        }
+        else if (output.is_did_register()) {
+            special_fee_type = 2;
+        }
+    }
+
+    if (special_fee_type > 0) {
+        if (etp_vec.size() == 2) {
+            // skip transaction of developer community address
+            auto skip = (etp_vec[0] != 0 && etp_vec[1] != 0);
+            if (!skip) {
+                uint64_t fee_to_developer = etp_vec[0] + etp_vec[1];
+                uint64_t total_fee = fee + fee_to_developer;
+                uint32_t percentage_to_miner = (uint32_t)std::ceil((fee * 100.0) / total_fee);
+
+                bool result = false;
+                if (special_fee_type == 1) {
+                    result = (total_fee >= bc::min_fee_to_issue_asset
+                        && percentage_to_miner >= min_fee_percentage_to_miner);
+
+                }
+                else if (special_fee_type == 2) {
+                    result = (total_fee >= bc::min_fee_to_register_did
+                        && percentage_to_miner >= min_fee_percentage_to_miner);
+                }
+
+                if (!result) {
+                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: "
+                        << (special_fee_type == 1 ? "issue asset" : "register did")
+                        << ", total_fee: " << std::to_string(total_fee)
+                        << ", fee_percentage_to_miner: " << std::to_string(percentage_to_miner);
+                    return false;
+                }
+            }
+        }
+        else {
+            if (special_fee_type == 1) {
+                if (fee < bc::min_fee_to_issue_asset) {
+                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: fee for issuing asset less than "
+                        << std::to_string(bc::min_fee_to_issue_asset);
+                    return false;
+                }
+            }
+            else if (special_fee_type == 2) {
+                if (fee < bc::min_fee_to_register_did) {
+                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: fee for registerring did less than "
+                        << std::to_string(bc::min_fee_to_register_did);
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+bool validate_transaction::tally_fees(blockchain::block_chain_impl& chain,
+    const transaction& tx, uint64_t value_in, uint64_t& total_fees)
 {
     const auto value_out = tx.total_output_value();
 
@@ -1488,8 +1541,10 @@ bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
         return false;
 
     const auto fee = value_in - value_out;
-    if (fee < min_tx_fee)
+    if (fee < min_tx_fee) {
         return false;
+    }
+
     total_fees += fee;
     return total_fees <= max_money();
 }

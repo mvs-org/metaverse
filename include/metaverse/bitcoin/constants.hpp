@@ -56,6 +56,10 @@ BC_CONSTEXPR uint32_t max_input_sequence = max_uint32;
 
 BC_CONSTEXPR uint32_t total_reward = 100000000;
 
+BC_CONSTEXPR uint64_t min_fee_to_issue_asset       = 10 * 100000000;
+BC_CONSTEXPR uint64_t min_fee_to_register_did      = 1 * 100000000;
+BC_CONSTEXPR uint32_t min_fee_percentage_to_miner  = 20;
+
 // Threshold for nLockTime: below this value it is interpreted as block number,
 // otherwise as UNIX timestamp. [Tue Nov 5 00:53:20 1985 UTC]
 BC_CONSTEXPR uint32_t locktime_threshold = 500000000;
@@ -116,6 +120,8 @@ BC_CONSTEXPR message::network_address unspecified_network_address
 
 // TODO: make static.
 BC_API hash_number max_target();
+
+BC_API std::string get_developer_community_address(bool is_testnet);
 
 } // namespace libbitcoin
 

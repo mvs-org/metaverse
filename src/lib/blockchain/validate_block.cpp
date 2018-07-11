@@ -574,7 +574,7 @@ bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
     return std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
-code validate_block::connect_block(hash_digest& err_tx) const
+code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const
 {
     err_tx = null_hash;
     const auto& transactions = current_block_.transactions;
@@ -639,7 +639,7 @@ code validate_block::connect_block(hash_digest& err_tx) const
 
         RETURN_IF_STOPPED();
 
-        if (!validate_transaction::tally_fees(tx, value_in, fees))
+        if (!validate_transaction::tally_fees(chain, tx, value_in, fees))
         {
             err_tx = tx.hash();
             return error::fees_out_of_range;

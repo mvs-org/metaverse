@@ -73,8 +73,9 @@ public:
 
     bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
 
-    static bool tally_fees(const chain::transaction& tx, uint64_t value_in,
-        uint64_t& fees);
+    static bool tally_fees(blockchain::block_chain_impl& chain,
+        const chain::transaction& tx, uint64_t value_in, uint64_t& fees);
+    static bool check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fees);
 
     bool check_asset_amount(const transaction& tx) const;
     bool check_asset_symbol(const transaction& tx) const;

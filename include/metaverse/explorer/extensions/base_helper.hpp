@@ -196,9 +196,6 @@ std::string get_address_from_did(const std::string& did,
 
 std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
 
-uint64_t get_fee_of_issue_asset(bc::blockchain::block_chain_impl& blockchain,
-    const std::string& account_name);
-
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
@@ -497,10 +494,11 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        receiver_record::list&& receiver_list, uint64_t fee)
+        receiver_record::list&& receiver_list, uint64_t fee, uint32_t fee_percentage_to_miner)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , attenuation_model_param_{std::move(model_param)}
+        , fee_percentage_to_miner_(fee_percentage_to_miner)
     {}
 
     ~issuing_asset(){}
@@ -514,6 +512,7 @@ private:
     std::shared_ptr<asset_detail> unissued_asset_;
     std::string domain_cert_address_;
     std::string attenuation_model_param_;
+    uint32_t fee_percentage_to_miner_;
 };
 
 class BCX_API secondary_issuing_asset : public base_transfer_helper
@@ -582,11 +581,13 @@ class BCX_API registering_did : public base_multisig_transfer_helper
 public:
     registering_did(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
-        std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list, uint64_t fee,
+        std::string&& from, std::string&& symbol, receiver_record::list&& receiver_list,
+        uint64_t fee, uint32_t fee_percentage_to_miner,
         account_multisig&& multisig)
         : base_multisig_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol),
             std::move(multisig))
+        , fee_percentage_to_miner_(fee_percentage_to_miner)
     {}
 
     ~registering_did()
@@ -598,6 +599,9 @@ public:
         tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = 0;
     };
+
+private:
+    uint32_t fee_percentage_to_miner_;
 };
 
 class BCX_API sending_multisig_did : public base_transfer_helper

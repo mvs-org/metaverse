@@ -30,4 +30,17 @@ hash_number max_target()
     return max_target;
 }
 
+std::string get_developer_community_address(bool is_testnet)
+{
+#ifdef NDEBUG
+    std::string address("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh");  // developer-community address for mainnet
+#else
+    std::string address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");  // genesis address for debug
+#endif
+    if (is_testnet) {
+        address = "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms";         // developer-community address for testnet
+    }
+    return address;
+}
+
 } // namespace libbitcoin
