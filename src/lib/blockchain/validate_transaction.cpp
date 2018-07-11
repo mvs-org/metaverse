@@ -949,8 +949,15 @@ bool validate_transaction::check_did_exist(const std::string& did) const
 
 bool validate_transaction::check_asset_exist(const std::string& symbol) const
 {
-    if (blockchain_.is_asset_exist(symbol, false)) {
-        return true;
+    uint64_t height = 0;
+    if (blockchain_.get_asset_height(symbol, height)) {
+        if (!validate_block_) {
+            return true;
+        }
+        const auto fork_index = validate_block_->get_fork_index();
+        if (height <= fork_index) {
+            return true;
+        }
     }
 
     if (validate_block_ && validate_block_->is_asset_in_orphan_chain(symbol)) {
@@ -975,8 +982,15 @@ bool validate_transaction::check_asset_cert_exist(const std::string& cert, asset
 
 bool validate_transaction::check_asset_mit_exist(const std::string& mit) const
 {
-    if (blockchain_.is_asset_mit_exist(mit)) {
-        return true;
+    auto reg_mit = blockchain_.get_registered_mit(mit);
+    if (reg_mit != nullptr) {
+        if (!validate_block_) {
+            return true;
+        }
+        const auto fork_index = validate_block_->get_fork_index();
+        if (reg_mit->output_height <= fork_index) {
+            return true;
+        }
     }
 
     if (validate_block_ && validate_block_->is_asset_mit_in_orphan_chain(mit)) {

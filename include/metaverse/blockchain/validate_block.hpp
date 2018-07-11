@@ -60,6 +60,8 @@ public:
     virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const = 0;
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const = 0;
 
+    virtual size_t get_fork_index() const { return max_size_t; }
+
 protected:
     typedef std::vector<uint8_t> versions;
     typedef std::function<bool()> stopped_callback;

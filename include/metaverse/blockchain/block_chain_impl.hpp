@@ -253,6 +253,7 @@ public:
     uint64_t get_account_asset_volume(const std::string& account, const std::string& asset);
     uint64_t get_asset_volume(const std::string& asset);
 
+    // asset api
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     bool get_asset_height(const std::string& asset_name, uint64_t& height);
     std::shared_ptr<asset_detail::list> get_local_assets();
