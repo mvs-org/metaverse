@@ -39,6 +39,7 @@ console_result getpeerinfo::invoke(Json::Value& jv_output,
     administrator_required_checker(node, auth_.name, auth_.auth);
 
     Json::Value array;
+    array.resize(0);
     for (auto authority : node.connections_ptr()->authority_list()) {
         // invalid authority
         if (authority.to_hostname() == "[::]" && authority.port() == 0)

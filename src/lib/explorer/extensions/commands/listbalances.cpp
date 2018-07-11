@@ -41,7 +41,8 @@ console_result listbalances::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     Json::Value all_balances;
-
+    all_balances.resize(0);
+    
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) {
         throw address_list_nullptr_exception{"nullptr for address list"};

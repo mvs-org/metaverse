@@ -34,10 +34,12 @@ console_result getdid::invoke (Json::Value& jv_output,
                                libbitcoin::server::server_node& node)
 {
     Json::Value json_value;
+    json_value.resize(0);
 
     auto& blockchain = node.chain_impl();
 
     if (option_.symbol.empty()) {
+
         auto sh_vec = blockchain.get_registered_dids();
 
         // add blockchain dids
@@ -45,10 +47,7 @@ console_result getdid::invoke (Json::Value& jv_output,
             json_value.append(elem.get_symbol());
         }
 
-        if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-            jv_output["dids"] = "";
-        }
-        else if (get_api_version() <= 2) {
+        if (get_api_version() <= 2) {
             jv_output["dids"] = json_value;
         }
         else {
@@ -84,12 +83,8 @@ console_result getdid::invoke (Json::Value& jv_output,
                 }
                 json_value.append(did_data);
             }
-
-            if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
-                jv_output["did"] = didSymbol;
-                jv_output["addresses"] = "";
-            }
-            else if (get_api_version() <= 2) {
+            
+            if (get_api_version() <= 2) {
                 jv_output["did"] = didSymbol;
                 jv_output["addresses"] = json_value;
             }

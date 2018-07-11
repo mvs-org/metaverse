@@ -56,12 +56,14 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
     //file_root["accounts"] =  ss.str();
 
     Json::Value multisig_lst;
+    multisig_lst.resize(0);
     for (auto ms : acc->get_multisig_vec()) {
         Json::Value multisig;
         multisig["m"] = ms.get_m();
         multisig["n"] = ms.get_n();
         multisig["s"] = ms.get_pub_key();
         multisig["d"] = ms.get_description();
+        multisig["k"].resize(0);
         for (const auto &cosigner_pubkey : ms.get_cosigner_pubkeys()) {
             multisig["k"].append( cosigner_pubkey );
         }

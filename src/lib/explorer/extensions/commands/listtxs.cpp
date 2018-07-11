@@ -87,6 +87,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
     auto& aroot = jv_output;
     Json::Value balances;
+    balances.resize(0);
 
     auto sort_by_height = [](const tx_block_info &lhs, const tx_block_info &rhs)->bool {
         return const_cast<tx_block_info&>(lhs).get_height() > const_cast<tx_block_info&>(rhs).get_height();

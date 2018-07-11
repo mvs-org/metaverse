@@ -185,3 +185,64 @@ class TestFork(ForkTestCase):
         certs = Alice.get_addressasset(Alice.didaddress(), True)
         cert = filter(lambda a: a.symbol == cert_symbol, certs)
         self.assertEqual(len(cert), 0)
+
+
+
+    def test_5_fork_at_register(self):
+        self.remote_ip=10.10.10.37
+        
+        did_symbol = "test_fork_registerdiid"+common.get_random_str()
+        rmtName = Zac.name+common.get_random_str()
+        Zac.new_address(2)
+        mvs.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123", Zac.mnemonic,2)
+        Alice.sendmore_etp(Zac.addresslist[0]+":100000000" , Zac.addresslist[1]+":100000000")
+        Alice.mining()
+
+        ec, message = mvs_rpc.get_info()
+        self.assertEqual(ec, 0, message)
+        pre_height = message[0]
+        print "pre_height:"+fork_height
+
+        self.make_partion()
+        try:
+            # fork
+            Alice.mining()
+            ec, message = Zac.register_did(Zac.addresslist[0], did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining(10)
+
+            ec, message = mvs_rpc.get_info()
+            self.assertEqual(ec, 0, message)
+            fork_height = message[0]
+
+            while  fork_height < pre_height+11:
+                time.sleep(1)
+                self.assertEqual(ec, 0, message)
+                fork_height = message[0]
+                print "fork_height:"+fork_height
+              
+        finally:
+            # main chain
+            Alice.mining(2)
+            ec, message = mvs.remote_call(self.remote_ip,mvs_rpc.register_did)(rmtName, "123", Zac.addresslist[1],did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining(20)
+            
+            ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
+            self.assertEqual(ec, 0, message)
+            main_height = message[0]
+
+            while  fork_height < pre_height+22:
+                time.sleep(1)
+                ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
+                self.assertEqual(ec, 0, message)
+                main_height = message[0]
+                print "main_height:"+main_height
+
+
+        ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
+        self.assertEqual(ec, 0, message)
+
+        ec, message = mvs_rpc.list_didaddresses(did_symbol)
+        self.assertEqual(ec, 0, message)
+        self.assertEqual(message[0]["address"], Zac.addresslist[1], message)

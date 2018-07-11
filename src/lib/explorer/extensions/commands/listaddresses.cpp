@@ -40,6 +40,7 @@ console_result listaddresses::invoke(Json::Value& jv_output,
 
     auto& aroot = jv_output;
     Json::Value addresses;
+    addresses.resize(0);
 
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};

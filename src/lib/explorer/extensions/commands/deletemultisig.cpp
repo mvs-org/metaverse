@@ -88,6 +88,7 @@ console_result deletemultisig::invoke(Json::Value& jv_output,
     }
 
     // output json
+    jv_output.resize(0);
     auto helper = config::json_helper(get_api_version());
     if (get_api_version() <= 2) {
         auto& acc_multisig = *(multisig_vec->begin());
