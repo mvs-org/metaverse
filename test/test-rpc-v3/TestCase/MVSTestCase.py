@@ -17,7 +17,7 @@ class MVSTestCaseBase(unittest.TestCase):
         # register did for role A~F, if not registered
         for role in self.roles[:-1]:
             ec, message = mvs_rpc.list_dids(role.name, role.password)
-            if ec == 0 and message:
+            if ec == 0 and len(message) > 0:
                 pass
             else:
                 if role != Alice:

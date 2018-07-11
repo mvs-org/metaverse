@@ -43,7 +43,7 @@ class TestMultiSig(MVSTestCaseBase):
         # no multisig addr
         ec, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None)
+        self.assertEqual(len(message), 0)
 
         # create 1 multi add
         addr = Alice.new_multisigaddress('A&B&C', [Bob, Cindy], 2)
@@ -69,7 +69,7 @@ class TestMultiSig(MVSTestCaseBase):
         #confirm by list
         ec, message = mvs_rpc.list_multisig(Alice.name, Alice.password)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None)
+        self.assertEqual(len(message), 0)
 
     def test_3_multi_sendasset(self):
         domain_symbol, asset_symbol = Alice.create_random_asset()

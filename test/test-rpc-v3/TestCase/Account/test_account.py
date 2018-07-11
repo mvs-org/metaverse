@@ -7,7 +7,7 @@ class TestAccount(MVSTestCaseBase):
     def test_0_new_account(self):
         #account already exist
         ec, message = mvs_rpc.new_account(Alice.name, "1")
-        self.assertEqual(ec, 3001, message)
+        self.assertEqual(ec, 2003, message)
 
     def test_1_get_account(self):
         #password error

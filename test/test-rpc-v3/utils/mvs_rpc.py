@@ -310,7 +310,7 @@ def list_balances(account, password, range_=[None, None]):
     }, None
 
 @mvs_api
-def register_did(account, password, address, did_symbol, fee=None, percentage=20):
+def register_did(account, password, address, did_symbol, fee=100000000, percentage=20):
     return "registerdid", [account, password, address, did_symbol], {'--fee' : fee, '--percentage' : percentage}, None
 
 @mvs_api

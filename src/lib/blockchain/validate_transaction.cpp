@@ -1504,6 +1504,7 @@ bool validate_transaction::check_special_fees(bool is_testnet, const chain::tran
     auto developer_community_address = bc::get_developer_community_address(is_testnet);
     std::vector<uint64_t> etp_vec;
     uint32_t special_fee_type = 0;
+    std::string to_address;
     for (auto& output: tx.outputs) {
         if (output.is_etp()) {
             if (output.get_script_address() == developer_community_address) {
@@ -1515,39 +1516,38 @@ bool validate_transaction::check_special_fees(bool is_testnet, const chain::tran
         }
         else if (output.is_asset_issue()) {
             special_fee_type = 1;
+            to_address = output.get_script_address();
         }
         else if (output.is_did_register()) {
             special_fee_type = 2;
+            to_address = output.get_script_address();
         }
     }
 
-    if (special_fee_type > 0) {
-        if (etp_vec.size() == 2) {
-            // skip transaction of developer community address
-            auto skip = (etp_vec[0] != 0 && etp_vec[1] != 0);
-            if (!skip) {
-                uint64_t fee_to_developer = etp_vec[0] + etp_vec[1];
-                uint64_t total_fee = fee + fee_to_developer;
-                uint32_t percentage_to_miner = (uint32_t)std::ceil((fee * 100.0) / total_fee);
+    // skip transaction to developer community address
+    if (special_fee_type > 0 && to_address != developer_community_address) {
+        uint64_t fee_to_developer = std::accumulate(etp_vec.begin() , etp_vec.end(), (uint64_t)0);
+        if (fee_to_developer > 0) {
+            uint64_t total_fee = fee + fee_to_developer;
+            uint32_t percentage_to_miner = (uint32_t)std::ceil((fee * 100.0) / total_fee);
 
-                bool result = false;
-                if (special_fee_type == 1) {
-                    result = (total_fee >= bc::min_fee_to_issue_asset
-                        && percentage_to_miner >= min_fee_percentage_to_miner);
+            bool result = false;
+            if (special_fee_type == 1) {
+                result = (total_fee >= bc::min_fee_to_issue_asset
+                    && percentage_to_miner >= min_fee_percentage_to_miner);
 
-                }
-                else if (special_fee_type == 2) {
-                    result = (total_fee >= bc::min_fee_to_register_did
-                        && percentage_to_miner >= min_fee_percentage_to_miner);
-                }
+            }
+            else if (special_fee_type == 2) {
+                result = (total_fee >= bc::min_fee_to_register_did
+                    && percentage_to_miner >= min_fee_percentage_to_miner);
+            }
 
-                if (!result) {
-                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: "
-                        << (special_fee_type == 1 ? "issue asset" : "register did")
-                        << ", total_fee: " << std::to_string(total_fee)
-                        << ", fee_percentage_to_miner: " << std::to_string(percentage_to_miner);
-                    return false;
-                }
+            if (!result) {
+                log::debug(LOG_BLOCKCHAIN) << "check fees failed: "
+                    << (special_fee_type == 1 ? "issue asset" : "register did")
+                    << ", total_fee: " << std::to_string(total_fee)
+                    << ", fee_percentage_to_miner: " << std::to_string(percentage_to_miner);
+                return false;
             }
         }
         else {

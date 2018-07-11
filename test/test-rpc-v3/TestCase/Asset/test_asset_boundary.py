@@ -143,7 +143,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         #asset not exist
         ec, message = mvs_rpc.get_asset("JZM.xxx")
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None, message)
+        self.assertEqual(len(message), 0, message)
 
         #get cert
         ec, message = mvs_rpc.get_asset(cert=True)
@@ -178,7 +178,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         # no asset
         ec, message = mvs_rpc.get_accountasset(Zac.name, Zac.password, Zac.asset_symbol)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None, message)
+        self.assertEqual(len(message), 0, message)
 
         ec, message = mvs_rpc.get_accountasset(Bob.name, Bob.password)
         self.assertEqual(ec, 0, message)
@@ -208,7 +208,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         # --cert specified
         ec, message = mvs_rpc.get_accountasset(Zac.name, Zac.password, cert=True)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None, message)
+        self.assertEqual(len(message), 0, message)
 
     def test_7_getaddressasset(self):
         # invalid address
@@ -218,7 +218,7 @@ class TestAssetBoundary(MVSTestCaseBase):
         # no asset
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress())
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message, None, message)
+        self.assertEqual(len(message), 0, message)
 
         # --cert specified
         ec, message = mvs_rpc.get_addressasset(Zac.mainaddress(), cert=True)
