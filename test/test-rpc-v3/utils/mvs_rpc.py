@@ -174,8 +174,8 @@ def getpeerinfo():
     }
     '''
     def handle_peers(result):
-        if result["peers"]:
-            return result["peers"]
+        if result:
+            return result
         return []
     return "getpeerinfo", [], {}, handle_peers
 

@@ -189,21 +189,24 @@ class TestFork(ForkTestCase):
 
 
     def test_5_fork_at_register(self):
-        self.remote_ip=10.10.10.37
-        
         did_symbol = "test_fork_registerdiid"+common.get_random_str()
         rmtName = Zac.name+common.get_random_str()
-        Zac.new_address(2)
-        mvs.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123", Zac.mnemonic,2)
-        Alice.sendmore_etp(Zac.addresslist[0]+":100000000" , Zac.addresslist[1]+":100000000")
+        print rmtName
+        mvs_rpc.new_address(Zac.name,Zac.password, 2)
+        mvs_rpc.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123456", ' '.join(Zac.mnemonic),2)
+        receivers={}
+        receivers[Zac.addresslist[0]] = 10**8
+        receivers[Zac.addresslist[1]] = 10**8
+        Alice.sendmore_etp(receivers)
         Alice.mining()
 
         ec, message = mvs_rpc.get_info()
         self.assertEqual(ec, 0, message)
         pre_height = message[0]
-        print "pre_height:"+fork_height
+        print "pre_height:"+str(pre_height)
 
         self.make_partion()
+        import time
         try:
             # fork
             Alice.mining()
@@ -219,14 +222,14 @@ class TestFork(ForkTestCase):
                 time.sleep(1)
                 self.assertEqual(ec, 0, message)
                 fork_height = message[0]
-                print "fork_height:"+fork_height
+                print "fork_height:"+str(fork_height)
               
         finally:
             # main chain
-            Alice.mining(2)
-            ec, message = mvs.remote_call(self.remote_ip,mvs_rpc.register_did)(rmtName, "123", Zac.addresslist[1],did_symbol)
+            self.remote_ming(2)
+            ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.register_did)(rmtName, "123456", Zac.addresslist[1],did_symbol)
             self.assertEqual(ec, 0, message)
-            Alice.mining(20)
+            self.remote_ming(20)
             
             ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
             self.assertEqual(ec, 0, message)
@@ -237,7 +240,7 @@ class TestFork(ForkTestCase):
                 ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
                 self.assertEqual(ec, 0, message)
                 main_height = message[0]
-                print "main_height:"+main_height
+                print "main_height:"+str(main_height)
 
 
         ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
