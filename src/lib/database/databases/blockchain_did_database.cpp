@@ -169,6 +169,35 @@ std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_blockc
     return vec_acc;
 }
 
+///
+std::shared_ptr<blockchain_did> blockchain_did_database::get_register_history(const std::string & did_symbol) const
+{
+    std::shared_ptr<blockchain_did> blockchain_did_ = nullptr;
+    data_chunk data(did_symbol.begin(), did_symbol.end());
+    auto key = sha256_hash(data);
+
+    auto memo = lookup_map_.rfind(key);
+    if(memo)
+    {
+        blockchain_did_ = std::make_shared<blockchain_did>();
+        const auto memory = REMAP_ADDRESS(memo);
+        auto deserial = make_deserializer_unsafe(memory);
+        blockchain_did_->from_data(deserial);
+    }
+
+    return blockchain_did_;
+}
+
+ uint64_t blockchain_did_database::get_register_height(const std::string & did_symbol) const
+ {
+    std::shared_ptr<blockchain_did> blockchain_did_ = get_register_history(did_symbol);
+    if(blockchain_did_)
+        return blockchain_did_->get_height();
+        
+    return MAX_UINT64;
+ }
+
+
 void blockchain_did_database::store(const hash_digest& hash, const blockchain_did& sp_detail)
 {
     // Write block data.
