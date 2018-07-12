@@ -193,8 +193,14 @@ bool validate_block_impl::fetch_orphan_transaction(chain::transaction& tx,
 bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());
+    BITCOIN_ASSERT(!address.empty());
 
     if (orphan_index_ == 0) {
+        return false;
+    }
+
+    if (address.empty()) {
+        log::debug("blockchain") << "check did match address in orphan chain: address is null for did: " << did;
         return false;
     }
 

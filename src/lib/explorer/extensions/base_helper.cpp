@@ -1457,7 +1457,7 @@ void issuing_asset::sum_payment_amount()
         check_model_param_initial(attenuation_model_param_, unissued_asset_->get_maximum_supply());
     }
 
-    uint64_t amount = (uint64_t)std::floor(payment_etp_ * (1.0 - fee_percentage_to_miner_ / 100.0));
+    uint64_t amount = (uint64_t)std::floor(payment_etp_ * ((100 - fee_percentage_to_miner_) / 100.0));
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);
@@ -1623,7 +1623,7 @@ void registering_did::sum_payment_amount()
             + std::to_string(min_fee/100000000) + " etp");
     }
 
-    uint64_t amount = (uint64_t)std::floor(payment_etp_ * (1.0 - fee_percentage_to_miner_ / 100.0));
+    uint64_t amount = (uint64_t)std::floor(payment_etp_ * ((100 - fee_percentage_to_miner_) / 100.0));
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
         auto&& did = blockchain_.get_did_from_address(address);

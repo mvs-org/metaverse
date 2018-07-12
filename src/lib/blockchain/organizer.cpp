@@ -109,27 +109,31 @@ code organizer::verify(uint64_t fork_point,
     };
 
     // Validates current_block
-    validate_block_impl validate(chain_, fork_point, orphan_chain,
-        orphan_index, height, *current_block, use_testnet_rules_, checkpoints_,
-            callback);
+    validate_block_impl validate(chain_, fork_point, orphan_chain, orphan_index, height,
+        *current_block, use_testnet_rules_, checkpoints_, callback);
 
     // Checks that are independent of the chain.
     auto ec = validate.check_block(static_cast<blockchain::block_chain_impl&>(this->chain_));
-
-    if (ec)
+    if (error::success != ec) {
+        log::debug(LOG_BLOCKCHAIN) << "organizer: check_block failed! fork_point: "
+            << std::to_string(fork_point) << ", orphan_index: " << std::to_string(orphan_index);
         return ec;
+    }
 
     validate.initialize_context();
 
     // Checks that are dependent on height and preceding blocks.
     ec = validate.accept_block();
-
-    if (ec)
+    if (error::success != ec) {
+        log::debug(LOG_BLOCKCHAIN) << "organizer: accept_block failed! fork_point: "
+            << std::to_string(fork_point) << ", orphan_index: " << std::to_string(orphan_index);
         return ec;
+    }
 
     // Start strict validation if past last checkpoint.
-    if (!strict(fork_point))
+    if (!strict(fork_point)) {
         return ec;
+    }
 
     const auto total_inputs = count_inputs(*current_block);
     const auto total_transactions = current_block->transactions.size();
