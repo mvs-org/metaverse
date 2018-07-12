@@ -144,7 +144,7 @@ std::shared_ptr<asset_mit_info::list> blockchain_mit_database::get_blockchain_mi
 }
 
 /// 
-std::shared_ptr<asset_mit_info> blockchain_mit_database::get_issue_history(const std::string & mit_symbol) const
+std::shared_ptr<asset_mit_info> blockchain_mit_database::get_register_history(const std::string & mit_symbol) const
 {
     std::shared_ptr<asset_mit_info> asset_mit_ = nullptr;
     data_chunk data(mit_symbol.begin(), mit_symbol.end());
@@ -163,13 +163,13 @@ std::shared_ptr<asset_mit_info> blockchain_mit_database::get_issue_history(const
 }
 
 ///
-uint64_t blockchain_mit_database::get_issue_height(const std::string & mit_symbol) const
+uint64_t blockchain_mit_database::get_register_height(const std::string & mit_symbol) const
 {
-    std::shared_ptr<asset_mit_info> asset_mit_ = get_issue_history(mit_symbol);
+    std::shared_ptr<asset_mit_info> asset_mit_ = get_register_history(mit_symbol);
     if(asset_mit_)
         return asset_mit_->output_height;
         
-    return MAX_UINT64;
+    return max_uint64;
 }
 
 void blockchain_mit_database::store(const asset_mit_info& mit_info)

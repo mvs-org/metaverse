@@ -166,7 +166,7 @@ std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_bl
 }
 
 /// 
-std::shared_ptr<blockchain_asset> blockchain_asset_database::get_issue_history(const std::string & asset_symbol) const
+std::shared_ptr<blockchain_asset> blockchain_asset_database::get_register_history(const std::string & asset_symbol) const
 {
     std::shared_ptr<blockchain_asset> blockchain_asset_ = nullptr;
     data_chunk data(asset_symbol.begin(), asset_symbol.end());
@@ -185,12 +185,12 @@ std::shared_ptr<blockchain_asset> blockchain_asset_database::get_issue_history(c
 }
 
 ///
-uint64_t blockchain_asset_database::get_issue_height(const std::string & asset_symbol) const
+uint64_t blockchain_asset_database::get_register_height(const std::string & asset_symbol) const
 {
-    std::shared_ptr<blockchain_asset> blockchain_asset_ = get_issue_history(asset_symbol);
+    std::shared_ptr<blockchain_asset> blockchain_asset_ = get_register_history(asset_symbol);
     if(blockchain_asset_)
         return blockchain_asset_->get_height();
-    return MAX_UINT64;
+    return max_uint64;
 }
 
 void blockchain_asset_database::store(const hash_digest& hash, const blockchain_asset& sp_detail)

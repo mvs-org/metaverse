@@ -937,68 +937,66 @@ code validate_transaction::check_asset_mit_transaction() const
 
 bool validate_transaction::check_did_exist(const std::string& did) const
 {
-    if (blockchain_.is_did_exist(did)) {
-        return true;
+    uint64_t height = blockchain_.get_did_height(did);
+
+    if (validate_block_ ) {
+        //register before fork or find in orphan chain
+        if( height <= validate_block_->get_fork_index() || validate_block_->is_did_in_orphan_chain(did, "")){
+            return true;
+        }
+
+        return false;
     }
 
-    if (is_did_in_orphan_chain(did, "")) {
-        return true;
-    }
-
-    return false;
+    return height != max_uint64;
 }
 
 bool validate_transaction::check_asset_exist(const std::string& symbol) const
-{
-    uint64_t height = 0;
-    if (blockchain_.get_asset_height(symbol, height)) {
-        if (!validate_block_) {
+{    
+    uint64_t height = blockchain_.get_asset_height(symbol);
+
+    if (validate_block_ ) {
+        //register before fork or find in orphan chain
+        if( height <= validate_block_->get_fork_index() || validate_block_->is_asset_in_orphan_chain(symbol)){
             return true;
         }
-        const auto fork_index = validate_block_->get_fork_index();
-        if (height <= fork_index) {
-            return true;
-        }
+
+        return false;
     }
 
-    if (validate_block_ && validate_block_->is_asset_in_orphan_chain(symbol)) {
-        return true;
-    }
-
-    return false;
+    return height != max_uint64;
 }
 
 bool validate_transaction::check_asset_cert_exist(const std::string& cert, asset_cert_type cert_type) const
 {
-    if (blockchain_.is_asset_cert_exist(cert, cert_type)) {
-        return true;
+    uint64_t height = blockchain_.get_asset_cert_height(cert, cert_type);
+
+    if (validate_block_ ) {
+        //register before fork or find in orphan chain
+        if( height <= validate_block_->get_fork_index() || validate_block_->is_asset_cert_in_orphan_chain(cert, cert_type)){
+            return true;
+        }
+
+        return false;
     }
 
-    if (validate_block_ && validate_block_->is_asset_cert_in_orphan_chain(cert, cert_type)) {
-        return true;
-    }
-
-    return false;
+    return height != max_uint64;
 }
 
 bool validate_transaction::check_asset_mit_exist(const std::string& mit) const
 {
-    auto reg_mit = blockchain_.get_registered_mit(mit);
-    if (reg_mit != nullptr) {
-        if (!validate_block_) {
+    uint64_t height = blockchain_.get_asset_mit_height(mit);
+
+    if (validate_block_ ) {
+        //register before fork or find in orphan chain
+        if( height <= validate_block_->get_fork_index() || validate_block_->is_asset_mit_in_orphan_chain(mit)){
             return true;
         }
-        const auto fork_index = validate_block_->get_fork_index();
-        if (reg_mit->output_height <= fork_index) {
-            return true;
-        }
+
+        return false;
     }
 
-    if (validate_block_ && validate_block_->is_asset_mit_in_orphan_chain(mit)) {
-        return true;
-    }
-
-    return false;
+    return height != max_uint64;
 }
 
 code validate_transaction::check_did_transaction() const

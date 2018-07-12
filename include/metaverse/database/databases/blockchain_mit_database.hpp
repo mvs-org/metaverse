@@ -58,9 +58,9 @@ public:
     std::shared_ptr<asset_mit_info::list> get_blockchain_mits() const;
 
     /// 
-    std::shared_ptr<asset_mit_info> get_issue_history(const std::string & mit_symbol) const;
+    std::shared_ptr<asset_mit_info> get_register_history(const std::string & mit_symbol) const;
     ///
-    uint64_t get_issue_height(const std::string & mit_symbol) const;
+    uint64_t get_register_height(const std::string & mit_symbol) const;
 
     void store(const asset_mit_info& mit_info);
 

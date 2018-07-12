@@ -194,7 +194,7 @@ std::shared_ptr<blockchain_did> blockchain_did_database::get_register_history(co
     if(blockchain_did_)
         return blockchain_did_->get_height();
         
-    return MAX_UINT64;
+    return max_uint64;
  }
 
 

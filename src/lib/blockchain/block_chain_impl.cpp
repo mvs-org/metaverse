@@ -2021,30 +2021,24 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool check_
     return false;
 }
 
-bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t& height)
+uint64_t block_chain_impl::get_asset_height(const std::string& asset_name)const
 {
-    const auto hash = get_hash(asset_name);
-
-    // std::shared_ptr<blockchain_asset>
-    auto sp_asset = database_.assets.get(hash);
-    if(sp_asset) {
-        height = sp_asset->get_height();
-    }
-
-    return (sp_asset != nullptr);
+    return database_.assets.get_register_height(asset_name);
 }
 
-bool block_chain_impl::get_did_height(const std::string& did_name, uint64_t& height)
+uint64_t block_chain_impl::get_did_height(const std::string& did_name)const
 {
-    const auto hash = get_hash(did_name);
+    return database_.dids.get_register_height(did_name);
+}
 
-    // std::shared_ptr<blockchain_asset>
-    auto sp_did = database_.dids.get(hash);
-    if(sp_did) {
-        height = sp_did->get_height();
-    }
+uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type)const
+{
+    return database_.certs.get_register_height(cert_symbol);
+}
 
-    return (sp_did != nullptr);
+uint64_t block_chain_impl::get_asset_mit_height(const std::string& mit_symbol)const
+{
+    return database_.mits.get_register_height(mit_symbol);
 }
 
 /// get asset from local database including all account's assets

@@ -255,7 +255,7 @@ public:
 
     // asset api
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
-    bool get_asset_height(const std::string& asset_name, uint64_t& height);
+    uint64_t get_asset_height(const std::string& asset_name) const ;
     std::shared_ptr<asset_detail::list> get_local_assets();
     std::shared_ptr<asset_detail::list> get_issued_assets();
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
@@ -266,6 +266,7 @@ public:
 
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
+    uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type) const;
     std::shared_ptr<asset_cert::list> get_issued_asset_certs();
     std::shared_ptr<asset_cert> get_account_asset_cert(
         const std::string& account, const std::string& symbol, asset_cert_type cert_type);
@@ -276,6 +277,7 @@ public:
 
     // identifiable asset
     bool is_asset_mit_exist(const std::string& symbol);
+    uint64_t get_asset_mit_height(const std::string& mit_symbol)const;
     std::shared_ptr<asset_mit_info> get_registered_mit(const std::string& symbol);
     std::shared_ptr<asset_mit_info::list> get_registered_mits();
     std::shared_ptr<asset_mit_info::list> get_mit_history(const std::string& symbol,
@@ -285,7 +287,7 @@ public:
 
     // account did api
     bool is_did_exist(const std::string& symbol);
-    bool get_did_height(const std::string& symbol, uint64_t& height);
+    uint64_t get_did_height(const std::string& symbol) const;
     bool is_address_registered_did(const std::string& address);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address);
