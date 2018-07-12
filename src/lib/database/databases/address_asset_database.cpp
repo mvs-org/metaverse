@@ -778,6 +778,41 @@ business_address_asset_cert::list address_asset_database::get_asset_certs(const 
     return unspent;
 }
 
+
+business_history::list address_asset_database::get_asset_certs_history(const std::string& address,
+        const std::string& symbol, asset_cert_type cert_type,
+        size_t from_height) const
+{
+    data_chunk data(address.begin(), address.end());
+    auto key = ripemd160_hash(data);
+    business_history::list result = get_business_history(key, from_height);
+    business_history::list unspent(result.size());
+
+    auto it = std::copy_if(result.begin(), result.end(), unspent.begin(), [&symbol,&cert_type](business_history & row)
+    {
+        if ((row.data.get_kind_value() != business_kind::asset_cert))  // asset_cert
+            return false;
+
+        auto cert_info = boost::get<asset_cert>(row.data.get_data());
+        if (!symbol.empty()) {
+            if (symbol != cert_info.get_symbol()) {
+                return false;
+            }
+        }
+
+        if (cert_type != asset_cert_ns::none) {
+            if (cert_type != cert_info.get_type()) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    unspent.resize(std::distance(unspent.begin(),it));
+    return unspent;
+}
+
+
 void address_asset_database::sync()
 {
     lookup_manager_.sync();

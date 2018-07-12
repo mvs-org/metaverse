@@ -84,7 +84,7 @@ bool asset_cert::is_valid_domain(const std::string& domain)
     return !domain.empty();
 }
 
-std::string asset_cert::get_key(const std::string&symbol, asset_cert_type bit)
+std::string asset_cert::get_key(const std::string&symbol, const asset_cert_type& bit)
 {
     return std::string(symbol + ":^#`@:" + std::to_string(bit));
 }

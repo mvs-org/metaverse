@@ -64,12 +64,6 @@ public:
     /// Get all asset certs
     std::shared_ptr<std::vector<asset_cert>> get_blockchain_asset_certs() const;
 
-
-    /// 
-    std::shared_ptr<asset_cert> get_register_history(const std::string & cert_symbol) const;
-    ///
-    uint64_t get_register_height(const std::string & cert_symbol) const;
-
     void store(const asset_cert& sp_cert);
 
     /// Delete a transaction from database.

@@ -2031,12 +2031,22 @@ uint64_t block_chain_impl::get_did_height(const std::string& did_name)const
     return database_.dids.get_register_height(did_name);
 }
 
-uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type)const
+uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type)
 {
-    return database_.certs.get_register_height(cert_symbol);
+    auto&& key_str = asset_cert::get_key(cert_symbol, cert_type);
+    const auto key = get_hash(key_str);
+    auto cert = database_.certs.get(key);
+    if(cert)
+    {
+       business_history::list history_cert = database_.address_assets.get_asset_certs_history(cert->get_address(), cert_symbol, cert_type, 0);
+       if(history_cert.size()>0){
+           return history_cert.back().output_height;
+       }
+    }
+    return max_uint64;
 }
 
-uint64_t block_chain_impl::get_asset_mit_height(const std::string& mit_symbol)const
+uint64_t block_chain_impl::get_asset_mit_height(const std::string& mit_symbol) const
 {
     return database_.mits.get_register_height(mit_symbol);
 }
