@@ -1850,11 +1850,9 @@ bool block_chain_impl::is_did_exist(const std::string& did_name)
 
 /* check did address exist or not
 */
-bool block_chain_impl::is_address_registered_did(const std::string& did_address)
+bool block_chain_impl::is_address_registered_did(const std::string& did_address, uint64_t fork_index)
 {
-    // find from blockchain database
-    auto&& did_vec = database_.address_dids.get_dids(did_address, 0);
-    return !did_vec.empty();
+    return !get_did_from_address(did_address, fork_index).empty();
 }
 
 bool block_chain_impl::is_account_owned_did(const std::string& account, const std::string& symbol)
@@ -1894,10 +1892,10 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
 
 /* find did by address
 */
-std::string block_chain_impl::get_did_from_address(const std::string& did_address)
+std::string block_chain_impl::get_did_from_address(const std::string& did_address, uint64_t fork_index)
 {
     // find from blockchain database
-    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+    auto&& did_vec = database_.address_dids.get_dids(did_address, 0, fork_index);
 
     if (!did_vec.empty()) {
         return did_vec[0].detail.get_symbol();

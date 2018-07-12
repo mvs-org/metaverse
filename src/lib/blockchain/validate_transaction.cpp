@@ -1003,6 +1003,7 @@ code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
     blockchain::block_chain_impl& chain = blockchain_;
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
 
     code ret = error::success;
 
@@ -1033,7 +1034,7 @@ code validate_transaction::check_did_transaction() const
                 return error::did_exist;
             }
 
-            if (chain.is_address_registered_did(output.get_did_address())) {
+            if (chain.is_address_registered_did(output.get_did_address(), fork_index)) {
                 return error::address_registered_did;
             }
 
@@ -1047,7 +1048,7 @@ code validate_transaction::check_did_transaction() const
             }
         }
         else if (output.is_did_transfer()) {
-            if (chain.is_address_registered_did(output.get_did_address())) {
+            if (chain.is_address_registered_did(output.get_did_address()), fork_index) {
                 return error::address_registered_did;
             }
 
@@ -1158,12 +1159,14 @@ code validate_transaction::check_attachment_to_did(const output& output) const
     }
 
     auto address = output.get_script_address();
-    auto did = blockchain_.get_did_from_address(address);
-    if (todid == did) {
+
+    if (is_did_match_address_in_orphan_chain(todid, address)) {
         return error::success;
     }
 
-    if (is_did_match_address_in_orphan_chain(todid, address)) {
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
+    auto did = blockchain_.get_did_from_address(address, fork_index);
+    if (todid == did) {
         return error::success;
     }
 
@@ -1190,11 +1193,13 @@ code validate_transaction::connect_attachment_from_did(const output& output) con
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
-        if (from_did == blockchain_.get_did_from_address(address)) {
+
+        if (is_did_match_address_in_orphan_chain(from_did, address)) {
             return error::success;
         }
 
-        if (is_did_match_address_in_orphan_chain(from_did, address)) {
+        uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
+        if (from_did == blockchain_.get_did_from_address(address, fork_index)) {
             return error::success;
         }
     }

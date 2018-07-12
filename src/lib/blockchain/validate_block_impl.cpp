@@ -195,17 +195,14 @@ bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string
     BITCOIN_ASSERT(!did.empty());
     BITCOIN_ASSERT(!address.empty());
 
-    if (orphan_index_ == 0) {
-        return false;
-    }
-
     if (address.empty()) {
         log::debug("blockchain") << "check did match address in orphan chain: address is null for did: " << did;
         return false;
     }
 
-    for (size_t orphan = orphan_index_ - 1; orphan >= 0; --orphan) {
-        const auto& orphan_block = orphan_chain_[orphan]->actual();
+    auto orphan = orphan_index_;
+    while (orphan > 0) {
+        const auto& orphan_block = orphan_chain_[--orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (auto& output : orphan_tx.outputs) {
                 if (output.is_did_register() || output.is_did_transfer()) {
@@ -268,10 +265,9 @@ bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbo
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
-                if (output.is_asset_cert_issue() || output.is_asset_cert_autoissue()) {
-                    if (symbol == output.get_asset_cert_symbol()) {
-                        return true;
-                    }
+                if (symbol == output.get_asset_cert_symbol() &&
+                    cert_type == output.get_asset_cert_type()) {
+                    return true;
                 }
             }
         }
