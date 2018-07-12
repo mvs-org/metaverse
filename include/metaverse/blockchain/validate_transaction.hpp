@@ -67,7 +67,8 @@ public:
     code check_asset_mit_transaction() const;
     code check_did_transaction() const;
     bool connect_did_input(const did& info) const;
-    bool is_did_in_orphan_chain(const std::string& did, const std::string& address) const;
+    bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const;
+    bool is_did_in_orphan_chain(const std::string& did) const;
     code check_attachment_to_did(const output& output) const;
     code connect_attachment_from_did(const output& output) const;
 

@@ -190,17 +190,40 @@ bool validate_block_impl::fetch_orphan_transaction(chain::transaction& tx,
     return false;
 }
 
-bool validate_block_impl::is_did_in_orphan_chain(const std::string& did, const std::string& address) const
+bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());
 
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    if (orphan_index_ == 0) {
+        return false;
+    }
+
+    for (size_t orphan = orphan_index_ - 1; orphan >= 0; --orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (auto& output : orphan_tx.outputs) {
                 if (output.is_did_register() || output.is_did_transfer()) {
-                    if (did == output.get_did_symbol() &&
-                        (address.empty() || address == output.get_did_address())) {
+                    if (did == output.get_did_symbol()) {
+                        return address == output.get_did_address();
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool validate_block_impl::is_did_in_orphan_chain(const std::string& did) const
+{
+    BITCOIN_ASSERT(!did.empty());
+
+    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
+        const auto& orphan_block = orphan_chain_[orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            for (auto& output : orphan_tx.outputs) {
+                if (output.is_did_register()) {
+                    if (did == output.get_did_symbol()) {
                         return true;
                     }
                 }
@@ -215,7 +238,7 @@ bool validate_block_impl::is_asset_in_orphan_chain(const std::string& symbol) co
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
@@ -235,7 +258,7 @@ bool validate_block_impl::is_asset_cert_in_orphan_chain(const std::string& symbo
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {
@@ -255,7 +278,7 @@ bool validate_block_impl::is_asset_mit_in_orphan_chain(const std::string& symbol
 {
     BITCOIN_ASSERT(!symbol.empty());
 
-    for (size_t orphan = 0; orphan <= orphan_index_; ++orphan) {
+    for (size_t orphan = 0; orphan < orphan_index_; ++orphan) {
         const auto& orphan_block = orphan_chain_[orphan]->actual();
         for (const auto& orphan_tx : orphan_block->transactions) {
             for (const auto& output : orphan_tx.outputs) {

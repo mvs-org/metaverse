@@ -941,7 +941,7 @@ bool validate_transaction::check_did_exist(const std::string& did) const
 
     if (validate_block_ ) {
         //register before fork or find in orphan chain
-        if( height <= validate_block_->get_fork_index() || validate_block_->is_did_in_orphan_chain(did, "")){
+        if( height <= validate_block_->get_fork_index() || validate_block_->is_did_in_orphan_chain(did)){
             return true;
         }
 
@@ -1129,16 +1129,21 @@ bool validate_transaction::connect_did_input(const did& info) const
            || (found_address_info && info.get_status() ==  DID_DETAIL_TYPE);
 }
 
-bool validate_transaction::is_did_in_orphan_chain(const std::string& did, const std::string& address) const
+bool validate_transaction::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
-    if (validate_block_ && validate_block_->is_did_in_orphan_chain(did, address)) {
-        if (address.empty()) {
-            log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: " << did;
-        }
-        else {
-            log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
-                << did << ", address: " << address;
-        }
+    if (validate_block_ && validate_block_->is_did_match_address_in_orphan_chain(did, address)) {
+        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
+            << did << ", match address: " << address;
+        return true;
+    }
+
+    return false;
+}
+
+bool validate_transaction::is_did_in_orphan_chain(const std::string& did) const
+{
+    if (validate_block_ && validate_block_->is_did_in_orphan_chain(did)) {
+        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: " << did << " exist";
         return true;
     }
 
@@ -1158,7 +1163,7 @@ code validate_transaction::check_attachment_to_did(const output& output) const
         return error::success;
     }
 
-    if (is_did_in_orphan_chain(todid, address)) {
+    if (is_did_match_address_in_orphan_chain(todid, address)) {
         return error::success;
     }
 
@@ -1189,7 +1194,7 @@ code validate_transaction::connect_attachment_from_did(const output& output) con
             return error::success;
         }
 
-        if (is_did_in_orphan_chain(from_did, address)) {
+        if (is_did_match_address_in_orphan_chain(from_did, address)) {
             return error::success;
         }
     }
