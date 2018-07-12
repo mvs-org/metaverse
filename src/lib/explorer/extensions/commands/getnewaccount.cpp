@@ -70,7 +70,11 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
         throw address_generate_exception(sout.str());
     }
 
-    if (get_api_version() <= 2) {
+    if (get_api_version() == 1) {
+        jv_output["mnemonic"] = words;
+        jv_output["default-address"] = jv_temp;
+    }
+    else if (get_api_version() == 2) {
         jv_output["mnemonic"] = words;
         jv_output["default-address"] = jv_temp["addresses"][0].asString();
     }

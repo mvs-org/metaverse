@@ -69,7 +69,6 @@ console_result importaccount::invoke(Json::Value& jv_output,
     blockchain.store_account(acc);
 
     // generate all account address
-    uint32_t idx = 0;
     auto&& str_idx = std::to_string(option_.hd_index);
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), option_.passwd.c_str(), "-n", str_idx.c_str()};
     Json::Value addresses;
@@ -81,14 +80,22 @@ console_result importaccount::invoke(Json::Value& jv_output,
     if (get_api_version() <= 2) {
         if (get_api_version() == 1) {
             jv_output["hd_index"] += option_.hd_index;
+            if (option_.hd_index == 1) {
+                Json::Value addr;
+                addr.append(addresses.asString());
+                jv_output["addresses"] = addr;
+            }
+            else {
+                jv_output["addresses"] = addresses["addresses"];
+            }
         }
         else if (get_api_version() == 2) {
             jv_output["hd_index"] = option_.hd_index;
+            jv_output["addresses"] = addresses["addresses"];
         }
 
         jv_output["name"] = auth_.name;
         jv_output["mnemonic"] = mnemonic;
-        jv_output["addresses"] = addresses["addresses"];
     }
     else {
         config::json_helper::account_info acc(auth_.name, mnemonic, addresses);

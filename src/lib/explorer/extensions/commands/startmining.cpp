@@ -58,7 +58,10 @@ console_result startmining::invoke(Json::Value& jv_output,
             throw address_generate_exception(jv_temp.asString());
         }
 
-        if (get_api_version() <=2 ) {
+        if (get_api_version() == 1) {
+            str_addr = jv_temp.asString();
+        }
+        else if (get_api_version() == 2) {
             str_addr = jv_temp["addresses"][0].asString();
         }
         else {
