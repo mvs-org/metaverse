@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <numeric>
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>

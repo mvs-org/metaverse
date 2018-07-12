@@ -1460,7 +1460,8 @@ void issuing_asset::sum_payment_amount()
     uint64_t amount = (uint64_t)std::floor(payment_etp_ * (1.0 - fee_percentage_to_miner_ / 100.0));
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment()});
+        auto&& did = blockchain_.get_did_from_address(address);
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
     }
 }
 
@@ -1625,7 +1626,8 @@ void registering_did::sum_payment_amount()
     uint64_t amount = (uint64_t)std::floor(payment_etp_ * (1.0 - fee_percentage_to_miner_ / 100.0));
     if (amount > 0) {
         auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
-        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment()});
+        auto&& did = blockchain_.get_did_from_address(address);
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
     }
 }
 
