@@ -54,7 +54,6 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     }
 
     Json::Value addresses;
-    addresses.resize(0);
     
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
@@ -113,6 +112,8 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         jv_output["addresses"] = addresses;
     }
     else {
+        if(addresses.isNull())
+            addresses.resize(0);  
         jv_output = addresses;
     }
 

@@ -38,7 +38,6 @@ console_result listmits::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     Json::Value json_value;
-    json_value.resize(0);
     auto json_helper = config::json_helper(get_api_version());
 
     if (auth_.name.empty()) {
@@ -78,6 +77,9 @@ console_result listmits::invoke(Json::Value& jv_output,
         jv_output["mits"] = json_value;
     }
     else {
+        if(json_value.isNull())
+            json_value.resize(0);  
+            
         jv_output = json_value;
     }
 

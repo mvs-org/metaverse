@@ -68,7 +68,6 @@ console_result getmit::invoke(Json::Value& jv_output,
     }
 
     Json::Value json_value;
-    json_value.resize(0);
     auto json_helper = config::json_helper(get_api_version());
 
     bool is_list = true;
@@ -98,6 +97,9 @@ console_result getmit::invoke(Json::Value& jv_output,
                 jv_output["mits"] = json_value;
             }
             else {
+                if(json_value.isNull())
+                    json_value.resize(0);  
+
                 jv_output = json_value;
             }
         }

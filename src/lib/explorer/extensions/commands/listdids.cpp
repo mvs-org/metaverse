@@ -37,7 +37,6 @@ console_result listdids::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     Json::Value dids;
-    dids.resize(0);
     auto& blockchain = node.chain_impl();
 
     std::shared_ptr<did_detail::list> sh_vec;
@@ -69,6 +68,9 @@ console_result listdids::invoke(Json::Value& jv_output,
         jv_output["dids"] = dids;
     }
     else {
+        if(dids.isNull())
+            dids.resize(0);  
+
         jv_output = dids;
     }
 

@@ -41,7 +41,6 @@ console_result listbalances::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     Json::Value all_balances;
-    all_balances.resize(0);
     
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) {
@@ -137,6 +136,9 @@ console_result listbalances::invoke(Json::Value& jv_output,
         aroot["balances"] = all_balances;
     }
     else {
+        if(all_balances.isNull())
+            all_balances.resize(0);  
+            
         aroot = all_balances;
     }
 

@@ -34,7 +34,6 @@ console_result getdid::invoke (Json::Value& jv_output,
                                libbitcoin::server::server_node& node)
 {
     Json::Value json_value;
-    json_value.resize(0);
 
     auto& blockchain = node.chain_impl();
 
@@ -89,6 +88,9 @@ console_result getdid::invoke (Json::Value& jv_output,
                 jv_output["addresses"] = json_value;
             }
             else {
+                if(json_value.isNull())
+                    json_value.resize(0);
+
                 jv_output = json_value;
             }
         }
