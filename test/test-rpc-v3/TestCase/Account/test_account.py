@@ -6,8 +6,8 @@ class TestAccount(MVSTestCaseBase):
     need_mine = False
     def test_0_new_account(self):
         #account already exist
-        ec, message = mvs_rpc.new_account(Alice.name, "1")
-        self.assertEqual(ec, 2003, message)
+        ec, message = mvs_rpc.new_account(Alice.name, "12345678")
+        self.assertEqual(ec, 3001, message)
 
     def test_1_get_account(self):
         #password error
