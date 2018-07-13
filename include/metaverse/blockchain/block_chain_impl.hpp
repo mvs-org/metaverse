@@ -288,9 +288,9 @@ public:
     // account did api
     bool is_did_exist(const std::string& symbol);
     uint64_t get_did_height(const std::string& symbol) const;
-    bool is_address_registered_did(const std::string& address, uint64_t fork_index = 0);
+    bool is_address_registered_did(const std::string& address, uint64_t fork_index = max_uint64);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
-    std::string get_did_from_address(const std::string& address, uint64_t fork_index = 0);
+    std::string get_did_from_address(const std::string& address, uint64_t fork_index = max_uint64);
     std::shared_ptr<did_detail> get_registered_did(const std::string& symbol);
     std::shared_ptr<did_detail::list> get_registered_dids();
     std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);

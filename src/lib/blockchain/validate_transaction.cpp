@@ -1003,7 +1003,7 @@ code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
     blockchain::block_chain_impl& chain = blockchain_;
-    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
 
     code ret = error::success;
 
@@ -1035,6 +1035,8 @@ code validate_transaction::check_did_transaction() const
             }
 
             if (chain.is_address_registered_did(output.get_did_address(), fork_index)) {
+                log::debug(LOG_BLOCKCHAIN) << "address "
+                    << output.get_did_address() << " already exists did, cannot register did.";
                 return error::address_registered_did;
             }
 
@@ -1048,7 +1050,9 @@ code validate_transaction::check_did_transaction() const
             }
         }
         else if (output.is_did_transfer()) {
-            if (chain.is_address_registered_did(output.get_did_address()), fork_index) {
+            if (chain.is_address_registered_did(output.get_did_address(), fork_index)) {
+                log::debug(LOG_BLOCKCHAIN) << "address "
+                    << output.get_did_address() << " already exists did, cannot transfer did.";
                 return error::address_registered_did;
             }
 
@@ -1164,7 +1168,7 @@ code validate_transaction::check_attachment_to_did(const output& output) const
         return error::success;
     }
 
-    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
     auto did = blockchain_.get_did_from_address(address, fork_index);
     if (todid == did) {
         return error::success;
@@ -1199,7 +1203,7 @@ code validate_transaction::connect_attachment_from_did(const output& output) con
             return error::success;
         }
 
-        uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : 0;
+        uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
         if (from_did == blockchain_.get_did_from_address(address, fork_index)) {
             return error::success;
         }

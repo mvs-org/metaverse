@@ -239,7 +239,7 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 auto didexist = dids.insert(didsymbol);
                 if (didexist.second == false) {
                     log::debug(LOG_BLOCKCHAIN)
-                        << "check_symbol_repeat did " + output.get_did_symbol()
+                        << "check_symbol_repeat did " + didsymbol
                         << " already exists in memorypool!"
                         << " " << tx->to_string(1);
                     return error::did_exist;
@@ -248,14 +248,19 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
                 auto didaddress = didaddreses.insert(output.get_did_address());
                 if (didaddress.second == false)
                 {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat did address " + output.get_did_address()
+                        << " already has did on it in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::address_registered_did;
                 }
 
                 if (didattaches.find(didsymbol) != didattaches.end())
                 {
                     log::debug(LOG_BLOCKCHAIN)
-                    << "check_symbol_repeat attachment did: " + didsymbol
-                    << " already transfer in memorypool!";
+                        << "check_symbol_repeat attachment did: " + didsymbol
+                        << " already transfer in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::did_exist;
                 }
             }

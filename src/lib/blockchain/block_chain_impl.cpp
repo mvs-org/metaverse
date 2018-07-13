@@ -1895,8 +1895,7 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
 std::string block_chain_impl::get_did_from_address(const std::string& did_address, uint64_t fork_index)
 {
     // find from blockchain database
-    uint64_t end_height = fork_index ? fork_index : max_uint64;
-    auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, end_height);
+    auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
 
     if (sp_did_vec && !sp_did_vec->empty()) {
         return sp_did_vec->back().get_did().get_symbol();
