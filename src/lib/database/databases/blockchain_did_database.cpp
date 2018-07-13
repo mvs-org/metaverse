@@ -248,6 +248,37 @@ std::shared_ptr<blockchain_did> blockchain_did_database::update_address_status(c
     return detail;
 }
 
+std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_from_address_history(const std::string &address,
+ const uint64_t &fromheight, const uint64_t &toheight) const
+{
+    auto vec_acc = std::make_shared<std::vector<blockchain_did>>();
+    uint64_t i = 0;
+    for( i = 0; i < number_buckets; i++ ) {
+        auto memo = lookup_map_.finds(i);
+        for(auto& elem : memo)
+        {
+            const auto memory = REMAP_ADDRESS(elem);
+            auto deserial = make_deserializer_unsafe(memory);
+            blockchain_did blockchain_did_ = blockchain_did::factory_from_data(deserial);
+
+            const auto height = blockchain_did_.get_height();
+            const auto did_address = blockchain_did_.get_did().get_address();
+
+            if(height >= fromheight && height <= toheight && did_address == address){
+                vec_acc->emplace_back(blockchain_did_);
+            }             
+        }
+        
+    }
+
+    std::sort(vec_acc->begin(), vec_acc->end(), []( blockchain_did & first, blockchain_did & second)
+    {
+        return first.get_height() < second.get_height();
+    });
+    return vec_acc;
+    
+}
+
 std::shared_ptr<blockchain_did> blockchain_did_database::pop_did_transfer(const hash_digest &hash)
 {
     lookup_map_.unlink(hash);

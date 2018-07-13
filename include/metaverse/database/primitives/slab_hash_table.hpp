@@ -72,6 +72,7 @@ public:
     std::shared_ptr<std::vector<memory_ptr>> find(uint64_t index) const;
     const memory_ptr rfind(const KeyType& key) const;
     std::vector<memory_ptr> finds(const KeyType& key) const;
+    std::vector<memory_ptr> finds(uint64_t index) const;
 
     /// Delete a key-value pair from the hashtable by unlinking the node.
     bool unlink(const KeyType& key);

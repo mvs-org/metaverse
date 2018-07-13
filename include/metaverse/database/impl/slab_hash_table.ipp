@@ -182,6 +182,37 @@ std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const KeyType& key) cons
     return ret;
 }
 
+template <typename KeyType>
+std::vector<memory_ptr> slab_hash_table<KeyType>::finds(uint64_t index) const
+{
+    std::vector<memory_ptr> ret;
+    auto current = header_.read(index);
+    static_assert(sizeof(current) == sizeof(file_offset), "Invalid size");
+
+    // Iterate through list...
+    while (current != header_.empty)
+    {
+        const slab_row<KeyType> item(manager_, current);
+
+        if(item.out_of_memory())
+            break;
+        
+        ret.push_back(item.data());
+
+        const auto previous = current;
+        current = item.next_position();
+
+        // This may otherwise produce an infinite loop here.
+        // It indicates that a write operation has interceded.
+        // So we must return gracefully vs. looping forever.
+        if (previous == current)
+            break;
+    }
+
+    return ret;
+}
+
+
 // This is limited to returning all the item in the special index.
 template <typename KeyType>
 std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t index) const
