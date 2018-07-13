@@ -1171,7 +1171,8 @@ code validate_transaction::check_attachment_to_did(const output& output) const
     }
 
     log::debug(LOG_BLOCKCHAIN) << "check_attachment_to_did: "
-        << todid << ", address: " << address;
+        << todid << ", address: " << address
+        << "; get did from address is " << did;
     return error::did_address_not_match;
 }
 

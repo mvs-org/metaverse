@@ -157,10 +157,16 @@ code output::check_attachment_address(bc::blockchain::block_chain_impl& chain) c
     if (is_asset || is_did) {
         auto script_address = get_script_address();
         if (attachment_address != script_address) {
-            if (is_asset)
+            log::debug("output::check_attachment_address")
+                << (is_asset ? "asset" : "did")
+                << " attachment address " << attachment_address
+                << " is not equal to script address " << script_address;
+            if (is_asset) {
                 return error::asset_address_not_match;
-            if (is_did)
+            }
+            if (is_did) {
                 return error::did_address_not_match;
+            }
         }
     }
     return error::success;

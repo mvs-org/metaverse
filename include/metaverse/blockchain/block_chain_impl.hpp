@@ -320,11 +320,11 @@ public:
     std::shared_ptr<account_address::list> get_account_addresses(const std::string& name);
     void uppercase_symbol(std::string& symbol);
 
-    bool is_valid_address(const std::string& address);
-    bool is_payment_address(const std::string& address);
-    bool is_stealth_address(const std::string& address);
-    bool is_script_address(const std::string& address);
-    bool is_blackhole_address(const std::string& address);
+    static bool is_valid_address(const std::string& address);
+    static bool is_payment_address(const std::string& address);
+    static bool is_stealth_address(const std::string& address);
+    static bool is_script_address(const std::string& address);
+    static bool is_blackhole_address(const std::string& address);
 
     void fired();
     organizer& get_organizer();

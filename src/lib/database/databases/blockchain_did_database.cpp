@@ -254,8 +254,8 @@ std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_f
     auto vec_acc = std::make_shared<std::vector<blockchain_did>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {
-        auto memo = lookup_map_.finds(i);
-        for(auto& elem : memo)
+        auto sp_memo = lookup_map_.find(i);
+        for(auto& elem : *sp_memo)
         {
             const auto memory = REMAP_ADDRESS(elem);
             auto deserial = make_deserializer_unsafe(memory);
@@ -264,11 +264,13 @@ std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_f
             const auto height = blockchain_did_.get_height();
             const auto did_address = blockchain_did_.get_did().get_address();
 
-            if(height >= fromheight && height <= toheight && did_address == address){
-                vec_acc->emplace_back(blockchain_did_);
-            }             
+            if (did_address == address) {
+                if((height >= fromheight && height <= toheight)
+                    || (height == max_uint32 && address == wallet::payment_address::blackhole_address)) {
+                    vec_acc->emplace_back(blockchain_did_);
+                }
+            }
         }
-        
     }
 
     std::sort(vec_acc->begin(), vec_acc->end(), []( blockchain_did & first, blockchain_did & second)
