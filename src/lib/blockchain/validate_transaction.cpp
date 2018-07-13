@@ -999,6 +999,27 @@ bool validate_transaction::check_asset_mit_exist(const std::string& mit) const
     return height != max_uint64;
 }
 
+bool validate_transaction::check_address_registered_did(const std::string& address) const
+{
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
+    auto did_symbol = blockchain_.get_did_from_address(address, fork_index);
+
+    if (!validate_block_) {
+        if (did_symbol.empty()) {
+            return false;
+        }
+    }
+    else {
+        did_symbol = validate_block_->get_did_from_address_consider_orphan_chain(address, did_symbol);
+        if (did_symbol.empty()) {
+            return false;
+        }
+    }
+
+    log::debug(LOG_BLOCKCHAIN) << "address " << address << " already exists did " << did_symbol;
+    return true;
+}
+
 code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
@@ -1034,7 +1055,7 @@ code validate_transaction::check_did_transaction() const
                 return error::did_exist;
             }
 
-            if (chain.is_address_registered_did(output.get_did_address(), fork_index)) {
+            if (check_address_registered_did(output.get_did_address())) {
                 log::debug(LOG_BLOCKCHAIN) << "address "
                     << output.get_did_address() << " already exists did, cannot register did.";
                 return error::address_registered_did;
@@ -1050,7 +1071,7 @@ code validate_transaction::check_did_transaction() const
             }
         }
         else if (output.is_did_transfer()) {
-            if (chain.is_address_registered_did(output.get_did_address(), fork_index)) {
+            if (check_address_registered_did(output.get_did_address())) {
                 log::debug(LOG_BLOCKCHAIN) << "address "
                     << output.get_did_address() << " already exists did, cannot transfer did.";
                 return error::address_registered_did;

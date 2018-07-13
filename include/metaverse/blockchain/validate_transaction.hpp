@@ -82,6 +82,7 @@ public:
     bool check_asset_symbol(const transaction& tx) const;
     bool check_asset_certs(const transaction& tx) const;
     bool check_asset_mit(const transaction& tx) const;
+    bool check_address_registered_did(const std::string& address) const;
 
     //check input did match output did
     bool check_did_symbol_match(const transaction& tx) const;

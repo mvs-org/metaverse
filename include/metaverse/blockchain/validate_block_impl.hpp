@@ -44,6 +44,7 @@ public:
     virtual bool is_valid_proof_of_work(const chain::header& header) const;
     virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
 
+    virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const override;
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const override;
     virtual bool is_did_in_orphan_chain(const std::string& symbol) const override;
     virtual bool is_asset_in_orphan_chain(const std::string& symbol) const override;

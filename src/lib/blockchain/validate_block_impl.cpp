@@ -190,6 +190,59 @@ bool validate_block_impl::fetch_orphan_transaction(chain::transaction& tx,
     return false;
 }
 
+std::string validate_block_impl::get_did_from_address_consider_orphan_chain(
+    const std::string& address, const std::string& did_symbol) const
+{
+    BITCOIN_ASSERT(!address.empty());
+
+    if (address.empty()) {
+        log::debug("blockchain") << "get_did_from_address_consider_orphan_chain: address is empty";
+        return "";
+    }
+
+    auto orphan = orphan_index_;
+    while (orphan > 0) {
+        const auto& orphan_block = orphan_chain_[--orphan]->actual();
+        for (const auto& orphan_tx : orphan_block->transactions) {
+            // iter outputs
+            for (const auto& output : orphan_tx.outputs) {
+                if (output.is_did_register() || output.is_did_transfer()) {
+                    if (address == output.get_did_address()) {
+                        return output.get_did_symbol();
+                    }
+                }
+            }
+
+            // iter inputs
+            for (const auto& input : orphan_tx.inputs) {
+                size_t previous_height;
+                transaction previous_tx;
+                const auto& previous_output = input.previous_output;
+
+                // This searches the blockchain and then the orphan pool up to and
+                // including the current (orphan) block and excluding blocks above fork.
+                if (!fetch_transaction(previous_tx, previous_height, previous_output.hash))
+                {
+                    log::warning(LOG_BLOCKCHAIN)
+                            << "Failure fetching input transaction ["
+                            << encode_hash(previous_output.hash) << "]";
+                    return "";
+                }
+
+                const auto& previous_tx_out = previous_tx.outputs[previous_output.index];
+
+                if (previous_tx_out.is_did_register() || previous_tx_out.is_did_transfer()) {
+                    if (address == previous_tx_out.get_did_address()) {
+                        return "";
+                    }
+                }
+            }
+        }
+    }
+
+    return did_symbol;
+}
+
 bool validate_block_impl::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
     BITCOIN_ASSERT(!did.empty());

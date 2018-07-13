@@ -55,6 +55,7 @@ public:
 
     bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, size_t& prev_height) const;
 
+    virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const = 0;
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const = 0;
     virtual bool is_did_in_orphan_chain(const std::string& symbol) const = 0;
     virtual bool is_asset_in_orphan_chain(const std::string& symbol) const = 0;

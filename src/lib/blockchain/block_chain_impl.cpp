@@ -1904,12 +1904,14 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
     if(did_symbol != "")
     {
         //double check
-        if(fork_index == max_uint64)
-        {
-            std::shared_ptr<blockchain_did::list>  blockchain_didlist = get_did_history_addresses(did_symbol);
-            if(!blockchain_didlist || blockchain_didlist->empty()
-                || blockchain_didlist->front().get_did().get_address() != did_address)
+        std::shared_ptr<blockchain_did::list>  blockchain_didlist = get_did_history_addresses(did_symbol);
+        for (const auto& item : *blockchain_didlist) {
+            if (item.get_height() > fork_index) {
+                continue;
+            }
+            if(item.get_did().get_address() != did_address) {
                 return "";
+            }
         }
     }
     else 

@@ -131,8 +131,6 @@ std::shared_ptr<blockchain_did> blockchain_did_database::get(const hash_digest& 
 std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_history_dids(const hash_digest &hash) const
 {
     auto did_details = std::make_shared<std::vector<blockchain_did>>();
-    if (!did_details)
-        return nullptr;
 
     const auto raw_memory_vec = lookup_map_.finds(hash);
     for(const auto& raw_memory : raw_memory_vec) {
