@@ -685,8 +685,11 @@ business_address_did::list address_did_database::get_dids(const std::string& add
             && (row.data.get_kind_value() != business_kind::did_transfer))  // did_transfer
             continue;
 
-        if (to_height != 0 && row.output_height > to_height) {
-            continue;
+        if(address != wallet::payment_address::blackhole_address)
+        {
+            if (row.output_height > to_height) {
+                continue;
+            }
         }
 
         uint8_t status = 0xff;

@@ -1894,14 +1894,34 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
 */
 std::string block_chain_impl::get_did_from_address(const std::string& did_address, uint64_t fork_index)
 {
-    // find from blockchain database
-    auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
+    //search from address_did_database first
+    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0, fork_index);
 
-    if (sp_did_vec && !sp_did_vec->empty()) {
-        return sp_did_vec->back().get_did().get_symbol();
+    std::string  did_symbol= "";
+    if(!did_vec.empty())
+        did_symbol = did_vec[0].detail.get_symbol();
+
+    if(did_symbol != "")
+    {
+        //double check
+        if(fork_index == max_uint64)
+        {
+            std::shared_ptr<blockchain_did::list>  blockchain_didlist = get_did_history_addresses(did_symbol);
+            if(!blockchain_didlist || blockchain_didlist->empty()
+                || blockchain_didlist->front().get_did().get_address() != did_address)
+                return "";
+        }
+    }
+    else 
+    {
+        // search from dids database
+        auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
+        if (sp_did_vec && !sp_did_vec->empty()) {
+            did_symbol = sp_did_vec->back().get_did().get_symbol();
+        }
     }
 
-    return "";
+    return did_symbol;
 }
 
 /* find history addresses by the did symbol
