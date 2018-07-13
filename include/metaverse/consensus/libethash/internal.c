@@ -8,11 +8,11 @@
 
   ethash is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    See the
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with cpp-ethereum.    If not, see <http://www.gnu.org/licenses/>.
+  along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @file internal.c
 * @author Tim Hughes <tim@twistedfury.com>
@@ -218,10 +218,10 @@ static bool ethash_hash(
 
         for (unsigned n = 0; n != MIX_NODES; ++n) {
             node const* dag_node;
+            node tmp_node;
             if (full_nodes) {
                 dag_node = &full_nodes[MIX_NODES * index + n];
             } else {
-                node tmp_node;
                 ethash_calculate_dag_item(&tmp_node, index * MIX_NODES + n, light);
                 dag_node = &tmp_node;
             }
@@ -241,7 +241,7 @@ static bool ethash_hash(
             #elif defined(__MIC__)
             {
                 // __m512i implementation via union
-                //    Each vector register (zmm) can store sixteen 32-bit integer numbers
+                //  Each vector register (zmm) can store sixteen 32-bit integer numbers
                 __m512i fnv_prime = _mm512_set1_epi32(FNV_PRIME);
                 __m512i zmm0 = _mm512_mullo_epi32(fnv_prime, mix[n].zmm[0]);
                 mix[n].zmm[0] = _mm512_xor_si512(zmm0, dag_node->zmm[0]);
@@ -389,7 +389,7 @@ ethash_return_value_t ethash_light_compute_internal(
     uint64_t nonce
 )
 {
-      ethash_return_value_t ret;
+    ethash_return_value_t ret;
     ret.success = true;
     if (!ethash_hash(&ret, NULL, light, full_size, header_hash, nonce)) {
         ret.success = false;
@@ -446,41 +446,43 @@ ethash_full_t ethash_full_new_internal(
         return NULL;
     }
     ret->file_size = (size_t)full_size;
-    switch (ethash_io_prepare(dirname, seed_hash, &f, (size_t)full_size, false)) {
-    case ETHASH_IO_FAIL:
-        // ethash_io_prepare will do all ETHASH_CRITICAL() logging in fail case
+
+    enum ethash_io_rc err = ethash_io_prepare(dirname, seed_hash, &f, (size_t)full_size, false);
+    if (err == ETHASH_IO_FAIL)
         goto fail_free_full;
-    case ETHASH_IO_MEMO_MATCH:
-        if (!ethash_mmap(ret, f)) {
-            ETHASH_CRITICAL("mmap failure()");
-            goto fail_close_file;
-        }
-#if defined(__MIC__)
-        node* tmp_nodes = _mm_malloc((size_t)full_size, 64);
-        //copy all nodes from ret->data
-        //mmapped_nodes are not aligned properly
-        uint32_t const countnodes = (uint32_t) ((size_t)ret->file_size / sizeof(node));
-        //fprintf(stderr,"ethash_full_new_internal:countnodes:%d",countnodes);
-        for (uint32_t i = 1; i != countnodes; ++i) {
-            tmp_nodes[i] = ret->data[i];
-        }
-        ret->data = tmp_nodes;
-#endif
-        return ret;
-    case ETHASH_IO_MEMO_SIZE_MISMATCH:
+
+    if (err == ETHASH_IO_MEMO_SIZE_MISMATCH) {
         // if a DAG of same filename but unexpected size is found, silently force new file creation
         if (ethash_io_prepare(dirname, seed_hash, &f, (size_t)full_size, true) != ETHASH_IO_MEMO_MISMATCH) {
             ETHASH_CRITICAL("Could not recreate DAG file after finding existing DAG with unexpected size.");
             goto fail_free_full;
         }
-        // fallthrough to the mismatch case here, DO NOT go through match
-    case ETHASH_IO_MEMO_MISMATCH:
+        // we now need to go through the mismatch case, NOT the match case
+        err = ETHASH_IO_MEMO_MISMATCH;
+    }
+
+    if (err == ETHASH_IO_MEMO_MISMATCH || err == ETHASH_IO_MEMO_MATCH) {
         if (!ethash_mmap(ret, f)) {
             ETHASH_CRITICAL("mmap failure()");
             goto fail_close_file;
         }
-        break;
+
+        if (err == ETHASH_IO_MEMO_MATCH) {
+#if defined(__MIC__)
+            node* tmp_nodes = _mm_malloc((size_t)full_size, 64);
+            //copy all nodes from ret->data
+            //mmapped_nodes are not aligned properly
+            uint32_t const countnodes = (uint32_t) ((size_t)ret->file_size / sizeof(node));
+            //fprintf(stderr,"ethash_full_new_internal:countnodes:%d",countnodes);
+            for (uint32_t i = 1; i != countnodes; ++i) {
+                tmp_nodes[i] = ret->data[i];
+            }
+            ret->data = tmp_nodes;
+#endif
+            return ret;
+        }
     }
+
 
 #if defined(__MIC__)
     ret->data = _mm_malloc((size_t)full_size, 64);
