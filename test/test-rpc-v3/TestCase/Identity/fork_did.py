@@ -80,7 +80,7 @@ class TestFork(ForkTestCase):
         # check asset
         ec, message = mvs_rpc.get_asset( )
         self.assertEqual(ec, 0, message)
-        self.assertNotIn(asset_symbol, message["assets"])
+        self.assertNotIn(asset_symbol, message)
 
         addressassets = Alice.get_addressasset(Alice.mainaddress())
         addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
@@ -210,7 +210,6 @@ class TestFork(ForkTestCase):
         self.assertEqual(ec, 0, message)
         pre_height = message[0]
         print "pre_height:"+str(pre_height)
-        import pdb; pdb.set_trace()
 
         self.make_partion()
         import time
