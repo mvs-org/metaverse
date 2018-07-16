@@ -1880,9 +1880,10 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
     auto pvaddr = get_account_addresses(account);
     if (pvaddr) {
         for (const auto& account_address : *pvaddr) {
-            auto&& did_vec = database_.address_dids.get_dids(account_address.get_address(), 0);
-            if (!did_vec.empty()) {
-                sh_vec->emplace_back(std::move(did_vec[0].detail));
+            auto did_address = account_address.get_address();
+            auto did_symbol = get_did_from_address(did_address);
+            if (!did_symbol.empty()) {
+                sh_vec->emplace_back(did_detail(did_symbol, did_address));
             }
         }
     }
@@ -1912,11 +1913,11 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
             if(item.get_did().get_address() == did_address) {
                 return did_symbol;
             }
-            
-            return "";            
+
+            return "";
         }
     }
-    else 
+    else
     {
         // search from dids database
         auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
