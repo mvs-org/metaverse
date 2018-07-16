@@ -692,7 +692,8 @@ def ban_node(peer):
 
 @mvs_api
 def register_mit(account, password, to_did, symbol=None, content=None, mits=None, fee=None):
-
+    if None == content:
+        content = ""
     '''
     account          Account name required.
     password         Account password(authorization) required.

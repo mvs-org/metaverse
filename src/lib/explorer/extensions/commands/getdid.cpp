@@ -41,6 +41,7 @@ console_result getdid::invoke (Json::Value& jv_output,
 
         auto sh_vec = blockchain.get_registered_dids();
 
+        std::sort(sh_vec->begin(), sh_vec->end());
         // add blockchain dids
         for (auto& elem : *sh_vec) {
             json_value.append(elem.get_symbol());
