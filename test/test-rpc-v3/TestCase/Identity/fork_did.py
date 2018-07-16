@@ -196,8 +196,8 @@ class TestFork(ForkTestCase):
         mvs_rpc.new_address(Zac.name,Zac.password, 2)
         mvs_rpc.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123456", ' '.join(Zac.mnemonic),2)
         receivers={}
-        receivers[Zac.addresslist[0]] = 10**10
-        receivers[Zac.addresslist[1]] = 10**10
+        receivers[Zac.addresslist[0]] = (9**10)
+        receivers[Zac.addresslist[1]] = (9**10)
         Alice.sendmore_etp(receivers)
         Alice.mining()
 
@@ -205,6 +205,8 @@ class TestFork(ForkTestCase):
         domain_symbol = ("Zacfork" + common.get_random_str()).upper()
         asset_symbol = domain_symbol + ".AST"
 
+        # mit
+        mit_symbol = ("MIT." + common.get_random_str()).upper()
 
         ec, message = mvs_rpc.get_info()
         self.assertEqual(ec, 0, message)
@@ -238,19 +240,16 @@ class TestFork(ForkTestCase):
 
             mvs_rpc.transfer_cert(Alice.name, Alice.password, "BLACKHOLE", domain_symbol, "DOMAIN")
             self.assertEqual(ec, 0, message)
-            Alice.mining(10)
+            Alice.mining()
 
-            ec, message = mvs_rpc.get_info()
-            self.assertEqual(ec, 0, message)
-            fork_height = message[0]
+            ec, message = mvs_rpc.register_mit(Zac.name, Zac.password, did_symbol, mit_symbol, "test fork mit")
+            self.assertEqual(ec, code.success, message)
+            Alice.mining(5)
 
-            while  fork_height < pre_height+15:
-                time.sleep(1)
-                ec, message = mvs_rpc.get_info()
-                self.assertEqual(ec, 0, message)
-                fork_height = message[0]
-                print "fork_height:"+str(fork_height)
-              
+            ec, message = mvs_rpc.transfer_mit(Zac.name, Zac.password, "BLACKHOLE", mit_symbol)
+            self.assertEqual(ec, code.success, message)
+            Alice.mining(5)
+          
         finally:
             # main chain
             self.remote_ming(2)
@@ -272,25 +271,27 @@ class TestFork(ForkTestCase):
 
             ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.transfer_cert)(rmtName, "123456", "BLACKHOLE", domain_symbol, "DOMAIN")
             self.assertEqual(ec, 0, message)
+            self.remote_ming(1)
+
+            ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.register_mit)(rmtName, "123456", did_symbol, mit_symbol)
+            self.assertEqual(ec, code.success, message)
+            self.remote_ming(1)
+
+            ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.transfer_mit)(rmtName, "123456", "BLACKHOLE", mit_symbol)
+            self.assertEqual(ec, code.success, message)
             self.remote_ming(20)
 
 
-            ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
-            self.assertEqual(ec, 0, message)
-            main_height = message[0]
-
-            while  main_height < pre_height+25:
-                time.sleep(1)
-                ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
-                self.assertEqual(ec, 0, message)
-                main_height = message[0]
-                print "main_height:"+str(main_height)
 
 
 
 
         ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
         self.assertEqual(ec, 0, message)
+
+        ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
+        self.assertEqual(ec, 0, message)
+        main_height = message[0]
 
         ec, message = mvs_rpc.get_info()
         self.assertEqual(ec, 0, message)
