@@ -188,29 +188,56 @@ class TestFork(ForkTestCase):
 
 
 
-    def test_5_fork_at_register(self):
+    def test_5_fork_at_did(self):
+        #
         did_symbol = "test_fork_registerdiid"+common.get_random_str()
         rmtName = Zac.name+common.get_random_str()
         print rmtName
         mvs_rpc.new_address(Zac.name,Zac.password, 2)
         mvs_rpc.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123456", ' '.join(Zac.mnemonic),2)
         receivers={}
-        receivers[Zac.addresslist[0]] = 10**8
-        receivers[Zac.addresslist[1]] = 10**8
+        receivers[Zac.addresslist[0]] = 10**10
+        receivers[Zac.addresslist[1]] = 10**10
         Alice.sendmore_etp(receivers)
         Alice.mining()
+
+        # asset
+        domain_symbol = ("Zacfork" + common.get_random_str()).upper()
+        asset_symbol = domain_symbol + ".AST"
+
 
         ec, message = mvs_rpc.get_info()
         self.assertEqual(ec, 0, message)
         pre_height = message[0]
         print "pre_height:"+str(pre_height)
+        import pdb; pdb.set_trace()
 
         self.make_partion()
         import time
         try:
-            # fork
+            # fork chain
             Alice.mining()
             ec, message = Zac.register_did(Zac.addresslist[0], did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            ec, message = mvs_rpc.change_did(Zac.name, Zac.password, Zac.addresslist[1], did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            Zac.create_asset_with_symbol(asset_symbol, True, 0, did_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            Zac.send_asset(Zac.addresslist[1], 100 ,asset_symbol)
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            mvs_rpc.transfer_cert(Zac.name, Zac.password, Alice.did_symbol, domain_symbol, "DOMAIN")
+            self.assertEqual(ec, 0, message)
+            Alice.mining()
+
+            mvs_rpc.transfer_cert(Alice.name, Alice.password, "BLACKHOLE", domain_symbol, "DOMAIN")
             self.assertEqual(ec, 0, message)
             Alice.mining(10)
 
@@ -218,8 +245,9 @@ class TestFork(ForkTestCase):
             self.assertEqual(ec, 0, message)
             fork_height = message[0]
 
-            while  fork_height < pre_height+11:
+            while  fork_height < pre_height+15:
                 time.sleep(1)
+                ec, message = mvs_rpc.get_info()
                 self.assertEqual(ec, 0, message)
                 fork_height = message[0]
                 print "fork_height:"+str(fork_height)
@@ -229,13 +257,30 @@ class TestFork(ForkTestCase):
             self.remote_ming(2)
             ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.register_did)(rmtName, "123456", Zac.addresslist[1],did_symbol)
             self.assertEqual(ec, 0, message)
-            self.remote_ming(20)
+            self.remote_ming(1)
             
+            ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.change_did)(rmtName, "123456", Zac.addresslist[0], did_symbol)
+            self.assertEqual(ec, 0, message)
+            self.remote_ming(1)
+
+            ec, message = self.create_asset_with_symbol_rmt(rmtName, "123456", asset_symbol, True, 0, did_symbol)
+            self.assertEqual(ec, 0, message)
+            self.remote_ming(1)
+
+            ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.send_asset)(rmtName, "123456",Zac.addresslist[1], asset_symbol,100)
+            self.assertEqual(ec, 0, message)
+            self.remote_ming(1)
+
+            ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.transfer_cert)(rmtName, "123456", "BLACKHOLE", domain_symbol, "DOMAIN")
+            self.assertEqual(ec, 0, message)
+            self.remote_ming(20)
+
+
             ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
             self.assertEqual(ec, 0, message)
             main_height = message[0]
 
-            while  fork_height < pre_height+22:
+            while  main_height < pre_height+25:
                 time.sleep(1)
                 ec, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.get_info)()
                 self.assertEqual(ec, 0, message)
@@ -243,9 +288,34 @@ class TestFork(ForkTestCase):
                 print "main_height:"+str(main_height)
 
 
+
+
         ec, message = mvs_rpc.add_node( self.remote_ip+':5251')
         self.assertEqual(ec, 0, message)
 
+        ec, message = mvs_rpc.get_info()
+        self.assertEqual(ec, 0, message)
+        fork_height = message[0]
+        while  fork_height < main_height:
+            time.sleep(1)
+            ec, message = mvs_rpc.get_info()
+            self.assertEqual(ec, 0, message)
+            fork_height = message[0]
+            print "fork_height:"+str(fork_height) + ",main_height:"+str(main_height)
+
         ec, message = mvs_rpc.list_didaddresses(did_symbol)
         self.assertEqual(ec, 0, message)
-        self.assertEqual(message[0]["address"], Zac.addresslist[1], message)
+        self.assertEqual(message[0]["address"], Zac.addresslist[0], message)
+
+
+    def create_asset_with_symbol_rmt(self, name, password, symbol, is_issue, secondary, did_symbol):
+        result, message = mvs_rpc.remote_call(self.remote_ip, mvs_rpc.create_asset)(name, password, symbol, 300000, did_symbol, description="%s's Asset" % name, rate=secondary)
+        if (result):
+            print("#ERROR#: failed to create asset: {}".format(message))
+        assert (result == 0)
+        if is_issue:
+            result, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.issue_asset)(name, password, symbol)
+            if (result):
+                print("#ERROR#: failed to issue asset: {}".format(message))
+            assert (result == 0)
+        return result, message
