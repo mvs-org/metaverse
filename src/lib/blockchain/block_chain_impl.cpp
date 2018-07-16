@@ -1909,9 +1909,11 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
             if (item.get_height() > fork_index) {
                 continue;
             }
-            if(item.get_did().get_address() != did_address) {
-                return "";
+            if(item.get_did().get_address() == did_address) {
+                return did_symbol;
             }
+            
+            return "";            
         }
     }
     else 
