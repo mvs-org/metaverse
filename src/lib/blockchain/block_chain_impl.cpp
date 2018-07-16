@@ -24,6 +24,8 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <algorithm>
+#include <algorithm>
 #include <utility>
 #include <unordered_map>
 #include <boost/filesystem.hpp>
@@ -1890,7 +1892,6 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
 
     return sh_vec;
 }
-
 /* find did by address
 */
 std::string block_chain_impl::get_did_from_address(const std::string& did_address, uint64_t fork_index)
@@ -1906,18 +1907,15 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
     {
         //double check
         std::shared_ptr<blockchain_did::list>  blockchain_didlist = get_did_history_addresses(did_symbol);
-        for (const auto& item : *blockchain_didlist) {
-            if (item.get_height() > fork_index) {
-                continue;
-            }
-            if(item.get_did().get_address() == did_address) {
-                return did_symbol;
-            }
-
+        auto iter = std::find_if(blockchain_didlist->begin(), blockchain_didlist->end(),
+        [fork_index](const blockchain_did & item){
+            return is_blackhole_address(item.get_did().get_address()) || item.get_height() <= fork_index;
+        });
+        
+        if(iter == blockchain_didlist->end() || iter->get_did().get_address() != did_address)   
             return "";
-        }
     }
-    else
+    else if(did_symbol == "" && fork_index != max_uint64)
     {
         // search from dids database
         auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
