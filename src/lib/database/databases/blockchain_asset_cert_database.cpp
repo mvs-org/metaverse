@@ -145,6 +145,7 @@ std::shared_ptr<std::vector<asset_cert>> blockchain_asset_cert_database::get_blo
     return vec_acc;
 }
 
+
 void blockchain_asset_cert_database::store(const asset_cert& sp_cert)
 {
     auto&& key_str = sp_cert.get_key();

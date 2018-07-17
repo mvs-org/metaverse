@@ -275,6 +275,9 @@ BCX_API Json::Value prop_tree(const chain::points_info& points_info, bool json);
  */
 BCX_API Json::Value prop_list(const transaction& transaction, bool json);
 BCX_API Json::Value prop_list(const transaction& transaction, uint64_t tx_height, bool json);
+
+BCX_API Json::Value prop_list_of_rawtx(const transaction& transaction, bool with_hash, bool ignore_compatibility=false);
+
 /**
  * Generate a property tree for a transaction.
  * @param[in]  transaction  The transaction.
@@ -463,6 +466,14 @@ BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
  * @return             A property list.
  */
 BCX_API Json::Value prop_attenuation_model_param(const data_chunk& param);
+
+/**
+ * Generate a property list for an account.
+ * @param[in]  acc        The account.
+ * @return             A property list.
+ */
+typedef std::tuple<std::string, std::string, Json::Value> account_info;
+BCX_API Json::Value prop_list(const account_info& acc);
 
 private:
     uint8_t version_{ 1 }; //1 - api v1; 2 - api v2;

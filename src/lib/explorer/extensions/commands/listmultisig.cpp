@@ -39,7 +39,6 @@ console_result listmultisig::invoke(Json::Value& jv_output,
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     Json::Value nodes;
-
     auto multisig_vec = acc->get_multisig_vec();
     auto helper = config::json_helper(get_api_version());
     for(auto& acc_multisig : multisig_vec) {
@@ -50,8 +49,14 @@ console_result listmultisig::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && nodes.isNull()) { // compatible for v1
         jv_output["multisig"] = "";
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output["multisig"] = nodes;
+    }
+    else {
+        if(nodes.isNull())
+            nodes.resize(0);  
+
+        jv_output = nodes;
     }
 
     return console_result::okay;

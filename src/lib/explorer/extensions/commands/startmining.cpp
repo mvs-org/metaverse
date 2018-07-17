@@ -54,12 +54,21 @@ console_result startmining::invoke(Json::Value& jv_output,
         // get new address
         const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
 
-        if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
+        if (dispatch_command(3, cmds2, jv_temp, node, get_api_version()) != console_result::okay) {
             throw address_generate_exception(jv_temp.asString());
         }
 
-        str_addr = jv_temp["addresses"][0].asString();
-    } else {
+        if (get_api_version() == 1) {
+            str_addr = jv_temp.asString();
+        }
+        else if (get_api_version() == 2) {
+            str_addr = jv_temp["addresses"][0].asString();
+        }
+        else {
+            str_addr = jv_temp[0].asString();
+        }
+    }
+    else {
         blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
         if (!blockchain.is_valid_address(str_addr)) {

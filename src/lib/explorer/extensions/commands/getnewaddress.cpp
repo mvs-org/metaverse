@@ -54,7 +54,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     }
 
     Json::Value addresses;
-
+    
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
     const auto seed = decode_mnemonic(words);
@@ -108,8 +108,13 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && option_.count == 1) {
         jv_output = addresses[0];
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output["addresses"] = addresses;
+    }
+    else {
+        if(addresses.isNull())
+            addresses.resize(0);  
+        jv_output = addresses;
     }
 
     return console_result::okay;

@@ -51,8 +51,14 @@ console_result listaddresses::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && addresses.isNull()) { // compatible for v1
         aroot["addresses"] = "";
     }
-    else {
+    else if (get_api_version() <= 2) {
         aroot["addresses"] = addresses;
+    }
+    else {
+        if(addresses.isNull())
+            addresses.resize(0);  
+
+        aroot = addresses;
     }
 
     return console_result::okay;

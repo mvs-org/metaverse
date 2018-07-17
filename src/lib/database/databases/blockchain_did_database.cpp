@@ -131,8 +131,6 @@ std::shared_ptr<blockchain_did> blockchain_did_database::get(const hash_digest& 
 std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_history_dids(const hash_digest &hash) const
 {
     auto did_details = std::make_shared<std::vector<blockchain_did>>();
-    if (!did_details)
-        return nullptr;
 
     const auto raw_memory_vec = lookup_map_.finds(hash);
     for(const auto& raw_memory : raw_memory_vec) {
@@ -168,6 +166,35 @@ std::shared_ptr<std::vector<blockchain_did>> blockchain_did_database::get_blockc
     }
     return vec_acc;
 }
+
+///
+std::shared_ptr<blockchain_did> blockchain_did_database::get_register_history(const std::string & did_symbol) const
+{
+    std::shared_ptr<blockchain_did> blockchain_did_ = nullptr;
+    data_chunk data(did_symbol.begin(), did_symbol.end());
+    auto key = sha256_hash(data);
+
+    auto memo = lookup_map_.rfind(key);
+    if(memo)
+    {
+        blockchain_did_ = std::make_shared<blockchain_did>();
+        const auto memory = REMAP_ADDRESS(memo);
+        auto deserial = make_deserializer_unsafe(memory);
+        blockchain_did_->from_data(deserial);
+    }
+
+    return blockchain_did_;
+}
+
+ uint64_t blockchain_did_database::get_register_height(const std::string & did_symbol) const
+ {
+    std::shared_ptr<blockchain_did> blockchain_did_ = get_register_history(did_symbol);
+    if(blockchain_did_)
+        return blockchain_did_->get_height();
+        
+    return max_uint64;
+ }
+
 
 void blockchain_did_database::store(const hash_digest& hash, const blockchain_did& sp_detail)
 {
@@ -217,6 +244,39 @@ std::shared_ptr<blockchain_did> blockchain_did_database::update_address_status(c
     }
 
     return detail;
+}
+
+std::shared_ptr<std::vector<blockchain_did> > blockchain_did_database::getdids_from_address_history(const std::string &address,
+ const uint64_t &fromheight, const uint64_t &toheight) const
+{
+    auto vec_acc = std::make_shared<std::vector<blockchain_did>>();
+    uint64_t i = 0;
+    for( i = 0; i < number_buckets; i++ ) {
+        auto sp_memo = lookup_map_.find(i);
+        for(auto& elem : *sp_memo)
+        {
+            const auto memory = REMAP_ADDRESS(elem);
+            auto deserial = make_deserializer_unsafe(memory);
+            blockchain_did blockchain_did_ = blockchain_did::factory_from_data(deserial);
+
+            const auto height = blockchain_did_.get_height();
+            const auto did_address = blockchain_did_.get_did().get_address();
+
+            if (did_address == address) {
+                if((height >= fromheight && height <= toheight)
+                    || (height == max_uint32 && address == wallet::payment_address::blackhole_address)) {
+                    vec_acc->emplace_back(blockchain_did_);
+                }
+            }
+        }
+    }
+
+    std::sort(vec_acc->begin(), vec_acc->end(), []( blockchain_did & first, blockchain_did & second)
+    {
+        return first.get_height() < second.get_height();
+    });
+    return vec_acc;
+    
 }
 
 std::shared_ptr<blockchain_did> blockchain_did_database::pop_did_transfer(const hash_digest &hash)

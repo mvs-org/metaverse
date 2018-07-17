@@ -63,7 +63,7 @@ console_result changepasswd::invoke(Json::Value& jv_output,
 
     auto& jv = jv_output;
     jv["name"] = auth_.name;
-    jv["status"] = "password changed";
+    jv["status"] = "changed successfully";
 
     return console_result::okay;
 }

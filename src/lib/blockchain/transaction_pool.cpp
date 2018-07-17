@@ -162,100 +162,123 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
     std::set<string> asset_mits;
     std::set<string> dids;
     std::set<string> didaddreses;
+    std::set<string> didattaches;
 
-    for (auto& item : buffer_)
+    auto check_outputs = [&](transaction_ptr txs)->code
     {
-        if (!item.tx)
-            continue;
-
-        for (auto& output : item.tx->outputs)
+        for (auto &output : txs->outputs)
         {
-            if (output.is_asset_issue()) {
+            //add attachment check;avoid send with did while transfer
+            if (output.attach_data.get_version() == DID_ATTACH_VERIFY_VERSION)
+            {
+                auto check_did = [&dids, &didattaches](string attach_did) {
+                    if (!attach_did.empty() && dids.find(attach_did) != dids.end())
+                    {
+                        log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat attachment did: " + attach_did
+                        << " already exists in memorypool!";
+                        return false;
+                    }
+
+                    didattaches.insert(attach_did);
+                    return true;
+                };
+
+                if (!check_did(output.attach_data.get_from_did())
+                 || !check_did(output.attach_data.get_to_did())) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat from_did " + output.attach_data.get_from_did()
+                        << " to_did " + output.attach_data.get_to_did()
+                        << " check failed!"
+                        << " " << tx->to_string(1);
+                    return error::did_exist;
+                }
+            }
+
+            if (output.is_asset_issue())
+            {
                 auto r = assets.insert(output.get_asset_symbol());
-                if (r.second == false) {
+                if (r.second == false)
+                {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat asset " + output.get_asset_symbol()
+                        << " already exists in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::asset_exist;
                 }
             }
-            else if (output.is_asset_cert()) {
-                auto&& key = output.get_asset_cert().get_key();
+            else if (output.is_asset_cert())
+            {
+                auto &&key = output.get_asset_cert().get_key();
                 auto r = asset_certs.insert(key);
-                if (r.second == false) {
+                if (r.second == false)
+                {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " cert " + output.get_asset_cert_symbol()
+                        << "check_symbol_repeat cert " + output.get_asset_cert_symbol()
                         << " with type " << output.get_asset_cert_type()
-                        << " already exists in pool!"
+                        << " already exists in memorypool!"
                         << " " << tx->to_string(1);
                     return error::asset_cert_exist;
                 }
             }
-            else if (output.is_asset_mit()) {
+            else if (output.is_asset_mit())
+            {
                 auto r = asset_mits.insert(output.get_asset_symbol());
-                if (r.second == false) {
+                if (r.second == false)
+                {
                     log::debug(LOG_BLOCKCHAIN)
-                        << " mit " + output.get_asset_symbol()
-                        << " already exists in block!"
+                        << "check_symbol_repeat mit " + output.get_asset_symbol()
+                        << " already exists in memorypool!"
                         << " " << tx->to_string(1);
                     return error::mit_exist;
                 }
             }
-            else if (output.is_did()) {
-                auto didexist = dids.insert(output.get_did_symbol());
+            else if (output.is_did())
+            {
+                auto didsymbol = output.get_did_symbol();
+                auto didexist = dids.insert(didsymbol);
                 if (didexist.second == false) {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat did " + didsymbol
+                        << " already exists in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::did_exist;
                 }
 
                 auto didaddress = didaddreses.insert(output.get_did_address());
-                if (didaddress.second == false ) {
+                if (didaddress.second == false)
+                {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat did address " + output.get_did_address()
+                        << " already has did on it in memorypool!"
+                        << " " << tx->to_string(1);
                     return error::address_registered_did;
+                }
+
+                if (didattaches.find(didsymbol) != didattaches.end())
+                {
+                    log::debug(LOG_BLOCKCHAIN)
+                        << "check_symbol_repeat attachment did: " + didsymbol
+                        << " already transfer in memorypool!"
+                        << " " << tx->to_string(1);
+                    return error::did_exist;
                 }
             }
         }
-    }
+        return error::success;
+    };
 
-    for (auto& output : tx->outputs)
+    code ec;
+    for (auto &item : buffer_)
     {
-        if (output.is_asset_issue()) {
-            auto r = assets.insert(output.get_asset_symbol());
-            if (r.second == false) {
-                return error::asset_exist;
-            }
-        }
-        else if (output.is_asset_cert()) {
-            auto&& key = output.get_asset_cert().get_key();
-            auto r = asset_certs.insert(key);
-            if (r.second == false) {
-                log::debug(LOG_BLOCKCHAIN)
-                    << " cert " + output.get_asset_cert_symbol()
-                    << " with type " << output.get_asset_cert_type()
-                    << " already exists!"
-                    << " " << tx->to_string(1);
-                return error::asset_cert_exist;
-            }
-        }
-        else if (output.is_asset_mit()) {
-            auto r = asset_mits.insert(output.get_asset_symbol());
-            if (r.second == false) {
-                log::debug(LOG_BLOCKCHAIN)
-                    << " mit " + output.get_asset_symbol()
-                    << " already exists!"
-                    << " " << tx->to_string(1);
-                return error::mit_exist;
-            }
-        }
-        else if (output.is_did()) {
-            auto didexist = dids.insert(output.get_did_symbol());
-            if (didexist.second == false) {
-                return error::did_exist;
-            }
+        if (!item.tx)
+            continue;
 
-            auto didaddress = didaddreses.insert(output.get_did_address());
-            if (didaddress.second == false ) {
-                return error::address_registered_did;
-            }
-        }
+        if((ec = check_outputs(item.tx)) != error::success)
+            break;
     }
 
-    return error::success;
+    return ec != error::success ? ec : check_outputs(tx);
 }
 
 // handle_confirm will never fire if handle_validate returns a failure code.

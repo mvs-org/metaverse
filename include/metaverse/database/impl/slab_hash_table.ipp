@@ -182,6 +182,7 @@ std::vector<memory_ptr> slab_hash_table<KeyType>::finds(const KeyType& key) cons
     return ret;
 }
 
+
 // This is limited to returning all the item in the special index.
 template <typename KeyType>
 std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t index) const
@@ -214,7 +215,6 @@ std::shared_ptr<std::vector<memory_ptr>> slab_hash_table<KeyType>::find(uint64_t
 
     return vec_memo;
 }
-
 
 // This is limited to unlinking the first of multiple matching key values.
 template <typename KeyType>

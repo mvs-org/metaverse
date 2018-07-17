@@ -112,7 +112,7 @@ public:
     business_address_did::list get_dids(const std::string& address,
         size_t from_height, business_kind kind) const;
     business_address_did::list get_dids(const std::string& address,
-        size_t from_height) const;
+        size_t from_height, size_t to_height = max_uint64) const;
     business_address_message::list get_messages(const std::string& address,
         size_t from_height) const;
 

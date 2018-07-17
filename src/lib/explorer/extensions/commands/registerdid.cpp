@@ -33,7 +33,7 @@ namespace commands
 {
 
 console_result registerdid::invoke(Json::Value &jv_output,
-                                libbitcoin::server::server_node &node)
+                                   libbitcoin::server::server_node &node)
 {
     auto &blockchain = node.chain_impl();
     auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
@@ -41,13 +41,29 @@ console_result registerdid::invoke(Json::Value &jv_output,
     // check did symbol
     check_did_symbol(argument_.symbol, true);
 
-    if (blockchain.is_valid_address(argument_.symbol))
+    if (blockchain.is_valid_address(argument_.symbol)) {
         throw address_invalid_exception{"symbol cannot be an address!"};
+    }
 
-    if (argument_.fee < 100000000)
-        throw did_register_poundage_exception{"register did fee must be at least 100000000 satoshi = 1 etp!"};
-    if (!blockchain.is_valid_address(argument_.address))
+    // check fee
+    if (argument_.fee < bc::min_fee_to_register_did) {
+        throw did_register_poundage_exception{
+            "register did: fee less than "
+            + std::to_string(bc::min_fee_to_register_did) + " that's "
+            + std::to_string(bc::min_fee_to_register_did / 100000000) + " ETPs"};
+    }
+
+    if (argument_.percentage < bc::min_fee_percentage_to_miner || argument_.percentage > 100) {
+        throw did_register_poundage_exception{
+            "register did minimum percentage of fee to miner less than "
+            + std::to_string(bc::min_fee_percentage_to_miner)
+            + " or greater than 100."};
+    }
+
+    // check address
+    if (!blockchain.is_valid_address(argument_.address)) {
         throw address_invalid_exception{"invalid address parameter!"};
+    }
 
     if (!blockchain.get_account_address(auth_.name, argument_.address)) {
         throw address_dismatch_account_exception{
@@ -78,24 +94,19 @@ console_result registerdid::invoke(Json::Value &jv_output,
         {argument_.address, argument_.symbol, 0, 0, utxo_attach_type::did_register, attachment()}};
 
     auto register_helper = registering_did(
-        *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-        std::move(argument_.address), std::move(argument_.symbol),
-        std::move(receiver), argument_.fee,
-        std::move(acc_multisig));
+                               *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
+                               std::move(argument_.address), std::move(argument_.symbol),
+                               std::move(receiver), argument_.fee, argument_.percentage,
+                               std::move(acc_multisig));
 
     register_helper.exec();
 
     // output json
+    auto && tx = register_helper.get_transaction();
     if (is_multisig_address) {
-        auto && tx = register_helper.get_transaction();
-        std::ostringstream tx_buf;
-        tx_buf << config::transaction(tx);
-        jv_output = tx_buf.str();
-        // TODO support restful API format
-        // jv_output["raw"] = tx_buf.str();
+        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false, true);
     }
     else {
-        auto &&tx = register_helper.get_transaction();
         jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
     }
 

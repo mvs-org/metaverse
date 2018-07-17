@@ -229,10 +229,6 @@ public:
     operation_result store_account(std::shared_ptr<account> acc);
     std::shared_ptr<account> get_account(const std::string& name);
     std::shared_ptr<std::vector<account>> get_accounts();
-    account_status get_account_user_status(const std::string& name);
-    account_status get_account_system_status(const std::string& name);
-    bool set_account_user_status(const std::string& name, uint8_t status);
-    bool set_account_system_status(const std::string& name, uint8_t status);
     operation_result delete_account(const std::string& name);
     operation_result delete_account_address(const std::string& name);
 
@@ -257,8 +253,9 @@ public:
     uint64_t get_account_asset_volume(const std::string& account, const std::string& asset);
     uint64_t get_asset_volume(const std::string& asset);
 
+    // asset api
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
-    bool get_asset_height(const std::string& asset_name, uint64_t& height);
+    uint64_t get_asset_height(const std::string& asset_name) const ;
     std::shared_ptr<asset_detail::list> get_local_assets();
     std::shared_ptr<asset_detail::list> get_issued_assets();
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
@@ -269,6 +266,7 @@ public:
 
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
+    uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);
     std::shared_ptr<asset_cert::list> get_issued_asset_certs();
     std::shared_ptr<asset_cert> get_account_asset_cert(
         const std::string& account, const std::string& symbol, asset_cert_type cert_type);
@@ -278,6 +276,8 @@ public:
         const std::string& address, const std::string& symbol, asset_cert_type cert_type);
 
     // identifiable asset
+    bool is_asset_mit_exist(const std::string& symbol);
+    uint64_t get_asset_mit_height(const std::string& mit_symbol)const;
     std::shared_ptr<asset_mit_info> get_registered_mit(const std::string& symbol);
     std::shared_ptr<asset_mit_info::list> get_registered_mits();
     std::shared_ptr<asset_mit_info::list> get_mit_history(const std::string& symbol,
@@ -287,10 +287,10 @@ public:
 
     // account did api
     bool is_did_exist(const std::string& symbol);
-    bool get_did_height(const std::string& symbol, uint64_t& height);
-    bool is_address_registered_did(const std::string& address);
+    uint64_t get_did_height(const std::string& symbol) const;
+    bool is_address_registered_did(const std::string& address, uint64_t fork_index = max_uint64);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
-    std::string get_did_from_address(const std::string& address);
+    std::string get_did_from_address(const std::string& address, uint64_t fork_index = max_uint64);
     std::shared_ptr<did_detail> get_registered_did(const std::string& symbol);
     std::shared_ptr<did_detail::list> get_registered_dids();
     std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
@@ -320,11 +320,11 @@ public:
     std::shared_ptr<account_address::list> get_account_addresses(const std::string& name);
     void uppercase_symbol(std::string& symbol);
 
-    bool is_valid_address(const std::string& address);
-    bool is_payment_address(const std::string& address);
-    bool is_stealth_address(const std::string& address);
-    bool is_script_address(const std::string& address);
-    bool is_blackhole_address(const std::string& address);
+    static bool is_valid_address(const std::string& address);
+    static bool is_payment_address(const std::string& address);
+    static bool is_stealth_address(const std::string& address);
+    static bool is_script_address(const std::string& address);
+    static bool is_blackhole_address(const std::string& address);
 
     void fired();
     organizer& get_organizer();

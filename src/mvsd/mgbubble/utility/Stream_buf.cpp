@@ -23,7 +23,7 @@ using namespace std;
 
 namespace mgbubble {
 
-StreamBuf::StreamBuf(mbuf& buf) throw(bad_alloc) : buf_(buf)
+StreamBuf::StreamBuf(mbuf& buf) : buf_(buf)
 {
   if (!buf_.buf) {
     // Pre-allocate buffer.

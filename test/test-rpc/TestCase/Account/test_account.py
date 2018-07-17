@@ -23,7 +23,7 @@ class TestAccount(MVSTestCaseBase):
         mnemonic, address_num = message
 
         self.assertEqual(mnemonic, ' '.join(Alice.mnemonic))
-        self.assertEqual(address_num, 10)
+        self.assertEqual(address_num, 11)
 
     def test_2_delete_account(self):
         # password error

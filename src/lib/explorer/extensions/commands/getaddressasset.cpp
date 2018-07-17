@@ -42,7 +42,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
 
     std::string json_key;
     Json::Value json_value;
-    auto json_helper = config::json_helper(get_api_version());
+    auto json_helper = config::json_helper(get_api_version());;
 
     if (option_.is_cert) { // only get asset certs
         json_key = "assetcerts";
@@ -75,8 +75,14 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
         jv_output[json_key] = "";
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output[json_key] = json_value;
+    }
+    else {    
+        if(json_value.isNull())
+            json_value.resize(0);  
+
+        jv_output = json_value;
     }
 
     return console_result::okay;

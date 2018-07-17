@@ -67,6 +67,12 @@ public:
 
     uint64_t get_asset_volume(const std::string& name) const;
 
+    /// 
+    std::shared_ptr<blockchain_asset> get_register_history(const std::string & asset_symbol) const;
+    ///
+    uint64_t get_register_height(const std::string & asset_symbol) const;
+
+
     void store(const hash_digest& hash, const blockchain_asset& sp_detail);
 
     /// Delete a transaction from database.

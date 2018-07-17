@@ -78,7 +78,12 @@ console_result getmit::invoke(Json::Value& jv_output,
             json_value.append(elem.mit.get_symbol());
         }
 
-        jv_output["mits"] = json_value;
+        if (get_api_version() <=2 ) {
+            jv_output["mits"] = json_value;
+        }
+        else {
+            jv_output = json_value;
+        }
     }
     else {
         if (option_.show_history) {
@@ -88,7 +93,15 @@ console_result getmit::invoke(Json::Value& jv_output,
                 json_value.append(asset_data);
             }
 
-            jv_output["mits"] = json_value;
+            if (get_api_version() <=2 ) {
+                jv_output["mits"] = json_value;
+            }
+            else {
+                if(json_value.isNull())
+                    json_value.resize(0);  
+
+                jv_output = json_value;
+            }
         }
         else {
             if (option_.show_current) {

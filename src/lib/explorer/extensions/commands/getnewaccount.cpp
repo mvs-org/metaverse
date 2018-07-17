@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/getnewaccount.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
@@ -36,7 +36,6 @@ using namespace bc::explorer::config;
 console_result getnewaccount::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
-
 #ifdef NDEBUG
     if (auth_.name.length() > 128 || auth_.name.length() < 3 ||
         auth_.auth.length() > 128 || auth_.auth.length() < 6)
@@ -48,8 +47,6 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
         throw account_existed_exception{"account already exist"};
     }
 
-    auto& root = jv_output;
-
     auto acc = std::make_shared<bc::chain::account>();
     acc->set_name(auth_.name);
     acc->set_passwd(auth_.auth);
@@ -59,7 +56,6 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
     auto&& words_list = get_mnemonic_new(opt_language , seed);
     auto&& words = bc::join(words_list);
 
-    root["mnemonic"] = words;
     acc->set_mnemonic(words, auth_.auth);
 
     // flush to db
@@ -70,15 +66,25 @@ console_result getnewaccount::invoke(Json::Value& jv_output,
     Json::Value jv_temp;
     const char* cmds2[]{"getnewaddress", auth_.name.c_str(), auth_.auth.c_str()};
 
-    if (dispatch_command(3, cmds2, jv_temp, node, 2) != console_result::okay) {
+    if (dispatch_command(3, cmds2, jv_temp, node, get_api_version()) != console_result::okay) {
         throw address_generate_exception(sout.str());
     }
 
-    root["default-address"] = jv_temp["addresses"][0].asString();
+    if (get_api_version() == 1) {
+        jv_output["mnemonic"] = words;
+        jv_output["default-address"] = jv_temp;
+    }
+    else if (get_api_version() == 2) {
+        jv_output["mnemonic"] = words;
+        jv_output["default-address"] = jv_temp["addresses"][0].asString();
+    }
+    else {
+        config::json_helper::account_info acc(auth_.name, words, jv_temp);
+        jv_output = config::json_helper(get_api_version()).prop_list(acc);
+    }
 
     return console_result::okay;
 }
-
 
 
 } // namespace commands

@@ -67,6 +67,15 @@ public:
     ///
     std::shared_ptr<std::vector<blockchain_did> > get_blockchain_dids() const;
 
+    /// 
+    std::shared_ptr<blockchain_did> get_register_history(const std::string & did_symbol) const;
+    ///
+    uint64_t get_register_height(const std::string & did_symbol) const;
+
+    std::shared_ptr<std::vector<blockchain_did> > getdids_from_address_history(
+        const std::string &address, const uint64_t& fromheight = 0
+        ,const uint64_t & toheight = max_uint64 ) const;
+
     void store(const hash_digest& hash, const blockchain_did& sp_detail);
 
     /// Delete a transaction from database.

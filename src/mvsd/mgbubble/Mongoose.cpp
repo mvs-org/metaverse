@@ -35,7 +35,7 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
         }
         argc_ = i;
     };
-    
+
     Json::Reader reader;
     Json::Value root;
     const char* begin = body().data();
@@ -62,10 +62,10 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
                 vargv_.emplace_back(param.asString());
         }
     } else {
-        /* ***************** /rpc/v2 **********************
+        /* ***************** /rpc/v2 or /rpc/v3 **********************
          * application/json
          * {
-         *  "method":"xxx", 
+         *  "method":"xxx",
          *  "params":[
          *      {
          *          k1:v1,  ==> Command Option
@@ -77,7 +77,12 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
          *  }
          * ******************************************/
 
-        if (root["jsonrpc"].asString() != "2.0") {
+        const vector<std::string> api20_ver_list = {"2.0", "3.0"};
+        auto checkAPIVer = [](const vector<std::string> &api_ver_list, const std::string &rpc_version){
+            return find(api_ver_list.begin(), api_ver_list.end(), rpc_version) != api_ver_list.end();
+        };
+
+        if (!checkAPIVer(api20_ver_list, root["jsonrpc"].asString())) {
             throw libbitcoin::explorer::jsonrpc_invalid_request();
         }
 
@@ -158,8 +163,8 @@ void WebsocketMessage::data_to_arg(uint8_t api_version) {
 
 void ToCommandArg::add_arg(std::string&& outside)
 {
-    vargv_.push_back(outside); 
-    argc_++; 
+    vargv_.push_back(outside);
+    argc_++;
 }
 
 } // mgbubble

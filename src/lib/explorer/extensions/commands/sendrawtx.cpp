@@ -52,7 +52,12 @@ console_result sendrawtx::invoke(Json::Value& jv_output,
     if (blockchain.broadcast_transaction(tx_))
         throw tx_broadcast_exception{"broadcast transaction failure"};
 
-    jv_output["hash"] = encode_hash(tx_.hash());
+    if (get_api_version() <= 2) {
+        jv_output["hash"] = encode_hash(tx_.hash());
+    }
+    else {
+        jv_output = encode_hash(tx_.hash());
+    }
 
     return console_result::okay;
 }

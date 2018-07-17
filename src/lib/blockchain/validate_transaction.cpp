@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <numeric>
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
@@ -316,7 +317,7 @@ code validate_transaction::check_tx_connect_input() const
 {
     uint64_t fee = 0;
 
-    if (!tally_fees(*tx_, value_in_, fee)) {
+    if (!tally_fees(blockchain_, *tx_, value_in_, fee)) {
         return error::fees_out_of_range;
     }
 
@@ -559,7 +560,7 @@ code validate_transaction::check_asset_issue_transaction() const
             if (!check_same(asset_address, detail.get_address())) {
                 return error::asset_issue_error;
             }
-            if (chain.is_asset_exist(asset_symbol, false)) {
+            if (check_asset_exist(asset_symbol)) {
                 return error::asset_exist;
             }
             if (operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
@@ -710,7 +711,7 @@ code validate_transaction::check_asset_cert_transaction() const
             }
 
             // check cert not exists
-            if (chain.is_asset_cert_exist(cert_symbol, cur_cert_type)) {
+            if (check_asset_cert_exist(cert_symbol, cur_cert_type)) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                                            << cert_info.get_symbol() << " already exists.";
                 return error::asset_cert_exist;
@@ -730,14 +731,6 @@ code validate_transaction::check_asset_cert_transaction() const
                 log::debug(LOG_BLOCKCHAIN) << "transfer cert: "
                                            << cert_info.get_symbol() << " does not match.";
                 return error::asset_cert_error;
-            }
-
-            // check cert exists
-            auto cur_cert_type = cert_info.get_type();
-            if (!chain.is_asset_cert_exist(cert_symbol, cur_cert_type)) {
-                log::debug(LOG_BLOCKCHAIN) << "transfer cert: "
-                                           << cert_info.get_symbol() << " not exists.";
-                return error::asset_cert_not_exist;
             }
         }
         else if (output.is_asset_cert()) {
@@ -818,7 +811,7 @@ code validate_transaction::check_asset_cert_transaction() const
             }
 
             // check asset not exist.
-            if (chain.is_asset_exist(cert_symbol, false)) {
+            if (check_asset_exist(cert_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "issue cert: "
                                            << "asset symbol '" + cert_symbol + "' already exists in blockchain!";
                 return error::asset_exist;
@@ -866,7 +859,7 @@ code validate_transaction::check_asset_mit_transaction() const
             }
 
             // check asset not exists
-            if (nullptr != chain.get_registered_mit(asset_symbol)) {
+            if (check_asset_mit_exist(asset_symbol)) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
                                            << asset_symbol << " already exists.";
                 return error::mit_exist;
@@ -880,13 +873,6 @@ code validate_transaction::check_asset_mit_transaction() const
 
             auto&& asset_info = output.get_asset_mit();
             asset_symbol = asset_info.get_symbol();
-
-            // check asset exists
-            if (nullptr == chain.get_registered_mit(asset_symbol)) {
-                log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
-                                           << asset_symbol << " not exists.";
-                return error::mit_not_exist;
-            }
         }
         else if (output.is_etp()) {
             if (!check_same(asset_address, output.get_script_address())) {
@@ -949,10 +935,96 @@ code validate_transaction::check_asset_mit_transaction() const
     return error::success;
 }
 
+bool validate_transaction::check_did_exist(const std::string& did) const
+{
+    uint64_t height = blockchain_.get_did_height(did);
+
+    if (validate_block_ ) {
+        //register before fork or find in orphan chain
+        if (height <= validate_block_->get_fork_index() || validate_block_->is_did_in_orphan_chain(did)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return height != max_uint64;
+}
+
+bool validate_transaction::check_asset_exist(const std::string& symbol) const
+{
+    uint64_t height = blockchain_.get_asset_height(symbol);
+
+    if (validate_block_) {
+        //register before fork or find in orphan chain
+        if (height <= validate_block_->get_fork_index() || validate_block_->is_asset_in_orphan_chain(symbol)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return height != max_uint64;
+}
+
+bool validate_transaction::check_asset_cert_exist(const std::string& cert, asset_cert_type cert_type) const
+{
+    uint64_t height = blockchain_.get_asset_cert_height(cert, cert_type);
+
+    if (validate_block_) {
+        //register before fork or find in orphan chain
+        if (height <= validate_block_->get_fork_index() || validate_block_->is_asset_cert_in_orphan_chain(cert, cert_type)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return height != max_uint64;
+}
+
+bool validate_transaction::check_asset_mit_exist(const std::string& mit) const
+{
+    uint64_t height = blockchain_.get_asset_mit_height(mit);
+
+    if (validate_block_) {
+        //register before fork or find in orphan chain
+        if (height <= validate_block_->get_fork_index() || validate_block_->is_asset_mit_in_orphan_chain(mit)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return height != max_uint64;
+}
+
+bool validate_transaction::check_address_registered_did(const std::string& address) const
+{
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
+    auto did_symbol = blockchain_.get_did_from_address(address, fork_index);
+
+    if (!validate_block_) {
+        if (did_symbol.empty()) {
+            return false;
+        }
+    }
+    else {
+        did_symbol = validate_block_->get_did_from_address_consider_orphan_chain(address, did_symbol);
+        if (did_symbol.empty()) {
+            return false;
+        }
+    }
+
+    log::debug(LOG_BLOCKCHAIN) << "address " << address << " already exists did " << did_symbol;
+    return true;
+}
+
 code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
     blockchain::block_chain_impl& chain = blockchain_;
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
 
     code ret = error::success;
 
@@ -964,11 +1036,11 @@ code validate_transaction::check_did_transaction() const
             return ret;
 
         //to_did check(strong check)
-        if ((ret = output.check_attachment_did_match_address(chain)) != error::success)
+        if ((ret = check_attachment_to_did(output)) != error::success)
             return ret;
 
         //from_did (weak check)
-        if ((ret = connect_input_address_match_did(output)) != error::success) {
+        if ((ret = connect_attachment_from_did(output)) != error::success) {
             return ret;
         }
 
@@ -977,11 +1049,15 @@ code validate_transaction::check_did_transaction() const
                 return error::did_symbol_invalid;
             }
 
-            if (chain.is_did_exist(output.get_did_symbol())) {
+            if (check_did_exist(output.get_did_symbol())) {
+                log::debug(LOG_BLOCKCHAIN) << "did_register: "
+                    << output.get_did_symbol() << " already exists";
                 return error::did_exist;
             }
 
-            if (chain.is_address_registered_did(output.get_did_address())) {
+            if (check_address_registered_did(output.get_did_address())) {
+                log::debug(LOG_BLOCKCHAIN) << "address "
+                    << output.get_did_address() << " already exists did, cannot register did.";
                 return error::address_registered_did;
             }
 
@@ -995,12 +1071,9 @@ code validate_transaction::check_did_transaction() const
             }
         }
         else if (output.is_did_transfer()) {
-            //did transfer only for did is exist
-            if (!chain.is_did_exist(output.get_did_symbol())) {
-                return error::did_not_exist;
-            }
-
-            if (chain.is_address_registered_did(output.get_did_address())) {
+            if (check_address_registered_did(output.get_did_address())) {
+                log::debug(LOG_BLOCKCHAIN) << "address "
+                    << output.get_did_address() << " already exists did, cannot transfer did.";
                 return error::address_registered_did;
             }
 
@@ -1082,35 +1155,83 @@ bool validate_transaction::connect_did_input(const did& info) const
            || (found_address_info && info.get_status() ==  DID_DETAIL_TYPE);
 }
 
-code validate_transaction::connect_input_address_match_did(const output& output) const
+bool validate_transaction::is_did_match_address_in_orphan_chain(const std::string& did, const std::string& address) const
 {
-    const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    if (validate_block_ && validate_block_->is_did_match_address_in_orphan_chain(did, address)) {
+        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: "
+            << did << ", match address: " << address;
+        return true;
+    }
 
-    const attachment& attach = output.attach_data;
+    return false;
+}
 
-    if (attach.get_from_did().empty()) {
+bool validate_transaction::is_did_in_orphan_chain(const std::string& did) const
+{
+    if (validate_block_ && validate_block_->is_did_in_orphan_chain(did)) {
+        log::debug(LOG_BLOCKCHAIN) << "did_in_orphan_chain: " << did << " exist";
+        return true;
+    }
+
+    return false;
+}
+
+code validate_transaction::check_attachment_to_did(const output& output) const
+{
+    auto todid = output.attach_data.get_to_did();
+    if (todid.empty()) {
         return error::success;
     }
 
-    for ( auto & input : tx.inputs)
-    {
+    auto address = output.get_script_address();
+
+    if (is_did_match_address_in_orphan_chain(todid, address)) {
+        return error::success;
+    }
+
+    uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
+    auto did = blockchain_.get_did_from_address(address, fork_index);
+    if (todid == did) {
+        return error::success;
+    }
+
+    log::debug(LOG_BLOCKCHAIN) << "check_attachment_to_did: "
+        << todid << ", address: " << address
+        << "; get did from address is " << did;
+    return error::did_address_not_match;
+}
+
+code validate_transaction::connect_attachment_from_did(const output& output) const
+{
+    auto from_did = output.attach_data.get_from_did();
+    if (from_did.empty()) {
+        return error::success;
+    }
+
+    for (auto& input : tx_->inputs) {
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "connect_input_address_match_did: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "connect_attachment_from_did: input not found: "
                                        << encode_hash(input.previous_output.hash);
             return error::input_not_found;
         }
 
         auto prev_output = prev_tx.outputs.at(input.previous_output.index);
         auto address = prev_output.get_script_address();
-        if (attach.get_from_did() == chain.get_did_from_address(address)) {
+
+        if (is_did_match_address_in_orphan_chain(from_did, address)) {
+            return error::success;
+        }
+
+        uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
+        if (from_did == blockchain_.get_did_from_address(address, fork_index)) {
             return error::success;
         }
     }
 
-
+    log::debug(LOG_BLOCKCHAIN) << "connect_attachment_from_did: input not found for from_did: "
+                               << from_did;
     return error::did_address_not_match;
 }
 
@@ -1231,7 +1352,7 @@ code validate_transaction::check_transaction_basic() const
         }
         else if (output.is_asset_cert()) {
             auto&& asset_cert = output.get_asset_cert();
-            if (!chain.is_did_exist(asset_cert.get_owner())) {
+            if (!check_did_exist(asset_cert.get_owner())) {
                 return error::did_address_needed;
             }
         }
@@ -1426,8 +1547,81 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
     return value_in_ <= max_money();
 }
 
-bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
-                                      uint64_t& total_fees)
+bool validate_transaction::check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fee)
+{
+    // check fee of issue asset or register did
+    auto developer_community_address = bc::get_developer_community_address(is_testnet);
+    std::vector<uint64_t> etp_vec;
+    uint32_t special_fee_type = 0;
+    std::string to_address;
+    for (auto& output: tx.outputs) {
+        if (output.is_etp()) {
+            if (output.get_script_address() == developer_community_address) {
+                etp_vec.push_back(output.value);
+            }
+            else {
+                etp_vec.push_back(0);
+            }
+        }
+        else if (output.is_asset_issue()) {
+            special_fee_type = 1;
+            to_address = output.get_script_address();
+        }
+        else if (output.is_did_register()) {
+            special_fee_type = 2;
+            to_address = output.get_script_address();
+        }
+    }
+
+    // skip transaction to developer community address
+    if (special_fee_type > 0 && to_address != developer_community_address) {
+        uint64_t fee_to_developer = std::accumulate(etp_vec.begin() , etp_vec.end(), (uint64_t)0);
+        if (fee_to_developer > 0) {
+            uint64_t total_fee = fee + fee_to_developer;
+            uint32_t percentage_to_miner = (uint32_t)std::ceil((fee * 100.0) / total_fee);
+
+            bool result = false;
+            if (special_fee_type == 1) {
+                result = (total_fee >= bc::min_fee_to_issue_asset
+                    && percentage_to_miner >= min_fee_percentage_to_miner);
+
+            }
+            else if (special_fee_type == 2) {
+                result = (total_fee >= bc::min_fee_to_register_did
+                    && percentage_to_miner >= min_fee_percentage_to_miner);
+            }
+
+            if (!result) {
+                log::debug(LOG_BLOCKCHAIN) << "check fees failed: "
+                    << (special_fee_type == 1 ? "issue asset" : "register did")
+                    << ", total_fee: " << std::to_string(total_fee)
+                    << ", fee_percentage_to_miner: " << std::to_string(percentage_to_miner);
+                return false;
+            }
+        }
+        else {
+            if (special_fee_type == 1) {
+                if (fee < bc::min_fee_to_issue_asset) {
+                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: fee for issuing asset less than "
+                        << std::to_string(bc::min_fee_to_issue_asset);
+                    return false;
+                }
+            }
+            else if (special_fee_type == 2) {
+                if (fee < bc::min_fee_to_register_did) {
+                    log::debug(LOG_BLOCKCHAIN) << "check fees failed: fee for registerring did less than "
+                        << std::to_string(bc::min_fee_to_register_did);
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+bool validate_transaction::tally_fees(blockchain::block_chain_impl& chain,
+    const transaction& tx, uint64_t value_in, uint64_t& total_fees)
 {
     const auto value_out = tx.total_output_value();
 
@@ -1435,8 +1629,10 @@ bool validate_transaction::tally_fees(const transaction& tx, uint64_t value_in,
         return false;
 
     const auto fee = value_in - value_out;
-    if (fee < min_tx_fee)
+    if (fee < min_tx_fee) {
         return false;
+    }
+
     total_fees += fee;
     return total_fees <= max_money();
 }

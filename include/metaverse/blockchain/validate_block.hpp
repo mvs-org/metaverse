@@ -46,7 +46,7 @@ class BCB_API validate_block
 public:
     code check_block(blockchain::block_chain_impl& chain) const;
     code accept_block() const;
-    code connect_block(hash_digest& err_tx) const;
+    code connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const;
 
     /// Required to call before calling accept_block or connect_block.
     void initialize_context();
@@ -54,6 +54,15 @@ public:
     static bool script_hash_signature_operations_count(size_t& out_count, const chain::script& output_script, const chain::script& input_script);
 
     bool get_transaction(const hash_digest& tx_hash, chain::transaction& prev_tx, size_t& prev_height) const;
+
+    virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const = 0;
+    virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const = 0;
+    virtual bool is_did_in_orphan_chain(const std::string& symbol) const = 0;
+    virtual bool is_asset_in_orphan_chain(const std::string& symbol) const = 0;
+    virtual bool is_asset_cert_in_orphan_chain(const std::string& symbol, asset_cert_type cert_type) const = 0;
+    virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const = 0;
+
+    virtual size_t get_fork_index() const { return max_size_t; }
 
 protected:
     typedef std::vector<uint8_t> versions;

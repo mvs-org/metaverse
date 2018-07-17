@@ -673,7 +673,7 @@ business_address_did::list address_did_database::get_dids(const std::string& add
 
 // get all kinds of did in the database(blockchain)
 business_address_did::list address_did_database::get_dids(const std::string& address,
-    size_t from_height) const
+    size_t from_height, size_t to_height) const
 {
     data_chunk data(address.begin(), address.end());
     auto key = ripemd160_hash(data);
@@ -684,6 +684,13 @@ business_address_did::list address_did_database::get_dids(const std::string& add
         if((row.data.get_kind_value() != business_kind::did_register)  // did_detail
             && (row.data.get_kind_value() != business_kind::did_transfer))  // did_transfer
             continue;
+
+        if(address != wallet::payment_address::blackhole_address)
+        {
+            if (row.output_height > to_height) {
+                continue;
+            }
+        }
 
         uint8_t status = 0xff;
         if (row.spend.hash == null_hash)

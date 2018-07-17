@@ -25,7 +25,7 @@
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/server/server_node.hpp>
 
-namespace mgbubble{
+namespace mgbubble {
 
 thread_local OStream HttpServ::out_;
 thread_local Tokeniser<'/'> HttpServ::uri_;
@@ -37,19 +37,19 @@ void HttpServ::reset(HttpMessage& data) noexcept
 
     const auto method = data.method();
     if (method == "GET") {
-      state_ |= MethodGet;
+        state_ |= MethodGet;
     } else if (method == "POST") {
-      state_ |= MethodPost;
+        state_ |= MethodPost;
     } else if (method == "PUT") {
-      state_ |= MethodPut;
+        state_ |= MethodPut;
     } else if (method == "DELETE") {
-      state_ |= MethodDelete;
+        state_ |= MethodDelete;
     }
 
     auto uri = data.uri();
     // Remove leading slash.
     if (uri.front() == '/') {
-      uri.remove_prefix(1);
+        uri.remove_prefix(1);
     }
     uri_.reset(uri);
 }
@@ -62,7 +62,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
     out_.reset(200, "OK");
 
     const vector<uint8_t> api20_ver_list = {2, 3};
-    auto checkAPIVer = [](const vector<uint8_t> &api_ver_list, const uint8_t &rpc_version){
+    auto checkAPIVer = [](const vector<uint8_t> &api_ver_list, const uint8_t &rpc_version) {
         return find(api_ver_list.begin(), api_ver_list.end(), rpc_version) != api_ver_list.end();
     };
     try {
@@ -71,7 +71,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         Json::Value jv_output;
 
         auto retcode = explorer::dispatch_command(data.argc(), const_cast<const char**>(data.argv()),
-            jv_output, node_, rpc_version);
+                       jv_output, node_, rpc_version);
 
         if (retcode == console_result::failure) { // only orignal command
             if (rpc_version == 1 && !jv_output.isObject() && !jv_output.isArray()) {
@@ -133,7 +133,7 @@ void HttpServ::ws_request(mg_connection& nc, WebsocketMessage ws)
 {
     Json::Value jv_output;
 
-    try{
+    try {
         ws.data_to_arg();
 
         console_result retcode = explorer::dispatch_command(ws.argc(), const_cast<const char**>(ws.argv()), jv_output, node_);
@@ -171,7 +171,7 @@ void HttpServ::spawn_to_mongoose(const std::function<void(uint64_t)>&& handler)
 void HttpServ::run() {
     log::info(LOG_HTTP) << "Http Service listen on " << node_.server_settings().mongoose_listen;
 
-    node_.subscribe_stop([this](const libbitcoin::code& ec) { stop(); });
+    node_.subscribe_stop([this](const libbitcoin::code & ec) { stop(); });
 
     base::run();
 
@@ -188,8 +188,9 @@ void HttpServ::on_http_req_handler(struct mg_connection& nc, http_message& msg)
     }
     else if ((mg_ncasecmp(msg.uri.p, "/rpc", 4) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/", 5) == 0)) {
         rpc_request(nc, HttpMessage(&msg), 1); //v1 rpc
-    } else {
-        std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection* ptr) { (void)(ptr); });
+    }
+    else {
+        std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection * ptr) { (void)(ptr); });
         serve_http_static(nc, msg);
     }
 }
@@ -207,7 +208,7 @@ void HttpServ::on_notify_handler(struct mg_connection& nc, struct mg_event& ev)
 
 void HttpServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
-    std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection* ptr) { (void)(ptr); });
+    std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection * ptr) { (void)(ptr); });
     send_frame(nc, "connected", 9);
 }
 

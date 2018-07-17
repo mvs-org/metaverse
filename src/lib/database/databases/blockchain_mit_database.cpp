@@ -143,6 +143,35 @@ std::shared_ptr<asset_mit_info::list> blockchain_mit_database::get_blockchain_mi
     return vec_acc;
 }
 
+/// 
+std::shared_ptr<asset_mit_info> blockchain_mit_database::get_register_history(const std::string & mit_symbol) const
+{
+    std::shared_ptr<asset_mit_info> asset_mit_ = nullptr;
+    data_chunk data(mit_symbol.begin(), mit_symbol.end());
+    auto key = sha256_hash(data);
+
+    auto memo = lookup_map_.rfind(key);
+    if(memo)
+    {
+        asset_mit_ = std::make_shared<asset_mit_info>();
+        const auto memory = REMAP_ADDRESS(memo);
+        auto deserial = make_deserializer_unsafe(memory);
+        *asset_mit_ = asset_mit_info::factory_from_data(deserial);
+    }
+
+    return asset_mit_;
+}
+
+///
+uint64_t blockchain_mit_database::get_register_height(const std::string & mit_symbol) const
+{
+    std::shared_ptr<asset_mit_info> asset_mit_ = get_register_history(mit_symbol);
+    if(asset_mit_)
+        return asset_mit_->output_height;
+        
+    return max_uint64;
+}
+
 void blockchain_mit_database::store(const asset_mit_info& mit_info)
 {
     const auto& key_str = mit_info.mit.get_symbol();

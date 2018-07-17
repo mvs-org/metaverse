@@ -32,7 +32,7 @@ using namespace bc::explorer::config;
 /************************ getaddressetp *************************/
 
 console_result getaddressetp::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                                     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     auto& addr = argument_.address;
@@ -48,14 +48,20 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
         jv["received"]  = std::to_string(addr_balance.total_received);
         jv["unspent"]   = std::to_string(addr_balance.unspent_balance);
         jv["frozen"]    = std::to_string(addr_balance.frozen_balance);
-    } else {
+    }
+    else {
         jv["confirmed"] = addr_balance.confirmed_balance;
         jv["received"]  = addr_balance.total_received;
         jv["unspent"]   = addr_balance.unspent_balance;
         jv["frozen"]    = addr_balance.frozen_balance;
     }
 
-    jv_output["balance"] = jv;
+    if (get_api_version() <= 2) {
+        jv_output["balance"] = jv;
+    }
+    else {
+        jv_output = jv;
+    }
 
     return console_result::okay;
 }

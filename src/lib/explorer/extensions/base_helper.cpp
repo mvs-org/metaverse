@@ -256,10 +256,75 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     }
 }
 
+static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockchain,
+    const std::string& account_name)
+{
+    auto pvaddr = blockchain.get_account_addresses(account_name);
+    if (!pvaddr) {
+        return 0;
+    }
+
+    auto sh_vec = std::make_shared<asset_cert::list>();
+    for (auto& each : *pvaddr){
+        sync_fetch_asset_cert_balance(each.get_address(), "", blockchain, sh_vec, asset_cert_ns::domain);
+    }
+
+    return sh_vec->size();
+}
+
+void sync_fetch_deposited_balance(wallet::payment_address& address,
+    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<deposited_balance::list> sh_vec)
+{
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    auto&& address_str = address.encoded();
+    auto&& rows = blockchain.get_address_history(address, false);
+    for (auto& row: rows) {
+        if (row.output_height == 0) {
+            continue;
+        }
+
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            auto output = tx_temp.outputs.at(row.output.index);
+
+            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+                // deposit utxo in block
+                uint64_t deposit_height = chain::operation::
+                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                uint64_t expiration_height = row.output_height + deposit_height;
+
+                if (expiration_height > height) {
+                    auto&& tx_hash = encode_hash(tx_temp.hash());
+                    const auto match = [&tx_hash](const deposited_balance& balance) {
+                        return balance.tx_hash == tx_hash;
+                    };
+                    auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
+                    if (iter != sh_vec->end()) {
+                        // interest of deposit
+                        iter->balance += row.value;
+                    }
+                    else {
+                        auto&& row_hash = encode_hash(row.output.hash);
+                        deposited_balance balance(address_str, tx_hash, row_hash,
+                            row.value, deposit_height, expiration_height);
+                        sh_vec->push_back(std::move(balance));
+                    }
+                }
+            }
+        }
+    }
+}
+
 void sync_fetchbalance(wallet::payment_address& address,
     bc::blockchain::block_chain_impl& blockchain, balances& addr_balance)
 {
-    auto&& rows = blockchain.get_address_history(address);
+    auto&& rows = blockchain.get_address_history(address, false);
 
     uint64_t total_received = 0;
     uint64_t confirmed_balance = 0;
@@ -271,9 +336,10 @@ void sync_fetchbalance(wallet::payment_address& address,
     uint64_t height = 0;
     blockchain.get_last_height(height);
 
-    for (auto& row: rows)
-    {
-        total_received += row.value;
+    for (auto& row: rows) {
+        if (row.output_height == 0) {
+            continue;
+        }
 
         // spend unconfirmed (or no spend attempted)
         if ((row.spend.hash == null_hash)
@@ -282,23 +348,17 @@ void sync_fetchbalance(wallet::payment_address& address,
             auto output = tx_temp.outputs.at(row.output.index);
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                if (row.output_height == 0) {
-                    // deposit utxo in transaction pool
+                // deposit utxo in block
+                uint64_t lock_height = chain::operation::
+                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+                if ((row.output_height + lock_height) > height) {
+                    // utxo already in block but deposit not expire
                     frozen_balance += row.value;
-                }
-                else {
-                    // deposit utxo in block
-                    uint64_t lock_height = chain::operation::
-                        get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                    if((row.output_height + lock_height) > height) {
-                        // utxo already in block but deposit not expire
-                        frozen_balance += row.value;
-                    }
                 }
             }
             else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
                 // add not coinbase_maturity etp into frozen
-                if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+                if ((row.output_height + coinbase_maturity) > height) {
                     frozen_balance += row.value;
                 }
             }
@@ -306,8 +366,9 @@ void sync_fetchbalance(wallet::payment_address& address,
             unspent_balance += row.value;
         }
 
-        if (row.output_height != 0 &&
-            (row.spend.hash == null_hash || row.spend_height == 0))
+        total_received += row.value;
+
+        if ((row.spend.hash == null_hash || row.spend_height == 0))
             confirmed_balance += row.value;
     }
 
@@ -1385,12 +1446,22 @@ void issuing_asset::sum_payment_amount()
         throw asset_symbol_notfound_exception{symbol_ + " not created"};
     }
 
-    if (payment_etp_ < 1000000000) { // 10 etp now
-        throw asset_issue_poundage_exception{"fee must at least 1000000000 satoshi == 10 etp"};
+    uint64_t min_fee = bc::min_fee_to_issue_asset;
+    if (payment_etp_ < min_fee) {
+        throw asset_issue_poundage_exception("fee must at least "
+            + std::to_string(min_fee) + " satoshi == "
+            + std::to_string(min_fee/100000000) + " etp");
     }
 
     if (!attenuation_model_param_.empty()) {
         check_model_param_initial(attenuation_model_param_, unissued_asset_->get_maximum_supply());
+    }
+
+    uint64_t amount = (uint64_t)std::floor(payment_etp_ * ((100 - fee_percentage_to_miner_) / 100.0));
+    if (amount > 0) {
+        auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
+        auto&& did = blockchain_.get_did_from_address(address);
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
     }
 }
 
@@ -1544,8 +1615,19 @@ void issuing_asset_cert::sum_payment_amount()
 void registering_did::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
-    if (payment_etp_ < 100000000) {
-        throw did_register_poundage_exception{"fee must at least 100000000 satoshi == 1 etp"};
+
+    uint64_t min_fee = bc::min_fee_to_register_did;
+    if (payment_etp_ < min_fee) {
+        throw did_register_poundage_exception("fee must at least "
+            + std::to_string(min_fee) + " satoshi == "
+            + std::to_string(min_fee/100000000) + " etp");
+    }
+
+    uint64_t amount = (uint64_t)std::floor(payment_etp_ * ((100 - fee_percentage_to_miner_) / 100.0));
+    if (amount > 0) {
+        auto&& address = bc::get_developer_community_address(blockchain_.chain_settings().use_testnet_rules);
+        auto&& did = blockchain_.get_did_from_address(address);
+        receiver_list_.push_back({address, "", amount, 0, utxo_attach_type::etp, attachment("", did)});
     }
 }
 

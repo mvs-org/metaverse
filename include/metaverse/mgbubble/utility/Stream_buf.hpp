@@ -30,7 +30,7 @@ namespace mgbubble {
 
 class StreamBuf : public std::streambuf {
  public:
-  explicit StreamBuf(mbuf& buf) throw(std::bad_alloc);
+  explicit StreamBuf(mbuf& buf);
   ~StreamBuf() noexcept override;
 
   // Copy.

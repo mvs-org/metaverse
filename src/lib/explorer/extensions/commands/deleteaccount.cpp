@@ -46,10 +46,8 @@ console_result deleteaccount::invoke(Json::Value& jv_output,
     // delete account
     blockchain.delete_account(acc->get_name());
 
-    auto& jv = jv_output;
-    jv["name"] = acc->get_name();
-    jv["status"]= "removed successfully";
-
+    jv_output["name"] = acc->get_name();
+    jv_output["status"]= "removed successfully";
 
     return console_result::okay;
 }

@@ -121,6 +121,10 @@ public:
         const std::string& symbol, asset_cert_type cert_type,
         size_t from_height) const;
 
+    business_history::list get_asset_certs_history(const std::string& address,
+        const std::string& symbol, asset_cert_type cert_type,
+        size_t from_height) const;
+
     /// Delete the last row that was added to key.
     void delete_last_row(const short_hash& key);
 

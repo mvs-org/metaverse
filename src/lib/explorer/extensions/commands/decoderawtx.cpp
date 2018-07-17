@@ -33,7 +33,7 @@ console_result decoderawtx::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     tx_type tx_ = argument_.transaction;
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx_, true);
+    jv_output = config::json_helper(get_api_version()).prop_tree(tx_, true);
 
     return console_result::okay;
 }
@@ -41,4 +41,3 @@ console_result decoderawtx::invoke(Json::Value& jv_output,
 } // namespace commands
 } // namespace explorer
 } // namespace libbitcoin
-

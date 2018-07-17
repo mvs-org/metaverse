@@ -1176,12 +1176,6 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\ping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert_payload.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\memory_pool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2900,9 +2894,6 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\transaction_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2916,9 +2907,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\inventory.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\header_message.hpp">

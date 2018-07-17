@@ -136,13 +136,14 @@ void session_outbound::delay_reseeding()
         auto pThis = shared_from_this();
         auto action = [this, pThis](){
             const int counter = outbound_counter;
-            in_reseeding = false;
             if (counter > 1) {
                 log::debug(LOG_NETWORK) << "outbound channel counter recovered to [" << counter << "], re-seeding is canceled!";
+                in_reseeding = false;
                 return;
             }
             log::debug(LOG_NETWORK) << "start re-seeding!";
             network__.restart_seeding();
+            in_reseeding = false;
         };
         pool_.service().post(action);
     });

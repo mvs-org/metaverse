@@ -88,8 +88,13 @@ public:
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(1000000000),
-            "The fee of tx. default_value 10 etp"
+            value<uint64_t>(&argument_.fee)->default_value(10 * 100000000),
+            "The fee of tx. minimum is 10 etp."
+        )
+        (
+            "percentage,p",
+            value<uint32_t>(&argument_.percentage)->default_value(20),
+            "Percentage of fee send to miner. minimum is 20."
         );
 
         return options;
@@ -106,6 +111,7 @@ public:
     {
         std::string symbol;
         uint64_t fee;
+        uint32_t percentage;
     } argument_;
 
     struct option

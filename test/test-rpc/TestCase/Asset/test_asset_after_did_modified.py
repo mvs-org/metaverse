@@ -30,7 +30,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         fst_did_address = addresslist[length - 1]
         fst_did_symbol = u"zacfirstdiid." + common.get_random_str()
 
-        result, message = mvs_rpc.send(Alice.name, Alice.password, fst_did_address, 22 * 10 ** 8)
+        result, message = mvs_rpc.send(Alice.name, Alice.password, fst_did_address, 30 * 10 ** 8)
         self.assertEqual(result, code.success, message)
         Zac.mining()
 
@@ -42,7 +42,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         snd_did_address = addresslist[length - 2]
         snd_did_symbol = u"zacmodifydiid." + common.get_random_str()
 
-        result, message = mvs_rpc.send(Alice.name, Alice.password, snd_did_address, 12 * 10 ** 8)
+        result, message = mvs_rpc.send(Alice.name, Alice.password, snd_did_address, 15 * 10 ** 8)
         self.assertEqual(result, code.success, message)
         Zac.mining()
 
@@ -54,7 +54,7 @@ class TestAssetAfterDidModified(MVSTestCaseBase):
         #
         trd_address = addresslist[length - 3]
 
-        result, message = mvs_rpc.send(Alice.name, Alice.password, trd_address, 12 * 10 ** 8)
+        result, message = mvs_rpc.send(Alice.name, Alice.password, trd_address, 15 * 10 ** 8)
         self.assertEqual(result, code.success, message)
         Zac.mining()
 

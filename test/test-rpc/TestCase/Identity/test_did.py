@@ -187,3 +187,95 @@ class Testdidcommon(MVSTestCaseBase):
         self.assertEqual(ec, 0, message)
         Alice.mining()
         self.assertEqual(Zac.get_didaddress(did_symbol), Zac.mainaddress(), 'Failed when registerdid with:'+did_symbol)
+
+class TestdidUTXOcommon(MVSTestCaseBase):
+    def test_didsend_twice(self):
+        Alice.send_etp(Zac.mainaddress(), 10**10)
+        Alice.mining()
+
+        ##registerdid
+        did_symbol = 'Zac@'+common.get_random_str()        
+        ec, message = Zac.register_did(symbol=did_symbol)
+        self.assertEqual(ec, 0, message)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+        
+        #didsendfrom
+        ec, message = mvs_rpc.didsend_from(Zac.name,Zac.password, did_symbol, Alice.mainaddress(),10000)
+        self.assertEqual(ec, 0, message)
+        ec, message = mvs_rpc.didsend_from(Zac.name,Zac.password, did_symbol, Alice.mainaddress(),10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #didsend
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password,  Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #didsendmore
+        receivers = {
+            Bob.mainaddress(): 100000,
+            Cindy.did_symbol: 100001,
+            Dale.mainaddress(): 100002,
+            Eric.did_symbol: 100003,
+        }
+        ec, message = mvs_rpc.didsendmore(Zac.name, Zac.password, receivers, did_symbol, 10000)
+        self.assertEqual(ec, 0, message)
+        ec, message = mvs_rpc.didsendmore(Zac.name, Zac.password, receivers, did_symbol, 10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #create asset
+        domain_symbol, asset_symbol = Zac.create_random_asset(did_symbol=did_symbol)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+
+        #sendasset 
+        ec, message = mvs_rpc.didsend_asset(Zac.name,Zac.password, Alice.did_symbol,asset_symbol, 100)
+        self.assertEqual(ec, 0, message)  
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+        
+        #sendassetfrom
+        ec, message = mvs_rpc.didsend_asset_from(Zac.name,Zac.password, did_symbol,Alice.did_symbol,asset_symbol, 100)
+        self.assertEqual(ec, 0, message)  
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+
+        #register mit
+        mit_symbol = ("MIT." + common.get_random_str()).upper()
+        content = "MIT of Zac: " + mit_symbol
+        ec, message = mvs_rpc.register_mit(Zac.name, Zac.password, did_symbol, mit_symbol, content)
+        self.assertEqual(ec, code.success, message)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+
+        # transfer mit
+        ec, message = Zac.transfer_mit(Bob.did_symbol, mit_symbol)
+        self.assertEqual(ec, code.success, message)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)  
+        Alice.mining()
+
+
+        #issue cert
+        cert_symbol = Zac.issue_naming_cert(domain_symbol,did_symbol)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()
+
+        #transfer cert
+        ec, message = mvs_rpc.transfer_cert(Zac.name, Zac.password, Alice.did_symbol, cert_symbol,
+                                            'naming',
+                                            fee=None)
+        self.assertEqual(ec, 0, message)
+        ec, message = mvs_rpc.didsend(Zac.name,Zac.password, Alice.did_symbol,10000)
+        self.assertEqual(ec, 0, message)
+        Alice.mining()

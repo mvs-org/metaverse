@@ -32,25 +32,32 @@ using namespace bc::explorer::config;
 /************************ getmininginfo *************************/
 
 console_result getmininginfo::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                                     libbitcoin::server::server_node& node)
 {
     administrator_required_checker(node, auth_.name, auth_.auth);
-
-    auto& aroot = jv_output;
-    Json::Value info;
-
-    auto& miner = node.miner();
 
     uint64_t height, rate;
     std::string difficulty;
     bool is_mining;
 
+    auto& miner = node.miner();
     miner.get_state(height, rate, difficulty, is_mining);
-    info["is-mining"] = is_mining;
-    info["height"] += height;
-    info["rate"] += rate;
-    info["difficulty"] = difficulty;
-    aroot["mining-info"] = info;
+
+    if (get_api_version() <= 2) {
+        auto& aroot = jv_output;
+        Json::Value info;
+        info["is-mining"] = is_mining;
+        info["height"] += height;
+        info["rate"] += rate;
+        info["difficulty"] = difficulty;
+        aroot["mining-info"] = info;
+    }
+    else {
+        jv_output["is_mining"] = is_mining;
+        jv_output["height"] += height;
+        jv_output["rate"] += rate;
+        jv_output["difficulty"] = difficulty;
+    }
 
     return console_result::okay;
 }

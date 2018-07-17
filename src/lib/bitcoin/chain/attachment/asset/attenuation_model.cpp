@@ -650,12 +650,16 @@ bool attenuation_model::check_model_param_uc_uq(attenuation_model& parser)
         log::debug(LOG_HEADER) << "attenuation param error: UQ.size() != UN";
         return false;
     }
-    if (sum_and_check_numbers(UCs, is_positive_number) != LP) {
-        log::debug(LOG_HEADER) << "attenuation param error: LP != sum(UC) or exist UC <= 0";
+    auto value = sum_and_check_numbers(UCs, is_positive_number);
+    if (value != LP) {
+        log::debug(LOG_HEADER) << "attenuation param error: LP("
+            << std::to_string(LP) <<") != sum(UC)(" << std::to_string(value) << ") or exist UC <= 0";
         return false;
     }
-    if (sum_and_check_numbers(UQs, is_positive_number) != LQ) {
-        log::debug(LOG_HEADER) << "attenuation param error: LQ != sum(UQ) or exist UQ <= 0";
+    value = sum_and_check_numbers(UQs, is_positive_number);
+    if (value != LQ) {
+        log::debug(LOG_HEADER) << "attenuation param error: LQ("
+            << std::to_string(LQ) <<") != sum(UQ)(" << std::to_string(value) << ") or exist UQ <= 0";
         return false;
     }
     return true;

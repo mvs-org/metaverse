@@ -24,6 +24,8 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <algorithm>
+#include <algorithm>
 #include <utility>
 #include <unordered_map>
 #include <boost/filesystem.hpp>
@@ -1450,6 +1452,11 @@ bool block_chain_impl::is_asset_cert_exist(const std::string& symbol, asset_cert
     return database_.certs.get(key) != nullptr;
 }
 
+bool block_chain_impl::is_asset_mit_exist(const std::string& symbol)
+{
+    return get_registered_mit(symbol) != nullptr;
+}
+
 std::shared_ptr<asset_mit_info> block_chain_impl::get_registered_mit(const std::string& symbol)
 {
     BITCOIN_ASSERT(!symbol.empty());
@@ -1845,11 +1852,9 @@ bool block_chain_impl::is_did_exist(const std::string& did_name)
 
 /* check did address exist or not
 */
-bool block_chain_impl::is_address_registered_did(const std::string& did_address)
+bool block_chain_impl::is_address_registered_did(const std::string& did_address, uint64_t fork_index)
 {
-    // find from blockchain database
-    auto&& did_vec = database_.address_dids.get_dids(did_address, 0);
-    return !did_vec.empty();
+    return !get_did_from_address(did_address, fork_index).empty();
 }
 
 bool block_chain_impl::is_account_owned_did(const std::string& account, const std::string& symbol)
@@ -1877,28 +1882,49 @@ std::shared_ptr<did_detail::list> block_chain_impl::get_account_dids(const std::
     auto pvaddr = get_account_addresses(account);
     if (pvaddr) {
         for (const auto& account_address : *pvaddr) {
-            auto&& did_vec = database_.address_dids.get_dids(account_address.get_address(), 0);
-            if (!did_vec.empty()) {
-                sh_vec->emplace_back(std::move(did_vec[0].detail));
+            auto did_address = account_address.get_address();
+            auto did_symbol = get_did_from_address(did_address);
+            if (!did_symbol.empty()) {
+                sh_vec->emplace_back(did_detail(did_symbol, did_address));
             }
         }
     }
 
     return sh_vec;
 }
-
 /* find did by address
 */
-std::string block_chain_impl::get_did_from_address(const std::string& did_address)
+std::string block_chain_impl::get_did_from_address(const std::string& did_address, uint64_t fork_index)
 {
-    // find from blockchain database
-    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0);
+    //search from address_did_database first
+    business_address_did::list did_vec = database_.address_dids.get_dids(did_address, 0, fork_index);
 
-    if (!did_vec.empty()) {
-        return did_vec[0].detail.get_symbol();
+    std::string  did_symbol= "";
+    if(!did_vec.empty())
+        did_symbol = did_vec[0].detail.get_symbol();
+
+    if(did_symbol != "")
+    {
+        //double check
+        std::shared_ptr<blockchain_did::list>  blockchain_didlist = get_did_history_addresses(did_symbol);
+        auto iter = std::find_if(blockchain_didlist->begin(), blockchain_didlist->end(),
+        [fork_index](const blockchain_did & item){
+            return is_blackhole_address(item.get_did().get_address()) || item.get_height() <= fork_index;
+        });
+        
+        if(iter == blockchain_didlist->end() || iter->get_did().get_address() != did_address)   
+            return "";
+    }
+    else if(did_symbol == "" && fork_index != max_uint64)
+    {
+        // search from dids database
+        auto sp_did_vec = database_.dids.getdids_from_address_history(did_address, 0, fork_index);
+        if (sp_did_vec && !sp_did_vec->empty()) {
+            did_symbol = sp_did_vec->back().get_did().get_symbol();
+        }
     }
 
-    return "";
+    return did_symbol;
 }
 
 /* find history addresses by the did symbol
@@ -1987,48 +2013,6 @@ std::shared_ptr<business_address_message::list> block_chain_impl::get_account_me
     return sp_asset_vec;
 }
 
-account_status block_chain_impl::get_account_user_status(const std::string& name)
-{
-    account_status ret_val = account_status::error;
-    auto account = get_account(name);
-    if (account) // account exist
-        ret_val = static_cast<account_status>(account->get_user_status());
-    return ret_val;
-}
-
-account_status block_chain_impl::get_account_system_status(const std::string& name)
-{
-    account_status ret_val = account_status::error;
-    auto account = get_account(name);
-    if (account) // account exist
-        ret_val = static_cast<account_status>(account->get_system_status());
-    return ret_val;
-}
-
-bool block_chain_impl::set_account_user_status(const std::string& name, uint8_t status)
-{
-    bool ret_val = false;
-    auto account = get_account(name);
-    if (account) // account exist
-    {
-        account->set_user_status(status);
-        ret_val = true;
-    }
-    return ret_val;
-}
-
-bool block_chain_impl::set_account_system_status(const std::string& name, uint8_t status)
-{
-    bool ret_val = false;
-    auto account = get_account(name);
-    if (account) // account exist
-    {
-        account->set_system_status(status);
-        ret_val = true;
-    }
-    return ret_val;
-}
-
 void block_chain_impl::fired()
 {
     organizer_.fired();
@@ -2058,30 +2042,34 @@ bool block_chain_impl::is_asset_exist(const std::string& asset_name, bool check_
     return false;
 }
 
-bool block_chain_impl::get_asset_height(const std::string& asset_name, uint64_t& height)
+uint64_t block_chain_impl::get_asset_height(const std::string& asset_name)const
 {
-    const auto hash = get_hash(asset_name);
-
-    // std::shared_ptr<blockchain_asset>
-    auto sp_asset = database_.assets.get(hash);
-    if(sp_asset) {
-        height = sp_asset->get_height();
-    }
-
-    return (sp_asset != nullptr);
+    return database_.assets.get_register_height(asset_name);
 }
 
-bool block_chain_impl::get_did_height(const std::string& did_name, uint64_t& height)
+uint64_t block_chain_impl::get_did_height(const std::string& did_name)const
 {
-    const auto hash = get_hash(did_name);
+    return database_.dids.get_register_height(did_name);
+}
 
-    // std::shared_ptr<blockchain_asset>
-    auto sp_did = database_.dids.get(hash);
-    if(sp_did) {
-        height = sp_did->get_height();
+uint64_t block_chain_impl::get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type)
+{
+    auto&& key_str = asset_cert::get_key(cert_symbol, cert_type);
+    const auto key = get_hash(key_str);
+    auto cert = database_.certs.get(key);
+    if(cert)
+    {
+       business_history::list history_cert = database_.address_assets.get_asset_certs_history(cert->get_address(), cert_symbol, cert_type, 0);
+       if(history_cert.size()>0){
+           return history_cert.back().output_height;
+       }
     }
+    return max_uint64;
+}
 
-    return (sp_did != nullptr);
+uint64_t block_chain_impl::get_asset_mit_height(const std::string& mit_symbol) const
+{
+    return database_.mits.get_register_height(mit_symbol);
 }
 
 /// get asset from local database including all account's assets

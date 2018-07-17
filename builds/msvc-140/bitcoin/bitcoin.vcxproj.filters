@@ -395,12 +395,6 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\address.cpp">
       <Filter>Source Files\message</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert.cpp">
-      <Filter>Source Files\message</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\message\alert_payload.cpp">
-      <Filter>Source Files\message</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_message.cpp">
       <Filter>Source Files\message</Filter>
     </ClCompile>
@@ -823,9 +817,6 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\checksum.hpp">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert_payload.hpp">
-      <Filter>Header Files\message</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\block_message.hpp">
       <Filter>Header Files\message</Filter>
     </ClInclude>
@@ -917,9 +908,6 @@
       <Filter>Header Files\message</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\address.hpp">
-      <Filter>Header Files\message</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\bitcoin\message\alert.hpp">
       <Filter>Header Files\message</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\unicode\console_streambuf.hpp">

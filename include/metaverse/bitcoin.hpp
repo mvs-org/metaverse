@@ -63,8 +63,6 @@
 #include <metaverse/bitcoin/math/stealth.hpp>
 #include <metaverse/bitcoin/math/uint256.hpp>
 #include <metaverse/bitcoin/message/address.hpp>
-#include <metaverse/bitcoin/message/alert.hpp>
-#include <metaverse/bitcoin/message/alert_payload.hpp>
 #include <metaverse/bitcoin/message/block_message.hpp>
 #include <metaverse/bitcoin/message/block_transactions.hpp>
 #include <metaverse/bitcoin/message/compact_block.hpp>

@@ -66,7 +66,7 @@ int bc::main(int argc, char* argv[])
     bc::set_utf8_stdout();
     auto work_path = bc::default_data_path();
     auto&& config_file = work_path / "mvs.conf";
-    std::string url{"127.0.0.1:8820/rpc/v2"};
+    std::string url{"127.0.0.1:8820/rpc/v3"};
 
     if (boost::filesystem::exists(config_file)) {
         const auto& path = config_file.string();
@@ -91,7 +91,7 @@ int bc::main(int argc, char* argv[])
                 if (tmp.find("0.0.0.0") == 0) {
                     tmp.replace(0, 7, "127.0.0.1");
                 }
-                url = tmp + "/rpc/v2";
+                url = tmp + "/rpc/v3";
             }
         }
     }

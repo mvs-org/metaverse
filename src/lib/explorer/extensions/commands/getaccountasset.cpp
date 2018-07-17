@@ -66,6 +66,10 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
 
             Json::Value asset_cert = json_helper.prop_list(elem);
             json_value.append(asset_cert);
+
+            if (!argument_.symbol.empty()) {
+                break;
+            }
         }
     }
     else {
@@ -91,6 +95,10 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
             Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
             asset_data["status"] = "unspent";
             json_value.append(asset_data);
+
+            if (!argument_.symbol.empty()) {
+                break;
+            }
         }
 
         // 2. get asset in local database
@@ -101,17 +109,28 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
             // symbol filter
             if(!argument_.symbol.empty() && argument_.symbol !=  symbol)
                 continue;
+
             Json::Value asset_data = json_helper.prop_list(elem.detail, false);
             asset_data["status"] = "unissued";
             json_value.append(asset_data);
+
+            if (!argument_.symbol.empty()) {
+                break;
+            }
         }
     }
 
     if (get_api_version() == 1 && json_value.isNull()) { //compatible for v1
         jv_output[json_key] = "";
     }
-    else {
+    else if (get_api_version() <= 2) {
         jv_output[json_key] = json_value;
+    }
+    else {
+        if(json_value.isNull())
+            json_value.resize(0);
+            
+        jv_output = json_value;
     }
 
     return console_result::okay;

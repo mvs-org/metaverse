@@ -120,7 +120,7 @@ public:
 
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
-    static std::string get_key(const std::string&symbol, asset_cert_type bit);
+    static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
