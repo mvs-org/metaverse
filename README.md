@@ -115,7 +115,7 @@ Modules blockchain/database required.
 $ git clone https://github.com/mvs-live/secp256k1
 $ cd secp256k1
 $ ./autogen.sh
-$ ./configure --enable-module-recovery
+$ ./configure --enable-module-recovery --with-bignum=no
 $ make -j4
 $ sudo make install && sudo ldconfig
 ```
