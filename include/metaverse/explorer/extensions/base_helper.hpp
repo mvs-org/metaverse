@@ -559,10 +559,11 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        receiver_record::list&& receiver_list, uint64_t fee)
+        receiver_record::list&& receiver_list, uint64_t fee, std::string&& message)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , attenuation_model_param_{std::move(model_param)}
+        , message_{std::move(message)}
     {}
 
     ~sending_asset()
@@ -574,6 +575,7 @@ public:
 
 private:
     std::string attenuation_model_param_;
+    std::string message_;
 };
 
 class BCX_API registering_did : public base_multisig_transfer_helper

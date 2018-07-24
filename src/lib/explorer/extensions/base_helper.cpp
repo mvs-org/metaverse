@@ -1509,6 +1509,14 @@ void sending_asset::populate_change()
 
     // asset utxo
     populate_asset_change();
+
+    // asset transfer  -- with message
+    if (!message_.empty()) {
+        auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
+        receiver_list_.push_back({addr, "", 0, 0,
+            utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(message_))});
+    }
 }
 
 chain::operation::stack

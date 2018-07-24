@@ -37,6 +37,10 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
+    if (!option_.message.empty() && option_.message.size() >= 255) {
+        throw argument_size_invalid_exception{"message length out of bounds."};
+    }
+
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
@@ -78,7 +82,8 @@ console_result didsendassetfrom::invoke(Json::Value& jv_output,
         std::move(auth_.name), std::move(auth_.auth),
         std::move(fromaddress), std::move(argument_.symbol),
         std::move(option_.attenuation_model_param),
-        std::move(receiver), argument_.fee);
+        std::move(receiver), argument_.fee,
+        std::move(option_.message));
 
     send_helper.exec();
 

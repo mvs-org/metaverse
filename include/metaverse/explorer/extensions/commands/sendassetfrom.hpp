@@ -112,6 +112,11 @@ public:
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
+        )
+        (
+            "message,i",
+            value<std::string>(&option_.message),
+            "Information attached to this transaction"
         );
 
         return options;
@@ -136,6 +141,7 @@ public:
     struct option
     {
         std::string attenuation_model_param;
+        std::string message;
     } option_;
 
 };
