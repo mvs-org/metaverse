@@ -735,7 +735,8 @@ std::string base_transfer_common::get_mychange_address(filter filter) const
         }
         if (filter & FILTER_ASSET) {
             return (record.type == utxo_attach_type::asset_transfer)
-                || (record.type == utxo_attach_type::asset_issue);
+                || (record.type == utxo_attach_type::asset_issue)
+                || (record.type == utxo_attach_type::asset_secondaryissue);
         }
         throw std::logic_error{"get_mychange_address: unknown/wrong filter for mychange"};
     };
