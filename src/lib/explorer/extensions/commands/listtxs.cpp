@@ -42,7 +42,7 @@ public:
     uint32_t get_timestamp() {
         return timestamp_;
     }
-    hash_digest get_hash(){
+    hash_digest get_hash() {
         return hash_;
     }
     bool operator<(const tx_block_info & rinfo) const
@@ -64,7 +64,7 @@ private:
 /************************ listtxs *************************/
 
 console_result listtxs::invoke(Json::Value& jv_output,
-    libbitcoin::server::server_node& node)
+                               libbitcoin::server::server_node& node)
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl();
@@ -73,22 +73,22 @@ console_result listtxs::invoke(Json::Value& jv_output,
     if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address parameter!"};
     // height check
-    if(option_.height.first()
-        && option_.height.second()
-        && (option_.height.first() >= option_.height.second())) {
+    if (option_.height.first()
+            && option_.height.second()
+            && (option_.height.first() >= option_.height.second())) {
         throw block_height_exception{"invalid height option!"};
     }
     // symbol check
-    if(!argument_.symbol.empty()) {
+    if (!argument_.symbol.empty()) {
         blockchain.uppercase_symbol(argument_.symbol);
-        if(!blockchain.get_issued_asset(argument_.symbol))
+        if (!blockchain.get_issued_asset(argument_.symbol))
             throw asset_symbol_notfound_exception{argument_.symbol + std::string(" not exist!")};
     }
 
     auto& aroot = jv_output;
     Json::Value balances;
 
-    auto sort_by_height = [](const tx_block_info &lhs, const tx_block_info &rhs)->bool {
+    auto sort_by_height = [](const tx_block_info & lhs, const tx_block_info & rhs)->bool {
         return const_cast<tx_block_info&>(lhs).get_height() > const_cast<tx_block_info&>(rhs).get_height();
     };
 
@@ -96,12 +96,12 @@ console_result listtxs::invoke(Json::Value& jv_output,
     auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
 
     // collect address
-    if(argument_.address.empty()) {
+    if (argument_.address.empty()) {
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if(!pvaddr)
+        if (!pvaddr)
             throw address_invalid_exception{"nullptr for address list"};
 
-        for (auto& elem: *pvaddr) {
+        for (auto& elem : *pvaddr) {
             sh_addr_vec->push_back(elem.get_address());
         }
     } else { // address exist in command
@@ -109,10 +109,10 @@ console_result listtxs::invoke(Json::Value& jv_output,
     }
 
     // scan all addresses business record
-    for (auto& each: *sh_addr_vec) {
+    for (auto& each : *sh_addr_vec) {
         auto sh_vec = blockchain.get_address_business_record(each, argument_.symbol,
-                option_.height.first(), option_.height.second(), 0, 0);
-        for(auto& elem : *sh_vec)
+                      option_.height.first(), option_.height.second(), 0, 0);
+        for (auto& elem : *sh_vec)
             sh_txs->push_back(tx_block_info(elem.height, elem.data.get_timestamp(), elem.point.hash));
     }
     std::sort (sh_txs->begin(), sh_txs->end());
@@ -120,24 +120,24 @@ console_result listtxs::invoke(Json::Value& jv_output,
     std::sort (sh_txs->begin(), sh_txs->end(), sort_by_height);
 
     // page limit & page index paramenter check
-    if(!argument_.index)
+    if (!argument_.index)
         throw argument_legality_exception{"page index parameter cannot be zero"};
-    if(!argument_.limit)
+    if (!argument_.limit)
         throw argument_legality_exception{"page record limit parameter cannot be zero"};
-    if(argument_.limit > 100)
+    if (argument_.limit > 100)
         throw argument_legality_exception{"page record limit cannot be bigger than 100."};
 
     uint64_t start, end, total_page, tx_count;
-    if(argument_.index && argument_.limit) {
-        start = (argument_.index - 1)*argument_.limit;
-        end = (argument_.index)*argument_.limit;
-        if(start >= sh_txs->size() || !sh_txs->size())
+    if (argument_.index && argument_.limit) {
+        start = (argument_.index - 1) * argument_.limit;
+        end = (argument_.index) * argument_.limit;
+        if (start >= sh_txs->size() || !sh_txs->size())
             throw argument_legality_exception{"no record in this page"};
 
-        total_page = sh_txs->size() % argument_.limit ? (sh_txs->size()/argument_.limit + 1) : (sh_txs->size()/argument_.limit);
-        tx_count = end >=sh_txs->size()? (sh_txs->size() - start) : argument_.limit ;
+        total_page = sh_txs->size() % argument_.limit ? (sh_txs->size() / argument_.limit + 1) : (sh_txs->size() / argument_.limit);
+        tx_count = end >= sh_txs->size() ? (sh_txs->size() - start) : argument_.limit ;
 
-    } else if(!argument_.index && !argument_.limit) { // all tx records
+    } else if (!argument_.index && !argument_.limit) { // all tx records
         start = 0;
         tx_count = sh_txs->size();
         argument_.index = 1;
@@ -156,9 +156,9 @@ console_result listtxs::invoke(Json::Value& jv_output,
     chain::transaction tx;
     uint64_t tx_height;
     //hash_digest trans_hash;
-    for (auto& each: result){
+    for (auto& each : result) {
         //decode_hash(trans_hash, each.hash);
-        if(!blockchain.get_transaction(each.get_hash(), tx, tx_height))
+        if (!blockchain.get_transaction(each.get_hash(), tx, tx_height))
             continue;
 
         Json::Value tx_item;
@@ -174,7 +174,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
         // set inputs content
         Json::Value input_addrs;
-        for(auto& input : tx.inputs) {
+        for (auto& input : tx.inputs) {
             Json::Value input_addr;
 
             auto&& script_address = payment_address::extract(input.script);
@@ -206,7 +206,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
         // set outputs content
         Json::Value pt_outputs;
         uint64_t lock_height = 0;
-        for(auto& op : tx.outputs) {
+        for (auto& op : tx.outputs) {
             Json::Value pt_output;
 
             auto&& address = payment_address::extract(op.script);
@@ -214,14 +214,14 @@ console_result listtxs::invoke(Json::Value& jv_output,
                 auto&& temp_addr = address.encoded();
                 pt_output["address"] = temp_addr;
                 auto ret = blockchain.get_account_address(auth_.name, temp_addr);
-                if(get_api_version() == 1)
+                if (get_api_version() == 1)
                     pt_output["own"] = ret ? "true" : "false";
                 else
                     pt_output["own"] = ret ? true : false;
 
             } else {
                 // empty output address ? unbelievable.
-                if(get_api_version() == 1)
+                if (get_api_version() == 1)
                     pt_output["address"] = "";
                 else
                     pt_output["address"] = Json::nullValue;
@@ -229,7 +229,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
             pt_output["script"] = op.script.to_string(1);
             lock_height = 0;
-            if(chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
+            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(op.script.operations))
                 lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(op.script.operations);
 
             if (get_api_version() == 1) {
@@ -275,7 +275,6 @@ console_result listtxs::invoke(Json::Value& jv_output,
             ////////////////////////////////////////////////////////////
 
             pt_outputs.append(pt_output);
-
         }
 
         if (get_api_version() == 1 && pt_outputs.isNull()) { // compatible for v1
@@ -287,13 +286,14 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
         // set tx direction
         // 1. receive check
-        auto pos = std::find_if(vec_ip_addr.begin(), vec_ip_addr.end(), [&](const std::string& i){
-                return blockchain.get_account_address(auth_.name, i) != nullptr;
-                });
+        auto pos = std::find_if(vec_ip_addr.begin(), vec_ip_addr.end(), [&](const std::string & i) {
+            return blockchain.get_account_address(auth_.name, i) != nullptr;
+        });
 
-        if (pos == vec_ip_addr.end()){
+        if (pos == vec_ip_addr.end()) {
             tx_item["direction"] = "receive";
         }
+
         // 3. all address clear
         vec_ip_addr.clear();
         balances.append(tx_item);
@@ -303,7 +303,8 @@ console_result listtxs::invoke(Json::Value& jv_output,
         aroot["total_page"] += total_page;
         aroot["current_page"] += argument_.index;
         aroot["transaction_count"] += tx_count;
-    } else {
+    }
+    else {
         aroot["total_page"] = total_page;
         aroot["current_page"] = argument_.index;
         aroot["transaction_count"] = tx_count;
@@ -316,10 +317,10 @@ console_result listtxs::invoke(Json::Value& jv_output,
         aroot["transactions"] = balances;
     }
     else {
-        if(balances.isNull())
-            balances.resize(0); 
+        if (balances.isNull())
+            balances.resize(0);
 
-        aroot = balances;
+        aroot["transactions"] = balances;
     }
 
     return console_result::okay;
