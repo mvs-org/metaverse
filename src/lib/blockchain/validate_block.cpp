@@ -633,6 +633,8 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         // Consensus checks here.
         if (!validate_inputs(tx, tx_index, value_in, total_sigops))
         {
+            log::debug(LOG_BLOCKCHAIN) << "validate inputs of block failed. tx hash:"
+                << encode_hash(tx.hash());
             err_tx = tx.hash();
             return error::validate_inputs_failed;
         }
