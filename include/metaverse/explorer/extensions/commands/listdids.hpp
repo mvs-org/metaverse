@@ -74,6 +74,16 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth),
             BX_ACCOUNT_AUTH
+        )
+        (
+            "limit,l",
+            value<uint64_t>(&argument_.limit)->default_value(100),
+            "Did count per page.Default value is 100."
+        )
+        (
+            "index,i",
+            value<uint64_t>(&argument_.index)->default_value(1),
+            "Page index.Default value is 1."
         );
 
         return options;
@@ -88,6 +98,10 @@ public:
 
     struct argument
     {
+        argument():limit(100), index(1)
+        {};
+        uint64_t limit;
+        uint64_t index;
     } argument_;
 
     struct option

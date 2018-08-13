@@ -52,8 +52,40 @@ console_result listdids::invoke(Json::Value& jv_output,
 
     std::sort(sh_vec->begin(), sh_vec->end());
 
+    // page limit & page index paramenter check
+    if (!argument_.index)
+        throw argument_legality_exception{"page index parameter cannot be zero"};
+    if (!argument_.limit)
+        throw argument_legality_exception{"page record limit parameter cannot be zero"};
+    if (argument_.limit > 100)
+        throw argument_legality_exception{"page record limit cannot be bigger than 100."};
+
+    uint64_t start, end, total_page, tx_count ,total_count;
+    total_count = sh_vec-> size();
+    if (argument_.index && argument_.limit) {
+        start = (argument_.index - 1) * argument_.limit;
+        end = (argument_.index) * argument_.limit;
+        if (start >= total_count || !total_count)
+            throw argument_legality_exception{"no record in this page"};
+
+        total_page = total_count % argument_.limit ? (total_count / argument_.limit + 1) : (total_count / argument_.limit);
+        tx_count = end >= total_count ? (total_count - start) : argument_.limit ;
+
+    } else if (!argument_.index && !argument_.limit) { // all tx records
+        start = 0;
+        tx_count = total_count;
+        argument_.index = 1;
+        total_page = 1;
+    } else {
+        throw argument_legality_exception{"invalid limit or index parameter"};
+    }
+
+    // sort by height
+    std::vector<did_detail> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
+
+
     // add blockchain dids
-    for (auto& elem: *sh_vec) {
+    for (auto& elem: result) {
         Json::Value did_data;
         did_data["symbol"] = elem.get_symbol();
         did_data["address"] = elem.get_address();
@@ -62,16 +94,19 @@ console_result listdids::invoke(Json::Value& jv_output,
     }
 
     if (get_api_version() == 1 && dids.isNull()) { //compatible for v1
+        jv_output["total_page"] += total_page;
+        jv_output["current_page"] += argument_.index;
+        jv_output["total_count"] += total_count;
         jv_output["dids"] = "";
-    }
-    else if (get_api_version() <= 2) {
-        jv_output["dids"] = dids;
     }
     else {
         if(dids.isNull())
             dids.resize(0);  
 
-        jv_output = dids;
+        jv_output["total_page"] = total_page;
+        jv_output["current_page"] = argument_.index;
+        jv_output["total_count"] = total_count;
+        jv_output["dids"] = dids;
     }
 
     return console_result::okay;
