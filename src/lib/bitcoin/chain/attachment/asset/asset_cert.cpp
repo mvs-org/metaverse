@@ -272,6 +272,9 @@ const std::map<asset_cert_type, std::string>& asset_cert::get_type_name_map()
         {asset_cert_ns::issue, "issue"},
         {asset_cert_ns::domain, "domain"},
         {asset_cert_ns::naming, "naming"},
+
+        {asset_cert_ns::marriage,   "marriage"},
+        {asset_cert_ns::kyc,        "KYC"},
     };
     return static_type_name_map;
 }
@@ -282,8 +285,14 @@ std::string asset_cert::get_type_name(asset_cert_type cert_type)
 
     const auto& type_name_map = get_type_name_map();
     auto iter = type_name_map.find(cert_type);
-    BITCOIN_ASSERT(iter != type_name_map.end());
-    return iter->second;
+    if (iter != type_name_map.end()) {
+        return iter->second;
+    }
+
+    std::stringstream sstream;
+    sstream << "0x" << std::hex << cert_type;
+    std::string result = sstream.str();
+    return result;
 }
 
 bool asset_cert::test_certs(const std::vector<asset_cert_type>& cert_vec, asset_cert_type cert_type)
