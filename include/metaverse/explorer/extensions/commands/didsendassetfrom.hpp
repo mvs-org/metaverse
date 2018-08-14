@@ -104,6 +104,11 @@ public:
             "Asset integer bits. see asset <decimal_number>."
         )
         (
+            "change,c",
+            value<std::string>(&option_.change_address),
+            "Change to this did/address"
+        )
+        (
             "model,m",
             value<std::string>(&option_.attenuation_model_param),
             BX_MST_OFFERING_CURVE
@@ -142,6 +147,7 @@ public:
     {
         std::string attenuation_model_param;
         std::string message;
+        std::string change_address;
     } option_;
 
 };

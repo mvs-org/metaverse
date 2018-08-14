@@ -559,9 +559,11 @@ public:
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
-        receiver_record::list&& receiver_list, uint64_t fee, std::string&& message)
+        receiver_record::list&& receiver_list, uint64_t fee,
+        std::string&& message, std::string&& change)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
-            std::move(from), std::move(receiver_list), fee, std::move(symbol))
+            std::move(from), std::move(receiver_list), fee,
+            std::move(symbol), std::move(change))
         , attenuation_model_param_{std::move(model_param)}
         , message_{std::move(message)}
     {}

@@ -55,9 +55,20 @@ console_result didsendasset::invoke(Json::Value& jv_output,
         tempaddress = argument_.did;
     }
     else {
-        tempaddress = get_address_from_did(argument_.did,blockchain);
+        tempaddress = get_address_from_did(argument_.did, blockchain);
         attach.set_to_did(argument_.did);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
+    }
+
+    // change address
+    std::string changeaddress;
+    if (!option_.change_address.empty()) {
+        if (blockchain.is_valid_address(option_.change_address)) {
+            changeaddress = option_.change_address;
+        }
+        else {
+            changeaddress = get_address_from_did(option_.change_address, blockchain);
+        }
     }
 
     // receiver
@@ -71,7 +82,8 @@ console_result didsendasset::invoke(Json::Value& jv_output,
             "", std::move(argument_.symbol),
             std::move(option_.attenuation_model_param),
             std::move(receiver), argument_.fee,
-            std::move(option_.message));
+            std::move(option_.message),
+            std::move(changeaddress));
 
     send_helper.exec();
 

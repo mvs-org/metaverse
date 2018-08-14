@@ -45,18 +45,21 @@ console_result didsendfrom::invoke(Json::Value& jv_output,
         fromaddress = argument_.fromdid;
     }
     else {
-        //blockchain.uppercase_symbol(argument_.fromdid);
-        if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE)
-            throw did_symbol_length_exception{"fromdid symbol length must be less than 64."};
-        if (!blockchain.is_did_exist(argument_.fromdid))
-            throw did_symbol_notfound_exception{"fromdid symbol is not exist on the blockchain"};
+        if (argument_.fromdid.length() > DID_DETAIL_SYMBOL_FIX_SIZE) {
+            throw did_symbol_length_exception{
+                "fromdid " + argument_.fromdid + " length must be less than 64."};
+        }
 
-        auto diddetail=blockchain.get_registered_did(argument_.fromdid);
+        if (!blockchain.is_did_exist(argument_.fromdid)) {
+            throw did_symbol_notfound_exception{
+                "fromdid " + argument_.fromdid + " is not exist on the blockchain."};
+        }
+
+        auto diddetail = blockchain.get_registered_did(argument_.fromdid);
         fromaddress = diddetail->get_address();
         attach.set_from_did(argument_.fromdid);
         attach.set_version(DID_ATTACH_VERIFY_VERSION);
     }
-
 
     //support address as well as did
     if (blockchain.is_valid_address(argument_.todid)) {
