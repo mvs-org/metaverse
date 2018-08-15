@@ -98,12 +98,12 @@ public:
         )
         (
             "change,c",
-            value<std::string>(&option_.change_address),
+            value<std::string>(&option_.change),
             "Change to this did/address"
         )
         (
-            "From,d",
-            value<std::string>(&option_.fromdid),
+            "from,d",
+            value<std::string>(&option_.from),
             "From this did/address"
         )
         (
@@ -137,10 +137,10 @@ public:
 
     struct option
     {
-        std::string fromdid;
+        std::string from;
         uint64_t swapfee;
         uint64_t fee;
-        std::string change_address;
+        std::string change;
     } option_;
 
 };

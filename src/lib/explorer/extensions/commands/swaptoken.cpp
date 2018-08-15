@@ -42,6 +42,7 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     if (argument_.message.empty() || argument_.message.size() >= 255) {
         throw argument_size_invalid_exception{"message length out of bounds."};
     }
+
     {
         Json::Reader reader;
         Json::Value file_root;
@@ -67,48 +68,36 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"Only support assets prefixed by 'ERC.'"};
     }
 
-    const std::string&& scan_address = get_address_from_did("crosschain", blockchain);
-    const std::string&& swapfee_address = bc::get_developer_community_address(blockchain.chain_settings().use_testnet_rules);
-
-    std::string fromaddress = "";
     attachment attach;
-    if (!option_.fromdid.empty()) {
-        // support address as well as did
-        if (blockchain.is_valid_address(option_.fromdid)) {
-            fromaddress = option_.fromdid;
-        } else {
-            fromaddress = get_address_from_did(option_.fromdid, blockchain);
-            attach.set_from_did(option_.fromdid);
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-        }
+    const std::string&& to_address = get_address("crosschain", attach, true, blockchain)
+    const std::string&& swapfee_address = bc::get_developer_community_address(
+        blockchain.chain_settings().use_testnet_rules);
+
+    std::string from_address("");
+    if (!option_.from.empty()) {
+        from_address = get_address(option_.from, attach, true, blockchain)
     }
 
-    // change address
-    std::string changeaddress;
-    if (!option_.change_address.empty()) {
-        if (blockchain.is_valid_address(option_.change_address)) {
-            changeaddress = option_.change_address;
-        }
-        else {
-            changeaddress = get_address_from_did(option_.change_address, blockchain);
-        }
-    }
+    std::string change_address = get_address(option_.change, blockchain)
 
-    if (!argument_.amount)
+    if (!argument_.amount) {
         throw argument_legality_exception{"invalid amount parameter!"};
-    if (option_.swapfee < DEFAULT_SWAP_FEE)
+    }
+    if (option_.swapfee < DEFAULT_SWAP_FEE) {
         throw argument_legality_exception{"invalid swapfee parameter! must >= 1 ETP"};
+    }
 
     std::vector<receiver_record> receiver{
-            {scan_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach},
-            {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attach},
+        {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach},
+        {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attachment()},
     };
-    auto send_helper = sending_asset(*this, blockchain,
-                                     std::move(auth_.name), std::move(auth_.auth),
-                                     std::move(fromaddress), std::move(argument_.symbol),
-                                     "",
-                                     std::move(receiver), option_.fee,
-                                     std::move(argument_.message), std::move(changeaddress));
+    auto send_helper = sending_asset(
+        *this, blockchain,
+         std::move(auth_.name), std::move(auth_.auth),
+         std::move(from_address), std::move(argument_.symbol),
+         "",
+         std::move(receiver), option_.fee,
+         std::move(argument_.message), std::move(change_address));
 
     send_helper.exec();
 
