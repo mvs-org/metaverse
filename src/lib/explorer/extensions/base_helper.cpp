@@ -1616,6 +1616,7 @@ void issuing_asset_cert::sum_payment_amount()
             throw asset_cert_exception("no asset cert of domain right.");
         }
 
+        payment_asset_cert_.clear();
         payment_asset_cert_.push_back(asset_cert_ns::domain);
     }
     else {

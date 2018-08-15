@@ -36,7 +36,8 @@ class Role:
         if None == self.did_address:
             ec, message = mvs_rpc.list_dids(self.name, self.password)
             assert (ec == 0)
-            if message:
+            if message and message['dids']:
+                message = message['dids']
                 dids = [MOCs.Did.init(i) for i in message if i]
                 found_dids = filter(lambda a: a.symbol == self.did_symbol, dids)
                 assert(len(found_dids) == 1)

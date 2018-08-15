@@ -10,7 +10,7 @@ class TestDIDSend(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids()
         if ec != 0:
             return
-        exist_symbols = [i["symbol"] for i in message]
+        exist_symbols = [i["symbol"] for i in message['dids']]
 
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)
@@ -98,7 +98,7 @@ class TestDIDSendAsset(MVSTestCaseBase):
         ec, message = mvs_rpc.list_dids()
         if ec != 0:
             return
-        exist_symbols = [i["symbol"] for i in message]
+        exist_symbols = [i["symbol"] for i in message['dids']]
 
         assert (Alice.did_symbol in exist_symbols)
         assert (Bob.did_symbol in exist_symbols)

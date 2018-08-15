@@ -27,7 +27,7 @@ class TestDIDBatch(MVSTestCaseBase):
         def get_did_count():
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0)
-            return len(message)
+            return message['total_count']
 
         try:
             for i in xrange(batch_amount_i):
