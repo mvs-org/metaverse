@@ -134,7 +134,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
-    func(make_shared<popblock>());
 
     os <<"\r\n";
     // block & tx
