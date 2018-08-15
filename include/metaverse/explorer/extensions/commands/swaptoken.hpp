@@ -102,7 +102,7 @@ public:
             "Change to this did/address"
         )
         (
-            "from,d",
+            "From,d",
             value<std::string>(&option_.fromdid),
             "From this did/address"
         )

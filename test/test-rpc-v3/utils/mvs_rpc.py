@@ -817,7 +817,7 @@ def pop_block(height):
 def swap_token(account, password, symbol, amount, message, change=None, from_=None, fee=None, swapfee=None):
     optional = {
         '--change': change,
-        '--from': from_,
+        '--From': from_,
         '--fee': fee,
         '--swapfee': swapfee
     }
