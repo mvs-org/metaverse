@@ -95,7 +95,7 @@
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/commands/didsendmore.hpp>
-
+#include <metaverse/explorer/extensions/commands/swaptoken.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -134,6 +134,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
+    func(make_shared<popblock>());
 
     os <<"\r\n";
     // block & tx
@@ -184,6 +185,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getaccountasset>());
     func(make_shared<getaddressasset>());
     func(make_shared<burn>());
+    func(make_shared<swaptoken>());
 
     os <<"\r\n";
     // cert
@@ -350,6 +352,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendassetfrom>();*/
     if (symbol == burn::symbol())
         return make_shared<burn>();
+    if (symbol == swaptoken::symbol())
+        return make_shared<swaptoken>();
 
     // cert
     if (symbol == transfercert::symbol())

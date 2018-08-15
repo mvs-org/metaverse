@@ -813,6 +813,16 @@ def pop_block(height):
     '''
     return "popblock", [height], {}, None
 
+@mvs_api
+def swap_token(account, password, symbol, amount, message, change=None, from_=None, fee=None, swapfee=None):
+    optional = {
+        '--change': change,
+        '--from': from_,
+        '--fee': fee,
+        '--swapfee': swapfee
+    }
+    return "swaptoken", [account, password, symbol, amount, message], optional, None
+
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
     print rc.list_balances('lxf', '123')
