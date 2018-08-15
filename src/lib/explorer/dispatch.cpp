@@ -146,7 +146,6 @@ console_result dispatch_command(int argc, const char* argv[],
         display_invalid_command(output, target, superseding);
         throw invalid_command_exception{ output.str() };
     }
-
     auto& in = get_command_input(*command, input);
 
     parser metadata(*command);
@@ -176,7 +175,8 @@ console_result dispatch_command(int argc, const char* argv[],
             uint64_t height{0};
             node.chain_impl().get_last_height(height);
             if (!command->is_block_height_fullfilled(height)) {
-                throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
+                // test-private-chain
+                // throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
             }
         }
 

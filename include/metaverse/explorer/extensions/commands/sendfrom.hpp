@@ -30,12 +30,12 @@ namespace explorer {
 namespace commands {
 
 
-/************************ didsendfrom *************************/
+/************************ sendfrom *************************/
 
-class didsendfrom: public send_command
+class sendfrom: public send_command
 {
 public:
-    static const char* symbol(){ return "didsendfrom";}
+    static const char* symbol(){ return "sendfrom";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "send etp from a specified did/address of this account to target did/address, mychange goes to from_did/address."; }
@@ -56,8 +56,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.fromdid, "FROM_", variables, input, raw);
-        load_input(argument_.todid, "TO_", variables, input, raw);
+        load_input(argument_.from, "FROM_", variables, input, raw);
+        load_input(argument_.to, "TO_", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -83,12 +83,12 @@ public:
         )
         (
             "FROM_",
-            value<std::string>(&argument_.fromdid)->required(),
+            value<std::string>(&argument_.from)->required(),
             "Send from this did/address"
         )
         (
             "TO_",
-            value<std::string>(&argument_.todid)->required(),
+            value<std::string>(&argument_.to)->required(),
             "Send to this did/address"
         )
         (
@@ -97,13 +97,18 @@ public:
             "ETP integer bits."
         )
         (
+            "change,c",
+            value<std::string>(&option_.change)->default_value(""),
+            "Change to this did/address"
+        )
+        (
             "memo,m",
-            value<std::string>(&argument_.memo),
+            value<std::string>(&option_.memo)->default_value(""),
             "The memo to descript transaction"
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
+            value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
         );
 
@@ -119,18 +124,21 @@ public:
 
     struct argument
     {
-
-        argument():fromdid(""), todid(""), memo("")
+        argument():from(""), to(""), amount(0)
         {};
-        std::string fromdid;
-        std::string todid;
+        std::string from;
+        std::string to;
         uint64_t amount;
-        uint64_t fee;
-        std::string memo;
     } argument_;
 
     struct option
     {
+        option():fee(10000), memo(""), change("")
+        {};
+
+        uint64_t fee;
+        std::string memo;
+        std::string change;
     } option_;
 
 };

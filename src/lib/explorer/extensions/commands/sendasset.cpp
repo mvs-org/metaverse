@@ -19,8 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/didsendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,80 +29,52 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result didsendassetfrom::invoke(Json::Value& jv_output,
+
+console_result sendasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if (!option_.message.empty() && option_.message.size() >= 255) {
-        throw argument_size_invalid_exception{"message length out of bounds."};
+    if (!option_.memo.empty() && option_.memo.size() >= 255) {
+        throw argument_size_invalid_exception{"memo length out of bounds."};
     }
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
-    std::string fromaddress = "";
-    std::string toaddress = "";
-    attachment attach;
-
-    //support address as well as did
-    if (blockchain.is_valid_address(argument_.fromdid)) {
-        fromaddress = argument_.fromdid;
-    }
-    else {
-        fromaddress = get_address_from_did(argument_.fromdid, blockchain);
-        attach.set_from_did(argument_.fromdid);
-        attach.set_version(DID_ATTACH_VERIFY_VERSION);
-    }
-
-    //support address as well as did
-    if (blockchain.is_valid_address(argument_.todid)) {
-        toaddress = argument_.todid;
-    }
-    else {
-        toaddress = get_address_from_did(argument_.todid,blockchain);
-        attach.set_to_did(argument_.todid);
-        attach.set_version(DID_ATTACH_VERIFY_VERSION);
-    }
-
-    // change address
-    std::string changeaddress;
-    if (!option_.change_address.empty()) {
-        if (blockchain.is_valid_address(option_.change_address)) {
-            changeaddress = option_.change_address;
-        }
-        else {
-            changeaddress = get_address_from_did(option_.change_address, blockchain);
-        }
-    }
-
     if (!argument_.amount) {
         throw asset_amount_exception{"invalid asset amount parameter!"};
     }
+
+    attachment attach;
+    std::string to_address = get_address(argument_.to, attach, false, blockchain);
+    std::string change_address = get_address(option_.change, blockchain);
 
     // receiver
     utxo_attach_type attach_type = option_.attenuation_model_param.empty()
         ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_attenuation_transfer;
     std::vector<receiver_record> receiver{
-        {toaddress, argument_.symbol, 0, argument_.amount, attach_type, attach}
+        {to_address, argument_.symbol, 0, argument_.amount, attach_type, attach}
     };
     auto send_helper = sending_asset(*this, blockchain,
-        std::move(auth_.name), std::move(auth_.auth),
-        std::move(fromaddress), std::move(argument_.symbol),
-        std::move(option_.attenuation_model_param),
-        std::move(receiver), argument_.fee,
-        std::move(option_.message), std::move(changeaddress));
+            std::move(auth_.name), std::move(auth_.auth),
+            "", std::move(argument_.symbol),
+            std::move(option_.attenuation_model_param),
+            std::move(receiver), option_.fee,
+            std::move(option_.memo),
+            std::move(change_address));
 
     send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }
+
 
 } // namespace commands
 } // namespace explorer

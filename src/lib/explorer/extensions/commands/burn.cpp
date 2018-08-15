@@ -43,7 +43,7 @@ console_result burn::invoke(Json::Value& jv_output,
     std::string blackhole_did = did_detail::get_blackhole_did_symbol();
 
     std::stringstream sout("");
-    const char* cmds[]{"didsendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()};
+    const char* cmds[]{"sendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()};
 
     if (dispatch_command(6, cmds, jv_output, node, get_api_version()) != console_result::okay) {
         throw address_generate_exception(sout.str());

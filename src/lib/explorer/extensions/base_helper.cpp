@@ -70,13 +70,11 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
-            throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
+        throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
-    if (check_sensitive)
-    {
-        if (boost::iequals(symbol, "BLACKHOLE"))
-        {
+    if (check_sensitive) {
+        if (boost::iequals(symbol, "BLACKHOLE")) {
             throw did_symbol_name_exception{"Did symbol cannot be blackhole."};
         }
     }
@@ -124,6 +122,42 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }
     }
+}
+
+std::string get_address(const std::string& did_or_address,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    std::string address;
+    if (!did_or_address.empty()) {
+        if (blockchain.is_valid_address(did_or_address)) {
+            address = did_or_address;
+        }
+        else {
+            address = get_address_from_did(did_or_address, blockchain);
+        }
+    }
+    return address;
+}
+
+std::string get_address(const std::string& did_or_address,
+    attachment& attach, bool is_from,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    std::string address;
+    if (blockchain.is_valid_address(did_or_address)) {
+        address = did_or_address;
+    }
+    else {
+        address = get_address_from_did(did_or_address, blockchain);
+        if (is_from) {
+            attach.set_from_did(did_or_address);
+        }
+        else {
+            attach.set_to_did(did_or_address);
+        }
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
+    }
+    return address;
 }
 
 std::string get_address_from_did(const std::string& did,

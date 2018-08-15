@@ -20,7 +20,7 @@
 
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/sendwithmsg.hpp>
+#include <metaverse/explorer/extensions/commands/sendfrom.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,19 +30,39 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-console_result sendwithmsg::invoke(Json::Value& jv_output,
+console_result sendfrom::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
+    attachment attach;
+    std::string from_address = get_address(argument_.from, attach, true, blockchain);
+    std::string to_address = get_address(argument_.to, attach, false, blockchain);
+    std::string change_address = get_address(option_.change, blockchain);
+
+    if (argument_.amount <= 0) {
+        throw argument_legality_exception("invalid amount parameter!");
+    }
+
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()},
-        {argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.message))}
+        {to_address, "", argument_.amount, 0, utxo_attach_type::etp, attach}
     };
-    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(receiver), argument_.fee);
+
+    if (!option_.memo.empty()) {
+        if ( option_.memo.size() >= 255) {
+            throw argument_size_invalid_exception{"memo length out of bounds."};
+        }
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
+
+    auto send_helper = sending_etp(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(from_address), std::move(receiver),
+        std::move(change_address), option_.fee);
 
     send_helper.exec();
 

@@ -20,7 +20,7 @@
 
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
-#include <metaverse/explorer/extensions/commands/didsendmore.hpp>
+#include <metaverse/explorer/extensions/commands/sendmore.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -31,53 +31,34 @@ namespace explorer {
 namespace commands {
 
 
-console_result didsendmore::invoke (Json::Value& jv_output,
+console_result sendmore::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    auto&& changesymbol = argument_.mychange_address;
-    if (!changesymbol.empty())
-    {
-        auto address = changesymbol;
-        if(!blockchain.is_valid_address(changesymbol))
-            address = get_address_from_did(changesymbol,blockchain);
-    }
-
     // receiver
     std::vector<receiver_record> receiver;
 
     for (auto& each : argument_.receivers) {
-        attachment attach;
-        std::string address;
-
         colon_delimited2_item<std::string, uint64_t> item(each);
-        auto && addressordid = item.first();
 
-        //did check
-        if (blockchain.is_valid_address(addressordid)) {
-            address = addressordid;
+        attachment attach;
+        std::string address = get_address(item.first(), attach, false, blockchain);
+        if (item.second() <= 0) {
+            throw argument_legality_exception("invalid amount parameter for " + item.first());
         }
-        else {
-            auto to_address = get_address_from_did(addressordid, blockchain);
-            if (!blockchain.is_valid_address(to_address))
-                throw address_invalid_exception{"invalid recipient did! " + addressordid};
-
-            attach.set_to_did(addressordid);
-            attach.set_version(DID_ATTACH_VERIFY_VERSION);
-
-            address = to_address;
-        }
-
-        if (!item.second())
-            throw argument_legality_exception("invalid amount parameter!" + each);
 
         receiver.push_back({address,"", item.second(), 0, utxo_attach_type::etp, attach});
     }
 
-    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(receiver), std::move(changesymbol), argument_.fee);
+    // change address
+    std::string change_address = get_address(option_.change, blockchain);
+
+    auto send_helper = sending_etp(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(receiver),
+        std::move(change_address), option_.fee);
 
     send_helper.exec();
 

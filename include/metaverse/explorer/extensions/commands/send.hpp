@@ -30,22 +30,21 @@ namespace explorer {
 namespace commands {
 
 
-
-/************************ didsendmore *************************/
-
-class didsendmore: public send_command
+class send: public send_command
 {
 public:
-    static const char* symbol(){ return "didsendmore";}
+    static const char* symbol(){ return "send";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp to multi target did/addresses. Eg: [didsendmore $name $password -r $did1/address1:$amount1 -r $did2/address2:$amount2 -m $mychange_address]"; }
+    const char* description() override { return "send etp to a targert did/address."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+            .add("ACCOUNTAUTH", 1)
+            .add("TO_", 1)
+            .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -54,6 +53,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.to, "TO_", variables, input, raw);
+        load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,7 +65,7 @@ public:
         (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
-            "Send to more target. "
+            "Get a description and instructions for this command."
         )
         (
             "ACCOUNTNAME",
@@ -77,21 +78,30 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "receivers,r",
-            value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [did/address:etp_bits]."
+            "TO_",
+            value<std::string>(&argument_.to)->required(),
+            "Send to this did/address"
         )
         (
-            "mychange,m",
-            value<std::string>(&argument_.mychange_address),
-            "Mychange to this did/address"
+            "AMOUNT",
+            value<uint64_t>(&argument_.amount)->required(),
+            "ETP integer bits."
+        )
+        (
+            "change,c",
+            value<std::string>(&option_.change)->default_value(""),
+            "Change to this did/address"
+        )
+        (
+            "memo,m",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
+            value<uint64_t>(&option_.fee)->default_value(10000),
+            "Transaction fee. defaults to 10000 etp bits"
         );
-
 
         return options;
     }
@@ -105,19 +115,23 @@ public:
 
     struct argument
     {
-        argument():mychange_address("")
+        argument():to("")
         {};
-        std::vector<std::string> receivers;
-        std::string mychange_address;
-        uint64_t fee;
+        std::string to;
+        uint64_t amount;
     } argument_;
 
     struct option
     {
+        option():fee(10000), memo(""), change("")
+        {};
+
+        uint64_t fee;
+        std::string memo;
+        std::string change;
     } option_;
 
 };
-
 
 
 } // namespace commands

@@ -65,10 +65,12 @@
 #include <metaverse/explorer/extensions/commands/listmits.hpp>
 #include <metaverse/explorer/extensions/commands/getmit.hpp>
 #include <metaverse/explorer/extensions/commands/registerdid.hpp>
-#include <metaverse/explorer/extensions/commands/didsend.hpp>
-#include <metaverse/explorer/extensions/commands/didsendasset.hpp>
-#include <metaverse/explorer/extensions/commands/didsendfrom.hpp>
-#include <metaverse/explorer/extensions/commands/didsendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/send.hpp>
+#include <metaverse/explorer/extensions/commands/sendfrom.hpp>
+#include <metaverse/explorer/extensions/commands/sendmore.hpp>
+#include <metaverse/explorer/extensions/commands/sendasset.hpp>
+#include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
+#include <metaverse/explorer/extensions/commands/swaptoken.hpp>
 #include <metaverse/explorer/extensions/commands/listdids.hpp>
 #include <metaverse/explorer/extensions/commands/deletelocalasset.hpp>
 #include <metaverse/explorer/extensions/commands/issue.hpp>
@@ -88,14 +90,11 @@
 #include <metaverse/explorer/extensions/commands/getpublickey.hpp>
 #include <metaverse/explorer/extensions/commands/listmultisig.hpp>
 #include <metaverse/explorer/extensions/commands/sendrawtx.hpp>
-#include <metaverse/explorer/extensions/commands/sendwithmsg.hpp>
-#include <metaverse/explorer/extensions/commands/sendwithmsgfrom.hpp>
 #include <metaverse/explorer/extensions/commands/signmultisigtx.hpp>
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
-#include <metaverse/explorer/extensions/commands/didsendmore.hpp>
-#include <metaverse/explorer/extensions/commands/swaptoken.hpp>
+
 
 namespace libbitcoin {
 namespace explorer {
@@ -161,9 +160,9 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
 
     os <<"\r\n";
     // etp
-    //func(make_shared<send>());
-    //func(make_shared<sendmore>());
-    //func(make_shared<sendfrom>());
+    func(make_shared<send>());
+    func(make_shared<sendmore>());
+    func(make_shared<sendfrom>());
     func(make_shared<deposit>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
@@ -175,10 +174,8 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
     func(make_shared<secondaryissue>());
-    //asset issue change to did,not need
-    //func(make_shared<issuefrom>());
-    //func(make_shared<sendasset>());
-    //func(make_shared<sendassetfrom>());
+    func(make_shared<sendasset>());
+    func(make_shared<sendassetfrom>());
     func(make_shared<listassets>());
     func(make_shared<getasset>());
     func(make_shared<getaccountasset>());
@@ -201,11 +198,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     os <<"\r\n";
     //did
     func(make_shared<registerdid>());
-    func(make_shared<didsend>());
-    func(make_shared<didsendfrom>());
-    func(make_shared<didsendasset>());
-    func(make_shared<didsendassetfrom>());
-    func(make_shared<didsendmore>());
     func(make_shared<didchangeaddress>());
     func(make_shared<listdids>());
     func(make_shared<getdid>());
@@ -317,13 +309,12 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaddressetp>();
     if (symbol == deposit::symbol())
         return make_shared<deposit>();
-    //combined to did
-    /*if (symbol == send::symbol())
+    if (symbol == send::symbol() || symbol == "didsend")
         return make_shared<send>();
-    if (symbol == sendmore::symbol())
+    if (symbol == sendmore::symbol() || symbol == "didsendmore")
         return make_shared<sendmore>();
-    if (symbol == sendfrom::symbol())
-        return make_shared<sendfrom>();*/
+    if (symbol == sendfrom::symbol() || symbol == "didsendfrom")
+        return make_shared<sendfrom>();
 
     // asset
     if (symbol == createasset::symbol())
@@ -340,15 +331,12 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaddressasset>();
     if (symbol == issue::symbol())
         return make_shared<issue>();
-    // if (symbol == issuefrom::symbol())
-    //     return make_shared<issuefrom>();
     if (symbol == secondaryissue::symbol() || (symbol == "additionalissue") )
         return make_shared<secondaryissue>();
-    //combined to did
-    /*if (symbol == sendasset::symbol())
+    if (symbol == sendasset::symbol() || symbol == "didsendasset")
         return make_shared<sendasset>();
-    if (symbol == sendassetfrom::symbol())
-        return make_shared<sendassetfrom>();*/
+    if (symbol == sendassetfrom::symbol() || symbol == "didsendassetfrom")
+        return make_shared<sendassetfrom>();
     if (symbol == burn::symbol())
         return make_shared<burn>();
     if (symbol == swaptoken::symbol())
@@ -373,16 +361,6 @@ shared_ptr<command> find_extension(const string& symbol)
     // did
     if (symbol == registerdid::symbol())
         return make_shared<registerdid>();
-    if (symbol == didsend::symbol() || symbol == "send")
-        return make_shared<didsend>();
-    if (symbol == didsendasset::symbol() || symbol == "sendasset")
-        return make_shared<didsendasset>();
-    if (symbol == didsendfrom::symbol() || symbol == "sendfrom")
-        return make_shared<didsendfrom>();
-    if (symbol == didsendmore::symbol() || symbol == "sendmore")
-        return make_shared<didsendmore>();
-    if (symbol == didsendassetfrom::symbol() || symbol == "sendassetfrom")
-        return make_shared<didsendassetfrom>();
     if (symbol == didchangeaddress::symbol())
         return make_shared<didchangeaddress>();
     if (symbol == listdids::symbol())

@@ -30,24 +30,25 @@ namespace explorer {
 namespace commands {
 
 
-/************************ sendwithmsg *************************/
+/************************ sendassetfrom *************************/
 
-class sendwithmsg: public send_command
+class sendassetfrom: public command_extension
 {
 public:
-    static const char* symbol(){ return "sendwithmsg";}
+    static const char* symbol(){ return "sendassetfrom";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "sendwithmsg "; }
+    const char* description() override { return "sendassetfrom"; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("TOADDRESS", 1)
-            .add("AMOUNT", 1)
-            .add("MESSAGE", 1);
+            .add("FROM_", 1)
+            .add("TO_", 1)
+            .add("SYMBOL", 1)
+            .add("AMOUNT", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -56,9 +57,10 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "TOADDRESS", variables, input, raw);
+        load_input(argument_.from, "FROM_", variables, input, raw);
+        load_input(argument_.to, "TO_", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
-        load_input(argument_.message, "MESSAGE", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -82,24 +84,44 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "TOADDRESS",
-            value<std::string>(&argument_.address)->required(),
-            "Send to this address"
+            "FROM_",
+            value<std::string>(&argument_.from)->required(),
+            "From did/address"
+        )
+        (
+            "TO_",
+            value<std::string>(&argument_.to)->required(),
+            "Target did/address"
+        )
+        (
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "Asset symbol"
         )
         (
             "AMOUNT",
             value<uint64_t>(&argument_.amount)->required(),
-            "ETP integer bits."
+            "Asset integer bits. see asset <decimal_number>."
         )
         (
-            "MESSAGE",
-            value<std::string>(&argument_.message)->required(),
-            "Message attached to the transaction"
+            "change,c",
+            value<std::string>(&option_.change),
+            "Change to this did/address"
+        )
+        (
+            "model,m",
+            value<std::string>(&option_.attenuation_model_param),
+            BX_MST_OFFERING_CURVE
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
+            value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
+        )
+        (
+            "memo,i",
+            value<std::string>(&option_.memo),
+            "Attached memo for this transaction."
         );
 
         return options;
@@ -114,14 +136,18 @@ public:
 
     struct argument
     {
-        std::string address;
+        std::string from;
+        std::string to;
+        std::string symbol;
         uint64_t amount;
-        std::string message;
-        uint64_t fee;
     } argument_;
 
     struct option
     {
+        std::string attenuation_model_param;
+        std::string memo;
+        std::string change;
+        uint64_t fee;
     } option_;
 
 };
