@@ -105,12 +105,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendrawtx.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsg.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsgfrom.hpp" />
@@ -231,12 +226,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendrawtx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsg.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsgfrom.cpp" />
