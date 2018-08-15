@@ -175,8 +175,7 @@ console_result dispatch_command(int argc, const char* argv[],
             uint64_t height{0};
             node.chain_impl().get_last_height(height);
             if (!command->is_block_height_fullfilled(height)) {
-                // test-private-chain
-                // throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
+                throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
             }
         }
 

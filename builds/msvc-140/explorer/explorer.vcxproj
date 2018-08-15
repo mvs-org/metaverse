@@ -63,11 +63,11 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deletemultisig.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\fetchheaderext.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaccount.hpp" />
@@ -105,10 +105,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registermit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\secondaryissue.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\swaptoken.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfercert.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendrawtx.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsg.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsgfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\setminingaccount.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\shutdown.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\signmultisigtx.hpp" />
@@ -184,11 +183,11 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deletemultisig.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendmore.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\fetchheaderext.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp" />
@@ -226,10 +225,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registermit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\secondaryissue.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\swaptoken.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfercert.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendrawtx.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsg.cpp" />
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsgfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\setminingaccount.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\shutdown.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\signmultisigtx.cpp" />
@@ -247,6 +245,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\json_helper.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\parser.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\utility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\include\CMakeLists.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9DE1D113-1D5B-401A-A5D4-8364598ABEE6}</ProjectGuid>

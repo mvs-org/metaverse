@@ -188,7 +188,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendmore.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp">
@@ -273,12 +273,6 @@
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendrawtx.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsg.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendwithmsgfrom.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\setminingaccount.hpp">
@@ -368,16 +362,16 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\registerdid.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendfrom.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendassetfrom.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsendasset.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didsend.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getmit.hpp">
@@ -390,6 +384,9 @@
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\transfermit.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\swaptoken.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
   </ItemGroup>
@@ -513,7 +510,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\dumpkeyfile.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendmore.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccount.cpp">
@@ -595,12 +592,6 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendrawtx.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsg.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendwithmsgfrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\setminingaccount.cpp">
@@ -711,16 +702,16 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\issuecert.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsend.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendasset.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendassetfrom.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didsendfrom.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\registerdid.cpp">
@@ -741,5 +732,13 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\transfermit.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\swaptoken.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\include\CMakeLists.txt">
+      <Filter>Header Files\extensions\commands</Filter>
+    </Text>
   </ItemGroup>
 </Project>
