@@ -272,21 +272,6 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\listtxs.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp">
-      <Filter>Header Files\extensions\commands</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendrawtx.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -607,21 +592,6 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\listtxs.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp">
-      <Filter>Source Files\extensions\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmore.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendrawtx.cpp">
