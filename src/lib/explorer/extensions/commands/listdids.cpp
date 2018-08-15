@@ -59,6 +59,9 @@ console_result listdids::invoke(Json::Value& jv_output,
         sh_vec = blockchain.get_account_dids(auth_.name);
     }
 
+    uint64_t limit = argument_.limit;
+    uint64_t index = argument_.index;
+
     std::vector<did_detail> result;
     uint64_t total_count = sh_vec-> size();
     uint64_t total_page = 0;
@@ -66,28 +69,27 @@ console_result listdids::invoke(Json::Value& jv_output,
         std::sort(sh_vec->begin(), sh_vec->end());
 
         uint64_t start = 0, end = 0, tx_count = 0;
-        if (argument_.index && argument_.limit) {
-            start = (argument_.index - 1) * argument_.limit;
-            end = (argument_.index) * argument_.limit;
-            if (start < total_count) {
-                total_page = total_count % argument_.limit ? (total_count / argument_.limit + 1) : (total_count / argument_.limit);
-                tx_count = end >= total_count ? (total_count - start) : argument_.limit ;
-            }
-
+        if (index && limit) {
+            total_page = (total_count % limit) ? (total_count / limit + 1) : (total_count / limit);
+            index = index > total_page ? total_page : index;
+            start = (index - 1) * limit;
+            end = index * limit;
+            tx_count = end >= total_count ? (total_count - start) : limit ;
         }
-        else if (!argument_.index && !argument_.limit) { // all tx records
+        else if (!index && !limit) { // all tx records
             start = 0;
             tx_count = total_count;
-            argument_.index = 1;
+            index = 1;
             total_page = 1;
         }
         else {
             throw argument_legality_exception{"invalid limit or index parameter"};
         }
 
-        if (start < total_count) {
-        std::copy(sh_vec->begin() + start, sh_vec->begin() + start + tx_count, result.begin());
-    }
+        if (start < total_count && tx_count > 0) {
+            result.resize(tx_count);
+            std::copy(sh_vec->begin() + start, sh_vec->begin() + start + tx_count, result.begin());
+        }
     }
 
     Json::Value dids;
@@ -107,7 +109,7 @@ console_result listdids::invoke(Json::Value& jv_output,
 
     jv_output["total_count"] = total_count;
     jv_output["total_page"] = total_page;
-    jv_output["current_page"] = argument_.index;
+    jv_output["current_page"] = index;
     jv_output["dids"] = dids;
 
     return console_result::okay;
