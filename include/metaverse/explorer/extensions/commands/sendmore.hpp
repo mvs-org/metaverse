@@ -82,7 +82,7 @@ public:
             "Send to [did/address:etp_bits]."
         )
         (
-            "change,m",
+            "mychange,m",
             value<std::string>(&option_.change),
             "Change to this did/address"
         )
