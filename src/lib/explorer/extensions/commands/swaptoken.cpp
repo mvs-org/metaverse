@@ -69,7 +69,7 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     }
 
     attachment attach;
-    const std::string&& to_address = get_address("crosschain", attach, false, blockchain);
+    const std::string&& to_address = get_address(argument_.to, attach, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
         blockchain.chain_settings().use_testnet_rules);
 
