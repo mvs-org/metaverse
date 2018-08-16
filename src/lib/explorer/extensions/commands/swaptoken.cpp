@@ -39,25 +39,17 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     blockchain.uppercase_symbol(argument_.symbol);
 
     // check message
-    if (argument_.message.empty() || argument_.message.size() >= 255) {
+    if (argument_.foreign_addr.empty() || argument_.foreign_addr.size() >= 255) {
         throw argument_size_invalid_exception{"message length out of bounds."};
     }
 
     {
-        Json::Reader reader;
-        Json::Value file_root;
-        if (!reader.parse(argument_.message, file_root)) {
-            throw argument_legality_exception{"message format parse error."};
-        }
-        if (file_root["type"] != "ETH") {
-            throw argument_legality_exception{"value of [type] not expect in message."};
-        }
+        // check ETH address
         static const regex regular("^0x[0-9a-f]{40}+$");
 
-        const std::string address = file_root["address"].asString();
-        sregex_iterator it(address.begin(), address.end(), regular), end;
+        sregex_iterator it(argument_.foreign_addr.begin(), argument_.foreign_addr.end(), regular), end;
         if (it == end) {
-            throw argument_legality_exception{"value of [address] not expect in message."};
+            throw argument_legality_exception{argument_.foreign_addr + " is not a valid ETH address."};
         }
     }
 
@@ -68,14 +60,15 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"Only support assets prefixed by 'ERC.'"};
     }
 
-    attachment attach;
-    const std::string&& to_address = get_address("crosschain", attach, false, blockchain);
+    attachment attach_asset, attach_fee;
+    const std::string&& to_address = get_address(argument_.to, attach_asset, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
         blockchain.chain_settings().use_testnet_rules);
 
     std::string from_address("");
     if (!option_.from.empty()) {
-        from_address = get_address(option_.from, attach, true, blockchain);
+        from_address = get_address(option_.from, attach_asset, true, blockchain);
+                       get_address(option_.from, attach_fee, true, blockchain);
     }
 
     std::string change_address = get_address(option_.change, blockchain);
@@ -88,16 +81,19 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     }
 
     std::vector<receiver_record> receiver{
-        {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach},
-        {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attachment()},
+        {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach_asset},
+        {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attach_fee},
     };
+
+    std::string message("{\"type\":\"ETH\",\"address\":\""+ argument_.foreign_addr + "\"}");
+
     auto send_helper = sending_asset(
         *this, blockchain,
          std::move(auth_.name), std::move(auth_.auth),
          std::move(from_address), std::move(argument_.symbol),
          "",
          std::move(receiver), option_.fee,
-         std::move(argument_.message), std::move(change_address));
+         std::move(message), std::move(change_address));
 
     send_helper.exec();
 
