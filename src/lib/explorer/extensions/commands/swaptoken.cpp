@@ -69,16 +69,16 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     }
 
     attachment attach;
-    const std::string&& to_address = get_address("crosschain", attach, true, blockchain)
+    const std::string&& to_address = get_address("crosschain", attach, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
         blockchain.chain_settings().use_testnet_rules);
 
     std::string from_address("");
     if (!option_.from.empty()) {
-        from_address = get_address(option_.from, attach, true, blockchain)
+        from_address = get_address(option_.from, attach, true, blockchain);
     }
 
-    std::string change_address = get_address(option_.change, blockchain)
+    std::string change_address = get_address(option_.change, blockchain);
 
     if (!argument_.amount) {
         throw argument_legality_exception{"invalid amount parameter!"};
