@@ -7,7 +7,8 @@ from TestCase.MVSTestCase import *
 AssetName = 'ERC.TSTCASE.' + time.strftime("%04Y%02m",  time.localtime())
 crosschain_addr = 'MLixg7rxKmtPj9DT9wPKSy6WkJkoUDWUSv'
 
-class TestSwapToken(MVSTestCaseBase):
+#class TestSwapToken(MVSTestCaseBase):
+class TestSwapToken:
     need_mine = False
     @classmethod
     def setUpClass(cls):
