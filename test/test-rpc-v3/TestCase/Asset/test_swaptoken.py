@@ -33,32 +33,30 @@ class TestSwapToken:
 
     def test_0_check_positional_args(self):
         ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100, "{}")
-        self.assertEqual(message, 'value of [type] not expect in message.')
+        self.assertEqual(message, '{} is not a valid ETH address.')
 
         ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100, '{"type":"ETHX"}')
-        self.assertEqual(message, 'value of [type] not expect in message.')
+        self.assertEqual(message, '{"type":"ETHX"} is not a valid ETH address.')
 
         ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100, '{"type":"ETH", "address":"xxx"}')
-        self.assertEqual(message, 'value of [address] not expect in message.')
+        self.assertEqual(message, '{"type":"ETH", "address":"xxx"} is not a valid ETH address.')
 
         ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100,
-                                         '{"type":"ETH", "address":"0x000000000000000000000000000000000000000g"}')
-        self.assertEqual(message, 'value of [address] not expect in message.')
-        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100,
-                                         '{"type":"ETH", "address":"0x000000000000000000000000000000000000000"}')
-        self.assertEqual(message, 'value of [address] not expect in message.')
+                                         "0x000000000000000000000000000000000000000g")
+        self.assertEqual(message, '0x000000000000000000000000000000000000000g is not a valid ETH address.')
 
-        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100,
-                                         '{"type":"ETH", "address":"0x0000000000000000000000000000000000000000"}')
+        # address length error
+        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100, "0x000000000000000000000000000000000000000")
+        self.assertEqual(message, '0x000000000000000000000000000000000000000 is not a valid ETH address.')
+
+        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, Alice.asset_symbol, 100, "0x0000000000000000000000000000000000000000")
         self.assertEqual(message, "Only support assets prefixed by 'ERC.'")
 
-        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, "ERC.ABC", 100,
-                                         '{"type":"ETH", "address":"0x0000000000000000000000000000000000000000"}')
+        ec, message = mvs_rpc.swap_token(Alice.name, Alice.password, "ERC.ABC", 100, "0x0000000000000000000000000000000000000000")
         self.assertEqual(message, 'not enough asset amount, unspent = 0, payment = 100')
 
     def test_1_check_optional_args(self):
-        func = lambda change, from_, fee, swapfee:  mvs_rpc.swap_token(Alice.name, Alice.password, "ERC.ABC", 100,
-                                         '{"type":"ETH", "address":"0x0000000000000000000000000000000000000000"}',
+        func = lambda change, from_, fee, swapfee:  mvs_rpc.swap_token(Alice.name, Alice.password, "ERC.ABC", 100, "0x0000000000000000000000000000000000000000", \
                                           change, from_, fee, swapfee)
         ec, message = func(None, None, 10000 -1, None)
         self.assertEqual(ec, 5005, 'check fee')
@@ -71,8 +69,9 @@ class TestSwapToken:
 
     def test_2_default(self):
         global AssetName, crosschain_addr
-        message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000000"}'
-        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message)
+        foreign_addr = "0x0000000000000000000000000000000000000000"
+        message = '{"type":"ETH","address":"%s"}' % foreign_addr
+        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, foreign_addr)
         self.assertEqual(ec, 0)
 
         #result = result['transaction']
@@ -96,8 +95,9 @@ class TestSwapToken:
 
     def test_3_fromdid(self):
         global AssetName, crosschain_addr
-        message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000001"}'
-        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, from_=Alice.did_symbol)
+        foreign_addr = "0x0000000000000000000000000000000000000001"
+        message = '{"type":"ETH","address":"%s"}' % foreign_addr
+        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, foreign_addr, from_=Alice.did_symbol)
         self.assertEqual(ec, 0)
         #result = result['transaction']
 
@@ -118,8 +118,9 @@ class TestSwapToken:
 
     def test_5_change(self):
         global AssetName
-        message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000002"}'
-        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, from_=Alice.mainaddress(), change=Alice.addresslist[1])
+        foreign_addr = "0x0000000000000000000000000000000000000002"
+        message = '{"type":"ETH","address":"%s"}' % foreign_addr
+        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, foreign_addr, from_=Alice.mainaddress(), change=Alice.addresslist[1])
         self.assertEqual(ec, 0)
         #result = result['transaction']
 
@@ -138,8 +139,9 @@ class TestSwapToken:
 
     def test_6_swapfee(self):
         global AssetName, crosschain_addr
-        message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000002"}'
-        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, swapfee=10**8 + 123456)
+        foreign_addr = "0x0000000000000000000000000000000000000003"
+        message = '{"type":"ETH","address":"%s"}' % foreign_addr
+        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, foreign_addr, swapfee=10**8 + 123456)
         self.assertEqual(ec, 0)
         #result = result['transaction']
 

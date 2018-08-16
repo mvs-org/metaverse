@@ -48,7 +48,7 @@ public:
             .add("TO_", 1)
             .add("SYMBOL", 1)
             .add("AMOUNT", 1)
-            .add("MESSAGE", 1);
+            .add("FOREIGN_ADDR", 1);
     }
 
     void load_fallbacks (std::istream& input,
@@ -60,7 +60,7 @@ public:
         load_input(argument_.to, "TO_", variables, input, raw);
         load_input(argument_.symbol, "SYMBOL", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
-        load_input(argument_.message, "MESSAGE", variables, input, raw);
+        load_input(argument_.foreign_addr, "FOREIGN_ADDR", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -99,9 +99,9 @@ public:
             "Asset integer bits. see asset <decimal_number>."
         )
         (
-            "MESSAGE",
-            value<std::string>(&argument_.message)->required(),
-            "Message in json format which indicates the destination chain(by \"type\") and address(by \"address\") to swap."
+            "FOREIGN_ADDR",
+            value<std::string>(&argument_.foreign_addr)->required(),
+            "To this address of the destination chain to swap the asset."
         )
         (
             "change,c",
@@ -140,7 +140,7 @@ public:
         std::string to;
         std::string symbol;
         uint64_t amount;
-        std::string message;
+        std::string foreign_addr;
     } argument_;
 
     struct option
