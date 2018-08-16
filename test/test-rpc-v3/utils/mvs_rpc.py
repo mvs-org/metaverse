@@ -817,11 +817,11 @@ def pop_block(height):
 def swap_token(account, password, symbol, amount, message, change=None, from_=None, fee=None, swapfee=None):
     optional = {
         '--change': change,
-        '--From': from_,
+        '--from': from_,
         '--fee': fee,
         '--swapfee': swapfee
     }
-    return "swaptoken", [account, password, symbol, amount, message], optional, None
+    return "swaptoken", [account, password, "crosschain",  symbol, amount, message], optional, None
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")

@@ -5,7 +5,7 @@ from TestCase.MVSTestCase import *
 
 # This asset is expected to be enough to be spend for 1 month
 AssetName = 'ERC.TSTCASE.' + time.strftime("%04Y%02m",  time.localtime())
-
+crosschain_addr = 'MLixg7rxKmtPj9DT9wPKSy6WkJkoUDWUSv'
 
 class TestSwapToken(MVSTestCaseBase):
     need_mine = False
@@ -23,6 +23,8 @@ class TestSwapToken(MVSTestCaseBase):
             ec, message = Alice.create_asset_with_symbol(AssetName)
             assert (ec == 0)
             Alice.mining()
+        # TODO: need to bind did [crosschain] to Alice's address [MLixg7rxKmtPj9DT9wPKSy6WkJkoUDWUSv]
+
     @classmethod
     def tearDownClass(cls):
         Alice.mining()
@@ -67,7 +69,7 @@ class TestSwapToken(MVSTestCaseBase):
         self.assertEqual(message, 'not enough asset amount, unspent = 0, payment = 100')
 
     def test_2_default(self):
-        global AssetName
+        global AssetName, crosschain_addr
         message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000000"}'
         ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message)
         self.assertEqual(ec, 0)
@@ -75,7 +77,7 @@ class TestSwapToken(MVSTestCaseBase):
         #result = result['transaction']
         actual_output0 = copy.copy(result['outputs'][0])
         actual_output0.pop('script')
-        expect_output0= {u'index': 0, u'value': 0, u'attachment': {u'symbol': AssetName, u'type': u'asset-transfer', u'quantity': 1}, u'address': u'MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh', u'locked_height_range': 0}
+        expect_output0= {u'index': 0, u'value': 0, u'attachment': {u'from_did': u'', u'to_did': u'crosschain', u'symbol': AssetName, u'type': u'asset-transfer', u'quantity': 1}, u'address': crosschain_addr, u'locked_height_range': 0}
         self.assertEqual(actual_output0, expect_output0)
 
         actual_output1 = copy.copy(result['outputs'][1])
@@ -83,15 +85,16 @@ class TestSwapToken(MVSTestCaseBase):
         expect_output1 = {u'index': 1, u'value': 100000000, u'attachment': {u'type': u'etp'}, u'address': u'MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh', u'locked_height_range': 0}
         self.assertEqual(actual_output1, expect_output1)
 
-        actual_output4 = copy.copy(result['outputs'][4])
+        actual_output4 = copy.copy(result['outputs'][-1])
         actual_output4.pop('script')
         actual_output4.pop('address')
-        expect_output4 = {u'index': 4, u'value': 0, u'attachment': {u'content': message, u'type': u'message'}, u'locked_height_range': 0}
+        actual_output4.pop('index')
+        expect_output4 = {u'value': 0, u'attachment': {u'content': message, u'type': u'message'}, u'locked_height_range': 0}
         self.assertEqual(actual_output4, expect_output4)
         Alice.mining()
 
     def test_3_fromdid(self):
-        global AssetName
+        global AssetName, crosschain_addr
         message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000001"}'
         ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, from_=Alice.did_symbol)
         self.assertEqual(ec, 0)
@@ -99,12 +102,13 @@ class TestSwapToken(MVSTestCaseBase):
 
         actual_output0 = copy.copy(result['outputs'][0])
         actual_output0.pop('script')
-        expect_output0 = {u'index': 0, u'value': 0, u'attachment': {u'from_did': Alice.did_symbol, u'to_did': u'', u'type': u'asset-transfer', u'symbol': AssetName, u'quantity': 1}, u'address': u'MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh', u'locked_height_range': 0}
+        expect_output0 = {u'index': 0, u'value': 0, u'attachment': {u'from_did': Alice.did_symbol, u'to_did': u'crosschain', u'type': u'asset-transfer', u'symbol': AssetName, u'quantity': 1}, u'address': u'MLixg7rxKmtPj9DT9wPKSy6WkJkoUDWUSv', u'locked_height_range': 0}
         self.assertEqual(actual_output0, expect_output0)
 
         actual_output1 = copy.copy(result['outputs'][1])
         actual_output1.pop('script')
-        expect_output1 = {u'index': 1, u'value': 100000000, u'attachment': {u'from_did': Alice.did_symbol, u'to_did': u'', u'type': u'etp'}, u'address': u'MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh', u'locked_height_range': 0}
+        expect_output1 = {u'index': 1, u'value': 100000000, u'attachment': {u'from_did': Alice.did_symbol, u'to_did': u'', u'type': u'etp'}, u'address': "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh", u'locked_height_range': 0}
+
         self.assertEqual(actual_output1, expect_output1)
         Alice.mining()
 
@@ -114,7 +118,7 @@ class TestSwapToken(MVSTestCaseBase):
     def test_5_change(self):
         global AssetName
         message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000002"}'
-        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, change=Alice.addresslist[1])
+        ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, from_=Alice.mainaddress(), change=Alice.addresslist[1])
         self.assertEqual(ec, 0)
         #result = result['transaction']
 
@@ -132,7 +136,7 @@ class TestSwapToken(MVSTestCaseBase):
         Alice.mining()
 
     def test_6_swapfee(self):
-        global AssetName
+        global AssetName, crosschain_addr
         message = '{"type":"ETH", "address":"0x0000000000000000000000000000000000000002"}'
         ec, result = mvs_rpc.swap_token(Alice.name, Alice.password, AssetName, 1, message, swapfee=10**8 + 123456)
         self.assertEqual(ec, 0)
@@ -140,6 +144,6 @@ class TestSwapToken(MVSTestCaseBase):
 
         actual_output1 = copy.copy(result['outputs'][1])
         actual_output1.pop('script')
-        expect_output1 = {u'index': 1, u'value': 100123456, u'attachment': {u'type': u'etp'}, u'address': u'MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh', u'locked_height_range': 0}
+        expect_output1 = {u'index': 1, u'value': 100123456, u'attachment': {u'type': u'etp'}, u'address': "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh", u'locked_height_range': 0}
         self.assertEqual(actual_output1, expect_output1)
         Alice.mining()

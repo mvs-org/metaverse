@@ -68,14 +68,15 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"Only support assets prefixed by 'ERC.'"};
     }
 
-    attachment attach;
-    const std::string&& to_address = get_address(argument_.to, attach, false, blockchain);
+    attachment attach_asset, attach_fee;
+    const std::string&& to_address = get_address(argument_.to, attach_asset, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
         blockchain.chain_settings().use_testnet_rules);
 
     std::string from_address("");
     if (!option_.from.empty()) {
-        from_address = get_address(option_.from, attach, true, blockchain);
+        from_address = get_address(option_.from, attach_asset, true, blockchain);
+                       get_address(option_.from, attach_fee, true, blockchain);
     }
 
     std::string change_address = get_address(option_.change, blockchain);
@@ -88,8 +89,8 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     }
 
     std::vector<receiver_record> receiver{
-        {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach},
-        {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attachment()},
+        {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach_asset},
+        {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attach_fee},
     };
     auto send_helper = sending_asset(
         *this, blockchain,
