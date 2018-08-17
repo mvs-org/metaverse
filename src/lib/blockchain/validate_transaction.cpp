@@ -1360,9 +1360,8 @@ code validate_transaction::check_transaction_basic() const
             }
         }
         else if (output.is_asset_cert()) {
-            auto&& asset_cert = output.get_asset_cert();
-            if (!check_did_exist(asset_cert.get_owner())) {
-                return error::did_address_needed;
+            if (!chain::output::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
+                return error::asset_symbol_invalid;
             }
         }
         else if (output.is_did_register()) {
