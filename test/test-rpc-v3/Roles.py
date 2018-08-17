@@ -210,6 +210,14 @@ class Role:
             asset_symbol = self.asset_symbol
         result, message = mvs_rpc.burn(self.name, self.password, asset_symbol, amount)
         assert (result == 0)
+        return result, message
+
+    def burn(self, symbol, amount=0, cert=None, is_mit=False):
+        if not symbol:
+            symbol = self.symbol
+        result, message = mvs_rpc.burn(self.name, self.password, symbol, amount, cert, is_mit)
+        assert (result == 0)
+        return result, message
 
     def send_etp(self, to_, amount):
         result, message = mvs_rpc.send(self.name, self.password, to_, amount)

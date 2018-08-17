@@ -601,8 +601,11 @@ def didsend_asset_from(account, password, from_, to_, symbol, amount, fee=None):
 
 
 @mvs_api
-def burn(account, password, symbol, amount):
-    return "burn", [account, password, symbol, amount], {}, None
+def burn(account, password, symbol, amount=0, cert=None, is_mit=False):
+    positional = filter(None, [account, password, symbol, amount])
+    if is_mit:
+        positional.append("--mit")
+    return "burn", positional, {'--cert': cert}, None
 
 
 @mvs_api
@@ -812,6 +815,7 @@ def pop_block(height):
     pop blocks with height >= [height].
     '''
     return "popblock", [height], {}, None
+
 
 @mvs_api
 def swap_token(account, password, symbol, amount, foreign_addr, change=None, from_=None, fee=None, swapfee=None):
