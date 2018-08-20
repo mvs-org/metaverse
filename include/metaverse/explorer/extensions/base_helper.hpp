@@ -148,20 +148,21 @@ struct balances {
 };
 
 struct deposited_balance {
-    deposited_balance(const std::string& address_, const string& tx_hash_, const string& row_hash_,
-        uint64_t balance_, uint64_t deposited_, uint64_t expiration_)
+    deposited_balance(const std::string& address_, const string& tx_hash_,
+        uint64_t deposited_, uint64_t expiration_)
         : address(address_)
         , tx_hash(tx_hash_)
-        , row_hash(row_hash_)
-        , balance(balance_)
+        , balance(0)
+        , bonus(0)
         , deposited_height(deposited_)
         , expiration_height(expiration_)
     {}
 
     std::string address;
     std::string tx_hash;
-    std::string row_hash;
+    std::string bonus_hash;
     uint64_t balance;
+    uint64_t bonus;
     uint64_t deposited_height;
     uint64_t expiration_height;
 

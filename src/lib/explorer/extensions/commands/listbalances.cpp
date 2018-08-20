@@ -41,7 +41,7 @@ console_result listbalances::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     Json::Value all_balances;
-    
+
     auto vaddr = blockchain.get_account_addresses(auth_.name);
     if(!vaddr) {
         throw address_list_nullptr_exception{"nullptr for address list"};
@@ -75,8 +75,10 @@ console_result listbalances::invoke(Json::Value& jv_output,
             Json::Value json_balance;
             json_balance["address"] = balance.address;
             json_balance["deposited_balance"] = balance.balance;
+            json_balance["bonus_balance"] = balance.bonus;
             json_balance["deposited_height"] = balance.deposited_height;
             json_balance["expiration_height"] = balance.expiration_height;
+            json_balance["tx_hash"] = balance.tx_hash;
 
             all_balances.append(json_balance);
         }
@@ -137,8 +139,8 @@ console_result listbalances::invoke(Json::Value& jv_output,
     }
     else {
         if(all_balances.isNull())
-            all_balances.resize(0);  
-            
+            all_balances.resize(0);
+
         aroot = all_balances;
     }
 

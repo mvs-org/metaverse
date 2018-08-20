@@ -334,20 +334,32 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                 uint64_t expiration_height = row.output_height + deposit_height;
 
                 if (expiration_height > height) {
+                    auto&& output_hash = encode_hash(row.output.hash);
                     auto&& tx_hash = encode_hash(tx_temp.hash());
                     const auto match = [&tx_hash](const deposited_balance& balance) {
                         return balance.tx_hash == tx_hash;
                     };
                     auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
                     if (iter != sh_vec->end()) {
-                        // interest of deposit
-                        iter->balance += row.value;
+                        if (output_hash == tx_hash) {
+                            iter->balance = row.value;
+                        }
+                        else {
+                            iter->bonus = row.value;
+                            iter->bonus_hash = output_hash;
+                        }
                     }
                     else {
-                        auto&& row_hash = encode_hash(row.output.hash);
-                        deposited_balance balance(address_str, tx_hash, row_hash,
-                            row.value, deposit_height, expiration_height);
-                        sh_vec->push_back(std::move(balance));
+
+                        deposited_balance deposited(address_str, tx_hash, deposit_height, expiration_height);
+                        if (output_hash == tx_hash) {
+                            deposited.balance = row.value;
+                        }
+                        else {
+                            deposited.bonus = row.value;
+                            deposited.bonus_hash = output_hash;
+                        }
+                        sh_vec->push_back(std::move(deposited));
                     }
                 }
             }
