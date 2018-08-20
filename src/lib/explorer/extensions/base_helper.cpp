@@ -220,6 +220,9 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address) {
+                continue;
+            }
             if (output.is_asset_cert())
             {
                 auto asset_cert = output.get_asset_cert();
@@ -255,6 +258,9 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address) {
+                continue;
+            }
             if (output.is_asset())
             {
                 const auto& symbol = output.get_asset_symbol();
@@ -326,6 +332,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address.encoded()) {
+                continue;
+            }
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 // deposit utxo in block
@@ -392,6 +401,9 @@ void sync_fetchbalance(wallet::payment_address& address,
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address.encoded()) {
+                continue;
+            }
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 // deposit utxo in block
@@ -485,6 +497,10 @@ void base_transfer_common::sync_fetchutxo(
 
         chain::output output;
         if (!get_spendable_output(output, row, height)) {
+            continue;
+        }
+
+        if (output.get_script_address() != addr) {
             continue;
         }
 
