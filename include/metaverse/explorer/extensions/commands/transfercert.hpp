@@ -89,12 +89,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "Asset cert symbol"
+            "Cert symbol"
         )
         (
             "CERT",
             value<std::string>(&argument_.cert)->required(),
-            "Asset cert type name. eg. ISSUE, DOMAIN or NAMING"
+            "Cert type name. eg. ISSUE, DOMAIN or NAMING"
         )
         (
             "fee,f",

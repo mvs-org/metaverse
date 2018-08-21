@@ -89,12 +89,12 @@ public:
         (
             "SYMBOL",
             value<std::string>(&argument_.symbol)->required(),
-            "Asset Cert Symbol/Name."
+            "Cert Symbol/Name."
         )
         (
             "CERT",
             value<std::string>(&argument_.cert)->required(),
-            "Asset cert type name can be: NAMING: cert of naming right of domain. The owner of domain cert can issue this type of cert by issuecert with symbol like “domain.XYZ”(domain is the symbol of domain cert)."
+            "Cert type name can be: NAMING: cert of naming right of domain. The owner of domain cert can issue this type of cert by issuecert with symbol like “domain.XYZ”(domain is the symbol of domain cert)."
         )
         (
             "fee,f",

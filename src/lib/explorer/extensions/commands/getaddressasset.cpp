@@ -40,6 +40,11 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
+    if (!option_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(option_.symbol);
+    }
+
     std::string json_key;
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());;
@@ -51,6 +56,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         sync_fetch_asset_cert_balance(argument_.address, "", blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.get_symbol())
+                continue;
+
             Json::Value asset_cert = json_helper.prop_list(elem);
             json_value.append(asset_cert);
         }
@@ -63,6 +71,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         std::sort(sh_vec->begin(), sh_vec->end());
 
         for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.symbol)
+                continue;
+
             auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset) {
                 continue;
@@ -80,6 +91,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.symbol)
+                continue;
+
             auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset) {
                 continue;
