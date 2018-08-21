@@ -352,6 +352,68 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
     }
 }
 
+
+
+void sync_fetch_asset_deposited_balance(const uint64_t & start, const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec)
+{
+    auto&& rows = blockchain.get_history_from_height(start);
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.is_asset())
+            {
+                std::string address = output.get_asset_address();
+
+                const auto& symbol = output.get_asset_symbol();
+                if (output.get_asset_symbol() != symbol || 
+                bc::wallet::symbol::is_forbidden(symbol)) {
+                    // swallow forbidden symbol
+                    continue;
+                }
+     
+
+                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    continue;
+                }
+
+                auto asset_amount = output.get_asset_amount();
+                if (asset_amount == 0) {
+                    continue;
+                }
+
+                const auto& model_param = output.get_attenuation_model_param();
+                auto diff_height = row.output_height ? (height - row.output_height) : 0;
+                auto available_amount = attenuation_model::get_available_asset_amount(
+                        asset_amount, diff_height, model_param);
+                uint64_t locked_amount = asset_amount - available_amount;
+                if (locked_amount == 0) {
+                    continue;
+                }
+
+                asset_deposited_balance deposited(
+                    symbol, address, encode_hash(row.output.hash), row.output_height);
+                deposited.unspent_asset = asset_amount;
+                deposited.locked_asset = locked_amount;
+                deposited.model_param = std::string(model_param.begin(), model_param.end());
+                sh_asset_vec->push_back(deposited);
+            }
+        }
+    }
+}
+
 static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockchain,
     const std::string& account_name)
 {

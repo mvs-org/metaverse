@@ -283,6 +283,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\xfetchbalance.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendwithmsgfrom.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccountasset.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getdepositasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listassets.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaddresstx.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\lockaccount.cpp" />
@@ -849,6 +850,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getbusinessbytime.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\gettransaction.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaccountasset.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getdepositasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\settxfee.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\backupaccount.hpp" />

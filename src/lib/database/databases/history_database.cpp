@@ -207,6 +207,64 @@ history_compact::list history_database::get(const short_hash& key,
     return result;
 }
 
+
+history_compact::list history_database::get(size_t from_height) const
+{
+    // Read the height value from the row.
+    const auto read_height = [](uint8_t* data)
+    {
+        static constexpr file_offset height_position = 1 + 36;
+        const auto height_address = data + height_position;
+        return from_little_endian_unsafe<uint32_t>(height_address);
+    };
+
+    // Read a row from the data for the history list.
+    const auto read_row = [](uint8_t* data)
+    {
+        auto deserial = make_deserializer_unsafe(data);
+        return history_compact
+        {
+            // output or spend?
+            static_cast<point_kind>(deserial.read_byte()),
+
+            // point
+            point::factory_from_data(deserial),
+
+            // height
+            deserial.read_4_bytes_little_endian(),
+
+            // value or checksum
+            { deserial.read_8_bytes_little_endian() }
+        };
+    };
+
+    history_compact::list result;
+    for(int i = 0; i < number_buckets ; i++)
+    {
+        const auto ret_vec = rows_multimap_.lookup(i);
+        for(auto ret : *ret_vec)
+        {
+            const auto records = record_multimap_iterable(rows_list_, ret);
+
+            for (const auto index: records)
+            {
+
+                // This obtains a remap safe address pointer against the rows file.
+                const auto record = rows_list_.get(index);
+                const auto address = REMAP_ADDRESS(record);
+
+                // Skip rows below from_height.
+                if (from_height == 0 || read_height(address) >= from_height)
+                    result.emplace_back(read_row(address));
+            }
+        }
+
+    }
+
+
+    // TODO: we could sort result here.
+    return result;
+}
 void history_database::sync()
 {
     lookup_manager_.sync();
