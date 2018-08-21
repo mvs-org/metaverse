@@ -68,6 +68,33 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
             json_value.append(asset_cert);
         }
     }
+    else if (option_.deposited) {
+        json_key = "assets";
+        auto sh_vec = std::make_shared<asset_deposited_balance::list>();
+
+        // get address unspent asset balance
+        std::string addr;
+        for (auto& each : *pvaddr){
+            sync_fetch_asset_deposited_balance(each.get_address(), blockchain, sh_vec);
+        }
+
+        std::sort(sh_vec->begin(), sh_vec->end());
+
+        for (auto& elem: *sh_vec) {
+            auto& symbol = elem.symbol;
+            if (!argument_.symbol.empty() && argument_.symbol != symbol)
+                continue;
+
+            auto issued_asset = blockchain.get_issued_asset(symbol);
+            if (!issued_asset) {
+                continue;
+            }
+
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset, true);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
+        }
+    }
     else {
         json_key = "assets";
         auto sh_vec = std::make_shared<asset_balances::list>();

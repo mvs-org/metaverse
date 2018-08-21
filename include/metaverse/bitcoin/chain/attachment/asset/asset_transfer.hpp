@@ -49,6 +49,35 @@ struct asset_balances {
     bool operator< (const asset_balances& other) const;
 };
 
+struct asset_deposited_balance {
+    asset_deposited_balance(const std::string& symbol_,
+        const std::string& address_,
+        const std::string& tx_hash_,
+        uint64_t tx_height_)
+        : symbol(symbol_)
+        , address(address_)
+        , tx_hash(tx_hash_)
+        , tx_height(tx_height_)
+        , unspent_asset(0)
+        , locked_asset(0)
+    {}
+
+    std::string symbol;
+    std::string address;
+    std::string tx_hash;
+    std::string model_param;
+    uint64_t tx_height;
+    uint64_t unspent_asset;
+    uint64_t locked_asset;
+
+    // for sort
+    bool operator< (const asset_deposited_balance& other) const {
+        return symbol < other.symbol || tx_height < other.tx_height;
+    }
+
+    typedef std::vector<asset_deposited_balance> list;
+};
+
 class BC_API asset_transfer
 {
 public:

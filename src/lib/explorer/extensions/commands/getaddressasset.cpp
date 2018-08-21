@@ -55,6 +55,24 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
             json_value.append(asset_cert);
         }
     }
+    else if (option_.deposited) {
+        json_key = "assets";
+
+        auto sh_vec = std::make_shared<asset_deposited_balance::list>();
+        sync_fetch_asset_deposited_balance(argument_.address, blockchain, sh_vec);
+        std::sort(sh_vec->begin(), sh_vec->end());
+
+        for (auto& elem: *sh_vec) {
+            auto issued_asset = blockchain.get_issued_asset(elem.symbol);
+            if (!issued_asset) {
+                continue;
+            }
+
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
+        }
+    }
     else {
         json_key = "assets";
 
@@ -78,9 +96,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     else if (get_api_version() <= 2) {
         jv_output[json_key] = json_value;
     }
-    else {    
+    else {
         if(json_value.isNull())
-            json_value.resize(0);  
+            json_value.resize(0);
 
         jv_output = json_value;
     }
