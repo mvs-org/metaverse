@@ -87,11 +87,15 @@ protected:
     void notify_blocks(uint32_t fork_point, const block_list& blocks);
     void notify_block(uint32_t height, const bc::chain::block::ptr block);
 
+    void notify_block_impl(uint32_t height, const bc::chain::block::ptr block);
     void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
+
+    void do_notify(const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
+        const std::shared_ptr<std::string>& rep);
 
 protected:
     void send_bad_response(struct mg_connection& nc, const char* message = nullptr, int code = 1000001, Json::Value data = Json::nullValue);
-    void send_response(struct mg_connection& nc, const std::string& event, const std::string& channel);
+    void send_response(struct mg_connection& nc, const std::string& event, const std::string& channel, Json::Value data = Json::nullValue);
 
     void refresh_connections();
 
@@ -108,8 +112,13 @@ protected:
 private:
     libbitcoin::server::server_node& node_;
     std::unordered_map<void*, std::shared_ptr<mg_connection>> map_connections_;
-    std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers_;
+    typedef std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> tx_subscriber_map;
+    tx_subscriber_map subscribers_;
     std::mutex subscribers_lock_;
+
+    typedef std::map<std::weak_ptr<mg_connection>, std::vector<std::string>, std::owner_less<std::weak_ptr<mg_connection>>> block_subscriber_map;
+    block_subscriber_map block_subscribers_;
+    std::mutex block_subscribers_lock_;
 };
 }
 

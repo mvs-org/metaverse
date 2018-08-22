@@ -32,13 +32,23 @@ constexpr auto EV_REQUEST     = "request";
 constexpr auto EV_RESPONSE    = "response";
 constexpr auto EV_MG_ERROR    = "error";
 constexpr auto EV_INFO        = "info";
+constexpr auto EV_PING        = "ping";
 
 constexpr auto CH_BLOCK       = "block";
+constexpr auto CH_HEIGHT      = "height";
 constexpr auto CH_TRANSACTION = "tx";
+
+constexpr int  JSON_FORMAT_VERSION = 3;
 }
+
 namespace mgbubble {
 using namespace bc;
 using namespace libbitcoin;
+
+explorer::config::json_helper get_json_helper()
+{
+    return explorer::config::json_helper(JSON_FORMAT_VERSION);
+}
 
 void WsPushServ::run() {
     log::info(NAME) << "Websocket Service listen on " << node_.server_settings().websocket_listen;
@@ -125,12 +135,101 @@ void WsPushServ::notify_block(uint32_t height, const block::ptr block)
     if (stopped())
         return;
 
-    const auto block_hash = block->header.hash();
+    notify_block_impl(height, block);
 
+    const auto block_hash = block->header.hash();
     for (const auto& tx : block->transactions) {
         const auto tx_hash = tx.hash();
 
         notify_transaction(height, block_hash, tx);
+    }
+}
+
+void WsPushServ::notify_block_impl(uint32_t height, const bc::chain::block::ptr block)
+{
+    block_subscriber_map subscribers;
+    {
+        std::lock_guard<std::mutex> guard(block_subscribers_lock_);
+        if (block_subscribers_.size() == 0) {
+            return;
+        }
+
+        for (auto& con : block_subscribers_) {
+            if (!con.first.expired()) {
+                subscribers.insert(con);
+            }
+        }
+
+        if (subscribers.size() != block_subscribers_.size()) {
+            block_subscribers_ = subscribers;
+        }
+    }
+
+    std::vector<std::weak_ptr<mg_connection>> notify_block_cons;
+    std::vector<std::weak_ptr<mg_connection>> notify_height_cons;
+    for (auto& sub : subscribers) {
+        auto& params = sub.second;
+        if (params.end() != std::find(params.begin(), params.end(), CH_HEIGHT)) {
+            notify_height_cons.push_back(sub.first);
+        }
+
+        if (params.end() != std::find(params.begin(), params.end(), CH_BLOCK)) {
+            notify_block_cons.push_back(sub.first);
+        }
+    }
+
+    if (notify_block_cons.size() > 0) {
+        Json::Value root;
+        root["event"] = EV_PUBLISH;
+        root["channel"] = CH_BLOCK;
+        root["result"] = get_json_helper().prop_tree(*block, true, true);
+
+        // log::info(NAME) << " ******** notify_block: height [" << height << "]  ******** ";
+
+        auto rep = std::make_shared<std::string>(root.toStyledString());
+        do_notify(notify_block_cons, rep);
+    }
+
+    if (notify_height_cons.size() > 0) {
+        Json::Value root;
+        root["event"] = EV_PUBLISH;
+        root["channel"] = CH_HEIGHT;
+        root["result"] = height;
+
+        // log::info(NAME) << " ******** notify_height: height [" << height << "]  ******** ";
+
+        auto rep = std::make_shared<std::string>(root.toStyledString());
+        do_notify(notify_height_cons, rep);
+    }
+}
+
+void WsPushServ::do_notify(const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
+                           const std::shared_ptr<std::string>& rep)
+{
+    for (auto& con : notify_cons)
+    {
+        auto shared_con = con.lock();
+        if (!shared_con) {
+            continue;
+        }
+
+        spawn_to_mongoose([this, shared_con, rep](uint64_t id) {
+            size_t active_connections = 0;
+            auto* mgr = &this->mg_mgr();
+            auto* notify_nc = shared_con.get();
+            for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
+                if (!is_websocket(*nc) || is_listen_socket(*nc) || is_notify_socket(*nc))
+                    continue;
+                ++active_connections;
+                if (notify_nc == nc) {
+                    send_frame(*nc, *rep);
+                }
+            }
+
+            if (active_connections != map_connections_.size()) {
+                refresh_connections();
+            }
+        });
     }
 }
 
@@ -140,7 +239,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
         return;
     }
 
-    std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers;
+    tx_subscriber_map subscribers;
     {
         std::lock_guard<std::mutex> guard(subscribers_lock_);
         if (subscribers_.size() == 0) {
@@ -189,44 +288,24 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
             return tx_addrs.end() != std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash);
         });
 
-        if (bnotify)
+        if (bnotify) {
             notify_cons.push_back(sub.first);
+        }
     }
 
     if (notify_cons.size() == 0) {
         return;
     }
 
-    log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
+    // log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
 
     Json::Value root;
     root["event"] = EV_PUBLISH;
     root["channel"] = CH_TRANSACTION;
-    root["result"] = explorer::config::json_helper().prop_list(tx, height, true);
+    root["result"] = get_json_helper().prop_list(tx, height, true);
 
     auto rep = std::make_shared<std::string>(root.toStyledString());
-
-    for (auto& con : notify_cons)
-    {
-        auto shared_con = con.lock();
-        if (!shared_con)
-            continue;
-
-        spawn_to_mongoose([this, shared_con, rep](uint64_t id) {
-            size_t active_connections = 0;
-            auto* mgr = &this->mg_mgr();
-            auto* notify_nc = shared_con.get();
-            for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
-                if (!is_websocket(*nc) || is_listen_socket(*nc) || is_notify_socket(*nc))
-                    continue;
-                ++active_connections;
-                if (notify_nc == nc)
-                    send_frame(*nc, *rep);
-            }
-            if (active_connections != map_connections_.size())
-                refresh_connections();
-        });
-    }
+    do_notify(notify_cons, rep);
 }
 
 void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message, int code, Json::Value data)
@@ -244,11 +323,17 @@ void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message
     send_frame(nc, tmp.c_str(), tmp.size());
 }
 
-void WsPushServ::send_response(struct mg_connection& nc, const std::string& event, const std::string& channel)
+void WsPushServ::send_response(struct mg_connection& nc, const std::string& event, const std::string& channel, Json::Value data)
 {
     Json::Value root;
     root["event"] = event;
-    root["channel"] = channel;
+    if (!channel.empty()) {
+        root["channel"] = channel;
+    }
+
+    if (!data.isNull()) {
+        root["result"] = data;
+    }
 
     auto&& tmp = root.toStyledString();
     send_frame(nc, tmp.c_str(), tmp.size());
@@ -294,12 +379,13 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         send_bad_response(nc, "under blockchain synchronizing", 1000002);
         return;
     }
+
     try {
         const char* begin = (const char*)msg.data;
         const char* end = begin + msg.size;
-        if (!reader.parse(begin, end, root) || !root.isObject()
-                || !root["event"].isString() || !root["channel"].isString()
-                || (!root["address"].isString() && !root["address"].isArray())) {
+        if (!reader.parse(begin, end, root)
+                || !root.isObject()
+                || !root["event"].isString()) {
             stringstream ss;
             ss << "parse request error, "
                << reader.getFormattedErrorMessages();
@@ -307,9 +393,29 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
             return;
         }
 
+        std::string channel;
         auto event = root["event"].asString();
-        auto channel = root["channel"].asString();
+        if (event == EV_SUBSCRIBE || event == EV_UNSUBSCRIBE) {
+            if (!root["channel"].isString()) {
+                stringstream ss;
+                ss << "parse request error, "
+                   << reader.getFormattedErrorMessages();
+                throw std::runtime_error(ss.str());
+                return;
+            }
+
+            channel = root["channel"].asString();
+        }
+
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
+            if (!root["address"].isString() && !root["address"].isArray()) {
+                stringstream ss;
+                ss << "parse request error, invalid address!"
+                   << reader.getFormattedErrorMessages();
+                throw std::runtime_error(ss.str());
+                return;
+            }
+
             std::vector<std::string> addresses;
             if (root["address"].isString()) {
                 auto short_addr = root["address"].asString();
@@ -373,10 +479,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                     send_response(nc, EV_SUBSCRIBED, channel);
                 }
                 else {
-                    subscribers_.insert({ week_con, {} });
-
-                    auto sub_it = subscribers_.find(week_con);
-                    auto& sub_list = sub_it->second;
+                    std::vector<size_t> sub_list;
                     for (const auto& short_addr : addresses) {
                         auto pay_addr = payment_address(short_addr);
                         size_t hash_addr = std::hash<payment_address>()(pay_addr);
@@ -385,6 +488,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                         }
                     }
 
+                    subscribers_.insert({ week_con, sub_list });
                     send_response(nc, EV_SUBSCRIBED, channel);
                 }
             }
@@ -404,13 +508,84 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                 send_bad_response(nc, "no subscription.");
             }
         }
+
+        else if (channel == CH_BLOCK || channel == CH_HEIGHT) {
+            if (event == EV_SUBSCRIBE) {
+                auto it = map_connections_.find(&nc);
+                if (it != map_connections_.end()) {
+                    std::lock_guard<std::mutex> guard(block_subscribers_lock_);
+                    std::weak_ptr<struct mg_connection> week_con(it->second);
+
+                    auto iter = block_subscribers_.find(week_con);
+                    if (iter != block_subscribers_.end()) {
+                        auto& sub_list = iter->second;
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), channel)) {
+                            sub_list.push_back(channel);
+                        }
+
+                        send_response(nc, EV_SUBSCRIBED, channel);
+                    }
+                    else {
+                        std::vector<std::string> sub_list;
+                        sub_list.push_back(channel);
+
+                        block_subscribers_.insert({ week_con, sub_list });
+                        send_response(nc, EV_SUBSCRIBED, channel);
+                    }
+                }
+                else {
+                    send_bad_response(nc, "connection lost.");
+                }
+            }
+            else if (event == EV_UNSUBSCRIBE) {
+                auto it = map_connections_.find(&nc);
+                if (it != map_connections_.end()) {
+                    std::lock_guard<std::mutex> guard(block_subscribers_lock_);
+                    std::weak_ptr<struct mg_connection> week_con(it->second);
+
+                    auto iter = block_subscribers_.find(week_con);
+                    if (iter != block_subscribers_.end()) {
+                        auto& params = iter->second;
+                        auto chit = std::find(params.begin(), params.end(), channel);
+                        if (chit != params.end()) {
+                            params.erase(chit);
+                        }
+
+                        if (params.empty()) {
+                            subscribers_.erase(week_con);
+                        }
+                    }
+
+                    send_response(nc, EV_UNSUBSCRIBED, channel);
+                }
+                else {
+                    send_bad_response(nc, "no subscription.");
+                }
+            }
+            else {
+                send_bad_response(nc, "request not support.");
+            }
+        }
+
+        else if (event == EV_VERSION) {
+            Json::Value version;
+            version["wallet"] = MVS_VERSION;
+            version["protocol"] = std::to_string(JSON_FORMAT_VERSION);
+            send_response(nc, event, "", version);
+        }
+
+        else if (event == EV_PING) {
+            Json::Value pong = "pong";
+            send_response(nc, event, "", pong);
+        }
         else {
             send_bad_response(nc, "request not support.");
         }
     }
     catch (std::exception& e) {
-        log::info(NAME) << "on on_ws_frame_handler: " << e.what();
-        send_bad_response(nc);
+        auto error = std::string(e.what());
+        log::info(NAME) << "on on_ws_frame_handler: " << error;
+        send_bad_response(nc, error.c_str());
     }
 }
 
