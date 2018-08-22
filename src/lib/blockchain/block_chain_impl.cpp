@@ -963,49 +963,6 @@ void block_chain_impl::fetch_history(const wallet::payment_address& address,
     fetch_serial(do_fetch);
 }
 
-void block_chain_impl::fetch_history(const uint64_t& from_height, history_fetch_handler handler)
-{
-    if (stopped())
-    {
-        handler(error::service_stopped, {});
-        return;
-    }
-
-    const auto do_fetch = [this, handler, from_height](
-        size_t slock)
-    {
-        const auto history = database_.history.get(from_height);
-        return finish_fetch(slock, handler, error::success, history);
-    };
-    fetch_serial(do_fetch);
-}
-
-bool block_chain_impl::fetch_history(const uint64_t & from_height, history_compact::list& history)
-{
-
-    if (stopped())
-    {
-        return false;
-    }
-
-    boost::mutex mutex;
-
-    mutex.lock();
-    auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
-    {
-        if((code)error::success == ec)
-            history = history_;
-        mutex.unlock();
-    };
-
-    // Obtain payment address history from the blockchain.
-    fetch_history(from_height, f);
-    boost::unique_lock<boost::mutex> lock(mutex);
-    return true;
-}
-
-
-
 bool block_chain_impl::fetch_history(const wallet::payment_address& address,
     uint64_t limit, uint64_t from_height, history_compact::list& history)
 {
@@ -1418,17 +1375,6 @@ history::list block_chain_impl::get_address_history(const wallet::payment_addres
     } else {
         result = fetch_history(addr, 0, 0, cmp_history);
     }
-    if (result) {
-        return expand_history(cmp_history);
-    }
-    return history::list();
-}
-
-history::list block_chain_impl::get_history_from_height(const uint64_t & start)
-{
-    history_compact::list cmp_history;
-    bool result = true;
-    result = fetch_history(start, cmp_history);
     if (result) {
         return expand_history(cmp_history);
     }

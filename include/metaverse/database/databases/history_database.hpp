@@ -84,8 +84,6 @@ public:
     chain::history_compact::list get(const short_hash& key, size_t limit,
         size_t from_height) const;
 
-    chain::history_compact::list get(size_t from_height) const;
-
     /// Synchonise with disk.
     void sync();
 
