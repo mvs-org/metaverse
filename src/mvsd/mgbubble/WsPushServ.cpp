@@ -22,19 +22,19 @@
 #include <metaverse/server/server_node.hpp>
 
 namespace mgbubble {
-    constexpr auto EV_VERSION     = "version";
-    constexpr auto EV_SUBSCRIBE   = "subscribe";
-    constexpr auto EV_UNSUBSCRIBE = "unsubscribe";
-    constexpr auto EV_SUBSCRIBED  = "subscribed";
-    constexpr auto EV_UNSUBSCRIBED = "unsubscribed";
-    constexpr auto EV_PUBLISH     = "publish";
-    constexpr auto EV_REQUEST     = "request";
-    constexpr auto EV_RESPONSE    = "response";
-    constexpr auto EV_MG_ERROR    = "error";
-    constexpr auto EV_INFO        = "info";
+constexpr auto EV_VERSION     = "version";
+constexpr auto EV_SUBSCRIBE   = "subscribe";
+constexpr auto EV_UNSUBSCRIBE = "unsubscribe";
+constexpr auto EV_SUBSCRIBED  = "subscribed";
+constexpr auto EV_UNSUBSCRIBED = "unsubscribed";
+constexpr auto EV_PUBLISH     = "publish";
+constexpr auto EV_REQUEST     = "request";
+constexpr auto EV_RESPONSE    = "response";
+constexpr auto EV_MG_ERROR    = "error";
+constexpr auto EV_INFO        = "info";
 
-    constexpr auto CH_BLOCK       = "block";
-    constexpr auto CH_TRANSACTION = "tx";
+constexpr auto CH_BLOCK       = "block";
+constexpr auto CH_TRANSACTION = "tx";
 }
 namespace mgbubble {
 using namespace bc;
@@ -43,15 +43,15 @@ using namespace libbitcoin;
 void WsPushServ::run() {
     log::info(NAME) << "Websocket Service listen on " << node_.server_settings().websocket_listen;
 
-    node_.subscribe_stop([this](const libbitcoin::code& ec) { stop(); });
+    node_.subscribe_stop([this](const libbitcoin::code & ec) { stop(); });
 
     node_.subscribe_transaction_pool(
         std::bind(&WsPushServ::handle_transaction_pool,
-            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     node_.subscribe_blockchain(
         std::bind(&WsPushServ::handle_blockchain_reorganization,
-            this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     base::run();
 
@@ -127,8 +127,7 @@ void WsPushServ::notify_block(uint32_t height, const block::ptr block)
 
     const auto block_hash = block->header.hash();
 
-    for (const auto& tx : block->transactions)
-    {
+    for (const auto& tx : block->transactions) {
         const auto tx_hash = tx.hash();
 
         notify_transaction(height, block_hash, tx);
@@ -137,40 +136,49 @@ void WsPushServ::notify_block(uint32_t height, const block::ptr block)
 
 void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_hash, const transaction& tx)
 {
-    if (stopped() || tx.outputs.empty())
+    if (stopped() || tx.outputs.empty()) {
         return;
+    }
 
     std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers;
     {
         std::lock_guard<std::mutex> guard(subscribers_lock_);
-        if (subscribers_.size() == 0)
+        if (subscribers_.size() == 0) {
             return;
-        for (auto& con : subscribers_)
-        {
-            if (!con.first.expired())
-            {
+        }
+
+        for (auto& con : subscribers_) {
+            if (!con.first.expired()) {
                 subscribers.insert(con);
             }
         }
-        if (subscribers.size() != subscribers_.size())
+
+        if (subscribers.size() != subscribers_.size()) {
             subscribers_ = subscribers;
+        }
     }
 
     /* ---------- may has subscribers ---------- */
 
     std::vector<size_t> tx_addrs;
-    for (const auto& input : tx.inputs)
-    {
+    for (const auto& input : tx.inputs) {
         const auto address = payment_address::extract(input.script);
-        if (address)
-            tx_addrs.push_back(std::hash<payment_address>()(address));
+        if (address) {
+            auto addr_hash = std::hash<payment_address>()(address);
+            if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
+                tx_addrs.push_back(addr_hash);
+            }
+        }
     }
 
-    for (const auto& output : tx.outputs)
-    {
+    for (const auto& output : tx.outputs) {
         const auto address = payment_address::extract(output.script);
-        if (address)
-            tx_addrs.push_back(std::hash<payment_address>()(address));
+        if (address) {
+            auto addr_hash = std::hash<payment_address>()(address);
+            if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
+                tx_addrs.push_back(addr_hash);
+            }
+        }
     }
 
     std::vector<std::weak_ptr<mg_connection>> notify_cons;
@@ -184,8 +192,10 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
         if (bnotify)
             notify_cons.push_back(sub.first);
     }
-    if (notify_cons.size() == 0)
+
+    if (notify_cons.size() == 0) {
         return;
+    }
 
     log::info(NAME) << " ******** notify_transaction: height [" << height << "]  ******** ";
 
@@ -251,7 +261,7 @@ void WsPushServ::refresh_connections()
     for (auto* nc = mg_next(mgr, NULL); nc != NULL; nc = mg_next(mgr, nc)) {
         if (!is_websocket(*nc) || is_listen_socket(*nc) || is_notify_socket(*nc))
             continue;
-        std::shared_ptr<struct mg_connection> con(nc, [](struct mg_connection* ptr) { (void)(ptr); });
+        std::shared_ptr<struct mg_connection> con(nc, [](struct mg_connection * ptr) { (void)(ptr); });
         swap.emplace(&nc, con);
     }
     map_connections_.swap(swap);
@@ -259,7 +269,7 @@ void WsPushServ::refresh_connections()
 
 void WsPushServ::on_ws_handshake_done_handler(struct mg_connection& nc)
 {
-    std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection* ptr) { (void)(ptr); });
+    std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection * ptr) { (void)(ptr); });
     map_connections_.emplace(&nc, con);
 
     std::string version("{\"event\": \"version\", " "\"result\": \"" MVS_VERSION "\"}");
@@ -288,10 +298,11 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         const char* begin = (const char*)msg.data;
         const char* end = begin + msg.size;
         if (!reader.parse(begin, end, root) || !root.isObject()
-            || !root["event"].isString() || !root["channel"].isString() || !root["address"].isString()) {
+                || !root["event"].isString() || !root["channel"].isString()
+                || (!root["address"].isString() && !root["address"].isArray())) {
             stringstream ss;
             ss << "parse request error, "
-                << reader.getFormattedErrorMessages();
+               << reader.getFormattedErrorMessages();
             throw std::runtime_error(ss.str());
             return;
         }
@@ -299,45 +310,86 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         auto event = root["event"].asString();
         auto channel = root["channel"].asString();
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
-            auto short_addr = root["address"].asString();
-            auto pay_addr = payment_address(short_addr);
-            if (!short_addr.empty() && !pay_addr) {
-                send_bad_response(nc, "invalid address.");
+            std::vector<std::string> addresses;
+            if (root["address"].isString()) {
+                auto short_addr = root["address"].asString();
+                auto pay_addr = payment_address(short_addr);
+                if (!short_addr.empty() && !pay_addr) {
+                    send_bad_response(nc, "invalid address.");
+                    return;
+                }
+
+                addresses.push_back(short_addr);
+            }
+            else if (root["address"].isArray()) {
+                auto array = root["address"];
+                int length = (int)(array.size());
+                for (int i = 0; i < length; ++i) {
+                    auto item = array[i];
+                    if (!item.isString()) {
+                        send_bad_response(nc, "invalid address.");
+                        return;
+                    }
+
+                    auto short_addr = item.asString();
+                    auto pay_addr = payment_address(short_addr);
+                    if (!short_addr.empty() && !pay_addr) {
+                        send_bad_response(nc, "invalid address.");
+                        return;
+                    }
+
+                    if (addresses.end() == std::find(addresses.begin(), addresses.end(), short_addr)) {
+                        addresses.push_back(short_addr);
+                    }
+                }
             }
             else {
-                size_t hash_addr = short_addr.empty() ? 0 : std::hash<payment_address>()(pay_addr);
-                auto it = map_connections_.find(&nc);
-                if (it != map_connections_.end()) {
-                    std::lock_guard<std::mutex> guard(subscribers_lock_);
-                    std::weak_ptr<struct mg_connection> week_con(it->second);
-                    auto sub_it = subscribers_.find(week_con);
-                    if (sub_it != subscribers_.end()) {
-                        auto& sub_list = sub_it->second;
-                        if (hash_addr == 0) {
-                            sub_list.clear();
-                            send_response(nc, EV_SUBSCRIBED, channel);
-                        }
-                        else {
-                            if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
-                                sub_list.push_back(hash_addr);
-                                send_response(nc, EV_SUBSCRIBED, channel);
-                            }
-                            else {
-                                send_bad_response(nc, "address already subscribed.");
-                            }
-                        }
-                    }
-                    else {
-                        if (hash_addr == 0)
-                            subscribers_.insert({ week_con, {} });
-                        else
-                            subscribers_.insert({ week_con, { hash_addr } });
+                send_bad_response(nc, "invalid address.");
+                return;
+            }
+
+            auto it = map_connections_.find(&nc);
+            if (it != map_connections_.end()) {
+                std::lock_guard<std::mutex> guard(subscribers_lock_);
+                std::weak_ptr<struct mg_connection> week_con(it->second);
+                auto sub_it = subscribers_.find(week_con);
+                if (sub_it != subscribers_.end()) {
+                    auto& sub_list = sub_it->second;
+
+                    if (addresses.empty()) {
+                        sub_list.clear();
                         send_response(nc, EV_SUBSCRIBED, channel);
+                        return;
                     }
+
+                    for (const auto& short_addr : addresses) {
+                        auto pay_addr = payment_address(short_addr);
+                        size_t hash_addr = std::hash<payment_address>()(pay_addr);
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
+                            sub_list.push_back(hash_addr);
+                        }
+                    }
+
+                    send_response(nc, EV_SUBSCRIBED, channel);
                 }
                 else {
-                    send_bad_response(nc, "connection lost.");
+                    subscribers_.insert({ week_con, {} });
+
+                    auto sub_it = subscribers_.find(week_con);
+                    auto& sub_list = sub_it->second;
+                    for (const auto& short_addr : addresses) {
+                        auto pay_addr = payment_address(short_addr);
+                        size_t hash_addr = std::hash<payment_address>()(pay_addr);
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
+                            sub_list.push_back(hash_addr);
+                        }
+                    }
+
+                    send_response(nc, EV_SUBSCRIBED, channel);
                 }
+            }
+            else {
+                send_bad_response(nc, "connection lost.");
             }
         }
         else if ((event == EV_UNSUBSCRIBE) && (channel == CH_TRANSACTION)) {
