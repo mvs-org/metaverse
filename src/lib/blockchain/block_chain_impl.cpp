@@ -1061,6 +1061,20 @@ inline short_hash block_chain_impl::get_short_hash(const std::string& str)
     return ripemd160_hash(data);
 }
 
+std::shared_ptr<chain::transaction> block_chain_impl::get_spends_output(const input_point& input)
+{
+    const auto spend = database_.spends.get(input);
+    if (spend.valid){
+        
+        const auto result = database_.transactions.get(spend.hash);
+        if(result) {
+            return std::make_shared<chain::transaction>(result.transaction());
+        } 
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<account> block_chain_impl::is_account_passwd_valid
     (const std::string& name, const std::string& passwd)
 {
@@ -1895,6 +1909,15 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
     }
     return sp_vec;
 }
+
+
+std::shared_ptr<blockchain_asset> block_chain_impl::get_asset_register_output(const std::string& symbol)
+{
+    return database_.assets.get_register_history(symbol);
+}
+
+
+
 
 /* check did symbol exist or not
 */

@@ -69,9 +69,14 @@ public:
             "Asset symbol."
         )
         (
-            "Height,-h",
-            value<uint64_t>(&option_.height)->default_value(0),
-            "Get asset start height"
+            "limit,l",
+            value<uint64_t>(&argument_.limit)->default_value(100),
+            "Asset count per page."
+        )
+        (
+            "index,i",
+            value<uint64_t>(&argument_.index)->default_value(1),
+            "Page index."
         )
         ;
 
@@ -85,13 +90,12 @@ public:
     struct argument
     {
         std::string symbol;
+        uint64_t limit;
+        uint64_t index;
     } argument_;
 
     struct option
     {
-        option(): height(0)
-        {};
-        uint64_t height;
     } option_;
 
 };

@@ -44,14 +44,44 @@ console_result getdepositasset::invoke(Json::Value& jv_output,
         check_asset_symbol(argument_.symbol);
     }
 
+       // page limit & page index paramenter check
+    if (!argument_.index)
+        throw argument_legality_exception{"page index parameter cannot be zero"};
+    if (!argument_.limit)
+        throw argument_legality_exception{"page record limit parameter cannot be zero"};
+    if (argument_.limit > 100)
+        throw argument_legality_exception{"page record limit cannot be bigger than 100."};
 
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
 
     auto sh_vec = std::make_shared<asset_deposited_balance::list>();
-    sync_fetch_asset_deposited_balance(option_.height, argument_.symbol, blockchain, sh_vec);
+    sync_fetch_asset_deposited(argument_.symbol, blockchain, sh_vec);
     std::sort(sh_vec->begin(), sh_vec->end());
-    for (auto& elem: *sh_vec) {
+
+    uint64_t start, end, total_page, tx_count;
+    if (argument_.index && argument_.limit) {
+        start = (argument_.index - 1) * argument_.limit;
+        end = (argument_.index) * argument_.limit;
+        if (start >= sh_vec->size() || !sh_vec->size())
+            throw argument_legality_exception{"no record in this page"};
+
+        total_page = sh_vec->size() % argument_.limit ? (sh_vec->size() / argument_.limit + 1) : (sh_vec->size() / argument_.limit);
+        tx_count = end >= sh_vec->size() ? (sh_vec->size() - start) : argument_.limit ;
+
+    } else if (!argument_.index && !argument_.limit) { // all tx records
+        start = 0;
+        tx_count = sh_vec->size();
+        argument_.index = 1;
+        total_page = 1;
+    } else {
+        throw argument_legality_exception{"invalid limit or index parameter"};
+    }
+
+
+     std::vector<asset_deposited_balance> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
+
+    for (auto& elem: result) {
         auto issued_asset = blockchain.get_issued_asset(elem.symbol);
         if (!issued_asset) {
             continue;
@@ -61,8 +91,10 @@ console_result getdepositasset::invoke(Json::Value& jv_output,
         json_value.append(asset_data);
     }
     
-
-    jv_output = json_value;
+    jv_output["total_page"] = total_page;
+    jv_output["current_page"] = argument_.index;
+    jv_output["deposit_count"] = tx_count;
+    jv_output["deposits"] = json_value;
 
     return console_result::okay;
 }

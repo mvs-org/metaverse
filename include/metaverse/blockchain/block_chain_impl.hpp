@@ -226,6 +226,9 @@ public:
 
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);
+  
+    std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
+
 
     // account related api
     std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
@@ -270,7 +273,8 @@ public:
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
-
+    
+    std::shared_ptr<blockchain_asset> get_asset_register_output(const std::string& symbol);
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
     uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);

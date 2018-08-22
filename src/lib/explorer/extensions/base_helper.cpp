@@ -352,30 +352,79 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
     }
 }
 
+void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const input_point& input,
+ std::shared_ptr<output_point::list>& output_list,  base_transfer_common::filter filter)
+{
+    auto is_filter = [filter](const output & output_){
+        if (((filter & base_transfer_common::FILTER_ETP) && output_.is_etp())
+        || ( (filter & base_transfer_common::FILTER_ASSET) && output_.is_asset())
+        || ( (filter & base_transfer_common::FILTER_IDENTIFIABLE_ASSET) && output_.is_asset_mit())
+        || ( (filter & base_transfer_common::FILTER_ASSETCERT) && output_.is_asset_cert())
+        || ( (filter & base_transfer_common::FILTER_DID) && output_.is_did())){
+            return true;
+        }
+        return false;
+    };
+
+    std::shared_ptr<chain::transaction> tx = blockchain.get_spends_output(input);
+    uint64_t tx_height;
+    chain::transaction tx_temp;
+    if(tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
+    {
+        const auto& output = tx_temp.outputs.at(input.index);
+
+        if (is_filter(output)){
+            output_list->emplace_back(input);
+        }
+    }
+    else if (tx != nullptr)
+    {
+
+        for (int i = 0; i < tx->outputs.size(); i++)
+        {
+            const auto& output = tx->outputs.at(i);
+            if (is_filter(output)){
+                input_point input_ = {tx->hash(), (uint32_t)i};
+                sync_unspend_output(blockchain, input_, output_list, filter);
+            }
+
+        }
+
+    }
+
+}
 
 
-void sync_fetch_asset_deposited_balance(const uint64_t & start, const std::string& symbol,
+void sync_fetch_asset_deposited(const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_deposited_balance::list> sh_asset_vec)
 {
-    auto&& rows = blockchain.get_history_from_height(start);
+    auto blockchain_asset = blockchain.get_asset_register_output(symbol);
+    if (blockchain_asset == nullptr){
+        throw asset_symbol_existed_exception(std::string("asset symbol[") +symbol + "]does not exist!");
+    }
+
+    auto out_point =  blockchain_asset->get_tx_point();
+
+    std::shared_ptr<output_point::list> output_list = std::make_shared<output_point::list>();
+    sync_unspend_output(blockchain, out_point, output_list, base_transfer_common::FILTER_ASSET);
+
 
     chain::transaction tx_temp;
     uint64_t tx_height;
     uint64_t height = 0;
     blockchain.get_last_height(height);
 
-    for (auto& row: rows)
+    for (auto& out: *output_list)
     {
         // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
         {
-            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
-            const auto& output = tx_temp.outputs.at(row.output.index);
+            BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(out.index);
             if (output.is_asset())
             {
-                std::string address = output.get_asset_address();
+                std::string address = output.get_script_address();
 
                 const auto& symbol = output.get_asset_symbol();
                 if (output.get_asset_symbol() != symbol || 
@@ -395,7 +444,7 @@ void sync_fetch_asset_deposited_balance(const uint64_t & start, const std::strin
                 }
 
                 const auto& model_param = output.get_attenuation_model_param();
-                auto diff_height = row.output_height ? (height - row.output_height) : 0;
+                auto diff_height = tx_height ? (height - tx_height) : 0;
                 auto available_amount = attenuation_model::get_available_asset_amount(
                         asset_amount, diff_height, model_param);
                 uint64_t locked_amount = asset_amount - available_amount;
@@ -404,7 +453,7 @@ void sync_fetch_asset_deposited_balance(const uint64_t & start, const std::strin
                 }
 
                 asset_deposited_balance deposited(
-                    symbol, address, encode_hash(row.output.hash), row.output_height);
+                    symbol, address, encode_hash(out.hash), tx_height);
                 deposited.unspent_asset = asset_amount;
                 deposited.locked_asset = locked_amount;
                 deposited.model_param = std::string(model_param.begin(), model_param.end());
