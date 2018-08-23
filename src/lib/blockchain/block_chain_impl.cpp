@@ -1857,9 +1857,9 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
 }
 
 
-std::shared_ptr<blockchain_asset> block_chain_impl::get_asset_register_output(const std::string& symbol)
+std::shared_ptr<blockchain_asset::list> block_chain_impl::get_asset_register_output(const std::string& symbol)
 {
-    return database_.assets.get_register_history(symbol);
+    return database_.assets.get_asset_history(symbol);
 }
 
 
