@@ -262,7 +262,7 @@ public:
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     uint64_t get_asset_height(const std::string& asset_name) const ;
     std::shared_ptr<asset_detail::list> get_local_assets();
-    std::shared_ptr<asset_detail::list> get_issued_assets();
+    std::shared_ptr<asset_detail::list> get_issued_assets(const std::string& symbol="");
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
     std::shared_ptr<business_address_asset::list> get_account_assets();
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);

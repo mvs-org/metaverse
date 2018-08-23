@@ -145,8 +145,12 @@ uint64_t blockchain_asset_database::get_asset_volume(const std::string& name) co
 }
 
 ///
-std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_blockchain_assets() const
+std::shared_ptr<std::vector<blockchain_asset>> blockchain_asset_database::get_blockchain_assets(const std::string& asset_symbol) const
 {
+    if (!asset_symbol.empty()) {
+        return get_asset_history(asset_symbol);
+    }
+
     auto vec_acc = std::make_shared<std::vector<blockchain_asset>>();
     uint64_t i = 0;
     for( i = 0; i < number_buckets; i++ ) {

@@ -1840,13 +1840,17 @@ std::shared_ptr<business_address_asset::list> block_chain_impl::get_account_unis
 }
 
 /// get all the asset in blockchain
-std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets()
+std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets(const std::string& symbol)
 {
     auto sp_vec = std::make_shared<asset_detail::list>();
-    auto sp_blockchain_vec = database_.assets.get_blockchain_assets();
+    const auto is_symbol_empty = symbol.empty();
+    if (!is_symbol_empty && bc::wallet::symbol::is_forbidden(symbol)) {
+        return sp_vec;
+    }
+    auto sp_blockchain_vec = database_.assets.get_blockchain_assets(symbol);
     for (auto& each : *sp_blockchain_vec) {
         auto& asset = each.get_asset();
-        if (bc::wallet::symbol::is_forbidden(asset.get_symbol())) {
+        if (is_symbol_empty && bc::wallet::symbol::is_forbidden(asset.get_symbol())) {
             // swallow forbidden symbol
             continue;
         }

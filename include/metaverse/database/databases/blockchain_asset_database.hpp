@@ -63,7 +63,7 @@ public:
     std::shared_ptr<blockchain_asset> get(const hash_digest& hash) const;
 
     ///
-    std::shared_ptr<std::vector<blockchain_asset>> get_blockchain_assets() const;
+    std::shared_ptr<std::vector<blockchain_asset>> get_blockchain_assets(const std::string& asset_symbol="") const;
 
     uint64_t get_asset_volume(const std::string& name) const;
 
