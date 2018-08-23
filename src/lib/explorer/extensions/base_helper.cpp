@@ -380,11 +380,11 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     else if (tx != nullptr)
     {
 
-        for (int i = 0; i < tx->outputs.size(); i++)
+        for (uint32_t i = 0; i < tx->outputs.size(); i++)
         {
             const auto& output = tx->outputs.at(i);
             if (is_filter(output)){
-                input_point input_ = {tx->hash(), (uint32_t)i};
+                input_point input_ = {tx->hash(), i};
                 sync_unspend_output(blockchain, input_, output_list, filter);
             }
 

@@ -57,10 +57,19 @@ console_result getdepositasset::invoke(Json::Value& jv_output,
 
     auto sh_vec = std::make_shared<asset_deposited_balance::list>();
     sync_fetch_asset_deposited(argument_.symbol, blockchain, sh_vec);
-    std::sort(sh_vec->begin(), sh_vec->end());
+
+    const auto no_asset_deposited = (sh_vec->empty() == true);
+    if (!no_asset_deposited) {
+        std::sort(sh_vec->begin(), sh_vec->end());
+    }
 
     uint64_t start, end, total_page, tx_count;
-    if (argument_.index && argument_.limit) {
+    if (no_asset_deposited || (!argument_.index && !argument_.limit)) { // all tx records
+        start = 0;
+        tx_count = sh_vec->size();
+        argument_.index = 1;
+        total_page = 1;
+    } else if (argument_.index && argument_.limit) {
         start = (argument_.index - 1) * argument_.limit;
         end = (argument_.index) * argument_.limit;
         if (start >= sh_vec->size() || !sh_vec->size())
@@ -69,17 +78,12 @@ console_result getdepositasset::invoke(Json::Value& jv_output,
         total_page = sh_vec->size() % argument_.limit ? (sh_vec->size() / argument_.limit + 1) : (sh_vec->size() / argument_.limit);
         tx_count = end >= sh_vec->size() ? (sh_vec->size() - start) : argument_.limit ;
 
-    } else if (!argument_.index && !argument_.limit) { // all tx records
-        start = 0;
-        tx_count = sh_vec->size();
-        argument_.index = 1;
-        total_page = 1;
     } else {
         throw argument_legality_exception{"invalid limit or index parameter"};
     }
 
 
-     std::vector<asset_deposited_balance> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
+    std::vector<asset_deposited_balance> result(sh_vec->begin() + start, sh_vec->begin() + start + tx_count);
 
     for (auto& elem: result) {
         auto issued_asset = blockchain.get_issued_asset(elem.symbol);
