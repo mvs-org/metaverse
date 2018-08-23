@@ -37,6 +37,7 @@ constexpr auto EV_PING        = "ping";
 constexpr auto CH_BLOCK       = "block";
 constexpr auto CH_HEIGHT      = "height";
 constexpr auto CH_TRANSACTION = "tx";
+constexpr auto CH_ALL         = "all";
 
 constexpr int  JSON_FORMAT_VERSION = 3;
 }
@@ -147,7 +148,7 @@ void WsPushServ::notify_block(uint32_t height, const block::ptr block)
 
 void WsPushServ::notify_block_impl(uint32_t height, const bc::chain::block::ptr block)
 {
-    block_subscriber_map subscribers;
+    connection_string_map subscribers;
     {
         std::lock_guard<std::mutex> guard(block_subscribers_lock_);
         if (block_subscribers_.size() == 0) {
@@ -186,8 +187,7 @@ void WsPushServ::notify_block_impl(uint32_t height, const bc::chain::block::ptr 
 
         // log::info(NAME) << " ******** notify_block: height [" << height << "]  ******** ";
 
-        auto rep = std::make_shared<std::string>(root.toStyledString());
-        do_notify(notify_block_cons, rep);
+        do_notify(notify_block_cons, root);
     }
 
     if (notify_height_cons.size() > 0) {
@@ -198,19 +198,52 @@ void WsPushServ::notify_block_impl(uint32_t height, const bc::chain::block::ptr 
 
         // log::info(NAME) << " ******** notify_height: height [" << height << "]  ******** ";
 
-        auto rep = std::make_shared<std::string>(root.toStyledString());
-        do_notify(notify_height_cons, rep);
+        do_notify(notify_height_cons, root);
     }
 }
 
-void WsPushServ::do_notify(const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
-                           const std::shared_ptr<std::string>& rep)
+void WsPushServ::do_notify(
+    const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
+    Json::Value& root,
+    std::shared_ptr<connection_string_map> topic_map)
 {
+    auto orignal_rep = root.toStyledString();
+
     for (auto& con : notify_cons)
     {
         auto shared_con = con.lock();
         if (!shared_con) {
             continue;
+        }
+
+        std::string rep;
+        if (topic_map != nullptr) {
+            auto iter = topic_map->find(con);
+            if (iter != topic_map->end()) {
+                auto& topics = iter->second;
+                if (topics.end() != std::find(topics.begin(), topics.end(), CH_ALL)) {
+                    root["topic"] = CH_ALL;
+                }
+                else if (topics.size() == 1) {
+                    root["topic"] = topics[0];
+                }
+                else {
+                    Json::Value value;
+                    for (auto& topic : topics) {
+                        value.append(topic);
+                    }
+                    if (value.isNull())
+                        value.resize(0);
+
+                    root["topic"] = value;
+                }
+
+                rep = root.toStyledString();
+            }
+        }
+
+        if (rep.empty()) {
+            rep = orignal_rep;
         }
 
         spawn_to_mongoose([this, shared_con, rep](uint64_t id) {
@@ -222,7 +255,7 @@ void WsPushServ::do_notify(const std::vector<std::weak_ptr<mg_connection>>& noti
                     continue;
                 ++active_connections;
                 if (notify_nc == nc) {
-                    send_frame(*nc, *rep);
+                    send_frame(*nc, rep);
                 }
             }
 
@@ -239,7 +272,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
         return;
     }
 
-    tx_subscriber_map subscribers;
+    connection_string_map subscribers;
     {
         std::lock_guard<std::mutex> guard(subscribers_lock_);
         if (subscribers_.size() == 0) {
@@ -259,11 +292,11 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
 
     /* ---------- may has subscribers ---------- */
 
-    std::vector<size_t> tx_addrs;
+    string_vector tx_addrs;
     for (const auto& input : tx.inputs) {
         const auto address = payment_address::extract(input.script);
         if (address) {
-            auto addr_hash = std::hash<payment_address>()(address);
+            auto addr_hash = address.encoded();
             if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
                 tx_addrs.push_back(addr_hash);
             }
@@ -273,22 +306,33 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     for (const auto& output : tx.outputs) {
         const auto address = payment_address::extract(output.script);
         if (address) {
-            auto addr_hash = std::hash<payment_address>()(address);
+            auto addr_hash = address.encoded();
             if (tx_addrs.end() == std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
                 tx_addrs.push_back(addr_hash);
             }
         }
     }
 
+    std::shared_ptr<connection_string_map> topic_map = std::make_shared<connection_string_map>();
+
     std::vector<std::weak_ptr<mg_connection>> notify_cons;
     for (auto& sub : subscribers)
     {
+        string_vector topics;
         auto& sub_addrs = sub.second;
-        bool bnotify = sub_addrs.size() == 0 ? true : std::any_of(sub_addrs.begin(), sub_addrs.end(), [&tx_addrs](size_t addr_hash) {
-            return tx_addrs.end() != std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash);
-        });
+        if (sub_addrs.empty()) {
+            topics.push_back(CH_ALL);
+        }
+        else {
+            for (auto& addr_hash : sub_addrs) {
+                if (tx_addrs.end() != std::find(tx_addrs.begin(), tx_addrs.end(), addr_hash)) {
+                    topics.push_back(addr_hash);
+                }
+            }
+        }
 
-        if (bnotify) {
+        if (!topics.empty()) {
+            topic_map->insert({sub.first, topics});
             notify_cons.push_back(sub.first);
         }
     }
@@ -304,8 +348,7 @@ void WsPushServ::notify_transaction(uint32_t height, const hash_digest& block_ha
     root["channel"] = CH_TRANSACTION;
     root["result"] = get_json_helper().prop_list(tx, height, true);
 
-    auto rep = std::make_shared<std::string>(root.toStyledString());
-    do_notify(notify_cons, rep);
+    do_notify(notify_cons, root, topic_map);
 }
 
 void WsPushServ::send_bad_response(struct mg_connection& nc, const char* message, int code, Json::Value data)
@@ -468,23 +511,19 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                         return;
                     }
 
-                    for (const auto& short_addr : addresses) {
-                        auto pay_addr = payment_address(short_addr);
-                        size_t hash_addr = std::hash<payment_address>()(pay_addr);
-                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
-                            sub_list.push_back(hash_addr);
+                    for (const auto& address : addresses) {
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), address)) {
+                            sub_list.push_back(address);
                         }
                     }
 
                     send_response(nc, EV_SUBSCRIBED, channel);
                 }
                 else {
-                    std::vector<size_t> sub_list;
-                    for (const auto& short_addr : addresses) {
-                        auto pay_addr = payment_address(short_addr);
-                        size_t hash_addr = std::hash<payment_address>()(pay_addr);
-                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), hash_addr)) {
-                            sub_list.push_back(hash_addr);
+                    string_vector sub_list;
+                    for (const auto& address : addresses) {
+                        if (sub_list.end() == std::find(sub_list.begin(), sub_list.end(), address)) {
+                            sub_list.push_back(address);
                         }
                     }
 
@@ -526,7 +565,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
                         send_response(nc, EV_SUBSCRIBED, channel);
                     }
                     else {
-                        std::vector<std::string> sub_list;
+                        string_vector sub_list;
                         sub_list.push_back(channel);
 
                         block_subscribers_.insert({ week_con, sub_list });
