@@ -125,10 +125,10 @@ void WsPushServ::notify_blocks(uint32_t fork_point, const block_list& blocks)
     if (stopped())
         return;
 
-    auto height = fork_point;
+    //auto height = fork_point;
 
     for (const auto block : blocks)
-        notify_block(height++, block);
+        notify_block(block.get()->header.number, block);
 }
 
 void WsPushServ::notify_block(uint32_t height, const block::ptr block)
