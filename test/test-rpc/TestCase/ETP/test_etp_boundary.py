@@ -8,7 +8,7 @@ class TestSendETP(MVSTestCaseBase):
 
         # check to_address
         ec, message = mvs_rpc.send(Alice.name, Alice.password, Zac.mainaddress()+'1', 1)
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         # not enough balance
         ec, message = mvs_rpc.send(Zac.name, Zac.password, Alice.mainaddress(), 1)
@@ -21,11 +21,11 @@ class TestSendETP(MVSTestCaseBase):
 
         # check from_address
         ec, message = mvs_rpc.sendfrom(Alice.name, Alice.password, Alice.mainaddress()+ "1", Zac.mainaddress(), 1)
-        self.assertEqual(ec, 4015, message)
+        self.assertEqual(ec, 7006, message)
 
         # check to_address
         ec, message = mvs_rpc.sendfrom(Alice.name, Alice.password, Alice.mainaddress(), Zac.mainaddress() + "1", 1)
-        self.assertEqual(ec, 4012, message)
+        self.assertEqual(ec, 7006, message)
 
         # not enough balance
         ec, message = mvs_rpc.send(Zac.name, Zac.password, Alice.mainaddress(), 1)
@@ -38,11 +38,7 @@ class TestSendETP(MVSTestCaseBase):
 
         #validate my change address
         ec, message = mvs_rpc.sendmore(Zac.name, Zac.password, {Alice.mainaddress(): 10000, Bob.mainaddress(): 20000}, Zac.mainaddress() + '1')
-        self.assertEqual(ec, 4012, message)
-
-        #my change address does not belong to me
-        #ec, message = mvs_rpc.sendmore(Zac.name, Zac.password, {Alice.mainaddress(): 10000, Bob.mainaddress(): 20000}, Alice.mainaddress())
-        #self.assertEqual(ec, 4012, message)
+        self.assertEqual(ec, 7006, message)
 
         #not enough balance
         ec, message = mvs_rpc.sendmore(Zac.name, Zac.password, {Alice.mainaddress(): 10000, Bob.mainaddress(): 20000}, Zac.mainaddress())

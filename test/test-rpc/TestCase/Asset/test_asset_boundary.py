@@ -224,7 +224,7 @@ class TestAssetBoundary(MVSTestCaseBase):
 
         # invalid to address parameter
         ec, message = mvs_rpc.send_asset(Zac.name, Zac.password, "111", Zac.asset_symbol, 1)
-        self.assertEqual(ec, 4010, message)
+        self.assertEqual(ec, 7006, message)
 
         # invalid amount parameter
         ec, message = mvs_rpc.send_asset(Zac.name, Zac.password, Zac.mainaddress(), Zac.asset_symbol, 0)
@@ -237,11 +237,11 @@ class TestAssetBoundary(MVSTestCaseBase):
 
         # invalid from address
         ec, message = mvs_rpc.send_asset_from(Zac.name, Zac.password, "111", "222", Zac.asset_symbol, 1)
-        self.assertEqual(ec, 4015, message)
+        self.assertEqual(ec, 7006, message)
 
         # invalid to address
         ec, message = mvs_rpc.send_asset_from(Zac.name, Zac.password, Zac.mainaddress(), "", Zac.asset_symbol, 1)
-        self.assertEqual(ec, 4012, message)
+        self.assertEqual(ec, 7001, message)
 
         # invalid amount parameter
         ec, message = mvs_rpc.send_asset_from(Zac.name, Zac.password, Zac.mainaddress(), Frank.mainaddress(), Zac.asset_symbol, 0)
