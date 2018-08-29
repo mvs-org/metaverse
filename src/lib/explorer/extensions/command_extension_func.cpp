@@ -180,7 +180,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<listassets>());
     func(make_shared<getasset>());
     func(make_shared<getaccountasset>());
-    func(make_shared<getassetview>());
+    // func(make_shared<getassetview>());
     func(make_shared<getaddressasset>());
     func(make_shared<burn>());
     func(make_shared<swaptoken>());
@@ -329,8 +329,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getasset>();
     if (symbol == getaccountasset::symbol())
         return make_shared<getaccountasset>();
-    if (symbol == getassetview::symbol())
-        return make_shared<getassetview>();
+    // if (symbol == getassetview::symbol())
+    //     return make_shared<getassetview>();
     if (symbol == getaddressasset::symbol())
         return make_shared<getaddressasset>();
     if (symbol == issue::symbol())
