@@ -609,7 +609,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         else if (event == EV_VERSION) {
             Json::Value version;
             version["wallet"] = MVS_VERSION;
-            version["protocol"] = std::to_string(JSON_FORMAT_VERSION);
+            version["protocol"] = node_.network_settings().protocol;
             send_response(nc, event, "", version);
         }
 
