@@ -30,15 +30,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ getdepositasset *************************/
+/************************ getassetview *************************/
 
-class getdepositasset: public command_extension
+class getassetview: public command_extension
 {
 public:
-    static const char* symbol(){ return "getdepositasset";}
+    static const char* symbol(){ return "getassetview";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "get deposit assets "; }
+    const char* description() override { return "Show asset owners from MVS blockchain. "; }
 
     arguments_metadata& load_arguments() override
     {
@@ -78,7 +78,11 @@ public:
             value<uint64_t>(&argument_.index)->default_value(1),
             "Page index."
         )
-        ;
+        (
+            "deposit,d",
+            value<bool>(&option_.is_deposit)->default_value(false)->zero_tokens(),
+            "If specified, then only get related cert. Default is not specified."
+        );
 
         return options;
     }
@@ -96,6 +100,7 @@ public:
 
     struct option
     {
+         bool is_deposit;
     } option_;
 
 };

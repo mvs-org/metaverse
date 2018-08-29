@@ -394,74 +394,147 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
 
 }
 
-
-void sync_fetch_asset_deposited(const std::string& symbol,
-    bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec)
+auto get_asset_unspend_utxo(const std::string& symbol,
+ bc::blockchain::block_chain_impl& blockchain) -> std::shared_ptr<output_point::list>
 {
     auto blockchain_assets = blockchain.get_asset_register_output(symbol);
     if (blockchain_assets == nullptr || blockchain_assets->empty()){
         throw asset_symbol_existed_exception(std::string("asset symbol[") +symbol + "]does not exist!");
     }
 
+    std::shared_ptr<output_point::list> output_list = std::make_shared<output_point::list>();
+    for (auto asset : *blockchain_assets)
+    {
+        auto out_point = asset.get_tx_point();
+        sync_unspend_output(blockchain, out_point, output_list, base_transfer_common::FILTER_ASSET);
+    }
+    if(!output_list->empty()){
+        std::sort(output_list->begin(), output_list->end());
+        output_list->erase(std::unique(output_list->begin(), output_list->end()), output_list->end());
+    }
+    return output_list;
+}
+
+auto sync_fetch_asset_deposited_view(const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain)
+     -> std::shared_ptr<asset_deposited_balance::list>
+{
+
+    std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
+
+    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec = std::make_shared<asset_deposited_balance::list>();
+
     chain::transaction tx_temp;
     uint64_t tx_height;
     uint64_t height = 0;
     blockchain.get_last_height(height);
 
-    for (auto asset : *blockchain_assets)
+    for (auto &out : *output_list)
     {
-        auto out_point = asset.get_tx_point();
-
-        std::shared_ptr<output_point::list> output_list = std::make_shared<output_point::list>();
-        sync_unspend_output(blockchain, out_point, output_list, base_transfer_common::FILTER_ASSET);
-
-        for (auto &out : *output_list)
+        // spend unconfirmed (or no spend attempted)
+        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
         {
-            // spend unconfirmed (or no spend attempted)
-            if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+            BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
+            const auto &output = tx_temp.outputs.at(out.index);
+            if (output.is_asset())
             {
-                BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
-                const auto &output = tx_temp.outputs.at(out.index);
-                if (output.is_asset())
+                std::string address = output.get_script_address();
+
+                const auto &symbol = output.get_asset_symbol();
+                if (output.get_asset_symbol() != symbol ||
+                    bc::wallet::symbol::is_forbidden(symbol))
                 {
-                    std::string address = output.get_script_address();
-
-                    const auto &symbol = output.get_asset_symbol();
-                    if (output.get_asset_symbol() != symbol ||
-                        bc::wallet::symbol::is_forbidden(symbol)){
-                        // swallow forbidden symbol
-                        continue;
-                    }
-
-                    if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)){
-                        continue;
-                    }
-
-                    auto asset_amount = output.get_asset_amount();
-                    if (asset_amount == 0){
-                        continue;
-                    }
-
-                    const auto &model_param = output.get_attenuation_model_param();
-                    auto diff_height = tx_height ? (height - tx_height) : 0;
-                    auto available_amount = attenuation_model::get_available_asset_amount(
-                        asset_amount, diff_height, model_param);
-                    uint64_t locked_amount = asset_amount - available_amount;
-                    if (locked_amount == 0){
-                        continue;
-                    }
-
-                    asset_deposited_balance deposited(
-                        symbol, address, encode_hash(out.hash), tx_height);
-                    deposited.unspent_asset = asset_amount;
-                    deposited.locked_asset = locked_amount;
-                    deposited.model_param = std::string(model_param.begin(), model_param.end());
-                    sh_asset_vec->push_back(deposited);
+                    // swallow forbidden symbol
+                    continue;
                 }
+
+                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations))
+                {
+                    continue;
+                }
+
+                auto asset_amount = output.get_asset_amount();
+                if (asset_amount == 0)
+                {
+                    continue;
+                }
+
+                const auto &model_param = output.get_attenuation_model_param();
+                auto diff_height = tx_height ? (height - tx_height) : 0;
+                auto available_amount = attenuation_model::get_available_asset_amount(
+                    asset_amount, diff_height, model_param);
+                uint64_t locked_amount = asset_amount - available_amount;
+                if (locked_amount == 0)
+                {
+                    continue;
+                }
+
+                asset_deposited_balance deposited(
+                    symbol, address, encode_hash(out.hash), tx_height);
+                deposited.unspent_asset = asset_amount;
+                deposited.locked_asset = locked_amount;
+                deposited.model_param = std::string(model_param.begin(), model_param.end());
+                sh_asset_vec->emplace_back(deposited);
             }
         }
     }
+
+    return sh_asset_vec;
+}
+
+
+auto sync_fetch_asset_view(const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain)
+     -> std::shared_ptr<asset_balances::list>
+{
+
+    std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
+
+    std::shared_ptr<asset_balances::list> sh_asset_vec = std::make_shared<asset_balances::list>();
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto &out : *output_list)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
+            const auto &output = tx_temp.outputs.at(out.index);
+            if (output.is_asset())
+            {
+                std::string address = output.get_script_address();
+
+                const auto &symbol = output.get_asset_symbol();
+                if (output.get_asset_symbol() != symbol ||
+                    bc::wallet::symbol::is_forbidden(symbol))
+                {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
+
+                auto asset_amount = output.get_asset_amount();
+                uint64_t locked_amount = 0;
+                if (asset_amount
+                    && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    const auto& attenuation_model_param = output.get_attenuation_model_param();
+                    auto diff_height = tx_height ? (height - tx_height) : 0;
+                    auto available_amount = attenuation_model::get_available_asset_amount(
+                            asset_amount, diff_height, attenuation_model_param);
+                    locked_amount = asset_amount - available_amount;
+                }
+
+                sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
+
+            }
+        }
+    }
+
+    return sh_asset_vec;
 }
 
 static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockchain,

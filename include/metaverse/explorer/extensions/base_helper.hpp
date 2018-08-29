@@ -189,9 +189,13 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_deposited_balance::list> sh_asset_vec);
 
-void sync_fetch_asset_deposited( const std::string& symbol,
-    bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec);
+std::shared_ptr<asset_balances::list> sync_fetch_asset_view(const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain);
+
+std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
+    const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain);
+    
 
 void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,

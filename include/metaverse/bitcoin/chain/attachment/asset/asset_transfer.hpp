@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <istream>
 #include <vector>
+#include <tuple>
 #include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
@@ -72,7 +73,8 @@ struct asset_deposited_balance {
 
     // for sort
     bool operator< (const asset_deposited_balance& other) const {
-        return symbol < other.symbol || tx_height < other.tx_height;
+        typedef std::tuple<std::string, uint64_t> cmp_tuple;
+        return cmp_tuple(symbol, tx_height) < cmp_tuple(other.symbol, other.tx_height);
     }
 
     typedef std::vector<asset_deposited_balance> list;

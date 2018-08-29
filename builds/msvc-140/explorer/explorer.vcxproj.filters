@@ -200,7 +200,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaccountasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getdepositasset.hpp">
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getassetview.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\getaddressasset.hpp">
@@ -522,7 +522,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaccountasset.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getdepositasset.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getassetview.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\getaddressasset.cpp">

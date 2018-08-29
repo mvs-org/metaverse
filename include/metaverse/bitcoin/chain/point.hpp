@@ -71,6 +71,8 @@ public:
 BC_API bool operator==(const point& left, const point& right);
 BC_API bool operator!=(const point& left, const point& right);
 
+BC_API bool operator<(const point& left, const point& right);
+
 typedef point input_point;
 typedef point output_point;
 

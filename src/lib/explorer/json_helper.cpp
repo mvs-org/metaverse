@@ -466,6 +466,21 @@ Json::Value json_helper::prop_list(const bc::chain::asset_balances& balance_info
     return tree;
 }
 
+Json::Value json_helper::prop_list(const bc::chain::asset_balances& balance_info)
+{
+    Json::Value tree;
+    tree["address"] = balance_info.address;
+
+    if (version_ == 1) {
+        tree["quantity"] += balance_info.unspent_asset;
+        tree["locked_quantity"] += balance_info.locked_asset;
+    } else {
+        tree["quantity"] = balance_info.unspent_asset;
+        tree["locked_quantity"] = balance_info.locked_asset;
+    }
+    return tree;
+}
+
 Json::Value json_helper::prop_list(const bc::chain::asset_deposited_balance& balance_info,
         const bc::chain::asset_detail& issued_info, bool show_address)
 {
