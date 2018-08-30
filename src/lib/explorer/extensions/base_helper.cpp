@@ -70,13 +70,11 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (!chain::output::is_valid_did_symbol(symbol, check_sensitive)) {
-            throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
+        throw did_symbol_name_exception{"Did symbol " + symbol + " is not valid."};
     }
 
-    if (check_sensitive)
-    {
-        if (boost::iequals(symbol, "BLACKHOLE"))
-        {
+    if (check_sensitive) {
+        if (boost::iequals(symbol, "BLACKHOLE")) {
             throw did_symbol_name_exception{"Did symbol cannot be blackhole."};
         }
     }
@@ -124,6 +122,42 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }
     }
+}
+
+std::string get_address(const std::string& did_or_address,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    std::string address;
+    if (!did_or_address.empty()) {
+        if (blockchain.is_valid_address(did_or_address)) {
+            address = did_or_address;
+        }
+        else {
+            address = get_address_from_did(did_or_address, blockchain);
+        }
+    }
+    return address;
+}
+
+std::string get_address(const std::string& did_or_address,
+    attachment& attach, bool is_from,
+    bc::blockchain::block_chain_impl& blockchain)
+{
+    std::string address;
+    if (blockchain.is_valid_address(did_or_address)) {
+        address = did_or_address;
+    }
+    else {
+        address = get_address_from_did(did_or_address, blockchain);
+        if (is_from) {
+            attach.set_from_did(did_or_address);
+        }
+        else {
+            attach.set_to_did(did_or_address);
+        }
+        attach.set_version(DID_ATTACH_VERIFY_VERSION);
+    }
+    return address;
 }
 
 std::string get_address_from_did(const std::string& did,
@@ -186,6 +220,9 @@ void sync_fetch_asset_cert_balance(const std::string& address, const string& sym
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address) {
+                continue;
+            }
             if (output.is_asset_cert())
             {
                 auto asset_cert = output.get_asset_cert();
@@ -221,6 +258,9 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
         {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address) {
+                continue;
+            }
             if (output.is_asset())
             {
                 const auto& symbol = output.get_asset_symbol();
@@ -254,6 +294,247 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
             }
         }
     }
+}
+
+void sync_fetch_asset_deposited_balance(const std::string& address,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec)
+{
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+            if (output.is_asset())
+            {
+                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    continue;
+                }
+
+                auto asset_amount = output.get_asset_amount();
+                if (asset_amount == 0) {
+                    continue;
+                }
+
+                const auto& symbol = output.get_asset_symbol();
+                if (bc::wallet::symbol::is_forbidden(symbol)) {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
+                const auto& model_param = output.get_attenuation_model_param();
+                auto diff_height = row.output_height ? (height - row.output_height) : 0;
+                auto available_amount = attenuation_model::get_available_asset_amount(
+                        asset_amount, diff_height, model_param);
+                uint64_t locked_amount = asset_amount - available_amount;
+                if (locked_amount == 0) {
+                    continue;
+                }
+
+                asset_deposited_balance deposited(
+                    symbol, address, encode_hash(row.output.hash), row.output_height);
+                deposited.unspent_asset = asset_amount;
+                deposited.locked_asset = locked_amount;
+                deposited.model_param = std::string(model_param.begin(), model_param.end());
+                sh_asset_vec->push_back(deposited);
+            }
+        }
+    }
+}
+
+void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const input_point& input,
+ std::shared_ptr<output_point::list>& output_list,  base_transfer_common::filter filter)
+{
+    auto is_filter = [filter](const output & output_){
+        if (((filter & base_transfer_common::FILTER_ETP) && output_.is_etp())
+        || ( (filter & base_transfer_common::FILTER_ASSET) && output_.is_asset())
+        || ( (filter & base_transfer_common::FILTER_IDENTIFIABLE_ASSET) && output_.is_asset_mit())
+        || ( (filter & base_transfer_common::FILTER_ASSETCERT) && output_.is_asset_cert())
+        || ( (filter & base_transfer_common::FILTER_DID) && output_.is_did())){
+            return true;
+        }
+        return false;
+    };
+
+    std::shared_ptr<chain::transaction> tx = blockchain.get_spends_output(input);
+    uint64_t tx_height;
+    chain::transaction tx_temp;
+    if(tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
+    {
+        const auto& output = tx_temp.outputs.at(input.index);
+
+        if (is_filter(output)){
+            output_list->emplace_back(input);
+        }
+    }
+    else if (tx != nullptr)
+    {
+
+        for (uint32_t i = 0; i < tx->outputs.size(); i++)
+        {
+            const auto& output = tx->outputs.at(i);
+            if (is_filter(output)){
+                input_point input_ = {tx->hash(), i};
+                sync_unspend_output(blockchain, input_, output_list, filter);
+            }
+
+        }
+
+    }
+
+}
+
+auto get_asset_unspend_utxo(const std::string& symbol,
+ bc::blockchain::block_chain_impl& blockchain) -> std::shared_ptr<output_point::list>
+{
+    auto blockchain_assets = blockchain.get_asset_register_output(symbol);
+    if (blockchain_assets == nullptr || blockchain_assets->empty()){
+        throw asset_symbol_existed_exception(std::string("asset symbol[") +symbol + "]does not exist!");
+    }
+
+    std::shared_ptr<output_point::list> output_list = std::make_shared<output_point::list>();
+    for (auto asset : *blockchain_assets)
+    {
+        auto out_point = asset.get_tx_point();
+        sync_unspend_output(blockchain, out_point, output_list, base_transfer_common::FILTER_ASSET);
+    }
+    if(!output_list->empty()){
+        std::sort(output_list->begin(), output_list->end());
+        output_list->erase(std::unique(output_list->begin(), output_list->end()), output_list->end());
+    }
+    return output_list;
+}
+
+auto sync_fetch_asset_deposited_view(const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain)
+     -> std::shared_ptr<asset_deposited_balance::list>
+{
+
+    std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
+
+    std::shared_ptr<asset_deposited_balance::list> sh_asset_vec = std::make_shared<asset_deposited_balance::list>();
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto &out : *output_list)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
+            const auto &output = tx_temp.outputs.at(out.index);
+            if (output.is_asset())
+            {
+                std::string address = output.get_script_address();
+
+                const auto &symbol = output.get_asset_symbol();
+                if (output.get_asset_symbol() != symbol ||
+                    bc::wallet::symbol::is_forbidden(symbol))
+                {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
+                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations))
+                {
+                    continue;
+                }
+
+                auto asset_amount = output.get_asset_amount();
+                if (asset_amount == 0)
+                {
+                    continue;
+                }
+
+                const auto &model_param = output.get_attenuation_model_param();
+                auto diff_height = tx_height ? (height - tx_height) : 0;
+                auto available_amount = attenuation_model::get_available_asset_amount(
+                    asset_amount, diff_height, model_param);
+                uint64_t locked_amount = asset_amount - available_amount;
+                if (locked_amount == 0)
+                {
+                    continue;
+                }
+
+                asset_deposited_balance deposited(
+                    symbol, address, encode_hash(out.hash), tx_height);
+                deposited.unspent_asset = asset_amount;
+                deposited.locked_asset = locked_amount;
+                deposited.model_param = std::string(model_param.begin(), model_param.end());
+                sh_asset_vec->emplace_back(deposited);
+            }
+        }
+    }
+
+    return sh_asset_vec;
+}
+
+
+auto sync_fetch_asset_view(const std::string& symbol,
+    bc::blockchain::block_chain_impl& blockchain)
+     -> std::shared_ptr<asset_balances::list>
+{
+
+    std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
+
+    std::shared_ptr<asset_balances::list> sh_asset_vec = std::make_shared<asset_balances::list>();
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto &out : *output_list)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if (blockchain.get_transaction(out.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(out.index < tx_temp.outputs.size());
+            const auto &output = tx_temp.outputs.at(out.index);
+            if (output.is_asset())
+            {
+                std::string address = output.get_script_address();
+
+                const auto &symbol = output.get_asset_symbol();
+                if (output.get_asset_symbol() != symbol ||
+                    bc::wallet::symbol::is_forbidden(symbol))
+                {
+                    // swallow forbidden symbol
+                    continue;
+                }
+
+
+                auto asset_amount = output.get_asset_amount();
+                uint64_t locked_amount = 0;
+                if (asset_amount
+                    && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
+                    const auto& attenuation_model_param = output.get_attenuation_model_param();
+                    auto diff_height = tx_height ? (height - tx_height) : 0;
+                    auto available_amount = attenuation_model::get_available_asset_amount(
+                            asset_amount, diff_height, attenuation_model_param);
+                    locked_amount = asset_amount - available_amount;
+                }
+
+                sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
+
+            }
+        }
+    }
+
+    return sh_asset_vec;
 }
 
 static uint32_t get_domain_cert_count(bc::blockchain::block_chain_impl& blockchain,
@@ -292,6 +573,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address.encoded()) {
+                continue;
+            }
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 // deposit utxo in block
@@ -300,20 +584,32 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                 uint64_t expiration_height = row.output_height + deposit_height;
 
                 if (expiration_height > height) {
+                    auto&& output_hash = encode_hash(row.output.hash);
                     auto&& tx_hash = encode_hash(tx_temp.hash());
                     const auto match = [&tx_hash](const deposited_balance& balance) {
                         return balance.tx_hash == tx_hash;
                     };
                     auto iter = std::find_if(sh_vec->begin(), sh_vec->end(), match);
                     if (iter != sh_vec->end()) {
-                        // interest of deposit
-                        iter->balance += row.value;
+                        if (output_hash == tx_hash) {
+                            iter->balance = row.value;
+                        }
+                        else {
+                            iter->bonus = row.value;
+                            iter->bonus_hash = output_hash;
+                        }
                     }
                     else {
-                        auto&& row_hash = encode_hash(row.output.hash);
-                        deposited_balance balance(address_str, tx_hash, row_hash,
-                            row.value, deposit_height, expiration_height);
-                        sh_vec->push_back(std::move(balance));
+
+                        deposited_balance deposited(address_str, tx_hash, deposit_height, expiration_height);
+                        if (output_hash == tx_hash) {
+                            deposited.balance = row.value;
+                        }
+                        else {
+                            deposited.bonus = row.value;
+                            deposited.bonus_hash = output_hash;
+                        }
+                        sh_vec->push_back(std::move(deposited));
                     }
                 }
             }
@@ -346,6 +642,9 @@ void sync_fetchbalance(wallet::payment_address& address,
                 && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != address.encoded()) {
+                continue;
+            }
 
             if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
                 // deposit utxo in block
@@ -439,6 +738,10 @@ void base_transfer_common::sync_fetchutxo(
 
         chain::output output;
         if (!get_spendable_output(output, row, height)) {
+            continue;
+        }
+
+        if (output.get_script_address() != addr) {
             continue;
         }
 
@@ -735,7 +1038,8 @@ std::string base_transfer_common::get_mychange_address(filter filter) const
         }
         if (filter & FILTER_ASSET) {
             return (record.type == utxo_attach_type::asset_transfer)
-                || (record.type == utxo_attach_type::asset_issue);
+                || (record.type == utxo_attach_type::asset_issue)
+                || (record.type == utxo_attach_type::asset_secondaryissue);
         }
         throw std::logic_error{"get_mychange_address: unknown/wrong filter for mychange"};
     };
@@ -1509,6 +1813,14 @@ void sending_asset::populate_change()
 
     // asset utxo
     populate_asset_change();
+
+    // asset transfer  -- with message
+    if (!message_.empty()) {
+        auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
+        receiver_list_.push_back({addr, "", 0, 0,
+            utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(message_))});
+    }
 }
 
 chain::operation::stack
@@ -1609,6 +1921,9 @@ void issuing_asset_cert::sum_payment_amount()
 
         payment_asset_cert_.clear();
         payment_asset_cert_.push_back(asset_cert_ns::domain);
+    }
+    else {
+        payment_asset_cert_.clear();
     }
 }
 

@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <sstream>
+#include <tuple>
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/formats/base_16.hpp>
@@ -195,6 +196,12 @@ bool operator==(const point& left, const point& right)
 bool operator!=(const point& left, const point& right)
 {
     return !(left == right);
+}
+
+bool operator<(const point& left, const point& right)
+{
+    typedef std::tuple<hash_digest, uint32_t> tupe_cmp;
+    return tupe_cmp(left.hash, left.index) < tupe_cmp(right.hash, right.index);
 }
 
 } // namspace chain

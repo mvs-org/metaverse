@@ -238,6 +238,8 @@ void validate_transaction::search_pool_previous_tx()
 
     if (!pool_->find(previous_tx, current_input.previous_output.hash))
     {
+        log::debug(LOG_BLOCKCHAIN) << "search_pool_previous_tx failed: prev hash"
+                                   << encode_hash(current_input.previous_output.hash);
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::input_not_found, tx_, list);
         return;
@@ -253,8 +255,10 @@ void validate_transaction::search_pool_previous_tx()
 void validate_transaction::handle_previous_tx(const code& ec,
         const transaction& previous_tx, size_t parent_height)
 {
-    if (ec)
-    {
+    if (ec) {
+        log::debug(LOG_BLOCKCHAIN) << "handle_previous_tx failed: error: "
+                                   << std::to_string(ec.value()) << ", prev hash: "
+                                   << encode_hash(previous_tx.hash());
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::input_not_found, tx_, list);
         return;
@@ -267,6 +271,8 @@ void validate_transaction::handle_previous_tx(const code& ec,
     // Should check if inputs are standard here...
     if (!connect_input(previous_tx, parent_height))
     {
+        log::debug(LOG_BLOCKCHAIN) << "connect_input of transaction failed. prev tx hash:"
+            << encode_hash(previous_tx.hash());
         const auto list = point::indexes{ current_input_ };
         handle_validate_(error::validate_inputs_failed, tx_, list);
         return;
@@ -1252,6 +1258,9 @@ code validate_transaction::check_transaction_connect_input(size_t last_height)
             return error::input_not_found;
         }
         if (!connect_input(prev_tx, prev_height)) {
+            log::debug(LOG_BLOCKCHAIN) << "connect_input failed. prev height:"
+                << std::to_string(prev_height)
+                << ", prev hash: " << encode_hash(prev_tx.hash());
             return error::validate_inputs_failed;
         }
         ++current_input_;
@@ -1351,9 +1360,8 @@ code validate_transaction::check_transaction_basic() const
             }
         }
         else if (output.is_asset_cert()) {
-            auto&& asset_cert = output.get_asset_cert();
-            if (!check_did_exist(asset_cert.get_owner())) {
-                return error::did_address_needed;
+            if (!chain::output::is_valid_symbol(output.get_asset_symbol(), tx.version)) {
+                return error::asset_symbol_invalid;
             }
         }
         else if (output.is_did_register()) {

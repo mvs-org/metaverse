@@ -52,6 +52,10 @@ namespace asset_cert_ns {
     constexpr asset_cert_type issue         = 1;
     constexpr asset_cert_type domain        = 2;
     constexpr asset_cert_type naming        = 3;
+
+    constexpr asset_cert_type custom        = 0x80000000;
+    constexpr asset_cert_type marriage      = custom + 0;
+    constexpr asset_cert_type kyc           = custom + 1;
 }
 
 class BC_API asset_cert

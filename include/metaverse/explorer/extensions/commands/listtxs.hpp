@@ -35,7 +35,7 @@ namespace commands {
 class listtxs: public command_extension
 {
 public:
-    static const char* symbol(){ return "listtxs";}
+    static const char* symbol() { return "listtxs";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
     const char* description() override { return "List transactions details of this account."; }
@@ -43,12 +43,12 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+               .add("ACCOUNTNAME", 1)
+               .add("ACCOUNTAUTH", 1);
     }
 
     void load_fallbacks (std::istream& input,
-        po::variables_map& variables) override
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
@@ -111,11 +111,11 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {
-        argument():address(""), symbol(""), limit(100), index(0)
+        argument(): address(""), symbol(""), limit(100), index(0)
         {};
         std::string address;
         std::string symbol;
@@ -125,7 +125,7 @@ public:
 
     struct option
     {
-        option():height(0, 0)
+        option(): height(0, 0)
         {};
         libbitcoin::explorer::commands::colon_delimited2_item<uint64_t, uint64_t> height;
     } option_;

@@ -36,17 +36,36 @@ console_result burn::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    if (!argument_.amount)
-        throw argument_legality_exception{"invalid amount parameter!"};
-
-    auto&& amount = std::to_string(argument_.amount);
     std::string blackhole_did = did_detail::get_blackhole_did_symbol();
 
-    std::stringstream sout("");
-    const char* cmds[]{"didsendasset", auth_.name.c_str(), auth_.auth.c_str(), blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()};
+    if (option_.is_mit) {
+        const char* cmds[] {
+            "transfermit", auth_.name.c_str(), auth_.auth.c_str(),
+            blackhole_did.c_str(), argument_.symbol.c_str()
+        };
 
-    if (dispatch_command(6, cmds, jv_output, node, get_api_version()) != console_result::okay) {
-        throw address_generate_exception(sout.str());
+        return dispatch_command(5, cmds, jv_output, node, get_api_version());
+    }
+    else if (!option_.cert_type.empty()) {
+        const char* cmds[] {
+            "transfercert", auth_.name.c_str(), auth_.auth.c_str(),
+            blackhole_did.c_str(), argument_.symbol.c_str(), option_.cert_type.c_str()
+        };
+
+        return dispatch_command(6, cmds, jv_output, node, get_api_version());
+    }
+    else {
+        if (argument_.amount <= 0) {
+            throw argument_legality_exception{"invalid amount parameter!"};
+        }
+
+        auto&& amount = std::to_string(argument_.amount);
+        const char* cmds[] {
+            "sendasset", auth_.name.c_str(), auth_.auth.c_str(),
+            blackhole_did.c_str(), argument_.symbol.c_str(), amount.c_str()
+        };
+
+        return dispatch_command(6, cmds, jv_output, node, get_api_version());
     }
 
     return console_result::okay;

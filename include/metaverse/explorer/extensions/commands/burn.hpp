@@ -86,9 +86,20 @@ public:
         )
         (
             "AMOUNT",
-            value<uint64_t>(&argument_.amount)->required(),
+            value<uint64_t>(&argument_.amount)->default_value(0),
             "Asset integer bits. see asset <decimal_number>."
-        );
+        )
+        (
+            "cert,c",
+            value<std::string>(&option_.cert_type)->default_value(""),
+            "If specified, then only burn related cert. Default is not specified."
+        )
+        (
+            "mit,m",
+            value<bool>(&option_.is_mit)->default_value(false)->zero_tokens(),
+            "If specified, then only burn related MIT. Default is not specified."
+        )
+        ;
 
         return options;
     }
@@ -102,12 +113,20 @@ public:
 
     struct argument
     {
-        std::string symbol;
+        argument(): amount(0), symbol("")
+        {}
+
         uint64_t amount;
+        std::string symbol;
     } argument_;
 
     struct option
     {
+        option(): is_mit(false), cert_type("")
+        {}
+
+        bool is_mit;
+        std::string cert_type;
     } option_;
 
 };

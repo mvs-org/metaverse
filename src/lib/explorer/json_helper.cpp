@@ -328,8 +328,13 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
 
 Json::Value json_helper::prop_attenuation_model_param(const data_chunk& chunk)
 {
-    Json::Value tree;
     std::string param_str(chunk.begin(), chunk.end());
+    return prop_attenuation_model_param(param_str);
+}
+
+Json::Value json_helper::prop_attenuation_model_param(const std::string& param_str)
+{
+    Json::Value tree;
     const auto& kv_vec = bc::split(param_str, ";", true);
     std::vector<uint64_t> uc_vec, uq_vec;
     for (const auto& kv : kv_vec) {
@@ -458,6 +463,41 @@ Json::Value json_helper::prop_list(const bc::chain::asset_balances& balance_info
         tree["decimal_number"] = issued_info.get_decimal_number();
         tree["secondaryissue_threshold"] = issued_info.get_secondaryissue_threshold();
     }
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::asset_balances& balance_info)
+{
+    Json::Value tree;
+    tree["address"] = balance_info.address;
+
+    if (version_ == 1) {
+        tree["quantity"] += balance_info.unspent_asset;
+        tree["locked_quantity"] += balance_info.locked_asset;
+    } else {
+        tree["quantity"] = balance_info.unspent_asset;
+        tree["locked_quantity"] = balance_info.locked_asset;
+    }
+    return tree;
+}
+
+Json::Value json_helper::prop_list(const bc::chain::asset_deposited_balance& balance_info,
+        const bc::chain::asset_detail& issued_info, bool show_address)
+{
+    Json::Value tree;
+    tree["symbol"] = balance_info.symbol;
+    if (show_address) {
+        tree["address"] = balance_info.address;
+    }
+
+    tree["tx_height"] = balance_info.tx_height;
+    tree["tx_hash"] = balance_info.tx_hash;
+    tree["decimal_number"] = issued_info.get_decimal_number();
+    // tree["issuer"] = issued_info.get_issuer();
+    // tree["description"] = issued_info.get_description();
+    tree["quantity"] = balance_info.unspent_asset;
+    tree["locked_quantity"] = balance_info.locked_asset;
+    tree["attenuation_model_param"] = prop_attenuation_model_param(balance_info.model_param);
     return tree;
 }
 

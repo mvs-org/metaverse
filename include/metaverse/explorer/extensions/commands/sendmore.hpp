@@ -39,7 +39,7 @@ public:
     static const char* symbol(){ return "sendmore";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp to multi target addresses, must specify mychange address. Eg: [sendmore $name $password -r $address1:$amount1 -r $address2:$amount2 -m $mychange_address]"; }
+    const char* description() override { return "send etp to multi target."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -79,19 +79,18 @@ public:
         (
             "receivers,r",
             value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [address:etp_bits]."
+            "Send to [did/address:etp_bits]."
         )
         (
             "mychange,m",
-            value<std::string>(&argument_.mychange_address),
-            "Mychange to this address"
+            value<std::string>(&option_.change),
+            "Change to this did/address"
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
+            value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
         );
-
 
         return options;
     }
@@ -105,15 +104,16 @@ public:
 
     struct argument
     {
-        argument():mychange_address("")
-        {};
         std::vector<std::string> receivers;
-        std::string mychange_address;
-        uint64_t fee;
     } argument_;
 
     struct option
     {
+        option():fee(10000), change("")
+        {};
+
+        uint64_t fee;
+        std::string change;
     } option_;
 
 };

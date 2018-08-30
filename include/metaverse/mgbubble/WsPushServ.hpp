@@ -27,9 +27,9 @@
 #include <metaverse/mgbubble/MgServer.hpp>
 
 namespace libbitcoin {
-    namespace server {
-        class server_node;
-    }
+namespace server {
+class server_node;
+}
 }
 
 namespace mgbubble {
@@ -37,7 +37,7 @@ namespace mgbubble {
 class WsEvent : public std::enable_shared_from_this<WsEvent> {
 public:
     explicit WsEvent(const std::function<void(uint64_t)>&& handler)
-        :callback_(std::move(handler))
+        : callback_(std::move(handler))
     {}
 
     WsEvent* hook()
@@ -81,17 +81,28 @@ public:
     void spawn_to_mongoose(const std::function<void(uint64_t)>&& handler);
 
 protected:
-    bool handle_blockchain_reorganization(const bc::code& ec, uint64_t fork_point, const block_list& new_blocks, const block_list&);
-    bool handle_transaction_pool(const bc::code& ec, const index_list&, bc::message::transaction_message::ptr tx);
+    bool handle_blockchain_reorganization(
+        const bc::code& ec, uint64_t fork_point,
+        const block_list& new_blocks, const block_list&);
+    bool handle_transaction_pool(
+        const bc::code& ec, const index_list&,
+        bc::message::transaction_message::ptr tx);
 
     void notify_blocks(uint32_t fork_point, const block_list& blocks);
     void notify_block(uint32_t height, const bc::chain::block::ptr block);
 
-    void notify_transaction(uint32_t height, const bc::hash_digest& block_hash, const bc::chain::transaction& tx);
+    void notify_block_impl(uint32_t height, const bc::chain::block::ptr block);
+    void notify_transaction(
+        uint32_t height, const bc::hash_digest& block_hash,
+        const bc::chain::transaction& tx);
 
 protected:
-    void send_bad_response(struct mg_connection& nc, const char* message = nullptr, int code = 1000001, Json::Value data = Json::nullValue);
-    void send_response(struct mg_connection& nc, const std::string& event, const std::string& channel);
+    void send_bad_response(
+        struct mg_connection& nc, const char* message = nullptr,
+        int code = 1000001, Json::Value data = Json::nullValue);
+    void send_response(
+        struct mg_connection& nc, const std::string& event,
+        const std::string& channel, Json::Value data = Json::nullValue);
 
     void refresh_connections();
 
@@ -106,10 +117,23 @@ protected:
     void on_notify_handler(struct mg_connection& nc, struct mg_event& ev) override;
 
 private:
+    typedef std::vector<std::string> string_vector;
+    typedef std::map<std::weak_ptr<mg_connection>, string_vector,
+            std::owner_less<std::weak_ptr<mg_connection>>> connection_string_map;
+
+    void do_notify(
+        const std::vector<std::weak_ptr<mg_connection>>& notify_cons,
+        Json::Value& value,
+        std::shared_ptr<connection_string_map> topic_map = nullptr);
+
+private:
     libbitcoin::server::server_node& node_;
     std::unordered_map<void*, std::shared_ptr<mg_connection>> map_connections_;
-    std::map<std::weak_ptr<mg_connection>, std::vector<size_t>, std::owner_less<std::weak_ptr<mg_connection>>> subscribers_;
+    connection_string_map subscribers_;
     std::mutex subscribers_lock_;
+
+    connection_string_map block_subscribers_;
+    std::mutex block_subscribers_lock_;
 };
 }
 

@@ -40,30 +40,37 @@ console_result sendassetfrom::invoke(Json::Value& jv_output,
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
-    if (!blockchain.is_valid_address(argument_.from))
-        throw fromaddress_invalid_exception{"invalid from address parameter!"};
-    if (!blockchain.is_valid_address(argument_.to))
-        throw toaddress_invalid_exception{"invalid to address parameter!"};
-    if (!argument_.amount)
-        throw asset_amount_exception{"invalid asset amount parameter!"};
+    attachment attach;
+    std::string from_address = get_address(argument_.from, attach, true, blockchain);
+    std::string to_address = get_address(argument_.to, attach, false, blockchain);
+    std::string change_address = get_address(option_.change, blockchain);
+
+    if (argument_.amount <= 0) {
+        throw asset_amount_exception("invalid amount parameter!");
+    }
+
+    if (!option_.memo.empty() && option_.memo.size() >= 255) {
+        throw argument_size_invalid_exception{"memo length out of bounds."};
+    }
 
     // receiver
     utxo_attach_type attach_type = option_.attenuation_model_param.empty()
         ? utxo_attach_type::asset_transfer : utxo_attach_type::asset_attenuation_transfer;
     std::vector<receiver_record> receiver{
-        {argument_.to, argument_.symbol, 0, argument_.amount, attach_type, attachment()}
+        {to_address, argument_.symbol, 0, argument_.amount, attach_type, attach}
     };
     auto send_helper = sending_asset(*this, blockchain,
-            std::move(auth_.name), std::move(auth_.auth),
-            std::move(argument_.from), std::move(argument_.symbol),
-            std::move(option_.attenuation_model_param),
-            std::move(receiver), argument_.fee);
+        std::move(auth_.name), std::move(auth_.auth),
+        std::move(from_address), std::move(argument_.symbol),
+        std::move(option_.attenuation_model_param),
+        std::move(receiver), option_.fee,
+        std::move(option_.memo), std::move(change_address));
 
     send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

@@ -40,6 +40,11 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     if (!blockchain.is_valid_address(argument_.address))
         throw address_invalid_exception{"invalid address!"};
 
+    if (!option_.symbol.empty()) {
+        // check asset symbol
+        check_asset_symbol(option_.symbol);
+    }
+
     std::string json_key;
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());;
@@ -51,8 +56,32 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         sync_fetch_asset_cert_balance(argument_.address, "", blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.get_symbol())
+                continue;
+
             Json::Value asset_cert = json_helper.prop_list(elem);
             json_value.append(asset_cert);
+        }
+    }
+    else if (option_.deposited) {
+        json_key = "assets";
+
+        auto sh_vec = std::make_shared<asset_deposited_balance::list>();
+        sync_fetch_asset_deposited_balance(argument_.address, blockchain, sh_vec);
+        std::sort(sh_vec->begin(), sh_vec->end());
+
+        for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.symbol)
+                continue;
+
+            auto issued_asset = blockchain.get_issued_asset(elem.symbol);
+            if (!issued_asset) {
+                continue;
+            }
+
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
         }
     }
     else {
@@ -62,6 +91,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
         sync_fetch_asset_balance(argument_.address, true, blockchain, sh_vec);
         std::sort(sh_vec->begin(), sh_vec->end());
         for (auto& elem: *sh_vec) {
+            if (!option_.symbol.empty() && option_.symbol != elem.symbol)
+                continue;
+
             auto issued_asset = blockchain.get_issued_asset(elem.symbol);
             if (!issued_asset) {
                 continue;
@@ -78,9 +110,9 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
     else if (get_api_version() <= 2) {
         jv_output[json_key] = json_value;
     }
-    else {    
+    else {
         if(json_value.isNull())
-            json_value.resize(0);  
+            json_value.resize(0);
 
         jv_output = json_value;
     }

@@ -146,7 +146,6 @@ console_result dispatch_command(int argc, const char* argv[],
         display_invalid_command(output, target, superseding);
         throw invalid_command_exception{ output.str() };
     }
-
     auto& in = get_command_input(*command, input);
 
     parser metadata(*command);

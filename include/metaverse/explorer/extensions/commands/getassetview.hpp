@@ -30,35 +30,27 @@ namespace explorer {
 namespace commands {
 
 
-/************************ didsendasset *************************/
+/************************ getassetview *************************/
 
-class didsendasset: public command_extension
+class getassetview: public command_extension
 {
 public:
-    static const char* symbol(){ return "didsendasset";}
+    static const char* symbol(){ return "getassetview";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "didsendasset "; }
+    const char* description() override { return "Show asset owners from MVS blockchain. "; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1)
-            .add("TO_", 1)
-            .add("ASSET", 1)
-            .add("AMOUNT", 1);
+            .add("SYMBOL", 1);
     }
 
     void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
-        load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.did, "TO_", variables, input, raw);
-        load_input(argument_.symbol, "ASSET", variables, input, raw);
-        load_input(argument_.amount, "AMOUNT", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -72,64 +64,49 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "ACCOUNTNAME",
-            value<std::string>(&auth_.name)->required(),
-            BX_ACCOUNT_NAME
+            "SYMBOL",
+            value<std::string>(&argument_.symbol),
+            "Asset symbol."
         )
         (
-            "ACCOUNTAUTH",
-            value<std::string>(&auth_.auth)->required(),
-            BX_ACCOUNT_AUTH
+            "limit,l",
+            value<uint64_t>(&argument_.limit)->default_value(100),
+            "Asset count per page."
         )
         (
-            "TO_",
-            value<std::string>(&argument_.did)->required(),
-            "Asset receiver did/address."
+            "index,i",
+            value<uint64_t>(&argument_.index)->default_value(1),
+            "Page index."
         )
         (
-            "ASSET",
-            value<std::string>(&argument_.symbol)->required(),
-            "Asset MST symbol."
-        )
-        (
-            "AMOUNT",
-            value<uint64_t>(&argument_.amount)->required(),
-            "Asset integer bits. see asset <decimal_number>."
-        )
-        (
-            "model,m",
-            value<std::string>(&option_.attenuation_model_param),
-            BX_MST_OFFERING_CURVE
-        )
-        (
-            "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
+            "deposit,d",
+            value<bool>(&option_.is_deposit)->default_value(false)->zero_tokens(),
+            "If specified, then only get related cert. Default is not specified."
         );
+
         return options;
     }
 
-    void set_defaults_from_config (po::variables_map& variables) override
-    {
-    }
 
     console_result invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node) override;
 
     struct argument
     {
-        std::string did;
         std::string symbol;
-        uint64_t amount;
-        uint64_t fee;
+        uint64_t limit;
+        uint64_t index;
     } argument_;
 
     struct option
     {
-        std::string attenuation_model_param;
+         bool is_deposit;
     } option_;
 
 };
+
+
+
 
 } // namespace commands
 } // namespace explorer

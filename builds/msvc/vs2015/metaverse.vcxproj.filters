@@ -498,6 +498,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getaccountasset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\getassetview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\listassets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2205,6 +2208,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getaccountasset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\getassetview.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\settxfee.hpp">

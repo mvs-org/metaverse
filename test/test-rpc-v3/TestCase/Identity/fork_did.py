@@ -20,7 +20,7 @@ class TestFork(ForkTestCase):
 
             self.assertIn({'status':"registered",
             'address':role.mainaddress(),
-            'symbol':role.did_symbol}, message)
+            'symbol':role.did_symbol}, message['dids'])
 
     def test_1_fork_at_registerdid(self):
         self.make_partion()
@@ -40,7 +40,7 @@ class TestFork(ForkTestCase):
 
             self.assertIn({'status': "registered",
                            'address': target_address,
-                           'symbol': did_symbol}, message)
+                           'symbol': did_symbol}, message['dids'])
         finally:
             self.fork()
 
@@ -48,7 +48,7 @@ class TestFork(ForkTestCase):
         self.assertEqual(ec, 0, message)
         self.assertNotIn({'status': "registered",
                        'address': target_address,
-                       'symbol': Alice.did_symbol}, message)
+                       'symbol': Alice.did_symbol}, message['dids'])
 
     def test_2_fork_at_issueasset(self):
         self.make_partion()
@@ -110,11 +110,11 @@ class TestFork(ForkTestCase):
 
             ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
             self.assertEqual(ec, 0, message)
-            self.assertIn(expect, message)
+            self.assertIn(expect, message['dids'])
 
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0, message)
-            self.assertIn(expect, message)
+            self.assertIn(expect, message['dids'])
 
 
             target_addr = Cindy.addresslist[-2]
@@ -133,12 +133,12 @@ class TestFork(ForkTestCase):
 
             ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
             self.assertEqual(ec, 0, message)
-            self.assertIn(expect, message)
+            self.assertIn(expect, message['dids'])
 
 
             ec, message = mvs_rpc.list_dids()
             self.assertEqual(ec, 0, message)
-            self.assertIn(expect, message)
+            self.assertIn(expect, message['dids'])
 
         finally:
             self.fork()
@@ -151,11 +151,11 @@ class TestFork(ForkTestCase):
 
         ec, message = mvs_rpc.list_dids(Cindy.name, Cindy.password)
         self.assertEqual(ec, 0, message)
-        self.assertIn(expect, message)
+        self.assertIn(expect, message['dids'])
 
         ec, message = mvs_rpc.list_dids()
         self.assertEqual(ec, 0, message)
-        self.assertIn(expect, message)
+        self.assertIn(expect, message['dids'])
 
     def test_4_fork_at_issuecert(self):
         self.make_partion()
@@ -249,14 +249,14 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.transfer_mit(Zac.name, Zac.password, "BLACKHOLE", mit_symbol)
             self.assertEqual(ec, code.success, message)
             Alice.mining(5)
-          
+
         finally:
             # main chain
             self.remote_ming(2)
             ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.register_did)(rmtName, "123456", Zac.addresslist[1],did_symbol)
             self.assertEqual(ec, 0, message)
             self.remote_ming(1)
-            
+
             ec, message = mvs_rpc.remote_call(self.remote_ip,mvs_rpc.change_did)(rmtName, "123456", Zac.addresslist[0], did_symbol)
             self.assertEqual(ec, 0, message)
             self.remote_ming(1)

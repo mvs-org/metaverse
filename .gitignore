@@ -54,6 +54,8 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
+.vscode
+.vscode/*
 
 # Cscope files
 cscope.*

@@ -85,8 +85,14 @@ public:
         (
             "cert,c",
             value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
-            "If specified, then only get related asset cert. Default is not specified."
-        );
+            "If specified, then only get related cert. Default is not specified."
+        )
+        (
+            "deposited,d",
+            value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
+            "If specified, then only get deposited assets. Default is not specified."
+        )
+        ;
 
         return options;
     }
@@ -105,7 +111,13 @@ public:
 
     struct option
     {
+        option():
+            is_cert(false),
+            deposited(false)
+        {}
+
         bool is_cert;
+        bool deposited;
     } option_;
 
 };

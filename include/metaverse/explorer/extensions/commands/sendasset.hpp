@@ -38,15 +38,15 @@ public:
     static const char* symbol(){ return "sendasset";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "sendasset "; }
+    const char* description() override { return "sendasset"; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
             .add("ACCOUNTNAME", 1)
             .add("ACCOUNTAUTH", 1)
-            .add("ADDRESS", 1)
-            .add("SYMBOL", 1)
+            .add("TO_", 1)
+            .add("ASSET", 1)
             .add("AMOUNT", 1);
     }
 
@@ -56,8 +56,8 @@ public:
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.address, "ADDRESS", variables, input, raw);
-        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.to, "TO_", variables, input, raw);
+        load_input(argument_.symbol, "ASSET", variables, input, raw);
         load_input(argument_.amount, "AMOUNT", variables, input, raw);
     }
 
@@ -82,14 +82,14 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "ADDRESS",
-            value<std::string>(&argument_.address)->required(),
-            "Asset receiver."
+            "TO_",
+            value<std::string>(&argument_.to)->required(),
+            "Asset receiver did/address."
         )
         (
-            "SYMBOL",
+            "ASSET",
             value<std::string>(&argument_.symbol)->required(),
-            "Asset symbol/name."
+            "Asset MST symbol."
         )
         (
             "AMOUNT",
@@ -97,14 +97,24 @@ public:
             "Asset integer bits. see asset <decimal_number>."
         )
         (
+            "change,c",
+            value<std::string>(&option_.change)->default_value(""),
+            "Change to this did/address"
+        )
+        (
             "model,m",
-            value<std::string>(&option_.attenuation_model_param),
+            value<std::string>(&option_.attenuation_model_param)->default_value(""),
             BX_MST_OFFERING_CURVE
         )
         (
             "fee,f",
-            value<uint64_t>(&argument_.fee)->default_value(10000),
+            value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
+        )
+        (
+            "memo,i",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
         );
         return options;
     }
@@ -118,15 +128,17 @@ public:
 
     struct argument
     {
-        std::string address;
+        std::string to;
         std::string symbol;
         uint64_t amount;
-        uint64_t fee;
     } argument_;
 
     struct option
     {
         std::string attenuation_model_param;
+        std::string memo;
+        std::string change;
+        uint64_t fee;
     } option_;
 
 };

@@ -31,41 +31,40 @@ namespace explorer {
 namespace commands {
 
 
-console_result sendmore::invoke(Json::Value& jv_output,
+console_result sendmore::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if (!argument_.mychange_address.empty() && !blockchain.is_valid_address(argument_.mychange_address))
-        throw toaddress_invalid_exception{std::string("invalid address!") + argument_.mychange_address};
-    //if (!blockchain.get_account_address(auth_.name, argument_.mychange_address))
-        //throw argument_legality_exception{argument_.mychange_address + std::string(" not owned to ") + auth_.name};
+
     // receiver
-    receiver_record record;
     std::vector<receiver_record> receiver;
 
-    for( auto& each : argument_.receivers){
+    for (auto& each : argument_.receivers) {
         colon_delimited2_item<std::string, uint64_t> item(each);
-        record.target = item.first();
-        // address check
-        if (!blockchain.is_valid_address(record.target))
-            throw toaddress_invalid_exception{std::string("invalid address!") + record.target};
-        record.symbol = "";
-        record.amount = item.second();
-        if (!record.amount)
-            throw argument_legality_exception{std::string("invalid amount parameter!") + each};
-        record.asset_amount = 0;
-        record.type = utxo_attach_type::etp; // attach not used so not do attah init
-        receiver.push_back(record);
+
+        attachment attach;
+        std::string address = get_address(item.first(), attach, false, blockchain);
+        if (item.second() <= 0) {
+            throw argument_legality_exception("invalid amount parameter for " + item.first());
+        }
+
+        receiver.push_back({address,"", item.second(), 0, utxo_attach_type::etp, attach});
     }
-    auto send_helper = sending_etp_more(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(receiver), std::move(argument_.mychange_address), argument_.fee);
+
+    // change address
+    std::string change_address = get_address(option_.change, blockchain);
+
+    auto send_helper = sending_etp(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(receiver),
+        std::move(change_address), option_.fee);
 
     send_helper.exec();
 
     // json output
     auto tx = send_helper.get_transaction();
-     jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
+    jv_output =  config::json_helper(get_api_version()).prop_tree(tx, true);
 
     return console_result::okay;
 }

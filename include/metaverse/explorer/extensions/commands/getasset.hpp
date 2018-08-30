@@ -71,7 +71,7 @@ public:
         (
             "cert,c",
             value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
-            "If specified, then only get related asset cert. Default is not specified."
+            "If specified, then only get related cert. Default is not specified."
         );
 
         return options;

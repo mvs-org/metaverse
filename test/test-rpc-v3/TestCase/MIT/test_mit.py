@@ -3,56 +3,66 @@ import MOCs
 from utils import common
 from TestCase.MVSTestCase import *
 
+
 class TestRegisterMIT(MVSTestCaseBase):
 
     def test_0_boundary(self):
 
         test_symbol = common.get_random_str()
 
-        #account password error
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password + '1', Alice.did_symbol, test_symbol)
+        # account password error
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password + '1', Alice.did_symbol, test_symbol)
         self.assertEqual(ec, 1000, message)
 
         # check symbol length
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, "X"*61)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, "X" * 61)
         self.assertEqual(ec, code.asset_symbol_length_exception, message)
 
         # check invalid char in symbol
         spec_char_lst = "`~!#$%^&*()+[{]}\\|;:'\",<>/?"
         for char in spec_char_lst:
-            ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol + char)
+            ec, message = mvs_rpc.register_mit(
+                Alice.name, Alice.password, Alice.did_symbol, test_symbol + char)
             self.assertEqual(ec, code.asset_symbol_name_exception, message)
 
         # check content length
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X"*257)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X" * 257)
         self.assertEqual(ec, code.argument_size_invalid_exception, message)
 
         # check to did not exist
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol + "1", test_symbol)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol + "1", test_symbol)
         self.assertEqual(ec, code.did_symbol_notfound_exception, message)
 
         # check to did not owned
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Bob.did_symbol, test_symbol)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Bob.did_symbol, test_symbol)
         self.assertEqual(ec, code.address_dismatch_account_exception, message)
 
         # check symbol already exist
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, test_symbol)
         self.assertEqual(ec, code.success, message)
         Alice.mining()
 
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, test_symbol)
         self.assertEqual(ec, code.asset_symbol_existed_exception, message)
 
         # check max length of content 256
         test_symbol = common.get_random_str()
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X"*256)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, test_symbol, "X" * 256)
         self.assertEqual(ec, code.success, message)
-
 
     def test_1_register_mit(self):
         symbol = ("MIT." + common.get_random_str()).upper()
         content = "MIT of Alice: " + symbol
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, symbol, content)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, symbol, content)
         self.assertEqual(ec, code.success, message)
         Alice.mining()
 
@@ -100,7 +110,6 @@ class TestRegisterMIT(MVSTestCaseBase):
         found_mits = filter(lambda a: a == symbol, mits)
         self.assertEqual(len(found_mits), 1)
 
-
     def test_2_transfer_mit(self):
         symbol = ("MIT." + common.get_random_str()).upper()
         content = "MIT of Alice: " + symbol
@@ -110,7 +119,8 @@ class TestRegisterMIT(MVSTestCaseBase):
         self.assertEqual(ec, code.asset_lack_exception, message)
 
         # register mit
-        ec, message = mvs_rpc.register_mit(Alice.name, Alice.password, Alice.did_symbol, symbol, content)
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, symbol, content)
         self.assertEqual(ec, code.success, message)
         Alice.mining()
 
@@ -157,3 +167,25 @@ class TestRegisterMIT(MVSTestCaseBase):
         # not enough mit
         ec, message = Alice.transfer_mit(Bob.did_symbol, symbol)
         self.assertEqual(ec, code.asset_lack_exception, message)
+
+    def test_3_burn_mit(self):
+        symbol = ("MIT." + common.get_random_str()).upper()
+        content = "MIT of Alice: " + symbol
+
+        # register mit
+        ec, message = mvs_rpc.register_mit(
+            Alice.name, Alice.password, Alice.did_symbol, symbol, content)
+        self.assertEqual(ec, code.success, message)
+        Alice.mining()
+
+        # burn mit
+        ec, message = mvs_rpc.burn(
+            Alice.name, Alice.password, symbol, is_mit=True)
+        self.assertEqual(ec, code.success, message)
+        Alice.mining()
+
+        # test get_mit with symbol
+        ec, message = Alice.get_mit(symbol, trace=True)
+        self.assertEqual(ec, code.success, message)
+        self.assertEqual(len(message), 2)
+        self.assertEqual(message[0]["to_did"], "BLACKHOLE")

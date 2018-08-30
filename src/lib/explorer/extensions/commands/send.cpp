@@ -36,17 +36,33 @@ console_result send::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if (!blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{std::string("invalid address : ") + argument_.address};
+
+    attachment attach;
+    std::string to_address = get_address(argument_.to, attach, false, blockchain);
+    std::string change_address = get_address(option_.change, blockchain);
+
+    if (argument_.amount <= 0) {
+        throw argument_legality_exception("invalid amount parameter!");
+    }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {argument_.address, "", argument_.amount, 0, utxo_attach_type::etp, attachment()}
+        {to_address, "", argument_.amount, 0, utxo_attach_type::etp, attach}
     };
-    if(!argument_.memo.empty())
-        receiver.push_back({argument_.address, "", 0, 0, utxo_attach_type::message, attachment(0, 0, blockchain_message(argument_.memo))});
-    auto send_helper = sending_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-            "", std::move(receiver), argument_.fee);
+
+    if (!option_.memo.empty()) {
+        if ( option_.memo.size() >= 255) {
+            throw argument_size_invalid_exception{"memo length out of bounds."};
+        }
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
+
+    auto send_helper = sending_etp(*this, blockchain,
+        std::move(auth_.name), std::move(auth_.auth),
+        "", std::move(receiver),
+        std::move(change_address), option_.fee);
 
     send_helper.exec();
 

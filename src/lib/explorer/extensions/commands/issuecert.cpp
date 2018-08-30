@@ -29,6 +29,15 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+template <typename ElemT>
+struct HexTo {
+    ElemT value;
+    operator ElemT() const {return value;}
+    friend std::istream& operator>>(std::istream& in, HexTo& out) {
+        in >> std::hex >> out.value;
+        return in;
+    }
+};
 
 console_result issuecert::invoke (Json::Value& jv_output,
     libbitcoin::server::server_node& node)
@@ -52,14 +61,33 @@ console_result issuecert::invoke (Json::Value& jv_output,
     }
 
     // check asset cert types
+    auto certs_create = asset_cert_ns::none;
     std::map <std::string, asset_cert_type> cert_map = {
-        {"naming", asset_cert_ns::naming}
+        {"naming",      asset_cert_ns::naming},
+        {"marriage",    asset_cert_ns::marriage},
+        {"kyc",         asset_cert_ns::kyc}
     };
     auto iter = cert_map.find(argument_.cert);
-    if (iter == cert_map.end()) {
-        throw asset_cert_exception("unknown asset cert type " + argument_.cert);
+    if (iter != cert_map.end()) {
+        certs_create = iter->second;
     }
-    auto certs_create = iter->second;
+    else {
+        try {
+            if (argument_.cert.compare(0, 2, "0x") == 0) {
+                certs_create = boost::lexical_cast<HexTo<asset_cert_type>>(argument_.cert.c_str());
+            }
+            else {
+                certs_create = boost::lexical_cast<asset_cert_type>(argument_.cert.c_str());
+            }
+
+            if (certs_create < asset_cert_ns::custom) {
+                throw asset_cert_exception("invalid asset cert type " + argument_.cert);
+            }
+        }
+        catch(boost::bad_lexical_cast const&) {
+            throw asset_cert_exception("invalid asset cert type " + argument_.cert);
+        }
+    }
 
     if (certs_create == asset_cert_ns::naming) {
         // check symbol is valid.

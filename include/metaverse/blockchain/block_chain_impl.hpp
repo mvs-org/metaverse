@@ -196,7 +196,9 @@ public:
     bool fetch_history(const wallet::payment_address& address,
         uint64_t limit, uint64_t from_height, history_compact::list& history);
 
+
     history::list get_address_history(const wallet::payment_address& addr, bool add_memory_pool = false);
+
 
     /// fetch stealth results.
     void fetch_stealth(const binary& filter, uint64_t from_height,
@@ -219,6 +221,9 @@ public:
 
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);
+  
+    std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
+
 
     // account related api
     std::shared_ptr<account> is_account_passwd_valid(const std::string& name, const std::string& passwd);
@@ -257,13 +262,14 @@ public:
     bool is_asset_exist(const std::string& asset_name, bool check_local_db=true);
     uint64_t get_asset_height(const std::string& asset_name) const ;
     std::shared_ptr<asset_detail::list> get_local_assets();
-    std::shared_ptr<asset_detail::list> get_issued_assets();
+    std::shared_ptr<asset_detail::list> get_issued_assets(const std::string& symbol="");
     std::shared_ptr<asset_detail> get_issued_asset(const std::string& symbol);
     std::shared_ptr<business_address_asset::list> get_account_assets();
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
-
+    
+    std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);
     uint64_t get_asset_cert_height(const std::string& cert_symbol,const asset_cert_type& cert_type);

@@ -66,10 +66,33 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
 
             Json::Value asset_cert = json_helper.prop_list(elem);
             json_value.append(asset_cert);
+        }
+    }
+    else if (option_.deposited) {
+        json_key = "assets";
+        auto sh_vec = std::make_shared<asset_deposited_balance::list>();
 
-            if (!argument_.symbol.empty()) {
-                break;
+        // get address unspent asset balance
+        std::string addr;
+        for (auto& each : *pvaddr){
+            sync_fetch_asset_deposited_balance(each.get_address(), blockchain, sh_vec);
+        }
+
+        std::sort(sh_vec->begin(), sh_vec->end());
+
+        for (auto& elem: *sh_vec) {
+            auto& symbol = elem.symbol;
+            if (!argument_.symbol.empty() && argument_.symbol != symbol)
+                continue;
+
+            auto issued_asset = blockchain.get_issued_asset(symbol);
+            if (!issued_asset) {
+                continue;
             }
+
+            Json::Value asset_data = json_helper.prop_list(elem, *issued_asset, true);
+            asset_data["status"] = "unspent";
+            json_value.append(asset_data);
         }
     }
     else {
@@ -95,10 +118,6 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
             Json::Value asset_data = json_helper.prop_list(elem, *issued_asset);
             asset_data["status"] = "unspent";
             json_value.append(asset_data);
-
-            if (!argument_.symbol.empty()) {
-                break;
-            }
         }
 
         // 2. get asset in local database
@@ -113,10 +132,6 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
             Json::Value asset_data = json_helper.prop_list(elem.detail, false);
             asset_data["status"] = "unissued";
             json_value.append(asset_data);
-
-            if (!argument_.symbol.empty()) {
-                break;
-            }
         }
     }
 
@@ -127,9 +142,9 @@ console_result getaccountasset::invoke(Json::Value& jv_output,
         jv_output[json_key] = json_value;
     }
     else {
-        if(json_value.isNull())
+        if (json_value.isNull())
             json_value.resize(0);
-            
+
         jv_output = json_value;
     }
 

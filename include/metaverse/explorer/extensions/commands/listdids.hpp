@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "listdids";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "list whole network DIDs in details."; }
+    const char* description() override { return "list DIDs in detail."; }
 
     arguments_metadata& load_arguments() override
     {
@@ -74,6 +74,16 @@ public:
             "ACCOUNTAUTH",
             value<std::string>(&auth_.auth),
             BX_ACCOUNT_AUTH
+        )
+        (
+            "limit,l",
+            value<uint64_t>(&argument_.limit)->default_value(100),
+            "DID count per page.Default is 100."
+        )
+        (
+            "index,i",
+            value<uint64_t>(&argument_.index)->default_value(1),
+            "Page index. Default is 1."
         );
 
         return options;
@@ -88,6 +98,10 @@ public:
 
     struct argument
     {
+        argument():limit(100), index(1)
+        {};
+        uint64_t limit;
+        uint64_t index;
     } argument_;
 
     struct option

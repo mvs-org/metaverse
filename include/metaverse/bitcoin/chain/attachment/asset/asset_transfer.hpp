@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <istream>
 #include <vector>
+#include <tuple>
 #include <metaverse/bitcoin/chain/point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
@@ -47,6 +48,36 @@ struct asset_balances {
 
     // for sort
     bool operator< (const asset_balances& other) const;
+};
+
+struct asset_deposited_balance {
+    asset_deposited_balance(const std::string& symbol_,
+        const std::string& address_,
+        const std::string& tx_hash_,
+        uint64_t tx_height_)
+        : symbol(symbol_)
+        , address(address_)
+        , tx_hash(tx_hash_)
+        , tx_height(tx_height_)
+        , unspent_asset(0)
+        , locked_asset(0)
+    {}
+
+    std::string symbol;
+    std::string address;
+    std::string tx_hash;
+    std::string model_param;
+    uint64_t tx_height;
+    uint64_t unspent_asset;
+    uint64_t locked_asset;
+
+    // for sort
+    bool operator< (const asset_deposited_balance& other) const {
+        typedef std::tuple<std::string, uint64_t> cmp_tuple;
+        return cmp_tuple(symbol, tx_height) < cmp_tuple(other.symbol, other.tx_height);
+    }
+
+    typedef std::vector<asset_deposited_balance> list;
 };
 
 class BC_API asset_transfer

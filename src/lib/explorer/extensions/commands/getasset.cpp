@@ -83,7 +83,7 @@ console_result getasset::invoke(Json::Value& jv_output,
         json_key = "assets";
 
         // get asset in blockchain
-        auto sh_vec = blockchain.get_issued_assets();
+        auto sh_vec = blockchain.get_issued_assets(argument_.symbol);
         if (argument_.symbol.empty()) {
             std::sort(sh_vec->begin(), sh_vec->end());
             std::set<std::string> symbols;

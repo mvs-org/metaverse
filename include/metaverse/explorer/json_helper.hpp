@@ -431,6 +431,22 @@ BCX_API Json::Value prop_list(const bc::chain::asset_detail& detail_info, bool i
 BCX_API Json::Value prop_list(const bc::chain::asset_balances& balance_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
 
 /**
+ * Generate a property list for a asset transfer with detail.
+ * @param[in]  balance_info The asset balance info.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_balances& balance_info);
+
+/**
+ * Generate a property list for a asset transfer with detail.
+ * @param[in]  balance_info The deoisuted asset balance info.
+ * @param[in]  issued_info  The issued asset detail. include the other info.
+ * @param[in]  show_address A boolean value indicate whether show address.
+ * @return             A property list.
+ */
+BCX_API Json::Value prop_list(const bc::chain::asset_deposited_balance& balance_info, const bc::chain::asset_detail& issued_info, bool show_address = true);
+
+/**
  * Generate a property list for a asset transfer.
  * @param[in]  trans_info        The asset transfer.
  * @param[in]  decimal_number    The asset transfer unit. if equals max_uint8, do not add "decimal_number" index.
@@ -466,6 +482,7 @@ BCX_API Json::Value prop_list(const bc::chain::account_multisig& multisign);
  * @return             A property list.
  */
 BCX_API Json::Value prop_attenuation_model_param(const data_chunk& param);
+BCX_API Json::Value prop_attenuation_model_param(const std::string& param);
 
 /**
  * Generate a property list for an account.
