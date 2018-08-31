@@ -102,10 +102,6 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     // check asset symbol
     check_asset_symbol(argument_.symbol);
 
-    if (argument_.symbol.compare(0, 4, "ERC.") != 0) {
-        throw argument_legality_exception{"Only support assets prefixed by 'ERC.'"};
-    }
-
     attachment attach_asset, attach_fee;
     const std::string&& to_address = get_address(argument_.to, attach_asset, false, blockchain);
     const std::string&& swapfee_address = bc::get_developer_community_address(
