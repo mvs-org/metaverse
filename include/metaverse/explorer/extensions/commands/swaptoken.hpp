@@ -86,7 +86,7 @@ public:
         (
             "TO_",
             value<std::string>(&argument_.to)->required(),
-            "To this did/address the specific asset will be sent. expect to be \"crosschain\"."
+            "To this did/address the specific asset will be sent. expect to be \"droplet\"."
         )
         (
             "SYMBOL",
