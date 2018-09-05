@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <istream>
 #include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
@@ -53,7 +54,10 @@ public:
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();
+
     bool is_final() const;
+    bool is_locked(size_t block_height, uint32_t median_time_past) const;
+
     uint64_t serialized_size() const;
     std::string get_script_address() const;
 

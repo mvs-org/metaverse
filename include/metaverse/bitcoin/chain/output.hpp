@@ -107,13 +107,6 @@ public:
     attachment attach_data; // added for asset issue/transfer
 };
 
-struct BC_API output_info
-{
-    typedef std::vector<output_info> list;
-
-    output_point point;
-    uint64_t value;
-};
 
 } // namespace chain
 } // namespace libbitcoin

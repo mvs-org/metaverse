@@ -58,6 +58,7 @@ block block::factory_from_data(reader& source,
 }
 
 block::block()
+  : header{}
 {
 }
 

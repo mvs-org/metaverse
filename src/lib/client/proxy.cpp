@@ -444,7 +444,7 @@ history::list proxy::expand(history_compact::list& compact)
         if (!found)
         {
             history row;
-            row.output = { null_hash, max_uint32 };
+            row.output = output_point( null_hash, max_uint32 );
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;

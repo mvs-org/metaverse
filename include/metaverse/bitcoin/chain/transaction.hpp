@@ -88,6 +88,7 @@ public:
     hash_digest hash(uint32_t sighash_type) const;
     bool is_coinbase() const;
     bool is_final(uint64_t block_height, uint32_t block_time) const;
+    bool is_locked(size_t block_height, uint32_t median_time_past) const;
     bool is_locktime_conflict() const;
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;

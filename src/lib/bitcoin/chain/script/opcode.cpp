@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/chain/script/opcode.hpp>
+#include <metaverse/bitcoin/chain/script/script.hpp>
 
 #include <sstream>
 #include <metaverse/bitcoin/constants.hpp>
@@ -234,14 +235,15 @@ std::string opcode_to_string(opcode value, uint32_t flags)
             return "checkmultisig";
         case opcode::checkmultisigverify:
             return "checkmultisigverify";
+        case opcode::op_nop1:
+            return "nop1";
         case opcode::checklocktimeverify:
             return "checklocktimeverify";
         case opcode::checkattenuationverify:
             return "checkattenuationverify";
-        case opcode::op_nop1:
-            return "nop1";
-        case opcode::op_nop4:
-            return "nop4";
+        case opcode::checksequenceverify:
+            return script::is_active(flags, script_context::bip112_enabled) ?
+                "checksequenceverify" : "nop4";
         case opcode::op_nop5:
             return "nop5";
         case opcode::op_nop6:
@@ -471,16 +473,16 @@ opcode string_to_opcode(const std::string& value)
         return opcode::checkmultisig;
     else if (value == "checkmultisigverify")
         return opcode::checkmultisigverify;
+    else if (value == "nop1")
+        return opcode::op_nop1;
     // Replaces nop2 with BIP65 activation.
     else if (value == "nop2" || value == "checklocktimeverify")
         return opcode::checklocktimeverify;
     // Replaces nop3 with attenuation, see MIP7 and MIP8.
     else if (value == "nop3" || value == "checkattenuationverify")
         return opcode::checkattenuationverify;
-    else if (value == "nop1")
-        return opcode::op_nop1;
-    else if (value == "nop4")
-        return opcode::op_nop4;
+    else if (value == "nop4" || value == "checksequenceverify")
+        return opcode::checksequenceverify;
     else if (value == "nop5")
         return opcode::op_nop5;
     else if (value == "nop6")

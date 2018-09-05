@@ -174,7 +174,12 @@ typedef enum verify_flags_type
     /**
      * Verify CHECKATTENUATIONVERIFY
      */
-    verify_flags_checkattenuationverify = (1U << 10)
+    verify_flags_checkattenuationverify = (1U << 10),
+
+    /**
+     * Verify CHECKSEQUENCEVERIFY
+     */
+    verify_flags_checksequenceverify = (1U << 11)
 } verify_flags;
 
 /**

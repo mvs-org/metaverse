@@ -127,6 +127,15 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attach_fee},
     };
 
+    if (!option_.memo.empty()) {
+        if ( option_.memo.size() >= 255) {
+            throw argument_size_invalid_exception{"memo length out of bounds."};
+        }
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
+
     std::string message("{\"type\":\"ETH\",\"address\":\""+ argument_.foreign_addr + "\"}");
 
     auto send_helper = sending_asset(

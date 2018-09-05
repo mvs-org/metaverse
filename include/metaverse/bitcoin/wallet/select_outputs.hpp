@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
-#include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 
 namespace libbitcoin {
 namespace wallet {

@@ -29,7 +29,6 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
-#include <metaverse/bitcoin/chain/history.hpp>
 
 namespace libbitcoin {
 namespace chain {

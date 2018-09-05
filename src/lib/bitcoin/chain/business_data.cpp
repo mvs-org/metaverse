@@ -26,15 +26,15 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 
-#define ETP_TYPE            KIND2UINT16(business_kind::etp)
-#define ETP_AWARD_TYPE      KIND2UINT16(business_kind::etp_award)
-#define ASSET_ISSUE_TYPE    KIND2UINT16(business_kind::asset_issue)
-#define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
-#define ASSET_CERT_TYPE     KIND2UINT16(business_kind::asset_cert)
-#define ASSET_MIT_TYPE      KIND2UINT16(business_kind::asset_mit)
-#define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
-#define DID_REGISTER_TYPE   KIND2UINT16(business_kind::did_register)
-#define DID_TRANSFER_TYPE   KIND2UINT16(business_kind::did_transfer)
+#define TYPE_ETP            KIND2UINT16(business_kind::etp)
+#define TYPE_ETP_AWARD      KIND2UINT16(business_kind::etp_award)
+#define TYPE_ASSET_ISSUE    KIND2UINT16(business_kind::asset_issue)
+#define TYPE_ASSET_TRANSFER KIND2UINT16(business_kind::asset_transfer)
+#define TYPE_ASSET_CERT     KIND2UINT16(business_kind::asset_cert)
+#define TYPE_ASSET_MIT      KIND2UINT16(business_kind::asset_mit)
+#define TYPE_MESSAGE        KIND2UINT16(business_kind::message)
+#define TYPE_DID_REGISTER   KIND2UINT16(business_kind::did_register)
+#define TYPE_DID_TRANSFER   KIND2UINT16(business_kind::did_transfer)
 
 namespace libbitcoin {
 namespace chain {
@@ -74,15 +74,15 @@ bool business_data::is_valid() const
 
 bool business_data::is_valid_type() const
 {
-    return ((ETP_TYPE == KIND2UINT16(kind))
-            || (ASSET_ISSUE_TYPE == KIND2UINT16(kind))
-            || (ASSET_TRANSFER_TYPE == KIND2UINT16(kind))
-            || (ASSET_CERT_TYPE == KIND2UINT16(kind))
-            || (ASSET_MIT_TYPE == KIND2UINT16(kind)))
-            || (ETP_AWARD_TYPE == KIND2UINT16(kind))
-            || (MESSAGE_TYPE == KIND2UINT16(kind))
-            || (DID_REGISTER_TYPE == KIND2UINT16(kind))
-            || (DID_TRANSFER_TYPE == KIND2UINT16(kind));
+    return ((TYPE_ETP == KIND2UINT16(kind))
+            || (TYPE_ASSET_ISSUE == KIND2UINT16(kind))
+            || (TYPE_ASSET_TRANSFER == KIND2UINT16(kind))
+            || (TYPE_ASSET_CERT == KIND2UINT16(kind))
+            || (TYPE_ASSET_MIT == KIND2UINT16(kind)))
+            || (TYPE_ETP_AWARD == KIND2UINT16(kind))
+            || (TYPE_MESSAGE == KIND2UINT16(kind))
+            || (TYPE_DID_REGISTER == KIND2UINT16(kind))
+            || (TYPE_DID_TRANSFER == KIND2UINT16(kind));
 }
 
 bool business_data::from_data(const data_chunk& data)
@@ -108,47 +108,47 @@ bool business_data::from_data(reader& source)
     {
         switch (KIND2UINT16(kind))
         {
-            case ETP_TYPE:
+            case TYPE_ETP:
             {
                 data = etp();
                 break;
             }
-            case ETP_AWARD_TYPE:
+            case TYPE_ETP_AWARD:
             {
                 data = etp_award();
                 break;
             }
-            case ASSET_ISSUE_TYPE:
+            case TYPE_ASSET_ISSUE:
             {
                 data = asset_detail();
                 break;
             }
-            case ASSET_TRANSFER_TYPE:
+            case TYPE_ASSET_TRANSFER:
             {
                 data = asset_transfer();
                 break;
             }
-            case ASSET_CERT_TYPE:
+            case TYPE_ASSET_CERT:
             {
                 data = asset_cert();
                 break;
             }
-            case ASSET_MIT_TYPE:
+            case TYPE_ASSET_MIT:
             {
                 data = asset_mit();
                 break;
             }
-            case MESSAGE_TYPE:
+            case TYPE_MESSAGE:
             {
                 data = blockchain_message();
                 break;
             }
-            case DID_REGISTER_TYPE:
+            case TYPE_DID_REGISTER:
             {
                 data = did_detail();
                 break;
             }
-            case DID_TRANSFER_TYPE:
+            case TYPE_DID_TRANSFER:
             {
                 data = did_detail();
                 break;

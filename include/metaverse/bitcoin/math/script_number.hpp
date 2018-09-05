@@ -30,6 +30,7 @@ namespace libbitcoin {
 
 BC_CONSTEXPR size_t max_script_number_size = 4;
 BC_CONSTEXPR size_t cltv_max_script_number_size = 5;
+BC_CONSTEXPR size_t csv_max_script_number_size = 5;
 
 /**
  * Numeric opcodes (OP_1ADD, etc) are restricted to operating on

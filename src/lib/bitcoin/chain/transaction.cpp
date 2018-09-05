@@ -323,6 +323,21 @@ bool transaction::is_final(uint64_t block_height, uint32_t block_time) const
     return true;
 }
 
+bool transaction::is_locked(size_t block_height,
+    uint32_t median_time_past) const
+{
+    if (version < relative_locktime_min_version || is_coinbase())
+        return false;
+
+    const auto locked = [block_height, median_time_past](const input& input)
+    {
+        return input.is_locked(block_height, median_time_past);
+    };
+
+    // If any input is relative time locked the transaction is as well.
+    return std::any_of(inputs.begin(), inputs.end(), locked);
+}
+
 bool transaction::is_locktime_conflict() const
 {
     auto locktime_set = locktime != 0;

@@ -175,7 +175,9 @@ enum error_code_t
     mit_exist,
     mit_register_error,
     mit_symbol_invalid,
-    mit_not_exist,
+    mit_not_exist,                  // 90
+
+    sequence_locked,
 
 };
 

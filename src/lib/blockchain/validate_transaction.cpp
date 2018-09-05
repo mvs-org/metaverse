@@ -1461,6 +1461,9 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     if ((flags & script_context::attenuation_enabled) != 0)
         consensus_flags |= verify_flags_checkattenuationverify;
 
+    if ((flags & script_context::bip112_enabled) != 0)
+        consensus_flags |= verify_flags_checksequenceverify;
+
     const auto result = verify_script(current_transaction.data(),
                                       current_transaction.size(), previous_output_script.data(),
                                       previous_output_script.size(), input_index32, consensus_flags);

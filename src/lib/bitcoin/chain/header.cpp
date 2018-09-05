@@ -62,6 +62,7 @@ uint64_t header::satoshi_fixed_size_without_transaction_count()
 }
 
 header::header()
+    : header(0, null_hash, null_hash, 0, 0, 0, 0, 0, 0)
 {
 }
 

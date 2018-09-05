@@ -42,6 +42,7 @@ using namespace std;
 namespace libbitcoin {
 namespace consensus {
 
+static BC_CONSTEXPR uint32_t block_version = 1;
 static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
@@ -253,7 +254,7 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
     // Create coinbase tx
     transaction tx_new;
     tx_new.inputs.resize(1);
-    tx_new.inputs[0].previous_output = {null_hash, max_uint32};
+    tx_new.inputs[0].previous_output = output_point(null_hash, max_uint32);
     tx_new.inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
     tx_new.outputs.resize(1);
 
@@ -293,8 +294,8 @@ miner::transaction_ptr miner::create_coinbase_tx(
     transaction_ptr ptransaction = make_shared<message::transaction_message>();
 
     ptransaction->inputs.resize(1);
-    ptransaction->version = version;
-    ptransaction->inputs[0].previous_output = {null_hash, max_uint32};
+    ptransaction->version = transaction_version::first;
+    ptransaction->inputs[0].previous_output = output_point(null_hash, max_uint32);
     script_number number(block_height);
     ptransaction->inputs[0].script.operations.push_back({ chain::opcode::special, number.data() });
 
@@ -542,7 +543,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
     pblock->header.timestamp = get_adjust_time(pblock->header.number);
-    pblock->header.version = version;
+    pblock->header.version = block_version;
     pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;

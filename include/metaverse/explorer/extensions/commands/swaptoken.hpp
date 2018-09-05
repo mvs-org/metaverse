@@ -114,6 +114,11 @@ public:
             "From this did/address"
         )
         (
+            "memo,m",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
+        )
+        (
             "swapfee,s",
             value<uint64_t>(&option_.swapfee)->default_value(DEFAULT_SWAP_FEE),
             "Transaction fee for crosschain token swap. defaults to 1 ETP"
@@ -149,6 +154,7 @@ public:
         uint64_t swapfee;
         uint64_t fee;
         std::string change;
+        std::string memo;
     } option_;
 
 };

@@ -26,6 +26,9 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <boost/variant.hpp>
+#include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
+#include <metaverse/bitcoin/chain/history.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>

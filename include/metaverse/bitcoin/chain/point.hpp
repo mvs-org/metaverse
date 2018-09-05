@@ -47,15 +47,40 @@ public:
     static point factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
+    point();
+
+    point(point&& other);
+    point(const point& other);
+
+    point(hash_digest&& hash, uint32_t index);
+    point(const hash_digest& hash, uint32_t index);
+
+    virtual ~point();
+
+
+    // Operators.
+    //-------------------------------------------------------------------------
+
+    /// This class is move assignable and copy assignable.
+    point& operator=(point&& other);
+    point& operator=(const point& other);
+
+    bool operator<(const point& other) const;
+    bool operator==(const point& other) const;
+    bool operator!=(const point& other) const;
+
     uint64_t checksum() const;
 
     bool is_null() const;
+
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
+
     data_chunk to_data() const;
     void to_data(std::ostream& stream) const;
     void to_data(writer& sink) const;
+
     std::string to_string() const;
     bool is_valid() const;
     void reset();
@@ -68,19 +93,14 @@ public:
     uint32_t index;
 };
 
-BC_API bool operator==(const point& left, const point& right);
-BC_API bool operator!=(const point& left, const point& right);
+// BC_API bool operator==(const point& left, const point& right);
+// BC_API bool operator!=(const point& left, const point& right);
 
-BC_API bool operator<(const point& left, const point& right);
+// BC_API bool operator<(const point& left, const point& right);
 
 typedef point input_point;
-typedef point output_point;
+// typedef point output_point;
 
-struct BC_API points_info
-{
-    output_point::list points;
-    uint64_t change;
-};
 
 } // namespace chain
 } // namespace libbitcoin
