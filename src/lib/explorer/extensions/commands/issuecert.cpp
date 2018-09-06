@@ -134,6 +134,15 @@ console_result issuecert::invoke (Json::Value& jv_output,
             attachment("", to_did)}
     };
 
+    if (!option_.memo.empty()) {
+        if ( option_.memo.size() >= 255) {
+            throw argument_size_invalid_exception{"memo length out of bounds."};
+        }
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
+
     if (certs_create == asset_cert_ns::naming) {
         auto&& domain = asset_cert::get_domain(argument_.symbol);
         receiver.push_back(
