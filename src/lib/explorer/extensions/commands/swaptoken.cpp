@@ -90,8 +90,8 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     blockchain.uppercase_symbol(argument_.symbol);
 
     // check message
-    if (argument_.foreign_addr.empty() || argument_.foreign_addr.size() >= 255) {
-        throw argument_size_invalid_exception{"message length out of bounds."};
+    if (argument_.foreign_addr.empty() || argument_.foreign_addr.size() >= 200) {
+        throw argument_size_invalid_exception{"foreign address length out of bounds."};
     }
 
     // check ETH address
@@ -128,9 +128,7 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     };
 
     if (!option_.memo.empty()) {
-        if ( option_.memo.size() >= 255) {
-            throw argument_size_invalid_exception{"memo length out of bounds."};
-        }
+        check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
             attachment(0, 0, blockchain_message(option_.memo))});

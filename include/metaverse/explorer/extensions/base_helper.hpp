@@ -195,7 +195,7 @@ std::shared_ptr<asset_balances::list> sync_fetch_asset_view(const std::string& s
 std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
     const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain);
-    
+
 
 void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
@@ -218,7 +218,8 @@ std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchai
 
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
-void check_did_symbol(const std::string& symbol,  bool check_sensitive=false);
+void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
+void check_message(const std::string& message, bool check_sensitive=false);
 
 class BCX_API base_transfer_common
 {
