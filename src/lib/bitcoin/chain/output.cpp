@@ -33,26 +33,46 @@
 namespace libbitcoin {
 namespace chain {
 
-output output::factory_from_data(const data_chunk& data)
+
+output::output(){}
+
+output::output(output&& other)
+: output(std::move(other.value), std::move(other.script),std::move(other.attach_data))
 {
-    output instance;
-    instance.from_data(data);
-    return instance;
+}
+output::output(const output& other)
+:output(other.value, other.script, other.attach_data)
+{
 }
 
-output output::factory_from_data(std::istream& stream)
+output::output(uint64_t&& value, chain::script&& script, attachment&& attach_data)
+: value(std::move(value)), script(std::move(script))
+,attach_data(std::move(attach_data))
 {
-    output instance;
-    instance.from_data(stream);
-    return instance;
 }
 
-output output::factory_from_data(reader& source)
+output::output(const uint64_t& value, const chain::script& script, const attachment& attach_data)
+: value(value), script(script),attach_data(attach_data)
 {
-    output instance;
-    instance.from_data(source);
-    return instance;
 }
+
+output& output::operator=(output&& other)
+{
+    value = std::move(other.value);
+    script = std::move(other.script);
+    attach_data = std::move(other.attach_data);
+    return *this;
+}
+
+output& output::operator=(const output& other)
+{
+    value = other.value;
+    script = other.script;
+    attach_data = other.attach_data;
+    return *this;
+}
+
+
 bool output::is_valid_symbol(const std::string& symbol, uint32_t tx_version)
 {
     if (symbol.empty())
@@ -179,19 +199,7 @@ void output::reset()
     attach_data.reset(); // added for asset issue/transfer
 }
 
-bool output::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool output::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool output::from_data(reader& source)
+bool output::from_data_t(reader& source)
 {
     reset();
 
@@ -213,25 +221,7 @@ bool output::from_data(reader& source)
     return result;
 }
 
-data_chunk output::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    log::debug("output::to_data") << "data.size=" << data.size();
-    log::debug("output::to_data") << "serialized_size=" << serialized_size();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void output::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void output::to_data(writer& sink) const
+void output::to_data_t(writer& sink) const
 {
     sink.write_8_bytes_little_endian(value);
     script.to_data(sink, true);

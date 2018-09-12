@@ -39,27 +39,6 @@
 namespace libbitcoin {
 namespace chain {
 
-business_data business_data::factory_from_data(const data_chunk& data)
-{
-    business_data instance;
-    instance.from_data(data);
-    return instance;
-}
-
-business_data business_data::factory_from_data(std::istream& stream)
-{
-    business_data instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-business_data business_data::factory_from_data(reader& source)
-{
-    business_data instance;
-    instance.from_data(source);
-    return instance;
-}
-
 void business_data::reset()
 {
     kind = business_kind::etp;
@@ -85,19 +64,7 @@ bool business_data::is_valid_type() const
             || (TYPE_DID_TRANSFER == KIND2UINT16(kind));
 }
 
-bool business_data::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool business_data::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool business_data::from_data(reader& source)
+bool business_data::from_data_t(reader& source)
 {
     reset();
     kind = static_cast<business_kind>(source.read_2_bytes_little_endian());
@@ -167,22 +134,7 @@ bool business_data::from_data(reader& source)
 
 }
 
-data_chunk business_data::to_data()
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    return data;
-}
-
-void business_data::to_data(std::ostream& stream)
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void business_data::to_data(writer& sink)
+void business_data::to_data_t(writer& sink)
 {
     sink.write_2_bytes_little_endian(KIND2UINT16(kind));
     sink.write_4_bytes_little_endian(timestamp);

@@ -103,27 +103,6 @@ bool point::operator!=(const point& other) const
     return !(*this == other);
 }
 
-point point::factory_from_data(const data_chunk& data)
-{
-    point instance;
-    instance.from_data(data);
-    return instance;
-}
-
-point point::factory_from_data(std::istream& stream)
-{
-    point instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-point point::factory_from_data(reader& source)
-{
-    point instance;
-    instance.from_data(source);
-    return instance;
-}
-
 bool point::is_valid() const
 {
     return (index != 0) || (hash != null_hash);
@@ -135,19 +114,7 @@ void point::reset()
     index = 0;
 }
 
-bool point::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool point::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool point::from_data(reader& source)
+bool point::from_data_t(reader& source)
 {
     reset();
 
@@ -161,23 +128,7 @@ bool point::from_data(reader& source)
     return result;
 }
 
-data_chunk point::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void point::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void point::to_data(writer& sink) const
+void point::to_data_t(writer& sink) const
 {
     sink.write_hash(hash);
     sink.write_4_bytes_little_endian(index);

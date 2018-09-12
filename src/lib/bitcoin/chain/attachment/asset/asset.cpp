@@ -43,26 +43,6 @@ asset::asset(uint32_t status, const asset_transfer& detail):
     status(status), data(detail)
 {
 }
-asset asset::factory_from_data(const data_chunk& data)
-{
-    asset instance;
-    instance.from_data(data);
-    return instance;
-}
-
-asset asset::factory_from_data(std::istream& stream)
-{
-    asset instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-asset asset::factory_from_data(reader& source)
-{
-    asset instance;
-    instance.from_data(source);
-    return instance;
-}
 
 void asset::reset()
 {
@@ -83,19 +63,8 @@ bool asset::is_valid_type() const
         || (ASSET_TRANSFERABLE_TYPE == status));
 }
 
-bool asset::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
 
-bool asset::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool asset::from_data(reader& source)
+bool asset::from_data_t(reader& source)
 {
     reset();
 
@@ -126,23 +95,7 @@ bool asset::from_data(reader& source)
     return result;
 }
 
-data_chunk asset::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void asset::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void asset::to_data(writer& sink) const
+void asset::to_data_t(writer& sink) const
 {
     sink.write_4_bytes_little_endian(status);
 

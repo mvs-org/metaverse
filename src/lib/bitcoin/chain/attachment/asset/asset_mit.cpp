@@ -71,40 +71,7 @@ bool asset_mit::operator< (const asset_mit& other) const
     return symbol_.compare(other.symbol_) < 0;
 }
 
-asset_mit asset_mit::factory_from_data(const data_chunk& data)
-{
-    asset_mit instance;
-    instance.from_data(data);
-    return instance;
-}
-
-asset_mit asset_mit::factory_from_data(std::istream& stream)
-{
-    asset_mit instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-asset_mit asset_mit::factory_from_data(reader& source)
-{
-    asset_mit instance;
-    instance.from_data(source);
-    return instance;
-}
-
-bool asset_mit::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool asset_mit::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool asset_mit::from_data(reader& source)
+bool asset_mit::from_data_t(reader& source)
 {
     reset();
 
@@ -135,22 +102,8 @@ data_chunk asset_mit::to_short_data() const
     return data;
 }
 
-data_chunk asset_mit::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    return data;
-}
 
-void asset_mit::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void asset_mit::to_data(writer& sink) const
+void asset_mit::to_data_t(writer& sink) const
 {
     sink.write_byte(status_);
     sink.write_string(symbol_);

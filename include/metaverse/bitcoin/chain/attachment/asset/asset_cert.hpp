@@ -25,6 +25,7 @@
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 #define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
 
@@ -59,6 +60,7 @@ namespace asset_cert_ns {
 }
 
 class BC_API asset_cert
+    : public base_primary<asset_cert>
 {
 public:
     typedef std::vector<asset_cert> list;
@@ -79,16 +81,8 @@ public:
     bool is_valid() const;
     bool operator< (const asset_cert& other) const;
 
-    static asset_cert factory_from_data(const data_chunk& data);
-    static asset_cert factory_from_data(std::istream& stream);
-    static asset_cert factory_from_data(reader& source);
-
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 
     std::string to_string() const;
     uint64_t serialized_size() const;

@@ -50,27 +50,6 @@ asset_detail::asset_detail(
 {
 }
 
-asset_detail asset_detail::factory_from_data(const data_chunk& data)
-{
-    asset_detail instance;
-    instance.from_data(data);
-    return instance;
-}
-
-asset_detail asset_detail::factory_from_data(std::istream& stream)
-{
-    asset_detail instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-asset_detail asset_detail::factory_from_data(reader& source)
-{
-    asset_detail instance;
-    instance.from_data(source);
-    return instance;
-}
-
 bool asset_detail::is_valid() const
 {
     return !(symbol.empty()
@@ -91,19 +70,7 @@ void asset_detail::reset()
     description = "";
 }
 
-bool asset_detail::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool asset_detail::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool asset_detail::from_data(reader& source)
+bool asset_detail::from_data_t(reader& source)
 {
     reset();
 
@@ -124,22 +91,8 @@ bool asset_detail::from_data(reader& source)
     return result;
 }
 
-data_chunk asset_detail::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    return data;
-}
 
-void asset_detail::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void asset_detail::to_data(writer& sink) const
+void asset_detail::to_data_t(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(maximum_supply);

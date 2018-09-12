@@ -32,19 +32,18 @@
 #include <metaverse/bitcoin/utility/data.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 class BC_API point
+    : public base_primary<point>
 {
 public:
     typedef std::vector<point> list;
     typedef std::vector<uint32_t> indexes;
 
-    static point factory_from_data(const data_chunk& data);
-    static point factory_from_data(std::istream& stream);
-    static point factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
     point();
@@ -73,13 +72,8 @@ public:
 
     bool is_null() const;
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 
     std::string to_string() const;
     bool is_valid() const;

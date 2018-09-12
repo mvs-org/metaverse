@@ -41,26 +41,6 @@ did_detail::did_detail(
 {
 }
 
-did_detail did_detail::factory_from_data(const data_chunk& data)
-{
-    did_detail instance;
-    instance.from_data(data);
-    return instance;
-}
-
-did_detail did_detail::factory_from_data(std::istream& stream)
-{
-    did_detail instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-did_detail did_detail::factory_from_data(reader& source)
-{
-    did_detail instance;
-    instance.from_data(source);
-    return instance;
-}
 bool did_detail::is_valid() const
 {
     return !(symbol.empty()
@@ -73,19 +53,7 @@ void did_detail::reset()
     address = "";
 }
 
-bool did_detail::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool did_detail::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool did_detail::from_data(reader& source)
+bool did_detail::from_data_t(reader& source)
 {
     reset();
 
@@ -99,23 +67,7 @@ bool did_detail::from_data(reader& source)
     return result;
 }
 
-data_chunk did_detail::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void did_detail::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void did_detail::to_data(writer& sink) const
+void did_detail::to_data_t(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_string(address);

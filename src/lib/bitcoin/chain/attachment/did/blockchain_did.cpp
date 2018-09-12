@@ -39,26 +39,6 @@ blockchain_did::blockchain_did(uint32_t version, const output_point& tx_point,
 {
 }
 
-blockchain_did blockchain_did::factory_from_data(const data_chunk& data)
-{
-    blockchain_did instance;
-    instance.from_data(data);
-    return instance;
-}
-
-blockchain_did blockchain_did::factory_from_data(std::istream& stream)
-{
-    blockchain_did instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-blockchain_did blockchain_did::factory_from_data(reader& source)
-{
-    blockchain_did instance;
-    instance.from_data(source);
-    return instance;
-}
 bool blockchain_did::is_valid() const
 {
     return true;
@@ -73,19 +53,8 @@ void blockchain_did::reset()
     did_ = did_detail();
 }
 
-bool blockchain_did::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
 
-bool blockchain_did::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool blockchain_did::from_data(reader& source)
+bool blockchain_did::from_data_t(reader& source)
 {
     reset();
 
@@ -98,23 +67,8 @@ bool blockchain_did::from_data(reader& source)
     return true;
 }
 
-data_chunk blockchain_did::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
 
-void blockchain_did::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void blockchain_did::to_data(writer& sink) const
+void blockchain_did::to_data_t(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version_);
     tx_point_.to_data(sink);

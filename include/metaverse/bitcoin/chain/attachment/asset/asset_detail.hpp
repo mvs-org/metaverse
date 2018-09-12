@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 #include "asset_cert.hpp"
 
 namespace libbitcoin {
@@ -48,6 +49,7 @@ BC_CONSTEXPR size_t ASSET_DETAIL_FIX_SIZE = ASSET_DETAIL_SYMBOL_FIX_SIZE
             + ASSET_DETAIL_DESCRIPTION_FIX_SIZE;
 
 class BC_API asset_detail
+    : public base_primary<asset_detail>
 {
 public:
     typedef std::vector<asset_detail> list;
@@ -61,16 +63,9 @@ public:
         uint8_t decimal_number, uint8_t threshold, const std::string& issuer,
         const std::string& address, const std::string& description);
 
-    static asset_detail factory_from_data(const data_chunk& data);
-    static asset_detail factory_from_data(std::istream& stream);
-    static asset_detail factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 
     bool operator< (const asset_detail& other) const;
     std::string to_string() const;

@@ -38,27 +38,6 @@ etp::etp(uint64_t value):
 
 }
 
-etp etp::factory_from_data(const data_chunk& data)
-{
-    etp instance;
-    instance.from_data(data);
-    return instance;
-}
-
-etp etp::factory_from_data(std::istream& stream)
-{
-    etp instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-etp etp::factory_from_data(reader& source)
-{
-    etp instance;
-    instance.from_data(source);
-    return instance;
-}
-
 void etp::reset()
 {
     value= 0;
@@ -68,19 +47,8 @@ bool etp::is_valid() const
     return true;
 }
 
-bool etp::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
 
-bool etp::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool etp::from_data(reader& source)
+bool etp::from_data_t(reader& source)
 {
     /*
     reset();
@@ -92,23 +60,7 @@ bool etp::from_data(reader& source)
     return true;
 }
 
-data_chunk etp::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void etp::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void etp::to_data(writer& sink) const
+void etp::to_data_t(writer& sink) const
 {
     //sink.write_8_bytes_little_endian(value); // not use etp now
 }
