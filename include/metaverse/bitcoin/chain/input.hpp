@@ -47,7 +47,7 @@ public:
     input(input&& other);
     input(const input& other);
 
-    input(output_point&& previous_output, chain::script&& script, uint32_t&& sequence);
+    input(output_point&& previous_output, chain::script&& script, uint32_t sequence);
     input(const output_point& previous_output, const chain::script& script, const uint32_t& sequence);
 
     input& operator=(input&& other);

@@ -33,10 +33,13 @@ namespace chain {
 
 
 
-input::input(){}
+input::input():sequence(0)
+{
+
+}
 
 input::input(input&& other)
-: input(std::move(other.previous_output), std::move(other.script),std::move(other.sequence))
+: input(std::move(other.previous_output), std::move(other.script),other.sequence)
 {
 }
 input::input(const input& other)
@@ -44,9 +47,9 @@ input::input(const input& other)
 {
 }
 
-input::input(output_point&& previous_output, chain::script&& script, uint32_t&& sequence)
+input::input(output_point&& previous_output, chain::script&& script, uint32_t sequence)
 : previous_output(std::move(previous_output)), script(std::move(script))
-,sequence(std::move(sequence))
+,sequence(sequence)
 {
 }
 
