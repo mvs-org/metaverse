@@ -828,6 +828,19 @@ code validate_transaction::check_asset_cert_transaction() const
     return error::success;
 }
 
+std::string get_category(const std::string& mit_symbol)
+{
+    std::string category;
+    auto pos = mit_symbol.find(".");
+    if (pos != std:: string::npos) {
+        category = mit_symbol.substr(0, pos);
+    }
+    else {
+        category = mit_symbol;
+    }
+    return category;
+}
+
 code validate_transaction::check_asset_mit_transaction() const
 {
     const chain::transaction& tx = *tx_;
@@ -845,7 +858,8 @@ code validate_transaction::check_asset_mit_transaction() const
         return error::success;
     }
 
-    std::string asset_symbol;
+    std::string category;
+    std::string transfered_symbol;
     std::string asset_address;
     size_t num_mit_transfer = 0;
     size_t num_mit_register = 0;
@@ -855,7 +869,7 @@ code validate_transaction::check_asset_mit_transaction() const
             ++num_mit_register;
 
             auto&& asset_info = output.get_asset_mit();
-            asset_symbol = asset_info.get_symbol();
+            auto&& asset_symbol = asset_info.get_symbol();
 
             if (!check_same(asset_address, asset_info.get_address())) {
                 log::debug(LOG_BLOCKCHAIN) << "register MIT: "
@@ -870,6 +884,16 @@ code validate_transaction::check_asset_mit_transaction() const
                                            << asset_symbol << " already exists.";
                 return error::mit_exist;
             }
+
+            if (tx.version >= transaction_version::check_improve_mit) {
+                auto&& cat = get_category(asset_symbol);
+                if (!check_same(category, cat)) {
+                    log::debug(LOG_BLOCKCHAIN) << "register() MIT: "
+                                               << " category is not same. "
+                                               << category << " != " << cat;
+                    return error::mit_register_error;
+                }
+            }
         }
         else if (output.is_asset_mit_transfer()) {
             if (++num_mit_transfer > 1) {
@@ -878,7 +902,17 @@ code validate_transaction::check_asset_mit_transaction() const
             }
 
             auto&& asset_info = output.get_asset_mit();
-            asset_symbol = asset_info.get_symbol();
+            transfered_symbol = asset_info.get_symbol();
+
+            if (tx.version >= transaction_version::check_improve_mit) {
+                auto&& cat = get_category(transfered_symbol);
+                if (!check_same(category, cat)) {
+                    log::debug(LOG_BLOCKCHAIN) << "transfer MIT: "
+                                               << " category is not same. "
+                                               << category << " != " << cat;
+                    return error::mit_register_error;
+                }
+            }
         }
         else if (output.is_etp()) {
             if (!check_same(asset_address, output.get_script_address())) {
@@ -890,13 +924,12 @@ code validate_transaction::check_asset_mit_transaction() const
         }
         else if (!output.is_message()) {
             log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output, "
-                                       << asset_symbol << " : " << output.to_string(1);
+                                       " : " << output.to_string(1);
             return error::mit_error;
         }
     }
 
-    if ((num_mit_register == 0 && num_mit_transfer == 0)
-        || (num_mit_register > 0 && num_mit_transfer > 0)) {
+    if (num_mit_register == 0 && num_mit_transfer == 0) {
         log::debug(LOG_BLOCKCHAIN) << "MIT: illegal output.";
         return error::mit_error;
     }
@@ -923,9 +956,9 @@ code validate_transaction::check_asset_mit_transaction() const
         }
         else if (prev_output.is_asset_mit()) {
             auto&& asset_info = prev_output.get_asset_mit();
-            if (asset_symbol != asset_info.get_symbol()) {
+            if (transfered_symbol != asset_info.get_symbol()) {
                 log::debug(LOG_BLOCKCHAIN) << "MIT: invalid MIT to transfer: "
-                                            << asset_info.get_symbol() << " != " << asset_symbol;
+                                            << asset_info.get_symbol() << " != " << transfered_symbol;
                 return error::validate_inputs_failed;
             }
 
@@ -934,7 +967,7 @@ code validate_transaction::check_asset_mit_transaction() const
     }
 
     if (num_mit_transfer > 0 && !has_input_transfer) {
-        log::debug(LOG_BLOCKCHAIN) << "MIT: no input MIT to transfer " << asset_symbol;
+        log::debug(LOG_BLOCKCHAIN) << "MIT: no input MIT to transfer " << transfered_symbol;
         return error::validate_inputs_failed;
     }
 
@@ -1788,7 +1821,8 @@ bool validate_transaction::check_asset_mit(const transaction& tx) const
                 return false;
             }
         }
-        else if (!output.is_etp() && !output.is_message()) {
+        else if (!output.is_etp() && !output.is_message()
+            && !output.is_asset_mit()) {
             return false;
         }
     }

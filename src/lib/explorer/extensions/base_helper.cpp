@@ -365,7 +365,7 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     auto is_filter = [filter](const output & output_){
         if (((filter & base_transfer_common::FILTER_ETP) && output_.is_etp())
         || ( (filter & base_transfer_common::FILTER_ASSET) && output_.is_asset())
-        || ( (filter & base_transfer_common::FILTER_IDENTIFIABLE_ASSET) && output_.is_asset_mit())
+        || ( (filter & base_transfer_common::FILTER_MIT) && output_.is_asset_mit())
         || ( (filter & base_transfer_common::FILTER_ASSETCERT) && output_.is_asset_cert())
         || ( (filter & base_transfer_common::FILTER_DID) && output_.is_did())){
             return true;
@@ -784,19 +784,19 @@ void base_transfer_common::sync_fetchutxo(
                 continue;
             }
         }
-        else if ((filter & FILTER_IDENTIFIABLE_ASSET) && output.is_asset_mit()) {
+        else if ((filter & FILTER_MIT) && output.is_asset_mit()) {
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
 
-            if (payment_mit_ <= unspent_mit_) {
+            if (payment_mit_ == unspent_mit_) {
                 continue;
             }
 
             if (symbol_ != output.get_asset_symbol())
                 continue;
 
-            ++unspent_mit_;
+            unspent_mit_ = symbol_;
         }
         else if ((filter & FILTER_ASSETCERT) && output.is_asset_cert()) { // cert related
             BITCOIN_ASSERT(etp_amount == 0);
@@ -935,10 +935,10 @@ void base_transfer_common::sum_payments()
         }
 
         if (iter.type == utxo_attach_type::asset_mit_transfer) {
-            ++payment_mit_;
-            if (payment_mit_ > 1) {
+            if (!payment_mit_.empty()) {
                 throw std::logic_error{"maximum one MIT can be transfered"};
             }
+            payment_mit_ = iter.symbol;
         }
         else if (iter.type == utxo_attach_type::did_transfer) {
             ++payment_did_;
@@ -971,7 +971,7 @@ bool base_transfer_common::is_payment_satisfied(filter filter) const
     if ((filter & FILTER_ASSET) && (unspent_asset_ < payment_asset_))
         return false;
 
-    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_))
+    if ((filter & FILTER_MIT) && (unspent_mit_ != payment_mit_))
         return false;
 
     if ((filter & FILTER_ASSETCERT)
@@ -996,9 +996,9 @@ void base_transfer_common::check_payment_satisfied(filter filter) const
             + std::to_string(unspent_asset_) + ", payment = " + std::to_string(payment_asset_)};
     }
 
-    if ((filter & FILTER_IDENTIFIABLE_ASSET) && (unspent_mit_ < payment_mit_)) {
+    if ((filter & FILTER_MIT) && (unspent_mit_ != payment_mit_)) {
         throw asset_lack_exception{"not enough MIT amount, unspent = "
-            + std::to_string(unspent_mit_) + ", payment = " + std::to_string(payment_mit_)};
+            + unspent_mit_+ ", payment = " + payment_mit_};
     }
 
     if ((filter & FILTER_ASSETCERT)
@@ -2073,23 +2073,62 @@ void sending_did::populate_unspent_list()
     populate_change();
 }
 
+void registering_mit::sum_payments()
+{
+    base_transfer_helper::sum_payments();
+
+    if (!is_create_category_) {
+        payment_mit_ = symbol_;
+        auto info = blockchain_.get_registered_mit(payment_mit_);
+        if (!info) {
+            throw asset_symbol_notfound_exception{"Category MIT does not exist in blockchain. " + symbol_};
+        }
+
+        auto match = [](const receiver_record& record) {
+            return (record.type == utxo_attach_type::asset_mit);
+        };
+        auto iter = std::find_if(receiver_list_.begin(), receiver_list_.end(), match);
+        BITCOIN_ASSERT(iter != receiver_list_.end());
+
+        receiver_list_.push_back(
+            {
+                iter->target, symbol_, 0, 0, 0,
+                utxo_attach_type::asset_mit,
+                attachment(info->to_did, iter->attach_elem.get_to_did())
+            }
+        );
+    }
+}
+
 attachment registering_mit::populate_output_attachment(const receiver_record& record)
 {
     auto&& attach = base_transfer_common::populate_output_attachment(record);
 
     if (record.type == utxo_attach_type::asset_mit) {
-        auto iter = mit_map_.find(record.symbol);
-        if (iter == mit_map_.end()) {
-            throw tx_attachment_value_exception{"invalid MIT issue attachment"};
-        }
+        if (!is_create_category_ && payment_mit_ == record.symbol) {
+            auto ass = asset_mit(record.symbol, record.target, "");
+            ass.set_status(MIT_STATUS_TRANSFER);
+            if (!ass.is_valid()) {
+                throw tx_attachment_value_exception{"invalid MIT issue attachment"};
+            }
 
-        auto ass = asset_mit(record.symbol, record.target, iter->second);
-        ass.set_status(MIT_STATUS_REGISTER);
-        if (!ass.is_valid()) {
-            throw tx_attachment_value_exception{"invalid MIT issue attachment"};
+            attach.set_attach(ass);
         }
+        else {
+            auto iter = mit_map_.find(record.symbol);
+            if (iter != mit_map_.end()) {
+                auto ass = asset_mit(record.symbol, record.target, iter->second);
+                ass.set_status(MIT_STATUS_REGISTER);
+                if (!ass.is_valid()) {
+                    throw tx_attachment_value_exception{"invalid MIT issue attachment"};
+                }
 
-        attach.set_attach(ass);
+                attach.set_attach(ass);
+            }
+            else {
+                throw tx_attachment_value_exception{"invalid MIT issue attachment"};
+            }
+        }
     }
 
     return attach;

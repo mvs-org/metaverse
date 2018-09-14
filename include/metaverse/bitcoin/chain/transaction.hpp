@@ -43,7 +43,8 @@ enum transaction_version {
     check_output_script = 2,   //add check output script
     check_nova_testnet = 3,
     check_nova_feature = 4,
-    max_version = 5
+    check_improve_mit = 5,
+    max_version = 6
 };
 
 class BC_API transaction

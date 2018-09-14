@@ -229,7 +229,7 @@ public:
         FILTER_ASSET = 1 << 1,
         FILTER_ASSETCERT = 1 << 2,
         FILTER_DID = 1 << 3,
-        FILTER_IDENTIFIABLE_ASSET = 1 << 4,
+        FILTER_MIT = 1 << 4,
         FILTER_ALL = 0xff,
         // if specify 'from_' address,
         // then get these types' unspent only from 'from_' address
@@ -320,8 +320,8 @@ protected:
     std::vector<asset_cert_type>      unspent_asset_cert_;
     uint8_t                           payment_did_{0};
     uint8_t                           unspent_did_{0};
-    uint8_t                           payment_mit_{0};
-    uint8_t                           unspent_mit_{0};
+    std::string                       payment_mit_;
+    std::string                       unspent_mit_;
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
 };
@@ -722,23 +722,28 @@ public:
         tx_.locktime = 0;
     };
 };
+
 class BCX_API registering_mit : public base_transfer_helper
 {
 public:
     registering_mit(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol, std::map<std::string, std::string>&& mit_map,
-        receiver_record::list&& receiver_list, uint64_t fee)
+        receiver_record::list&& receiver_list, uint64_t fee,
+        bool is_create_category)
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), fee, std::move(symbol))
         , mit_map_(mit_map)
+        , is_create_category_(is_create_category)
     {}
 
     ~registering_mit()
     {}
 
+    void sum_payments() override;
+
     void populate_tx_header() override {
-        tx_.version = transaction_version::check_nova_feature;
+        tx_.version = transaction_version::check_improve_mit;
         tx_.locktime = 0;
     };
 
@@ -746,6 +751,7 @@ public:
 
 private:
     std::map<std::string, std::string> mit_map_;
+    bool is_create_category_;
 };
 
 class BCX_API transferring_mit : public base_multisig_transfer_helper
