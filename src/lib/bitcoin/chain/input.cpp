@@ -33,7 +33,10 @@ namespace chain {
 
 
 
-input::input(){}
+input::input():sequence(0)
+{
+
+}
 
 input::input(input&& other)
 : input(std::move(other.previous_output), std::move(other.script),std::move(other.sequence))
