@@ -44,7 +44,7 @@ template<class T>
 template<typename... Args>
 T base_primary<T>::factory_from_data(const data_chunk &data, Args... args){
     T instance;
-    instance.from_data(data, args...);
+    instance.from_data(data, std::forward<Args>(args)...);
     return instance;
 }
 
@@ -52,7 +52,7 @@ template<class T>
 template<typename... Args>
 T base_primary<T>::factory_from_data(std::istream& stream, Args... args){
     T instance;
-    instance.from_data(stream, args...);
+    instance.from_data(stream, std::forward<Args>(args)...);
     return instance;
 }
 
@@ -60,7 +60,7 @@ template<class T>
 template<typename... Args>
 T base_primary<T>::factory_from_data(reader& source, Args... args){
     T instance;
-    instance.from_data(source, args...);
+    instance.from_data(source, std::forward<Args>(args)...);
     return instance;
 }
 
@@ -68,20 +68,20 @@ template<class T>
 template<typename... Args>
 bool base_primary<T>::from_data(const data_chunk& data, Args... args){
     data_source istream(data);
-    return from_data(istream, args...);
+    return from_data(istream, std::forward<Args>(args)...);
 }
 
 template<class T>
 template<typename... Args>
 bool base_primary<T>::from_data(std::istream& stream, Args... args){
     istream_reader source(stream);
-    return from_data(source, args...);
+    return from_data(source, std::forward<Args>(args)...);
 }
 
 template<class T>
 template<typename... Args>
 bool base_primary<T>::from_data(reader& source, Args... args){
-    return Instance().from_data_t(source, args...);
+    return Instance().from_data_t(source, std::forward<Args>(args)...);
 }
 
 template<class T>
@@ -116,8 +116,7 @@ void base_primary<T>::to_data(std::ostream& stream, Args... args) const{
 template<class T>
 template< typename... Args>
 void base_primary<T>::to_data(writer& sink, Args... args) const{
-    writer & wr = sink;
-    Instance().to_data_t(wr, std::forward<Args>(args)...);
+    Instance().to_data_t(sink, std::forward<Args>(args)...);
 }
 
 } // namespace libbitcoin
