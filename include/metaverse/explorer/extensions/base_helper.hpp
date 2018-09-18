@@ -216,6 +216,7 @@ std::string get_address_from_did(const std::string& did,
 
 std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
 
+bool is_ETH_Address(const string& address);
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol, bool check_sensitive=false);

@@ -29,31 +29,37 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+#define DEFAULT_SWAP_FEE 100000000
 
+/************************ burn *************************/
 
-/************************ sendmore *************************/
-
-class sendmore: public send_command
+class swapmit: public command_extension
 {
 public:
-    static const char* symbol(){ return "sendmore";}
+    static const char* symbol() { return "swapmit";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "send etp to multi target."; }
+    const char* description() override { return "Swap mit for crosschain transaction."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("ACCOUNTNAME", 1)
-            .add("ACCOUNTAUTH", 1);
+               .add("ACCOUNTNAME", 1)
+               .add("ACCOUNTAUTH", 1)
+               .add("TO_", 1)
+               .add("SYMBOL", 1)
+               .add("FOREIGN_ADDR", 1);
     }
 
     void load_fallbacks (std::istream& input,
-        po::variables_map& variables) override
+                         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
+        load_input(argument_.to, "TO_", variables, input, raw);
+        load_input(argument_.symbol, "SYMBOL", variables, input, raw);
+        load_input(argument_.foreign_addr, "FOREIGN_ADDR", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,7 +70,7 @@ public:
         (
             BX_HELP_VARIABLE ",h",
             value<bool>()->zero_tokens(),
-            "Send to more target. "
+            "Get a description and instructions for this command."
         )
         (
             "ACCOUNTNAME",
@@ -77,25 +83,36 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "receivers,r",
-            value<std::vector<std::string>>(&argument_.receivers)->required(),
-            "Send to [did/address:etp_bits]."
+            "TO_",
+            value<std::string>(&argument_.to)->required(),
+            "To this did/address the specific mit will be sent. expect to be \"droplet\"."
         )
         (
-            "mychange,m",
-            value<std::string>(&option_.change),
-            "Change to this did/address"
+            "SYMBOL",
+            value<std::string>(&argument_.symbol)->required(),
+            "Asset symbol"
         )
         (
-            "memo,i",
+            "FOREIGN_ADDR",
+            value<std::string>(&argument_.foreign_addr)->required(),
+            "To this address of the destination chain to swap the mit."
+        )
+        (
+            "memo,m",
             value<std::string>(&option_.memo)->default_value(""),
-            "The memo to descript transaction"
+            "Attached memo for this transaction."
+        )
+        (
+            "swapfee,s",
+            value<uint64_t>(&option_.swapfee)->default_value(DEFAULT_SWAP_FEE),
+            "Transaction fee for crosschain token swap. defaults to 1 ETP"
         )
         (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
-            "Transaction fee. defaults to 10000 ETP bits"
-        );
+            "Transaction fee for miners. defaults to 10000 ETP bits"
+        )
+        ;
 
         return options;
     }
@@ -105,26 +122,23 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-         libbitcoin::server::server_node& node) override;
+                           libbitcoin::server::server_node& node) override;
 
     struct argument
     {
-        std::vector<std::string> receivers;
+        std::string to;
+        std::string symbol;
+        std::string foreign_addr;
     } argument_;
 
     struct option
     {
-        option():fee(10000), change(""), memo("")
-        {};
-
+        uint64_t swapfee;
         uint64_t fee;
-        std::string change;
         std::string memo;
     } option_;
 
 };
-
-
 
 } // namespace commands
 } // namespace explorer

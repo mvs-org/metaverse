@@ -37,6 +37,8 @@ console_result sendmore::invoke (Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
+    std::string msg_address;
+
     // receiver
     std::vector<receiver_record> receiver;
 
@@ -50,10 +52,26 @@ console_result sendmore::invoke (Json::Value& jv_output,
         }
 
         receiver.push_back({address,"", item.second(), 0, utxo_attach_type::etp, attach});
+
+        if (msg_address.empty()) {
+            msg_address = address;
+        }
     }
 
     // change address
     std::string change_address = get_address(option_.change, blockchain);
+
+    // memo
+    if (!option_.memo.empty()) {
+        check_message(option_.memo);
+
+        if (!change_address.empty()) {
+            msg_address = change_address;
+        }
+
+        receiver.push_back({msg_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
 
     auto send_helper = sending_etp(*this, blockchain,
         std::move(auth_.name), std::move(auth_.auth),
