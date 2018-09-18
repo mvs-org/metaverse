@@ -74,6 +74,13 @@ console_result transfermit::invoke (Json::Value& jv_output,
         }
     };
 
+    if (!option_.memo.empty()) {
+        check_message(option_.memo);
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
+
     auto helper = transferring_mit(
                       *this, blockchain,
                       std::move(auth_.name), std::move(auth_.auth),

@@ -90,6 +90,11 @@ public:
             "Asset MIT symbol"
         )
         (
+            "memo,m",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -114,6 +119,7 @@ public:
 
     struct option
     {
+        std::string memo;
     } option_;
 
 };
