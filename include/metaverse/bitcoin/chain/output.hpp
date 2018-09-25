@@ -32,6 +32,7 @@
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/chain/attachment/attachment.hpp> // added for asset issue/transfer
 #include <metaverse/bitcoin/chain/attachment/did/did.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 // forward declaration
 namespace libbitcoin {
@@ -44,23 +45,25 @@ namespace libbitcoin {
 namespace chain {
 
 class BC_API output
+    : public base_primary<output>
 {
 public:
+    output();
+    output(output&& other);
+    output(const output& other);
+
+    output(uint64_t&& value, chain::script&& script, attachment&& attach_data);
+    output(const uint64_t& value, const chain::script& script, const attachment& attach_data);
+    output& operator=(output&& other);
+    output& operator=(const output& other);
     typedef std::vector<output> list;
 
-    static output factory_from_data(const data_chunk& data);
-    static output factory_from_data(std::istream& stream);
-    static output factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
     static bool is_valid_symbol(const std::string& symbol, uint32_t tx_version);
     static bool is_valid_did_symbol(const std::string& symbol,  bool check_sensitive = false);
     static bool is_valid_mit_symbol(const std::string& symbol,  bool check_sensitive = false);
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     code check_attachment_address(bc::blockchain::block_chain_impl& chain) const;
@@ -107,13 +110,6 @@ public:
     attachment attach_data; // added for asset issue/transfer
 };
 
-struct BC_API output_info
-{
-    typedef std::vector<output_info> list;
-
-    output_point point;
-    uint64_t value;
-};
 
 } // namespace chain
 } // namespace libbitcoin

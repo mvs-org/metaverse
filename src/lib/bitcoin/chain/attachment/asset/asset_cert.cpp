@@ -94,40 +94,7 @@ std::string asset_cert::asset_cert::get_key() const
     return get_key(symbol_, cert_type_);
 }
 
-asset_cert asset_cert::factory_from_data(const data_chunk& data)
-{
-    asset_cert instance;
-    instance.from_data(data);
-    return instance;
-}
-
-asset_cert asset_cert::factory_from_data(std::istream& stream)
-{
-    asset_cert instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-asset_cert asset_cert::factory_from_data(reader& source)
-{
-    asset_cert instance;
-    instance.from_data(source);
-    return instance;
-}
-
-bool asset_cert::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool asset_cert::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool asset_cert::from_data(reader& source)
+bool asset_cert::from_data_t(reader& source)
 {
     reset();
     symbol_ = source.read_string();
@@ -143,22 +110,8 @@ bool asset_cert::from_data(reader& source)
     return result;
 }
 
-data_chunk asset_cert::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    return data;
-}
 
-void asset_cert::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void asset_cert::to_data(writer& sink) const
+void asset_cert::to_data_t(writer& sink) const
 {
     sink.write_string(symbol_);
     sink.write_string(owner_);

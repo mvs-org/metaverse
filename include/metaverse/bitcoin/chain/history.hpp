@@ -25,6 +25,7 @@
 #include <vector>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 
 namespace libbitcoin {
 namespace chain {

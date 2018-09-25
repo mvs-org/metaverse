@@ -44,27 +44,6 @@ attachment::attachment(const std::string& from_did, const std::string& to_did)
     boost::apply_visitor(visitor, attach);
 }
 
-attachment attachment::factory_from_data(const data_chunk& data)
-{
-    attachment instance;
-    instance.from_data(data);
-    return instance;
-}
-
-attachment attachment::factory_from_data(std::istream& stream)
-{
-    attachment instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-attachment attachment::factory_from_data(reader& source)
-{
-    attachment instance;
-    instance.from_data(source);
-    return instance;
-}
-
 void attachment::reset()
 {
     version = 0;
@@ -95,20 +74,7 @@ bool attachment::is_valid_type() const
         || (DID_TYPE == type));
 }
 
-
-bool attachment::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool attachment::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool attachment::from_data(reader& source)
+bool attachment::from_data_t(reader& source)
 {
     reset();
 
@@ -174,23 +140,7 @@ bool attachment::from_data(reader& source)
     return result;
 }
 
-data_chunk attachment::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void attachment::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void attachment::to_data(writer& sink) const
+void attachment::to_data_t(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_4_bytes_little_endian(type);

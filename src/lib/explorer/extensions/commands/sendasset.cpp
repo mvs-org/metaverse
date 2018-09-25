@@ -37,9 +37,7 @@ console_result sendasset::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     blockchain.uppercase_symbol(argument_.symbol);
 
-    if (!option_.memo.empty() && option_.memo.size() >= 255) {
-        throw argument_size_invalid_exception{"memo length out of bounds."};
-    }
+    check_message(option_.memo);
 
     // check asset symbol
     check_asset_symbol(argument_.symbol);

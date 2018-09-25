@@ -25,6 +25,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/bitcoin/chain/history.hpp>
 #include <json/minijson_writer.hpp>
 
 namespace libbitcoin {
@@ -46,26 +47,6 @@ asset_transfer::asset_transfer(const std::string& symbol, uint64_t quantity):
 {
 
 }
-asset_transfer asset_transfer::factory_from_data(const data_chunk& data)
-{
-    asset_transfer instance;
-    instance.from_data(data);
-    return instance;
-}
-
-asset_transfer asset_transfer::factory_from_data(std::istream& stream)
-{
-    asset_transfer instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-asset_transfer asset_transfer::factory_from_data(reader& source)
-{
-    asset_transfer instance;
-    instance.from_data(source);
-    return instance;
-}
 
 bool asset_transfer::is_valid() const
 {
@@ -80,19 +61,7 @@ void asset_transfer::reset()
     quantity = 0;
 }
 
-bool asset_transfer::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool asset_transfer::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool asset_transfer::from_data(reader& source)
+bool asset_transfer::from_data_t(reader& source)
 {
     reset();
     symbol = source.read_string();
@@ -105,23 +74,8 @@ bool asset_transfer::from_data(reader& source)
     return result;
 }
 
-data_chunk asset_transfer::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
 
-void asset_transfer::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void asset_transfer::to_data(writer& sink) const
+void asset_transfer::to_data_t(writer& sink) const
 {
     sink.write_string(symbol);
     sink.write_8_bytes_little_endian(quantity);

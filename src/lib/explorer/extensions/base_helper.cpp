@@ -21,7 +21,9 @@
 #include <metaverse/explorer/extensions/base_helper.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/consensus/libdevcore/SHA3.h>
 #include <boost/algorithm/string.hpp>
+#include <regex>
 
 namespace libbitcoin {
 namespace explorer {
@@ -65,6 +67,55 @@ utxo_attach_type get_utxo_attach_type(const chain::output& output_)
     }
     throw std::logic_error("get_utxo_attach_type : Unkown output type "
             + std::to_string(output.attach_data.get_type()));
+}
+
+//Check if address is checksum of ETH address
+bool is_ETH_Address(const string& address)
+{
+    // regex checking
+    {
+        sregex_iterator end;
+
+        // check if it has the basic requirements of an address
+        static const regex reg_common("^0x[0-9a-fA-F]{40}$");
+        sregex_iterator it(address.begin(), address.end(), reg_common);
+        if (it == end) {
+            return false;
+        }
+
+        // If it's all small caps, return true
+        static const regex reg_alllower("^0x[0-9a-f]{40}$");
+        sregex_iterator it1(address.begin(), address.end(), reg_alllower);
+        if (it1 != end) {
+            return true;
+        }
+
+        // If it's all caps, return true
+        static const regex reg_allupper("^0x[0-9A-F]{40}$");
+        sregex_iterator it2(address.begin(), address.end(), reg_allupper);
+        if (it2 != end) {
+            return true;
+        }
+    }
+
+    // Otherwise check each case
+    auto addr = address.substr(2); // get rid of prefix "0x"
+    auto address_hash = bc::sha3(boost::to_lower_copy(addr)).hex();
+
+    for (size_t i = 0; i < addr.size(); ++i) {
+        auto c = addr[i];
+        if (std::isdigit(c)) {
+            continue;
+        }
+        // the nth letter should be uppercase if the nth digit of casemap is 1 (89abcdef)
+        bool is_less_than_8 = (address_hash[i] >= '0' && address_hash[i] < '8');
+        if ((is_less_than_8 && !std::islower(c)) ||
+                (!is_less_than_8 && !std::isupper(c))) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void check_did_symbol(const std::string& symbol, bool check_sensitive)
@@ -121,6 +172,13 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
         if (bc::wallet::symbol::is_sensitive(upper)) {
             throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
         }
+    }
+}
+
+void check_message(const std::string& message, bool check_sensitive)
+{
+    if (!message.empty() && message.size() >= 0xfd/* 253, see serializer.ipp */) {
+        throw argument_size_invalid_exception{"message length out of bounds."};
     }
 }
 
@@ -1267,8 +1325,8 @@ attachment base_transfer_common::populate_output_attachment(const receiver_recor
     }
     else if (record.type == utxo_attach_type::message) {
         auto msg = boost::get<blockchain_message>(record.attach_elem.get_attach());
-        if (msg.get_content().size() > 128) {
-            throw tx_attachment_value_exception{"memo text length should be less than 128"};
+        if (msg.get_content().size() >= 0xfd/* 253, see serializer.ipp */) {
+            throw tx_attachment_value_exception{"memo text length should be less than 253"};
         }
         if (!msg.is_valid()) {
             throw tx_attachment_value_exception{"invalid message attachment"};

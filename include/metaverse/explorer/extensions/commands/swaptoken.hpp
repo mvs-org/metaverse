@@ -86,7 +86,7 @@ public:
         (
             "TO_",
             value<std::string>(&argument_.to)->required(),
-            "To this did/address the specific asset will be sent. expect to be \"crosschain\"."
+            "To this did/address the specific asset will be sent. expect to be \"droplet\"."
         )
         (
             "SYMBOL",
@@ -112,6 +112,11 @@ public:
             "from,d",
             value<std::string>(&option_.from),
             "From this did/address"
+        )
+        (
+            "memo,m",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
         )
         (
             "swapfee,s",
@@ -149,6 +154,7 @@ public:
         uint64_t swapfee;
         uint64_t fee;
         std::string change;
+        std::string memo;
     } option_;
 
 };

@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -39,6 +40,7 @@ BC_CONSTEXPR size_t DID_DETAIL_FIX_SIZE = DID_DETAIL_SYMBOL_FIX_SIZE
             + DID_DETAIL_ADDRESS_FIX_SIZE;
 
 class BC_API did_detail
+    : public base_primary<did_detail>
 {
 public:
     typedef std::vector<did_detail> list;
@@ -53,17 +55,10 @@ public:
     did_detail();
     did_detail(const std::string& symbol, const std::string& address);
 
-    static did_detail factory_from_data(const data_chunk& data);
-    static did_detail factory_from_data(std::istream& stream);
-    static did_detail factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
     static std::string get_blackhole_did_symbol();
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 
     bool operator< (const did_detail& other) const;
     std::string to_string() const;

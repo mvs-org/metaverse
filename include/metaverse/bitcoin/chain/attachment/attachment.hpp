@@ -34,6 +34,7 @@
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 using namespace libbitcoin::chain;
 #define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
@@ -53,6 +54,7 @@ namespace libbitcoin {
 namespace chain {
 
 class BC_API attachment
+    : public base_primary<attachment>
 {
 public:
 
@@ -86,17 +88,10 @@ public:
         : type(type), version(version), attach(attach_data)
     {}
 
-    static attachment factory_from_data(const data_chunk& data);
-    static attachment factory_from_data(std::istream& stream);
-    static attachment factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     std::string to_string() const;
     bool is_valid() const;
     bool is_valid_type() const;

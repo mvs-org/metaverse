@@ -1022,11 +1022,11 @@ std::shared_ptr<chain::transaction> block_chain_impl::get_spends_output(const in
 {
     const auto spend = database_.spends.get(input);
     if (spend.valid){
-        
+
         const auto result = database_.transactions.get(spend.hash);
         if(result) {
             return std::make_shared<chain::transaction>(result.transaction());
-        } 
+        }
     }
 
     return nullptr;
@@ -1328,7 +1328,7 @@ static history::list expand_history(history_compact::list& compact)
         // an output and its spend. In this case we return just the spend.
         {
             history row;
-            row.output = { null_hash, max_uint32 };
+            row.output = output_point( null_hash, max_uint32 );
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;
@@ -1938,8 +1938,8 @@ std::string block_chain_impl::get_did_from_address(const std::string& did_addres
         [fork_index](const blockchain_did & item){
             return is_blackhole_address(item.get_did().get_address()) || item.get_height() <= fork_index;
         });
-        
-        if(iter == blockchain_didlist->end() || iter->get_did().get_address() != did_address)   
+
+        if(iter == blockchain_didlist->end() || iter->get_did().get_address() != did_address)
             return "";
     }
     else if(did_symbol == "" && fork_index != max_uint64)
@@ -2300,7 +2300,7 @@ bool block_chain_impl::get_history_callback(const payment_address& address,
                 if (!found)
                 {
                     history row;
-                    row.output = { null_hash, max_uint32 };
+                    row.output = output_point( null_hash, max_uint32 );
                     row.output_height = max_uint64;
                     row.value = max_uint64;
                     row.spend = spend.point;

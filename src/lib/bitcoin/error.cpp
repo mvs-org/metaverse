@@ -261,6 +261,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::mit_symbol_invalid:
             return "MIT symbol invalid";
 
+        case error::sequence_locked:
+            return "transaction currently locked";
+
         // unknown errors
         case error::unknown:
         default:

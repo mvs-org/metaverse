@@ -27,6 +27,7 @@
 #include <metaverse/bitcoin/error.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 #define MIT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_mit::mit_status>::type>(kd))
 
@@ -54,6 +55,7 @@ BC_CONSTEXPR size_t ASSET_MIT_TRANSFER_FIX_SIZE = (
 BC_CONSTEXPR size_t ASSET_MIT_INFO_FIX_SIZE = 4 + 4 + 64 + ASSET_MIT_TRANSFER_FIX_SIZE;
 
 class BC_API asset_mit
+    : public base_primary<asset_mit>
 {
 public:
     typedef std::vector<asset_mit> list;
@@ -74,17 +76,9 @@ public:
     bool is_valid() const;
     bool operator< (const asset_mit& other) const;
 
-    static asset_mit factory_from_data(const data_chunk& data);
-    static asset_mit factory_from_data(std::istream& stream);
-    static asset_mit factory_from_data(reader& source);
-
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     data_chunk to_short_data() const;
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
 
     std::string to_string() const;
     uint64_t serialized_size() const;

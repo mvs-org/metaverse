@@ -502,7 +502,7 @@ business_history::list address_did_database::get_business_history(const short_ha
         if (!found)
         {
             business_history row;
-            row.output = { null_hash, max_uint32 };
+            row.output = output_point( null_hash, max_uint32 );
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;

@@ -24,36 +24,46 @@
 #include <cstdint>
 #include <istream>
 #include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/wallet/payment_address.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 class BC_API input
+    : public base_primary<input>
 {
 public:
     typedef std::vector<input> list;
 
-    static input factory_from_data(const data_chunk& data);
-    static input factory_from_data(std::istream& stream);
-    static input factory_from_data(reader& source);
+
+    input();
+    input(input&& other);
+    input(const input& other);
+
+    input(output_point&& previous_output, chain::script&& script, uint32_t sequence);
+    input(const output_point& previous_output, const chain::script& script, const uint32_t& sequence);
+
+    input& operator=(input&& other);
+    input& operator=(const input& other);
+
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();
+
     bool is_final() const;
+    bool is_locked(size_t block_height, uint32_t median_time_past) const;
+
     uint64_t serialized_size() const;
     std::string get_script_address() const;
 

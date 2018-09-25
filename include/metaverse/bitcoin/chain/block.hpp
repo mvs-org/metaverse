@@ -32,11 +32,13 @@
 #include <metaverse/bitcoin/utility/data.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 class BC_API block
+    : public base_primary<block>
 {
 public:
     typedef std::vector<block> list;
@@ -44,12 +46,6 @@ public:
     typedef std::vector<ptr> ptr_list;
     typedef std::vector<size_t> indexes;
 
-    static block factory_from_data(const data_chunk& data,
-        bool with_transaction_count = true);
-    static block factory_from_data(std::istream& stream,
-        bool with_transaction_count = true);
-    static block factory_from_data(reader& source,
-        bool with_transaction_count = true);
     static hash_digest generate_merkle_root(
         const transaction::list& transactions);
     static block genesis_mainnet();
@@ -68,12 +64,8 @@ public:
     block& operator=(block&& other);
     void operator=(const block&) = delete;
 
-    bool from_data(const data_chunk& data, bool with_transaction_count = true);
-    bool from_data(std::istream& stream, bool with_transaction_count = true);
-    bool from_data(reader& source, bool with_transaction_count = true);
-    data_chunk to_data(bool with_transaction_count = true) const;
-    void to_data(std::ostream& stream, bool with_transaction_count = true) const;
-    void to_data(writer& sink, bool with_transaction_count = true) const;
+    bool from_data_t(reader& source, bool with_transaction_count = true);
+    void to_data_t(writer& sink, bool with_transaction_count = true) const;
     bool is_valid() const;
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;

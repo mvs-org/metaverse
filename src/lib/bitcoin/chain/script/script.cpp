@@ -1441,6 +1441,37 @@ bool op_checklocktimeverify(evaluation_context& context, const script& script,
     return is_locktime_type_match(stack, transaction);
 }
 
+bool op_checksequenceverify(evaluation_context& context, const script& script,
+    const transaction& parent_tx, uint32_t input_index)
+{
+    if (input_index >= parent_tx.inputs.size())
+        return false;
+
+    if (context.stack.empty())
+        return false;
+
+    // nSequence, like nLockTime, is a 32-bit unsigned integer
+    // field. See the comment in CHECKLOCKTIMEVERIFY regarding
+    // 5-byte numeric operands.
+    script_number number;
+    if (!number.set_data(context.pop_stack(), csv_max_script_number_size))
+        return false;
+
+    // In the rare event that the argument may be < 0 due to
+    // some arithmetic being done first, you can always use
+    // 0 MAX CHECKSEQUENCEVERIFY.
+    if (number < 0)
+        return false;
+
+    // To provide for future soft-fork extensibility, if the
+    // operand has the disabled lock-time flag set,
+    // CHECKSEQUENCEVERIFY behaves as a NOP.
+    if ((number.int64() & (1 << 31)/*CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG*/) != 0)
+        return false;
+
+    return true;
+}
+
 bool op_checkattenuationverify(evaluation_context& context, const script& script,
     const transaction& parent_tx, uint32_t input_index)
 {
@@ -1735,15 +1766,17 @@ bool run_operation(const operation& op, const transaction& parent_tx,
 
         case opcode::checklocktimeverify:
             return script::is_active(context.flags, script_context::bip65_enabled) ?
-                op_checklocktimeverify(context, script, parent_tx,
-                    input_index) : true;
+                op_checklocktimeverify(context, script, parent_tx, input_index) : true;
 
         case opcode::checkattenuationverify:
             return script::is_active(context.flags, script_context::attenuation_enabled) ?
                 op_checkattenuationverify(context, script, parent_tx, input_index) : true;
 
+        case opcode::checksequenceverify:
+            return script::is_active(context.flags, script_context::bip112_enabled) ?
+                op_checksequenceverify(context, script, parent_tx, input_index) : true;
+
         case opcode::op_nop1:
-        case opcode::op_nop4:
         case opcode::op_nop5:
         case opcode::op_nop6:
         case opcode::op_nop7:

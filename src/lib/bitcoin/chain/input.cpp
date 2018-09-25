@@ -31,26 +31,49 @@
 namespace libbitcoin {
 namespace chain {
 
-input input::factory_from_data(const data_chunk& data)
+
+
+input::input():sequence(0)
 {
-    input instance;
-    instance.from_data(data);
-    return instance;
+
 }
 
-input input::factory_from_data(std::istream& stream)
+input::input(input&& other)
+: input(std::move(other.previous_output), std::move(other.script),other.sequence)
 {
-    input instance;
-    instance.from_data(stream);
-    return instance;
+}
+input::input(const input& other)
+:input(other.previous_output, other.script, other.sequence)
+{
 }
 
-input input::factory_from_data(reader& source)
+input::input(output_point&& previous_output, chain::script&& script, uint32_t sequence)
+: previous_output(std::move(previous_output)), script(std::move(script))
+,sequence(sequence)
 {
-    input instance;
-    instance.from_data(source);
-    return instance;
 }
+
+input::input(const output_point& previous_output, const chain::script& script, const uint32_t& sequence)
+: previous_output(previous_output), script(script),sequence(sequence)
+{
+}
+
+input& input::operator=(input&& other)
+{
+    previous_output = std::move(other.previous_output);
+    script = std::move(other.script);
+    sequence = std::move(other.sequence);
+    return *this;
+}
+
+input& input::operator=(const input& other)
+{
+    previous_output = other.previous_output;
+    script = other.script;
+    sequence = other.sequence;
+    return *this;
+}
+
 
 bool input::is_valid() const
 {
@@ -66,19 +89,7 @@ void input::reset()
     sequence = 0;
 }
 
-bool input::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool input::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool input::from_data(reader& source)
+bool input::from_data_t(reader& source)
 {
     reset();
 
@@ -106,23 +117,7 @@ bool input::from_data(reader& source)
     return result;
 }
 
-data_chunk input::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void input::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void input::to_data(writer& sink) const
+void input::to_data_t(writer& sink) const
 {
     previous_output.to_data(sink);
     script.to_data(sink, true);
@@ -149,6 +144,27 @@ std::string input::to_string(uint32_t flags) const
 bool input::is_final() const
 {
     return (sequence == max_input_sequence);
+}
+
+bool input::is_locked(size_t block_height, uint32_t median_time_past) const
+{
+    if ((sequence & relative_locktime_disabled) != 0)
+        return false;
+
+    // bip68: a minimum block-height constraint over the input's age.
+    const auto minimum = (sequence & relative_locktime_mask);
+    const auto& prevout = previous_output.metadata;
+
+    if ((sequence & relative_locktime_time_locked) != 0) {
+        // Median time past must be monotonically-increasing by block.
+        BITCOIN_ASSERT(median_time_past >= prevout.median_time_past);
+        const auto age_seconds = median_time_past - prevout.median_time_past;
+        return age_seconds < (minimum << relative_locktime_seconds_shift);
+    }
+
+    BITCOIN_ASSERT(block_height >= prevout.height);
+    const auto age_blocks = block_height - prevout.height;
+    return age_blocks < minimum;
 }
 
 std::string input::get_script_address() const

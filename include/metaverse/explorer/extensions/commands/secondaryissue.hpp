@@ -101,6 +101,11 @@ public:
             BX_MST_OFFERING_CURVE
         )
         (
+            "memo,i",
+            value<std::string>(&option_.memo)->default_value(""),
+            "Attached memo for this transaction."
+        )
+        (
             "fee,f",
             value<uint64_t>(&argument_.fee)->default_value(10000),
             "The fee of tx. default_value 10000 ETP bits"
@@ -127,6 +132,7 @@ public:
     struct option
     {
         std::string attenuation_model_param;
+        std::string memo;
     } option_;
 
 };

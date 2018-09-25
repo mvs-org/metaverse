@@ -26,39 +26,18 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 
-#define ETP_TYPE            KIND2UINT16(business_kind::etp)
-#define ETP_AWARD_TYPE      KIND2UINT16(business_kind::etp_award)
-#define ASSET_ISSUE_TYPE    KIND2UINT16(business_kind::asset_issue)
-#define ASSET_TRANSFER_TYPE KIND2UINT16(business_kind::asset_transfer)
-#define ASSET_CERT_TYPE     KIND2UINT16(business_kind::asset_cert)
-#define ASSET_MIT_TYPE      KIND2UINT16(business_kind::asset_mit)
-#define MESSAGE_TYPE        KIND2UINT16(business_kind::message)
-#define DID_REGISTER_TYPE   KIND2UINT16(business_kind::did_register)
-#define DID_TRANSFER_TYPE   KIND2UINT16(business_kind::did_transfer)
+#define TYPE_ETP            KIND2UINT16(business_kind::etp)
+#define TYPE_ETP_AWARD      KIND2UINT16(business_kind::etp_award)
+#define TYPE_ASSET_ISSUE    KIND2UINT16(business_kind::asset_issue)
+#define TYPE_ASSET_TRANSFER KIND2UINT16(business_kind::asset_transfer)
+#define TYPE_ASSET_CERT     KIND2UINT16(business_kind::asset_cert)
+#define TYPE_ASSET_MIT      KIND2UINT16(business_kind::asset_mit)
+#define TYPE_MESSAGE        KIND2UINT16(business_kind::message)
+#define TYPE_DID_REGISTER   KIND2UINT16(business_kind::did_register)
+#define TYPE_DID_TRANSFER   KIND2UINT16(business_kind::did_transfer)
 
 namespace libbitcoin {
 namespace chain {
-
-business_data business_data::factory_from_data(const data_chunk& data)
-{
-    business_data instance;
-    instance.from_data(data);
-    return instance;
-}
-
-business_data business_data::factory_from_data(std::istream& stream)
-{
-    business_data instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-business_data business_data::factory_from_data(reader& source)
-{
-    business_data instance;
-    instance.from_data(source);
-    return instance;
-}
 
 void business_data::reset()
 {
@@ -74,30 +53,18 @@ bool business_data::is_valid() const
 
 bool business_data::is_valid_type() const
 {
-    return ((ETP_TYPE == KIND2UINT16(kind))
-            || (ASSET_ISSUE_TYPE == KIND2UINT16(kind))
-            || (ASSET_TRANSFER_TYPE == KIND2UINT16(kind))
-            || (ASSET_CERT_TYPE == KIND2UINT16(kind))
-            || (ASSET_MIT_TYPE == KIND2UINT16(kind)))
-            || (ETP_AWARD_TYPE == KIND2UINT16(kind))
-            || (MESSAGE_TYPE == KIND2UINT16(kind))
-            || (DID_REGISTER_TYPE == KIND2UINT16(kind))
-            || (DID_TRANSFER_TYPE == KIND2UINT16(kind));
+    return ((TYPE_ETP == KIND2UINT16(kind))
+            || (TYPE_ASSET_ISSUE == KIND2UINT16(kind))
+            || (TYPE_ASSET_TRANSFER == KIND2UINT16(kind))
+            || (TYPE_ASSET_CERT == KIND2UINT16(kind))
+            || (TYPE_ASSET_MIT == KIND2UINT16(kind)))
+            || (TYPE_ETP_AWARD == KIND2UINT16(kind))
+            || (TYPE_MESSAGE == KIND2UINT16(kind))
+            || (TYPE_DID_REGISTER == KIND2UINT16(kind))
+            || (TYPE_DID_TRANSFER == KIND2UINT16(kind));
 }
 
-bool business_data::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool business_data::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool business_data::from_data(reader& source)
+bool business_data::from_data_t(reader& source)
 {
     reset();
     kind = static_cast<business_kind>(source.read_2_bytes_little_endian());
@@ -108,47 +75,47 @@ bool business_data::from_data(reader& source)
     {
         switch (KIND2UINT16(kind))
         {
-            case ETP_TYPE:
+            case TYPE_ETP:
             {
                 data = etp();
                 break;
             }
-            case ETP_AWARD_TYPE:
+            case TYPE_ETP_AWARD:
             {
                 data = etp_award();
                 break;
             }
-            case ASSET_ISSUE_TYPE:
+            case TYPE_ASSET_ISSUE:
             {
                 data = asset_detail();
                 break;
             }
-            case ASSET_TRANSFER_TYPE:
+            case TYPE_ASSET_TRANSFER:
             {
                 data = asset_transfer();
                 break;
             }
-            case ASSET_CERT_TYPE:
+            case TYPE_ASSET_CERT:
             {
                 data = asset_cert();
                 break;
             }
-            case ASSET_MIT_TYPE:
+            case TYPE_ASSET_MIT:
             {
                 data = asset_mit();
                 break;
             }
-            case MESSAGE_TYPE:
+            case TYPE_MESSAGE:
             {
                 data = blockchain_message();
                 break;
             }
-            case DID_REGISTER_TYPE:
+            case TYPE_DID_REGISTER:
             {
                 data = did_detail();
                 break;
             }
-            case DID_TRANSFER_TYPE:
+            case TYPE_DID_TRANSFER:
             {
                 data = did_detail();
                 break;
@@ -167,22 +134,7 @@ bool business_data::from_data(reader& source)
 
 }
 
-data_chunk business_data::to_data()
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    return data;
-}
-
-void business_data::to_data(std::ostream& stream)
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void business_data::to_data(writer& sink)
+void business_data::to_data_t(writer& sink)
 {
     sink.write_2_bytes_little_endian(KIND2UINT16(kind));
     sink.write_4_bytes_little_endian(timestamp);

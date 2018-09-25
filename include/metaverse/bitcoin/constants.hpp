@@ -64,6 +64,15 @@ BC_CONSTEXPR uint32_t min_fee_percentage_to_miner  = 20;
 // otherwise as UNIX timestamp. [Tue Nov 5 00:53:20 1985 UTC]
 BC_CONSTEXPR uint32_t locktime_threshold = 500000000;
 
+// Relative locktime constants.
+//-----------------------------------------------------------------------------
+
+BC_CONSTEXPR size_t relative_locktime_min_version = 2;
+BC_CONSTEXPR size_t relative_locktime_seconds_shift = 9;
+BC_CONSTEXPR uint32_t relative_locktime_mask = 0x0000ffff;
+BC_CONSTEXPR uint32_t relative_locktime_disabled = 0x80000000;
+BC_CONSTEXPR uint32_t relative_locktime_time_locked = 0x00400000;
+
 BC_CONSTFUNC uint64_t max_money_recursive(uint64_t current)
 {
     return (current > 0) ? current + max_money_recursive(current >> 1) : 0;

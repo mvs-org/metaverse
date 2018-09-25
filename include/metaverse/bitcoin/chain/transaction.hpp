@@ -33,6 +33,7 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/thread.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -46,6 +47,7 @@ enum transaction_version {
 };
 
 class BC_API transaction
+    : public base_primary<transaction>
 {
 public:
     typedef std::vector<transaction> list;
@@ -53,9 +55,6 @@ public:
     typedef std::vector<ptr> ptr_list;
     typedef std::vector<size_t> indexes;
 
-    static transaction factory_from_data(const data_chunk& data);
-    static transaction factory_from_data(std::istream& stream);
-    static transaction factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
     transaction();
@@ -73,12 +72,8 @@ public:
     // TODO: eliminate blockchain transaction copies and then delete this.
     transaction& operator=(const transaction& other) /*= delete*/;
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();
@@ -88,6 +83,7 @@ public:
     hash_digest hash(uint32_t sighash_type) const;
     bool is_coinbase() const;
     bool is_final(uint64_t block_height, uint32_t block_time) const;
+    bool is_locked(size_t block_height, uint32_t median_time_past) const;
     bool is_locktime_conflict() const;
     uint64_t total_output_value() const;
     uint64_t serialized_size() const;

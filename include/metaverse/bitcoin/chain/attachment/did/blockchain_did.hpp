@@ -23,16 +23,19 @@
 #include <istream>
 #include <vector>
 #include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 #include <metaverse/bitcoin/chain/script/script.hpp>
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 class BC_API blockchain_did
+    : public base_primary<blockchain_did>
 {
 public:
     enum did_address_type: uint32_t
@@ -45,17 +48,10 @@ public:
     blockchain_did();
     blockchain_did( uint32_t version, const output_point& tx_point,
             uint64_t height, uint32_t status, const did_detail& did);
-    static blockchain_did factory_from_data(const data_chunk& data);
-    static blockchain_did factory_from_data(std::istream& stream);
-    static blockchain_did factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 
 #ifdef MVS_DEBUG
     std::string to_string() const;

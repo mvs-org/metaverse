@@ -33,31 +33,9 @@
 namespace libbitcoin {
 namespace chain {
 
-block block::factory_from_data(const data_chunk& data,
-    bool with_transaction_count)
-{
-    block instance;
-    instance.from_data(data, with_transaction_count);
-    return instance;
-}
-
-block block::factory_from_data(std::istream& stream,
-    bool with_transaction_count)
-{
-    block instance;
-    instance.from_data(stream, with_transaction_count);
-    return instance;
-}
-
-block block::factory_from_data(reader& source,
-    bool with_transaction_count)
-{
-    block instance;
-    instance.from_data(source, with_transaction_count);
-    return instance;
-}
 
 block::block()
+  : header{}
 {
 }
 
@@ -103,19 +81,7 @@ void block::reset()
     transactions.shrink_to_fit();
 }
 
-bool block::from_data(const data_chunk& data, bool with_transaction_count)
-{
-    data_source istream(data);
-    return from_data(istream, with_transaction_count);
-}
-
-bool block::from_data(std::istream& stream, bool with_transaction_count)
-{
-    istream_reader source(stream);
-    return from_data(source, with_transaction_count);
-}
-
-bool block::from_data(reader& source, bool with_transaction_count)
+bool block::from_data_t(reader& source, bool with_transaction_count)
 {
     reset();
 
@@ -140,23 +106,8 @@ bool block::from_data(reader& source, bool with_transaction_count)
     return result;
 }
 
-data_chunk block::to_data(bool with_transaction_count) const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream, with_transaction_count);
-    ostream.flush();
-    BITCOIN_ASSERT(header.number <= 1270000 || data.size() == serialized_size(with_transaction_count));
-    return data;
-}
 
-void block::to_data(std::ostream& stream, bool with_transaction_count) const
-{
-    ostream_writer sink(stream);
-    to_data(sink, with_transaction_count);
-}
-
-void block::to_data(writer& sink, bool with_transaction_count) const
+void block::to_data_t(writer& sink, bool with_transaction_count) const
 {
     header.to_data(sink, with_transaction_count);
 

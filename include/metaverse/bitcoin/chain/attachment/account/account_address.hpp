@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -50,7 +51,8 @@ enum account_address_status : uint8_t
     stealth_addr = 3 // stealth address
 };
 
-class BC_API account_address
+class BC_API account_address 
+    : public base_primary<account_address>
 {
 public:
     typedef std::vector<account_address> list;
@@ -59,17 +61,10 @@ public:
         const std::string& pub_key, uint32_t hd_index, uint64_t balance,
         const std::string& alias, const std::string& address, uint8_t status);
     account_address(const account_address& other);
-    static account_address factory_from_data(const data_chunk& data);
-    static account_address factory_from_data(std::istream& stream);
-    static account_address factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
 #ifdef MVS_DEBUG
     std::string to_string() ;
 #endif

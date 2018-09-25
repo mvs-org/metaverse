@@ -27,29 +27,24 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 namespace libbitcoin {
 namespace chain {
 
 BC_CONSTEXPR size_t  BLOCKCHAIN_MESSAGE_FIX_SIZE = 256;
 class BC_API blockchain_message
+    : public base_primary<blockchain_message>
 {
 public:
     //BC_CONSTEXPR static size_t blockchain_message_FIX_SIZE = 64;
 
     blockchain_message();
     blockchain_message(std::string content);
-    static blockchain_message factory_from_data(const data_chunk& data);
-    static blockchain_message factory_from_data(std::istream& stream);
-    static blockchain_message factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() const;
-    void to_data(std::ostream& stream) const;
-    void to_data(writer& sink) const;
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink) const;
     std::string to_string() const;
     bool is_valid() const;
     void reset();

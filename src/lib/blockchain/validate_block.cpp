@@ -151,26 +151,32 @@ void validate_block::initialize_context()
     // good for all, no votes is needed.
     activations_ |= script_context::attenuation_enabled;
 
-    // bip65 is activated based on 75% of preceding 1000 mainnet blocks.
-    if (activate(count_4))
+    // bip65/112 is activated based on 75% of preceding 1000 mainnet blocks.
+    if (activate(count_4)) {
         activations_ |= script_context::bip65_enabled;
+        activations_ |= script_context::bip112_enabled;
+    }
 
     // bip66 is activated based on 75% of preceding 1000 mainnet blocks.
-    if (activate(count_3))
+    if (activate(count_3)) {
         activations_ |= script_context::bip66_enabled;
+    }
 
     // bip34 is activated based on 75% of preceding 1000 mainnet blocks.
-    if (activate(count_2))
+    if (activate(count_2)) {
         activations_ |= script_context::bip34_enabled;
+    }
 
     // bip30 applies to all but two mainnet blocks that violate the rule.
     if (height_ != bip30_exception_height1 &&
-            height_ != bip30_exception_height2)
+            height_ != bip30_exception_height2) {
         activations_ |= script_context::bip30_enabled;
+    }
 
     // bip16 was activated with a one-time test on mainnet/testnet (~55% rule).
-    if (height_ >= bip16_activation_height)
+    if (height_ >= bip16_activation_height) {
         activations_ |= script_context::bip16_enabled;
+    }
 }
 
 // initialize_context must be called first (to set activations_).
@@ -182,6 +188,7 @@ bool validate_block::is_active(script_context flag) const
     const auto version = current_block_.header.version;
     return
         (flag == script_context::attenuation_enabled) ||
+        (flag == script_context::bip112_enabled && version >= version_4) ||
         (flag == script_context::bip65_enabled && version >= version_4) ||
         (flag == script_context::bip66_enabled && version >= version_3) ||
         (flag == script_context::bip34_enabled && version >= version_2);
@@ -543,6 +550,15 @@ code validate_block::accept_block() const
             !is_valid_coinbase_height(height_, current_block_))
         return error::coinbase_height_mismatch;
 
+    if (is_active(script_context::bip112_enabled)) {
+        for (const auto& tx : current_block_.transactions) {
+            if (tx.is_locked(height_, median_time_past())) {
+                return error::sequence_locked;
+            }
+
+            RETURN_IF_STOPPED();
+        }
+    }
     return error::success;
 }
 

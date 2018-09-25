@@ -61,26 +61,6 @@ account_address::account_address(const account_address& other)
     address = other.address;
     status_ = other.status_;
 }
-account_address account_address::factory_from_data(const data_chunk& data)
-{
-    account_address instance;
-    instance.from_data(data);
-    return instance;
-}
-
-account_address account_address::factory_from_data(std::istream& stream)
-{
-    account_address instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-account_address account_address::factory_from_data(reader& source)
-{
-    account_address instance;
-    instance.from_data(source);
-    return instance;
-}
 
 bool account_address::is_valid() const
 {
@@ -99,19 +79,9 @@ void account_address::reset()
     status_ = 0;
 }
 
-bool account_address::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
 
-bool account_address::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
 
-bool account_address::from_data(reader& source)
+bool account_address::from_data_t(reader& source)
 {
     reset();
     name = source.read_fixed_string(ADDRESS_NAME_FIX_SIZE);
@@ -133,23 +103,8 @@ bool account_address::from_data(reader& source)
     return true;
 }
 
-data_chunk account_address::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
 
-void account_address::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void account_address::to_data(writer& sink) const
+void account_address::to_data_t(writer& sink) const
 {
     sink.write_fixed_string(name, ADDRESS_NAME_FIX_SIZE);
     //sink.write_fixed_string(prv_key, ADDRESS_PRV_KEY_FIX_SIZE);

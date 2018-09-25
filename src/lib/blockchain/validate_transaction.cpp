@@ -1339,6 +1339,18 @@ code validate_transaction::check_transaction_basic() const
     if (tx.serialized_size() > max_transaction_size)
         return error::size_limits;
 
+    // check double spend in inputs
+    std::set<std::string> set;
+    for (auto& input : tx.inputs) {
+        auto tx_hash = libbitcoin::encode_hash(input.previous_output.hash);
+        auto value = tx_hash + ":" + std::to_string(input.previous_output.index);
+        if (set.count(value)) {
+            return error::double_spend;
+        }
+
+        set.insert(value);
+    }
+
     // Check for negative or overflow output values
     uint64_t total_output_value = 0;
 
@@ -1460,6 +1472,9 @@ bool validate_transaction::check_consensus(const script& prevout_script,
 
     if ((flags & script_context::attenuation_enabled) != 0)
         consensus_flags |= verify_flags_checkattenuationverify;
+
+    if ((flags & script_context::bip112_enabled) != 0)
+        consensus_flags |= verify_flags_checksequenceverify;
 
     const auto result = verify_script(current_transaction.data(),
                                       current_transaction.size(), previous_output_script.data(),

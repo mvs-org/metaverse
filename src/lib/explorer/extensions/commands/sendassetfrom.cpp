@@ -49,9 +49,7 @@ console_result sendassetfrom::invoke(Json::Value& jv_output,
         throw asset_amount_exception("invalid amount parameter!");
     }
 
-    if (!option_.memo.empty() && option_.memo.size() >= 255) {
-        throw argument_size_invalid_exception{"memo length out of bounds."};
-    }
+    check_message(option_.memo);
 
     // receiver
     utxo_attach_type attach_type = option_.attenuation_model_param.empty()

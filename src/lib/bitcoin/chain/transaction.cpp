@@ -35,27 +35,6 @@
 namespace libbitcoin {
 namespace chain {
 
-transaction transaction::factory_from_data(const data_chunk& data)
-{
-    transaction instance;
-    instance.from_data(data);
-    return instance;
-}
-
-transaction transaction::factory_from_data(std::istream& stream)
-{
-    transaction instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-transaction transaction::factory_from_data(reader& source)
-{
-    transaction instance;
-    instance.from_data(source);
-    return instance;
-}
-
 // default constructors
 
 transaction::transaction()
@@ -134,19 +113,7 @@ void transaction::reset()
     mutex_.unlock();
 }
 
-bool transaction::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool transaction::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool transaction::from_data(reader& source)
+bool transaction::from_data_t(reader& source)
 {
     reset();
     version = source.read_4_bytes_little_endian();
@@ -202,25 +169,7 @@ bool transaction::from_data(reader& source)
     return result;
 }
 
-data_chunk transaction::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-
-    BITCOIN_ASSERT(data.size() == serialized_size());
-
-    return data;
-}
-
-void transaction::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void transaction::to_data(writer& sink) const
+void transaction::to_data_t(writer& sink) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_variable_uint_little_endian(inputs.size());
@@ -321,6 +270,21 @@ bool transaction::is_final(uint64_t block_height, uint32_t block_time) const
             return false;
 
     return true;
+}
+
+bool transaction::is_locked(size_t block_height,
+    uint32_t median_time_past) const
+{
+    if (version < relative_locktime_min_version || is_coinbase())
+        return false;
+
+    const auto locked = [block_height, median_time_past](const input& input)
+    {
+        return input.is_locked(block_height, median_time_past);
+    };
+
+    // If any input is relative time locked the transaction is as well.
+    return std::any_of(inputs.begin(), inputs.end(), locked);
 }
 
 bool transaction::is_locktime_conflict() const

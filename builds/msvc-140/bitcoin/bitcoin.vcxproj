@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\header.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\input.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output_point.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\point_iterator.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\uri.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\base_primary.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\account\account_address.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\chain\attachment\asset\asset.hpp" />
@@ -357,6 +359,7 @@
     <ClInclude Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_token.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\include\metaverse\bitcoin\impl\base_primary.ipp" />
     <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_16.ipp" />
     <None Include="..\..\..\include\metaverse\bitcoin\impl\formats\base_58.ipp" />
     <None Include="..\..\..\include\metaverse\bitcoin\impl\math\checksum.ipp" />

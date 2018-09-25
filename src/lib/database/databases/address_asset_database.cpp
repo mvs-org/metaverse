@@ -25,6 +25,7 @@
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 #include <metaverse/database/memory/memory.hpp>
 #include <metaverse/database/primitives/record_multimap_iterable.hpp>
 #include <metaverse/database/primitives/record_multimap_iterator.hpp>
@@ -506,7 +507,7 @@ business_history::list address_asset_database::get_business_history(const short_
         if (!found)
         {
             business_history row;
-            row.output = { null_hash, max_uint32 };
+            row.output = output_point( null_hash, max_uint32 );
             row.output_height = max_uint64;
             row.value = max_uint64;
             row.spend = spend.point;

@@ -33,54 +33,6 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-//Check if address is checksum of ETH address
-bool is_ETH_Address(const string& address)
-{
-    // regex checking
-    {
-        sregex_iterator end;
-
-        // check if it has the basic requirements of an address
-        static const regex reg_common("^0x[0-9a-fA-F]{40}$");
-        sregex_iterator it(address.begin(), address.end(), reg_common);
-        if (it == end) {
-            return false;
-        }
-
-        // If it's all small caps, return true
-        static const regex reg_alllower("^0x[0-9a-f]{40}$");
-        sregex_iterator it1(address.begin(), address.end(), reg_alllower);
-        if (it1 != end) {
-            return true;
-        }
-
-        // If it's all caps, return true
-        static const regex reg_allupper("^0x[0-9A-F]{40}$");
-        sregex_iterator it2(address.begin(), address.end(), reg_allupper);
-        if (it2 != end) {
-            return true;
-        }
-    }
-
-    // Otherwise check each case
-    auto addr = address.substr(2); // get rid of prefix "0x"
-    auto address_hash = bc::sha3(boost::to_lower_copy(addr)).hex();
-
-    for (size_t i = 0; i < addr.size(); ++i) {
-        auto c = addr[i];
-        if (std::isdigit(c)) {
-            continue;
-        }
-        // the nth letter should be uppercase if the nth digit of casemap is 1 (89abcdef)
-        bool is_less_than_8 = (address_hash[i] >= '0' && address_hash[i] < '8');
-        if ((is_less_than_8 && !std::islower(c)) ||
-            (!is_less_than_8 && !std::isupper(c))) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 console_result swaptoken::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
@@ -90,8 +42,8 @@ console_result swaptoken::invoke(Json::Value& jv_output,
     blockchain.uppercase_symbol(argument_.symbol);
 
     // check message
-    if (argument_.foreign_addr.empty() || argument_.foreign_addr.size() >= 255) {
-        throw argument_size_invalid_exception{"message length out of bounds."};
+    if (argument_.foreign_addr.empty() || argument_.foreign_addr.size() >= 200) {
+        throw argument_size_invalid_exception{"foreign address length out of bounds."};
     }
 
     // check ETH address
@@ -126,6 +78,13 @@ console_result swaptoken::invoke(Json::Value& jv_output,
         {to_address, argument_.symbol, 0, argument_.amount, utxo_attach_type::asset_transfer, attach_asset},
         {swapfee_address, "", option_.swapfee, 0, utxo_attach_type::etp, attach_fee},
     };
+
+    if (!option_.memo.empty()) {
+        check_message(option_.memo);
+
+        receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
+            attachment(0, 0, blockchain_message(option_.memo))});
+    }
 
     std::string message("{\"type\":\"ETH\",\"address\":\""+ argument_.foreign_addr + "\"}");
 

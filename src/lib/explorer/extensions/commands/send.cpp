@@ -51,9 +51,7 @@ console_result send::invoke(Json::Value& jv_output,
     };
 
     if (!option_.memo.empty()) {
-        if ( option_.memo.size() >= 255) {
-            throw argument_size_invalid_exception{"memo length out of bounds."};
-        }
+        check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
             attachment(0, 0, blockchain_message(option_.memo))});

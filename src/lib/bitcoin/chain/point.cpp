@@ -35,25 +35,72 @@
 namespace libbitcoin {
 namespace chain {
 
-point point::factory_from_data(const data_chunk& data)
+// Constructors.
+//-----------------------------------------------------------------------------
+
+// A default instance is invalid (until modified).
+point::point()
+  : hash(null_hash), index(0)
 {
-    point instance;
-    instance.from_data(data);
-    return instance;
 }
 
-point point::factory_from_data(std::istream& stream)
+point::point(const hash_digest& hash_, uint32_t index_)
+  : hash(hash_), index(index_)
 {
-    point instance;
-    instance.from_data(stream);
-    return instance;
 }
 
-point point::factory_from_data(reader& source)
+point::point(hash_digest&& hash_, uint32_t index_)
+  : hash(std::move(hash_)), index(index_)
 {
-    point instance;
-    instance.from_data(source);
-    return instance;
+}
+
+point::point(const point& other)
+  : point(other.hash, other.index)
+{
+}
+
+point::point(point&& other)
+  : point(std::move(other.hash), other.index)
+{
+}
+
+point::~point()
+{
+}
+
+// Operators.
+//-----------------------------------------------------------------------------
+
+point& point::operator=(point&& other)
+{
+    hash = std::move(other.hash);
+    index = other.index;
+    return *this;
+}
+
+point& point::operator=(const point& other)
+{
+    hash = other.hash;
+    index = other.index;
+    return *this;
+}
+
+// This arbitrary order is produced to support set uniqueness determinations.
+bool point::operator<(const point& other) const
+{
+    // The index is primary only because its comparisons are simpler.
+    return index == other.index ? hash < other.hash :
+        index < other.index;
+}
+
+bool point::operator==(const point& other) const
+{
+    return (hash == other.hash) && (index == other.index);
+}
+
+bool point::operator!=(const point& other) const
+{
+    return !(*this == other);
 }
 
 bool point::is_valid() const
@@ -63,23 +110,11 @@ bool point::is_valid() const
 
 void point::reset()
 {
-    hash.fill(0);
+    hash = null_hash;
     index = 0;
 }
 
-bool point::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool point::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool point::from_data(reader& source)
+bool point::from_data_t(reader& source)
 {
     reset();
 
@@ -93,23 +128,7 @@ bool point::from_data(reader& source)
     return result;
 }
 
-data_chunk point::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    BITCOIN_ASSERT(data.size() == serialized_size());
-    return data;
-}
-
-void point::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void point::to_data(writer& sink) const
+void point::to_data_t(writer& sink) const
 {
     sink.write_hash(hash);
     sink.write_4_bytes_little_endian(index);
@@ -165,6 +184,7 @@ uint64_t point::checksum() const
     const auto index_lower_15_bits = tx_index & ~mask;
     return tx_upper_49_bits | index_lower_15_bits;
 }
+
 #if 0 // old version checksum method
 // This is used with output_point identification within a set of history rows
 // of the same address. Collision will result in miscorrelation of points by
@@ -188,21 +208,22 @@ uint64_t point::checksum() const
     // return std::hash<point>()(*this);
 }
 #endif
-bool operator==(const point& left, const point& right)
-{
-    return left.hash == right.hash && left.index == right.index;
-}
 
-bool operator!=(const point& left, const point& right)
-{
-    return !(left == right);
-}
+// bool operator==(const point& left, const point& right)
+// {
+//     return left.hash == right.hash && left.index == right.index;
+// }
 
-bool operator<(const point& left, const point& right)
-{
-    typedef std::tuple<hash_digest, uint32_t> tupe_cmp;
-    return tupe_cmp(left.hash, left.index) < tupe_cmp(right.hash, right.index);
-}
+// bool operator!=(const point& left, const point& right)
+// {
+//     return !(left == right);
+// }
+
+// bool operator<(const point& left, const point& right)
+// {
+//     typedef std::tuple<hash_digest, uint32_t> tupe_cmp;
+//     return tupe_cmp(left.hash, left.index) < tupe_cmp(right.hash, right.index);
+// }
 
 } // namspace chain
 } // namspace libbitcoin

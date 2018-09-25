@@ -26,6 +26,9 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <boost/variant.hpp>
+#include <metaverse/bitcoin/chain/point.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
+#include <metaverse/bitcoin/chain/history.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
@@ -34,6 +37,7 @@
 #include <metaverse/bitcoin/chain/attachment/etp/etp.hpp>
 #include <metaverse/bitcoin/chain/attachment/etp/etp_award.hpp>
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
+#include <metaverse/bitcoin/base_primary.hpp>
 
 #define KIND2UINT16(kd)  (static_cast<typename std::underlying_type<business_kind>::type>(kd))
 // 0 -- unspent  1 -- confirmed  2 -- local asset not issued
@@ -68,6 +72,7 @@ enum business_status : uint8_t
 };
 
 class BC_API business_data
+    : public base_primary<business_data>
 {
 public:
     typedef boost::variant<
@@ -80,17 +85,10 @@ public:
         blockchain_message,
         did_detail> business_data_type;
 
-    static business_data factory_from_data(const data_chunk& data);
-    static business_data factory_from_data(std::istream& stream);
-    static business_data factory_from_data(reader& source);
     static uint64_t satoshi_fixed_size();
 
-    bool from_data(const data_chunk& data);
-    bool from_data(std::istream& stream);
-    bool from_data(reader& source);
-    data_chunk to_data() ;
-    void to_data(std::ostream& stream) ;
-    void to_data(writer& sink);
+    bool from_data_t(reader& source);
+    void to_data_t(writer& sink);
 #if MVS_DEBUG
     std::string to_string() ;
 #endif

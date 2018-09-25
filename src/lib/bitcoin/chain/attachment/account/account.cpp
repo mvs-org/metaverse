@@ -246,26 +246,6 @@ account::account(
 {
 }
 
-account account::factory_from_data(const data_chunk& data)
-{
-    account instance;
-    instance.from_data(data);
-    return instance;
-}
-
-account account::factory_from_data(std::istream& stream)
-{
-    account instance;
-    instance.from_data(stream);
-    return instance;
-}
-
-account account::factory_from_data(reader& source)
-{
-    account instance;
-    instance.from_data(source);
-    return instance;
-}
 
 bool account::is_valid() const
 {
@@ -283,19 +263,7 @@ void account::reset()
     this->status = account_status::normal;
 }
 
-bool account::from_data(const data_chunk& data)
-{
-    data_source istream(data);
-    return from_data(istream);
-}
-
-bool account::from_data(std::istream& stream)
-{
-    istream_reader source(stream);
-    return from_data(source);
-}
-
-bool account::from_data(reader& source)
+bool account::from_data_t(reader& source)
 {
     reset();
     name = source.read_string();
@@ -326,23 +294,7 @@ bool account::from_data(reader& source)
     return true;
 }
 
-data_chunk account::to_data() const
-{
-    data_chunk data;
-    data_sink ostream(data);
-    to_data(ostream);
-    ostream.flush();
-    //BITCOIN_ASSERT(data.size() == serialized_size()); // serialized_size is not used
-    return data;
-}
-
-void account::to_data(std::ostream& stream) const
-{
-    ostream_writer sink(stream);
-    to_data(sink);
-}
-
-void account::to_data(writer& sink) const
+void account::to_data_t(writer& sink) const
 {
     sink.write_string(name);
     sink.write_string(mnemonic);
