@@ -1340,15 +1340,21 @@ code validate_transaction::check_transaction_basic() const
         return error::size_limits;
 
     // check double spend in inputs
-    std::set<std::string> set;
-    for (auto& input : tx.inputs) {
-        auto tx_hash = libbitcoin::encode_hash(input.previous_output.hash);
-        auto value = tx_hash + ":" + std::to_string(input.previous_output.index);
+    using point_t = std::pair<hash_digest, uint32_t>;
+    std::set<point_t> set;
+    for (const auto& input : tx.inputs) {
+        point_t value(input.previous_output.hash, input.previous_output.index);
         if (set.count(value)) {
             return error::double_spend;
         }
 
         set.insert(value);
+
+        if (!validate_block_) {
+            if (chain.get_spends_output(input.previous_output)) {
+                return error::duplicate_or_spent;
+            }
+        }
     }
 
     // Check for negative or overflow output values
