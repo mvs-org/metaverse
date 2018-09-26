@@ -1526,7 +1526,7 @@ void base_transfer_common::sign_tx_inputs()
             chain::script script_encoded;
             script_encoded.from_string(multisig_script);
 
-            ss.operations.push_back({bc::chain::opcode::pushdata1, script_encoded.to_data(false)});
+            ss.operations.push_back({bc::chain::opcode::pushdata2, script_encoded.to_data(false)});
         }
         else {
             bc::explorer::config::script config_contract(fromeach.script);
