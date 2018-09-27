@@ -1519,14 +1519,13 @@ void base_transfer_common::sign_tx_inputs()
             }
 
             // do script
-            data_chunk data;
-            ss.operations.push_back({bc::chain::opcode::zero, data});
+            ss.operations.push_back({bc::chain::opcode::zero, {}});
             ss.operations.push_back({bc::chain::opcode::special, endorse});
 
             chain::script script_encoded;
             script_encoded.from_string(multisig_script);
 
-            ss.operations.push_back({bc::chain::opcode::pushdata2, script_encoded.to_data(false)});
+            ss.operations.push_back(chain::operation::from_raw_data(script_encoded.to_data(false)));
         }
         else {
             bc::explorer::config::script config_contract(fromeach.script);

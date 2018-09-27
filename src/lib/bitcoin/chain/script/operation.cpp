@@ -37,6 +37,15 @@ namespace chain {
 
 const size_t operation::max_null_data_size = 80;
 
+operation operation::from_raw_data(const data_chunk& data)
+{
+    BITCOIN_ASSERT_MSG(data.size() > 0, "operation::from_raw_data must take non-empty raw data.");
+    operation instance;
+    instance.data = data;
+    instance.code = data_to_opcode(data);
+    return instance;
+}
+
 operation operation::factory_from_data(const data_chunk& data)
 {
     operation instance;

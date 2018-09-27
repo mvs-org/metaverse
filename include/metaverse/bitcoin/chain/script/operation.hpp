@@ -149,6 +149,8 @@ public:
     static stack to_pay_key_hash_with_attenuation_model_pattern(
             const short_hash& hash, const std::string& model_param, const point& input_point);
 
+    static operation from_raw_data(const data_chunk& data);
+
     bool from_data(const data_chunk& data);
     bool from_data(std::istream& stream);
     bool from_data(reader& source);
