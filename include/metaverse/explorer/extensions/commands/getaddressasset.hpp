@@ -66,7 +66,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "address"
+            "did/address"
         )
         (
             "cert,c",

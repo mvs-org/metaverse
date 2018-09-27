@@ -43,14 +43,14 @@ public:
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-            .add("PAYMENT_ADDRESS", 1);
+            .add("ADDRESS", 1);
     }
 
     void load_fallbacks (std::istream& input,
         po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
-        load_input(auth_.auth, "PAYMENT_ADDRESS", variables, input, raw);
+        load_input(argument_.address, "ADDRESS", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -64,9 +64,9 @@ public:
             "Get a description and instructions for this command."
         )
         (
-            "PAYMENT_ADDRESS",
-            value<bc::wallet::payment_address>(&argument_.address)->required(),
-            "The payment address. If not specified the address is read from STDIN."
+            "ADDRESS",
+            value<std::string>(&argument_.address)->required(),
+            "did/address. If not specified it is read from STDIN."
         );
 
         return options;
@@ -81,7 +81,7 @@ public:
 
     struct argument
     {
-        bc::wallet::payment_address address;
+        std::string address;
     } argument_;
 
     struct option

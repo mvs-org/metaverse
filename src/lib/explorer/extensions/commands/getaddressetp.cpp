@@ -23,6 +23,7 @@
 #include <metaverse/explorer/extensions/commands/getaddressetp.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -35,13 +36,18 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
                                      libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    auto& addr = argument_.address;
+    auto&& address = get_address(argument_.address, blockchain);
+    if (address.empty()) {
+        throw address_invalid_exception{"invalid address!"};
+    }
+
+    wallet::payment_address waddr(address);
     bc::explorer::commands::balances addr_balance{0, 0, 0, 0};
 
-    sync_fetchbalance(addr, blockchain, addr_balance);
+    sync_fetchbalance(waddr, blockchain, addr_balance);
 
     Json::Value jv;
-    jv["address"] = addr.encoded();
+    jv["address"] = address;
     if (get_api_version() == 1) {
         // compatible for version 1: as string value
         jv["confirmed"] = std::to_string(addr_balance.confirmed_balance);
