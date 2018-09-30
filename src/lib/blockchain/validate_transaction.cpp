@@ -308,7 +308,7 @@ void validate_transaction::check_double_spend(const code& ec,
 void validate_transaction::check_fees() const
 {
     code ec = check_tx_connect_input();
-    if (ec != error::success) {
+    if (ec) {
         handle_validate_(ec, tx_, {});
         return;
     }
@@ -1038,15 +1038,15 @@ code validate_transaction::check_did_transaction() const
 
     for (const auto& output : tx.outputs)
     {
-        if ((ret = output.check_attachment_address(chain)) != error::success)
+        if ((ret = output.check_attachment_address(chain)))
             return ret;
 
         //to_did check(strong check)
-        if ((ret = check_attachment_to_did(output)) != error::success)
+        if ((ret = check_attachment_to_did(output)))
             return ret;
 
         //from_did (weak check)
-        if ((ret = connect_attachment_from_did(output)) != error::success) {
+        if ((ret = connect_attachment_from_did(output))) {
             return ret;
         }
 
@@ -1273,32 +1273,32 @@ code validate_transaction::check_transaction() const
 {
     code ret = error::success;
 
-    if ((ret = check_transaction_basic()) != error::success) {
+    if ((ret = check_transaction_basic())) {
         return ret;
     }
 
-    if ((ret = check_asset_issue_transaction()) != error::success) {
+    if ((ret = check_asset_issue_transaction())) {
         return ret;
     }
 
     if (tx_->version >= transaction_version::check_nova_feature) {
-        if ((ret = check_asset_cert_transaction()) != error::success) {
+        if ((ret = check_asset_cert_transaction())) {
             return ret;
         }
 
-        if ((ret = check_secondaryissue_transaction()) != error::success) {
+        if ((ret = check_secondaryissue_transaction())) {
             return ret;
         }
 
-        if ((ret = check_asset_mit_transaction()) != error::success) {
+        if ((ret = check_asset_mit_transaction())) {
             return ret;
         }
 
-        if ((ret = check_did_transaction()) != error::success) {
+        if ((ret = check_did_transaction())) {
             return ret;
         }
 
-        if ((ret = attenuation_model::check_model_param(*this)) != error::success) {
+        if ((ret = attenuation_model::check_model_param(*this))) {
             return ret;
         }
     }

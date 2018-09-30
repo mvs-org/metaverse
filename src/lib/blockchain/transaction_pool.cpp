@@ -147,7 +147,7 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
     }
 
     code error = check_symbol_repeat(tx);
-    if (error != error::success) {
+    if (error) {
         handler(error, tx, {});
         return;
     }
@@ -274,11 +274,11 @@ code transaction_pool::check_symbol_repeat(transaction_ptr tx)
         if (!item.tx)
             continue;
 
-        if((ec = check_outputs(item.tx)) != error::success)
+        if((ec = check_outputs(item.tx)))
             break;
     }
 
-    return ec != error::success ? ec : check_outputs(tx);
+    return (ec.value() != error::success) ? ec : check_outputs(tx);
 }
 
 // handle_confirm will never fire if handle_validate returns a failure code.
