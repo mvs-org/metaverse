@@ -30,11 +30,10 @@ namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
 
-void sort_multi_sigs(tx_type& tx_) {
+bool sort_multi_sigs(tx_type& tx_) {
     bc::chain::script input_script;
     bc::chain::script redeem_script;
 
-    bool fullfilled = true;
     for (uint32_t index = 0; index < tx_.inputs.size(); ++index) {
         auto &each_input = tx_.inputs[index];
         input_script = each_input.script;
@@ -75,7 +74,12 @@ void sort_multi_sigs(tx_type& tx_) {
             "script" : "zero [ signature_1 ] [ signature_2 ] [ encoded-script ]",
         */
         // skip first "m" and last "n checkmultisig"
+        static constexpr auto op_1 = static_cast<uint8_t>(chain::opcode::op_1);
         const auto op_m = static_cast<uint8_t>(script_encoded.operations[0].code);
+        if (op_m < op_1) {
+            return false;
+        }
+        const auto num_m = op_m - op_1 + 1u;
 
         auto multisig_start = script_encoded.operations.begin() + 1;
         auto multisig_end = script_encoded.operations.end() - 2;
@@ -105,21 +109,19 @@ void sort_multi_sigs(tx_type& tx_) {
                     break;
                 }
             }
-
-            if (new_script.operations.size() >= op_m + 1) {
-                break;
-            }
         }
 
         // insert encoded-script
         new_script.operations.push_back(input_script.operations.back());
-        if (new_script.operations.size() < op_m + 2) {
-            fullfilled = false;
+        if (new_script.operations.size() < num_m + 2) {
+            return false;
         }
 
         // set input script of this tx
         each_input.script = new_script;
     }
+
+    return true;
 }
 
 console_result sendrawtx::invoke(Json::Value& jv_output,
@@ -138,9 +140,12 @@ console_result sendrawtx::invoke(Json::Value& jv_output,
         throw tx_validate_exception{"no enough transaction fee"};
     base_transfer_common::check_fee_in_valid_range(inputs_etp_val - outputs_etp_val);
 
-    sort_multi_sigs(tx_);
-    if (blockchain.validate_transaction(tx_))
-        throw tx_validate_exception{"validate transaction failure"};
+    if (blockchain.validate_transaction(tx_) != error::success) {
+        if (!sort_multi_sigs(tx_))
+            throw tx_validate_exception{"validate multi-sig transaction failure"};
+        if (blockchain.validate_transaction(tx_) != error::success)
+            throw tx_validate_exception{"validate transaction failure"};
+    }
 
     if (blockchain.broadcast_transaction(tx_))
         throw tx_broadcast_exception{"broadcast transaction failure"};
