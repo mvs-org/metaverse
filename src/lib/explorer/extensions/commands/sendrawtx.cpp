@@ -140,11 +140,12 @@ console_result sendrawtx::invoke(Json::Value& jv_output,
         throw tx_validate_exception{"no enough transaction fee"};
     base_transfer_common::check_fee_in_valid_range(inputs_etp_val - outputs_etp_val);
 
-    if (blockchain.validate_transaction(tx_) != error::success) {
+    code ec = error::success;
+    if ((ec = blockchain.validate_transaction(tx_))) {
         if (!sort_multi_sigs(tx_))
-            throw tx_validate_exception{"validate multi-sig transaction failure"};
-        if (blockchain.validate_transaction(tx_) != error::success)
-            throw tx_validate_exception{"validate transaction failure"};
+            throw tx_validate_exception{"validate multi-sig transaction failure:" + ec.message()};
+        if ((ec = blockchain.validate_transaction(tx_)))
+            throw tx_validate_exception{"validate transaction failure: " + ec.message()};
     }
 
     if (blockchain.broadcast_transaction(tx_))
