@@ -211,6 +211,15 @@ bool block_chain_impl::get_header(header& out_header, uint64_t height) const
     return true;
 }
 
+uint64_t block_chain_impl::get_transaction_count(uint64_t block_height) const
+{
+    auto result = database_.blocks.get(block_height);
+    if (!result)
+        return 0;
+
+    return result.transaction_count();
+}
+
 bool block_chain_impl::get_height(uint64_t& out_height,
     const hash_digest& block_hash) const
 {

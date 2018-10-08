@@ -828,8 +828,10 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
             return false;
         }
 
-        if (block_chain.get_header(block_header, height))
+        if (block_chain.get_header(block_header, height)) {
+            block_header.transaction_count = block_chain.get_transaction_count(height);
             return true;
+        }
     }
 
     return false;

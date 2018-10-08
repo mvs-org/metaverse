@@ -96,6 +96,7 @@ public:
 
     /// Get the header of the block at the given height.
     bool get_header(chain::header& out_header, uint64_t height) const;
+    uint64_t get_transaction_count(uint64_t block_height) const;
 
     /// Get the height of the block with the given hash.
     bool get_height(uint64_t& out_height, const hash_digest& block_hash) const;
