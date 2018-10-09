@@ -44,29 +44,52 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
     wallet::payment_address waddr(address);
     bc::explorer::commands::balances addr_balance{0, 0, 0, 0};
 
-    sync_fetchbalance(waddr, blockchain, addr_balance);
+     Json::Value balances;
 
-    Json::Value jv;
-    jv["address"] = address;
-    if (get_api_version() == 1) {
-        // compatible for version 1: as string value
-        jv["confirmed"] = std::to_string(addr_balance.confirmed_balance);
-        jv["received"]  = std::to_string(addr_balance.total_received);
-        jv["unspent"]   = std::to_string(addr_balance.unspent_balance);
-        jv["frozen"]    = std::to_string(addr_balance.frozen_balance);
+    if (option_.deposited) {
+        auto deposited_balances = std::make_shared<deposited_balance::list>();
+
+        sync_fetch_deposited_balance(waddr, blockchain, deposited_balances);
+        
+
+        for (auto& balance : *deposited_balances) {
+            Json::Value json_balance;
+            json_balance["address"] = balance.address;
+            json_balance["deposited_balance"] = balance.balance;
+            json_balance["bonus_balance"] = balance.bonus;
+            json_balance["deposited_height"] = balance.deposited_height;
+            json_balance["expiration_height"] = balance.expiration_height;
+            json_balance["tx_hash"] = balance.tx_hash;
+
+            balances.append(json_balance);
+        }
     }
-    else {
-        jv["confirmed"] = addr_balance.confirmed_balance;
-        jv["received"]  = addr_balance.total_received;
-        jv["unspent"]   = addr_balance.unspent_balance;
-        jv["frozen"]    = addr_balance.frozen_balance;
+    else{
+        sync_fetchbalance(waddr, blockchain, addr_balance);
+
+        balances["address"] = address;
+        if (get_api_version() == 1) {
+            // compatible for version 1: as string value
+            balances["confirmed"] = std::to_string(addr_balance.confirmed_balance);
+            balances["received"]  = std::to_string(addr_balance.total_received);
+            balances["unspent"]   = std::to_string(addr_balance.unspent_balance);
+            balances["frozen"]    = std::to_string(addr_balance.frozen_balance);
+        }
+        else {
+            balances["confirmed"] = addr_balance.confirmed_balance;
+            balances["received"]  = addr_balance.total_received;
+            balances["unspent"]   = addr_balance.unspent_balance;
+            balances["frozen"]    = addr_balance.frozen_balance;
+        }
+
+
     }
 
     if (get_api_version() <= 2) {
-        jv_output["balance"] = jv;
+        jv_output["balance"] = balances;
     }
     else {
-        jv_output = jv;
+        jv_output = balances;
     }
 
     return console_result::okay;

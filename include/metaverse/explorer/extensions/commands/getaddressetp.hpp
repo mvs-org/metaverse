@@ -67,6 +67,11 @@ public:
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
             "did/address. If not specified it is read from STDIN."
+        )       
+        (
+            "deposited,d",
+            value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
+            "If specified, then only get deposited etp. Default is not specified."
         );
 
         return options;
@@ -86,6 +91,7 @@ public:
 
     struct option
     {
+        bool deposited;
     } option_;
 
 };
