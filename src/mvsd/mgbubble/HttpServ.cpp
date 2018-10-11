@@ -61,10 +61,6 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
     out_.rdbuf(&buf);
     out_.reset(200, "OK");
 
-    const vector<uint8_t> api20_ver_list = {2, 3};
-    auto checkAPIVer = [](const vector<uint8_t> &api_ver_list, const uint8_t &rpc_version) {
-        return find(api_ver_list.begin(), api_ver_list.end(), rpc_version) != api_ver_list.end();
-    };
     try {
         data.data_to_arg(rpc_version);
 
@@ -87,7 +83,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
                 else
                     out_ << jv_output.asString();
             }
-            else if (checkAPIVer(api20_ver_list, rpc_version)) {
+            else {
                 Json::Value jv_root;
                 jv_root["jsonrpc"] = "2.0";
                 jv_root["id"] = data.jsonrpc_id();
@@ -101,7 +97,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
         if (rpc_version == 1) {
             out_ << e;
         }
-        else if (checkAPIVer(api20_ver_list, rpc_version)) {
+        else {
             Json::Value root;
             root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
@@ -116,7 +112,7 @@ void HttpServ::rpc_request(mg_connection& nc, HttpMessage data, uint8_t rpc_vers
             libbitcoin::explorer::explorer_exception ex(1000, e.what());
             out_ << ex;
         }
-        else if (checkAPIVer(api20_ver_list, rpc_version)) {
+        else {
             Json::Value root;
             root["jsonrpc"] = "2.0";
             root["id"] = data.jsonrpc_id();
@@ -180,14 +176,21 @@ void HttpServ::run() {
 
 void HttpServ::on_http_req_handler(struct mg_connection& nc, http_message& msg)
 {
-    if ((mg_ncasecmp(msg.uri.p, "/rpc/v3", 7) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/v3/", 8) == 0)) {
-        rpc_request(nc, HttpMessage(&msg), 3); // v3 rpc
-    }
-    else if ((mg_ncasecmp(msg.uri.p, "/rpc/v2", 7) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/v2/", 8) == 0)) {
-        rpc_request(nc, HttpMessage(&msg), 2); // v2 rpc
-    }
-    else if ((mg_ncasecmp(msg.uri.p, "/rpc", 4) == 0) || (mg_ncasecmp(msg.uri.p, "/rpc/", 5) == 0)) {
-        rpc_request(nc, HttpMessage(&msg), 1); //v1 rpc
+    auto get_api_version = [&msg]() -> int {
+        if ((msg.uri.len >= 6) && (mg_ncasecmp(msg.uri.p, "/rpc/v", 6) == 0)) {
+            return std::max(1, std::atoi(msg.uri.p + 6));
+        }
+        if ((msg.uri.len >= 4) && (mg_ncasecmp(msg.uri.p, "/rpc", 4) == 0)) {
+            if ( (msg.uri.len == 4) || (msg.uri.p[4] == '/')) {
+                return 1;
+            }
+        }
+        return 0;
+    };
+
+    auto api_version = get_api_version();
+    if (api_version > 0) {
+        rpc_request(nc, HttpMessage(&msg), api_version);
     }
     else {
         std::shared_ptr<struct mg_connection> con(&nc, [](struct mg_connection * ptr) { (void)(ptr); });
