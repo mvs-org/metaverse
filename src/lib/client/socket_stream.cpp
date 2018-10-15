@@ -51,7 +51,7 @@ bool socket_stream::read(stream& stream)
     data_stack data;
     zmq::message message;
 
-    if (socket_.receive(message) != (code)error::success)
+    if (socket_.receive(message).value() != error::success)
         return false;
 
     // Copy the message to a data stack.
@@ -68,11 +68,11 @@ bool socket_stream::read(stream& stream)
 ////
 ////    response_message message;
 ////
-////    if (socket_.receive(message) != (code)error::success)
+////    if (socket_.receive(message).value() != error::success)
 ////        return false;
 ////
 ////    auto response = message.get_response();
-////    return response && (stream->write(response) == (code)error::success);
+////    return response && (stream->write(response).value() == error::success);
 ////}
 
 // TODO: optimize by passing the internal type of the message object.
@@ -85,7 +85,7 @@ bool socket_stream::write(const data_stack& data)
     for (const auto& chunk: data)
         message.enqueue(chunk);
 
-    return socket_.send(message) == (code)error::success;
+    return socket_.send(message).value() == error::success;
 }
 
 ////bool socket_stream::write(const std::shared_ptr<request>& request)
@@ -95,7 +95,7 @@ bool socket_stream::write(const data_stack& data)
 ////
 ////    request_message message;
 ////    message.set_request(request);
-////    return socket_.send(message) == (code)error::success;
+////    return socket_.send(message).value() == error::success;
 ////}
 
 } // namespace client

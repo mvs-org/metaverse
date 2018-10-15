@@ -81,7 +81,7 @@ void protocol_events::set_event(const code& ec)
     if (!handler)
         return;
 
-    if (ec == (code)error::channel_stopped)
+    if (ec.value() == error::channel_stopped)
         handler_.store(nullptr);
 
     handler(ec);

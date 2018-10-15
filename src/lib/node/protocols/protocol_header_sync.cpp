@@ -172,13 +172,13 @@ bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
 // This is fired by the base timer and stop handler.
 void protocol_header_sync::handle_event(const code& ec, event_handler complete)
 {
-    if (ec == (code)error::channel_stopped)
+    if (ec && ec.value() == error::channel_stopped)
     {
         complete(ec);
         return;
     }
 
-    if (ec && ec != (code)error::channel_timeout)
+    if (ec && ec.value() != error::channel_timeout)
     {
         log::warning(LOG_NODE)
             << "Failure in header sync timer for [" << authority() << "] "

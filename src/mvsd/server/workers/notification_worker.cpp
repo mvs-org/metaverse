@@ -226,7 +226,7 @@ void notification_worker::send(const route& reply_to,
     zmq::socket notifier(authenticator_, zmq::socket::role::router);
     auto ec = notifier.connect(endpoint);
 
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
         return;
 
     if (ec)
@@ -241,7 +241,7 @@ void notification_worker::send(const route& reply_to,
     message notification(reply_to, command, id, payload);
     ec = notification.send(notifier);
 
-    if (ec && ec != (code)error::service_stopped)
+    if (ec && ec.value() != error::service_stopped)
         log::warning(LOG_SERVER)
             << "Failed to send notification to "
             << notification.route().display() << " " << ec.message();
@@ -464,7 +464,7 @@ void notification_worker::subscribe_penetration(const route& reply_to,
 bool notification_worker::handle_blockchain_reorganization(const code& ec,
     uint64_t fork_point, const block_list& new_blocks, const block_list&)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped() || ec.value() == error::service_stopped)
         return false;
 
     if (ec)
@@ -499,7 +499,7 @@ void notification_worker::notify_blocks(uint32_t fork_point,
     zmq::socket publisher(authenticator_, zmq::socket::role::publisher);
     const auto ec = publisher.connect(endpoint);
 
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
         return;
 
     if (ec)
@@ -542,7 +542,7 @@ void notification_worker::notify_block(zmq::socket& publisher, uint32_t height,
 bool notification_worker::handle_inventory(const code& ec,
     const bc::message::inventory::ptr packet)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped() || ec.value() == error::service_stopped)
         return false;
 
     if (ec)
@@ -568,10 +568,10 @@ bool notification_worker::handle_inventory(const code& ec,
 bool notification_worker::handle_transaction_pool(const code& ec,
     const point::indexes&, bc::message::transaction_message::ptr tx)
 {
-    if (stopped() || ec == (code)error::service_stopped)
+    if (stopped() || ec.value() == error::service_stopped)
         return false;
 
-    if (ec == (code)error::mock)
+    if (ec.value() == error::mock)
     {
         return true;
     }

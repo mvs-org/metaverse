@@ -113,7 +113,7 @@ void session_batch::new_connect(connector::ptr connect,
 void session_batch::start_connect(const code& ec, const authority& host,
     connector::ptr connect, atomic_counter_ptr counter, channel_handler handler)
 {
-    if (counter->load() == batch_size_ || ec == (code)error::service_stopped)
+    if (counter->load() == batch_size_ || ec.value() == error::service_stopped)
         return;
 
     // This termination prevents a tight loop in the empty address pool case.
@@ -152,7 +152,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
         log::trace(LOG_NETWORK)
             << "Failure connecting to [" << host << "] " << count << ","
             << ec.message();
-        if (ec == error::channel_timeout) // if connect is not aviliable, change it into inactive state
+        if (ec.value() == error::channel_timeout) // if connect is not aviliable, change it into inactive state
             remove(host.to_network_address(), [](const code&){});
         else
             store(host.to_network_address());

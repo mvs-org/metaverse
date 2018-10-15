@@ -90,7 +90,7 @@ bool WsPushServ::handle_transaction_pool(const code& ec, const index_list&, mess
 {
     if (stopped())
         return false;
-    if (ec == (code)error::mock || ec == (code)error::service_stopped)
+    if (ec.value() == error::mock || ec.value() == error::service_stopped)
         return true;
     if (ec)
     {
@@ -106,7 +106,7 @@ bool WsPushServ::handle_blockchain_reorganization(const code& ec, uint64_t fork_
 {
     if (stopped())
         return false;
-    if (ec == (code)error::mock || ec == (code)error::service_stopped)
+    if (ec.value() == error::mock || ec.value() == error::service_stopped)
         return true;
     if (ec)
     {

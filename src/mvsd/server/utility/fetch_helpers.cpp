@@ -111,7 +111,7 @@ void chain_transaction_fetched(const code& ec, const chain::transaction& tx,
     const message& request, send_handler handler)
 {
     // wdy add for tx is null reference
-    if((code)error::not_found == ec) {
+    if (error::not_found == ec.value()) {
         handler(message(request, error::not_found));
         return;
     }

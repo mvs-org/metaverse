@@ -125,7 +125,7 @@ void transaction_pool::handle_validated(const code& ec, transaction_ptr tx,
         return;
     }
 
-    if (ec == (code)error::input_not_found || ec == (code)error::validate_inputs_failed)
+    if (ec.value() == error::input_not_found || ec.value() == error::validate_inputs_failed)
     {
         BITCOIN_ASSERT(unconfirmed.size() == 1);
         handler(ec, tx, unconfirmed);
@@ -463,14 +463,14 @@ void transaction_pool::exists(const hash_digest& tx_hash,
 bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
         const block_list& new_blocks, const block_list& replaced_blocks)
 {
-    if (ec == (code)error::service_stopped)
+    if (ec.value() == error::service_stopped)
     {
         log::debug(LOG_BLOCKCHAIN)
                 << "Stopping transaction pool: " << ec.message();
         return false;
     }
 
-    if (ec == error::mock)
+    if (ec.value() == error::mock)
         return true;
 
     if (ec)

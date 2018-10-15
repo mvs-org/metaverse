@@ -985,7 +985,7 @@ bool block_chain_impl::fetch_history(const wallet::payment_address& address,
     mutex.lock();
     auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
     {
-        if((code)error::success == ec)
+        if (error::success == ec.value())
             history = history_;
         mutex.unlock();
     };
@@ -2194,7 +2194,7 @@ bool block_chain_impl::get_transaction(const hash_digest& hash,
         mutex.lock();
         auto f = [&tx_ptr, &mutex](const code& ec, transaction_message::ptr tx_) -> void
         {
-            if((code)error::success == ec)
+            if (error::success == ec.value())
                 tx_ptr = tx_;
             mutex.unlock();
         };
@@ -2234,7 +2234,7 @@ bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
 
         auto f = [&tx_ptr, handler](const code& ec, transaction_message::ptr tx_) -> void
         {
-            if((code)error::success == ec){
+            if (error::success == ec.value()){
                 tx_ptr = tx_;
                 if(tx_ptr)
                     handler(ec, *(static_cast<std::shared_ptr<chain::transaction>>(tx_ptr)));
@@ -2264,7 +2264,7 @@ bool block_chain_impl::get_history_callback(const payment_address& address,
 
     auto f = [&ret, handler](const code& ec, chain::history_compact::list compact) -> void
     {
-        if((code)error::success == ec){
+        if (error::success == ec.value()){
             history::list result;
 
             // Process and remove all outputs.
@@ -2357,7 +2357,7 @@ code block_chain_impl::validate_transaction(const chain::transaction& tx)
     {
         log::debug("validate_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
         log::debug("validate_transaction") << "ec.message=" << ec.message();
-        //if((error::success == ec) && idx_vec.empty())
+        //if((error::success == ec.value()) && idx_vec.empty())
         ret = ec;
         mutex.unlock();
     };
@@ -2395,7 +2395,7 @@ code block_chain_impl::broadcast_transaction(const chain::transaction& tx)
         log::debug("broadcast_transaction") << "ec=" << ec << " idx_vec=" << idx_vec.size();
         log::debug("broadcast_transaction") << "ec.message=" << ec.message();
         ret = ec;
-        if(error::success == ec){
+        if (error::success == ec.value()) {
             log::trace("broadcast_transaction") << encode_hash(tx_ptr->hash()) << " validated";
         } else {
             //send_mutex.unlock(); // incase dead lock
@@ -2423,7 +2423,7 @@ bool block_chain_impl::get_history(const wallet::payment_address& address,
     mutex.lock();
     auto f = [&history, &mutex](const code& ec, const history_compact::list& history_) -> void
     {
-        if((code)error::success == ec)
+        if (error::success == ec.value())
             history = history_;
         mutex.unlock();
     };

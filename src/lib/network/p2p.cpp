@@ -263,7 +263,7 @@ session_outbound::ptr p2p::attach_outbound_session()
 bool p2p::stop()
 {
     // This is the only stop operation that can fail.
-    const auto result = (hosts_->stop() == (code)error::success);
+    const auto result = (hosts_->stop().value() == error::success);
 
     // Signal all current work to stop and free manual session.
     stopped_ = true;
