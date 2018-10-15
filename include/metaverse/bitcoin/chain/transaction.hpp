@@ -96,7 +96,6 @@ public:
 
     bool has_did_register() const;
     bool has_did_transfer() const;
-    std::string get_did_transfer_old_address() const;
 
     uint32_t version;
     uint32_t locktime;
