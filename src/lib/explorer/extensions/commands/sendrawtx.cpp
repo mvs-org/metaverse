@@ -136,20 +136,27 @@ console_result sendrawtx::invoke(Json::Value& jv_output,
         throw tx_validate_exception{"get transaction inputs etp value error!"};
 
     // check raw tx fee range
-    if (inputs_etp_val <= outputs_etp_val)
+    if (inputs_etp_val <= outputs_etp_val) {
         throw tx_validate_exception{"no enough transaction fee"};
+    }
     base_transfer_common::check_fee_in_valid_range(inputs_etp_val - outputs_etp_val);
 
-    code ec = error::success;
-    if ((ec = blockchain.validate_transaction(tx_))) {
-        if (!sort_multi_sigs(tx_))
+    code ec = blockchain.validate_transaction(tx_);
+    if (ec.value() != error::success) {
+        if (!sort_multi_sigs(tx_)) {
             throw tx_validate_exception{"validate multi-sig transaction failure:" + ec.message()};
-        if ((ec = blockchain.validate_transaction(tx_)))
+        }
+
+        ec = blockchain.validate_transaction(tx_);
+        if (ec.value() != error::success) {
             throw tx_validate_exception{"validate transaction failure: " + ec.message()};
+        }
     }
 
-    if (blockchain.broadcast_transaction(tx_))
-        throw tx_broadcast_exception{"broadcast transaction failure"};
+    ec = blockchain.broadcast_transaction(tx_);
+    if (ec.value() != error::success) {
+        throw tx_broadcast_exception{"broadcast transaction failure: " + ec.message()};
+    }
 
     if (get_api_version() <= 2) {
         jv_output["hash"] = encode_hash(tx_.hash());
