@@ -143,12 +143,18 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
             auto& tx = **i;
             auto hash = tx.hash();
 
+            if (sets.count(hash)) {
+                // already exist, keep unique
+                i = transactions.erase(i);
+                continue;
+            }
+
             uint64_t total_input_value = 0;
             bool ready = get_input_etp(tx, transactions, total_input_value, previous_out_map);
             if (!ready) {
                 // erase tx but not delete it from pool if parent tx is not ready
                 i = transactions.erase(i);
-                break;
+                continue;
             }
 
             uint64_t total_output_value = tx.total_output_value();
@@ -159,30 +165,27 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                 i = transactions.erase(i);
                 // delete it from pool if not enough fee
                 node_.pool().delete_tx(hash);
-                break;
+                continue;
             }
 
             auto transaction_is_ok = true;
-            for (auto& output : tx.outputs) {
-                if (tx.version >= transaction_version::check_output_script
-                        && output.script.pattern() == script_pattern::non_standard) {
-#ifdef MVS_DEBUG
-                    log::error(LOG_HEADER) << "transaction output script error! tx:" << tx.to_string(1);
-#endif
+
+            // check double spending
+            for (const auto& input : tx.inputs) {
+                if (node_.chain_impl().get_spends_output(input.previous_output)) {
+                    i = transactions.erase(i);
                     node_.pool().delete_tx(hash);
                     transaction_is_ok = false;
                     break;
                 }
             }
+            if (!transaction_is_ok) {
+                continue;
+            }
 
-            if (transaction_is_ok && (sets.find(hash) == sets.end())) {
-                tx_fee_map[hash] = fee;
-                sets.insert(hash);
-                ++i;
-            }
-            else {
-                i = transactions.erase(i);
-            }
+            tx_fee_map[hash] = fee;
+            sets.insert(hash);
+            ++i;
         }
     }
     return transactions.empty() == false;
