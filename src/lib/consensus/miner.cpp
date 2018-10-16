@@ -168,19 +168,20 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                 continue;
             }
 
-            auto transaction_is_ok = true;
-
-            // check double spending
-            for (const auto& input : tx.inputs) {
-                if (node_.chain_impl().get_spends_output(input.previous_output)) {
-                    i = transactions.erase(i);
-                    node_.pool().delete_tx(hash);
-                    transaction_is_ok = false;
-                    break;
+            if (!setting_.transaction_pool_consistency) {
+                auto transaction_is_ok = true;
+                // check double spending
+                for (const auto& input : tx.inputs) {
+                    if (node_.chain_impl().get_spends_output(input.previous_output)) {
+                        i = transactions.erase(i);
+                        node_.pool().delete_tx(hash);
+                        transaction_is_ok = false;
+                        break;
+                    }
                 }
-            }
-            if (!transaction_is_ok) {
-                continue;
+                if (!transaction_is_ok) {
+                    continue;
+                }
             }
 
             tx_fee_map[hash] = fee;
