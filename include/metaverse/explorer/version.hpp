@@ -12,9 +12,9 @@
  * For interpretation of the versioning scheme see: http://semver.org
  */
 
-#define MVS_EXPLORER_VERSION "0.8.5"
+#define MVS_EXPLORER_VERSION "0.9.0"
 #define MVS_EXPLORER_MAJOR_VERSION 0
-#define MVS_EXPLORER_MINOR_VERSION 8
-#define MVS_EXPLORER_PATCH_VERSION 5
+#define MVS_EXPLORER_MINOR_VERSION 9
+#define MVS_EXPLORER_PATCH_VERSION 0
 
 #endif
