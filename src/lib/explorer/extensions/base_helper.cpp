@@ -134,17 +134,17 @@ void check_did_symbol(const std::string& symbol, bool check_sensitive)
 void check_asset_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (symbol.empty()) {
-        throw asset_symbol_length_exception{"Symbol cannot be empty."};
+        throw asset_symbol_length_exception{"Asset symbol cannot be empty."};
     }
 
     if (symbol.length() > ASSET_DETAIL_SYMBOL_FIX_SIZE) {
-        throw asset_symbol_length_exception{"Symbol length must be less than "
+        throw asset_symbol_length_exception{"Asset symbol length must be less than "
             + std::to_string(ASSET_DETAIL_SYMBOL_FIX_SIZE) + "."};
     }
 
     if (check_sensitive) {
         if (bc::wallet::symbol::is_sensitive(symbol)) {
-            throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
+            throw asset_symbol_name_exception{"Asset symbol " + symbol + " is forbidden."};
         }
     }
 }
@@ -152,11 +152,11 @@ void check_asset_symbol(const std::string& symbol, bool check_sensitive)
 void check_mit_symbol(const std::string& symbol, bool check_sensitive)
 {
     if (symbol.empty()) {
-        throw asset_symbol_length_exception{"Symbol cannot be empty."};
+        throw asset_symbol_length_exception{"MIT symbol cannot be empty."};
     }
 
     if (symbol.length() > ASSET_MIT_SYMBOL_FIX_SIZE) {
-        throw asset_symbol_length_exception{"Symbol length must be less than "
+        throw asset_symbol_length_exception{"MIT symbol length must be less than "
             + std::to_string(ASSET_MIT_SYMBOL_FIX_SIZE) + "."};
     }
 
@@ -164,13 +164,13 @@ void check_mit_symbol(const std::string& symbol, bool check_sensitive)
     for (const auto& i : symbol) {
         if (!(std::isalnum(i) || i == '.'|| i == '@' || i == '_' || i == '-'))
             throw asset_symbol_name_exception(
-                "Symbol " + symbol + " has invalid character.");
+                "MIT symbol " + symbol + " has invalid character.");
     }
 
     if (check_sensitive) {
         auto upper = boost::to_upper_copy(symbol);
         if (bc::wallet::symbol::is_sensitive(upper)) {
-            throw asset_symbol_name_exception{"Symbol " + symbol + " is forbidden."};
+            throw asset_symbol_name_exception{"MIT symbol " + symbol + " is forbidden."};
         }
     }
 }
@@ -180,6 +180,89 @@ void check_message(const std::string& message, bool check_sensitive)
     if (!message.empty() && message.size() >= 0xfd/* 253, see serializer.ipp */) {
         throw argument_size_invalid_exception{"message length out of bounds."};
     }
+}
+
+template <typename ElemT>
+struct HexTo {
+    ElemT value;
+    operator ElemT() const {return value;}
+    friend std::istream& operator>>(std::istream& in, HexTo& out) {
+        in >> std::hex >> out.value;
+        return in;
+    }
+};
+
+asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
+    const string& account, const string& symbol, const string& cert_name)
+{
+    // check asset cert types
+    auto certs_create = asset_cert_ns::none;
+    std::map <std::string, asset_cert_type> cert_map = {
+        {"naming",      asset_cert_ns::naming},
+        {"marriage",    asset_cert_ns::marriage},
+        {"kyc",         asset_cert_ns::kyc}
+    };
+    auto iter = cert_map.find(cert_name);
+    if (iter != cert_map.end()) {
+        certs_create = iter->second;
+    }
+    else {
+        try {
+            if (cert_name.compare(0, 2, "0x") == 0) {
+                certs_create = boost::lexical_cast<HexTo<asset_cert_type>>(cert_name.c_str());
+            }
+            else {
+                certs_create = boost::lexical_cast<asset_cert_type>(cert_name.c_str());
+            }
+
+            if (certs_create < asset_cert_ns::custom) {
+                throw asset_cert_exception("invalid asset cert type " + cert_name);
+            }
+        }
+        catch(boost::bad_lexical_cast const&) {
+            throw asset_cert_exception("invalid asset cert type " + cert_name);
+        }
+    }
+
+    // check domain naming cert not exist.
+    if (blockchain.is_asset_cert_exist(symbol, certs_create)) {
+        throw asset_cert_existed_exception(
+            "cert '" + symbol + "' with type '" + cert_name + "' already exists on the blockchain!");
+    }
+
+    if (certs_create == asset_cert_ns::naming) {
+        // check symbol is valid.
+        auto pos = symbol.find(".");
+        if (pos == std::string::npos) {
+            throw asset_symbol_name_exception("invalid naming cert symbol " + symbol
+                + ", it should contain a dot '.'");
+        }
+
+        auto&& domain = asset_cert::get_domain(symbol);
+        if (!asset_cert::is_valid_domain(domain)) {
+            throw asset_symbol_name_exception("invalid naming cert symbol " + symbol
+                + ", it should contain a valid domain!");
+        }
+
+        // check asset not exist.
+        if (blockchain.is_asset_exist(symbol, false)) {
+            throw asset_symbol_existed_exception(
+                "asset symbol '" + symbol + "' already exists on the blockchain!");
+        }
+
+        // check domain cert belong to this account.
+        bool exist = blockchain.is_asset_cert_exist(domain, asset_cert_ns::domain);
+        if (!exist) {
+            throw asset_cert_notfound_exception("no domain cert '" + domain + "' found!");
+        }
+
+        auto cert = blockchain.get_account_asset_cert(account, domain, asset_cert_ns::domain);
+        if (!cert) {
+            throw asset_cert_notowned_exception("no domain cert '" + domain + "' owned by " + account);
+        }
+    }
+
+    return certs_create;
 }
 
 std::string get_address(const std::string& did_or_address,

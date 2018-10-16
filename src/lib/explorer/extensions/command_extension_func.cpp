@@ -50,6 +50,7 @@
 #include <metaverse/explorer/extensions/commands/getnewaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getblock.hpp>
 #include <metaverse/explorer/extensions/commands/validateaddress.hpp>
+#include <metaverse/explorer/extensions/commands/validatesymbol.hpp>
 #include <metaverse/explorer/extensions/commands/listbalances.hpp>
 #include <metaverse/explorer/extensions/commands/getbalance.hpp>
 #include <metaverse/explorer/extensions/commands/listtxs.hpp>
@@ -172,6 +173,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
 
     os <<"\r\n";
     // asset
+    func(make_shared<validatesymbol>());
     func(make_shared<createasset>());
     func(make_shared<deletelocalasset>());
     func(make_shared<issue>());
@@ -321,6 +323,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendfrom>();
 
     // asset
+    if (symbol == validatesymbol::symbol())
+        return make_shared<validatesymbol>();
     if (symbol == createasset::symbol())
         return make_shared<createasset>();
     if (symbol == deletelocalasset::symbol() || symbol == "deleteasset" )
