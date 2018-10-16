@@ -519,6 +519,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\validateaddress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\validatesymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\verifymessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2076,6 +2079,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\validateaddress.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\validatesymbol.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\deleteaccount.hpp">

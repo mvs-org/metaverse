@@ -302,6 +302,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validateaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\validatesymbol.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\callback_state.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -622,6 +625,9 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validateaddress.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\validatesymbol.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\callback_state.cpp">
