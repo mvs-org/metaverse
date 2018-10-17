@@ -60,18 +60,40 @@ BC_CONSTEXPR uint64_t min_fee_to_issue_asset       = 10 * 100000000;
 BC_CONSTEXPR uint64_t min_fee_to_register_did      = 1 * 100000000;
 BC_CONSTEXPR uint32_t min_fee_percentage_to_miner  = 20;
 
+// Relative locktime constants.
+//-----------------------------------------------------------------------------
+
 // Threshold for nLockTime: below this value it is interpreted as block number,
 // otherwise as UNIX timestamp. [Tue Nov 5 00:53:20 1985 UTC]
 BC_CONSTEXPR uint32_t locktime_threshold = 500000000;
 
-// Relative locktime constants.
-//-----------------------------------------------------------------------------
-
 BC_CONSTEXPR size_t relative_locktime_min_version = 2;
-BC_CONSTEXPR size_t relative_locktime_seconds_shift = 9;
-BC_CONSTEXPR uint32_t relative_locktime_mask = 0x0000ffff;
-BC_CONSTEXPR uint32_t relative_locktime_disabled = 0x80000000;
-BC_CONSTEXPR uint32_t relative_locktime_time_locked = 0x00400000;
+
+/* Below flags apply in the context of BIP 68*/
+/* If this flag set, input::sequence is NOT interpreted as a
+ * relative lock-time. */
+BC_CONSTEXPR uint32_t relative_locktime_disabled = (1 << 31);
+
+/* If input::sequence encodes a relative lock-time and this flag
+ * is set, the relative lock-time has units of 512 seconds,
+ * otherwise it specifies blocks with a granularity of 1. */
+BC_CONSTEXPR uint32_t relative_locktime_time_locked = (1 << 22);
+
+/* If input::sequence encodes a relative lock-time, this mask is
+ * applied to extract that lock-time from the sequence field. */
+BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
+
+/* In order to use the same number of bits to encode roughly the
+ * same wall-clock duration, and because blocks are naturally
+ * limited to occur every 30s on average, the minimum granularity
+ * for time-based relative lock-time is fixed at 32 seconds.
+ * Converting from input::sequence to seconds is performed by
+ * multiplying by 32 = 2^5, or equivalently shifting up by
+ * 5 bits. */
+BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
+
+// price
+//-----------------------------------------------------------------------------
 
 BC_CONSTFUNC uint64_t max_money_recursive(uint64_t current)
 {

@@ -1466,7 +1466,7 @@ bool op_checksequenceverify(evaluation_context& context, const script& script,
     // To provide for future soft-fork extensibility, if the
     // operand has the disabled lock-time flag set,
     // CHECKSEQUENCEVERIFY behaves as a NOP.
-    if ((number.int64() & (1 << 31)/*CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG*/) != 0)
+    if ((number.int64() & relative_locktime_disabled) != 0)
         return false;
 
     return true;

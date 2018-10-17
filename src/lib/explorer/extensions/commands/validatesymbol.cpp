@@ -82,7 +82,7 @@ console_result validatesymbol::invoke(Json::Value& jv_output, libbitcoin::server
         jv_output[key] = Forbidden;
     }
 
-    // chck mit symbol:available/existed/forbidden
+    // check mit symbol:available/existed/forbidden
     key = "mit_symbol";
     try
     {
@@ -101,7 +101,7 @@ console_result validatesymbol::invoke(Json::Value& jv_output, libbitcoin::server
         jv_output[key] = Forbidden;
     }
 
-    // chck did symbol:available/existed/forbidden
+    // check did symbol:available/existed/forbidden
     key = "did_symbol";
     try
     {

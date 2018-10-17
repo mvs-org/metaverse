@@ -97,6 +97,11 @@ public:
             "Message/Information attached to this transaction"
         )
         (
+            "locktime,x",
+            value<uint32_t>(&option_.locktime)->default_value(0),
+            "Locktime. defaults to 0"
+        )
+        (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -129,6 +134,7 @@ public:
         std::string message;
         uint16_t deposit;
         uint64_t fee;
+        uint32_t locktime;
 
     } option_;
 

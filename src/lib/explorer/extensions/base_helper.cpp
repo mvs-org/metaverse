@@ -1659,7 +1659,7 @@ void base_transfer_common::send_tx()
 
 void base_transfer_common::populate_tx_header()
 {
-    tx_.locktime = 0;
+    tx_.locktime = locktime_;
     if (validate_transaction::is_nova_feature_activated(blockchain_)) {
         tx_.version = transaction_version::check_nova_feature;
     } else {

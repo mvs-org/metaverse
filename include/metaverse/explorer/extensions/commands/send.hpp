@@ -98,6 +98,11 @@ public:
             "Attached memo for this transaction."
         )
         (
+            "locktime,x",
+            value<uint32_t>(&option_.locktime)->default_value(0),
+            "Locktime. defaults to 0"
+        )
+        (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 etp bits"
@@ -123,12 +128,13 @@ public:
 
     struct option
     {
-        option():fee(10000), memo(""), change("")
+        option():fee(10000), memo(""), change(""), locktime(0)
         {};
 
         uint64_t fee;
         std::string memo;
         std::string change;
+        uint32_t locktime;
     } option_;
 
 };

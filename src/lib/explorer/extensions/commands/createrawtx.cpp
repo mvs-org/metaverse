@@ -37,12 +37,18 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.uppercase_symbol(option_.symbol);
 
-    if (!option_.mychange_address.empty() && !blockchain.is_valid_address(option_.mychange_address))
+    if (!option_.mychange_address.empty() 
+        && !blockchain.is_valid_address(option_.mychange_address)) {
         throw toaddress_invalid_exception{"invalid address " + option_.mychange_address};
+    }
 
     // check senders
     if (option_.senders.empty()) {
         throw fromaddress_invalid_exception{"senders can not be empty!"};
+    }
+
+    if (option_.locktime < 0) {
+        throw argument_legality_exception("invalid locktime parameter!");
     }
 
     for (auto& each : option_.senders) {
@@ -110,27 +116,31 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     std::shared_ptr<base_transfer_common> sp_send_helper;
 
     switch (type) {
-        case utxo_attach_type::etp:
-        case utxo_attach_type::asset_transfer: {
-            sp_send_helper = std::make_shared<base_transaction_constructor>(blockchain, type,
+    case utxo_attach_type::etp:
+    case utxo_attach_type::asset_transfer: {
+        sp_send_helper = std::make_shared<base_transaction_constructor>(
+                             blockchain, type,
                              std::move(option_.senders), std::move(receivers),
                              std::move(option_.symbol), std::move(option_.mychange_address),
-                             std::move(option_.message), option_.fee);
-            break;
-        }
+                             std::move(option_.message),
+                             option_.fee, option_.locktime);
+        break;
+    }
 
-        case utxo_attach_type::deposit: {
-            sp_send_helper = std::make_shared<depositing_etp_transaction>(blockchain, type,
+    case utxo_attach_type::deposit: {
+        sp_send_helper = std::make_shared<depositing_etp_transaction>(
+                             blockchain, type,
                              std::move(option_.senders), std::move(receivers),
                              option_.deposit, std::move(option_.mychange_address),
-                             std::move(option_.message), option_.fee);
-            break;
-        }
+                             std::move(option_.message),
+                             option_.fee, option_.locktime);
+        break;
+    }
 
-        default: {
-            throw argument_legality_exception{"invalid transaction type."};
-            break;
-        }
+    default: {
+        throw argument_legality_exception{"invalid transaction type."};
+        break;
+    }
     }
 
     sp_send_helper->exec();
