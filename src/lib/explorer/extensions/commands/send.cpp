@@ -45,10 +45,6 @@ console_result send::invoke(Json::Value& jv_output,
         throw argument_legality_exception("invalid amount parameter!");
     }
 
-    if (option_.locktime < 0) {
-        throw argument_legality_exception("invalid locktime parameter!");
-    }
-
     // receiver
     std::vector<receiver_record> receiver{
         {to_address, "", argument_.amount, 0, utxo_attach_type::etp, attach}

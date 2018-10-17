@@ -510,7 +510,7 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     std::shared_ptr<chain::transaction> tx = blockchain.get_spends_output(input);
     uint64_t tx_height;
     chain::transaction tx_temp;
-    if(tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
+    if (tx == nullptr && blockchain.get_transaction(input.hash, tx_temp, tx_height))
     {
         const auto& output = tx_temp.outputs.at(input.index);
 
@@ -520,7 +520,6 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
     }
     else if (tx != nullptr)
     {
-
         for (uint32_t i = 0; i < tx->outputs.size(); i++)
         {
             const auto& output = tx->outputs.at(i);
@@ -528,11 +527,8 @@ void sync_unspend_output(bc::blockchain::block_chain_impl& blockchain, const inp
                 input_point input_ = {tx->hash(), i};
                 sync_unspend_output(blockchain, input_, output_list, filter);
             }
-
         }
-
     }
-
 }
 
 auto get_asset_unspend_utxo(const std::string& symbol,
@@ -1366,12 +1362,18 @@ void base_transfer_common::populate_tx_inputs()
                 + std::to_string(tx_limit) + " inputs.";
             throw tx_validate_exception(response);
         }
-
-        tx_item_idx_++;
-        input.sequence = max_input_sequence;
+        
+        if (locktime_ > 0) {
+            input.sequence = bc::relative_locktime_disabled;
+        }
+        else {
+            input.sequence = max_input_sequence;
+        }
+        
         input.previous_output.hash = fromeach.output.hash;
         input.previous_output.index = fromeach.output.index;
         tx_.inputs.push_back(input);
+        tx_item_idx_++;
     }
 }
 

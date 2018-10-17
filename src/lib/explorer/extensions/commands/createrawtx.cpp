@@ -47,10 +47,6 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         throw fromaddress_invalid_exception{"senders can not be empty!"};
     }
 
-    if (option_.locktime < 0) {
-        throw argument_legality_exception("invalid locktime parameter!");
-    }
-
     for (auto& each : option_.senders) {
         if (!blockchain.is_valid_address(each)) {
             throw fromaddress_invalid_exception{"invalid sender address " + each};
