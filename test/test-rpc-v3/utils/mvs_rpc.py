@@ -56,7 +56,7 @@ class RPC:
             result = rpc_rsp.json()['result']
             if result != None and isinstance(result, dict):
                 if self.method not in self.method_keys:
-                    keys = result.keys()
+                    keys = list( result.keys() )
                     keys.sort()
                     self.method_keys[self.method] = keys
 
@@ -496,11 +496,7 @@ def eth_get_work():
     '''
     {"jsonrpc": "3.0", "method": method, "params": params, "id": 0}
     '''
-    def result_handler(result):
-        header_hash, seed_hash, boundary = result
-        return common.toHex(header_hash), seed_hash, boundary
-
-    return "eth_getWork", [], {}, result_handler
+    return "eth_getWork", [], {}, None
 
 
 @mvs_api
@@ -829,5 +825,5 @@ def swap_token(account, password, symbol, amount, foreign_addr, change=None, fro
 
 if __name__ == "__main__":
     rc = RemoteCtrl("10.10.10.35")
-    print rc.list_balances('lxf', '123')
-    print list_balances('lxf', '123')
+    print( rc.list_balances('lxf', '123') )
+    print( list_balances('lxf', '123') )

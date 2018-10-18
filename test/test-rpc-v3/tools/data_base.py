@@ -72,7 +72,7 @@ class Header:
         invalid_offset = '\xFF' * self.size_of_offset
         bucket_array = []
         if need_bucket:
-            for i in xrange(self.bucket_size):
+            for i in range(self.bucket_size):
                 offset_str = f.read(self.size_of_offset)
                 if offset_str == invalid_offset:
                     continue
@@ -549,7 +549,7 @@ class transaction_table(account_table):
         assert (version < 5)
         input_size = get_var_len(ff, extra_padding.append)
         assert (input_size < 700) # max input ~ 667 ?
-        for i in xrange(input_size):
+        for i in range(input_size):
             #previous_output
             utxo_hash_ = ff.read(32)
             utxo_index = str2int( ff.read(4) )
@@ -563,7 +563,7 @@ class transaction_table(account_table):
 
         output_size = get_var_len(ff, extra_padding.append)
         assert (output_size < 70)
-        for i in xrange(output_size):
+        for i in range(output_size):
             amount = str2int( ff.read(8) )
             script_len = get_var_len(ff, extra_padding.append)
             assert (script_len < 256)
@@ -615,7 +615,7 @@ class block_table(account_table):
         tx_count32 = str2int( ff.read(4) )
 
         # transactions
-        for i in xrange(tx_count32):
+        for i in range(tx_count32):
             tx_hash = ff.read(32)
 
         end = ff.tell()

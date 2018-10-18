@@ -13,7 +13,7 @@ class TestAssetBatch(MVSTestCaseBase):
         avg_duration = 0.002
         durations = []
 
-        for i in xrange(round):
+        for i in range(round):
             print i
             duration, ret = common.duration_call(mvs_rpc.get_accountasset, Alice.name, Alice.password)
             self.assertEqual(ret[0], 0, "mvs_rpc.get_accountasset failed!")
@@ -28,7 +28,7 @@ class TestAssetBatch(MVSTestCaseBase):
         avg_duration = 0.005
         durations = []
 
-        for i in xrange(round):
+        for i in range(round):
             duration, ret = common.duration_call(mvs_rpc.get_addressasset, Alice.mainaddress())
             self.assertEqual(ret[0], 0, "mvs_rpc.get_addressasset failed!")
             self.assertLess(duration, max_duration)

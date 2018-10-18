@@ -30,9 +30,9 @@ class TestDIDBatch(MVSTestCaseBase):
             return message['total_count']
 
         try:
-            for i in xrange(batch_amount_i):
+            for i in range(batch_amount_i):
                 receivers = {}
-                for j in xrange(batch_amount_j):
+                for j in range(batch_amount_j):
                     ec, (lastword, address) = mvs_rpc.easy_new_account(get_account_name(i, j), "123456")
                     self.assertEqual(ec, 0)
                     lastwords.append(lastword)
@@ -43,8 +43,8 @@ class TestDIDBatch(MVSTestCaseBase):
                 Alice.mining()
 
             previous = get_did_count()
-            for i in xrange(batch_amount_i):
-                for j in xrange(batch_amount_j):
+            for i in range(batch_amount_i):
+                for j in range(batch_amount_j):
                     ec, message = mvs_rpc.register_did(get_account_name(i, j), "123456", get_address(i, j), get_did_symbol(i, j))
                     self.assertEqual(ec, 0)
 
@@ -58,7 +58,7 @@ class TestDIDBatch(MVSTestCaseBase):
             self.assertEqual(mine_round, 2)
 
         finally:
-            for i in xrange(batch_amount_i):
-                for j in xrange(batch_amount_j):
+            for i in range(batch_amount_i):
+                for j in range(batch_amount_j):
                     ec, message = mvs_rpc.delete_account(get_account_name(i, j), "123456", get_lastword(i, j))
                     self.assertEqual(ec, 0, message)

@@ -286,19 +286,23 @@ class Role:
             result, (height, difficulty) = mvs_rpc.get_info()
             assert (result == 0)
 
+            bin_header_hash = bytes.fromhex(header_hash[2:])
+
             rounds = 100
             nonce = 0
             while True:
-                bin_nonce, mixhash = mine(block_number=height+1, difficulty=difficulty, mining_hash=header_hash,
+                bin_nonce, mixhash = mine(block_number=height+1, difficulty=difficulty, mining_hash=bin_header_hash,
                                           rounds=rounds, start_nonce=nonce)
                 if bin_nonce:
                     break
                 nonce += rounds
-            return bin_nonce, '0x' + common.toString(header_hash), '0x' + common.toString(mixhash)
+            return '0x' + bin_nonce.hex(), header_hash, '0x' + mixhash.hex()
 
-        for i in xrange(times):
+        for i in range(times):
             bin_nonce, header_hash, mix_hash = __mine__()
-            result, message = mvs_rpc.eth_submit_work('0x' + common.toString(bin_nonce), header_hash, mix_hash)
+            result, message = mvs_rpc.eth_submit_work( bin_nonce, header_hash, mix_hash)
+            if result != 0:
+                print('failed to submit work:[%s, %s, %s] -> %s' % (bin_nonce, header_hash, mix_hash, message))
             assert (result == 0)
 
     def new_multisigaddress(self, description, others, required_key_num):
@@ -371,7 +375,7 @@ class NewGuy(Role):
         assert (result == 0)
 
         f = open('./Zac.txt', 'w')
-        print >> f, self.lastword()
+        f.write( self.lastword() )
         f.close()
 
         result, _ = mvs_rpc.new_address(self.name, self.password, 9)

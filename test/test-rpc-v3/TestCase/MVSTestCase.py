@@ -36,7 +36,7 @@ class MVSTestCaseBase(unittest.TestCase):
 
             # record current height
             _, (hash, height) = mvs_rpc.getblockheader()
-            print "current block height=[%s], hash=[%s]" % (height, hash)
+            print( "current block height=[%s], hash=[%s]" % (height, hash) )
 
     def tearDown(self):
         pass
@@ -107,7 +107,7 @@ class ForkTestCase(MVSTestCaseBase):
                 # it still works if the account Alice already exist in remote wallet
                 #self.assertEqual(ec, 0, message)
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )
 
     def tearDown(self):
         try:
@@ -117,7 +117,7 @@ class ForkTestCase(MVSTestCaseBase):
             ec, message = mvs_rpc.add_node(self.remote_ip + ':5251')
             self.assertEqual(ec, 0, message)
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )
 
         MVSTestCaseBase.tearDown(self)
 
@@ -162,4 +162,4 @@ class ForkTestCase(MVSTestCaseBase):
                 timeout -= 1
                 self.assertGreater(timeout, 0, "wait fork timeout error!")
         except:
-            print 'unable to connect remote url:' + self.remote_ip
+            print( 'unable to connect remote url:' + self.remote_ip )
