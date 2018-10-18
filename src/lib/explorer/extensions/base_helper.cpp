@@ -214,7 +214,7 @@ asset_cert_type check_cert_type_name(const string& cert_name)
                 certs_create = boost::lexical_cast<asset_cert_type>(cert_name.c_str());
             }
 
-            if (certs_create < asset_cert_ns::custom || certs_create > asset_cert_ns::custom_max) {
+            if (certs_create < asset_cert_ns::custom) {
                 throw asset_cert_exception("invalid asset cert type " + cert_name);
             }
         }
