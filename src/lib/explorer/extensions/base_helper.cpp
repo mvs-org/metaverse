@@ -192,8 +192,7 @@ struct HexTo {
     }
 };
 
-asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
-    const string& account, const string& symbol, const string& cert_name)
+asset_cert_type check_cert_type_name(const string& cert_name)
 {
     // check asset cert types
     auto certs_create = asset_cert_ns::none;
@@ -223,6 +222,13 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
             throw asset_cert_exception("invalid asset cert type " + cert_name);
         }
     }
+    return certs_create;
+}
+
+asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
+    const string& account, const string& symbol, const string& cert_name)
+{
+    auto certs_create = check_cert_type_name(cert_name);
 
     // check domain naming cert not exist.
     if (blockchain.is_asset_cert_exist(symbol, certs_create)) {

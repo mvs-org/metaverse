@@ -223,6 +223,7 @@ void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_message(const std::string& message, bool check_sensitive=false);
 asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
     const string& account, const string& symbol, const string& cert_name);
+asset_cert_type check_cert_type_name(const string& cert_type_name);
 
 class BCX_API base_transfer_common
 {
