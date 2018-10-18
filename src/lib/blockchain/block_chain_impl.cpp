@@ -1457,12 +1457,19 @@ block_chain_impl::get_account_asset_certs(const std::string& account, const std:
     return ret_vector;
 }
 
-std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs()
+std::shared_ptr<asset_cert::list> block_chain_impl::get_issued_asset_certs(
+    const std::string& address)
 {
+    log::info("block_chain_impl") << "address: " << address;
     auto sp_vec = std::make_shared<asset_cert::list>();
     auto sp_asset_certs_vec = database_.certs.get_blockchain_asset_certs();
-    for (const auto& each : *sp_asset_certs_vec)
+    for (const auto& each : *sp_asset_certs_vec) {
+        if (!address.empty() && address != each.get_address()) {
+            continue;
+        }
+
         sp_vec->emplace_back(std::move(each));
+    }
     return sp_vec;
 }
 
@@ -1849,7 +1856,8 @@ std::shared_ptr<business_address_asset::list> block_chain_impl::get_account_unis
 }
 
 /// get all the asset in blockchain
-std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets(const std::string& symbol)
+std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets(
+    const std::string& symbol, const std::string& address)
 {
     auto sp_vec = std::make_shared<asset_detail::list>();
     const auto is_symbol_empty = symbol.empty();
@@ -1861,6 +1869,10 @@ std::shared_ptr<asset_detail::list> block_chain_impl::get_issued_assets(const st
         auto& asset = each.get_asset();
         if (is_symbol_empty && bc::wallet::symbol::is_forbidden(asset.get_symbol())) {
             // swallow forbidden symbol
+            continue;
+        }
+
+        if (!address.empty() && address != asset.get_address()) {
             continue;
         }
 

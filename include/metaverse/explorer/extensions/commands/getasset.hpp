@@ -72,7 +72,13 @@ public:
             "cert,c",
             value<bool>(&option_.is_cert)->default_value(false)->zero_tokens(),
             "If specified, then only get related cert. Default is not specified."
-        );
+        )
+        (
+            "issuer,i",
+            value<std::string>(&option_.issuer)->default_value(""),
+            "did/address. If specified, then only get asset/cert issued by issuer. Default is not specified."
+        )
+        ;
 
         return options;
     }
@@ -97,6 +103,7 @@ public:
     struct option
     {
         bool is_cert;
+        std::string issuer;
     } option_;
 
 };

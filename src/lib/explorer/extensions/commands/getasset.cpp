@@ -42,6 +42,8 @@ console_result getasset::invoke(Json::Value& jv_output,
         check_asset_symbol(argument_.symbol);
     }
 
+    auto address = get_address(option_.issuer, blockchain);
+
     std::string json_key;
     Json::Value json_value;
     auto json_helper = config::json_helper(get_api_version());
@@ -50,7 +52,7 @@ console_result getasset::invoke(Json::Value& jv_output,
         json_key = "assetcerts";
 
         // get asset cert in blockchain
-        auto sh_vec = blockchain.get_issued_asset_certs();
+        auto sh_vec = blockchain.get_issued_asset_certs(address);
         if (argument_.symbol.empty()) {
             std::set<std::string> symbols;
             std::sort(sh_vec->begin(), sh_vec->end());
@@ -83,7 +85,7 @@ console_result getasset::invoke(Json::Value& jv_output,
         json_key = "assets";
 
         // get asset in blockchain
-        auto sh_vec = blockchain.get_issued_assets(argument_.symbol);
+        auto sh_vec = blockchain.get_issued_assets(argument_.symbol, address);
         if (argument_.symbol.empty()) {
             std::sort(sh_vec->begin(), sh_vec->end());
             std::set<std::string> symbols;
