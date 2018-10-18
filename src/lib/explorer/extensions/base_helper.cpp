@@ -215,7 +215,7 @@ asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
                 certs_create = boost::lexical_cast<asset_cert_type>(cert_name.c_str());
             }
 
-            if (certs_create < asset_cert_ns::custom) {
+            if (certs_create < asset_cert_ns::custom || certs_create > asset_cert_ns::custom_max) {
                 throw asset_cert_exception("invalid asset cert type " + cert_name);
             }
         }

@@ -271,6 +271,15 @@ bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std
     return true;
 }
 
+bool asset_cert::is_movalbe(asset_cert_type cert_type)
+{
+    return (cert_type | asset_cert_ns::unmovable_flag) != 0;
+}
+
+bool asset_cert::is_movalbe() const
+{
+    return asset_cert::is_movalbe(cert_type_);
+}
 
 } // namspace chain
 } // namspace libbitcoin

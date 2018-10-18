@@ -54,7 +54,20 @@ namespace asset_cert_ns {
     constexpr asset_cert_type domain        = 2;
     constexpr asset_cert_type naming        = 3;
 
+    constexpr asset_cert_type unmovable_flag = (1 << 30);
+    constexpr asset_cert_type unused_flag10  = (1 << 29);
+    constexpr asset_cert_type unused_flag9   = (1 << 28);
+    constexpr asset_cert_type unused_flag8   = (1 << 27);
+    constexpr asset_cert_type unused_flag7   = (1 << 26);
+    constexpr asset_cert_type unused_flag6   = (1 << 25);
+    constexpr asset_cert_type unused_flag5   = (1 << 24);
+    constexpr asset_cert_type unused_flag4   = (1 << 23);
+    constexpr asset_cert_type unused_flag3   = (1 << 22);
+    constexpr asset_cert_type unused_flag2   = (1 << 21);
+    constexpr asset_cert_type unused_flag1   = (1 << 20);
+
     constexpr asset_cert_type custom        = 0x80000000;
+    constexpr asset_cert_type custom_max    = 0x800fffff;
     constexpr asset_cert_type marriage      = custom + 0;
     constexpr asset_cert_type kyc           = custom + 1;
 }
@@ -119,6 +132,9 @@ public:
     static std::string get_domain(const std::string& symbol);
     static bool is_valid_domain(const std::string& domain);
     static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
+
+    static bool is_movalbe(asset_cert_type cert_type);
+    bool is_movalbe() const;
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
