@@ -133,8 +133,8 @@ public:
     static bool is_valid_domain(const std::string& domain);
     static std::string get_key(const std::string&symbol, const asset_cert_type& bit);
 
-    static bool is_movalbe(asset_cert_type cert_type);
-    bool is_movalbe() const;
+    static bool is_unmovable(asset_cert_type cert_type);
+    bool is_unmovable() const;
 
 private:
     // NOTICE: ref CAssetCert in transaction.h
