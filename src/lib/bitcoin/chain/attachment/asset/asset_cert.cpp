@@ -31,6 +31,12 @@ namespace chain {
 
 #define ASSET_SYMBOL_DELIMITER "."
 
+std::istream& operator>>(std::istream& in, asset_cert_type& out){
+    uint32_t & cert_type = out.mask;
+    in >> cert_type;
+    return in;
+}
+
 asset_cert::asset_cert()
 {
     reset();
@@ -273,7 +279,7 @@ bool asset_cert::test_certs(const std::vector<asset_cert_type>& total, const std
 
 bool asset_cert::is_unmovable(asset_cert_type cert_type)
 {
-    return (cert_type | asset_cert_ns::unmovable_flag) != 0;
+    return cert_type.cert_type_status.unmovable;
 }
 
 bool asset_cert::is_unmovable() const

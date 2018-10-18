@@ -26,6 +26,23 @@
 #include <metaverse/bitcoin/utility/reader.hpp>
 #include <metaverse/bitcoin/utility/writer.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
+#include <metaverse/bitcoin/compat.h>
+
+#ifdef __BIG_ENDIAN__
+    #define ASSET_CERT_BIG_ENDIAN
+#elif defined __LITTLE_ENDIAN__
+    /* override */
+#elif defined __BYTE_ORDER
+    #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
+        #define ASSET_CERT_BIG_ENDIAN
+    #endif
+#else /* !defined __LITTLE_ENDIAN__ */
+    #include <endian.h> /* machine/endian.h */
+    #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
+        #define ASSET_CERT_BIG_ENDIAN
+    #endif
+#endif
+
 
 #define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
 
@@ -47,29 +64,47 @@ BC_CONSTEXPR size_t ASSET_CERT_FIX_SIZE = (ASSET_CERT_SYMBOL_FIX_SIZE
     + ASSET_CERT_OWNER_FIX_SIZE + ASSET_CERT_ADDRESS_FIX_SIZE
     + ASSET_CERT_TYPE_FIX_SIZE + ASSET_CERT_STATUS_FIX_SIZE);
 
-using asset_cert_type = uint32_t;
+
+union asset_cert_type
+{
+    asset_cert_type(uint32_t mask_= 0)
+        :mask(mask_)
+    {
+    }
+    operator uint32_t()const
+    {
+        return mask;
+    }
+
+    struct{
+#ifdef ASSET_CERT_BIG_ENDIAN
+        uint32_t custom:1;
+        uint32_t unmovable:1;
+        uint32_t :10;
+        uint32_t type:20;
+#else
+        uint32_t type:20;
+        uint32_t :10;
+        uint32_t unmovable:1;
+        uint32_t custom:1;
+#endif
+    } cert_type_status;
+
+    uint32_t mask;
+};
+
+std::istream& operator>>(std::istream& in, asset_cert_type& out);
+
 namespace asset_cert_ns {
-    constexpr asset_cert_type none          = 0;
-    constexpr asset_cert_type issue         = 1;
-    constexpr asset_cert_type domain        = 2;
-    constexpr asset_cert_type naming        = 3;
+    const asset_cert_type none          = 0;
+    const asset_cert_type issue         = 1;
+    const asset_cert_type domain        = 2;
+    const asset_cert_type naming        = 3;
 
-    constexpr asset_cert_type unmovable_flag = (1 << 30);
-    constexpr asset_cert_type unused_flag10  = (1 << 29);
-    constexpr asset_cert_type unused_flag9   = (1 << 28);
-    constexpr asset_cert_type unused_flag8   = (1 << 27);
-    constexpr asset_cert_type unused_flag7   = (1 << 26);
-    constexpr asset_cert_type unused_flag6   = (1 << 25);
-    constexpr asset_cert_type unused_flag5   = (1 << 24);
-    constexpr asset_cert_type unused_flag4   = (1 << 23);
-    constexpr asset_cert_type unused_flag3   = (1 << 22);
-    constexpr asset_cert_type unused_flag2   = (1 << 21);
-    constexpr asset_cert_type unused_flag1   = (1 << 20);
-
-    constexpr asset_cert_type custom        = 0x80000000;
-    constexpr asset_cert_type custom_max    = 0x800fffff;
-    constexpr asset_cert_type marriage      = custom + 0;
-    constexpr asset_cert_type kyc           = custom + 1;
+    const asset_cert_type custom        = 0x80000000;
+    const asset_cert_type custom_max    = 0x800fffff;
+    const asset_cert_type marriage      = custom + 0;
+    const asset_cert_type kyc           = custom + 1;
 }
 
 class BC_API asset_cert
