@@ -2253,20 +2253,6 @@ attachment transferring_mit::populate_output_attachment(const receiver_record& r
     return attach;
 }
 
-chain::operation::stack
-transferring_asset_cert::get_script_operations(const receiver_record& record) const
-{
-    if ((utxo_attach_type::asset_cert_transfer == record.type) &&
-        asset_cert::is_unmovable(record.asset_cert)) {
-
-        receiver_record rec(record);
-        rec.target = from_;
-        return base_transfer_helper::get_script_operations(rec);
-    }
-
-    return base_transfer_helper::get_script_operations(record);
-}
-
 } //commands
 } // explorer
 } // libbitcoin

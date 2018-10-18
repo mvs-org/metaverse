@@ -721,8 +721,6 @@ public:
     ~transferring_asset_cert()
     {}
 
-    chain::operation::stack get_script_operations(const receiver_record& record) const override;
-
     void populate_tx_header() override {
         tx_.version = transaction_version::check_nova_feature;
         tx_.locktime = locktime_;
