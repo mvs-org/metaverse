@@ -151,7 +151,7 @@ class Testdidcommon(MVSTestCaseBase):
     def test_1_registerdid(self):
         special_symbol=['@','.','-','_']
         optional = {}
-        for i in xrange(len(special_symbol)):
+        for i in range(len(special_symbol)):
             optional[Zac.addresslist[i]] = 10**8
 
         mvs_rpc.sendmore(Alice.name, Alice.password, optional)
