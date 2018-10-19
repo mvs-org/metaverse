@@ -1,4 +1,4 @@
-/* mman-win32 from code.google.com/p/mman-win32 (MIT License). */
+/* mman-win32 derived from code.google.com/p/mman-win32 (MIT License). */
 
 #include "mman.h"
 
@@ -13,19 +13,26 @@
     #define FILE_MAP_EXECUTE 0x0020
 #endif
 
-/* private functions */
+/* local utilities */
 
-static int error(const DWORD err, const int deferr)
+static const int large = (sizeof(oft__) > sizeof(DWORD));
+
+static int last_error(int default_value)
 {
-    if (err == 0)
-        return 0;
+    /* TODO: implement full mapping to standard codes. */
 
-    /* TODO: implement. */
-
-    return err;
+    switch (GetLastError())
+    {
+        case ERROR_INVALID_HANDLE:
+            return EBADF;
+        case ERROR_DISK_FULL:
+            return ENOSPC;
+        default:
+            return default_value;
+    }
 }
 
-static DWORD protect_page(const int prot)
+static DWORD protect_page(int prot)
 {
     DWORD protect = 0;
 
@@ -45,7 +52,7 @@ static DWORD protect_page(const int prot)
     return protect;
 }
 
-static DWORD protect_file(const int prot)
+static DWORD protect_file(int prot)
 {
     DWORD desired_access = 0;
 
@@ -77,18 +84,15 @@ void* mmap(void* addr, size_t len, int prot, int flags, int fildes, oft__ off)
     const DWORD protect = protect_page(prot);
 
     const oft__ max = off + (oft__)len;
-    const int less = (sizeof(oft__) <= sizeof(DWORD));
 
-    const DWORD max_lo  = less ? (DWORD)max : (DWORD)((max      ) & MAXDWORD);
-    const DWORD max_hi  = less ? (DWORD)0   : (DWORD)((max >> 32) & MAXDWORD);
-    const DWORD file_lo = less ? (DWORD)off : (DWORD)((off      ) & MAXDWORD);
-    const DWORD file_hi = less ? (DWORD)0   : (DWORD)((off >> 32) & MAXDWORD);
+    const DWORD max_lo  = large ? (DWORD)((max)       & MAXDWORD) : (DWORD)max;
+    const DWORD max_hi  = large ? (DWORD)((max >> 32) & MAXDWORD) : (DWORD)0;
+    const DWORD file_lo = large ? (DWORD)((off)       & MAXDWORD) : (DWORD)off;
+    const DWORD file_hi = large ? (DWORD)((off >> 32) & MAXDWORD) : (DWORD)0;
 
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-    errno = 0;
 
     if (len == 0 || (flags & MAP_FIXED) != 0 || prot == PROT_EXEC)
     {
@@ -110,7 +114,7 @@ void* mmap(void* addr, size_t len, int prot, int flags, int fildes, oft__ off)
 
     if (mapping == NULL)
     {
-        errno = error(GetLastError(), EPERM);
+        errno = last_error(EPERM);
         return MAP_FAILED;
     }
 
@@ -119,25 +123,29 @@ void* mmap(void* addr, size_t len, int prot, int flags, int fildes, oft__ off)
     /* TODO: verify mapping handle may be closed here and then use the map. */
     if (map == NULL || CloseHandle(mapping) == FALSE)
     {
-        errno = error(GetLastError(), EPERM);
+        errno = last_error(EPERM);
         return MAP_FAILED;
     }
 
+    errno = 0;
     return map;
 }
 
 int munmap(void* addr, size_t len)
 {
     if (UnmapViewOfFile(addr) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
 int madvise(void* addr, size_t len, int advice)
 {
-    /* Not implemented. */
+    /* Not implemented, but should not fail (optimization). */
     return 0;
 }
 
@@ -147,36 +155,48 @@ int mprotect(void* addr, size_t len, int prot)
     const DWORD new_protect = protect_page(prot);
 
     if (VirtualProtect(addr, len, new_protect, &old_protect) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
 int msync(void* addr, size_t len, int flags)
 {
     if (FlushViewOfFile(addr, len) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
 int mlock(const void* addr, size_t len)
 {
     if (VirtualLock((LPVOID)addr, len) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
 int munlock(const void* addr, size_t len)
 {
     if (VirtualUnlock((LPVOID)addr, len) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
@@ -188,9 +208,12 @@ int fsync(int fd)
     const HANDLE handle = (HANDLE)(_get_osfhandle(fd));
 
     if (FlushFileBuffers(handle) != FALSE)
+    {
+        errno = 0;
         return 0;
+    }
 
-    errno = error(GetLastError(), EPERM);
+    errno = last_error(EPERM);
     return -1;
 }
 
@@ -200,38 +223,31 @@ int ftruncate(int fd, oft__ size)
     LARGE_INTEGER big;
 
     if (fd < 0)
+    {
+        errno = EBADF;
         return -1;
+    }
 
     /* guard against overflow from unsigned to signed */
-    if (size >= MAXINT64)
+    if (size >= (uint64_t)(large ? MAXINT64 : MAXINT32))
+    {
+        errno = EFBIG;
         return -1;
+    }
 
     /* unsigned to signed, splits to high and low */
     big.QuadPart = (LONGLONG)size;
 
     const HANDLE handle = (HANDLE)_get_osfhandle(fd);
-    const BOOL ret = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
+    const BOOL ok = SetFilePointerEx(handle, big, NULL, FILE_BEGIN);
 
-    if (!ret || !SetEndOfFile(handle))
+    if (!ok || SetEndOfFile(handle) == FALSE)
     {
-        const DWORD error = GetLastError();
-
-        switch (error)
-        {
-            case ERROR_INVALID_HANDLE:
-                errno = EBADF;
-                break;
-            case ERROR_DISK_FULL:
-                errno = ENOSPC;
-                break;
-            default:
-                errno = EIO;
-                break;
-        }
-
+        errno = last_error(EIO);
         return -1;
     }
 
+    errno = 0;
     return 0;
 }
 
