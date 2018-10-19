@@ -490,6 +490,8 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             if (get_option(variables, BS_TESTNET_VARIABLE))
             {
                 configured.network.hosts_file = "hosts-test.cache";
+                configured.network.debug_file = "debug-test.log";
+                configured.network.error_file = "error-test.log";
                 const_cast<path&>(variables[BS_CONFIG_VARIABLE].as<path>()) = "mvs-test.conf";
             }
             auto data_dir = variables[BS_DATADIR_VARIABLE].as<path>();
@@ -499,7 +501,8 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
                 {
                     error << format_invalid_parameter("datadir path is invalid.") << std::endl;
                     return false;
-                }            }
+                }
+            }
             // Returns true if the settings were loaded from a file.
             file = load_configuration_variables(variables, BS_CONFIG_VARIABLE);
         }
