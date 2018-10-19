@@ -87,7 +87,7 @@ class Transaction:
                         + get_varlen( len(input.script) )
                         + input.script
                         + int2bytes(input.sequence, 4) )
-        return version + input_size + inputs + self.remain_bytes
+        return version + input_size + inputs + self.remain_bytes + int2bytes(self.locktime, 4)
 
     @classmethod
     def parse_rawtx(cls, rawtx):
@@ -114,7 +114,8 @@ class Transaction:
 
             obj.inputs.append( Input(utxo_hash, utxo_index, script, sequence) )
 
-        obj.remain_bytes = bintx[f.tell():]
+        obj.remain_bytes = bintx[f.tell():-4]
+        obj.locktime = bytes2int( bintx[-4:] )
         return obj
 
 
