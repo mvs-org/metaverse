@@ -61,6 +61,8 @@ public:
     code check_transaction_connect_input(size_t last_height);
     code check_transaction() const;
     code check_transaction_basic() const;
+    code check_sequence_locks() const;
+    code check_final_tx() const;
     code check_asset_issue_transaction() const;
     code check_asset_cert_transaction() const;
     code check_secondaryissue_transaction() const;

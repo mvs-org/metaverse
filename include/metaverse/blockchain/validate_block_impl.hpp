@@ -52,9 +52,8 @@ public:
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const override;
 
     virtual size_t get_fork_index() const override { return fork_index_; }
-
-protected:
     uint64_t median_time_past() const;
+protected:
     u256 previous_block_bits() const;
     uint64_t actual_time_span(size_t interval) const;
     versions preceding_block_versions(size_t maximum) const;

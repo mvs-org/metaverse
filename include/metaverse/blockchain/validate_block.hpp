@@ -63,7 +63,8 @@ public:
     virtual bool is_asset_mit_in_orphan_chain(const std::string& symbol) const = 0;
 
     virtual size_t get_fork_index() const { return max_size_t; }
-
+    const uint64_t get_height() const {return height_;}
+    virtual uint64_t median_time_past() const = 0;
 protected:
     typedef std::vector<uint8_t> versions;
     typedef std::function<bool()> stopped_callback;
@@ -73,7 +74,6 @@ protected:
         stopped_callback stop_callback);
 
     virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& tx) const = 0;
-    virtual uint64_t median_time_past() const = 0;
     virtual u256 previous_block_bits() const = 0;
     virtual uint64_t actual_time_span(size_t interval) const = 0;
     virtual versions preceding_block_versions(size_t count) const = 0;
@@ -112,7 +112,7 @@ protected:
 
 private:
     bool testnet_;
-    const size_t height_;
+    const uint64_t height_;
     uint32_t activations_;
     uint32_t minimum_version_;
     const chain::block& current_block_;

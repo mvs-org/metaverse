@@ -1277,6 +1277,14 @@ code validate_transaction::check_transaction() const
         return ret;
     }
 
+    if ((ret = check_final_tx())) {
+        return ret;
+    }
+
+    if ((ret = check_sequence_locks())) {
+        return ret;
+    }
+
     if ((ret = check_asset_issue_transaction())) {
         return ret;
     }
@@ -1304,6 +1312,102 @@ code validate_transaction::check_transaction() const
     }
 
     return ret;
+}
+
+uint64_t median_time_past(const uint64_t &height, const blockchain::block_chain_impl& chain)
+{
+    const uint64_t median_time_past_blocks = 11;
+    // Read last 11 (or height if height < 11) block times into array.
+    const auto count = std::min(height, median_time_past_blocks);
+
+    header header;
+    std::vector<uint64_t> times;
+    for (size_t i = 1; i <= count; ++i) {
+        if (!chain.get_header(header, height - count + i)) {
+            return MAX_UINT64;
+        }
+        times.push_back(header.timestamp);
+    }
+
+    // Sort and select middle (median) value from the array.
+    std::sort(times.begin(), times.end());
+    return times.empty() ? 0 : times[times.size() / 2];
+}
+
+code validate_transaction::check_final_tx() const
+{
+    blockchain::block_chain_impl& chain = blockchain_;
+
+    uint64_t height = 0;
+    uint64_t median_time_past_ = 0;
+    if (validate_block_) {
+        height = validate_block_->get_height();
+        median_time_past_ = validate_block_->median_time_past();
+    } else {
+        chain.get_last_height(height);
+        median_time_past_ = median_time_past(height, chain);
+        ++height; // the next block's height
+    }
+
+    return !tx_->is_final(height, median_time_past_) ? error::non_final_transaction : error::success;
+}
+
+code validate_transaction::check_sequence_locks() const
+{
+    const chain::transaction& tx = *tx_;
+    blockchain::block_chain_impl& chain = blockchain_;
+    if (tx.version < relative_locktime_min_version || tx_->is_coinbase())
+        return error::success;
+
+    uint64_t last_height = 0;
+    uint64_t median_time_past_ = 0;
+    if (validate_block_) {
+        last_height = validate_block_->get_height();
+        median_time_past_ = validate_block_->median_time_past();
+    } else {
+        chain.get_last_height(last_height);
+        median_time_past_ = median_time_past(last_height, chain);
+        ++last_height; // the next block's height
+    }
+
+    uint64_t min_time = 0;
+    uint64_t min_height = 0;
+
+    header header;
+
+    for (auto &input : tx.inputs) {
+        const auto& nSequence = input.sequence;
+        if (nSequence & relative_locktime_disabled) {
+            continue;
+        }
+
+        chain::transaction prev_tx;
+        uint64_t prev_height{0};
+        if (!get_previous_tx(prev_tx, prev_height, input)) {
+            log::error(LOG_BLOCKCHAIN) << "check_sequence_locks: input not found: "
+                                       << encode_hash(input.previous_output.hash);
+            return error::input_not_found;
+        }
+
+        if (nSequence & relative_locktime_time_locked) {
+            if (!chain.get_header(header, prev_height)) {
+                return error::not_found;
+            }
+            min_time = std::max(min_time, header.timestamp + uint64_t((nSequence & relative_locktime_mask) << relative_locktime_seconds_shift) - 1);
+        } else {
+            min_height = std::max(min_height, prev_height + (nSequence & relative_locktime_mask) - 1);
+        }
+    }
+
+    if (median_time_past_ <= min_time) {
+        return error::sequence_locked;
+    }
+
+    if (last_height <= min_height) {
+        return error::sequence_locked;
+    }
+
+    return error::success;
 }
 
 code validate_transaction::check_transaction_basic() const
@@ -1831,6 +1935,7 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx) const
 
 bool validate_transaction::is_nova_feature_activated(blockchain::block_chain_impl& chain)
 {
+    return true;
     if (chain.chain_settings().use_testnet_rules) {
         return true;
     }
