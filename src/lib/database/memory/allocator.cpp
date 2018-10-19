@@ -37,17 +37,17 @@ allocator::allocator(shared_mutex& mutex)
     // Begin Critical Section
 
     // Acquire exclusive downgradable lock.
-    mutex_.lock();
+    mutex_.lock_upgrade();
 }
 
 uint8_t* allocator::buffer()
 {
-    BITCOIN_ASSERT_MSG(data_ != nullptr, "Downgrade must be called.");
     return data_;
 }
 
 void allocator::increment(size_t value)
 {
+    BITCOIN_ASSERT_MSG(data_ != nullptr, "Downgrade must be called.");
     BITCOIN_ASSERT((size_t)data_ <= bc::max_size_t - value);
     data_ += value;
 }
@@ -55,10 +55,8 @@ void allocator::increment(size_t value)
 // protected/friend
 void allocator::downgrade(uint8_t* data)
 {
-    BITCOIN_ASSERT_MSG(data != nullptr, "Invalid pointer value.");
-
     // Downgrade the exclusive lock.
-    mutex_.unlock_and_lock_shared();
+    mutex_.unlock_upgrade_and_lock_shared();
 
     // Save protected pointer.
     data_ = data;
