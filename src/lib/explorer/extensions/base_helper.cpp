@@ -562,9 +562,7 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain)
      -> std::shared_ptr<asset_deposited_balance::list>
 {
-
     std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
-
     std::shared_ptr<asset_deposited_balance::list> sh_asset_vec = std::make_shared<asset_deposited_balance::list>();
 
     chain::transaction tx_temp;
@@ -591,14 +589,12 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
                     continue;
                 }
 
-                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations))
-                {
+                if (!operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                     continue;
                 }
 
                 auto asset_amount = output.get_asset_amount();
-                if (asset_amount == 0)
-                {
+                if (asset_amount == 0)  {
                     continue;
                 }
 
@@ -607,8 +603,7 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
                 auto available_amount = attenuation_model::get_available_asset_amount(
                     asset_amount, diff_height, model_param);
                 uint64_t locked_amount = asset_amount - available_amount;
-                if (locked_amount == 0)
-                {
+                if (locked_amount == 0) {
                     continue;
                 }
 
@@ -625,14 +620,11 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
     return sh_asset_vec;
 }
 
-
 auto sync_fetch_asset_view(const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain)
      -> std::shared_ptr<asset_balances::list>
 {
-
     std::shared_ptr<output_point::list> output_list = get_asset_unspend_utxo(symbol, blockchain);
-
     std::shared_ptr<asset_balances::list> sh_asset_vec = std::make_shared<asset_balances::list>();
 
     chain::transaction tx_temp;
@@ -659,7 +651,6 @@ auto sync_fetch_asset_view(const std::string& symbol,
                     continue;
                 }
 
-
                 auto asset_amount = output.get_asset_amount();
                 uint64_t locked_amount = 0;
                 if (asset_amount
@@ -672,7 +663,6 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 }
 
                 sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
-
             }
         }
     }
@@ -743,7 +733,6 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                         }
                     }
                     else {
-
                         deposited_balance deposited(address_str, tx_hash, deposit_height, expiration_height);
                         if (output_hash == tx_hash) {
                             deposited.balance = row.value;

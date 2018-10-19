@@ -79,13 +79,13 @@ public:
     virtual code store(const address& host);
     virtual void store(const address::list& hosts, result_handler handler);
     address::list copy();
-private:
-    //    typedef boost::circular_buffer<address> list;
-    using list = std::set<address, address_compare >;
 
+private:
+    typedef boost::circular_buffer<address> list;
     typedef list::iterator iterator;
 
     iterator find(const address& host);
+    iterator find(list& buffer, const address& host);
     void do_store(const address& host, result_handler handler);
     void handle_timer(const code& ec);
 
@@ -107,6 +107,7 @@ private:
 
     // record the seed count
     const size_t seed_count;
+    size_t host_pool_capacity_;
 };
 
 } // namespace network

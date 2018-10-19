@@ -1123,7 +1123,6 @@ void data_base::push_etp(const etp& etp, const short_hash& key,
         static_cast<typename std::underlying_type<business_kind>::type>(business_kind::etp),
         timestamp_, etp);
     address_assets.sync();
-
 }
 
 void data_base::push_etp_award(const etp_award& award, const short_hash& key,

@@ -101,11 +101,12 @@ console_result transfercert::invoke (Json::Value& jv_output,
 
     // json output
     auto && tx = helper.get_transaction();
+    auto json_helper = config::json_helper(get_api_version());
     if (is_multisig_address) {
-        jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false, true);
+        jv_output = json_helper.prop_list_of_rawtx(tx, false, true);
     }
     else {
-        jv_output = config::json_helper(get_api_version()).prop_tree(tx, true);
+        jv_output = json_helper.prop_tree(tx, true);
     }
 
     return console_result::okay;
