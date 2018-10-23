@@ -32,13 +32,12 @@
 namespace libbitcoin {
 namespace network {
 
-#define NAME "hosts"
+uint32_t timer_interval = 60 * 5; // 5 minutes
 
 
 hosts::hosts(threadpool& pool, const settings& settings)
     : buffer_(std::max(settings.host_pool_capacity, 1u))
     , stopped_(true)
-    , dispatch_(pool, NAME)
     , file_path_(default_data_path() / settings.hosts_file)
     , disabled_(settings.host_pool_capacity == 0)
     , pool_(pool)
@@ -173,7 +172,7 @@ code hosts::start()
 
     mutex_.unlock_upgrade_and_lock();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
+    snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(timer_interval));
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
 
     stopped_ = false;
@@ -497,14 +496,14 @@ void hosts::store(const address::list& hosts, result_handler handler)
         }
     }
 
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
     log::debug(LOG_NETWORK)
             << "Accepted (" << accepted << " of " << hosts.size()
             << ") host addresses from peer."
             << " inactive size is " << inactive_.size()
             << ", buffer size is " << buffer_.size();
+
+    mutex_.unlock();
+    ///////////////////////////////////////////////////////////////////////////
 
     handler(error::success);
 }

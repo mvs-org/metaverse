@@ -96,9 +96,6 @@ private:
     std::atomic<bool> stopped_;
     mutable upgrade_mutex mutex_;
 
-    // This is thread safe.
-    dispatcher dispatch_;
-
     // HACK: we use this because the buffer capacity cannot be set to zero.
     const bool disabled_;
     const boost::filesystem::path file_path_;
