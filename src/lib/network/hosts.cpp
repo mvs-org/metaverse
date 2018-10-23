@@ -43,7 +43,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
     , disabled_(settings.host_pool_capacity == 0)
     , pool_(pool)
     , seed_count(settings.seeds.size())
-    , host_pool_capacity_(settings.host_pool_capacity)
+    , host_pool_capacity_(std::max(settings.host_pool_capacity, 1u))
 {
 }
 
@@ -133,8 +133,8 @@ void hosts::handle_timer(const code& ec)
     {
         log::debug(LOG_NETWORK)
                 << "sync hosts to file(" << file_path_.string()
-                << "), inactive hosts size is " << inactive_.size()
-                << ", active hosts size is " << buffer_.size();
+                << "), inactive size is " << inactive_.size()
+                << ", buffer size is " << buffer_.size();
 
         for (const auto& entry : buffer_)
         {
@@ -311,8 +311,8 @@ code hosts::after_reseeding()
     //re-seeding failed and recover the buffer with backup one
     if (buffer_.size() <= seed_count)
     {
-        log::warning(LOG_NETWORK)
-                << "Reseeding finished, but got address list: " << buffer_.size()
+        log::debug(LOG_NETWORK)
+                << "Reseeding finished, buffer size: " << buffer_.size()
                 << ", less than seed count: " << seed_count
                 << ", roll back the hosts cache.";
 
@@ -348,7 +348,7 @@ code hosts::after_reseeding()
     backup_.clear();
 
     log::debug(LOG_NETWORK)
-            << "Reseeding finished, and got addresses of count: " << buffer_.size();
+            << "Reseeding finished, buffer size: " << buffer_.size();
 
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -379,6 +379,11 @@ code hosts::remove(const address& host)
 
     if (find(inactive_, host) == inactive_.end())
     {
+        if (inactive_.size() >= host_pool_capacity_ * 2) {
+            list temp(host_pool_capacity_);
+            std::copy(inactive_.begin() + host_pool_capacity_, inactive_.end(), temp.begin());
+            inactive_ = std::move(temp);
+        }
         inactive_.push_back(host);
     }
 
@@ -500,9 +505,6 @@ void hosts::store(const address::list& hosts, result_handler handler)
             << ") host addresses from peer."
             << " inactive size is " << inactive_.size()
             << ", buffer size is " << buffer_.size();
-
-    dispatch_.parallel(hosts, "hosts", handler,
-                       &hosts::do_store, shared_from_this());
 
     handler(error::success);
 }
