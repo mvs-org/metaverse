@@ -390,7 +390,12 @@ bool operation::is_sign_multisig_pattern(const operation::stack& ops)
     if (ops.front().code != opcode::zero)
         return false;
 
-    return true;
+    const auto found = [](const operation& op)
+    {
+        return op.code == opcode::special;
+    };
+
+    return std::all_of(ops.begin()+1, ops.end()-1, found);
 }
 
 bool operation::is_sign_public_key_pattern(const operation::stack& ops)

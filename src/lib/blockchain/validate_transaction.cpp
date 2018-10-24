@@ -1603,7 +1603,7 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     if (!valid) {
         log::warning(LOG_BLOCKCHAIN)
                 << "Invalid transaction ["
-                << encode_hash(current_tx.hash()) << "]";
+                << encode_hash(current_tx.hash()) << "] verify_result:" << result;
     }
 
     return valid;
