@@ -68,6 +68,33 @@ int bc::main(int argc, char* argv[])
     auto&& config_file = work_path / "mvs.conf";
     std::string url{"127.0.0.1:8820/rpc/v3"};
 
+    // use '-c file_name' to specify config file name
+    if (argc > 1 && std::string(argv[1]) == "-c") {
+        if (argc < 3 || std::string(argv[2]).empty()) {
+            std::cout << "'-c' option must followed by a non-empty config file name."
+                      << std::endl;
+            return 0;
+        }
+        std::string file_name = argv[2];
+        config_file = work_path / file_name;
+        if (!boost::filesystem::exists(config_file)) {
+            std::cout << "The specified config file '"
+                      << config_file.string()
+                      << "' does not exist!"
+                      << std::endl;
+            return 0;
+        }
+        if (boost::filesystem::is_directory(config_file)) {
+            std::cout << "The specified config file '"
+                      << config_file.string()
+                      << "' is a directory!"
+                      << std::endl;
+            return 0;
+        }
+        argc -= 2;
+        argv += 2;
+    }
+
     if (boost::filesystem::exists(config_file)) {
         const auto& path = config_file.string();
         bc::ifstream file(path);
@@ -100,7 +127,6 @@ int bc::main(int argc, char* argv[])
     HttpReq req(url, 3000, reply_handler(my_impl));
 
     Json::Value jsonvar;
-    Json::Value jsonopt;
     jsonvar["jsonrpc"] = "2.0";
     jsonvar["id"] = 1;
     jsonvar["method"] = (argc > 1) ? argv[1] : "help";
