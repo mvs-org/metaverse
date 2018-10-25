@@ -40,31 +40,16 @@ using namespace bc::explorer::config;
 console_result getblockheader::invoke(Json::Value& jv_output,
                                       libbitcoin::server::server_node& node)
 {
-
-    uint64_t height = 0;
     auto& blockchain = node.chain_impl();
-    if (!blockchain.get_last_height(height)) {
-        throw block_last_height_get_exception{"query last height failure."};
-    }
+    std::promise<code> p;
 
-    if (option_.height != std::numeric_limits<uint32_t>::max()) {
-        height = option_.height;
-    }
-
-    const auto connection = get_connection(*this);
-
-    obelisk_client client(connection);
-
-    if (!client.connect(connection)) {
-        throw connection_exception{"Could not connect to mvsd port 9921."};
-    }
-
-    encoding json_format{"json"};
-    std::ostringstream output;
-    callback_state state(output, output, json_format);
-
-    auto on_done = [this, &jv_output](const chain::header & header)
+    auto handler = [this, &p, &jv_output](const code& ec, const chain::header& header)
     {
+        if (ec) {
+            p.set_value(ec);
+            return;
+        }
+
         auto&& jheader = config::json_helper(get_api_version()).prop_tree(header);
 
         if (get_api_version() <= 2) {
@@ -100,26 +85,34 @@ console_result getblockheader::invoke(Json::Value& jv_output,
                 jv_output = jheader;
             }
         }
-    };
 
-    auto on_error = [&state](const code & error)
-    {
-        state.succeeded(error);
+        p.set_value(error::success);
     };
 
     // Height is ignored if both are specified.
     // Use the null_hash as sentinel to determine whether to use height or hash.
     const hash_digest& hash = option_.hash;
     if (hash == null_hash) {
-        client.blockchain_fetch_block_header(on_error, on_done, height);
+        uint64_t height = 0;
+        if (option_.height != std::numeric_limits<uint32_t>::max()) {
+            height = option_.height;
+        }
+        else if (!blockchain.get_last_height(height)) {
+            throw block_last_height_get_exception{"query last height failure."};
+        }
+
+        blockchain.fetch_block_header(height, handler);
     }
     else {
-        client.blockchain_fetch_block_header(on_error, on_done, hash);
+        blockchain.fetch_block_header(hash, handler);
     }
 
-    client.wait();
+    auto result = p.get_future().get();
+    if (result) {
+        throw block_header_get_exception{ result.message() };
+    }
 
-    return state.get_result();
+    return console_result::okay;
 }
 
 
