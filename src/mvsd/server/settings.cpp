@@ -35,6 +35,7 @@ settings::settings()
     websocket_listen("127.0.0.1:8821"),
     administrator_required(false),
     log_level("DEBUG"),
+    rpc_version(""),
     secure_only(false),
     query_service_enabled(true),
     heartbeat_service_enabled(false),

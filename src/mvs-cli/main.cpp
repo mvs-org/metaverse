@@ -66,7 +66,8 @@ int bc::main(int argc, char* argv[])
     bc::set_utf8_stdout();
     auto work_path = bc::default_data_path();
     auto&& config_file = work_path / "mvs.conf";
-    std::string url{"127.0.0.1:8820/rpc/v3"};
+    std::string default_rpc_version = "3";
+    std::string url{"127.0.0.1:8820/rpc/v" + default_rpc_version};
 
     // use '-c file_name' to specify config file name
     if (argc > 1 && std::string(argv[1]) == "-c") {
@@ -104,8 +105,10 @@ int bc::main(int argc, char* argv[])
         }
 
         std::string tmp;
+        std::string rpc_version;
         po::options_description desc("");
         desc.add_options()
+            ("server.rpc_version", po::value<std::string>(&rpc_version)->default_value(default_rpc_version))
             ("server.mongoose_listen", po::value<std::string>(&tmp)->default_value("127.0.0.1:8820"));
 
         po::variables_map vm;
@@ -118,7 +121,7 @@ int bc::main(int argc, char* argv[])
                 if (tmp.find("0.0.0.0") == 0) {
                     tmp.replace(0, 7, "127.0.0.1");
                 }
-                url = tmp + "/rpc/v3";
+                url = tmp + "/rpc/v" + rpc_version;
             }
         }
     }

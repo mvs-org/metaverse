@@ -385,6 +385,11 @@ options_metadata parser::load_settings()
         "Setup log level of debug log in level [TRACE,DEBUG,INFO], defaults to DEBUG."
     )
     (
+        "server.rpc_version",
+        value<std::string>(&configured.server.rpc_version),
+        "Server RPC version, defaults to empty string, only used by mvs-cli."
+    )
+    (
         "server.secure_only",
         value<bool>(&configured.server.secure_only),
         "Disable public endpoints, defaults to false."
