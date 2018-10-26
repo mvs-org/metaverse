@@ -197,8 +197,11 @@ def getblockheader(hash=None, height=None):
 
 
 @mvs_api
-def dump_keyfile(account, password, lastword, keyfile=""):
-    return "dumpkeyfile", [account, password, lastword, keyfile], {}, None
+def dump_keyfile(account, password, lastword, keyfile="", to_report=False):
+    args = [account, password, lastword, keyfile]
+    if to_report:
+        args.append('-d')
+    return "dumpkeyfile", args, {}, None
 
 
 @mvs_api
@@ -209,6 +212,9 @@ def import_keyfile(account, password, keystore_file, keyfile_content=None):
         args = [account, password, keystore_file]
     return "importkeyfile", args, {}, None
 
+@mvs_api
+def import_address(account, password, addr_or_script, decs=None):
+    return "importaddress", [account, password, addr_or_script], {'-d':decs}, None
 
 @mvs_api
 def new_account(account, password):
@@ -690,7 +696,7 @@ def get_block(hash_or_height, json=True, tx_json=True):
 
 
 @mvs_api
-def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None):
+def create_rawtx(type, senders, utxos, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None):
     '''
     -d [--deposit]       Deposits support [7, 30, 90, 182, 365] days.
                          defaluts to 7 days
@@ -707,10 +713,15 @@ def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=
                          [addr1, addr2, ...]
     -t [--type]          Transaction type. 0 -- transfer etp, 1 -- deposit
                          etp, 3 -- transfer asset
+    -u [--utxos]         Use the specific UTXO as input. format:
+                         "tx-hash:output-index[:sequence]"
     '''
+    # utxos: [tx-hash(str), output-index(int), sequence(int)]
+    utxos = [':'.join( [txhash, str(output_index), str(sequence)] ) for (txhash, output_index, sequence) in utxos]
     return "createrawtx", [], {
         '-r': ["%s:%s" % (i, receivers[i]) for i in receivers],
         '-s': [i for i in senders],
+        '-u': utxos,
         '-t': type,
         '-d': deposit,
         '-f': fee,

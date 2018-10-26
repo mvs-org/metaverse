@@ -12,7 +12,7 @@ OP_ENDIF
 
 contract = template % {'Alice' : '02578ad340083e85c739f379bbe6c6937c5da2ced52e09ac1eec43dc4c64846573',
             'Bob' : '0380990a7312b87abda80e5857ee6ebf798a2bf62041b07111287d19926c429d11',
-            'Sequence' : '64'}
+            'Sequence' : '0a000000'}
 
 template2 = '''
 OP_0

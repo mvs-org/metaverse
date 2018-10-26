@@ -145,6 +145,10 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     std::vector<uint32_t> sequence_lst;
     for (const std::string utxo : option_.utxos) {
         const auto utxo_stru = bc::split(utxo, ":");
+        if ((utxo_stru.size() != 2) && (utxo_stru.size() != 3)) {
+            throw argument_legality_exception{"invalid utxo: " + utxo};
+        }
+
         const bc::config::hash256 hash = utxo_stru[0];
 
         uint64_t tx_height = 0;
