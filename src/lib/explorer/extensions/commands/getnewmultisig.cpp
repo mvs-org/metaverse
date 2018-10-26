@@ -89,6 +89,9 @@ console_result getnewmultisig::invoke(
     std::string self_prvkey;
     auto found = false;
     for (auto& each : *pvaddr) {
+        if (each.get_status() == account_address_status::script_addr) {
+            continue;
+        }
         self_prvkey = each.get_prv_key(auth_.auth);
         auto&& target_pub_key = ec_to_xxx_impl("ec-to-public", self_prvkey);
         if (target_pub_key == self_pubkey) {

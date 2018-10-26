@@ -87,7 +87,8 @@ class Transaction:
                         + get_varlen( len(input.script) )
                         + input.script
                         + int2bytes(input.sequence, 4) )
-        return version + input_size + inputs + self.remain_bytes + int2bytes(self.locktime, 4)
+        ret = version + input_size + inputs + self.remain_bytes + int2bytes(self.locktime, 4)
+        return str(b2a_hex(ret), 'utf-8')
 
     @classmethod
     def parse_rawtx(cls, rawtx):
@@ -131,5 +132,6 @@ if __name__ == "__main__":
     t.inputs[0].script = a2b_hex(sig_script) #bytes([]) #
     #t.inputs[0].sequence = (1 << 22) | 100 # time
     t.inputs[0].sequence =         0 | 0x0054  # height
+    import pdb; pdb.set_trace()
     ret = t.to_rawtx()
-    print( b2a_hex(ret) )
+    print( ret )
