@@ -853,28 +853,35 @@ bool base_transfer_common::get_spendable_output(
 // only consider etp and asset and cert.
 // specify parameter 'did' to true to only consider did
 void base_transfer_common::sync_fetchutxo(
-        const std::string& prikey, const std::string& addr, filter filter)
+        const std::string& prikey, const std::string& addr, filter filter, const history::list& spec_rows)
 {
     auto&& waddr = wallet::payment_address(addr);
-    auto&& rows = blockchain_.get_address_history(waddr, true);
 
     uint64_t height = 0;
     blockchain_.get_last_height(height);
 
+    const auto &rows = spec_rows.empty() ? blockchain_.get_address_history(waddr, true) : spec_rows;
+
     for (auto& row: rows)
     {
-        // performance improve
-        if (is_payment_satisfied(filter)) {
-            break;
-        }
-
         chain::output output;
-        if (!get_spendable_output(output, row, height)) {
-            continue;
-        }
+        if (!spec_rows.empty()) {
+            if (!get_spendable_output(output, row, height)) {
+                throw std::logic_error("output spent error.");
+            }
+        } else {
+            // performance improve
+            if (is_payment_satisfied(filter)) {
+                break;
+            }
 
-        if (output.get_script_address() != addr) {
-            continue;
+            if (!get_spendable_output(output, row, height)) {
+                continue;
+            }
+
+            if (output.get_script_address() != addr) {
+                continue;
+            }
         }
 
         auto etp_amount = row.value;
@@ -952,7 +959,7 @@ void base_transfer_common::sync_fetchutxo(
             }
         }
         else if ((filter & FILTER_DID) &&
-            (output.is_did_register() || output.is_did_transfer())) { // did related
+                 (output.is_did_register() || output.is_did_transfer())) { // did related
             BITCOIN_ASSERT(etp_amount == 0);
             BITCOIN_ASSERT(asset_total_amount == 0);
             BITCOIN_ASSERT(cert_type == asset_cert_ns::none);
@@ -1015,17 +1022,15 @@ void base_transfer_common::sync_fetchutxo(
             auto locked_asset = asset_total_amount - record.asset_amount;
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
-                    0, locked_asset, utxo_attach_type::asset_locked_transfer,
-                    attachment(0, 0, blockchain_message(std::move(model_param))), record.output});
+                                      0, locked_asset, utxo_attach_type::asset_locked_transfer,
+                                      attachment(0, 0, blockchain_message(std::move(model_param))), record.output});
             // in secondary issue, locked asset can also verify threshold condition
             if (is_locked_asset_as_payment()) {
                 payment_asset_ = (payment_asset_ > locked_asset)
-                    ? (payment_asset_ - locked_asset) : 0;
+                                 ? (payment_asset_ - locked_asset) : 0;
             }
         }
     }
-
-    rows.clear();
 }
 
 void base_transfer_common::check_fee_in_valid_range(uint64_t fee)
@@ -1715,7 +1720,7 @@ std::string base_multisig_transfer_helper::get_sign_tx_multisig_script(const add
 void base_transaction_constructor::sum_payment_amount()
 {
     base_transfer_common::sum_payment_amount();
-    if (from_vec_.empty()) {
+    if (from_vec_.empty() && from_list_.empty()) {
         throw fromaddress_empty_exception{"empty from address"};
     }
 }

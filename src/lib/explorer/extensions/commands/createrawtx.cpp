@@ -42,9 +42,11 @@ console_result createrawtx::invoke(Json::Value& jv_output,
         throw toaddress_invalid_exception{"invalid address " + option_.mychange_address};
     }
 
+
+
     // check senders
-    if (option_.senders.empty()) {
-        throw fromaddress_invalid_exception{"senders can not be empty!"};
+    if (option_.senders.empty() && option_.utxos.empty()) {
+        throw fromaddress_invalid_exception{"senders and utxos can not be empty!"};
     }
 
     for (auto& each : option_.senders) {
@@ -139,9 +141,48 @@ console_result createrawtx::invoke(Json::Value& jv_output,
     }
     }
 
+    history::list utxo_list;
+    std::vector<uint32_t> sequence_lst;
+    for (const std::string utxo : option_.utxos) {
+        const auto utxo_stru = bc::split(utxo, ":");
+        const bc::config::hash256 hash = utxo_stru[0];
+
+        uint64_t tx_height = 0;
+        bc::chain::transaction tx;
+        auto exist = blockchain.get_transaction(hash, tx, tx_height);
+        if (!exist) {
+            throw tx_notfound_exception{"transaction[" + utxo_stru[0] + "] does not exist!"};
+        }
+
+        const uint32_t utxo_index = std::strtoul(utxo_stru[1].c_str(), NULL, 10);
+        if ( !(utxo_index < tx.outputs.size()) ) {
+            throw tx_notfound_exception{"output index[" + utxo_stru[1] + "] of transaction[" + utxo_stru[0] + "] is out of range!"};
+        }
+        const uint32_t utxo_sequence = (utxo_stru.size() == 3) ? std::strtoul(utxo_stru[2].c_str(), NULL, 10) : max_uint32;
+
+        history h;
+        h.output.hash = tx.hash();
+        h.output.index = utxo_index;
+        h.output_height = tx_height;
+        h.value = tx.outputs[utxo_index].value;
+        utxo_list.push_back(h);
+        sequence_lst.push_back(utxo_sequence);
+    }
+
+    if (!utxo_list.empty())
+        sp_send_helper->sync_fetchutxo("", "", base_transfer_common::FILTER_ALL, utxo_list);
+
     sp_send_helper->exec();
 
+    // set sequence
     auto&& tx = sp_send_helper->get_transaction();
+    for (auto i=0; i<sequence_lst.size(); ++i) {
+        // maybe conflict with nlocktime, so when the sequence(by rpc) is invalid, we will not change it.
+        if (sequence_lst[i] == max_uint32) {
+            continue;
+        }
+        tx.inputs[i].sequence = sequence_lst[i];
+    }
 
     // output json
     jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx, false);

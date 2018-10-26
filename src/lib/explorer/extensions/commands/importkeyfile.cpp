@@ -144,6 +144,31 @@ console_result importkeyfile::invoke(Json::Value& jv_output,
             }
         }
 
+        //p2sh
+        {
+            const auto &redeem_scripts = file_root["scripts"];
+            const int size = redeem_scripts.size();
+            for (int i=0; i < size; ++i) {
+                const std::string desc = redeem_scripts[i]["description"].asString();
+                const std::string addr = redeem_scripts[i]["address"].asString();
+                const std::string hex  = redeem_scripts[i]["script"].asString();
+
+                const std::string& script = hex.empty() ? addr : hex;
+
+                // get n new sub-address
+                Json::Value jv_temp;
+                std::vector<const char *> vec_cmds = {"importaddress", auth_.name.c_str(), auth_.auth.c_str(),
+                                                      script.c_str(),
+                                                      "-d", desc.c_str()
+                };
+
+                if (dispatch_command(vec_cmds.size(), vec_cmds.data(), jv_temp, node, get_api_version()) != console_result::okay) {
+                    throw address_generate_exception{std::string("Failed to importaddress for [") + addr + "]."};
+                }
+
+            }
+        }
+
         Json::Value jv_temp;
         std::vector<const char *> vec_cmds = {"listaddresses", auth_.name.c_str(), auth_.auth.c_str()};
         if (dispatch_command(vec_cmds.size(), vec_cmds.data(), jv_temp, node, get_api_version()) != console_result::okay) {

@@ -30,33 +30,31 @@ namespace explorer {
 namespace commands {
 
 
-/************************ signrawtx *************************/
+/************************ importkeyfile *************************/
 
-class signrawtx: public command_extension
+class importaddress: public command_extension
 {
 public:
-    static const char* symbol() { return "signrawtx";}
+    static const char* symbol(){ return "importaddress";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ctgy_extension & bs ) == bs; }
-    const char* description() override { return "signrawtx "; }
-
-    bc::endorsement sign(libbitcoin::server::server_node& node, tx_type tx_, const uint32_t& index, const std::string& address, const bc::explorer::config::script& config_contract, data_chunk& public_key_data);
+    const char* description() override { return "import a script (in hex) or p2sh address that can be watched as if it were in your wallet but cannot be used to spend."; }
 
     arguments_metadata& load_arguments() override
     {
         return get_argument_metadata()
-               .add("ACCOUNTNAME", 1)
-               .add("ACCOUNTAUTH", 1)
-               .add("TRANSACTION", 1);
+            .add("ACCOUNTNAME", 1)
+            .add("ACCOUNTAUTH", 1)
+            .add("SCRIPT", 1);
     }
 
     void load_fallbacks (std::istream& input,
-                         po::variables_map& variables) override
+        po::variables_map& variables) override
     {
         const auto raw = requires_raw_input();
         load_input(auth_.name, "ACCOUNTNAME", variables, input, raw);
         load_input(auth_.auth, "ACCOUNTAUTH", variables, input, raw);
-        load_input(argument_.transaction, "TRANSACTION", variables, input, raw);
+        load_input(argument_.script, "SCRIPT", variables, input, raw);
     }
 
     options_metadata& load_options() override
@@ -80,9 +78,14 @@ public:
             BX_ACCOUNT_AUTH
         )
         (
-            "TRANSACTION",
-            value<explorer::config::transaction>(&argument_.transaction)->required(),
-            "The input Base16 transaction to sign."
+            "SCRIPT",
+            value<std::string>(&argument_.script)->required(),
+            "The hex-encoded script or p2sh address."
+        )
+        (
+            "description,d",
+            value<std::string>(&option_.description),
+            "The description for this p2sh address."
         );
 
         return options;
@@ -93,18 +96,26 @@ public:
     }
 
     console_result invoke (Json::Value& jv_output,
-                           libbitcoin::server::server_node& node) override;
+         libbitcoin::server::server_node& node) override;
 
     struct argument
     {
-        explorer::config::transaction transaction;
+        std::string script;
     } argument_;
 
     struct option
     {
+        option()
+          : description("")
+        {
+        }
+
+        std::string description;
     } option_;
 
 };
+
+
 
 } // namespace commands
 } // namespace explorer

@@ -270,7 +270,7 @@ public:
     virtual bool get_spendable_output(chain::output&, const chain::history&, uint64_t height) const;
     virtual chain::operation::stack get_script_operations(const receiver_record& record) const;
     virtual void sync_fetchutxo(
-            const std::string& prikey, const std::string& addr, filter filter = FILTER_ALL);
+            const std::string& prikey, const std::string& addr, filter filter = FILTER_ALL, const history::list& spec_rows={});
     virtual attachment populate_output_attachment(const receiver_record& record);
     virtual void sum_payments();
     virtual void sum_payment_amount();

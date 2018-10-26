@@ -37,6 +37,53 @@ using namespace libbitcoin::wallet;
 namespace libbitcoin {
 namespace chain {
 
+account_script::account_script()
+{
+}
+
+void account_script::set_description(const std::string& description)
+{
+    description_ = description;
+}
+
+void account_script::set_address(const std::string& address)
+{
+    address_ = address;
+}
+
+void account_script::set_script(const data_chunk& script)
+{
+    script_ = script;
+}
+
+bool account_script::from_data(reader& source)
+{
+    description_ = source.read_string();
+    address_ = source.read_string();
+    const auto size = source.read_variable_uint_little_endian();
+    script_ = source.read_data(size);
+    return !address_.empty();
+}
+
+void account_script::to_data(writer& sink) const
+{
+    sink.write_string(description_);
+    sink.write_string(address_);
+    sink.write_variable_uint_little_endian(script_.size());
+    sink.write_data(script_);
+}
+
+bool account_script::operator==(const account_script& other) const
+{
+    //return (description_ == other.description_) && (address_ == other.address_) && (script_ == other.script_);
+    return address_ == other.address_;
+}
+
+uint64_t account_script::serialized_size() const
+{
+    return variable_string_size(description_) + variable_string_size(address_) + variable_data_chunk_size(script_);
+}
+
 account_multisig::account_multisig()
     : hd_index_(0), m_(0), n_(0)
 {
@@ -281,7 +328,7 @@ bool account::from_data_t(reader& source)
     //status = source.read_2_bytes_little_endian();
     type = source.read_byte();
     status = source.read_byte();
-    if (type == account_type::multisignature) {
+    if (is_multisignature(type)) {
         //multisig.from_data(source);
         account_multisig multisig;
         uint32_t size = source.read_4_bytes_little_endian();
@@ -289,6 +336,14 @@ bool account::from_data_t(reader& source)
             multisig.reset();
             multisig.from_data(source);
             multisig_vec.push_back(multisig);
+        }
+    }
+    if (is_script(type)) {
+        uint32_t size = source.read_4_bytes_little_endian();
+        while (size--) {
+            account_script script;
+            script.from_data(source);
+            script_vec.push_back(script);
         }
     }
     return true;
@@ -304,7 +359,7 @@ void account::to_data_t(writer& sink) const
     //sink.write_2_bytes_little_endian(status);
     sink.write_byte(type);
     sink.write_byte(status);
-    if (type == account_type::multisignature) {
+    if (is_multisignature(type)) {
         //multisig.to_data(sink);
         sink.write_4_bytes_little_endian(multisig_vec.size());
         if (multisig_vec.size()) {
@@ -313,15 +368,26 @@ void account::to_data_t(writer& sink) const
             }
         }
     }
+    if (is_script(type)) {
+        sink.write_4_bytes_little_endian(script_vec.size());
+        for (auto& each : script_vec) {
+            each.to_data(sink);
+        }
+    }
 }
 
 uint64_t account::serialized_size() const
 {
     uint64_t size = name.size() + mnemonic.size() + passwd.size() + 4 + 1 + 2 + 2 * 9; // 2 string len
-    if (type == account_type::multisignature) {
+    if (is_multisignature(type)) {
         //size += multisig.serialized_size();
         size += 4; // vector size
         for (auto& each : multisig_vec)
+            size += each.serialized_size();
+    }
+    if (is_script(type)) {
+        size += 4; // vector size
+        for (auto& each : script_vec)
             size += each.serialized_size();
     }
     return size;
@@ -352,7 +418,7 @@ std::string account::to_string()
        << "\t priority = " << priority << "\n"
        << "\t type = " << type << "\n"
        << "\t status = " << status << "\n";
-    if (type == account_type::multisignature) {
+    if (is_multisignature(type)) {
         for (auto& each : multisig_vec)
             ss << "\t\t" << each.to_string();
     }
@@ -420,7 +486,7 @@ uint8_t account::get_type() const
 
 void account::set_type(uint8_t type)
 {
-    this->type = type;
+    this->type |= type;
 }
 
 uint8_t account::get_status() const
@@ -498,6 +564,54 @@ void account::modify_multisig(const account_multisig& multisig)
             break;
         }
     }
+}
+
+const account_script::list& account::get_script_vec() const
+{
+    return script_vec;
+}
+void account::set_script_vec(account_script::list&& script)
+{
+    script_vec = std::move(script);
+}
+bool account::is_script_exist(const account_script& script)
+{
+    const auto iter = std::find(script_vec.begin(), script_vec.end(), script);
+    return iter != script_vec.end();
+}
+void account::set_script(const account_script& script)
+{
+    if (!is_script_exist(script)) {
+        script_vec.push_back(script);
+    }
+}
+void account::modify_script(const account_script& script)
+{
+    for (auto& each : script_vec) {
+        if (each == script) {
+            each = script;
+            break;
+        }
+    }
+}
+void account::remove_script(const account_script& script)
+{
+    for (auto it = script_vec.begin(); it != script_vec.end(); ++it) {
+        if (*it == script) {
+            it = script_vec.erase(it);
+            break;
+        }
+    }
+}
+std::shared_ptr<account_script::list> account::get_script(const std::string& addr)
+{
+    auto acc_vec = std::make_shared<account_script::list>();
+    for (auto& each : script_vec) {
+        if (addr == each.get_address()) {
+            acc_vec->push_back(each);
+        }
+    }
+    return acc_vec;
 }
 
 } // namspace chain

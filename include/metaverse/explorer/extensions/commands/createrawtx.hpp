@@ -67,8 +67,13 @@ public:
             "Transaction type. 0 -- transfer etp, 1 -- deposit etp, 3 -- transfer asset"
         )
         (
+            "utxos,u",
+            value<std::vector<std::string>>(&option_.utxos),
+            "Use the specific UTXO as input. format: \"tx-hash:output-index[:sequence]\""
+        )
+        (
             "senders,s",
-            value<std::vector<std::string>>(&option_.senders)->required(),
+            value<std::vector<std::string>>(&option_.senders),
             "Send from addresses"
         )
         (
@@ -127,6 +132,7 @@ public:
     struct option
     {
         uint16_t type;
+        std::vector<std::string> utxos;
         std::vector<std::string> senders;
         std::vector<std::string> receivers;
         std::string symbol;
