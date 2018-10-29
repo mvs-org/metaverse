@@ -118,7 +118,7 @@ def fork_test(  ):
 
     f_origin.close()
     f_popback.close()
-    print "fork test passed!"
+    print( "fork test passed!")
 
 
 
@@ -128,9 +128,9 @@ if __name__ == '__main__':
     clear_account()
     ensure_Alice_balance()
     if len(sys.argv) >= 2 and sys.argv[1] == "fork":
-        print 'backup check point -> run testcase -> popblock -> check database '
+        print('backup check point -> run testcase -> popblock -> check database ')
         fork_test()
     else:
-        print 'run testcase'
+        print('run testcase')
         run_testcase()
 
