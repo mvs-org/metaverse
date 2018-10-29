@@ -105,3 +105,22 @@ class TestAsset(MVSTestCaseBase):
         addressassets = Alice.get_addressasset(Alice.didaddress())
         addressasset = list( filter(lambda a: a.symbol == Alice.asset_symbol, addressassets) )
         self.assertEqual(len(addressasset), 0)
+
+    def test_6_sendassetmore(self):
+        Alice.create_asset()
+        Alice.mining()
+
+        origin_amount = self.get_asset_amount(Alice)
+
+        mvs_rpc.new_address(Zac.name, Zac.password, 2)
+        receivers={
+            Zac.addresslist[0]:1000,
+            Zac.addresslist[1]:2000
+        }
+
+        #pre-set condition
+        self.assertGreater(origin_amount, 3000)
+        Alice.sendmore_asset(Zac.mainaddress(), receivers, Alice.asset_symbol)
+        Alice.mining()
+
+        self.assertEqual(self.get_asset_amount(Zac, k), v) for k,v in receivers.items()

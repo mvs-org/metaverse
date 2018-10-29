@@ -600,6 +600,26 @@ def didsend_asset_from(account, password, from_, to_, symbol, amount, fee=None):
     '''
     return "didsendassetfrom", [account, password, from_, to_, symbol, amount], {'--fee': fee}, None
 
+@mvs_api
+def sendmore_asset(account, password, symbol, receivers, mychange=None, fee=None):
+    '''
+
+    :param account:
+    :param password:
+    :param receivers: {address1:amount1, address2:amount2, ...} amount in bits
+    :param symbol:
+    :param mychange:
+    :param fee:
+    :return:
+    '''
+    positional = [account, password, symbol]
+    optional = {
+        '-f': fee,
+        '-m': mychange,
+        '-r': ["%s:%s" % (i, receivers[i]) for i in receivers]
+    }
+    return "sendmore", positional, optional, None
+
 
 @mvs_api
 def burn(account, password, symbol, amount=0, cert=None, is_mit=False):

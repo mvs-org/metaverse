@@ -199,6 +199,15 @@ class Role:
             print("failed to send_asset: {}, {}".format(result, message))
         assert (result == 0)
 
+    def sendmore_asset(self, receivers, asset_symbol=None, memo=None, fee=None):
+        if not asset_symbol:
+            asset_symbol = self.asset_symbol
+
+        result, message = mvs_rpc.sendmore_asset(self.name, self.password, asset_symbol, receivers, memo, fee)
+        if (result != 0):
+            print("failed to sendmore_asset: {}, {}".format(result, message))
+        assert (result == 0)
+
     def send_asset_from(self, from_, to_, amount, asset_symbol=None):
         if not asset_symbol:
             asset_symbol = self.asset_symbol
