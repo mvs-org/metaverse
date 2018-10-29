@@ -73,7 +73,7 @@
 #include <metaverse/explorer/extensions/commands/sendmore.hpp>
 #include <metaverse/explorer/extensions/commands/sendasset.hpp>
 #include <metaverse/explorer/extensions/commands/sendassetfrom.hpp>
-#include <metaverse/explorer/extensions/commands/sendassetmore.hpp>
+#include <metaverse/explorer/extensions/commands/sendmoreasset.hpp>
 #include <metaverse/explorer/extensions/commands/swaptoken.hpp>
 // #include <metaverse/explorer/extensions/commands/swapmit.hpp>
 #include <metaverse/explorer/extensions/commands/listdids.hpp>
@@ -182,7 +182,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<issue>());
     func(make_shared<secondaryissue>());
     func(make_shared<sendasset>());
-    func(make_shared<sendassetmore>());
+    func(make_shared<sendmoreasset>());
     func(make_shared<sendassetfrom>());
     func(make_shared<listassets>());
     func(make_shared<getasset>());
@@ -353,8 +353,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol() || symbol == "didsendassetfrom")
         return make_shared<sendassetfrom>();
-    if (symbol == sendassetmore::symbol())
-        return make_shared<sendassetmore>();
+    if (symbol == sendmoreasset::symbol())
+        return make_shared<sendmoreasset>();
     if (symbol == burn::symbol())
         return make_shared<burn>();
     if (symbol == swaptoken::symbol())

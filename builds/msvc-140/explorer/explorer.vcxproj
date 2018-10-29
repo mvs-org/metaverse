@@ -66,7 +66,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
-    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetmore.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmoreasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendfrom.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\dumpkeyfile.hpp" />

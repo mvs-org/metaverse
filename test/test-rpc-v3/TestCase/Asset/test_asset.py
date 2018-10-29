@@ -106,7 +106,7 @@ class TestAsset(MVSTestCaseBase):
         addressasset = list( filter(lambda a: a.symbol == Alice.asset_symbol, addressassets) )
         self.assertEqual(len(addressasset), 0)
 
-    def test_6_sendassetmore(self):
+    def test_6_sendmoreasset(self):
         Alice.create_asset()
         Alice.mining()
 

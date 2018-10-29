@@ -30,15 +30,15 @@ namespace explorer {
 namespace commands {
 
 
-/************************ sendassetmore *************************/
+/************************ sendmoreasset *************************/
 
-class sendassetmore: public command_extension
+class sendmoreasset: public command_extension
 {
 public:
-    static const char* symbol(){ return "sendassetmore";}
+    static const char* symbol(){ return "sendmoreasset";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "sendassetmore"; }
+    const char* description() override { return "sendmoreasset"; }
 
     arguments_metadata& load_arguments() override
     {

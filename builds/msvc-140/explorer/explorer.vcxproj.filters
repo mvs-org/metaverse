@@ -726,7 +726,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetmore.cpp">
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendmoreasset.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp">

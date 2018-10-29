@@ -19,7 +19,7 @@
  */
 
 #include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/extensions/commands/sendassetmore.hpp>
+#include <metaverse/explorer/extensions/commands/sendmoreasset.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
@@ -30,7 +30,7 @@ namespace explorer {
 namespace commands {
 
 
-console_result sendassetmore::invoke(Json::Value& jv_output,
+console_result sendmoreasset::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
