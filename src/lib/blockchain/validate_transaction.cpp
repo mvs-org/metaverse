@@ -1521,22 +1521,21 @@ code validate_transaction::check_transaction_basic() const
             if (input.previous_output.is_null())
                 return error::previous_output_null;
 
-            uint64_t prev_output_blockheight = 0;
-            chain::transaction prev_tx;
-            if (!get_previous_tx(prev_tx, prev_output_blockheight, input)) {
-                log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic deposit : input not found: "
-                                            << encode_hash(input.previous_output.hash);
-                return error::input_not_found;
-            }
-
-            // since unlock script for p2sh pattern are so complex, that is_sign_key_hash_with_lock_height_pattern cannot be well dealed.
-            if ( chain::operation::is_pay_script_hash_pattern( prev_tx.outputs[input.previous_output.index].script.operations ) )
-                continue;
-
             if (chain::operation::is_sign_key_hash_with_lock_height_pattern(input.script.operations)) {
-
+                uint64_t prev_output_blockheight = 0;
+                chain::transaction prev_tx;
                 uint64_t current_blockheight = 0;
+
                 chain.get_last_height(current_blockheight);
+                if (!get_previous_tx(prev_tx, prev_output_blockheight, input)) {
+                    log::debug(LOG_BLOCKCHAIN) << "check_transaction_basic deposit : input not found: "
+                                               << encode_hash(input.previous_output.hash);
+                    return error::input_not_found;
+                }
+                
+                // since unlock script for p2sh pattern are so complex, that is_sign_key_hash_with_lock_height_pattern cannot be well dealed.
+                if ( chain::operation::is_pay_script_hash_pattern( prev_tx.outputs[input.previous_output.index].script.operations ) )
+                    continue;
 
                 uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
                 if (lock_height > current_blockheight - prev_output_blockheight) {
@@ -1544,6 +1543,7 @@ code validate_transaction::check_transaction_basic() const
                 }
             }
         }
+
 
         for (auto& output : tx.outputs)
         {
