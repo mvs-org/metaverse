@@ -195,7 +195,7 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance =filter(lambda x: x["address"] == address, message)
+        balance =list( filter(lambda x: x["address"] == address, message) )
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
             "address": address,
@@ -221,7 +221,7 @@ class TestSendETP(MVSTestCaseBase):
         ec, message = mvs_rpc.list_balances(Zac.name, Zac.password)
         self.assertEqual(ec, 0, message)
 
-        balance = filter(lambda x: x["address"] == address, message)
+        balance = list( filter(lambda x: x["address"] == address, message) )
         self.assertEqual(len(balance), 1)
         self.assertEqual(balance[0], {
             "address": address,

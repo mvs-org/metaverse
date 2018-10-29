@@ -39,7 +39,7 @@ class Role:
             if message and message['dids']:
                 message = message['dids']
                 dids = [MOCs.Did.init(i) for i in message if i]
-                found_dids = filter(lambda a: a.symbol == self.did_symbol, dids)
+                found_dids = list( filter(lambda a: a.symbol == self.did_symbol, dids) )
                 assert(len(found_dids) == 1)
                 self.did_address = found_dids[0].address
 

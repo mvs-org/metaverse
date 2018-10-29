@@ -26,7 +26,7 @@ class TestAsset(MVSTestCaseBase):
         Alice.mining()
 
         account_assets = Alice.get_accountasset()
-        found_assets = filter(lambda a: a.symbol == Alice.asset_symbol, account_assets)
+        found_assets = list( filter(lambda a: a.symbol == Alice.asset_symbol, account_assets) )
         self.assertEqual(len(found_assets), 1)
         self.assertEqual(found_assets[0].symbol, Alice.asset_symbol)
         self.assertEqual(found_assets[0].issuer, Alice.did_symbol)
@@ -42,7 +42,7 @@ class TestAsset(MVSTestCaseBase):
         address_assets = role.get_addressasset(address)
 
         #we only consider Alice's Asset
-        found_assets = filter(lambda a: a.symbol == Alice.asset_symbol, address_assets)
+        found_assets = list( filter(lambda a: a.symbol == Alice.asset_symbol, address_assets) )
         self.assertEqual(len(found_assets), 1)
 
         previous_quantity = found_assets[0].quantity
@@ -103,5 +103,5 @@ class TestAsset(MVSTestCaseBase):
         Alice.burn_asset(1)
         Alice.mining()
         addressassets = Alice.get_addressasset(Alice.didaddress())
-        addressasset = filter(lambda a: a.symbol == Alice.asset_symbol, addressassets)
+        addressasset = list( filter(lambda a: a.symbol == Alice.asset_symbol, addressassets) )
         self.assertEqual(len(addressasset), 0)

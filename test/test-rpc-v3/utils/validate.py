@@ -1,5 +1,5 @@
 import MOCs
-import mvs_rpc
+from utils import mvs_rpc
 
 def validate_tx(checker, tx_hash, from_who, to_who, amount, fee, desc=None):
     '''

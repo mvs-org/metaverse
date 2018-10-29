@@ -47,7 +47,7 @@ class MVSTestCaseBase(unittest.TestCase):
     def checkResponseKeys(self, result, expect_keys):
         if result != None and isinstance(result, dict):
             expect_keys.sort()
-            actual_keys = result.keys()
+            actual_keys = list(result.keys())
             actual_keys.sort()
             self.assertEqual(actual_keys, expect_keys)
 

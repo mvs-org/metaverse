@@ -32,7 +32,6 @@ class RPC:
             else:
                 optional_params.append(key)
                 optional_params.append(value)
-
         ret = {
             'method': self.method,
             'id': self.id,
@@ -369,7 +368,7 @@ def list_didaddresses(did_symbol):
 
 @mvs_api
 def get_asset(asset_symbol=None, cert=False):
-    positional = filter(None, [asset_symbol])
+    positional = list( filter(None, [asset_symbol]) )
     if cert:
         positional.append("--cert")
     return "getasset", positional, {}, None
@@ -388,7 +387,7 @@ def get_accountasset(account, password, asset_symbol=None, cert=False):
     args = [account, password, asset_symbol]
     if cert:
         args.append('--cert')
-    return "getaccountasset", filter(None, args), {}, None
+    return "getaccountasset", list( filter(None, args) ), {}, None
 
 
 @mvs_api
@@ -427,7 +426,7 @@ def delete_localasset(account, password, symbol):
 
 @mvs_api
 def list_assets(account=None, password=None, cert=False):
-    positional = filter(None, [account, password])
+    positional = list( filter(None, [account, password]) )
     if cert:
         positional.append('--cert')
     return "listassets", positional, {}, None
@@ -604,7 +603,7 @@ def didsend_asset_from(account, password, from_, to_, symbol, amount, fee=None):
 
 @mvs_api
 def burn(account, password, symbol, amount=0, cert=None, is_mit=False):
-    positional = filter(None, [account, password, symbol, amount])
+    positional = list( filter(None, [account, password, symbol, amount]) )
     if is_mit:
         positional.append("--mit")
     return "burn", positional, {'--cert': cert}, None
@@ -696,7 +695,7 @@ def get_block(hash_or_height, json=True, tx_json=True):
 
 
 @mvs_api
-def create_rawtx(type, senders, utxos, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None):
+def create_rawtx(type, senders, receivers, deposit=None, mychange=None, message=None, symbol=None, fee=None, utxos=None):
     '''
     -d [--deposit]       Deposits support [7, 30, 90, 182, 365] days.
                          defaluts to 7 days
@@ -717,7 +716,7 @@ def create_rawtx(type, senders, utxos, receivers, deposit=None, mychange=None, m
                          "tx-hash:output-index[:sequence]"
     '''
     # utxos: [tx-hash(str), output-index(int), sequence(int)]
-    utxos = [':'.join( [txhash, str(output_index), str(sequence)] ) for (txhash, output_index, sequence) in utxos]
+    utxos = None if utxos== None else [':'.join( [txhash, str(output_index), str(sequence)] ) for (txhash, output_index, sequence) in utxos]
     return "createrawtx", [], {
         '-r': ["%s:%s" % (i, receivers[i]) for i in receivers],
         '-s': [i for i in senders],
@@ -797,13 +796,13 @@ def transfer_mit(account, password, to_did, symbol, fee=None):
 
 @mvs_api
 def list_mits(account=None, password=None):
-    positional = filter(None, [account, password])
+    positional = list( filter(None, [account, password]) )
     return "listmits", positional, {}, None
 
 
 @mvs_api
 def get_mit(symbol=None, tracing=False, page_index=1, page_limit=100):
-    positional = filter(None, [symbol])
+    positional = list( filter(None, [symbol]) )
     if symbol != None and tracing:
         positional.append("--trace")
         return "getmit", positional, {'--index': page_index, '--limit': page_limit}, None

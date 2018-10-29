@@ -66,12 +66,12 @@ class TestFork(ForkTestCase):
             self.assertIn(asset_symbol, message)
 
             addressassets = Alice.get_addressasset(Alice.mainaddress())
-            addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
+            addressasset = list( filter(lambda a: a.symbol == asset_symbol, addressassets) )
             self.assertEqual(len(addressasset), 1)
 
             # check domain cert
             certs = Alice.get_addressasset(Alice.mainaddress(), True)
-            cert = filter(lambda a: a.symbol == domain_symbol, certs)
+            cert = list( filter(lambda a: a.symbol == domain_symbol, certs) )
             self.assertEqual(len(cert), 1)
 
         finally:
@@ -83,12 +83,12 @@ class TestFork(ForkTestCase):
         self.assertNotIn(asset_symbol, message)
 
         addressassets = Alice.get_addressasset(Alice.mainaddress())
-        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
+        addressasset = list( filter(lambda a: a.symbol == asset_symbol, addressassets) )
         self.assertEqual(len(addressasset), 0)
 
         # check domain cert
         certs = Alice.get_addressasset(Alice.mainaddress(), True)
-        cert = filter(lambda a: a.symbol == domain_symbol, certs)
+        cert = list( filter(lambda a: a.symbol == domain_symbol, certs) )
         self.assertEqual(len(cert), 0)
 
     def test_3_fork_at_change_did(self):
@@ -175,7 +175,7 @@ class TestFork(ForkTestCase):
             certs = Alice.get_addressasset(Alice.didaddress(), True)
 
 
-            cert = filter(lambda a: a.symbol == cert_symbol, certs)
+            cert = list( filter(lambda a: a.symbol == cert_symbol, certs) )
             self.assertEqual(len(cert), 1)
 
         finally:
@@ -183,7 +183,7 @@ class TestFork(ForkTestCase):
 
         # check cert
         certs = Alice.get_addressasset(Alice.didaddress(), True)
-        cert = filter(lambda a: a.symbol == cert_symbol, certs)
+        cert = list( filter(lambda a: a.symbol == cert_symbol, certs) )
         self.assertEqual(len(cert), 0)
 
 

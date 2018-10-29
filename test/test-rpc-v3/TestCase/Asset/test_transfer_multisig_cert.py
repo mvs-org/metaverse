@@ -44,7 +44,7 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         # check cert
         certs = Zac.get_addressasset(multisig_address, True);
         self.assertGreater(len(certs), 0, "not cert found at " + multisig_address)
-        exist_symbols = filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs)
+        exist_symbols = list( filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs) )
         self.assertEqual(len(exist_symbols), 1, "not cert found at " + multisig_address)
 
         # transfer cert to Cindy
@@ -60,5 +60,5 @@ class TestTransferMultisigCert(MVSTestCaseBase):
         # check cert
         certs = Cindy.get_addressasset(Cindy.didaddress(), True);
         self.assertGreater(len(certs), 0, "not cert found at " + Cindy.didaddress())
-        exist_symbols = filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs)
+        exist_symbols = list( filter(lambda a: a.symbol == asset_symbol and a.cert == "issue", certs) )
         self.assertEqual(len(exist_symbols), 1, "not cert found at " + Cindy.didaddress())

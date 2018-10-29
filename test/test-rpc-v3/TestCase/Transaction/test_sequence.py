@@ -28,7 +28,7 @@ class TestTxSequence(MVSTestCaseBase):
         for sequence, expect_ec in [(height - prev_height + 2, 5304), (height - prev_height + 1, 0)]:
             t.inputs[0].sequence = sequence
             raw_tx = t.to_rawtx()
-            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx.hex())
+            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx)
             self.assertEqual(ec, 0, message)
             ec, message = mvs_rpc.send_rawtx(message['rawtx'])
             self.assertEqual(ec, expect_ec, message)
@@ -58,7 +58,7 @@ class TestTxSequence(MVSTestCaseBase):
             t.inputs[0].sequence = sequence_0 + a0
             t.inputs[1].sequence = sequence_1 + a1
             raw_tx = t.to_rawtx()
-            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx.hex())
+            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx)
             self.assertEqual(ec, 0, message)
             ec, message = mvs_rpc.send_rawtx(message['rawtx'])
             self.assertEqual(ec, expect, message)
@@ -103,7 +103,7 @@ class TestTxSequence(MVSTestCaseBase):
         for sequence_, expect_ec in [(sequence + 1, 5304), (sequence, 0)]:
             t.inputs[0].sequence = ((1 << 22) | sequence_)
             raw_tx = t.to_rawtx()
-            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx.hex())
+            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx)
             self.assertEqual(ec, 0, message)
             ec, message = mvs_rpc.send_rawtx(message['rawtx'])
             self.assertEqual(ec, expect_ec, message)
@@ -122,7 +122,7 @@ class TestTxLocktime(MVSTestCaseBase):
         for i,e in [(2, 5304), (1, 5304), (0, 0)]:
             t.locktime = height + i
             raw_tx = t.to_rawtx()
-            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx.hex())
+            ec, message = mvs_rpc.sign_rawtx(Alice.name, Alice.password, raw_tx)
             self.assertEqual(ec, 0, message)
             ec, message = mvs_rpc.send_rawtx(message['rawtx'])
             self.assertEqual(ec, e, message)

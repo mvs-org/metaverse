@@ -106,7 +106,7 @@ class TestDIDSendAsset(MVSTestCaseBase):
     def get_asset_amount(self, role, asset_symbol):
         addressassets = role.get_addressasset(role.mainaddress())
 
-        addressasset = filter(lambda a: a.symbol == asset_symbol, addressassets)
+        addressasset = list( filter(lambda a: a.symbol == asset_symbol, addressassets) )
         if len(addressasset) == 1:
             previous_quantity = addressasset[0].quantity
             previous_decimal = addressasset[0].decimal_number
