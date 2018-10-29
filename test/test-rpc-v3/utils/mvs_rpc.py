@@ -114,7 +114,7 @@ class RPC:
             ret.append((method, max_ * 1000, min_ *
                         1000, avg_ * 1000, len(times)))
         ret.sort(
-            lambda x, y: cmp(x[3], y[3]),
+            key=lambda x : x[3],
             reverse=True
         )
 
@@ -520,12 +520,12 @@ def deposit(account, password, amount, address=None, deposit=None, fee=None):
 
 
 @mvs_api
-def send(account, password, to_, amount, fee=None, desc=None, remark=None):
+def send(account, password, to_, amount, fee=None, desc=None, locktime=None):
     positional = [account, password, to_, amount]
     optional = {
         '-f': fee,
         '-m': desc,
-        "-r": remark
+        "-x": locktime
     }
 
     return "send", positional, optional, None
