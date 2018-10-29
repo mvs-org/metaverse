@@ -115,7 +115,7 @@ class OutputRedirector(object):
         self.fp = fp
 
     def write(self, s):
-        self.fp.write(s)
+        self.fp.write( bytes(s, 'utf-8') )
 
     def writelines(self, lines):
         self.fp.writelines(lines)
