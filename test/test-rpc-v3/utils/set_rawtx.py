@@ -132,6 +132,5 @@ if __name__ == "__main__":
     t.inputs[0].script = a2b_hex(sig_script) #bytes([]) #
     #t.inputs[0].sequence = (1 << 22) | 100 # time
     t.inputs[0].sequence =         0 | 0x0054  # height
-    import pdb; pdb.set_trace()
     ret = t.to_rawtx()
     print( ret )
