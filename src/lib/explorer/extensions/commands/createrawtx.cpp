@@ -180,7 +180,7 @@ console_result createrawtx::invoke(Json::Value& jv_output,
 
     // set sequence
     auto&& tx = sp_send_helper->get_transaction();
-    for (auto i=0; i<sequence_lst.size(); ++i) {
+    for (size_t i=0; i<sequence_lst.size(); ++i) {
         // maybe conflict with nlocktime, so when the sequence(by rpc) is invalid, we will not change it.
         if (sequence_lst[i] == max_uint32) {
             continue;
