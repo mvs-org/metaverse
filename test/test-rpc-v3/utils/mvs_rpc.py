@@ -613,7 +613,6 @@ def sendmore_asset(account, password, symbol, receivers, mychange=None, fee=None
     :return:
     '''
     positional = [account, password, symbol]
-    import pdb; pdb.set_trace()
     optional = {
         '-f': fee,
         '-m': mychange,
