@@ -192,7 +192,7 @@ class TestFork(ForkTestCase):
         #
         did_symbol = "test_fork_registerdiid"+common.get_random_str()
         rmtName = Zac.name+common.get_random_str()
-        print rmtName
+        print( rmtName )
         mvs_rpc.new_address(Zac.name,Zac.password, 2)
         mvs_rpc.remote_call(self.remote_ip, mvs_rpc.import_account)(rmtName, "123456", ' '.join(Zac.mnemonic),2)
         receivers={}
@@ -211,7 +211,7 @@ class TestFork(ForkTestCase):
         ec, message = mvs_rpc.get_info()
         self.assertEqual(ec, 0, message)
         pre_height = message[0]
-        print "pre_height:"+str(pre_height)
+        print( "pre_height:"+str(pre_height) )
 
         self.make_partion()
         import time
@@ -301,7 +301,7 @@ class TestFork(ForkTestCase):
             ec, message = mvs_rpc.get_info()
             self.assertEqual(ec, 0, message)
             fork_height = message[0]
-            print "fork_height:"+str(fork_height) + ",main_height:"+str(main_height)
+            print( "fork_height:"+str(fork_height) + ",main_height:"+str(main_height) )
 
         ec, message = mvs_rpc.list_didaddresses(did_symbol)
         self.assertEqual(ec, 0, message)

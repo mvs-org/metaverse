@@ -120,7 +120,7 @@ class TestAsset(MVSTestCaseBase):
 
         #pre-set condition
         self.assertGreater(origin_amount, 3000)
-        Alice.sendmore_asset(Zac.mainaddress(), receivers, Alice.asset_symbol)
+        Alice.sendmore_asset(receivers, Alice.asset_symbol)
         Alice.mining()
 
-        self.assertEqual(self.get_asset_amount(Zac, k), v) for k,v in receivers.items()
+        [ self.assertEqual(self.get_asset_amount(Zac, k), v) for k,v in receivers.items() ]

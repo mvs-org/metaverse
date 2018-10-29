@@ -613,12 +613,13 @@ def sendmore_asset(account, password, symbol, receivers, mychange=None, fee=None
     :return:
     '''
     positional = [account, password, symbol]
+    import pdb; pdb.set_trace()
     optional = {
         '-f': fee,
         '-m': mychange,
         '-r': ["%s:%s" % (i, receivers[i]) for i in receivers]
     }
-    return "sendmore", positional, optional, None
+    return "sendassetmore", positional, optional, None
 
 
 @mvs_api
