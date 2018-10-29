@@ -78,7 +78,7 @@ void session_seed::handle_started(const code& ec, result_handler handler)
 
 void session_seed::handle_count(size_t start_size, result_handler handler)
 {
-    if (start_size != 0)
+    if (start_size != 0 && settings_.seeds.empty())
     {
         log::debug(LOG_NETWORK)
             << "Seeding is not required because there are "
@@ -95,6 +95,11 @@ void session_seed::handle_count(size_t start_size, result_handler handler)
         return;
     }
 
+    log::debug(LOG_NETWORK)
+        << "Start seeding, there are "
+        << start_size << " cached addresses.";
+
+    start_size = 0;
     // This is NOT technically the end of the start sequence, since the handler
     // is not invoked until seeding operations are complete.
     start_seeding(start_size, create_connector(), handler);
