@@ -123,9 +123,9 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
     if (script_sig_map.empty()) {
         // get raw tx
-        if (blockchain.validate_transaction(tx_)) {
-            throw tx_validate_exception{"validate transaction failure"};
-        }
+        //if (blockchain.validate_transaction(tx_)) {
+        //    throw tx_validate_exception{"validate transaction failure"};
+        //}
 
         jv_output = config::json_helper(get_api_version()).prop_list_of_rawtx(tx_, true);
 
