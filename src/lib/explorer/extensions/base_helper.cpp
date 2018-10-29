@@ -1006,7 +1006,7 @@ void base_transfer_common::sync_fetchutxo(
             record.prikey = prikey;
             record.script = output.script;
         }
-        record.addr = addr;
+        record.addr = output.get_script_address();
         record.amount = etp_amount;
         record.symbol = asset_symbol;
         record.asset_amount = asset_amount;

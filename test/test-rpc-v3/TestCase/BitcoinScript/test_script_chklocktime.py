@@ -18,8 +18,6 @@ from TestCase.MVSTestCase import *
 class TestChkLocktime(MVSTestCaseBase):
     need_mine = False
     def test_0_ChkLocktime(self):
-        import pdb
-        pdb.set_trace()
         ec, (height, _) = mvs_rpc.get_info()
         self.assertEqual(ec, 0)
 
