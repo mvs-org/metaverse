@@ -377,6 +377,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendmore.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
@@ -721,6 +724,9 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetmore.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendfrom.cpp">

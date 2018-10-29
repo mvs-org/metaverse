@@ -95,7 +95,7 @@ console_result registerdid::invoke(Json::Value &jv_output,
 
     auto register_helper = registering_did(
                                *this, blockchain, std::move(auth_.name), std::move(auth_.auth),
-                               "", std::move(argument_.symbol),
+                               std::move(argument_.address), std::move(argument_.symbol),
                                std::move(receiver), argument_.fee, argument_.percentage,
                                std::move(acc_multisig));
 

@@ -561,6 +561,9 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendassetfrom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\sendassetmore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\wallet\gettx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2076,6 +2079,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendassetfrom.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\sendassetmore.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\wallet\validateaddress.hpp">

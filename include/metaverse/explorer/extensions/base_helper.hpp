@@ -581,7 +581,7 @@ private:
 class BCX_API sending_asset : public base_transfer_helper
 {
 public:
-    sending_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        sending_asset(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, std::string&& symbol,
         std::string&& model_param,
