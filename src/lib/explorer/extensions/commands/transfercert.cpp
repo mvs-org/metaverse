@@ -44,7 +44,7 @@ console_result transfercert::invoke (Json::Value& jv_output,
 
     // check asset cert types
     auto& cert_type_name = argument_.cert;
-    auto cert_type = check_cert_type_name(cert_type_name);
+    auto cert_type = check_cert_type_name(cert_type_name, true);
 
     if (cert_type == asset_cert_ns::issue) {
         auto sh_asset = blockchain.get_issued_asset(argument_.symbol);

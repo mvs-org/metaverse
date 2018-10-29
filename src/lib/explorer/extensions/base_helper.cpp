@@ -192,7 +192,7 @@ struct HexTo {
     }
 };
 
-asset_cert_type check_cert_type_name(const string& cert_name)
+asset_cert_type check_cert_type_name(const string& cert_name, bool all)
 {
     // check asset cert types
     auto certs_create = asset_cert_ns::none;
@@ -201,6 +201,12 @@ asset_cert_type check_cert_type_name(const string& cert_name)
         {"marriage",    asset_cert_ns::marriage},
         {"kyc",         asset_cert_ns::kyc}
     };
+
+    if (all) {
+        cert_map["issue"] = asset_cert_ns::issue;
+        cert_map["domain"] = asset_cert_ns::domain;
+    }
+
     auto iter = cert_map.find(cert_name);
     if (iter != cert_map.end()) {
         certs_create = iter->second;
