@@ -36,17 +36,30 @@ console_result listaddresses::invoke(Json::Value& jv_output,
     libbitcoin::server::server_node& node)
 {
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+    const auto acc = blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     auto& aroot = jv_output;
     Json::Value addresses;
 
-    auto vaddr = blockchain.get_account_addresses(auth_.name);
-    if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
+    if (option_.b_script) {
+        for (auto sc : acc->get_script_vec()) {
+            Json::Value script;
+            script["address"] = sc.get_address();
+            script["script"] = encode_base16(sc.get_script());
+            script["description"] = sc.get_description();
 
-    for (auto& it: *vaddr){
-        addresses.append(it.get_address());
+            addresses.append(script);
+        }
+    } else {
+        auto vaddr = blockchain.get_account_addresses(auth_.name);
+        if(!vaddr) throw address_list_nullptr_exception{"nullptr for address list"};
+
+        for (auto& it: *vaddr){
+            addresses.append(it.get_address());
+        }
     }
+
+    
 
     if (get_api_version() == 1 && addresses.isNull()) { // compatible for v1
         aroot["addresses"] = "";
