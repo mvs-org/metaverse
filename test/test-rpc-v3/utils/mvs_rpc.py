@@ -452,6 +452,11 @@ def start_mining(account, password, address=None, number=None):
     return "startmining", [account, password], {'-a': address, '-n': number}, None
 
 
+@mvs_api
+def stop_mining():
+    return "stopmining", [], {}, None
+
+
 @mvs_api_v3
 def eth_submit_work(nonce, header_hash, mix_hash):
     '''

@@ -272,13 +272,15 @@ class Role:
         result, (height_origin, _) = mvs_rpc.get_info()
         assert (result == 0)
         mvs_rpc.start_mining(self.name, self.password, self.mainaddress(), times)
-        for i in range(10):
+        for i in range(times+10):
             time.sleep(0.1)
             result, (height_new, _) = mvs_rpc.get_info()
             assert (result == 0)
             if height_new == (height_origin + times):
                 break
 
+        mvs_rpc.stop_mining()
+        time.sleep(0.2)
         return
         '''
         from ethereum.pow.ethpow import mine
