@@ -86,7 +86,6 @@ private:
 
     iterator find(const address& host);
     iterator find(list& buffer, const address& host);
-    void do_store(const address& host, result_handler handler);
     void handle_timer(const code& ec);
 
     // These are protected by a mutex.

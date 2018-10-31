@@ -447,15 +447,6 @@ code hosts::store(const address& host)
     return error::success;
 }
 
-// private
-void hosts::do_store(const address& host, result_handler handler)
-{
-    if (disabled_)
-        return;
-
-    handler(store(host));
-}
-
 // The handler is invoked once all calls to do_store are completed.
 // We disperse here to allow other addresses messages to interleave hosts.
 void hosts::store(const address::list& hosts, result_handler handler)
