@@ -181,7 +181,7 @@ console_result signmultisigtx::invoke(
 
                 ec_signature signature;
                 // from validate_transaction.cpp handle_previous_tx
-                auto strict = ((script_context::all_enabled & script_context::bip66_enabled) != 0);
+                auto strict = ((chain::get_script_context() & script_context::bip66_enabled) != 0);
                 if (!parse_signature(signature, distinguished, strict)) {
                     log::trace("multisig") << "failed to parse_signature! " << sighash_type;
                     continue;

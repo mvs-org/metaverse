@@ -1672,7 +1672,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
         }
     }
 
-    if (!check_consensus(previous_output.script, *tx_, current_input_, script_context::all_enabled)) {
+    if (!check_consensus(previous_output.script, *tx_, current_input_, chain::get_script_context())) {
         log::debug(LOG_BLOCKCHAIN) << "check_consensus failed";
         return false;
     }

@@ -518,5 +518,10 @@ opcode data_to_opcode(const data_chunk& value)
     return code;
 }
 
+script_context get_script_context()
+{
+    return script_context::all_enabled;
+}
+
 } // namspace chain
 } // namspace libbitcoin
