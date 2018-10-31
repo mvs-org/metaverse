@@ -24,6 +24,7 @@
 #include <sstream>
 #include <utility>
 #include <boost/iostreams/stream.hpp>
+#include <metaverse/bitcoin/math/limits.hpp>
 #include <metaverse/bitcoin/chain/input.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
 #include <metaverse/bitcoin/constants.hpp>
@@ -252,24 +253,25 @@ bool transaction::is_coinbase() const
     return (inputs.size() == 1) && inputs[0].previous_output.is_null();
 }
 
+bool transaction::all_inputs_final() const
+{
+    const auto finalized = [](const input& input)
+    {
+        return input.is_final();
+    };
+
+    return std::all_of(inputs.begin(), inputs.end(), finalized);
+}
+
 bool transaction::is_final(uint64_t block_height, uint32_t block_time) const
 {
-    if (locktime == 0)
-        return true;
+    const auto max_locktime = [=]()
+    {
+        return locktime < locktime_threshold ?
+            safe_unsigned<uint32_t>(block_height) : block_time;
+    };
 
-    auto max_locktime = block_time;
-
-    if (locktime < locktime_threshold)
-        max_locktime = static_cast<uint32_t>(block_height);
-
-    if (locktime < max_locktime)
-        return true;
-
-    for (const auto& tx_input: inputs)
-        if (!tx_input.is_final())
-            return false;
-
-    return true;
+    return locktime == 0 || locktime < max_locktime() || all_inputs_final();
 }
 
 bool transaction::is_locked(size_t block_height,

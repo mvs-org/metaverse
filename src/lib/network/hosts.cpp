@@ -235,6 +235,10 @@ code hosts::stop()
     }
 
     mutex_.unlock_upgrade_and_lock();
+    
+    // stop timer
+    snap_timer_->stop();
+
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     stopped_ = true;
     bc::ofstream file(file_path_.string());

@@ -102,6 +102,9 @@ public:
     input::list inputs;
     output::list outputs;
 
+protected:
+    bool all_inputs_final() const;
+
 private:
     mutable upgrade_mutex mutex_;
     mutable std::shared_ptr<hash_digest> hash_;

@@ -57,7 +57,7 @@ enum account_type : uint8_t
 {
     common = 0,
     multisignature,
-    script_,
+    script_,    // 'script' conflicts with class 'script'
 };
 
 #define is_multisignature(type) ((type & account_type::multisignature) == account_type::multisignature)
