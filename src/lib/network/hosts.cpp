@@ -71,10 +71,6 @@ size_t hosts::count() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-static std::atomic<uint64_t> fetch_times{0};
-
-static std::vector<config::authority> hosts_{config::authority("198.199.84.199:5252")};
-
 code hosts::fetch(address& out, const config::authority::list& excluded_list)
 {
     if (disabled_)
@@ -101,6 +97,8 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
 hosts::address::list hosts::copy()
 {
     address::list copy;
+    if (disabled_)
+        return copy;
 
     shared_lock lock{mutex_};
     copy.reserve(host_pool_capacity_);
@@ -112,6 +110,9 @@ hosts::address::list hosts::copy()
 
 void hosts::handle_timer(const code& ec)
 {
+    if (disabled_)
+        return;
+
     if (ec.value() != error::success) {
         return;
     }
@@ -271,6 +272,9 @@ code hosts::stop()
 
 code hosts::clear()
 {
+    if (disabled_)
+        return error::success;
+
     // Critical Section
     mutex_.lock_upgrade();
 
@@ -300,6 +304,9 @@ code hosts::clear()
 
 code hosts::after_reseeding()
 {
+    if (disabled_)
+        return error::success;
+
     mutex_.lock_upgrade();
 
     if (stopped_)
@@ -361,6 +368,9 @@ code hosts::after_reseeding()
 
 code hosts::remove(const address& host)
 {
+    if (disabled_)
+        return error::success;
+
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex_.lock_upgrade();
@@ -398,6 +408,9 @@ code hosts::remove(const address& host)
 
 code hosts::store(const address& host)
 {
+    if (disabled_)
+        return error::success;
+
     if (!host.is_routable())
     {
         // We don't treat invalid address as an error, just log it.
@@ -437,6 +450,9 @@ code hosts::store(const address& host)
 // private
 void hosts::do_store(const address& host, result_handler handler)
 {
+    if (disabled_)
+        return;
+
     handler(store(host));
 }
 
