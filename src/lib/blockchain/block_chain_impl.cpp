@@ -55,6 +55,7 @@ block_chain_impl::block_chain_impl(threadpool& pool,
     const blockchain::settings& chain_settings,
     const database::settings& database_settings)
   : stopped_(true),
+    sync_disabled_(false),
     settings_(chain_settings),
     organizer_(pool, *this, chain_settings),
     ////read_dispatch_(pool, NAME),
@@ -336,6 +337,12 @@ void block_chain_impl::store(message::block_message::ptr block,
     if (stopped())
     {
         handler(error::service_stopped, 0);
+        return;
+    }
+
+    if (is_sync_disabled())
+    {
+        handler(error::sync_disabled, 0);
         return;
     }
 
@@ -2487,6 +2494,20 @@ void block_chain_impl::safe_store_account(account& acc, std::vector<std::shared_
     database_.accounts.sync();
 }
 
+shared_mutex& block_chain_impl::get_mutex()
+{
+    return mutex_;
+}
+
+bool block_chain_impl::is_sync_disabled() const
+{
+    return sync_disabled_;
+}
+
+void block_chain_impl::set_sync_disabled(bool b)
+{
+    sync_disabled_ = b;
+}
 
 } // namespace blockchain
 } // namespace libbitcoin

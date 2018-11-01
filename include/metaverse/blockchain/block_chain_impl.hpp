@@ -350,6 +350,10 @@ public:
     bool get_tx_inputs_etp_value (chain::transaction& tx, uint64_t& etp_val);
     void safe_store_account(account& acc, std::vector<std::shared_ptr<account_address>>& addresses);
 
+    shared_mutex& get_mutex();
+    bool is_sync_disabled() const;
+    void set_sync_disabled(bool b);
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 
@@ -385,6 +389,7 @@ private:
 
 private:
     std::atomic<bool> stopped_;
+    std::atomic<bool> sync_disabled_;
     const settings& settings_;
 
     // These are thread safe.
@@ -395,7 +400,7 @@ private:
 
     // This is protected by mutex.
     database::data_base database_;
-    mutable shared_mutex mutex_;
+    shared_mutex mutex_;
 };
 
 } // namespace blockchain

@@ -40,6 +40,7 @@
 #include <metaverse/explorer/extensions/commands/getblockheader.hpp>
 #include <metaverse/explorer/extensions/commands/fetchheaderext.hpp>
 #include <metaverse/explorer/extensions/commands/gettx.hpp>
+#include <metaverse/explorer/extensions/commands/popblock.hpp>
 #include <metaverse/explorer/extensions/commands/dumpkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importkeyfile.hpp>
 #include <metaverse/explorer/extensions/commands/importaccount.hpp>
@@ -139,6 +140,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<getwork>());
     func(make_shared<submitwork>());
     func(make_shared<getmemorypool>());
+    func(make_shared<popblock>());
 
     os <<"\r\n";
     // block & tx
@@ -283,6 +285,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<fetchheaderext>();
     if (symbol == gettx::symbol() || symbol == "gettransaction")
         return make_shared<gettx>();
+    if (symbol == popblock::symbol())
+        return make_shared<popblock>();
     if (symbol == "fetch-tx")
         return make_shared<gettx>(symbol);
     if (symbol == listtxs::symbol())

@@ -178,6 +178,7 @@ enum error_code_t
     mit_not_exist,                  // 90
 
     sequence_locked,
+    sync_disabled,
 
 };
 

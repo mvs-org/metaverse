@@ -264,6 +264,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::sequence_locked:
             return "transaction currently locked";
 
+        case error::sync_disabled:
+            return "block sync is disabled";
+
         // unknown errors
         case error::unknown:
         default:
