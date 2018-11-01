@@ -98,8 +98,13 @@ public:
     static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 
+    chain::block_version get_accept_block_version() const;
+    void set_accept_block_version(chain::block_version v);
+
+    bool is_witness(const wallet::payment_address& pay_address) const;
+
 private:
-    void work(const wallet::payment_address pay_address);
+    void work(const wallet::payment_address& pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_addres);
     unsigned int get_adjust_time(uint64_t height) const;
     unsigned int get_median_time_past(uint64_t height) const;
@@ -107,7 +112,7 @@ private:
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
-    bool is_stop_miner(uint64_t block_height) const;
+    bool is_stop_miner(uint64_t block_height, block_ptr block) const;
 
 private:
     p2p_node& node_;
@@ -115,6 +120,7 @@ private:
     mutable state state_;
     uint16_t new_block_number_;
     uint16_t new_block_limit_;
+    chain::block_version accept_block_version_;
 
     block_ptr new_block_;
     wallet::payment_address pay_address_;

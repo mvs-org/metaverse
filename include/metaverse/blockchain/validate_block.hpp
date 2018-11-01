@@ -114,7 +114,6 @@ private:
     bool testnet_;
     const uint64_t height_;
     uint32_t activations_;
-    uint32_t minimum_version_;
     const chain::block& current_block_;
     const config::checkpoint::list& checkpoints_;
     const stopped_callback stop_callback_;

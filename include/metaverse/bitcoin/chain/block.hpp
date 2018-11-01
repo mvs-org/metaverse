@@ -46,6 +46,8 @@ public:
     typedef std::vector<ptr> ptr_list;
     typedef std::vector<size_t> indexes;
 
+    static const uint32_t pow_check_point_height;
+
     static hash_digest generate_merkle_root(
         const transaction::list& transactions);
     static block genesis_mainnet();
@@ -72,6 +74,9 @@ public:
 
     chain::header header;
     transaction::list transactions;
+
+    bool can_use_dpos_consensus() const;
+    bool must_use_pow_consensus() const;
 };
 
 } // namespace chain

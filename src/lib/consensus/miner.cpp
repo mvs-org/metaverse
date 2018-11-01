@@ -42,7 +42,6 @@ using namespace std;
 namespace libbitcoin {
 namespace consensus {
 
-static BC_CONSTEXPR uint32_t block_version = 1;
 static BC_CONSTEXPR unsigned int min_tx_fee = 10000;
 
 // tuples: (priority, fee_per_kb, fee, transaction_ptr)
@@ -71,6 +70,7 @@ miner::miner(p2p_node& node)
     , state_(state::init_)
     , new_block_number_(0)
     , new_block_limit_(0)
+    , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
 {
     if (setting_.use_testnet_rules) {
@@ -525,21 +525,50 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         pblock->transactions.push_back(*i);
     }
 
-    pblock->transactions[0].outputs[0].value =
-        total_fee + calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
-
     // Fill in header
     pblock->header.number = current_block_height + 1;
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.previous_block_hash = prev_header.hash();
-    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
     pblock->header.timestamp = get_adjust_time(pblock->header.number);
-    pblock->header.version = block_version;
-    pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
+
+    bool can_use_dpos = false;
+    if (get_accept_block_version() == chain::block_version_dpos ||
+        get_accept_block_version() == chain::block_version_any) {
+        can_use_dpos = pblock->can_use_dpos_consensus();
+        can_use_dpos &= is_witness(pay_address);
+        if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
+            return nullptr;
+        }
+    }
+    uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
+    if (can_use_dpos) {
+        block_subsidy = uint64_t(1.0 * block_subsidy / block::pow_check_point_height);
+    }
+    pblock->transactions[0].outputs[0].value = total_fee + block_subsidy;
+
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+    if (can_use_dpos) {
+        pblock->header.version = chain::block_version_dpos;
+        pblock->header.bits = prev_header.bits;
+    }
+    else {
+        pblock->header.version = chain::block_version_pow;
+        pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
+    }
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
 
     return pblock;
+}
+
+chain::block_version miner::get_accept_block_version() const
+{
+    return accept_block_version_;
+}
+
+void miner::set_accept_block_version(chain::block_version v)
+{
+    accept_block_version_ = v;
 }
 
 unsigned int miner::get_adjust_time(uint64_t height) const
@@ -602,13 +631,14 @@ std::string to_string(_T const& _t)
     return o.str();
 }
 
-void miner::work(const wallet::payment_address pay_address)
+void miner::work(const wallet::payment_address& pay_address)
 {
     log::info(LOG_HEADER) << "solo miner start with address: " << pay_address.encoded();
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
         if (block) {
-            if (MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number))) {
+            if (block->header.version == chain::block_version_dpos ||
+                MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number, block))) {
                 boost::uint64_t height = store_block(block);
                 if (height == 0) {
                     continue;
@@ -627,9 +657,38 @@ void miner::work(const wallet::payment_address pay_address)
     }
 }
 
-bool miner::is_stop_miner(uint64_t block_height) const
+bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
 {
-    return (state_ == state::exit_) || (get_height() > block_height);
+    if (state_ == state::exit_) {
+        return true;
+    }
+    auto latest_height = get_height();
+    if ((latest_height > block_height) ||
+        (block && latest_height >= block->header.number)) {
+        return true;
+    }
+    // if i can use pos, then exit this loop and create new block with dpos consensus next time
+    if (get_accept_block_version() == chain::block_version_any &&
+        block && !block->must_use_pow_consensus()) {
+        boost::mutex mutex;
+        mutex.lock();
+        std::vector<transaction_ptr> transactions;
+        auto f = [&transactions, &mutex](const error_code& ec, const vector<transaction_ptr>& transactions_) -> void
+        {
+            if (error::success == ec.value()) {
+                transactions = transactions_;
+            }
+            mutex.unlock();
+        };
+        node_.pool().fetch(f);
+
+        boost::unique_lock<boost::mutex> lock(mutex);
+
+        if (!transactions.empty()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
@@ -747,17 +806,7 @@ bool miner::put_result(const std::string& nonce, const std::string& mix_hash,
     }
 
     if (header_hash == "0x" + to_string(HeaderAux::hashHead(new_block_->header))) {
-        auto s_nonce = "0x" + nonce;
-        uint64_t n_nonce;
-#ifdef MAC_OSX
-        size_t sz = 0;
-        n_nonce = std::stoull(s_nonce, &sz, 16);
-#else
-        if (sscanf(s_nonce.c_str(), "%lx", &n_nonce) != 1) {
-            log::error(LOG_HEADER) << "nonce change error\n";
-            return false;
-        }
-#endif
+        uint64_t n_nonce = std::stoull(nonce, 0, 16);
         // nounce_mask defination is moved to the caller by chengzhiping 2018-3-15.
         uint64_t nonce_t = n_nonce ^ nounce_mask;
         new_block_->header.nonce = (u64) nonce_t;
@@ -828,5 +877,11 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
     return false;
 }
 
+// DPOS_TODO: add algorithm to verify the witness node
+bool miner::is_witness(const wallet::payment_address& pay_address) const
+{
+    return true;
 }
-}
+
+} // consensus
+} // libbitcoin

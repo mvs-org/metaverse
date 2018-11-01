@@ -59,7 +59,6 @@ validate_block::validate_block(size_t height, const block& block, bool testnet,
     : testnet_(testnet),
       height_(height),
       activations_(script_context::none_enabled),
-      minimum_version_(0),
       current_block_(block),
       checkpoints_(checks),
       stop_callback_(callback)
@@ -80,7 +79,8 @@ bool validate_block::is_active(script_context flag) const
 // validate_version must be called first (to set minimum_version_).
 bool validate_block::is_valid_version() const
 {
-    return current_block_.header.version >= minimum_version_;
+    return current_block_.header.version >= chain::block_version_min &&
+        current_block_.header.version < chain::block_version_max;
 }
 
 bool validate_block::stopped() const
@@ -102,6 +102,9 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     if (!is_valid_proof_of_work(header))
         return error::proof_of_work;
+
+    if (header.version == chain::block_version_dpos && !current_block_.can_use_dpos_consensus())
+        return error::checkpoints_failed;
 
     RETURN_IF_STOPPED();
 
@@ -387,7 +390,7 @@ size_t validate_block::legacy_sigops_count(const transaction::list& txs)
 code validate_block::accept_block() const
 {
     const auto& header = current_block_.header;
-    if (header.bits != work_required(testnet_))
+    if (header.version != chain::block_version_dpos && header.bits != work_required(testnet_))
         return error::incorrect_proof_of_work;
 
     RETURN_IF_STOPPED();

@@ -41,7 +41,7 @@ console_result startmining::invoke(Json::Value& jv_output,
     uint64_t rate;
     std::string difficulty;
     bool is_solo_mining;
-    node.miner().get_state(height, rate, difficulty, is_solo_mining);
+    miner.get_state(height, rate, difficulty, is_solo_mining);
     if (is_solo_mining) {
         throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
@@ -49,6 +49,10 @@ console_result startmining::invoke(Json::Value& jv_output,
     auto str_addr = option_.address;
 
     if (str_addr.empty()) {
+        if (option_.consensus != "pow") {
+            throw argument_legality_exception{"mining non-pow blocks must specify a mining address!"};
+        }
+
         Json::Value jv_temp;
 
         // get new address
@@ -84,6 +88,16 @@ console_result startmining::invoke(Json::Value& jv_output,
 
     if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) { // for multisig address
         throw argument_legality_exception{"script address parameter not allowed!"};
+    }
+
+    if (option_.consensus == "pow") {
+        miner.set_accept_block_version(chain::block_version_pow);
+    }
+    else if (option_.consensus == "dpos") {
+        miner.set_accept_block_version(chain::block_version_dpos);
+    }
+    else {
+        miner.set_accept_block_version(chain::block_version_any);
     }
 
     // start

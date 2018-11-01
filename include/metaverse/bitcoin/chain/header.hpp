@@ -49,6 +49,14 @@ namespace libbitcoin {
 
 namespace chain {
 
+enum block_version {
+    block_version_any = 0,
+    block_version_min = 1,
+    block_version_pow = 1,
+    block_version_dpos = 2,
+    block_version_max = 3
+};
+
 class BC_API header
     : public base_primary<header>
 {

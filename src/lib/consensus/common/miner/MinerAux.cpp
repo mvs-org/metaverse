@@ -78,6 +78,12 @@ bool MinerAux::search(libbitcoin::chain::header& header, std::function<bool (voi
     uint64_t ms;
     uint64_t hashCount = 1;
 
+    // quick check and exit
+    if(is_exit() == true)
+    {
+        return false;
+    }
+
     while( nullptr == dag)
     {
         log::debug(LOG_MINER) << "start generate dag\n";
@@ -103,8 +109,7 @@ bool MinerAux::search(libbitcoin::chain::header& header, std::function<bool (voi
         }
         if(is_exit() == true)
         {
-            ethashReturn.success = false;
-            return ethashReturn.success;
+            return false;
         }
     }
     ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - timeStart).count();

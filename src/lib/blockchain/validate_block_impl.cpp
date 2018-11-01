@@ -50,12 +50,16 @@ validate_block_impl::validate_block_impl(simple_chain& chain,
 
 bool validate_block_impl::is_valid_proof_of_work(const chain::header& header) const
 {
+    if (header.version == chain::block_version_dpos) {
+        return true;
+    }
+
     chain::header parent_header;
     if (orphan_index_ != 0) {
         parent_header = orphan_chain_[orphan_index_ - 1]->actual()->header;
     }
     else {
-        static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
+        chain_.get_header(parent_header, header.number - 1);
     }
     return MinerAux::verifySeal(const_cast<chain::header&>(header), parent_header);
 }

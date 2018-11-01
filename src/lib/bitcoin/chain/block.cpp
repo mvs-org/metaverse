@@ -251,5 +251,28 @@ chain::block block::genesis_testnet()
     return genesis;
 }
 
+const uint32_t block::pow_check_point_height = 100; // may be 10000 in production
+bool block::must_use_pow_consensus() const
+{
+    return header.number % pow_check_point_height == 0;
+}
+
+bool block::can_use_dpos_consensus() const
+{
+    if (header.number <= coinbase_maturity + 1) {
+        // may be only for testing, quickly generate spendable uxto
+        // for the existed mainnet, this has no side effect
+        return true;
+    }
+    if (must_use_pow_consensus()) {
+        return false;
+    }
+    // only use DPOS to pack real txs, forbid block with only coinbase tx
+    if (transactions.size() == 1 && transactions[0].is_coinbase()) {
+        return false;
+    }
+    return true;
+}
+
 } // namspace chain
 } // namspace libbitcoin
