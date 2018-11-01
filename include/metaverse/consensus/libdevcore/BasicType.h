@@ -77,39 +77,4 @@ struct FullAllocation
 using LightType = std::shared_ptr<LightAllocation>;
 using FullType = std::shared_ptr<FullAllocation>;
 
-struct ChainOperationParams
-{
-    ChainOperationParams();
-
-    explicit operator bool() const { return accountStartNonce != Invalid256; }
-
-    /// The chain sealer name: e.g. Ethash, NoProof, BasicAuthority
-    std::string sealEngineName = "NoProof";
-
-    /// General chain params.
-    u256 blockReward = 0;
-    u256 maximumExtraDataSize = 1024;
-    u256 accountStartNonce = 0;
-    bool tieBreakingGas = true;
-
-    /// Precompiled contracts as specified in the chain params.
-//  std::unordered_map<Address, PrecompiledContract> precompiled;
-
-    /**
-     * @brief Additional parameters.
-     *
-     * e.g. Ethash specific:
-     * - minGasLimit
-     * - maxGasLimit
-     * - gasLimitBoundDivisor
-     * - minimumDifficulty
-     * - difficultyBoundDivisor
-     * - durationLimit
-     */
-    std::unordered_map<std::string, std::string> otherParams;
-
-    /// Convenience method to get an otherParam as a u256 int.
-    u256 u256Param(std::string const& _name);
-};
-
 }
