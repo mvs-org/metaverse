@@ -88,6 +88,10 @@ private:
     iterator find(list& buffer, const address& host);
     void handle_timer(const code& ec);
 
+    // record the seed count
+    const size_t seed_count;
+    const size_t host_pool_capacity_;
+
     // These are protected by a mutex.
     list buffer_;
     list backup_;
@@ -100,10 +104,6 @@ private:
     const boost::filesystem::path file_path_;
     threadpool& pool_;
     deadline::ptr snap_timer_;
-
-    // record the seed count
-    const size_t seed_count;
-    size_t host_pool_capacity_;
 };
 
 } // namespace network

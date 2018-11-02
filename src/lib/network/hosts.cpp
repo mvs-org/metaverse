@@ -36,13 +36,15 @@ uint32_t timer_interval = 60 * 5; // 5 minutes
 
 
 hosts::hosts(threadpool& pool, const settings& settings)
-    : buffer_(std::max(settings.host_pool_capacity, 1u))
+    : seed_count(settings.seeds.size())
+    , host_pool_capacity_(std::max(settings.host_pool_capacity, 1u))
+    , buffer_(host_pool_capacity_)
+    , backup_(host_pool_capacity_)
+    , inactive_(host_pool_capacity_ * 2)
     , stopped_(true)
     , file_path_(default_data_path() / settings.hosts_file)
     , disabled_(settings.host_pool_capacity == 0)
     , pool_(pool)
-    , seed_count(settings.seeds.size())
-    , host_pool_capacity_(std::max(settings.host_pool_capacity, 1u))
 {
 }
 
@@ -101,7 +103,7 @@ hosts::address::list hosts::copy()
         return copy;
 
     shared_lock lock{mutex_};
-    copy.reserve(host_pool_capacity_);
+    copy.reserve(buffer_.size());
     for (auto& h : buffer_) {
         copy.push_back(h);
     }
@@ -193,7 +195,7 @@ code hosts::start()
                 if (network_address.is_routable())
                 {
                     buffer_.push_back(network_address);
-                    if (buffer_.size() >= host_pool_capacity_) {
+                    if (buffer_.full()) {
                         break;
                     }
                 }
@@ -287,14 +289,9 @@ code hosts::clear()
 
     mutex_.unlock_upgrade_and_lock();
 
-    // if the buffer is already moved to backup, call this function again will lead to the loss of backup.
-    // backup_ = std::move( buffer_ );
-    for (auto& host : buffer_) 
-    {
-        backup_.push_back(host);
+    if (!buffer_.empty()) {
+        backup_ = std::move( buffer_ );
     }
-
-    buffer_.clear();
 
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -326,7 +323,7 @@ code hosts::after_reseeding()
                 << ", less than seed count: " << seed_count
                 << ", roll back the hosts cache.";
 
-        if (buffer_.size() < host_pool_capacity_)
+        if (!buffer_.full())
         {
             for (auto& host : backup_)
             {
@@ -334,7 +331,7 @@ code hosts::after_reseeding()
                 {
                     buffer_.push_back(host);
 
-                    if (buffer_.size() >= host_pool_capacity_)
+                    if (buffer_.full())
                     {
                         break;
                     }
@@ -392,11 +389,6 @@ code hosts::remove(const address& host)
 
     if (find(inactive_, host) == inactive_.end())
     {
-        if (inactive_.size() >= host_pool_capacity_ * 2) {
-            list temp(host_pool_capacity_);
-            std::copy(inactive_.begin() + host_pool_capacity_, inactive_.end(), temp.begin());
-            inactive_ = std::move(temp);
-        }
         inactive_.push_back(host);
     }
 
