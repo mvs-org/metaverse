@@ -229,19 +229,6 @@ bool miner::script_hash_signature_operations_count(
     return true;
 }
 
-#define VALUE(a) (a < 'a' ? (a - '0') : (a - 'a' + 10))
-std::string transfer_public_key(const string& key)
-{
-    string pub_key;
-    for (auto i = key.begin(); i != key.end(); i += 2) {
-        unsigned char a = 0;
-        a = (VALUE(*i) << 4)  + VALUE(*(i + 1));
-        pub_key.push_back(a);
-    }
-
-    return pub_key;
-}
-
 miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 {
     string text;
