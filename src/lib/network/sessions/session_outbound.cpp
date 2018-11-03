@@ -71,6 +71,9 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     outbound_counter = 0;
     in_reseeding = false;
 
+    connect_timer_ = std::make_shared<deadline>(pool_, asio::seconds(2));
+    reseeding_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
+
     const auto connect = create_connector();
     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
     {
@@ -100,18 +103,15 @@ void session_outbound::new_connection(connector::ptr connect)
 
 void session_outbound::delay_new_connect(connector::ptr connect)
 {
-    auto timer = std::make_shared<deadline>(pool_, asio::seconds(2));
     auto self = shared_from_this();
-    timer->start([this, connect, timer, self](const code& ec){
-        if (stopped())
-        {
+    connect_timer_->start([this, connect, self](const code& ec){
+        if (ec || stopped()) {
             return;
         }
-        auto pThis = shared_from_this();
-        auto action = [this, pThis, connect](){
-            new_connection(connect);
-        };
-        pool_.service().post(action);
+        pool_.service().post(
+            std::bind(&session_outbound::new_connection,
+                shared_from_base<session_outbound>(),
+                connect));
     });
 }
 
@@ -126,27 +126,32 @@ void session_outbound::delay_reseeding()
     }
     in_reseeding = true;
     log::debug(LOG_NETWORK) << "outbound channel counter decreased, the re-seeding will be triggered 60s later!";
-    auto timer = std::make_shared<deadline>(pool_, asio::seconds(60));
     auto self = shared_from_this();
-    timer->start([this, timer, self](const code& ec){
-        if (stopped())
-        {
+    reseeding_timer_->start([this, self](const code& ec){
+        if (ec || stopped()) {
+            in_reseeding = false;
             return;
         }
-        auto pThis = shared_from_this();
-        auto action = [this, pThis](){
-            const int counter = outbound_counter;
-            if (counter > 1) {
-                log::debug(LOG_NETWORK) << "outbound channel counter recovered to [" << counter << "], re-seeding is canceled!";
-                in_reseeding = false;
-                return;
-            }
-            log::debug(LOG_NETWORK) << "start re-seeding!";
-            network__.restart_seeding();
-            in_reseeding = false;
-        };
-        pool_.service().post(action);
+        pool_.service().post(
+            std::bind(&session_outbound::handle_reseeding,
+                shared_from_base<session_outbound>()));
     });
+}
+
+void session_outbound::handle_reseeding()
+{
+    const int counter = outbound_counter;
+    if (counter > 1) {
+        log::debug(LOG_NETWORK)
+            << "outbound channel counter recovered to ["
+            << counter
+            << "], re-seeding is canceled!";
+    }
+    else {
+        log::debug(LOG_NETWORK) << "start re-seeding!";
+        network__.restart_seeding();
+    }
+    in_reseeding = false;
 }
 
 void session_outbound::handle_connect(const code& ec, channel::ptr channel,
@@ -199,13 +204,16 @@ void session_outbound::handle_channel_stop(const code& ec,
 
     const int counter = --outbound_counter;
 
-    if(! stopped() && ec.value() != error::service_stopped)
-    {
-        delay_new_connect(connect);
-        //restart the seeding procedure with in 1 minutes when outbound session count reduce to 1.
-        if (counter <= 1) {
-            delay_reseeding();
-        }
+    if (stopped() || (ec.value() == error::service_stopped)) {
+        connect_timer_->stop();
+        reseeding_timer_->stop();
+        return;
+    }
+
+    delay_new_connect(connect);
+    //restart the seeding procedure with in 1 minutes when outbound session count reduce to 1.
+    if (counter <= 1) {
+        delay_reseeding();
     }
 }
 

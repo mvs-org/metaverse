@@ -79,6 +79,7 @@ private:
         uint16_t port);
 
     bc::atomic<connector::ptr> connector_;
+    deadline::ptr connect_timer_;
 };
 
 } // namespace network

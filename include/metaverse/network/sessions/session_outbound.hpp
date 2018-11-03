@@ -65,9 +65,14 @@ private:
     void handle_channel_start(const code& ec, connector::ptr connect,
         channel::ptr channel);
 
+    void handle_reseeding();
+
     std::atomic_int outbound_counter;
     std::atomic_bool in_reseeding; //to mark if the re-seeding timer is active
     p2p& network__;
+
+    deadline::ptr connect_timer_;
+    deadline::ptr reseeding_timer_;
 };
 
 } // namespace network
