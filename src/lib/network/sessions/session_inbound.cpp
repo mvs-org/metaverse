@@ -119,7 +119,7 @@ void session_inbound::handle_accept(const code& ec, channel::ptr channel,
         return;
     }
 
-    if (blacklisted(channel->authority()))
+    if (channel && blacklisted(channel->authority()))
     {
         log::trace(LOG_NETWORK)
             << "Rejected inbound connection from ["

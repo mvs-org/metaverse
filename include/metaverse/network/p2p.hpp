@@ -203,7 +203,7 @@ public:
 #endif
 
     //restart the seeding session
-    void restart_seeding();
+    void restart_seeding(bool manual=false);
 
 protected:
 

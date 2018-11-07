@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/node_method_wrapper.hpp>
+#include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/bitcoin/config/authority.hpp>
 #include <metaverse/network/channel.hpp>
 
@@ -41,9 +42,18 @@ console_result addnode::invoke(Json::Value& jv_output,
 
     administrator_required_checker(node, auth_.name, auth_.auth);
 
+    code errcode;
+
+    if (option_.operation == "reseed") {
+        node.restart_seeding(true);
+        jv_output = errcode.message();
+        return console_result::okay;
+    } else if (argument_.address.empty()) {
+        throw argument_legality_exception("the option '--NODEADDRESS' is required but missing");
+    }
+
     const auto authority = libbitcoin::config::authority(argument_.address);
 
-    code errcode;
     auto handler = [&errcode](const code& ec){
         errcode = ec;
     };
@@ -54,6 +64,9 @@ console_result addnode::invoke(Json::Value& jv_output,
     } else if ((option_.operation == "add") || (option_.operation == "")){
         network::channel::manual_unban(authority);
         node.store(authority.to_network_address(), handler);
+    } else if (option_.operation == "peer") {
+        network::channel::manual_unban(authority);
+        node.connect(authority);
     } else {
         jv_output = string("Invalid operation [") +option_.operation+"]." ;
         return console_result::okay;
