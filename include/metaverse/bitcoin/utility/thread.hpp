@@ -43,6 +43,7 @@ typedef boost::mutex::scoped_lock scoped_lock;
 typedef boost::unique_lock<shared_mutex> unique_lock;
 typedef boost::shared_lock<shared_mutex> shared_lock;
 typedef boost::upgrade_lock<shared_mutex> upgrade_lock;
+typedef boost::upgrade_to_unique_lock<shared_mutex> upgrade_to_unique_lock;
 
 BC_API void set_thread_priority(thread_priority priority);
 

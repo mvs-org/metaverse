@@ -29,6 +29,7 @@
 #include <boost/thread.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
+#include <metaverse/consensus/witness.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/config/hash160.hpp>
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
@@ -877,10 +878,10 @@ bool miner::get_block_header(chain::header& block_header, const string& para)
     return false;
 }
 
-// DPOS_TODO: add algorithm to verify the witness node
 bool miner::is_witness(const wallet::payment_address& pay_address) const
 {
-    return true;
+    witness wit(node_);
+    return wit.is_witness(pay_address);
 }
 
 } // consensus
