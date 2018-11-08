@@ -50,7 +50,6 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
         auto deposited_balances = std::make_shared<deposited_balance::list>();
 
         sync_fetch_deposited_balance(waddr, blockchain, deposited_balances);
-        
 
         for (auto& balance : *deposited_balances) {
             Json::Value json_balance;
@@ -80,9 +79,8 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
             balances["received"]  = addr_balance.total_received;
             balances["unspent"]   = addr_balance.unspent_balance;
             balances["frozen"]    = addr_balance.frozen_balance;
+            balances["available"] = (addr_balance.unspent_balance - addr_balance.frozen_balance);
         }
-
-
     }
 
     if (get_api_version() <= 2) {
