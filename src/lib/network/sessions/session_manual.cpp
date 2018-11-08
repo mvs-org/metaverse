@@ -194,7 +194,7 @@ void session_manual::delay_new_connection(const std::string& hostname, uint16_t 
 void session_manual::handle_channel_stop(const code& ec,
     const std::string& hostname, uint16_t port, channel::ptr channel)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
     if (stopped() || (ec.value() == error::service_stopped) ||

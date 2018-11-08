@@ -564,5 +564,17 @@ bool proxy::misbehaving(int32_t howmuch)
     return false;
 }
 
+std::map<config::authority, int64_t> proxy::get_banned()
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::spinlock_};
+    return banned_;
+}
+
+std::list<config::authority> proxy::get_manual_banned()
+{
+    boost::detail::spinlock::scoped_lock guard{proxy::manual_banned_spinlock_};
+    return manual_banned_;
+}
+
 } // namespace network
 } // namespace libbitcoin
