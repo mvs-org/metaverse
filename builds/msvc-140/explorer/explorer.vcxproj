@@ -64,6 +64,7 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\deposit.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\didchangeaddress.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaddress.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\popblock.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\send.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendasset.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\sendassetfrom.hpp" />
@@ -188,6 +189,7 @@
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\deposit.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\didchangeaddress.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaddress.cpp" />
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\popblock.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\send.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendasset.cpp" />
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\sendassetfrom.cpp" />

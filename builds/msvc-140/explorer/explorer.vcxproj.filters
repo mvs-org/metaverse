@@ -404,6 +404,9 @@
     <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\importaddress.hpp">
       <Filter>Header Files\extensions\commands</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\explorer\extensions\commands\popblock.hpp">
+      <Filter>Header Files\extensions\commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\metaverse\explorer\impl\utility.ipp">
@@ -760,6 +763,9 @@
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\importaddress.cpp">
+      <Filter>Source Files\extensions\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\explorer\extensions\commands\popblock.cpp">
       <Filter>Source Files\extensions\commands</Filter>
     </ClCompile>
   </ItemGroup>
