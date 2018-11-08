@@ -161,7 +161,7 @@ void session_batch::handle_connect(const code& ec, channel::ptr channel,
     store(host.to_network_address());
 
     log::trace(LOG_NETWORK)
-        << "Connected to [" << channel->authority() << "]";
+        << "Connected to [" << host << "]";
 
     // This is the end of the connect sequence.
     handler(error::success, channel);

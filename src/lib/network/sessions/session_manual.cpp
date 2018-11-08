@@ -107,6 +107,14 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
     const std::string& hostname, uint16_t port, channel_handler handler,
     uint32_t retries)
 {
+    if (channel && blacklisted(channel->authority())) {
+        log::debug(LOG_NETWORK)
+            << "Suspended blacklisted/banned manual connection [" << channel->authority() << "]";
+
+        handler(error::address_blocked, nullptr);
+        return;
+    }
+
     if (ec)
     {
         log::debug(LOG_NETWORK)
@@ -130,7 +138,7 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
 
     register_channel(channel,
         BIND5(handle_channel_start, _1, hostname, port, channel, handler),
-        BIND3(handle_channel_stop, _1, hostname, port));
+        BIND4(handle_channel_stop, _1, hostname, port, channel));
 }
 
 void session_manual::handle_channel_start(const code& ec,
@@ -184,12 +192,13 @@ void session_manual::delay_new_connection(const std::string& hostname, uint16_t 
 
 // After a stop we don't use the caller's start handler, but keep connecting.
 void session_manual::handle_channel_stop(const code& ec,
-    const std::string& hostname, uint16_t port)
+    const std::string& hostname, uint16_t port, channel::ptr channel)
 {
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
-    if (stopped() || (ec.value() == error::service_stopped)) {
+    if (stopped() || (ec.value() == error::service_stopped) ||
+        (channel && blacklisted(channel->authority()))) {
         connect_timer_->stop();
         return;
     }

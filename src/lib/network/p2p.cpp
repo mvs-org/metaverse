@@ -625,8 +625,15 @@ void p2p::map_port(bool)
 }
 #endif // #ifdef USE_UPNP
 
-void p2p::restart_seeding()
+void p2p::restart_seeding(bool manual)
 {
+    if (manual) {
+        seed->restart([](const code& ec) {
+            log::debug(LOG_NETWORK) << "restart_seeding manual result: " << ec.message();
+        });
+        return;
+    }
+
     //1. clear the host::buffer_ cache
     const auto result = hosts_->clear();
     log::debug(LOG_NETWORK) << "restart_seeding clear hosts cache: " << result.message();

@@ -96,8 +96,6 @@ void session_outbound::new_connection(connector::ptr connect)
             << "Suspended outbound connection.";
         return;
     }
-    static int i{0};
-    int b = i++;
     this->connect(connect, BIND3(handle_connect, _1, _2, connect));
 }
 
@@ -157,6 +155,12 @@ void session_outbound::handle_reseeding()
 void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     connector::ptr connect)
 {
+    if (channel && blacklisted(channel->authority())) {
+        log::trace(LOG_NETWORK)
+            << "Suspended blacklisted/banned outbound connection [" << channel->authority() << "]";
+        return;
+    }
+
     if (ec)
     {
         log::trace(LOG_NETWORK)
@@ -204,7 +208,8 @@ void session_outbound::handle_channel_stop(const code& ec,
 
     const int counter = --outbound_counter;
 
-    if (stopped() || (ec.value() == error::service_stopped)) {
+    if (stopped() || (ec.value() == error::service_stopped) ||
+        (channel && blacklisted(channel->authority()))) {
         connect_timer_->stop();
         reseeding_timer_->stop();
         return;

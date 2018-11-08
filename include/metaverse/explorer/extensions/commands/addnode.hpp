@@ -68,8 +68,8 @@ public:
         )
         (
             "NODEADDRESS",
-            value<std::string>(&argument_.address)->required(),
-            "The target node address[x.x.x.x:port]."
+            value<std::string>(&argument_.address),
+            "The target node address[x.x.x.x:port], required by all operations except list|reseed."
         )
         (
             "ADMINNAME",
@@ -84,7 +84,7 @@ public:
         (
             "operation,o",
             value<std::string>(&option_.operation),
-            "The operation[ add|ban ] to the target node address. default: add."
+            "The operation[ add|ban|peer|list|reseed ] to the target node address. default: add."
         );
 
         return options;

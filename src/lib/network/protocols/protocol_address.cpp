@@ -157,8 +157,7 @@ bool protocol_address::handle_receive_address(const code& ec,
     network_address::list addresses;
     addresses.reserve(message->addresses.size());
     for (auto& addr:message->addresses) {
-        //if (!channel::blacklisted(addr)) {
-        if (!channel::manualbanned(addr)) {
+        if (!channel::blacklisted(addr) && !channel::manualbanned(addr)) {
             addresses.push_back(addr);
         }
     }
