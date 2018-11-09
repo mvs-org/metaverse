@@ -121,8 +121,6 @@ code organizer::verify(uint64_t fork_point,
         return ec;
     }
 
-    validate.initialize_context();
-
     // Checks that are dependent on height and preceding blocks.
     ec = validate.accept_block();
     if (error::success != ec.value()) {

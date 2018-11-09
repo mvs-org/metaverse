@@ -480,12 +480,6 @@ bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
         return false;
     }
 
-    log::debug(LOG_BLOCKCHAIN)
-            << "Reorganize: tx pool size (" << buffer_.size()
-            << ") forked at (" << fork_point
-            << ") new blocks (" << new_blocks.size()
-            << ") replace blocks (" << replaced_blocks.size() << ")";
-
     if (replaced_blocks.empty())
     {
         // Remove memory pool transactions that also exist in new blocks.
@@ -495,6 +489,12 @@ bool transaction_pool::handle_reorganized(const code& ec, size_t fork_point,
     }
     else
     {
+        log::debug(LOG_BLOCKCHAIN)
+                << "Reorganize: tx pool size (" << buffer_.size()
+                << ") forked at (" << fork_point
+                << ") new blocks (" << new_blocks.size()
+                << ") replace blocks (" << replaced_blocks.size() << ")";
+
         // See http://www.jwz.org/doc/worse-is-better.html
         // for why we take this approach. We return with an error_code.
         // An alternative would be resubmit all tx from the cleared blocks.

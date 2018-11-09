@@ -64,6 +64,7 @@ validate_block::validate_block(size_t height, const block& block, bool testnet,
       checkpoints_(checks),
       stop_callback_(callback)
 {
+    initialize_context();
 }
 
 void validate_block::initialize_context()
@@ -137,8 +138,8 @@ code validate_block::check_coinbase(const header& prev_header) const
         if (coinbase_input_ops.size() != 3) {
             return error::witness_sign_invalid;
         }
-        auto endorse = coinbase_input_ops[1].to_data();
-        auto pubkey = coinbase_input_ops[2].to_data();
+        auto endorse = operation::factory_from_data(coinbase_input_ops[1].data).data;
+        auto pubkey = operation::factory_from_data(coinbase_input_ops[2].data).data;
         if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
             return error::witness_sign_invalid;
         }
@@ -509,25 +510,11 @@ bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
         return false;
     }
 
+    const auto actual = operation::factory_from_data(actual_ops.front().data).data;
     script_number number(height);
-
-    if ( number.data() != actual_ops.front().to_data()) {
-        return false;
-    }
-
-    if (block.header.version == chain::block_version_pow) {
-        const auto actual = actual_script.to_data(false);
-
-        // Create the expected script as a byte vector.
-        script expected_script;
-        expected_script.operations.push_back({ opcode::special, number.data() });
-        const auto expected = expected_script.to_data(false);
-
-        // Require that the coinbase script match the expected coinbase script.
-        return std::equal(expected.begin(), expected.end(), actual.begin());
-    }
-
-    return true;
+    const auto expected = number.data();
+    // Require that the coinbase script match the expected coinbase script.
+    return std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
 code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const
