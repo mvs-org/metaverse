@@ -266,6 +266,10 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 
         case error::sync_disabled:
             return "block sync is disabled";
+        case error::block_version_not_match:
+            return "block version not match";
+        case error::witness_sign_invalid:
+            return "witness sign is invalid";
 
         // unknown errors
         case error::unknown:

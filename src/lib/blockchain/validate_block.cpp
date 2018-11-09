@@ -34,6 +34,7 @@
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/miner.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -88,56 +89,10 @@ bool validate_block::stopped() const
     return stop_callback_();
 }
 
-code validate_block::check_block(blockchain::block_chain_impl& chain) const
+code validate_block::check_coinbase(const header& prev_header) const
 {
-    // These are checks that are independent of the blockchain
-    // that can be validated before saving an orphan block.
-
-    const auto& transactions = current_block_.transactions;
-
-    if (transactions.empty() || current_block_.serialized_size() > max_block_size)
-        return error::size_limits;
-
     const auto& header = current_block_.header;
-
-    if (!is_valid_proof_of_work(header))
-        return error::proof_of_work;
-
-    if (header.version == chain::block_version_dpos && !current_block_.can_use_dpos_consensus())
-        return error::checkpoints_failed;
-
-    RETURN_IF_STOPPED();
-
-    //TO.FIX.CHENHAO.Reject
-    if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
-        // 校验未来区块时间攻击分叉点
-        bc::config::checkpoint::list blocktime_checkpoints;
-        blocktime_checkpoints.push_back({
-            "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
-            bc::consensus::future_blocktime_fork_height
-        });
-
-        const auto block_hash = header.hash();
-        if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
-            return error::checkpoints_failed;
-        }
-    }
-
-    if (current_block_.header.number >= bc::consensus::future_blocktime_fork_height) {
-        // 未来区块时间攻击分叉，执行新规则检查
-        if (!is_valid_time_stamp_new(header.timestamp))
-            return error::futuristic_timestamp;
-        // 过去区块时间检查
-        chain::header prev_header = fetch_block(height_ - 1);
-        if (current_block_.header.timestamp < prev_header.timestamp)
-            return error::timestamp_too_early;
-    }
-    else {
-        if (!is_valid_time_stamp(header.timestamp))
-            return error::futuristic_timestamp;
-    }
-
-    RETURN_IF_STOPPED();
+    const auto& transactions = current_block_.transactions;
 
     unsigned int coinbase_count = 0;
     for (auto i : transactions) {
@@ -160,6 +115,96 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
             return error::extra_coinbases;
     }
 
+    RETURN_IF_STOPPED();
+
+    // Enforce rule that the coinbase starts with serialized height.
+    if (is_active(script_context::bip34_enabled) &&
+        !is_valid_coinbase_height(height_, current_block_)) {
+        return error::coinbase_height_mismatch;
+    }
+
+    const auto& coinbase_script = transactions[0].inputs[0].script;
+    const auto& coinbase_input_ops = coinbase_script.operations;
+
+    const auto coinbase_size = coinbase_script.serialized_size(false);
+    if ((coinbase_size < 2) ||
+        (coinbase_script.operations.size() < 3 && coinbase_size > 100) ||
+        (coinbase_script.operations.size() >= 3 && coinbase_size > 200)) {
+        return error::invalid_coinbase_script_size;
+    }
+
+    if (header.version == chain::block_version_dpos) {
+        if (coinbase_input_ops.size() != 3) {
+            return error::witness_sign_invalid;
+        }
+        auto endorse = coinbase_input_ops[1].to_data();
+        auto pubkey = coinbase_input_ops[2].to_data();
+        if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
+            return error::witness_sign_invalid;
+        }
+    }
+
+    return error::success;
+}
+
+code validate_block::check_block(blockchain::block_chain_impl& chain) const
+{
+    // These are checks that are independent of the blockchain
+    // that can be validated before saving an orphan block.
+
+    const auto& transactions = current_block_.transactions;
+
+    if (transactions.empty() || current_block_.serialized_size() > max_block_size)
+        return error::size_limits;
+
+    const auto& header = current_block_.header;
+
+    if (!is_valid_proof_of_work(header))
+        return error::proof_of_work;
+
+    if (header.version == chain::block_version_dpos && !current_block_.can_use_dpos_consensus())
+        return error::block_version_not_match;
+
+    RETURN_IF_STOPPED();
+
+    //TO.FIX.CHENHAO.Reject
+    if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
+        // 校验未来区块时间攻击分叉点
+        bc::config::checkpoint::list blocktime_checkpoints;
+        blocktime_checkpoints.push_back({
+            "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
+            bc::consensus::future_blocktime_fork_height
+        });
+
+        const auto block_hash = header.hash();
+        if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
+            return error::checkpoints_failed;
+        }
+    }
+
+    chain::header prev_header = fetch_block(height_ - 1);
+    if (current_block_.header.number >= bc::consensus::future_blocktime_fork_height) {
+        // 未来区块时间攻击分叉，执行新规则检查
+        if (!is_valid_time_stamp_new(header.timestamp))
+            return error::futuristic_timestamp;
+        // 过去区块时间检查
+        if (current_block_.header.timestamp < prev_header.timestamp)
+            return error::timestamp_too_early;
+    }
+    else {
+        if (!is_valid_time_stamp(header.timestamp))
+            return error::futuristic_timestamp;
+    }
+
+    RETURN_IF_STOPPED();
+
+    auto ec = check_coinbase(prev_header);
+    if (ec) {
+        return ec;
+    }
+
+    RETURN_IF_STOPPED();
+
     std::set<string> assets;
     std::set<string> asset_certs;
     std::set<string> asset_mits;
@@ -171,7 +216,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
         RETURN_IF_STOPPED();
 
         const auto validate_tx = std::make_shared<validate_transaction>(chain, tx, *this);
-        auto ec = validate_tx->check_transaction();
+        ec = validate_tx->check_transaction();
         if (!ec) {
             ec = validate_tx->check_transaction_connect_input(header.number);
         }
@@ -429,13 +474,6 @@ code validate_block::accept_block() const
     if (!is_valid_version())
         return error::old_version_block;
 
-    RETURN_IF_STOPPED();
-
-    // Enforce rule that the coinbase starts with serialized height.
-    if (is_active(script_context::bip34_enabled) &&
-            !is_valid_coinbase_height(height_, current_block_))
-        return error::coinbase_height_mismatch;
-
     if (is_active(script_context::bip112_enabled)) {
         for (const auto& tx : current_block_.transactions) {
             if (tx.is_locked(height_, median_time_past())) {
@@ -457,23 +495,39 @@ u256 validate_block::work_required(bool is_testnet) const
 bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
 {
     // There must be a transaction with an input.
-    if (block.transactions.empty() ||
-            block.transactions.front().inputs.empty())
+    if (block.transactions.empty() || block.transactions.front().inputs.empty()) {
         return false;
+    }
 
     // Get the serialized coinbase input script as a byte vector.
     const auto& actual_tx = block.transactions.front();
     const auto& actual_script = actual_tx.inputs.front().script;
-    const auto actual = actual_script.to_data(false);
+    const auto& actual_ops = actual_script.operations;
 
-    // Create the expected script as a byte vector.
-    script expected_script;
+    if ((block.header.version == chain::block_version_pow && actual_ops.size() != 1) ||
+        (block.header.version == chain::block_version_dpos && actual_ops.size() != 3)) {
+        return false;
+    }
+
     script_number number(height);
-    expected_script.operations.push_back({ opcode::special, number.data() });
-    const auto expected = expected_script.to_data(false);
 
-    // Require that the coinbase script match the expected coinbase script.
-    return std::equal(expected.begin(), expected.end(), actual.begin());
+    if ( number.data() != actual_ops.front().to_data()) {
+        return false;
+    }
+
+    if (block.header.version == chain::block_version_pow) {
+        const auto actual = actual_script.to_data(false);
+
+        // Create the expected script as a byte vector.
+        script expected_script;
+        expected_script.operations.push_back({ opcode::special, number.data() });
+        const auto expected = expected_script.to_data(false);
+
+        // Require that the coinbase script match the expected coinbase script.
+        return std::equal(expected.begin(), expected.end(), actual.begin());
+    }
+
+    return true;
 }
 
 code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const

@@ -37,6 +37,8 @@
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 
+#include <metaverse/explorer/config/ec_private.hpp>
+
 #define LOG_HEADER "consensus"
 using namespace std;
 
@@ -541,11 +543,26 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             return nullptr;
         }
     }
+    auto& coinbase_tx = pblock->transactions[0];
     uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
     if (can_use_dpos) {
+        // adjust block subsidy for dpos
         block_subsidy = uint64_t(1.0 * block_subsidy / block::pow_check_point_height);
     }
-    pblock->transactions[0].outputs[0].value = total_fee + block_subsidy;
+    coinbase_tx.outputs[0].value = total_fee + block_subsidy;
+
+    if (can_use_dpos) {
+        // add witness's signature to the previous block header
+        bc::endorsement endorse;
+        if (!witness::sign(endorse, private_key_, prev_header)) {
+            log::error(LOG_HEADER) << "witness sign failed in create_new_block";
+            return nullptr;
+        }
+
+        auto& coinbase_input_ops = coinbase_tx.inputs[0].script.operations;
+        coinbase_input_ops.push_back({ chain::opcode::special, endorse });
+        coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+    }
 
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
     if (can_use_dpos) {
@@ -694,20 +711,16 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
 
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
+    if (get_accept_block_version() != chain::block_version_pow) {
+        if (private_key_.empty() || public_key_data_.empty()) {
+            return false;
+        }
+    }
     if (!thread_) {
         new_block_limit_ = number;
         thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));
     }
     return true;
-}
-
-bool miner::start(const std::string& public_key, uint16_t number)
-{
-    wallet::payment_address pay_address = libbitcoin::wallet::ec_public(public_key).to_payment_address();
-    if (pay_address) {
-        return start(pay_address, number);
-    }
-    return false;
 }
 
 bool miner::stop()
@@ -729,20 +742,6 @@ uint64_t miner::get_height() const
     uint64_t height = 0;
     node_.chain_impl().get_last_height(height);
     return height;
-}
-
-bool miner::set_miner_public_key(const string& public_key)
-{
-    libbitcoin::wallet::ec_public ec_public_key(public_key);
-    pay_address_ = ec_public_key.to_payment_address();
-    if (pay_address_) {
-        log::debug(LOG_HEADER) << "set_miner_public_key[" << pay_address_.encoded() << "] success";
-        return true;
-    }
-    else {
-        log::error(LOG_HEADER) << "set_miner_public_key[" << public_key << "] is not availabe!";
-        return false;
-    }
 }
 
 bool miner::set_miner_payment_address(const bc::wallet::payment_address& address)
@@ -882,6 +881,24 @@ bool miner::is_witness(const wallet::payment_address& pay_address) const
 {
     witness wit(node_);
     return wit.is_witness(pay_address);
+}
+
+bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
+{
+    bc::endorsement endorse;
+    bc::explorer::config::ec_private config_private_key(prikey);
+    private_key_ = config_private_key;
+
+    data_chunk pubkey_data;
+    if (!libbitcoin::wallet::ec_public(pubkey).to_data(public_key_data_)) {
+        return false;
+    }
+
+    if (private_key_.empty() || public_key_data_.empty()) {
+        return false;
+    }
+
+    return true;
 }
 
 } // consensus

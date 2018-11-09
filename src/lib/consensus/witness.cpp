@@ -96,5 +96,42 @@ bool witness::update_witness_list(uint64_t height)
     return true;
 }
 
+bool witness::sign(endorsement& out, const ec_secret& secret, const header& h)
+{
+    const auto sighash = h.hash();
+
+    ec_signature signature;
+    if (!bc::sign(signature, secret, sighash) || !bc::encode_signature(out, signature)) {
+        return false;
+    }
+
+    out.push_back(h.number & 0xff);
+    return true;
+}
+
+bool witness::verify_sign(const endorsement& out, const data_chunk& public_key, const header& h)
+{
+    if (public_key.empty()) {
+        return false;
+    }
+
+    if (out.back() != (h.number & 0xff)) {
+        return false;
+    }
+
+    auto distinguished = out;
+    distinguished.pop_back();
+
+    ec_signature signature;
+
+    if (!parse_signature(signature, distinguished, true)) {
+        return false;
+    }
+
+    const auto sighash = h.hash();
+
+    return bc::verify_signature(public_key, sighash, signature);
+}
+
 } // consensus
 } // libbitcoin

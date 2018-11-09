@@ -75,7 +75,6 @@ public:
     };
 
     bool start(const wallet::payment_address& pay_address, uint16_t number = 0);
-    bool start(const std::string& pay_public_key, uint16_t number = 0);
     bool stop();
     static block_ptr create_genesis_block(bool is_mainnet);
     bool script_hash_signature_operations_count(size_t &count, const chain::input::list& inputs,
@@ -89,7 +88,6 @@ public:
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
     bool put_result(const std::string& nonce, const std::string& mix_hash,
         const std::string& header_hash, const uint64_t &nounce_mask);
-    bool set_miner_public_key(const string& public_key);
     bool set_miner_payment_address(const wallet::payment_address& address);
     void get_state(uint64_t &height,  uint64_t &rate, string& difficulty, bool& is_mining);
     bool get_block_header(chain::header& block_header, const string& para);
@@ -102,6 +100,7 @@ public:
     void set_accept_block_version(chain::block_version v);
 
     bool is_witness(const wallet::payment_address& pay_address) const;
+    bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
 
 private:
     void work(const wallet::payment_address& pay_address);
@@ -125,6 +124,8 @@ private:
     block_ptr new_block_;
     wallet::payment_address pay_address_;
     const blockchain::settings& setting_;
+    data_chunk public_key_data_;
+    ec_secret private_key_;
 };
 
 }

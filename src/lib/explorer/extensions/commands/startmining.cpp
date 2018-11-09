@@ -47,9 +47,10 @@ console_result startmining::invoke(Json::Value& jv_output,
     }
 
     auto str_addr = option_.address;
+    const auto is_use_pow = (option_.consensus == "pow");
 
     if (str_addr.empty()) {
-        if (option_.consensus != "pow") {
+        if (!is_use_pow) {
             throw argument_legality_exception{"mining non-pow blocks must specify a mining address!"};
         }
 
@@ -79,8 +80,17 @@ console_result startmining::invoke(Json::Value& jv_output,
             throw address_invalid_exception{"invalid address parameter! " + str_addr};
         }
 
-        if (!blockchain.get_account_address(auth_.name, str_addr)) {
+        auto sp_account_address = blockchain.get_account_address(auth_.name, str_addr);
+        if (!sp_account_address) {
             throw address_dismatch_account_exception{"target address does not match account. " + str_addr};
+        }
+
+        if (!is_use_pow) {
+            const std::string pubkey = sp_account_address->get_pub_key();
+            const std::string prikey = sp_account_address->get_prv_key(auth_.auth);
+            if (!miner.set_pub_and_pri_key(pubkey, prikey)) {
+                throw address_invalid_exception{"invalid address parameter(wrong key)! " + str_addr};
+            }
         }
     }
 
@@ -90,7 +100,7 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"script address parameter not allowed!"};
     }
 
-    if (option_.consensus == "pow") {
+    if (is_use_pow) {
         miner.set_accept_block_version(chain::block_version_pow);
     }
     else if (option_.consensus == "dpos") {

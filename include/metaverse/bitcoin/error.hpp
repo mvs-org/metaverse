@@ -179,6 +179,8 @@ enum error_code_t
 
     sequence_locked,
     sync_disabled,
+    block_version_not_match,
+    witness_sign_invalid,
 
 };
 

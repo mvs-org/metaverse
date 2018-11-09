@@ -1507,14 +1507,7 @@ code validate_transaction::check_transaction_basic() const
         }
     }
 
-    if (tx.is_coinbase())
-    {
-        const auto& coinbase_script = tx.inputs[0].script;
-        const auto coinbase_size = coinbase_script.serialized_size(false);
-        if (coinbase_size < 2 || coinbase_size > 100)
-            return error::invalid_coinbase_script_size;
-    }
-    else
+    if (!tx.is_coinbase())
     {
         for (const auto& input : tx.inputs)
         {

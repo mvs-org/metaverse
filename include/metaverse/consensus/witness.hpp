@@ -62,6 +62,10 @@ public:
     bool register_witness(const witness_id& id);
     bool unregister_witness(const witness_id& id);
 
+    // signature
+    static bool sign(endorsement& out, const ec_secret& secret, const header& h);
+    static bool verify_sign(const endorsement& out, const data_chunk& public_key, const header& h);
+
 private:
     static bool exists(const list&, const witness_id&);
 
