@@ -5,12 +5,11 @@
 
 #include "utilstrencodings.h"
 
-#include "tinyformat.h"
-
 #include <cstdlib>
 #include <cstring>
 #include <errno.h>
 #include <limits>
+#include <sstream>
 
 using namespace std;
 
@@ -512,12 +511,12 @@ std::string FormatParagraph(const std::string& in, size_t width, size_t indent)
 
 std::string i64tostr(int64_t n)
 {
-    return strprintf("%d", n);
+    return std::to_string(n);
 }
 
 std::string itostr(int n)
 {
-    return strprintf("%d", n);
+    return std::to_string(n);
 }
 
 int64_t atoi64(const char* psz)

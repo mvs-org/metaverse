@@ -72,7 +72,7 @@
       <PreprocessorDefinitions>NDEBUG;_MBCS;BCX_STATIC;BC_STATIC;BCB_STATIC;BCC_STATIC;BCK_STATIC;BCD_STATIC;BCT_STATIC;BCN_STATIC;BCP_STATIC;BCS_STATIC;ZMQ_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;..\..\..\..\secp256k1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;..\..\..\..\secp256k1\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
