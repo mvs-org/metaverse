@@ -48,6 +48,8 @@ public:
     using witness_id = wallet::payment_address;
     using list = std::list<witness_id>;
 
+    static constexpr uint32_t witess_number = 11;
+
 public:
     witness(p2p_node& node);
     ~witness();
@@ -62,9 +64,12 @@ public:
     bool register_witness(const witness_id& id);
     bool unregister_witness(const witness_id& id);
 
+    static uint32_t get_slot_num(const data_chunk& public_key);
+
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const header& h);
     static bool verify_sign(const endorsement& out, const data_chunk& public_key, const header& h);
+    static bool verify_signer(const data_chunk& public_key, const chain::block& block, const header& prev_header);
 
 private:
     static bool exists(const list&, const witness_id&);
@@ -75,8 +80,9 @@ private:
 private:
     p2p_node& node_;
     const settings& setting_;
-    list witness_list_;
-    list candidate_list_;
+    static uint64_t epoch_height;
+    static list witness_list_;
+    static list candidate_list_;
     mutable upgrade_mutex mutex_;
 };
 

@@ -181,6 +181,7 @@ enum error_code_t
     sync_disabled,
     block_version_not_match,
     witness_sign_invalid,
+    witness_mismatch,               // 95
 
 };
 

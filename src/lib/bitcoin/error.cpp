@@ -270,6 +270,8 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "block version not match";
         case error::witness_sign_invalid:
             return "witness sign is invalid";
+        case error::witness_mismatch:
+            return "witness mismatch";
 
         // unknown errors
         case error::unknown:
