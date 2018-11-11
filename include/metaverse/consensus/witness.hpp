@@ -47,7 +47,9 @@ public:
     using settings = blockchain::settings;
     using public_key_t = data_chunk;
     using witness_id = public_key_t;
-    using list = std::list<witness_id>;
+    using list = std::vector<witness_id>;
+    using iterator = list::iterator;
+    using const_iterator = list::const_iterator;
 
     static constexpr uint32_t witess_number = 11;
 
@@ -65,7 +67,9 @@ public:
     bool register_witness(const witness_id& id);
     bool unregister_witness(const witness_id& id);
 
-    static uint32_t get_slot_num(const public_key_t& public_key);
+    void set_epoch_height(uint64_t block_height);
+
+    static uint32_t get_slot_num(const witness_id& id);
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const header& h);
@@ -75,6 +79,8 @@ public:
 
 private:
     static bool exists(const list&, const witness_id&);
+    static const_iterator finds(const list&, const witness_id&);
+    static iterator finds(list&, const witness_id&);
 
     // generate a new epoch witness list
     bool update_witness_list(uint64_t height);
@@ -82,7 +88,7 @@ private:
 private:
     p2p_node& node_;
     const settings& setting_;
-    static uint64_t epoch_height;
+    static uint64_t epoch_height_;
     static list witness_list_;
     static list candidate_list_;
     mutable upgrade_mutex mutex_;

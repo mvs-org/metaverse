@@ -29,7 +29,7 @@ namespace consensus {
 
 witness::list witness::witness_list_;
 witness::list witness::candidate_list_;
-uint64_t witness::epoch_height = 0;
+uint64_t witness::epoch_height_ = 0;
 
 witness::witness(p2p_node& node)
     : node_(node)
@@ -41,10 +41,21 @@ witness::~witness()
 {
 }
 
-bool witness::exists(const list& l, const witness_id& id)
+witness::iterator witness::finds(list& l, const witness_id& id)
 {
     auto cmp = [&id](const witness_id& item){return id == item;};
-    return std::find_if(std::begin(l), std::end(l), cmp) != l.end();
+    return std::find_if(std::begin(l), std::end(l), cmp);
+}
+
+witness::const_iterator witness::finds(const list& l, const witness_id& id)
+{
+    auto cmp = [&id](const witness_id& item){return id == item;};
+    return std::find_if(std::begin(l), std::end(l), cmp);
+}
+
+bool witness::exists(const list& l, const witness_id& id)
+{
+    return finds(l, id) != l.end();
 }
 
 witness::list witness::get_witness_list() const
@@ -83,14 +94,22 @@ bool witness::unregister_witness(const witness_id& id)
 {
     upgrade_lock lock(mutex_);
 
-    if (! (exists(witness_list_, id) || exists(candidate_list_, id))) {
+    auto witness_pos = finds(witness_list_, id);
+    auto candidate_pos = finds(candidate_list_, id);
+
+    if (witness_pos == witness_list_.end() && candidate_pos == candidate_list_.end()) {
         log::debug(LOG_HEADER) << "In unregister_witness, " << id << " is not registered.";
         return false;
     }
 
     upgrade_to_unique_lock ulock(lock);
-    witness_list_.remove(id);
-    candidate_list_.remove(id);
+    if (witness_pos != witness_list_.end()) {
+        // clear data instead of remove, as a stub
+        *witness_pos = witness_id();
+    }
+    if (candidate_pos != candidate_list_.end()) {
+        candidate_list_.erase(candidate_pos);
+    }
     return true;
 }
 
@@ -100,9 +119,19 @@ bool witness::update_witness_list(uint64_t height)
     return true;
 }
 
-uint32_t witness::get_slot_num(const public_key_t& public_key)
+void witness::set_epoch_height(uint64_t block_height)
 {
-    return 0;
+    unique_lock lock(mutex_);
+    epoch_height_ = block_height;
+}
+
+uint32_t witness::get_slot_num(const witness_id& id)
+{
+    auto pos = finds(witness_list_, id);
+    if (pos != witness_list_.end()) {
+        return pos - witness_list_.cbegin();
+    }
+    return max_uint32;
 }
 
 bool witness::sign(endorsement& out, const ec_secret& secret, const header& h)
@@ -150,9 +179,13 @@ bool witness::verify_signer(const public_key_t& public_key, const chain::block& 
 
 bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const header& prev_header)
 {
+    if (witness_slot_num >= witess_number) {
+        return false;
+    }
+
     const auto& header = block.header;
     auto block_height = header.number;
-    auto calced_slot_num = ((block_height - epoch_height) % witess_number);
+    auto calced_slot_num = ((block_height - epoch_height_) % witess_number);
     if (calced_slot_num == witness_slot_num) {
         return true;
     }
