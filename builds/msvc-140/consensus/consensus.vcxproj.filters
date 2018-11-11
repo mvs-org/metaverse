@@ -173,6 +173,9 @@
     <ClInclude Include="..\..\..\src\lib\consensus\clone\script\script_error.h">
       <Filter>Source Files\clone\script</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\witness.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\lib\consensus\miner.cpp">
@@ -249,6 +252,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\consensus\consensus\consensus.cpp">
       <Filter>Source Files\consensus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\witness.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
