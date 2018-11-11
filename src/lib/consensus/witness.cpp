@@ -144,14 +144,23 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
 
 bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const header& prev_header)
 {
+    auto witness_slot_num = get_slot_num(public_key);
+    return verify_signer(witness_slot_num, block, prev_header);
+}
+
+bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const header& prev_header)
+{
     const auto& header = block.header;
     auto block_height = header.number;
-    auto slot_num = get_slot_num(public_key);
     auto calced_slot_num = ((block_height - epoch_height) % witess_number);
-    if (calced_slot_num != slot_num) {
-        return false;
+    if (calced_slot_num == witness_slot_num) {
+        return true;
     }
-    return true;
+    static uint32_t time_config{24}; // same as HeaderAux::calculateDifficulty
+    if (header.timestamp > prev_header.timestamp + time_config*2) {
+        return true;
+    }
+    return false;
 }
 
 } // consensus

@@ -73,6 +73,7 @@ miner::miner(p2p_node& node)
     , new_block_limit_(0)
     , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
+    , witness_slot_num_(max_uint32)
 {
     if (setting_.use_testnet_rules) {
         bc::HeaderAux::set_as_testnet();
@@ -537,6 +538,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         get_accept_block_version() == chain::block_version_any) {
         can_use_dpos = pblock->can_use_dpos_consensus();
         can_use_dpos &= is_witness();
+        can_use_dpos &= witness::verify_signer(witness_slot_num_, *pblock, prev_header);
         if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
             return nullptr;
         }
@@ -905,6 +907,8 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
     if (private_key_.empty() || public_key_data_.empty()) {
         return false;
     }
+
+    witness_slot_num_ = witness::get_slot_num(public_key_data_);
 
     return true;
 }
