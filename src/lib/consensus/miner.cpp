@@ -37,8 +37,6 @@
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 
-#include <metaverse/explorer/config/ec_private.hpp>
-
 #define LOG_HEADER "consensus"
 using namespace std;
 
@@ -885,12 +883,19 @@ bool miner::is_witness(const wallet::payment_address& pay_address) const
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
 {
-    bc::endorsement endorse;
-    bc::explorer::config::ec_private config_private_key(prikey);
-    private_key_ = config_private_key;
+    if (!decode_base16(private_key_, prikey) ||
+        !bc::verify(private_key_)) {
+        return false;
+    }
+
+    bc::wallet::ec_private ec_private_key(private_key_, 0u, true);
+    auto&& public_key = ec_private_key.to_public();
+    if (public_key != bc::wallet::ec_public(pubkey)) {
+        return false;
+    }
 
     data_chunk pubkey_data;
-    if (!libbitcoin::wallet::ec_public(pubkey).to_data(public_key_data_)) {
+    if (!public_key.to_data(public_key_data_)) {
         return false;
     }
 
