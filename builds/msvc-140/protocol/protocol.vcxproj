@@ -109,7 +109,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;BC_STATIC;BCP_STATIC;ZMQ_STATIC</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\zeromq-4.2.1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\zeromq-4.2.1\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
