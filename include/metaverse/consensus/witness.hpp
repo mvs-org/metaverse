@@ -45,7 +45,8 @@ class witness
 public:
     using p2p_node = libbitcoin::node::p2p_node;
     using settings = blockchain::settings;
-    using witness_id = wallet::payment_address;
+    using public_key_t = data_chunk;
+    using witness_id = public_key_t;
     using list = std::list<witness_id>;
 
     static constexpr uint32_t witess_number = 11;
@@ -64,12 +65,12 @@ public:
     bool register_witness(const witness_id& id);
     bool unregister_witness(const witness_id& id);
 
-    static uint32_t get_slot_num(const data_chunk& public_key);
+    static uint32_t get_slot_num(const public_key_t& public_key);
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const header& h);
-    static bool verify_sign(const endorsement& out, const data_chunk& public_key, const header& h);
-    static bool verify_signer(const data_chunk& public_key, const chain::block& block, const header& prev_header);
+    static bool verify_sign(const endorsement& out, const public_key_t& public_key, const header& h);
+    static bool verify_signer(const public_key_t& public_key, const chain::block& block, const header& prev_header);
 
 private:
     static bool exists(const list&, const witness_id&);

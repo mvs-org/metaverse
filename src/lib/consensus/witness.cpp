@@ -62,7 +62,7 @@ witness::list witness::get_candidate_list() const
 bool witness::is_witness(const witness_id& id) const
 {
     shared_lock lock(mutex_);
-    return exists(witness_list_, id);
+    return (!id.empty()) && exists(witness_list_, id);
 }
 
 bool witness::register_witness(const witness_id& id)
@@ -100,7 +100,7 @@ bool witness::update_witness_list(uint64_t height)
     return true;
 }
 
-uint32_t witness::get_slot_num(const data_chunk& public_key)
+uint32_t witness::get_slot_num(const public_key_t& public_key)
 {
     return 0;
 }
@@ -118,7 +118,7 @@ bool witness::sign(endorsement& out, const ec_secret& secret, const header& h)
     return true;
 }
 
-bool witness::verify_sign(const endorsement& out, const data_chunk& public_key, const header& h)
+bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const header& h)
 {
     if (public_key.empty()) {
         return false;
@@ -142,7 +142,7 @@ bool witness::verify_sign(const endorsement& out, const data_chunk& public_key, 
     return bc::verify_signature(public_key, sighash, signature);
 }
 
-bool witness::verify_signer(const data_chunk& public_key, const chain::block& block, const header& prev_header)
+bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const header& prev_header)
 {
     const auto& header = block.header;
     auto block_height = header.number;

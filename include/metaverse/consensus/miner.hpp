@@ -99,7 +99,7 @@ public:
     chain::block_version get_accept_block_version() const;
     void set_accept_block_version(chain::block_version v);
 
-    bool is_witness(const wallet::payment_address& pay_address) const;
+    bool is_witness() const;
     bool set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey);
 
 private:
