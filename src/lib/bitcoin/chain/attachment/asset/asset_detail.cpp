@@ -26,7 +26,6 @@
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
 #include <metaverse/bitcoin/utility/string.hpp>
-#include <json/minijson_writer.hpp>
 
 #define ASSET_SYMBOL_DELIMITER "."
 
