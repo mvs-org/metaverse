@@ -27,6 +27,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using payment_address = wallet::payment_address;
 
 /************************ validateaddress *************************/
 

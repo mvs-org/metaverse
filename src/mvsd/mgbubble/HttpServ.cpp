@@ -26,6 +26,7 @@
 #include <metaverse/server/server_node.hpp>
 
 namespace mgbubble {
+using namespace libbitcoin;
 
 thread_local OStream HttpServ::out_;
 thread_local Tokeniser<'/'> HttpServ::uri_;

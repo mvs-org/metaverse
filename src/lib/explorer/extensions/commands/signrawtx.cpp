@@ -28,6 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using payment_address = wallet::payment_address;
 
 console_result signrawtx::invoke(Json::Value& jv_output,
                                  libbitcoin::server::server_node& node) {
@@ -74,8 +75,8 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
                     // walk the script and find potential public kes
                     std::set<data_chunk> script_pk_set;
-                    auto f = [&script_pk_set](const operation& op) {
-                        if ((op.code == opcode::special) && (op.data.size() == 33)) {
+                    auto f = [&script_pk_set](const chain::operation& op) {
+                        if ((op.code == chain::opcode::special) && (op.data.size() == 33)) {
                             script_pk_set.insert(op.data);
                         }
                     };
@@ -83,7 +84,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
                     std::map<std::string, std::string> pk_sig;
                     for (const auto& pk : script_pk_set) {
-                        const payment_address script_pkh = ec_public(pk).to_payment_address();
+                        const payment_address script_pkh = wallet::ec_public(pk).to_payment_address();
                         auto acc_addr = blockchain.get_account_address(auth_.name, script_pkh.encoded());
                         if (!acc_addr) {
                             continue;
@@ -152,7 +153,7 @@ bc::endorsement signrawtx::sign(libbitcoin::server::server_node& node, tx_type t
 
     // paramaters
     explorer::config::hashtype sign_type;
-    uint8_t hash_type = (signature_hash_algorithm)sign_type;
+    uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
     bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(auth_.auth)); // address private key
     const ec_secret& private_key =    config_private_key;

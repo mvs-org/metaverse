@@ -345,7 +345,7 @@ bool proxy::decode_transaction_index(reader& payload,
 
 bool proxy::decode_validate(reader& payload, validate_handler& handler)
 {
-    point::indexes unconfirmed;
+    chain::point::indexes unconfirmed;
 
     while (!payload.is_exhausted())
     {

@@ -58,9 +58,6 @@
 #include <metaverse/database/databases/address_mit_database.hpp>
 #include <metaverse/database/databases/mit_history_database.hpp>
 
-using namespace libbitcoin::wallet;
-using namespace libbitcoin::chain;
-
 namespace libbitcoin {
 namespace database {
 
@@ -192,7 +189,7 @@ public:
 
     /* begin store asset info into  database */
 
-    void push_attachment(const attachment& attach, const payment_address& address,
+    void push_attachment(const attachment& attach, const wallet::payment_address& address,
             const output_point& outpoint, uint32_t output_height, uint64_t value);
 
     void push_etp(const etp& etp, const short_hash& key,

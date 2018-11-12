@@ -29,9 +29,6 @@
 #include <metaverse/database/result/base_result.hpp>
 #include <metaverse/bitcoin/chain/attachment/account/account.hpp>
 
-using namespace libbitcoin::chain;
-using namespace std;
-
 namespace libbitcoin {
 namespace database {
 

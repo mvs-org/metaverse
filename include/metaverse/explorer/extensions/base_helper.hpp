@@ -20,9 +20,17 @@
 #pragma once
 
 #include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/command.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
+
+namespace libbitcoin {
+namespace blockchain {
+class block_chain_impl;
+}
+}
 
 namespace libbitcoin {
 namespace explorer {
@@ -83,7 +91,7 @@ struct address_asset_record
     uint64_t    amount{0}; // spendable etp amount
     std::string symbol;
     uint64_t    asset_amount{0}; // spendable asset amount
-    asset_cert_type asset_cert{asset_cert_ns::none};
+    asset_cert_type asset_cert{chain::asset_cert_ns::none};
     utxo_attach_type type{utxo_attach_type::invalid};
     output_point output;
     chain::script script;
@@ -98,7 +106,7 @@ struct receiver_record
     std::string symbol;
     uint64_t    amount{0}; // etp value
     uint64_t    asset_amount{0};
-    asset_cert_type asset_cert{asset_cert_ns::none};
+    asset_cert_type asset_cert{chain::asset_cert_ns::none};
 
     utxo_attach_type type{utxo_attach_type::invalid};
     attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
@@ -109,7 +117,7 @@ struct receiver_record
         , symbol()
         , amount(0)
         , asset_amount(0)
-        , asset_cert(asset_cert_ns::none)
+        , asset_cert(chain::asset_cert_ns::none)
         , type(utxo_attach_type::invalid)
         , attach_elem()
         , input_point{null_hash, max_uint32}
@@ -120,7 +128,7 @@ struct receiver_record
         utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
         const chain::input_point& input_point_ = {null_hash, max_uint32})
         : receiver_record(target_, symbol_, amount_, asset_amount_,
-            asset_cert_ns::none, type_, attach_elem_, input_point_)
+            chain::asset_cert_ns::none, type_, attach_elem_, input_point_)
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
@@ -148,7 +156,7 @@ struct balances {
 };
 
 struct deposited_balance {
-    deposited_balance(const std::string& address_, const string& tx_hash_,
+    deposited_balance(const std::string& address_, const std::string& tx_hash_,
         uint64_t deposited_, uint64_t expiration_)
         : address(address_)
         , tx_hash(tx_hash_)
@@ -197,9 +205,9 @@ std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
     bc::blockchain::block_chain_impl& blockchain);
 
 
-void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
+void sync_fetch_asset_cert_balance(const std::string& address, const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=asset_cert_ns::none);
+    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=chain::asset_cert_ns::none);
 
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);
@@ -216,14 +224,14 @@ std::string get_address_from_did(const std::string& did,
 
 std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
 
-bool is_ETH_Address(const string& address);
+bool is_ETH_Address(const std::string& address);
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_message(const std::string& message, bool check_sensitive=false);
 asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
-    const string& account, const string& symbol, const string& cert_name);
-asset_cert_type check_cert_type_name(const string& cert_type_name, bool all=false);
+    const std::string& account, const std::string& symbol, const std::string& cert_name);
+asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all=false);
 
 class BCX_API base_transfer_common
 {

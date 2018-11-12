@@ -38,7 +38,6 @@
 #include <metaverse/bitcoin/chain/header.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
-using namespace libbitcoin::message;
 
 namespace libbitcoin {
 namespace blockchain {
@@ -340,7 +339,7 @@ public:
         chain::transaction& tx, uint64_t& tx_height);
     bool get_transaction_callback(const hash_digest& hash,
     std::function<void(const code&, const chain::transaction&)> handler);
-    bool get_history_callback(const payment_address& address,
+    bool get_history_callback(const wallet::payment_address& address,
         size_t limit, size_t from_height,
         std::function<void(const code&, chain::history::list&)> handler);
     bool get_history(const wallet::payment_address& address,

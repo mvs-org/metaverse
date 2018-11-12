@@ -29,6 +29,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 console_result getnewmultisig::invoke(
     Json::Value& jv_output,
@@ -132,7 +133,7 @@ console_result getnewmultisig::invoke(
     auto multisig_script = acc_multisig.get_multisig_script();
     chain::script payment_script;
     payment_script.from_string(multisig_script);
-    if (script_pattern::pay_multisig != payment_script.pattern())
+    if (chain::script_pattern::pay_multisig != payment_script.pattern())
         throw multisig_script_exception{ std::string("invalid multisig script : ") + multisig_script };
 
     payment_address address(payment_script, payment_address::mainnet_p2sh);

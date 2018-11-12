@@ -105,7 +105,7 @@ console_result swapmit::invoke(Json::Value& jv_output,
 
         receiver.push_back({
             to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, blockchain_message(option_.memo))
+            attachment(0, 0, chain::blockchain_message(option_.memo))
         });
     }
 
@@ -113,7 +113,7 @@ console_result swapmit::invoke(Json::Value& jv_output,
     std::string message("{\"type\":\"ETH\",\"address\":\"" + argument_.foreign_addr + "\"}");
     receiver.push_back({
         to_address, "", 0, 0, utxo_attach_type::message,
-        attachment(0, 0, blockchain_message(message))
+        attachment(0, 0, chain::blockchain_message(message))
     });
 
     auto helper = transferring_mit(

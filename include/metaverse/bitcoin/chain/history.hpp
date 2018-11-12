@@ -94,4 +94,8 @@ struct BC_API history
 } // namespace chain
 } // namespace libbitcoin
 
+using point_kind = libbitcoin::chain::point_kind;
+using history = libbitcoin::chain::history;
+using history_compact = libbitcoin::chain::history_compact;
+
 #endif

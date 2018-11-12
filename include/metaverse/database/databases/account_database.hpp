@@ -29,8 +29,6 @@
 #include <metaverse/database/primitives/slab_manager.hpp>
 #include <metaverse/database/databases/base_database.hpp>
 
-using namespace libbitcoin::chain;
-
 namespace libbitcoin {
 namespace database {
 

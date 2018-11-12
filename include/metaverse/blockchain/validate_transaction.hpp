@@ -27,13 +27,14 @@
 #include <memory>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/define.hpp>
-#include <metaverse/blockchain/transaction_pool.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
 
 class validate_block;
+class transaction_pool;
+class block_chain_impl;
+class block_chain;
 
 /// This class is not thread safe.
 /// This is a utility for transaction_pool::validate and validate_block.
@@ -93,10 +94,10 @@ public:
 
     bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
-    transaction& get_tx() { return *tx_; }
-    const transaction& get_tx() const { return *tx_; }
-    blockchain::block_chain_impl& get_blockchain() { return blockchain_; }
-    const blockchain::block_chain_impl& get_blockchain() const { return blockchain_; }
+    transaction& get_tx();
+    const transaction& get_tx() const;
+    blockchain::block_chain_impl& get_blockchain();
+    const blockchain::block_chain_impl& get_blockchain() const;
 
 private:
     code basic_checks() const;

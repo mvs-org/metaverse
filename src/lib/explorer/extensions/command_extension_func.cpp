@@ -105,12 +105,11 @@
 namespace libbitcoin {
 namespace explorer {
 
+using namespace std;
+using namespace commands;
 
 void broadcast_extension(const function<void(shared_ptr<command>)> func, std::ostream& os)
 {
-    using namespace std;
-    using namespace commands;
-
     os <<"\r\n";
     // account
     func(make_shared<getnewaccount>());
@@ -217,9 +216,6 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
 
 shared_ptr<command> find_extension(const string& symbol)
 {
-    using namespace std;
-    using namespace commands;
-
     // account
     if (symbol == getnewaccount::symbol())
         return make_shared<getnewaccount>();

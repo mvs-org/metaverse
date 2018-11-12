@@ -43,6 +43,14 @@
     #endif
 #endif
 
+namespace libbitcoin {
+namespace chain {
+class asset_cert;
+union asset_cert_type;
+}
+}
+using asset_cert = libbitcoin::chain::asset_cert;
+using asset_cert_type = libbitcoin::chain::asset_cert_type;
 
 #define ASSET_CERT_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<asset_cert::asset_cert_status>::type>(kd))
 
@@ -183,6 +191,8 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
+
+namespace asset_cert_ns = libbitcoin::chain::asset_cert_ns;
 
 #endif
 

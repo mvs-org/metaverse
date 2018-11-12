@@ -30,6 +30,7 @@ namespace explorer {
 namespace commands {
 namespace fs = boost::filesystem;
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 /************************ importkeyfile *************************/
 
@@ -60,7 +61,7 @@ console_result importaddress::invoke(Json::Value& jv_output,
         acc_script.set_address(p2sh_address);
         acc_script.set_script(redeem_data);
 
-        jv_output["script"] = redeem_script.to_string( script_context::all_enabled );
+        jv_output["script"] = redeem_script.to_string( chain::script_context::all_enabled );
     } else {
         throw redeem_script_data_exception{"Unexpect \"SCRIPT\" argument format. Only p2sh address or hex-encoded bitcoin script is supported."};
     }

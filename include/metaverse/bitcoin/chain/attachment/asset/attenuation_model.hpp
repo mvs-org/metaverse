@@ -26,8 +26,6 @@
 #include <metaverse/bitcoin/define.hpp>
 #include <metaverse/bitcoin/error.hpp>
 
-using namespace libbitcoin::chain;
-
 // forward declaration
 namespace libbitcoin {
 namespace blockchain {
@@ -104,6 +102,8 @@ private:
 
 } // namespace chain
 } // namespace libbitcoin
+
+using attenuation_model = libbitcoin::chain::attenuation_model;
 
 #endif
 

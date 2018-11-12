@@ -29,12 +29,15 @@
 #include <vector>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/miner.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
 #include <metaverse/consensus/witness.hpp>
+
+using string = std::string;
 
 namespace libbitcoin {
 namespace blockchain {
@@ -652,7 +655,7 @@ bool validate_block::script_hash_signature_operations_count(size_t& out_count,
     constexpr auto strict = script::parse_mode::strict;
 
     if (input_script.operations.empty() ||
-            output_script.pattern() != script_pattern::pay_script_hash)
+            output_script.pattern() != chain::script_pattern::pay_script_hash)
     {
         out_count = 0;
         return true;

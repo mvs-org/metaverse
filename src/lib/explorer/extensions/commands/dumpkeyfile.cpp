@@ -96,7 +96,7 @@ console_result dumpkeyfile::invoke(Json::Value& jv_output,
             argument_.dst /= keyfile_name;
 
         } else {
-            string dstpath = argument_.dst.string();
+            std::string dstpath = argument_.dst.string();
             if (dstpath.length() > 0 && dstpath[0] == '~') {
                 char *home_dir = getenv("HOME");
                 if (home_dir && strlen(home_dir) != 0) {

@@ -29,6 +29,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 class BC_API tx_block_info
 {

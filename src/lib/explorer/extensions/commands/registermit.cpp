@@ -37,19 +37,19 @@ void registermit::check_symbol_content(const std::string& symbol, const std::str
     }
 
     // reserve 4 bytes
-    if (symbol.size() > (ASSET_MIT_SYMBOL_FIX_SIZE - 4)) {
+    if (symbol.size() > (chain::ASSET_MIT_SYMBOL_FIX_SIZE - 4)) {
         throw asset_symbol_length_exception{"Symbol length must be less than "
-            + std::to_string(ASSET_MIT_SYMBOL_FIX_SIZE - 4) + ". " + symbol};
+            + std::to_string(chain::ASSET_MIT_SYMBOL_FIX_SIZE - 4) + ". " + symbol};
     }
 
     // check symbol
     check_mit_symbol(symbol, true);
 
     // check content
-    if (content.size() > ASSET_MIT_CONTENT_FIX_SIZE) {
+    if (content.size() > chain::ASSET_MIT_CONTENT_FIX_SIZE) {
         throw argument_size_invalid_exception(
             "Content length must be less than "
-            + std::to_string(ASSET_MIT_CONTENT_FIX_SIZE) + ". " + content);
+            + std::to_string(chain::ASSET_MIT_CONTENT_FIX_SIZE) + ". " + content);
     }
 }
 
@@ -76,10 +76,10 @@ console_result registermit::invoke (Json::Value& jv_output,
     else {
         if (option_.content.size() > 0) {
             // check content
-            if (option_.content.size() > ASSET_MIT_CONTENT_FIX_SIZE) {
+            if (option_.content.size() > chain::ASSET_MIT_CONTENT_FIX_SIZE) {
                 throw argument_size_invalid_exception(
                     "Content length must be less than "
-                    + std::to_string(ASSET_MIT_CONTENT_FIX_SIZE) + ". " + option_.content);
+                    + std::to_string(chain::ASSET_MIT_CONTENT_FIX_SIZE) + ". " + option_.content);
             }
 
             use_unified_content = true;

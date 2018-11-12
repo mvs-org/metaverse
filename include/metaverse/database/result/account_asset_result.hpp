@@ -28,8 +28,6 @@
 #include <metaverse/database/result/base_result.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_transfer.hpp>
 
-using namespace libbitcoin::chain;
-
 namespace libbitcoin {
 namespace database {
 

@@ -82,4 +82,6 @@ public:
 } // namespace chain
 } // namespace libbitcoin
 
+using block = libbitcoin::chain::block;
+
 #endif

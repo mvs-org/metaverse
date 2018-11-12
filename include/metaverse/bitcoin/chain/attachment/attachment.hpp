@@ -36,7 +36,13 @@
 #include <metaverse/bitcoin/chain/attachment/message/message.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
 
-using namespace libbitcoin::chain;
+namespace libbitcoin {
+namespace chain {
+class attachment;
+}
+}
+using attachment = libbitcoin::chain::attachment;
+
 #define TYPE2UINT32(kd)  (static_cast<typename std::underlying_type<attachment::attachment_type>::type>(kd))
 
 #define ETP_TYPE        TYPE2UINT32(attachment::attachment_type::attachment_etp)

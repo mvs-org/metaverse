@@ -38,6 +38,8 @@ using namespace chain;
 using namespace wallet;
 using namespace std::placeholders;
 
+using string = std::string;
+
 transaction_pool::transaction_pool(threadpool& pool, block_chain& chain,
                                    const settings& settings)
     : stopped_(true),

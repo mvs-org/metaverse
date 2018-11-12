@@ -95,7 +95,7 @@ console_result secondaryissue::invoke(Json::Value& jv_output,
         check_message(option_.memo);
 
         receiver.push_back({to_address, "", 0, 0, utxo_attach_type::message,
-            attachment(0, 0, blockchain_message(option_.memo))});
+            attachment(0, 0, chain::blockchain_message(option_.memo))});
     }
 
     auto issue_helper = secondary_issuing_asset(*this, blockchain,

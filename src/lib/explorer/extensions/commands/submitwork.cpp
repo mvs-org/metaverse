@@ -31,7 +31,7 @@ namespace commands {
 using namespace bc::explorer::config;
 
 /************************ submitwork *************************/
-inline bool startswith(const string &str, const char *prefix) {
+inline bool startswith(const std::string &str, const char *prefix) {
     return str.find(prefix) == 0;
 }
 
