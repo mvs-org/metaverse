@@ -94,10 +94,10 @@
             std::locale::global(locale(BC_LOCALE_UTF8)); \
             boost::filesystem::path::imbue(std::locale()); \
             \
-            auto variables = to_utf8(_wenviron); \
+            auto variables = bc::to_utf8(_wenviron); \
             environ = reinterpret_cast<char**>(variables.data()); \
             \
-            auto arguments = to_utf8(argc, argv); \
+            auto arguments = bc::to_utf8(argc, argv); \
             auto args = reinterpret_cast<char**>(arguments.data()); \
             \
             return libbitcoin::main(argc, args); \
