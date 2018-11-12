@@ -109,5 +109,7 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
+using asset_transfer = libbitcoin::chain::asset_transfer;
+
 #endif
 

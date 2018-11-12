@@ -29,8 +29,6 @@
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
 #include <metaverse/bitcoin/chain/business_data.hpp>
 
-using namespace libbitcoin::chain;
-
 namespace libbitcoin {
 namespace database {
 

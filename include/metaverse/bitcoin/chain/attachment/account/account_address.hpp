@@ -105,5 +105,7 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
+using account_address = libbitcoin::chain::account_address;
+
 #endif
 

@@ -28,8 +28,6 @@
 #include <metaverse/database/memory/memory_map.hpp>
 #include <metaverse/database/primitives/record_multimap.hpp>
 #include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
-//#include <metaverse/database/result/account_address_result.hpp>  // todo -- remove later
-using namespace libbitcoin::chain;
 
 namespace libbitcoin {
 namespace database {

@@ -32,7 +32,12 @@
 #include <metaverse/bitcoin/chain/attachment/did/did_detail.hpp>
 #include <metaverse/bitcoin/base_primary.hpp>
 
-using namespace libbitcoin::chain;
+namespace libbitcoin {
+namespace chain {
+class did;
+}
+}
+using did = libbitcoin::chain::did;
 
 #define DID_STATUS2UINT32(kd)  (static_cast<typename std::underlying_type<did::did_status>::type>(kd))
 

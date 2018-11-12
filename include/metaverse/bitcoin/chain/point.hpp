@@ -97,7 +97,10 @@ typedef point input_point;
 
 
 } // namespace chain
+using point = chain::point;
 } // namespace libbitcoin
+
+using input_point = libbitcoin::chain::input_point;
 
 namespace std
 {

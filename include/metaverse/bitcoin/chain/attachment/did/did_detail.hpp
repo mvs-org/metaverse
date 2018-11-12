@@ -80,5 +80,7 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
+using did_detail = libbitcoin::chain::did_detail;
+
 #endif
 

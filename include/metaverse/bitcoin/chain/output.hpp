@@ -114,4 +114,6 @@ public:
 } // namespace chain
 } // namespace libbitcoin
 
+using output = libbitcoin::chain::output;
+
 #endif
