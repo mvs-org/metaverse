@@ -29,11 +29,14 @@
 #include <vector>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/miner.hpp>
 #include <metaverse/bitcoin/chain/output.hpp>
+
+using string = std::string;
 
 namespace libbitcoin {
 namespace blockchain {

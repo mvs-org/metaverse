@@ -671,20 +671,6 @@ uint64_t miner::get_height() const
     return height;
 }
 
-bool miner::set_miner_public_key(const string& public_key)
-{
-    libbitcoin::wallet::ec_public ec_public_key(public_key);
-    pay_address_ = ec_public_key.to_payment_address();
-    if (pay_address_) {
-        log::debug(LOG_HEADER) << "set_miner_public_key[" << pay_address_.encoded() << "] success";
-        return true;
-    }
-    else {
-        log::error(LOG_HEADER) << "set_miner_public_key[" << public_key << "] is not availabe!";
-        return false;
-    }
-}
-
 bool miner::set_miner_payment_address(const bc::wallet::payment_address& address)
 {
     if (address) {

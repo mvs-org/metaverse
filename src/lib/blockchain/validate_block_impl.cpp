@@ -24,7 +24,6 @@
 #include <cstddef>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/block_detail.hpp>
-#include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 
@@ -34,7 +33,7 @@ namespace blockchain {
 // Value used to define median time past.
 static constexpr size_t median_time_past_blocks = 11;
 
-validate_block_impl::validate_block_impl(simple_chain& chain,
+validate_block_impl::validate_block_impl(block_chain_impl& chain,
         size_t fork_index, const block_detail::list& orphan_chain,
         size_t orphan_index, size_t height, const chain::block& block,
         bool testnet, const config::checkpoint::list& checks,

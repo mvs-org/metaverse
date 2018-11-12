@@ -31,7 +31,6 @@
 #include <metaverse/blockchain/orphan_pool.hpp>
 #include <metaverse/blockchain/organizer.hpp>
 #include <metaverse/blockchain/settings.hpp>
-#include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/validate_block_impl.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/node/protocols/protocol_block_out.hpp>
@@ -46,7 +45,7 @@ using namespace bc::config;
 
 #define NAME "organizer"
 
-organizer::organizer(threadpool& pool, simple_chain& chain,
+organizer::organizer(threadpool& pool, block_chain_impl& chain,
     const settings& settings)
   : stopped_(true),
     use_testnet_rules_(settings.use_testnet_rules),
@@ -113,7 +112,7 @@ code organizer::verify(uint64_t fork_point,
         *current_block, use_testnet_rules_, checkpoints_, callback);
 
     // Checks that are independent of the chain.
-    auto ec = validate.check_block(static_cast<blockchain::block_chain_impl&>(this->chain_));
+    auto ec = validate.check_block(chain_);
     if (error::success != ec.value()) {
         log::debug(LOG_BLOCKCHAIN) << "organizer: check_block failed! error:"
             << std::to_string(ec.value()) << ", fork_point: "
@@ -149,9 +148,9 @@ code organizer::verify(uint64_t fork_point,
     {
         hash_digest err_tx;
         // Checks that include input->output traversal.
-        ec = validate.connect_block(err_tx, static_cast<blockchain::block_chain_impl&>(this->chain_));
+        ec = validate.connect_block(err_tx, chain_);
         if(ec && err_tx != null_hash) {
-            dynamic_cast<block_chain_impl&>(chain_).pool().delete_tx(err_tx);
+            chain_.pool().delete_tx(err_tx);
         }
 
     };
@@ -457,7 +456,7 @@ void organizer::fired()
 
 std::unordered_map<hash_digest, uint64_t> organizer::get_fork_chain_last_block_hashes()
 {
-    unordered_map<hash_digest, uint64_t> hashes;
+    std::unordered_map<hash_digest, uint64_t> hashes;
     boost::unique_lock<boost::mutex> lock(mutex_fork_chain_last_block_hashes_);
     hashes = fork_chain_last_block_hashes_;
     return hashes;

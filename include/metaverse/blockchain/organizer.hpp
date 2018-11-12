@@ -30,7 +30,6 @@
 #include <metaverse/blockchain/block_detail.hpp>
 #include <metaverse/blockchain/orphan_pool.hpp>
 #include <metaverse/blockchain/settings.hpp>
-#include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/bitcoin/math/hash.hpp>
 #include <boost/thread.hpp>
 
@@ -53,7 +52,7 @@ public:
         reorganize_handler;
 
     /// Construct an instance.
-    organizer(threadpool& pool, simple_chain& chain, const settings& settings);
+    organizer(threadpool& pool, block_chain_impl& chain, const settings& settings);
 
     /// This method is NOT thread safe.
     virtual void organize();
@@ -97,7 +96,7 @@ private:
     const config::checkpoint::list checkpoints_;
 
     // These are protected by the caller protecting organize().
-    simple_chain& chain_;
+    block_chain_impl& chain_;
     block_detail::list process_queue_;
 
     // These are thread safe.

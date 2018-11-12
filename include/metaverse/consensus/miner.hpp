@@ -24,7 +24,6 @@
 #include <vector>
 #include <boost/thread.hpp>
 
-#include "metaverse/blockchain/block_chain_impl.hpp"
 #include "metaverse/blockchain/transaction_pool.hpp"
 #include "metaverse/bitcoin/chain/block.hpp"
 #include "metaverse/bitcoin/chain/input.hpp"
@@ -34,6 +33,9 @@
 namespace libbitcoin {
 namespace node {
 class p2p_node;
+}
+namespace blockchain {
+class block_chain_impl;
 }
 }
 
@@ -45,7 +47,7 @@ BC_CONSTEXPR unsigned int median_time_span = 11;
 BC_CONSTEXPR uint64_t future_blocktime_fork_height = 1030000;
 
 extern int bucket_size;
-extern vector<uint64_t> lock_heights;
+extern std::vector<uint64_t> lock_heights;
 
 class miner
 {
@@ -79,9 +81,9 @@ public:
     bool stop();
     static block_ptr create_genesis_block(bool is_mainnet);
     bool script_hash_signature_operations_count(size_t &count, const chain::input::list& inputs,
-        vector<transaction_ptr>& transactions);
+        std::vector<transaction_ptr>& transactions);
     bool script_hash_signature_operations_count(size_t &count, const chain::input& input,
-        vector<transaction_ptr>& transactions);
+        std::vector<transaction_ptr>& transactions);
     transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_addres,
         uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);
 
@@ -89,10 +91,9 @@ public:
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
     bool put_result(const std::string& nonce, const std::string& mix_hash,
         const std::string& header_hash, const uint64_t &nounce_mask);
-    bool set_miner_public_key(const string& public_key);
     bool set_miner_payment_address(const wallet::payment_address& address);
-    void get_state(uint64_t &height,  uint64_t &rate, string& difficulty, bool& is_mining);
-    bool get_block_header(chain::header& block_header, const string& para);
+    void get_state(uint64_t &height,  uint64_t &rate, std::string& difficulty, bool& is_mining);
+    bool get_block_header(chain::header& block_header, const std::string& para);
 
     static int get_lock_heights_index(uint64_t height);
     static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet);

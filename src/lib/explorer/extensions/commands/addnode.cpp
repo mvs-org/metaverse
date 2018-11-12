@@ -96,7 +96,7 @@ console_result addnode::invoke(Json::Value& jv_output,
         network::channel::manual_unban(authority);
         node.connect(authority);
     } else {
-        jv_output = string("Invalid operation [") +option_.operation+"]." ;
+        jv_output = std::string("Invalid operation [") +option_.operation+"]." ;
         return console_result::okay;
     }
 

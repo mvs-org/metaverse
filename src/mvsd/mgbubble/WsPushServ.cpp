@@ -429,7 +429,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         if (!reader.parse(begin, end, root)
                 || !root.isObject()
                 || !root["event"].isString()) {
-            stringstream ss;
+            std::stringstream ss;
             ss << "parse request error, "
                << reader.getFormattedErrorMessages();
             throw std::runtime_error(ss.str());
@@ -440,7 +440,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
         auto event = root["event"].asString();
         if (event == EV_SUBSCRIBE || event == EV_UNSUBSCRIBE) {
             if (!root["channel"].isString()) {
-                stringstream ss;
+                std::stringstream ss;
                 ss << "parse request error, "
                    << reader.getFormattedErrorMessages();
                 throw std::runtime_error(ss.str());
@@ -452,7 +452,7 @@ void WsPushServ::on_ws_frame_handler(struct mg_connection& nc, websocket_message
 
         if ((event == EV_SUBSCRIBE) && (channel == CH_TRANSACTION)) {
             if (!root["address"].isString() && !root["address"].isArray()) {
-                stringstream ss;
+                std::stringstream ss;
                 ss << "parse request error, invalid address!"
                    << reader.getFormattedErrorMessages();
                 throw std::runtime_error(ss.str());

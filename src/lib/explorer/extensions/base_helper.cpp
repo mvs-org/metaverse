@@ -31,6 +31,7 @@ namespace commands {
 
 using bc::chain::blockchain_message;
 using bc::blockchain::validate_transaction;
+using namespace std;
 
 utxo_attach_type get_utxo_attach_type(const chain::output& output_)
 {

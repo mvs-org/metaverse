@@ -27,10 +27,11 @@
 #include <vector>
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/define.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
 
 namespace libbitcoin {
 namespace blockchain {
+
+class block_chain_impl;
 
 // Max block size (1000000 bytes).
 constexpr uint32_t max_block_size = 1000000;

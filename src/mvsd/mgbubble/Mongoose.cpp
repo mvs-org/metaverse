@@ -77,8 +77,8 @@ void HttpMessage::data_to_arg(uint8_t rpc_version) {
          *  }
          * ******************************************/
 
-        const vector<std::string> api20_ver_list = {"2.0", "3.0"};
-        auto checkAPIVer = [](const vector<std::string> &api_ver_list, const std::string &rpc_version){
+        const std::vector<std::string> api20_ver_list = {"2.0", "3.0"};
+        auto checkAPIVer = [](const std::vector<std::string> &api_ver_list, const std::string &rpc_version){
             return find(api_ver_list.begin(), api_ver_list.end(), rpc_version) != api_ver_list.end();
         };
 

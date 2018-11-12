@@ -22,15 +22,17 @@
 #include <cstdint>
 #include <istream>
 #include <vector>
-#include <metaverse/bitcoin/chain/point.hpp>
-#include <metaverse/bitcoin/chain/script/script.hpp>
-#include <metaverse/bitcoin/define.hpp>
-#include <metaverse/bitcoin/utility/reader.hpp>
-#include <metaverse/bitcoin/utility/writer.hpp>
-#include <metaverse/bitcoin/formats/base_16.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
+#include <metaverse/bitcoin.hpp>
 #include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_detail.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
+
+namespace libbitcoin {
+namespace blockchain {
+class block_chain_impl;
+}
+}
+
 
 namespace libbitcoin {
 namespace chain {

@@ -20,9 +20,17 @@
 #pragma once
 
 #include <metaverse/bitcoin.hpp>
+#include <metaverse/bitcoin/chain/attachment/attachment.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account.hpp>
+#include <metaverse/bitcoin/chain/attachment/account/account_address.hpp>
 #include <metaverse/explorer/define.hpp>
 #include <metaverse/explorer/command.hpp>
-#include <metaverse/blockchain/block_chain_impl.hpp>
+
+namespace libbitcoin {
+namespace blockchain {
+class block_chain_impl;
+}
+}
 
 namespace libbitcoin {
 namespace explorer {
@@ -148,7 +156,7 @@ struct balances {
 };
 
 struct deposited_balance {
-    deposited_balance(const std::string& address_, const string& tx_hash_,
+    deposited_balance(const std::string& address_, const std::string& tx_hash_,
         uint64_t deposited_, uint64_t expiration_)
         : address(address_)
         , tx_hash(tx_hash_)
@@ -197,7 +205,7 @@ std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
     bc::blockchain::block_chain_impl& blockchain);
 
 
-void sync_fetch_asset_cert_balance(const std::string& address, const string& symbol,
+void sync_fetch_asset_cert_balance(const std::string& address, const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=asset_cert_ns::none);
 
@@ -216,14 +224,14 @@ std::string get_address_from_did(const std::string& did,
 
 std::string get_fee_dividend_address(bc::blockchain::block_chain_impl& blockchain);
 
-bool is_ETH_Address(const string& address);
+bool is_ETH_Address(const std::string& address);
 void check_asset_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_mit_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_did_symbol(const std::string& symbol, bool check_sensitive=false);
 void check_message(const std::string& message, bool check_sensitive=false);
 asset_cert_type check_issue_cert(bc::blockchain::block_chain_impl& blockchain,
-    const string& account, const string& symbol, const string& cert_name);
-asset_cert_type check_cert_type_name(const string& cert_type_name, bool all=false);
+    const std::string& account, const std::string& symbol, const std::string& cert_name);
+asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all=false);
 
 class BCX_API base_transfer_common
 {

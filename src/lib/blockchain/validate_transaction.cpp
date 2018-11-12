@@ -29,6 +29,7 @@
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
+#include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/consensus/miner.hpp>
 
 #ifdef WITH_CONSENSUS
@@ -66,6 +67,26 @@ validate_transaction::validate_transaction(block_chain& chain,
       validate_block_(nullptr),
       tx_hash_(tx.hash())
 {
+}
+
+transaction& validate_transaction::get_tx()
+{
+    return *tx_;
+}
+
+const transaction& validate_transaction::get_tx() const
+{
+    return *tx_;
+}
+
+blockchain::block_chain_impl& validate_transaction::get_blockchain()
+{
+    return blockchain_;
+}
+
+const blockchain::block_chain_impl& validate_transaction::get_blockchain() const
+{
+    return blockchain_;
 }
 
 void validate_transaction::start(validate_handler handler)

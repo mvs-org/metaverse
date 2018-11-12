@@ -50,6 +50,7 @@ using namespace bc::database;
 using namespace boost::interprocess;
 using namespace std::placeholders;
 using boost::filesystem::path;
+using string = std::string;
 
 block_chain_impl::block_chain_impl(threadpool& pool,
     const blockchain::settings& chain_settings,
