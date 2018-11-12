@@ -192,5 +192,7 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
+namespace asset_cert_ns = libbitcoin::chain::asset_cert_ns;
+
 #endif
 

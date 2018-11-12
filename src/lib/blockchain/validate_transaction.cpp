@@ -1452,7 +1452,7 @@ code validate_transaction::check_transaction_basic() const
 
     if (tx.version >= transaction_version::check_output_script) {
         for (auto& i : tx.outputs) {
-            if (i.script.pattern() == script_pattern::non_standard) {
+            if (i.script.pattern() == chain::script_pattern::non_standard) {
                 return error::script_not_standard;
             }
         }
@@ -1597,19 +1597,19 @@ bool validate_transaction::check_consensus(const script& prevout_script,
     // Convert native flags to libbitcoin-consensus flags.
     uint32_t consensus_flags = verify_flags_none;
 
-    if ((flags & script_context::bip16_enabled) != 0)
+    if ((flags & chain::script_context::bip16_enabled) != 0)
         consensus_flags |= verify_flags_p2sh;
 
-    if ((flags & script_context::bip65_enabled) != 0)
+    if ((flags & chain::script_context::bip65_enabled) != 0)
         consensus_flags |= verify_flags_checklocktimeverify;
 
-    if ((flags & script_context::bip66_enabled) != 0)
+    if ((flags & chain::script_context::bip66_enabled) != 0)
         consensus_flags |= verify_flags_dersig;
 
-    if ((flags & script_context::attenuation_enabled) != 0)
+    if ((flags & chain::script_context::attenuation_enabled) != 0)
         consensus_flags |= verify_flags_checkattenuationverify;
 
-    if ((flags & script_context::bip112_enabled) != 0)
+    if ((flags & chain::script_context::bip112_enabled) != 0)
         consensus_flags |= verify_flags_checksequenceverify;
 
     const auto result = verify_script(current_transaction.data(),

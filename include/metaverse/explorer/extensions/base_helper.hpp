@@ -91,7 +91,7 @@ struct address_asset_record
     uint64_t    amount{0}; // spendable etp amount
     std::string symbol;
     uint64_t    asset_amount{0}; // spendable asset amount
-    asset_cert_type asset_cert{asset_cert_ns::none};
+    asset_cert_type asset_cert{chain::asset_cert_ns::none};
     utxo_attach_type type{utxo_attach_type::invalid};
     output_point output;
     chain::script script;
@@ -106,7 +106,7 @@ struct receiver_record
     std::string symbol;
     uint64_t    amount{0}; // etp value
     uint64_t    asset_amount{0};
-    asset_cert_type asset_cert{asset_cert_ns::none};
+    asset_cert_type asset_cert{chain::asset_cert_ns::none};
 
     utxo_attach_type type{utxo_attach_type::invalid};
     attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
@@ -117,7 +117,7 @@ struct receiver_record
         , symbol()
         , amount(0)
         , asset_amount(0)
-        , asset_cert(asset_cert_ns::none)
+        , asset_cert(chain::asset_cert_ns::none)
         , type(utxo_attach_type::invalid)
         , attach_elem()
         , input_point{null_hash, max_uint32}
@@ -128,7 +128,7 @@ struct receiver_record
         utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
         const chain::input_point& input_point_ = {null_hash, max_uint32})
         : receiver_record(target_, symbol_, amount_, asset_amount_,
-            asset_cert_ns::none, type_, attach_elem_, input_point_)
+            chain::asset_cert_ns::none, type_, attach_elem_, input_point_)
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
@@ -207,7 +207,7 @@ std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
 
 void sync_fetch_asset_cert_balance(const std::string& address, const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,
-    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=asset_cert_ns::none);
+    std::shared_ptr<asset_cert::list> sh_vec, asset_cert_type cert_type=chain::asset_cert_ns::none);
 
 std::string get_random_payment_address(std::shared_ptr<std::vector<account_address>>,
     bc::blockchain::block_chain_impl& blockchain);

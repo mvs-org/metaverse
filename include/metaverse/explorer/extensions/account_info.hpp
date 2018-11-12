@@ -73,5 +73,5 @@ private:
 } // namespace chain
 } // namespace libbitcoin
 
-
+using account_info = libbitcoin::chain::account_info;
 

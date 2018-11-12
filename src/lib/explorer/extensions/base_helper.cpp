@@ -29,8 +29,8 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
-using bc::chain::blockchain_message;
 using bc::blockchain::validate_transaction;
+using namespace chain;
 using namespace std;
 
 utxo_attach_type get_utxo_attach_type(const chain::output& output_)
@@ -1030,7 +1030,7 @@ void base_transfer_common::sync_fetchutxo(
             std::string model_param(new_model_param_ptr->begin(), new_model_param_ptr->end());
             receiver_list_.push_back({record.addr, record.symbol,
                                       0, locked_asset, utxo_attach_type::asset_locked_transfer,
-                                      attachment(0, 0, blockchain_message(std::move(model_param))), record.output});
+                                      attachment(0, 0, chain::blockchain_message(std::move(model_param))), record.output});
             // in secondary issue, locked asset can also verify threshold condition
             if (is_locked_asset_as_payment()) {
                 payment_asset_ = (payment_asset_ > locked_asset)
@@ -1744,7 +1744,7 @@ void base_transaction_constructor::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, blockchain_message(message_))});
+            attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 
@@ -1968,7 +1968,7 @@ void sending_asset::populate_change()
         auto addr = !mychange_.empty() ? mychange_ : from_list_.begin()->addr;
         receiver_list_.push_back({addr, "", 0, 0,
             utxo_attach_type::message,
-            attachment(0, 0, blockchain_message(message_))});
+            attachment(0, 0, chain::blockchain_message(message_))});
     }
 }
 

@@ -59,7 +59,7 @@ console_result createasset::invoke(Json::Value& jv_output,
     auto issued_did = option_.issuer;
     check_did_symbol(issued_did);
 
-    if (option_.description.length() > ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
+    if (option_.description.length() > chain::ASSET_DETAIL_DESCRIPTION_FIX_SIZE)
         throw asset_description_length_exception{"asset description length must be less than 64."};
     auto threshold = option_.secondaryissue_threshold;
     if ((threshold < -1) || (threshold > 100)) {

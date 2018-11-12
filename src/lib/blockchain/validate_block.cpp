@@ -608,7 +608,7 @@ bool validate_block::script_hash_signature_operations_count(size_t& out_count,
     constexpr auto strict = script::parse_mode::strict;
 
     if (input_script.operations.empty() ||
-            output_script.pattern() != script_pattern::pay_script_hash)
+            output_script.pattern() != chain::script_pattern::pay_script_hash)
     {
         out_count = 0;
         return true;

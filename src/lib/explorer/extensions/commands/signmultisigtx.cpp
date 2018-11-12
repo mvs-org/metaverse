@@ -74,7 +74,7 @@ console_result signmultisigtx::invoke(
         auto& each_input = tx_.inputs[index];
         input_script = each_input.script;
 
-        if (script_pattern::sign_multisig != input_script.pattern())
+        if (chain::script_pattern::sign_multisig != input_script.pattern())
             continue;
 
         // 1. extract address from multisig payment script
@@ -89,7 +89,7 @@ console_result signmultisigtx::invoke(
         }
 
         // Is the redeem script a standard pay (output) script?
-        if (redeem_script.pattern() != script_pattern::pay_multisig) {
+        if (redeem_script.pattern() != chain::script_pattern::pay_multisig) {
             throw redeem_script_pattern_exception{"redeem script is not pay multisig pattern."};
         }
 
@@ -130,7 +130,7 @@ console_result signmultisigtx::invoke(
 
             // prepare sign
             explorer::config::hashtype sign_type;
-            uint8_t hash_type = (signature_hash_algorithm)sign_type;
+            uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
             bc::explorer::config::ec_private config_private_key(addr_prikey);
             bc::explorer::config::script config_contract(multisig_script);
@@ -182,7 +182,7 @@ console_result signmultisigtx::invoke(
 
                 ec_signature signature;
                 // from validate_transaction.cpp handle_previous_tx
-                auto strict = ((chain::get_script_context() & script_context::bip66_enabled) != 0);
+                auto strict = ((chain::get_script_context() & chain::script_context::bip66_enabled) != 0);
                 if (!parse_signature(signature, distinguished, strict)) {
                     log::trace("multisig") << "failed to parse_signature! " << sighash_type;
                     continue;
