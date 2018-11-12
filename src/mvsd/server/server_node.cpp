@@ -28,6 +28,7 @@
 #include <metaverse/server/messages/route.hpp>
 #include <metaverse/server/workers/query_worker.hpp>
 #include <metaverse/mgbubble.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 #include <thread>
 
@@ -64,6 +65,7 @@ server_node::server_node(const configuration& configuration)
     rest_server_(new mgbubble::HttpServ(webpage_path_.string().data(), *this, configuration.server.mongoose_listen)),
     push_server_(new mgbubble::WsPushServ(*this, configuration.server.websocket_listen))
 {
+    consensus::witness::create(*this);
 }
 
 // This allows for shutdown based on destruct without need to call stop.

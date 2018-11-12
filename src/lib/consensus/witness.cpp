@@ -20,6 +20,7 @@
 #include <metaverse/consensus/witness.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
+#include <mutex>
 
 
 #define LOG_HEADER "witness"
@@ -27,18 +28,39 @@
 namespace libbitcoin {
 namespace consensus {
 
-witness::list witness::witness_list_;
-witness::list witness::candidate_list_;
-uint64_t witness::epoch_height_ = 0;
+witness* witness::instance_ = nullptr;
 
 witness::witness(p2p_node& node)
     : node_(node)
     , setting_(node_.chain_impl().chain_settings())
+    , epoch_height_(0)
+    , witness_list_()
+    , candidate_list_()
+    , mutex_()
 {
 }
 
 witness::~witness()
 {
+}
+
+void witness::init(p2p_node& node)
+{
+    static witness s_instance(node);
+    instance_ = &s_instance;
+}
+
+witness& witness::create(p2p_node& node)
+{
+    static std::once_flag s_flag;
+    std::call_once(s_flag, witness::init, node);
+    return *instance_;
+}
+
+witness& witness::get()
+{
+    BITCOIN_ASSERT_MSG(instance_, "use witness::create() before witness::get()");
+    return *instance_;
 }
 
 witness::iterator witness::finds(list& l, const witness_id& id)
@@ -125,8 +147,9 @@ void witness::set_epoch_height(uint64_t block_height)
     epoch_height_ = block_height;
 }
 
-uint32_t witness::get_slot_num(const witness_id& id)
+uint32_t witness::get_slot_num(const witness_id& id) const
 {
+    shared_lock lock(mutex_);
     auto pos = finds(witness_list_, id);
     if (pos != witness_list_.end()) {
         return pos - witness_list_.cbegin();
@@ -171,13 +194,14 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     return bc::verify_signature(public_key, sighash, signature);
 }
 
-bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header)
+bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const
 {
+    shared_lock lock(mutex_);
     auto witness_slot_num = get_slot_num(public_key);
     return verify_signer(witness_slot_num, block, prev_header);
 }
 
-bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header)
+bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const
 {
     if (witness_slot_num >= witess_number) {
         return false;

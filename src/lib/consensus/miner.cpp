@@ -538,7 +538,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         get_accept_block_version() == chain::block_version_any) {
         can_use_dpos = pblock->can_use_dpos_consensus();
         can_use_dpos &= is_witness();
-        can_use_dpos &= witness::verify_signer(witness_slot_num_, *pblock, prev_header);
+        can_use_dpos &= witness::get().verify_signer(witness_slot_num_, *pblock, prev_header);
         if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
             return nullptr;
         }
@@ -882,8 +882,7 @@ bool miner::is_witness() const
     if (public_key_data_.empty()) {
         return false;
     }
-    witness wit(node_);
-    return wit.is_witness(public_key_data_);
+    return witness::get().is_witness(public_key_data_);
 }
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
@@ -908,7 +907,7 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
         return false;
     }
 
-    witness_slot_num_ = witness::get_slot_num(public_key_data_);
+    witness_slot_num_ = witness::get().get_slot_num(public_key_data_);
 
     return true;
 }

@@ -54,8 +54,11 @@ public:
     static constexpr uint32_t witess_number = 11;
 
 public:
-    witness(p2p_node& node);
     ~witness();
+
+    // singleton
+    static witness& create(p2p_node& node);
+    static witness& get();
 
     // return a copy list
     list get_witness_list() const;
@@ -67,30 +70,33 @@ public:
     bool register_witness(const witness_id& id);
     bool unregister_witness(const witness_id& id);
 
+    // generate a new epoch witness list
+    bool update_witness_list(uint64_t height);
+
     void set_epoch_height(uint64_t block_height);
 
-    static uint32_t get_slot_num(const witness_id& id);
+    uint32_t get_slot_num(const witness_id& id) const;
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
-    static bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header);
-    static bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header);
+    bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const;
+    bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const;
 
 private:
+    witness(p2p_node& node);
+    static void init(p2p_node& node);
     static bool exists(const list&, const witness_id&);
     static const_iterator finds(const list&, const witness_id&);
     static iterator finds(list&, const witness_id&);
 
-    // generate a new epoch witness list
-    bool update_witness_list(uint64_t height);
-
 private:
+    static witness* instance_;
     p2p_node& node_;
     const settings& setting_;
-    static uint64_t epoch_height_;
-    static list witness_list_;
-    static list candidate_list_;
+    uint64_t epoch_height_;
+    list witness_list_;
+    list candidate_list_;
     mutable upgrade_mutex mutex_;
 };
 
