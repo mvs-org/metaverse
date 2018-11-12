@@ -28,6 +28,7 @@
 namespace libbitcoin {
 namespace explorer {
 namespace commands {
+using payment_address = wallet::payment_address;
 
 console_result signrawtx::invoke(Json::Value& jv_output,
                                  libbitcoin::server::server_node& node) {
@@ -83,7 +84,7 @@ console_result signrawtx::invoke(Json::Value& jv_output,
 
                     std::map<std::string, std::string> pk_sig;
                     for (const auto& pk : script_pk_set) {
-                        const payment_address script_pkh = ec_public(pk).to_payment_address();
+                        const payment_address script_pkh = wallet::ec_public(pk).to_payment_address();
                         auto acc_addr = blockchain.get_account_address(auth_.name, script_pkh.encoded());
                         if (!acc_addr) {
                             continue;

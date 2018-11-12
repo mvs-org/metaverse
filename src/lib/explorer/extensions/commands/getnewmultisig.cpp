@@ -29,6 +29,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 console_result getnewmultisig::invoke(
     Json::Value& jv_output,

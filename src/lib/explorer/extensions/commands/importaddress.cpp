@@ -30,6 +30,7 @@ namespace explorer {
 namespace commands {
 namespace fs = boost::filesystem;
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 /************************ importkeyfile *************************/
 

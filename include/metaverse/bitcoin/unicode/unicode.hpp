@@ -90,7 +90,6 @@
         \
         int wmain(int argc, wchar_t* argv[]) \
         { \
-            using namespace libbitcoin; \
             boost::locale::generator locale; \
             std::locale::global(locale(BC_LOCALE_UTF8)); \
             boost::filesystem::path::imbue(std::locale()); \

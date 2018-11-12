@@ -57,7 +57,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
-    const auto seed = decode_mnemonic(words);
+    const auto seed = wallet::decode_mnemonic(words);
     libbitcoin::config::base16 bs(seed);
     const data_chunk& ds = static_cast<const data_chunk&>(bs);
     const auto prefixes = bc::wallet::hd_private::to_prefixes(76066276, 0);//76066276 is HD private key version
@@ -88,9 +88,9 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         libbitcoin::secret_to_public(point, derive_private_key.secret());
 
         // Serialize to the original compression state.
-        auto ep =  ec_public(point, true);
+        auto ep =  wallet::ec_public(point, true);
 
-        payment_address pa(ep, payment_version);
+        wallet::payment_address pa(ep, payment_version);
 
         addr->set_address(pa.encoded());
         addr->set_status(1); // 1 -- enable address

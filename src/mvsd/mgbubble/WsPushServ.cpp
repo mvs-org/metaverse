@@ -45,6 +45,7 @@ constexpr int  JSON_FORMAT_VERSION = 3;
 namespace mgbubble {
 using namespace bc;
 using namespace libbitcoin;
+using payment_address = wallet::payment_address;
 
 explorer::config::json_helper get_json_helper()
 {

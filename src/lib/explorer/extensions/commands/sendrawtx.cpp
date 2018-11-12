@@ -29,6 +29,7 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 using namespace bc::explorer::config;
+using payment_address = wallet::payment_address;
 
 bool sort_multi_sigs(tx_type& tx_) {
     bc::chain::script input_script;

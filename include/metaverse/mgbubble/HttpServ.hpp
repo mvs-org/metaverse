@@ -17,8 +17,6 @@ namespace server{
 
 namespace mgbubble{
 
-using namespace bc;
-
 class HttpServ : public MgServer
 {
     typedef MgServer base;

@@ -47,6 +47,7 @@ namespace blockchain {
 
 using namespace bc::chain;
 using namespace bc::database;
+using namespace bc::message;
 using namespace boost::interprocess;
 using namespace std::placeholders;
 using boost::filesystem::path;
@@ -1559,7 +1560,7 @@ std::shared_ptr<asset_mit::list> block_chain_impl::get_account_mits(
 uint64_t block_chain_impl::get_address_asset_volume(const std::string& addr, const std::string& asset)
 {
     uint64_t asset_volume = 0;
-    auto address = payment_address(addr);
+    auto address = wallet::payment_address(addr);
     auto&& rows = get_address_history(address);
 
     chain::transaction tx_temp;
@@ -2270,7 +2271,7 @@ bool block_chain_impl::get_transaction_callback(const hash_digest& hash,
     return ret;
 }
 
-bool block_chain_impl::get_history_callback(const payment_address& address,
+bool block_chain_impl::get_history_callback(const wallet::payment_address& address,
     size_t limit, size_t from_height,
     std::function<void(const code&, chain::history::list&)> handler)
 {
