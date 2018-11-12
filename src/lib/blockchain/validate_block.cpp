@@ -93,7 +93,7 @@ bool validate_block::stopped() const
     return stop_callback_();
 }
 
-code validate_block::check_coinbase(const header& prev_header) const
+code validate_block::check_coinbase(const chain::header& prev_header) const
 {
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;

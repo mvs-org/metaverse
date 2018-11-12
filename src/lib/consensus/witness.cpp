@@ -134,7 +134,7 @@ uint32_t witness::get_slot_num(const witness_id& id)
     return max_uint32;
 }
 
-bool witness::sign(endorsement& out, const ec_secret& secret, const header& h)
+bool witness::sign(endorsement& out, const ec_secret& secret, const chain::header& h)
 {
     const auto sighash = h.hash();
 
@@ -147,7 +147,7 @@ bool witness::sign(endorsement& out, const ec_secret& secret, const header& h)
     return true;
 }
 
-bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const header& h)
+bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h)
 {
     if (public_key.empty()) {
         return false;
@@ -171,13 +171,13 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     return bc::verify_signature(public_key, sighash, signature);
 }
 
-bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const header& prev_header)
+bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header)
 {
     auto witness_slot_num = get_slot_num(public_key);
     return verify_signer(witness_slot_num, block, prev_header);
 }
 
-bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const header& prev_header)
+bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header)
 {
     if (witness_slot_num >= witess_number) {
         return false;

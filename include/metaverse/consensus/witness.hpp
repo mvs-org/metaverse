@@ -72,10 +72,10 @@ public:
     static uint32_t get_slot_num(const witness_id& id);
 
     // signature
-    static bool sign(endorsement& out, const ec_secret& secret, const header& h);
-    static bool verify_sign(const endorsement& out, const public_key_t& public_key, const header& h);
-    static bool verify_signer(const public_key_t& public_key, const chain::block& block, const header& prev_header);
-    static bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const header& prev_header);
+    static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
+    static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
+    static bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header);
+    static bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header);
 
 private:
     static bool exists(const list&, const witness_id&);

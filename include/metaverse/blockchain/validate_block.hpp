@@ -67,7 +67,7 @@ public:
     const uint64_t get_height() const {return height_;}
     virtual uint64_t median_time_past() const = 0;
 
-    code check_coinbase(const header& prev_header) const;
+    code check_coinbase(const chain::header& prev_header) const;
 
 protected:
     typedef std::vector<uint8_t> versions;
