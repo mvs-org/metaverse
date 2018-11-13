@@ -64,6 +64,8 @@ public:
     static witness& create(p2p_node& node);
     static witness& get();
 
+    bool is_witness_prepared() const;
+
     // return a copy list
     list get_witness_list() const;
     list get_candidate_list() const;
@@ -77,11 +79,14 @@ public:
     // generate a new epoch witness list
     bool update_witness_list(uint64_t height);
 
-    bool is_begin_of_epoch(uint64_t height) const;
-    bool is_between_vote_maturity_interval(uint64_t height) const;
-    bool is_update_witness_needed(uint64_t height) const;
-
     uint32_t get_slot_num(const witness_id& id) const;
+
+    static uint64_t get_height_in_epoch(uint64_t height);
+    static uint64_t get_vote_result_height(uint64_t height);
+
+    static bool is_begin_of_epoch(uint64_t height);
+    static bool is_between_vote_maturity_interval(uint64_t height);
+    static bool is_update_witness_needed(uint64_t height);
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);

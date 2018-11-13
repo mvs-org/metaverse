@@ -262,7 +262,7 @@ bool block::must_use_pow_consensus() const
     }
     // ensure the vote is security,
     // first vote_maturity blocks of each epoch must use pow
-    if (consensus::witness::get().is_between_vote_maturity_interval(header.number)) {
+    if (consensus::witness::is_between_vote_maturity_interval(header.number)) {
         return true;
     }
     return false;

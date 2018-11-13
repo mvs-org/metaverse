@@ -233,19 +233,35 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
     return false;
 }
 
-bool witness::is_begin_of_epoch(uint64_t height) const
+bool witness::is_witness_prepared() const
 {
-    return (height - witness_enable_height) % epoch_cycle_height == 0;
+    return !witness_list_.empty();
 }
 
-bool witness::is_between_vote_maturity_interval(uint64_t height) const
+uint64_t witness::get_height_in_epoch(uint64_t height)
 {
-    return (height - witness_enable_height) % epoch_cycle_height <= vote_maturity;
+    return (height - witness_enable_height) % epoch_cycle_height;
 }
 
-bool witness::is_update_witness_needed(uint64_t height) const
+// vote result is stored in the beginning of each epoch
+uint64_t witness::get_vote_result_height(uint64_t height)
 {
-    return (height - witness_enable_height) % epoch_cycle_height == vote_maturity;
+    return height - get_height_in_epoch(height);
+}
+
+bool witness::is_begin_of_epoch(uint64_t height)
+{
+    return get_height_in_epoch(height) == 0;
+}
+
+bool witness::is_between_vote_maturity_interval(uint64_t height)
+{
+    return get_height_in_epoch(height) <= vote_maturity;
+}
+
+bool witness::is_update_witness_needed(uint64_t height)
+{
+    return get_height_in_epoch(height) == vote_maturity;
 }
 
 } // consensus
