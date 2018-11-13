@@ -1156,7 +1156,10 @@ bool validate_transaction::connect_did_input(const did& info) const
         chain::transaction prev_tx;
         uint64_t prev_height{0};
         if (!get_previous_tx(prev_tx, prev_height, input)) {
-            log::debug(LOG_BLOCKCHAIN) << "connect_did_input: input not found: "
+            log::debug(LOG_BLOCKCHAIN) << "connect_did_input: "
+                                       << "symbol: " << detail_info.get_symbol()
+                                       << "address: " << detail_info.get_address()
+                                       << " input not found: "
                                        << encode_hash(input.previous_output.hash);
             return false;
         }
