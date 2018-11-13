@@ -272,6 +272,10 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
             return "witness sign is invalid";
         case error::witness_mismatch:
             return "witness mismatch";
+        case error::witness_vote_error:
+            return "witness vote error";
+        case error::witness_update_error:
+            return "witness update error";
 
         // unknown errors
         case error::unknown:

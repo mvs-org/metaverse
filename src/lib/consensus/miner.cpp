@@ -347,13 +347,6 @@ struct transaction_dependent {
 miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
 {
     block_ptr pblock;
-    vector<transaction_ptr> transactions;
-    map<hash_digest, transaction_dependent> transaction_dependents;
-    previous_out_map_t previous_out_map;
-    tx_fee_map_t tx_fee_map;
-    get_transaction(transactions, previous_out_map, tx_fee_map);
-
-    vector<transaction_priority> transaction_prioritys;
     block_chain_impl& block_chain = node_.chain_impl();
 
     uint64_t current_block_height = 0;
@@ -364,6 +357,16 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         return pblock;
     } else {
         pblock = make_shared<block>();
+    }
+
+    vector<transaction_ptr> transactions;
+    vector<transaction_priority> transaction_prioritys;
+    map<hash_digest, transaction_dependent> transaction_dependents;
+    previous_out_map_t previous_out_map;
+    tx_fee_map_t tx_fee_map;
+
+    if (!witness::is_begin_of_epoch(current_block_height + 1)){
+        get_transaction(transactions, previous_out_map, tx_fee_map);
     }
 
     // Create coinbase tx
@@ -547,7 +550,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
     if (can_use_dpos) {
         // adjust block subsidy for dpos
-        block_subsidy = uint64_t(1.0 * block_subsidy / witness::pow_check_point_height);
+        block_subsidy = std::min(block_subsidy / witness::witess_number,
+            uint64_t(1.0 * block_subsidy * witness::witess_number / witness::pow_check_point_height));
     }
     coinbase_tx.outputs[0].value = total_fee + block_subsidy;
 
@@ -562,6 +566,13 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         auto& coinbase_input_ops = coinbase_tx.inputs[0].script.operations;
         coinbase_input_ops.push_back({ chain::opcode::special, endorse });
         coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+    } else if (witness::is_begin_of_epoch(pblock->header.number)){
+        auto&& vote_output = witness::get().create_witness_vote_result(pblock->header.number);
+        if (vote_output.script.operations.empty()) {
+            log::error(LOG_HEADER) << "create_witness_vote_result failed";
+            return nullptr;
+        }
+        coinbase_tx.outputs.emplace_back(vote_output);
     }
 
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);

@@ -182,6 +182,8 @@ enum error_code_t
     block_version_not_match,
     witness_sign_invalid,
     witness_mismatch,               // 95
+    witness_vote_error,
+    witness_update_error,
 
 };
 

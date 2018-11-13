@@ -20,7 +20,8 @@
 #include <metaverse/consensus/witness.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
-
+#include <future>
+#include <mutex>
 
 #define LOG_HEADER "witness"
 
@@ -150,9 +151,104 @@ bool witness::unregister_witness(const witness_id& id)
     return true;
 }
 
+chain::output witness::create_witness_vote_result(uint64_t height)
+{
+    calc_witness_list(height);
+
+    shared_lock lock(mutex_);
+
+    chain::output output;
+    output.value = 0;
+    auto& ops = output.script.operations;
+
+    ops.push_back({chain::opcode::raw_data, to_chunk("witness")});
+    for (const auto& witness : witness_list_) {
+        ops.push_back({chain::opcode::special, witness});
+    }
+
+    ops.push_back({chain::opcode::raw_data, to_chunk("candidate")});
+    for (const auto& candidate : candidate_list_) {
+        ops.push_back({chain::opcode::special, candidate});
+    }
+
+    return output;
+}
+
 // DPOS_TODO: add algorithm to generate the witness list of each epoch
+bool witness::calc_witness_list(uint64_t height)
+{
+    return true;
+}
+
+bool witness::verify_vote_result(const chain::block& block) const
+{
+    const auto& transactions = block.transactions;
+    if (transactions.size() != 1) {
+        return false;
+    }
+    if (transactions.front().outputs.size() != 2) {
+        return false;
+    }
+    auto& ops = transactions.front().outputs.back().script.operations;
+    if (ops.size() < 2 + witess_number) {
+        return false;
+    }
+    return true;
+}
+
+chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
+{
+    auto vote_height = get_vote_result_height(height);
+
+    std::promise<code> p;
+    chain::block::ptr sp_block;
+
+    node_.chain_impl().fetch_block(vote_height,
+        [&p, &sp_block](const code & ec, chain::block::ptr block){
+            if (ec) {
+                p.set_value(ec);
+                return;
+            }
+            sp_block = block;
+            p.set_value(error::success);
+        });
+
+    auto result = p.get_future().get();
+    if (result) {
+        return nullptr;
+    }
+    return sp_block;
+}
+
 bool witness::update_witness_list(uint64_t height)
 {
+    chain::block::ptr sp_block;
+    static std::once_flag s_flag;
+    std::call_once(s_flag, [this, &sp_block, height](){sp_block = fetch_vote_result_block(height);});
+    if (!sp_block) {
+        return false;
+    }
+    return update_witness_list(*sp_block);
+}
+
+bool witness::update_witness_list(const chain::block& block)
+{
+    unique_lock ulock(mutex_);
+
+    witness_list_.clear();
+    candidate_list_.clear();
+
+    const auto& transactions = block.transactions;
+    auto& ops = transactions.front().outputs.back().script.operations;
+    BITCOIN_ASSERT_MSG(ops.size() >= 2 + witess_number, "wrong number of vote result.");
+
+    size_t i = 0;
+    for (++i; i <= witess_number; ++i) {
+        witness_list_.emplace_back(chain::operation::factory_from_data(ops[i].data).data);
+    }
+    for (++i; i <= ops.size(); ++i) {
+        candidate_list_.emplace_back(chain::operation::factory_from_data(ops[i].data).data);
+    }
     return true;
 }
 
@@ -233,6 +329,11 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
     return false;
 }
 
+bool witness::is_witness_enabled(uint64_t height)
+{
+    return height >= witness_enable_height;
+}
+
 bool witness::is_witness_prepared() const
 {
     return !witness_list_.empty();
@@ -251,17 +352,17 @@ uint64_t witness::get_vote_result_height(uint64_t height)
 
 bool witness::is_begin_of_epoch(uint64_t height)
 {
-    return get_height_in_epoch(height) == 0;
+    return is_witness_enabled(height) && get_height_in_epoch(height) == 0;
 }
 
 bool witness::is_between_vote_maturity_interval(uint64_t height)
 {
-    return get_height_in_epoch(height) <= vote_maturity;
+    return is_witness_enabled(height) && get_height_in_epoch(height) <= vote_maturity;
 }
 
 bool witness::is_update_witness_needed(uint64_t height)
 {
-    return get_height_in_epoch(height) == vote_maturity;
+    return is_witness_enabled(height) && get_height_in_epoch(height) == vote_maturity;
 }
 
 } // consensus

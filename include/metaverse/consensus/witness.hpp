@@ -77,10 +77,15 @@ public:
     bool unregister_witness(const witness_id& id);
 
     // generate a new epoch witness list
+    bool calc_witness_list(uint64_t height);
     bool update_witness_list(uint64_t height);
+    bool update_witness_list(const chain::block& block);
+    chain::output create_witness_vote_result(uint64_t height);
+    chain::block::ptr fetch_vote_result_block(uint64_t height);
 
     uint32_t get_slot_num(const witness_id& id) const;
 
+    static bool is_witness_enabled(uint64_t height);
     static uint64_t get_height_in_epoch(uint64_t height);
     static uint64_t get_vote_result_height(uint64_t height);
 
@@ -93,6 +98,7 @@ public:
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const;
     bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const;
+    bool verify_vote_result(const chain::block& block) const;
 
 private:
     witness(p2p_node& node);

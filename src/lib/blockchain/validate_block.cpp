@@ -147,10 +147,18 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
             return error::witness_sign_invalid;
         }
         if (!consensus::witness::get().is_witness_prepared()) {
-            consensus::witness::get().update_witness_list(header.number);
+            if (!consensus::witness::get().update_witness_list(header.number)) {
+                return error::witness_update_error;
+            }
         }
         if (!consensus::witness::get().verify_signer(pubkey, current_block_, prev_header)) {
             return error::witness_mismatch;
+        }
+    }
+
+    if (consensus::witness::is_begin_of_epoch(header.number)) {
+        if (!consensus::witness::get().verify_vote_result(current_block_)) {
+            return error::witness_vote_error;
         }
     }
 

@@ -254,7 +254,7 @@ chain::block block::genesis_testnet()
 
 bool block::must_use_pow_consensus() const
 {
-    if (header.number < consensus::witness::witness_enable_height) {
+    if (!consensus::witness::is_witness_enabled(header.number)) {
         return true;
     }
     if (header.number % consensus::witness::pow_check_point_height == 0) {
