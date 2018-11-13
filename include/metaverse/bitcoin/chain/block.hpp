@@ -46,8 +46,6 @@ public:
     typedef std::vector<ptr> ptr_list;
     typedef std::vector<size_t> indexes;
 
-    static const uint32_t pow_check_point_height;
-
     static hash_digest generate_merkle_root(
         const transaction::list& transactions);
     static block genesis_mainnet();

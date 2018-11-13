@@ -547,7 +547,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
     if (can_use_dpos) {
         // adjust block subsidy for dpos
-        block_subsidy = uint64_t(1.0 * block_subsidy / block::pow_check_point_height);
+        block_subsidy = uint64_t(1.0 * block_subsidy / witness::pow_check_point_height);
     }
     coinbase_tx.outputs[0].value = total_fee + block_subsidy;
 

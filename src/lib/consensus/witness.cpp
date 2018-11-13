@@ -27,6 +27,12 @@
 namespace libbitcoin {
 namespace consensus {
 
+uint32_t witness::pow_check_point_height = 100;
+uint64_t witness::witness_enable_height = 2000000;
+uint32_t witness::witess_number = 11;
+uint32_t witness::epoch_cycle_height = 10000;
+uint32_t witness::vote_maturity = 12;
+
 witness* witness::instance_ = nullptr;
 
 witness::witness(p2p_node& node)
@@ -47,6 +53,14 @@ void witness::init(p2p_node& node)
 {
     static witness s_instance(node);
     instance_ = &s_instance;
+
+    if (instance_->setting_.use_testnet_rules) {
+        witness::pow_check_point_height = 100;
+        witness::witness_enable_height = 1000000;
+        witness::witess_number = 5;
+        witness::epoch_cycle_height = 1000;
+        witness::vote_maturity = 2;
+    }
 }
 
 witness& witness::create(p2p_node& node)
@@ -149,6 +163,12 @@ void witness::set_epoch_height(uint64_t block_height)
     epoch_height_ = block_height;
 }
 
+uint64_t witness::get_epoch_height() const
+{
+    shared_lock lock(mutex_);
+    return epoch_height_;
+}
+
 uint32_t witness::get_slot_num(const witness_id& id) const
 {
     shared_lock lock(mutex_);
@@ -214,6 +234,10 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
     auto calced_slot_num = ((block_height - epoch_height_) % witess_number);
     if (calced_slot_num == witness_slot_num) {
         return true;
+    }
+    if (((calced_slot_num + 1) % witess_number) == witness_slot_num) {
+        // for safty, the previous slot should not be mined by the next witnesses
+        return false;
     }
     static uint32_t time_config{24}; // same as HeaderAux::calculateDifficulty
     if (header.timestamp > prev_header.timestamp + time_config*2) {

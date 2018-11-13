@@ -29,6 +29,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -251,10 +252,22 @@ chain::block block::genesis_testnet()
     return genesis;
 }
 
-const uint32_t block::pow_check_point_height = 100; // may be 10000 in production
 bool block::must_use_pow_consensus() const
 {
-    return header.number % pow_check_point_height == 0;
+    if (header.number < consensus::witness::witness_enable_height) {
+        return true;
+    }
+    if (header.number % consensus::witness::pow_check_point_height == 0) {
+        return true;
+    }
+    // ensure the vote is security,
+    // first vote_maturity blocks of each epoch must use pow
+    auto epoch_start_height = consensus::witness::get().get_epoch_height();
+    if (header.number >= epoch_start_height &&
+        header.number <= epoch_start_height + consensus::witness::vote_maturity) {
+        return true;
+    }
+    return false;
 }
 
 bool block::can_use_dpos_consensus() const
