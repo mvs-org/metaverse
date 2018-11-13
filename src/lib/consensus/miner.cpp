@@ -320,7 +320,11 @@ int miner::get_lock_heights_index(uint64_t height)
 
 uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet)
 {
-    return uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
+    auto result = uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
+    if (witness::is_begin_of_epoch(block_height)) {
+        result <<= 2; // more award to the vote result block miner
+    }
+    return result;
 }
 
 uint64_t miner::calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num)
