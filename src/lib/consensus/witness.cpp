@@ -20,7 +20,6 @@
 #include <metaverse/consensus/witness.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
-#include <mutex>
 
 
 #define LOG_HEADER "witness"
@@ -52,8 +51,11 @@ void witness::init(p2p_node& node)
 
 witness& witness::create(p2p_node& node)
 {
-    static std::once_flag s_flag;
-    std::call_once(s_flag, witness::init, node);
+    static unique_mutex umutex;
+    if (!instance_) {
+        scoped_lock l(umutex);
+        init(node);
+    }
     return *instance_;
 }
 
