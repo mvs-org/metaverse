@@ -77,8 +77,9 @@ public:
     // generate a new epoch witness list
     bool update_witness_list(uint64_t height);
 
-    void set_epoch_height(uint64_t block_height);
-    uint64_t get_epoch_height() const;
+    bool is_begin_of_epoch(uint64_t height) const;
+    bool is_between_vote_maturity_interval(uint64_t height) const;
+    bool is_update_witness_needed(uint64_t height) const;
 
     uint32_t get_slot_num(const witness_id& id) const;
 
@@ -99,7 +100,6 @@ private:
     static witness* instance_;
     p2p_node& node_;
     const settings& setting_;
-    uint64_t epoch_height_;
     list witness_list_;
     list candidate_list_;
     mutable upgrade_mutex mutex_;

@@ -262,9 +262,7 @@ bool block::must_use_pow_consensus() const
     }
     // ensure the vote is security,
     // first vote_maturity blocks of each epoch must use pow
-    auto epoch_start_height = consensus::witness::get().get_epoch_height();
-    if (header.number >= epoch_start_height &&
-        header.number <= epoch_start_height + consensus::witness::vote_maturity) {
+    if (consensus::witness::get().is_between_vote_maturity_interval(header.number)) {
         return true;
     }
     return false;

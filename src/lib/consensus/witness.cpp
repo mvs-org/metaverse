@@ -38,7 +38,6 @@ witness* witness::instance_ = nullptr;
 witness::witness(p2p_node& node)
     : node_(node)
     , setting_(node_.chain_impl().chain_settings())
-    , epoch_height_(0)
     , witness_list_()
     , candidate_list_()
     , mutex_()
@@ -157,18 +156,6 @@ bool witness::update_witness_list(uint64_t height)
     return true;
 }
 
-void witness::set_epoch_height(uint64_t block_height)
-{
-    unique_lock lock(mutex_);
-    epoch_height_ = block_height;
-}
-
-uint64_t witness::get_epoch_height() const
-{
-    shared_lock lock(mutex_);
-    return epoch_height_;
-}
-
 uint32_t witness::get_slot_num(const witness_id& id) const
 {
     shared_lock lock(mutex_);
@@ -231,7 +218,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
 
     const auto& header = block.header;
     auto block_height = header.number;
-    auto calced_slot_num = ((block_height - epoch_height_) % witess_number);
+    auto calced_slot_num = ((block_height - witness_enable_height) % witess_number);
     if (calced_slot_num == witness_slot_num) {
         return true;
     }
@@ -244,6 +231,21 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
         return true;
     }
     return false;
+}
+
+bool witness::is_begin_of_epoch(uint64_t height) const
+{
+    return (height - witness_enable_height) % epoch_cycle_height == 0;
+}
+
+bool witness::is_between_vote_maturity_interval(uint64_t height) const
+{
+    return (height - witness_enable_height) % epoch_cycle_height <= vote_maturity;
+}
+
+bool witness::is_update_witness_needed(uint64_t height) const
+{
+    return (height - witness_enable_height) % epoch_cycle_height == vote_maturity;
 }
 
 } // consensus
