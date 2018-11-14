@@ -92,6 +92,13 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+// Relative PoS constants.
+//-----------------------------------------------------------------------------
+BC_CONSTEXPR uint64_t pos_enabled_height = 1000;
+BC_CONSTEXPR uint32_t block_version      = 1;
+BC_CONSTEXPR uint32_t block_version_pos  = 2;
+
+
 // price
 //-----------------------------------------------------------------------------
 

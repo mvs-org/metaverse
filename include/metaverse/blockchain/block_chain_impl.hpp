@@ -223,7 +223,7 @@ public:
     virtual bool is_pos_capability(const wallet::payment_address& pay_addres);
 
     /// select pos utxo. target value
-    virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, output::list& set_coins);
+    virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, chain::output_info::list& stake_outputs);
 
 
     inline hash_digest get_hash(const std::string& str);

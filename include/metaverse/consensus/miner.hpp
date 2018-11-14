@@ -85,8 +85,10 @@ public:
         std::vector<transaction_ptr>& transactions);
     bool script_hash_signature_operations_count(size_t &count, const chain::input& input,
         std::vector<transaction_ptr>& transactions);
-    transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_addres,
+    transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_address,
         uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);
+    transaction_ptr create_coinstake_tx(const wallet::payment_address& pay_address, 
+        block_ptr pblock, const chain::output_info::list& stake_outputs);
 
     block_ptr get_block(bool is_force_create_block = false);
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
@@ -98,12 +100,13 @@ public:
 
     static int get_lock_heights_index(uint64_t height);
     static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet);
+    static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 
 private:
     void work(const wallet::payment_address pay_address);
-    block_ptr create_new_block(const wallet::payment_address& pay_addres);
-    block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_addres);
+    block_ptr create_new_block(const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_address);
     unsigned int get_adjust_time(uint64_t height) const;
     unsigned int get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
@@ -115,6 +118,7 @@ private:
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height) const;
     unsigned int get_tx_sign_length(transaction_ptr tx);
+    void sleep(uint32_t interval);
 
 private:
     p2p_node& node_;

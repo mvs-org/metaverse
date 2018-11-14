@@ -34,10 +34,13 @@ namespace libbitcoin {
 namespace chain {
 
 
-output::output(){}
+output::output()
+{
+    reset();
+}
 
 output::output(output&& other)
-: output(std::move(other.value), std::move(other.script),std::move(other.attach_data))
+: output(other.value, std::move(other.script), std::move(other.attach_data))
 {
 }
 output::output(const output& other)

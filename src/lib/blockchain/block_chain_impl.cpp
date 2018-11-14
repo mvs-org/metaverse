@@ -159,9 +159,9 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addres)
+bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_address)
 {
-    auto&& rows = get_address_history(pay_addres, false);
+    auto&& rows = get_address_history(pay_address, false);
     uint64_t height = 0;
     get_last_height(height);
     chain::transaction tx_temp;
@@ -174,10 +174,10 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
         }
 
         if ((row.spend.hash == null_hash) 
-        && get_transaction(row.output.hash, tx_temp, tx_height)){
+            && get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
-            if (output.get_script_address() != pay_addres.encoded()){
+            if (output.get_script_address() != pay_address.encoded()) {
                 continue;
             }
             
@@ -200,9 +200,9 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
     return false;
 }
 
-bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pay_addres, output::list& set_coins) 
+bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pay_address, chain::output_info::list& stake_outputs) 
 {
-    auto&& rows = get_address_history(pay_addres, false);
+    auto&& rows = get_address_history(pay_address, false);
     uint64_t height = 0;
     get_last_height(height);
 
@@ -220,7 +220,7 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 && get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
-            if (output.get_script_address() != pay_addres.encoded()) {
+            if (output.get_script_address() != pay_address.encoded()) {
                 continue;
             }
 
@@ -241,15 +241,11 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 // add not coinbase_maturity etp into frozen
                 if ((row.output_height + coinbase_maturity) > height) {
                     continue;
-
                 }
             } 
 
-            set_coins.push_back(output);    
+            stake_outputs.push_back( {row.output, row.value} );
         }
-
-        
-
     }
 
     return true;
