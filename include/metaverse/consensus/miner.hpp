@@ -76,6 +76,7 @@ public:
         exit_
     };
 
+    void set_pos_params(bool isStaking, const std::string& account, const std::string& passwd);
     bool start(const wallet::payment_address& pay_address, uint16_t number = 0);
     bool start(const std::string& pay_public_key, uint16_t number = 0);
     bool stop();
@@ -102,13 +103,18 @@ public:
 private:
     void work(const wallet::payment_address pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_addres);
+    block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_addres);
     unsigned int get_adjust_time(uint64_t height) const;
     unsigned int get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
+    bool get_block_transactions(
+        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs, 
+        uint64_t& total_fee, unsigned int& total_tx_sig_length);
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height) const;
+    unsigned int get_tx_sign_length(transaction_ptr tx);
 
 private:
     p2p_node& node_;
@@ -120,6 +126,10 @@ private:
     block_ptr new_block_;
     wallet::payment_address pay_address_;
     const blockchain::settings& setting_;
+
+    bool isStaking_;
+    std::string account_;
+    std::string passwd_;
 };
 
 }

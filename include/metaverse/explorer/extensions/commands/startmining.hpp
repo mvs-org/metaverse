@@ -84,6 +84,11 @@ public:
             "number,n",
             value<uint16_t>(&option_.number)->default_value(0),
             "The number of mining blocks, useful for testing. Defaults to 0, means no limit."
+        )
+        (
+            "staking,s",
+            value<bool>(&option_.isStaking)->default_value(false),
+            "Mining with PoS, default is false."
         );
 
         return options;
@@ -104,6 +109,7 @@ public:
     {
         std::string address;
         uint16_t number;
+        bool isStaking;
     } option_;
 
 };

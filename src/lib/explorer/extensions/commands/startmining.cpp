@@ -86,15 +86,20 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"script address parameter not allowed!"};
     }
 
+    miner.set_pos_params(option_.isStaking, auth_.name, auth_.auth);
+
     // start
-    if (miner.start(addr, option_.number)){
-        if (option_.number == 0) {
-            jv_output = "solo mining started at " + str_addr;
-        } else {
-            jv_output = "solo mining started at " + str_addr
-                + ", try to mine " + std::to_string(option_.number) + " block(s).";
+    if (miner.start(addr, option_.number)) {
+        std::string info("solo ");
+        info += (option_.isStaking ? "PoS" : "PoW");
+        info += " mining started at " + str_addr;
+        if (option_.number != 0) {
+            info += ", try to mine " + std::to_string(option_.number) + " block(s).";
         }
-    } else {
+
+        jv_output = info;
+    } 
+    else {
         throw unknown_error_exception{"solo mining startup got error"};
     }
 

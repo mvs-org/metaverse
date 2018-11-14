@@ -72,6 +72,7 @@ miner::miner(p2p_node& node)
     , new_block_number_(0)
     , new_block_limit_(0)
     , setting_(node_.chain_impl().chain_settings())
+    , isStaking_(false)
 {
     if (setting_.use_testnet_rules) {
         bc::HeaderAux::set_as_testnet();
@@ -81,6 +82,19 @@ miner::miner(p2p_node& node)
 miner::~miner()
 {
     stop();
+}
+
+void miner::set_pos_params(bool isStaking, const std::string& account, const std::string& passwd)
+{
+    isStaking_ = isStaking;
+    if (isStaking_) {
+        account_ = account;
+        passwd_ = passwd;
+    }
+    else {
+        account_ = "";
+        passwd_ = "";
+    }
 }
 
 bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions,
@@ -342,30 +356,22 @@ struct transaction_dependent {
         : dpendens(_dpendens), is_need_process(_is_need_process) { hash = make_shared<hash_digest>(_hash);}
 };
 
-miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
+unsigned int miner::get_tx_sign_length(transaction_ptr tx)
 {
-    block_ptr pblock;
+    return blockchain::validate_block::validate_block::legacy_sigops_count(*tx);
+}
+
+bool miner::get_block_transactions(
+    uint64_t last_height,
+    std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs, 
+    uint64_t& total_fee, unsigned int& total_tx_sig_length)
+{
     vector<transaction_ptr> transactions;
+    vector<transaction_priority> transaction_prioritys;
     map<hash_digest, transaction_dependent> transaction_dependents;
     previous_out_map_t previous_out_map;
     tx_fee_map_t tx_fee_map;
     get_transaction(transactions, previous_out_map, tx_fee_map);
-
-    vector<transaction_priority> transaction_prioritys;
-    block_chain_impl& block_chain = node_.chain_impl();
-
-    uint64_t current_block_height = 0;
-    header prev_header;
-    if (!block_chain.get_last_height(current_block_height)
-            || !block_chain.get_header(prev_header, current_block_height)) {
-        log::warning(LOG_HEADER) << "get_last_height or get_header fail. current_block_height:" << current_block_height;
-        return pblock;
-    } else {
-        pblock = make_shared<block>();
-    }
-
-    // Create coinbase tx
-    pblock->transactions.push_back(*create_coinbase_tx(pay_address, 0, current_block_height + 1, 0, 0));
 
     // Largest block you're willing to create:
     unsigned int block_max_size = blockchain::max_block_size / 2;
@@ -382,9 +388,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     unsigned int block_min_size = 0;
     block_min_size = min(block_max_size, block_min_size);
 
-    uint64_t total_fee = 0;
     unsigned int block_size = 0;
-    unsigned int total_tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*pblock->transactions.begin());
     for (auto tx : transactions)
     {
         auto tx_hash = tx->hash();
@@ -397,7 +401,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 
             if (prev_height != max_uint64) {
                 uint64_t input_value = prev_output.value;
-                priority += (double)input_value * (current_block_height - prev_height + 1);
+                priority += (double)input_value * (last_height - prev_height + 1);
             }
             else {
                 transaction_dependents[input.previous_output.hash].hash = make_shared<hash_digest>(tx_hash);
@@ -418,13 +422,12 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         transaction_prioritys.push_back(transaction_priority(priority, fee_per_kb, tx_fee, tx));
     }
 
-    vector<transaction_ptr> blocked_transactions;
     auto sort_func = sort_by_fee_per_kb;
     bool is_resort = false;
     make_heap(transaction_prioritys.begin(), transaction_prioritys.end(), sort_func);
 
     transaction_priority *next_transaction_priority = NULL;
-    uint32_t reward_lock_time = current_block_height - 1;
+    uint32_t reward_lock_time = last_height - 1;
     while (!transaction_prioritys.empty() || next_transaction_priority)
     {
         transaction_priority temp_priority;
@@ -463,8 +466,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
                 int lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
                 coinage_reward_coinbase = create_coinbase_tx(wallet::payment_address::extract(ptx->outputs[0].script),
                                           calculate_lockblock_reward(lock_height, output.value),
-                                          current_block_height + 1, lock_height, reward_lock_time);
-                unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*coinage_reward_coinbase);
+                                          last_height + 1, lock_height, reward_lock_time);
+                unsigned int tx_sig_length = get_tx_sign_length(coinage_reward_coinbase);
                 if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops) {
                     continue;
                 }
@@ -480,7 +483,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             continue;
 
         // Legacy limits on sigOps:
-        unsigned int tx_sig_length = blockchain::validate_block::validate_block::legacy_sigops_count(*ptx);
+        unsigned int tx_sig_length = get_tx_sign_length(ptx);
         if (total_tx_sig_length + tx_sig_length >= blockchain::max_block_script_sigops)
             continue;
 
@@ -504,11 +507,13 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             continue;
         tx_sig_length += c;
 
-        blocked_transactions.push_back(ptx);
-        for (auto& i : coinage_reward_coinbases) {
-            pblock->transactions.push_back(*i);
+        // update txs
+        txs.push_back(ptx);
+        for (auto i : coinage_reward_coinbases) {
+            reward_txs.push_back(i);
         }
 
+        // update fee
         block_size += serialized_size;
         total_tx_sig_length += tx_sig_length;
         total_fee += fee;
@@ -521,23 +526,81 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         }
     }
 
-    for (auto i : blocked_transactions) {
+    return true;
+}
+
+miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
+{
+    if (isStaking_) {
+        return create_new_block_pos(account_, passwd_, pay_address);
+    }
+
+    block_ptr pblock;
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return pblock;
+    } 
+    else {
+        pblock = make_shared<block>();
+    }
+
+    uint64_t total_fee = 0;
+    unsigned int total_tx_sig_length = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+    uint64_t block_height = last_height + 1;
+    
+    // Create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    pblock->transactions.push_back(*coinbase);
+    total_tx_sig_length = get_tx_sign_length(coinbase);
+
+    // Get txs
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase rewad
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules);
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
         pblock->transactions.push_back(*i);
     }
 
-    pblock->transactions[0].outputs[0].value =
-        total_fee + calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
 
     // Fill in header
-    pblock->header.number = current_block_height + 1;
-    pblock->header.transaction_count = pblock->transactions.size();
-    pblock->header.previous_block_hash = prev_header.hash();
-    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.timestamp = get_adjust_time(pblock->header.number);
-    pblock->header.version = block_version;
+    pblock->header.timestamp = get_adjust_time(block_height);
     pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.transaction_count = pblock->transactions.size();
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+    pblock->header.number = block_height;
+    pblock->header.version = block_version;
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
+
+    return pblock;
+}
+
+miner::block_ptr miner::create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_addres)
+{
+    block_ptr pblock;
+    vector<transaction_ptr> transactions;
+    map<hash_digest, transaction_dependent> transaction_dependents;
+    previous_out_map_t previous_out_map;
+    tx_fee_map_t tx_fee_map;
+    get_transaction(transactions, previous_out_map, tx_fee_map);
+
+    // TODO create coinbase and coinstake
 
     return pblock;
 }
