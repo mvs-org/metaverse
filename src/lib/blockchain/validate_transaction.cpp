@@ -1961,7 +1961,9 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx) const
 
 bool validate_transaction::is_nova_feature_activated(blockchain::block_chain_impl& chain)
 {
-    if (chain.chain_settings().use_testnet_rules) {
+    /// test-private-chain
+    // if (chain.chain_settings().use_testnet_rules) 
+    {
         return true;
     }
 

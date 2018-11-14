@@ -138,26 +138,31 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
     return ethash_get_datasize(_blockNumber);
 }
 
-u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
+u256 HeaderAux::calculateDifficulty(const libbitcoin::chain::header& current, const libbitcoin::chain::header& parent)
 {
-    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
+    return calculateDifficulty(current.number, current.timestamp, parent);
+}
+
+u256 HeaderAux::calculateDifficulty(uint32_t blockNumber, uint32_t timestamp, const libbitcoin::chain::header& parent)
+{
+    /// test-private-chain
+    auto minimumDifficulty = bigint(10);
+    // auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
     bigint target;
 
-    // DO NOT MODIFY time_config in release
-    static uint32_t time_config{24};
-    if (!_bi.number)
-    {
+    if (!blockNumber) {
         throw GenesisBlockCannotBeCalculated();
     }
 
-    if(_bi.timestamp >= _parent.timestamp + time_config)
-    {
-        target = _parent.bits - (_parent.bits/1024);
-    } else {
-        target = _parent.bits + (_parent.bits/1024);
+    // DO NOT MODIFY time_config in release
+    static uint32_t time_config{24};
+    if (timestamp >= parent.timestamp + time_config) {
+        target = parent.bits - (parent.bits/1024);
     }
-    bigint result = target;
+    else {
+        target = parent.bits + (parent.bits/1024);
+    }
 
-    result = std::max<bigint>(minimumDifficulty, result);
+    bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }

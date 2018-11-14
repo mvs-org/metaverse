@@ -554,18 +554,20 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     vector<transaction_ptr> txs;
     vector<transaction_ptr> reward_txs;
     uint64_t block_height = last_height + 1;
-    
+
     // Create coinbase tx
     transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
-    pblock->transactions.push_back(*coinbase);
     total_tx_sig_length = get_tx_sign_length(coinbase);
 
     // Get txs
     get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
 
-    // Update coinbase rewad
+    // Update coinbase reward
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules);
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
 
     // Put coinage reward_txs before txs.
     for (auto i : reward_txs) {
@@ -578,15 +580,17 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     }
 
     // Fill in header
-    pblock->header.timestamp = get_adjust_time(block_height);
-    pblock->header.bits = HeaderAux::calculateDifficulty(pblock->header, prev_header);
+    uint32_t block_time = get_adjust_time(block_height);
+
+    pblock->header.version = block_version;
+    pblock->header.number = block_height;
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.timestamp = block_time;
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.number = block_height;
-    pblock->header.version = block_version;
-    pblock->header.nonce = 0;
-    pblock->header.mixhash = 0;
+    pblock->header.bits = HeaderAux::calculateDifficulty(block_height, block_time, prev_header);
 
     return pblock;
 }

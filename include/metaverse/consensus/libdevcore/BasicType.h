@@ -21,7 +21,8 @@ public:
     static h256 seedHash(libbitcoin::chain::header& _bi);
     static h256 hashHead(libbitcoin::chain::header& _bi);
     static h256 boundary(libbitcoin::chain::header& _bi) { auto d = _bi.bits; return d ? (h256)u256(((bigint(1) << 255)-bigint(1) +(bigint(1) << 255) ) / d) : h256(); }
-    static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent);
+    static u256 calculateDifficulty(const libbitcoin::chain::header& bi, const libbitcoin::chain::header& parent);
+    static u256 calculateDifficulty(uint32_t blockNumber, uint32_t timestamp, const libbitcoin::chain::header& parent);
     static uint64_t number(h256& _seedHash);
     static uint64_t cacheSize(libbitcoin::chain::header& _header);
     static uint64_t dataSize(uint64_t _blockNumber);
