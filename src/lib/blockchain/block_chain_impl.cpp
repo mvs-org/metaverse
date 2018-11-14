@@ -58,6 +58,8 @@ BC_CONSTEXPR uint64_t MIN_POS_LOCK_HEIGHT = 10000;
 BC_CONSTEXPR double MIN_POS_RADIO = 0.8;
 
 BC_CONSTEXPR uint64_t MIN_POS_VALUE = 1*100000000ul;
+BC_CONSTEXPR uint64_t MIN_POS_UTXO_HEIGHT = 500;
+
 
 block_chain_impl::block_chain_impl(threadpool& pool,
     const blockchain::settings& chain_settings,
@@ -222,7 +224,7 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 continue;
             }
 
-            if(row.value < MIN_POS_VALUE){
+            if(row.value < MIN_POS_VALUE && row.output_height + MIN_POS_UTXO_HEIGHT > height){
                 continue;
             }
 
