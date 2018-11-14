@@ -219,6 +219,13 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
+    /// must be have enough etp locked in the address
+    virtual bool is_pos_capability(const wallet::payment_address& pay_addres);
+
+    /// select pos utxo. target value
+    virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, output::list& set_coins);
+
+
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);
   

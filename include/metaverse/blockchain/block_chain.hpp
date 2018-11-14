@@ -132,6 +132,9 @@ public:
 
     virtual void fired() = 0; // used for removing out of date action
     virtual organizer& get_organizer() = 0;
+
+    virtual bool is_pos_capability(const wallet::payment_address& pay_addres) = 0;
+    virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, output::list& set_coins) = 0;
 };
 
 } // namespace blockchain
