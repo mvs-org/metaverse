@@ -44,6 +44,7 @@ public:
         const config::checkpoint::list& checkpoints,
         stopped_callback stopped);
     virtual bool is_valid_proof_of_work(const chain::header& header) const;
+    virtual bool is_vaild_proof_of_stake(const chain::header& header) const;
     virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
 
     virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const override;

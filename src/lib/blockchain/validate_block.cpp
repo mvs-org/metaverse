@@ -103,8 +103,13 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (!is_valid_proof_of_work(header))
+    if (header.version == 2 && !is_vaild_proof_of_stake(header)){
+        return error::proof_of_stake;
+    }
+     
+    if(header.version == 1 && !is_valid_proof_of_work(header))
         return error::proof_of_work;
+
 
     RETURN_IF_STOPPED();
 
@@ -139,26 +144,11 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    unsigned int coinbase_count = 0;
-    for (auto i : transactions) {
-        if (i.is_coinbase()) {
-            if (i.outputs.size() > 1 || i.outputs[0].is_etp() == false) {
-                return error::first_not_coinbase;
-            }
-            ++coinbase_count;
-        }
-    }
-    if (coinbase_count == 0) {
-        return error::first_not_coinbase;
+    code ec;
+    if( (ec = check_coinbase(header.version, transactions)) != error::success){
+        return ec;
     }
 
-    for (auto it = transactions.begin() + coinbase_count; it != transactions.end(); ++it)
-    {
-        RETURN_IF_STOPPED();
-
-        if (it->is_coinbase())
-            return error::extra_coinbases;
-    }
 
     std::set<string> assets;
     std::set<string> asset_certs;
@@ -269,6 +259,44 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     return error::success;
 }
+
+code validate_block::check_coinbase(const uint32_t & version, const chain::transaction::list& txs) const
+{
+    unsigned int coinbase_count = 0;
+    unsigned int coinstake_count = 0;
+    for (auto & tx : txs) {
+        if (tx.is_coinbase()) {
+            if (tx.outputs.size() > 1 || tx.outputs[0].is_etp() == false) {
+                return error::first_not_coinbase;
+            }
+            ++coinbase_count;
+        }
+    }
+
+    if(version == 2){
+        if( txs.size() < 2 || !txs[1].is_coinstake())
+        {
+            return error::tx_not_coinstake;
+        }
+        ++coinstake_count;
+    }
+    
+    
+    if (coinbase_count == 0) {
+        return error::first_not_coinbase;
+    }
+
+    for (auto it = txs.begin() + coinbase_count + coinstake_count; it != txs.end(); ++it)
+    {
+        RETURN_IF_STOPPED();
+
+        if (it->is_coinbase())
+            return error::extra_coinbases;
+    }
+
+    return error::success;
+}
+
 
 bool validate_block::is_distinct_tx_set(const transaction::list& txs)
 {

@@ -267,6 +267,15 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::sync_disabled:
             return "block sync is disabled";
 
+        case error::proof_of_stake:
+            return "proof of stake failed";
+
+        case error::tx_not_coinstake:
+            return "transaction of stake invalid";
+
+        case error::coinstake_version_invalid:
+            return "coinstake version invalid";
+
         // unknown errors
         case error::unknown:
         default:

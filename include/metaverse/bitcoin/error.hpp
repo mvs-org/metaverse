@@ -180,6 +180,10 @@ enum error_code_t
     sequence_locked,
     sync_disabled,
 
+    proof_of_stake, 
+    tx_not_coinstake, 
+    coinstake_version_invalid,
+    
 };
 
 enum error_condition_t

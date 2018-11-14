@@ -59,6 +59,18 @@ bool validate_block_impl::is_valid_proof_of_work(const chain::header& header) co
     return MinerAux::verifySeal(const_cast<chain::header&>(header), parent_header);
 }
 
+bool validate_block_impl::is_vaild_proof_of_stake(const chain::header& header) const
+{
+    chain::header parent_header;
+    if (orphan_index_ != 0) {
+        parent_header = orphan_chain_[orphan_index_ - 1]->actual()->header;
+    }
+    else {
+        static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
+    }
+    return false;
+}
+
 u256 validate_block_impl::previous_block_bits() const
 {
     // Read block header (top - 1) and return bits

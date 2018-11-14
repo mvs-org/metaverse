@@ -253,6 +253,15 @@ bool transaction::is_coinbase() const
     return (inputs.size() == 1) && inputs[0].previous_output.is_null();
 }
 
+bool transaction::is_coinstake() const
+{
+    if(inputs.size() != 1 || outputs.size() != 1)
+        return false;
+    
+    return inputs[0].get_script_address() == outputs[0].get_script_address();
+}
+
+
 bool transaction::all_inputs_final() const
 {
     const auto finalized = [](const input& input)
