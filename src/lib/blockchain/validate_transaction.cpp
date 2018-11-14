@@ -1555,7 +1555,7 @@ code validate_transaction::check_transaction_basic() const
                     continue;
 
                 uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
-                if (lock_height > current_blockheight - prev_output_blockheight) {
+                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight)) {
                     return error::invalid_input_script_lock_height;
                 }
             }

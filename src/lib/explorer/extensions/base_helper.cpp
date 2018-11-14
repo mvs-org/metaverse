@@ -433,7 +433,9 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                 if (asset_amount
                     && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                     const auto& attenuation_model_param = output.get_attenuation_model_param();
-                    auto diff_height = row.output_height ? (height - row.output_height) : 0;
+                    auto diff_height = row.output_height
+                        ? blockchain.calc_number_of_blocks(row.output_height, height)
+                        : 0;
                     auto available_amount = attenuation_model::get_available_asset_amount(
                             asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
@@ -487,7 +489,9 @@ void sync_fetch_asset_deposited_balance(const std::string& address,
                 }
 
                 const auto& model_param = output.get_attenuation_model_param();
-                auto diff_height = row.output_height ? (height - row.output_height) : 0;
+                auto diff_height = row.output_height
+                    ? blockchain.calc_number_of_blocks(row.output_height, height)
+                    : 0;
                 auto available_amount = attenuation_model::get_available_asset_amount(
                         asset_amount, diff_height, model_param);
                 uint64_t locked_amount = asset_amount - available_amount;
@@ -606,7 +610,9 @@ auto sync_fetch_asset_deposited_view(const std::string& symbol,
                 }
 
                 const auto &model_param = output.get_attenuation_model_param();
-                auto diff_height = tx_height ? (height - tx_height) : 0;
+                auto diff_height = tx_height
+                    ? blockchain.calc_number_of_blocks(tx_height, height)
+                    : 0;
                 auto available_amount = attenuation_model::get_available_asset_amount(
                     asset_amount, diff_height, model_param);
                 uint64_t locked_amount = asset_amount - available_amount;
@@ -663,7 +669,9 @@ auto sync_fetch_asset_view(const std::string& symbol,
                 if (asset_amount
                     && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
                     const auto& attenuation_model_param = output.get_attenuation_model_param();
-                    auto diff_height = tx_height ? (height - tx_height) : 0;
+                    auto diff_height = tx_height
+                        ? blockchain.calc_number_of_blocks(tx_height, height)
+                        : 0;
                     auto available_amount = attenuation_model::get_available_asset_amount(
                             asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
@@ -841,7 +849,7 @@ bool base_transfer_common::get_spendable_output(
             // deposit utxo in block
             auto lock_height = chain::operation::
                 get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-            if ((row.output_height + lock_height) > height) {
+            if (lock_height > blockchain_.calc_number_of_blocks(row.output_height, height)) {
                 // utxo already in block but deposit not expire
                 return false;
             }
@@ -849,7 +857,8 @@ bool base_transfer_common::get_spendable_output(
     } else if (tx_temp.is_coinbase()) { // incase readd deposit
         // coin base etp maturity etp check
         // coinbase_maturity etp check
-        if ((row.output_height == 0) || ((row.output_height + coinbase_maturity) > height)) {
+        if ((row.output_height == 0) ||
+            (coinbase_maturity > blockchain_.calc_number_of_blocks(row.output_height, height))) {
             return false;
         }
     }
@@ -990,7 +999,9 @@ void base_transfer_common::sync_fetchutxo(
             && operation::is_pay_key_hash_with_attenuation_model_pattern(output.script.operations)) {
             const auto& attenuation_model_param = output.get_attenuation_model_param();
             new_model_param_ptr = std::make_shared<data_chunk>();
-            auto diff_height = row.output_height ? (height - row.output_height) : 0;
+            auto diff_height = row.output_height
+                ? blockchain_.calc_number_of_blocks(row.output_height, height)
+                : 0;
             asset_amount = attenuation_model::get_available_asset_amount(
                     asset_total_amount, diff_height, attenuation_model_param, new_model_param_ptr);
             if ((asset_amount == 0) && !is_locked_asset_as_payment()) {

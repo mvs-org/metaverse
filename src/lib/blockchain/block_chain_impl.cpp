@@ -40,6 +40,8 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/blockchain/account_security_strategy.hpp>
+#include <metaverse/consensus/witness.hpp>
+
 namespace libbitcoin {
 namespace blockchain {
 
@@ -2509,6 +2511,36 @@ bool block_chain_impl::is_sync_disabled() const
 void block_chain_impl::set_sync_disabled(bool b)
 {
     sync_disabled_ = b;
+}
+
+uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, chain::block_version version) const
+{
+    if (from >= to) {
+        return 0;
+    }
+
+    uint64_t number = to - from;
+
+    const auto witness_enable_height = consensus::witness::witness_enable_height;
+    // block before 'start' is all pow blocks
+    uint64_t start = std::min(to, std::max(from, witness_enable_height));
+    if (version != chain::block_version_pow) {
+        number -= (start - from);
+    }
+
+    if (start < to) {
+        chain::header out_header;
+        for (auto i = start; i < to; ++i) {
+            if (!get_header(out_header, i)) {
+                return 0;
+            }
+            if (out_header.version != version) {
+                --number;
+            }
+        }
+    }
+
+    return number;
 }
 
 } // namespace blockchain

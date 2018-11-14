@@ -35,7 +35,6 @@
 #include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
-#include <metaverse/bitcoin/chain/header.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
 
@@ -352,6 +351,9 @@ public:
     shared_mutex& get_mutex();
     bool is_sync_disabled() const;
     void set_sync_disabled(bool b);
+
+    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to,
+        chain::block_version version = chain::block_version_pow) const;
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
