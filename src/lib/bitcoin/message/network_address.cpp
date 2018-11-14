@@ -300,6 +300,8 @@ bool network_address::is_routable() const
 
 bool network_address::is_ulticast() const
 {
+    /// test-private-chain
+    return true;
     return (is_ipv4() && (get_byte(3) & 0xF0) == 0xE0) || (get_byte(15) == 0xFF);
 }
 
