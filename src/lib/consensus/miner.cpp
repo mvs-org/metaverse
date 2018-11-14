@@ -36,7 +36,7 @@
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
-
+#include <metaverse/explorer/config/ec_private.hpp>
 #define LOG_HEADER "consensus"
 using namespace std;
 
@@ -727,6 +727,20 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
     // TODO calculate difficulty for pos
     pblock->header.bits = HeaderAux::calculateDifficulty(block_height, block_time, prev_header);
+
+    // generate block signature
+    const string address = pblock->transactions[0].outputs[0].get_script_address();
+    auto &blockchain = node_.chain_impl();
+    auto acc_addr = blockchain.get_account_address(account, address);
+
+    if (!acc_addr)
+        return nullptr;
+    std::string passwd_ =  passwd;
+    bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(passwd_)); // address private key
+    const ec_secret& private_key =    config_private_key;
+
+    if (!sign(pblock->blocksig, private_key, pblock->header.hash()))
+        return nullptr;
 
     return pblock;
 }

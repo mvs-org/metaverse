@@ -72,6 +72,8 @@ public:
 
     chain::header header;
     transaction::list transactions;
+
+    ec_signature blocksig; // pos block only
 };
 
 } // namespace chain
