@@ -34,6 +34,9 @@ namespace libbitcoin {
 
 // Generic constants.
 
+BC_CONSTEXPR uint32_t block_version      = 1;
+BC_CONSTEXPR uint32_t block_version_pos  = 2;
+
 BC_CONSTEXPR size_t command_size = 12;
 
 BC_CONSTEXPR int64_t min_int64 = MIN_INT64;
@@ -94,10 +97,14 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
-BC_CONSTEXPR uint64_t pos_enabled_height = 1000;
-BC_CONSTEXPR uint32_t block_version      = 1;
-BC_CONSTEXPR uint32_t block_version_pos  = 2;
+BC_CONSTEXPR uint64_t pos_enabled_height        = 1000;
 
+BC_CONSTEXPR uint64_t min_pos_lock_value        = 500*100000000ul;
+BC_CONSTEXPR uint64_t min_pos_lock_height       = 10000;
+BC_CONSTEXPR double min_pos_lock_rate           = 0.8;
+
+BC_CONSTEXPR uint64_t min_pos_value             = 1*100000000ul;
+BC_CONSTEXPR uint64_t min_pos_confirm_height    = 500;
 
 // price
 //-----------------------------------------------------------------------------

@@ -1,25 +1,28 @@
+
+#include <metaverse/consensus/miner/MinerAux.h>
+#include <chrono>
+#include <array>
+#include <thread>
+#include <random>
+#include <boost/detail/endian.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/throw_exception.hpp>
+
 #include <metaverse/consensus/libethash/internal.h>
 #include <metaverse/consensus/libdevcore/Guards.h>
 #include <metaverse/consensus/libdevcore/Log.h>
 #include <metaverse/consensus/libdevcore/SHA3.h>
-#include <metaverse/bitcoin/chain/header.hpp>
-#include <boost/detail/endian.hpp>
-#include <boost/filesystem.hpp>
-#include <chrono>
-#include <array>
-#include <thread>
-#include <metaverse/consensus/miner/MinerAux.h>
-#include <random>
 #include <metaverse/consensus/libdevcore/Exceptions.h>
-#include <boost/throw_exception.hpp>
+#include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/utility/log.hpp>
-
+#include <metaverse/bitcoin/chain/header.hpp>
 
 using namespace libbitcoin;
 using namespace std;
 
 MinerAux* libbitcoin::MinerAux::s_this = nullptr;
 #define LOG_MINER "etp_hash"
+
 MinerAux::~MinerAux()
 {
 }
@@ -147,9 +150,12 @@ bool MinerAux::verifySeal(libbitcoin::chain::header& _header, libbitcoin::chain:
     return false;
 }
 
-
 bool MinerAux::check_kernel(chain::header& header, const chain::output_info& info, uint64_t height)
 {
+    if (header.number + min_pos_confirm_height < height) {
+        return false;
+    }
+
     return MinerAux::check_proof_of_stake(header, info, height);
 }
 

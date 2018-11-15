@@ -255,14 +255,13 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_coinstake() const
 {
-    if (inputs.size() != 1 || outputs.size() != 2 
-        || inputs[0].get_script_address() == outputs[1].get_script_address()){
+    if (inputs.size() != 1 || outputs.size() != 2
+        || inputs[0].get_script_address() != outputs[1].get_script_address()) {
         return false;
     }
 
     return outputs[0].is_null();
 }
-
 
 bool transaction::all_inputs_final() const
 {

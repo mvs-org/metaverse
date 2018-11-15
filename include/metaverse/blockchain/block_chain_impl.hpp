@@ -220,10 +220,15 @@ public:
     virtual void subscribe_reorganize(reorganize_handler handler);
 
     /// must be have enough etp locked in the address
-    virtual bool is_pos_capability(const wallet::payment_address& pay_addres);
+    virtual bool check_pos_capability(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres);
 
     /// select pos utxo. target value
-    virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, chain::output_info::list& stake_outputs);
+    virtual bool select_utxo_for_staking(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        chain::output_info::list& stake_outputs);
 
     chain::header::ptr get_last_block_header(const chain::header& header, bool is_staking);
 

@@ -704,6 +704,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
         }
     }
 
+    log::info(LOG_HEADER) << "Failed to create_coinstake_tx!";
     return nullptr;
 }
 
@@ -739,17 +740,18 @@ miner::block_ptr miner::create_new_block_pos(
     uint64_t block_height = last_height + 1;
     if (block_height < pos_enabled_height) {
         log::warning(LOG_HEADER) << "PoS is not allowed at block height:" << last_height;
+        return nullptr;
     }
 
     // Check deposited stake
-    if (!block_chain.is_pos_capability(pay_address)) {
+    if (!block_chain.check_pos_capability(last_height, pay_address)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is deposited at address " << address;
         return nullptr;
     }
 
     // Check utxo stake
     chain::output_info::list stake_outputs;
-    block_chain.select_utxo_for_staking(pay_address, stake_outputs);
+    block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs);
     if (stake_outputs.empty()) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is holded at address " << address;
         return nullptr;

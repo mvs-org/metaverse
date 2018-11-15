@@ -106,7 +106,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     if (header.version == 2 && !is_vaild_proof_of_stake(header)){
         return error::proof_of_stake;
     }
-     
+
     if(header.version == 1 && !is_valid_proof_of_work(header))
         return error::proof_of_work;
 
@@ -273,15 +273,17 @@ code validate_block::check_coinbase(const uint32_t & version, const chain::trans
         }
     }
 
-    if(version == 2){
-        if( txs.size() < 2 || !txs[1].is_coinstake())
-        {
+    if (version == block_version_pos) {
+        if (txs.size() < 2 || !txs[1].is_coinstake()) {
+            log::error(LOG_BLOCKCHAIN) << "Invalid coinstake! txs: "
+                << std::to_string(txs.size())
+                << " tx: " << (txs.size() >= 2 ? txs[1].to_string(1) : "null");
             return error::tx_not_coinstake;
         }
+
         ++coinstake_count;
     }
-    
-    
+
     if (coinbase_count == 0) {
         return error::first_not_coinbase;
     }

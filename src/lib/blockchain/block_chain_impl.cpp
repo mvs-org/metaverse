@@ -55,13 +55,6 @@ using namespace std::placeholders;
 using boost::filesystem::path;
 using string = std::string;
 
-BC_CONSTEXPR uint64_t MIN_POS_LOCK_VALUE = 500*100000000ul;
-BC_CONSTEXPR uint64_t MIN_POS_LOCK_HEIGHT = 10000;
-BC_CONSTEXPR double MIN_POS_RADIO = 0.8;
-
-BC_CONSTEXPR uint64_t MIN_POS_VALUE = 1*100000000ul;
-BC_CONSTEXPR uint64_t MIN_POS_UTXO_HEIGHT = 500;
-
 
 block_chain_impl::block_chain_impl(threadpool& pool,
     const blockchain::settings& chain_settings,
@@ -161,11 +154,11 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_address)
+bool block_chain_impl::check_pos_capability(
+    uint64_t best_height,
+    const wallet::payment_address& pay_address)
 {
     auto&& rows = get_address_history(pay_address, false);
-    uint64_t height = 0;
-    get_last_height(height);
     chain::transaction tx_temp;
     uint64_t tx_height;
 
@@ -183,16 +176,16 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
                 continue;
             }
 
-            if ( row.value >= MIN_POS_LOCK_VALUE &&
+            if ( row.value >= min_pos_lock_value &&
                 chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
             {
                 // deposit utxo in block
                 uint64_t lock_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
 
-                // utxo deposit height > MIN_POS_LOCK_HEIGHT and MIN_POS_RADIO percent of height limited
-                if (lock_height >= MIN_POS_LOCK_HEIGHT &&
-                    (row.output_height + lock_height * MIN_POS_RADIO) > height){
+                // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
+                if (lock_height >= min_pos_lock_height &&
+                    (row.output_height + lock_height * min_pos_lock_rate) > best_height){
                     return true;
                 }
             }
@@ -202,11 +195,13 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
     return false;
 }
 
-bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pay_address, chain::output_info::list& stake_outputs)
+bool block_chain_impl::select_utxo_for_staking(
+    uint64_t best_height,
+    const wallet::payment_address& pay_address,
+    chain::output_info::list& stake_outputs)
 {
     auto&& rows = get_address_history(pay_address, false);
-    uint64_t height = 0;
-    get_last_height(height);
+
 
     chain::transaction tx_temp;
     uint64_t tx_height;
@@ -226,7 +221,7 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 continue;
             }
 
-            if(row.value < MIN_POS_VALUE && row.output_height + MIN_POS_UTXO_HEIGHT > height){
+            if (row.value < min_pos_value || row.output_height + min_pos_confirm_height > best_height){
                 continue;
             }
 
@@ -234,14 +229,14 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 // deposit utxo in block
                 uint64_t lock_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if ((row.output_height + lock_height) > height) {
+                if ((row.output_height + lock_height) > best_height) {
                     // utxo already in block but deposit not expire
                     continue;
                 }
             }
             else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
                 // add not coinbase_maturity etp into frozen
-                if ((row.output_height + coinbase_maturity) > height) {
+                if ((row.output_height + coinbase_maturity) > best_height) {
                     continue;
                 }
             }
