@@ -22,7 +22,6 @@
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
 #include <future>
-#include <mutex>
 
 #define LOG_HEADER "witness"
 
@@ -115,6 +114,17 @@ witness::list witness::get_candidate_list() const
 {
     shared_lock lock(mutex_);
     return candidate_list_;
+}
+
+void witness::swap_witness_list(list& l)
+{
+    unique_lock ulock(mutex_);
+    witness_list_.swap(l);
+}
+
+void witness::swap_candidate_list(list& l)
+{
+    candidate_list_.swap(l);
 }
 
 bool witness::is_witness(const witness_id& id) const
@@ -252,9 +262,7 @@ chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
 
 bool witness::update_witness_list(uint64_t height)
 {
-    chain::block::ptr sp_block;
-    static std::once_flag s_flag;
-    std::call_once(s_flag, [this, &sp_block, height](){sp_block = fetch_vote_result_block(height);});
+    auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
         return false;
     }
@@ -263,8 +271,11 @@ bool witness::update_witness_list(uint64_t height)
 
 bool witness::update_witness_list(const chain::block& block)
 {
-    unique_lock ulock(mutex_);
+    if (!verify_vote_result(block)) {
+        return false;
+    }
 
+    unique_lock ulock(mutex_);
     witness_list_.clear();
     candidate_list_.clear();
 
@@ -388,11 +399,6 @@ bool witness::is_begin_of_epoch(uint64_t height)
 bool witness::is_between_vote_maturity_interval(uint64_t height)
 {
     return is_witness_enabled(height) && get_height_in_epoch(height) <= vote_maturity;
-}
-
-bool witness::is_update_witness_needed(uint64_t height)
-{
-    return is_witness_enabled(height) && get_height_in_epoch(height) == vote_maturity;
 }
 
 } // consensus

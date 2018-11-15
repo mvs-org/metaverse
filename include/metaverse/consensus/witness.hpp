@@ -69,6 +69,8 @@ public:
     // return a copy list
     list get_witness_list() const;
     list get_candidate_list() const;
+    void swap_witness_list(list&);
+    void swap_candidate_list(list&);
 
     bool is_witness(const witness_id& id) const;
 
@@ -91,7 +93,6 @@ public:
 
     static bool is_begin_of_epoch(uint64_t height);
     static bool is_between_vote_maturity_interval(uint64_t height);
-    static bool is_update_witness_needed(uint64_t height);
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);

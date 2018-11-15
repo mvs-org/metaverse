@@ -141,6 +141,15 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         return error::invalid_coinbase_script_size;
     }
 
+    if (is_begin_of_epoch) {
+        if (!consensus::witness::get().update_witness_list(current_block_)) {
+            log::debug(LOG_BLOCKCHAIN)
+                << "update witness list failed at " << header.number
+                << " block hash: " << encode_hash(header.hash());
+            return error::witness_update_error;
+        }
+    }
+
     if (header.version == chain::block_version_dpos) {
         if (coinbase_input_ops.size() != 3) {
             return error::witness_sign_invalid;
@@ -150,19 +159,8 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
             return error::witness_sign_invalid;
         }
-        if (!consensus::witness::get().is_witness_prepared()) {
-            if (!consensus::witness::get().update_witness_list(header.number)) {
-                return error::witness_update_error;
-            }
-        }
         if (!consensus::witness::get().verify_signer(pubkey, current_block_, prev_header)) {
             return error::witness_mismatch;
-        }
-    }
-
-    if (is_begin_of_epoch) {
-        if (!consensus::witness::get().verify_vote_result(current_block_)) {
-            return error::witness_vote_error;
         }
     }
 

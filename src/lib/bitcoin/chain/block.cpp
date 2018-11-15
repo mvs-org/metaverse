@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/chain/block.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <utility>
 #include <boost/iostreams/stream.hpp>
@@ -257,12 +258,18 @@ bool block::must_use_pow_consensus() const
     if (!consensus::witness::is_witness_enabled(header.number)) {
         return true;
     }
-    if (header.number % consensus::witness::pow_check_point_height == 0) {
-        return true;
-    }
     // ensure the vote is security,
     // first vote_maturity blocks of each epoch must use pow
     if (consensus::witness::is_between_vote_maturity_interval(header.number)) {
+        return true;
+    }
+#ifdef PRIVATE_CHAIN
+    if (header.number <= coinbase_maturity + 1) {
+        // only for testing, quickly generate spendable uxto
+        return false;
+    }
+#endif
+    if (header.number % consensus::witness::pow_check_point_height == 0) {
         return true;
     }
     return false;
@@ -270,16 +277,17 @@ bool block::must_use_pow_consensus() const
 
 bool block::can_use_dpos_consensus() const
 {
-    if (header.number <= coinbase_maturity + 1) {
-        // may be only for testing, quickly generate spendable uxto
-        // for the existed mainnet, this has no side effect
-        return true;
-    }
     if (must_use_pow_consensus()) {
         return false;
     }
+#ifdef PRIVATE_CHAIN
+    if (header.number <= coinbase_maturity + 1) {
+        // only for testing, quickly generate spendable uxto
+        return false;
+    }
+#endif
     // only use DPOS to pack real txs, forbid block with only coinbase tx
-    if (transactions.size() == 1 && transactions[0].is_coinbase()) {
+    if (transactions.size() == 1) {
         return false;
     }
     return true;

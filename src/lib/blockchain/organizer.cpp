@@ -368,10 +368,6 @@ void organizer::replace_chain(uint64_t fork_index,
         }
         else
         {
-            auto block_height = arrival_block->actual()->header.number;
-            if (consensus::witness::is_update_witness_needed(block_height)) {
-                consensus::witness::get().update_witness_list(*arrival_block->actual());
-            }
             log::debug(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
                 << " hash:"  << encode_hash(arrival_block->actual()->header.hash());
