@@ -103,6 +103,10 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
     if (!result)
         reset();
 
+    if (header.version == 2) {
+        const data_chunk&& sig = source.read_data(sizeof(blocksig));
+        std::copy(sig.begin(), sig.end(), blocksig.begin());
+    }
     return result;
 }
 
@@ -113,6 +117,12 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         tx.to_data(sink);
+
+    if (header.version == 2){
+        data_chunk sig;
+        std::copy(blocksig.begin(), blocksig.end(), sig.begin());
+        sink.write_data(sig);
+    }
 }
 
 uint64_t block::serialized_size(bool with_transaction_count) const
@@ -121,6 +131,9 @@ uint64_t block::serialized_size(bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         block_size += tx.serialized_size();
+
+    if (header.version == 2)
+        block_size += sizeof(blocksig);
 
     return block_size;
 }
