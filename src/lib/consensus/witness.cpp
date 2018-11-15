@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/consensus/witness.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
 #include <future>
@@ -61,6 +62,14 @@ void witness::init(p2p_node& node)
         witness::epoch_cycle_height = 1000;
         witness::vote_maturity = 2;
     }
+
+#ifdef PRIVATE_CHAIN
+    witness::pow_check_point_height = 10;
+    witness::witness_enable_height = 10;
+    witness::witess_number = 3;
+    witness::epoch_cycle_height = 20;
+    witness::vote_maturity = 2;
+#endif
 }
 
 witness& witness::create(p2p_node& node)
@@ -177,6 +186,27 @@ chain::output witness::create_witness_vote_result(uint64_t height)
 // DPOS_TODO: add algorithm to generate the witness list of each epoch
 bool witness::calc_witness_list(uint64_t height)
 {
+    unique_lock ulock(mutex_);
+
+    witness_list_.clear();
+    candidate_list_.clear();
+
+#ifdef PRIVATE_CHAIN
+    std::vector<std::string> initial_witness_list = {
+        // MFxC8nVTwJ7xpZDGEsv7B5h2SmohGGfjDd
+        "02a9b1c925f6fd140359d559299ba38c131dde6ad33b5fdd818cccfebdf66a4da3",
+        // MFvpy7WTJvZMnxeQDTjo3LQyuRnawhaQGA
+        "0226515661e5ba01aa211048c7d34e1e6d577b7460de9582bfd8f5c70b81f07e87",
+        // MFdY9fXz91Jo9Cic6aJt7nMLQpS8HQv7Vs
+        "02cb2cdccfa8f31ffe8b486aa9e12858f8754b438d2001ff2a9bb72427b23e5dc0"
+    };
+
+    for (const auto& id : initial_witness_list) {
+        witness_list_.emplace_back(to_chunk(id));
+    }
+    return true;
+#endif
+
     return true;
 }
 
