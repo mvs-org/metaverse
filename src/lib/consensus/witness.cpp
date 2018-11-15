@@ -23,7 +23,7 @@
 #include <metaverse/blockchain/settings.hpp>
 #include <future>
 
-#define LOG_HEADER "witness"
+#define LOG_HEADER "Witness"
 
 namespace libbitcoin {
 namespace consensus {
@@ -170,6 +170,24 @@ bool witness::unregister_witness(const witness_id& id)
     return true;
 }
 
+std::string witness::show_list() const
+{
+    shared_lock lock(mutex_);
+    std::string res;
+    res += "witness : [";
+    for (const auto& witness : witness_list_) {
+        res += encode_base16(witness) + "   ";
+    }
+    res += "] ";
+
+    res += "candidate : [";
+    for (const auto& candidate : candidate_list_) {
+        res += encode_base16(candidate) + "   ";
+    }
+    res += "]";
+    return res;
+}
+
 chain::output witness::create_witness_vote_result(uint64_t height)
 {
     calc_witness_list(height);
@@ -239,6 +257,9 @@ bool witness::verify_vote_result(const chain::block& block) const
 chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
 {
     auto vote_height = get_vote_result_height(height);
+    if (vote_height == 0) {
+        return nullptr;
+    }
 
     std::promise<code> p;
     chain::block::ptr sp_block;
@@ -388,7 +409,7 @@ uint64_t witness::get_height_in_epoch(uint64_t height)
 // vote result is stored in the beginning of each epoch
 uint64_t witness::get_vote_result_height(uint64_t height)
 {
-    return height - get_height_in_epoch(height);
+    return is_witness_enabled(height) ? (height - get_height_in_epoch(height)) : 0;
 }
 
 bool witness::is_begin_of_epoch(uint64_t height)

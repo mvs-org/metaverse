@@ -59,6 +59,15 @@ organizer::organizer(threadpool& pool, block_chain_impl& chain,
 
 void organizer::start()
 {
+    uint64_t height = 0;
+    if (!chain_.get_last_height(height)) {
+        log::info(LOG_BLOCKCHAIN) << "get last height failed";
+        return;
+    }
+    log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
+    consensus::witness::get().update_witness_list(height);
+    log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+
     stopped_ = false;
     subscriber_->start();
 }
@@ -139,7 +148,8 @@ code organizer::verify(uint64_t fork_point,
     const auto total_transactions = current_block->transactions.size();
 
     log::info(LOG_BLOCKCHAIN)
-        << "Block [" << height << "] verify (" << total_transactions
+        << "Block [" << height << "] version (" << std::to_string(current_block->header.version)
+        << ") verify (" << total_transactions
         << ") txs and (" << total_inputs << ") inputs";
 
     // Time this for logging.
@@ -162,7 +172,8 @@ code organizer::verify(uint64_t fork_point,
     const auto verified = ec ? "unverified" : "verified";
 
     log::info(LOG_BLOCKCHAIN)
-        << "Block [" << height << "] " << verified << " in ("
+        << "Block [" << height << "] version (" << std::to_string(current_block->header.version)
+        << ") " << verified << " in ("
         << seconds_per_block << ") secs or (" << ms_per_input << ") ms/input";
 
     return ec;
@@ -213,7 +224,33 @@ void organizer::process(block_detail::ptr process_block)
         // Verify the blocks in the orphan chain.
         if (chain_.get_height(fork_index, hash))
         {
-            replace_chain(fork_index, orphan_chain);
+            uint64_t current_block_height = 0;
+            DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
+            BITCOIN_ASSERT(ok);
+            auto witness_list = consensus::witness::get().get_witness_list();
+            auto candidate_list = consensus::witness::get().get_candidate_list();
+            if (consensus::witness::get_vote_result_height(fork_index) !=
+                consensus::witness::get_vote_result_height(current_block_height)) {
+                consensus::witness::get().update_witness_list(fork_index);
+            }
+
+            auto ret = replace_chain(fork_index, orphan_chain);
+
+            const auto& num_of_poped_blocks = std::get<0>(ret);
+            const auto& num_of_pushed_blocks = std::get<1>(ret);
+            const auto need_recovery = num_of_poped_blocks == 0 && num_of_pushed_blocks == 0;
+            const auto need_reupdate = num_of_poped_blocks != 0 && num_of_pushed_blocks == 0;
+            if (need_recovery) {
+                consensus::witness::get().swap_witness_list(witness_list);
+                consensus::witness::get().swap_candidate_list(candidate_list);
+            } else if (need_reupdate) {
+                const auto& new_block_height = std::get<2>(ret);
+                if (consensus::witness::get_vote_result_height(fork_index) !=
+                    consensus::witness::get_vote_result_height(new_block_height)) {
+                    consensus::witness::get().update_witness_list(new_block_height);
+                }
+            }
+
             if(orphan_chain.empty() == false)
             {
                 const auto hash = orphan_chain.back()->actual()->header.hash();

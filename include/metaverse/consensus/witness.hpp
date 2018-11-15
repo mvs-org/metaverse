@@ -71,6 +71,7 @@ public:
     list get_candidate_list() const;
     void swap_witness_list(list&);
     void swap_candidate_list(list&);
+    std::string show_list() const;
 
     bool is_witness(const witness_id& id) const;
 

@@ -665,7 +665,11 @@ std::string to_string(_T const& _t)
 
 void miner::work(const wallet::payment_address& pay_address)
 {
-    log::info(LOG_HEADER) << "solo miner start with address: " << pay_address.encoded();
+    log::info(LOG_HEADER)
+        << "solo miner start with address: "
+        << pay_address.encoded()
+        << ", accept consensus " + std::to_string(get_accept_block_version());
+
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
         if (block) {

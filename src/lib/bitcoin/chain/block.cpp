@@ -283,7 +283,7 @@ bool block::can_use_dpos_consensus() const
 #ifdef PRIVATE_CHAIN
     if (header.number <= coinbase_maturity + 1) {
         // only for testing, quickly generate spendable uxto
-        return false;
+        return true;
     }
 #endif
     // only use DPOS to pack real txs, forbid block with only coinbase tx
