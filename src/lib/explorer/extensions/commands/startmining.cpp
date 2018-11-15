@@ -112,11 +112,12 @@ console_result startmining::invoke(Json::Value& jv_output,
 
     // start
     if (miner.start(addr, option_.number)){
+        std::string prompt = "solo mining started at "
+            + str_addr + ", accept consensus " + option_.consensus;
         if (option_.number == 0) {
-            jv_output = "solo mining started at " + str_addr;
+            jv_output = prompt;
         } else {
-            jv_output = "solo mining started at " + str_addr
-                + ", try to mine " + std::to_string(option_.number) + " block(s).";
+            jv_output = prompt + ", try to mine " + std::to_string(option_.number) + " block(s).";
         }
     } else {
         throw unknown_error_exception{"solo mining startup got error"};

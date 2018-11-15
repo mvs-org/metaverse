@@ -128,7 +128,6 @@ private:
     const blockchain::settings& setting_;
     data_chunk public_key_data_;
     ec_secret private_key_;
-    uint32_t witness_slot_num_;
 };
 
 }

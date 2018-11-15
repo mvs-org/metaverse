@@ -244,10 +244,10 @@ bool witness::update_witness_list(const chain::block& block)
 
     size_t i = 0;
     for (++i; i <= witess_number; ++i) {
-        witness_list_.emplace_back(chain::operation::factory_from_data(ops[i].data).data);
+        witness_list_.emplace_back(chain::operation::factory_from_data(ops[i].to_data()).data);
     }
-    for (++i; i <= ops.size(); ++i) {
-        candidate_list_.emplace_back(chain::operation::factory_from_data(ops[i].data).data);
+    for (++i; i < ops.size(); ++i) {
+        candidate_list_.emplace_back(chain::operation::factory_from_data(ops[i].to_data()).data);
     }
     return true;
 }

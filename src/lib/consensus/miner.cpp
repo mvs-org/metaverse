@@ -73,7 +73,6 @@ miner::miner(p2p_node& node)
     , new_block_limit_(0)
     , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
-    , witness_slot_num_(max_uint32)
 {
     if (setting_.use_testnet_rules) {
         bc::HeaderAux::set_as_testnet();
@@ -545,7 +544,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         get_accept_block_version() == chain::block_version_any) {
         can_use_dpos = pblock->can_use_dpos_consensus();
         can_use_dpos &= is_witness();
-        can_use_dpos &= witness::get().verify_signer(witness_slot_num_, *pblock, prev_header);
+        can_use_dpos &= witness::get().verify_signer(public_key_data_, *pblock, prev_header);
         if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
             return nullptr;
         }
@@ -577,6 +576,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             return nullptr;
         }
         coinbase_tx.outputs.emplace_back(vote_output);
+        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
     }
 
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
@@ -902,27 +902,22 @@ bool miner::is_witness() const
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
 {
+    // set private key
     if (!decode_base16(private_key_, prikey) ||
         !bc::verify(private_key_)) {
         return false;
     }
 
-    bc::wallet::ec_private ec_private_key(private_key_, 0u, true);
-    auto&& public_key = ec_private_key.to_public();
-    if (public_key != bc::wallet::ec_public(pubkey)) {
-        return false;
-    }
-
-    data_chunk pubkey_data;
-    if (!public_key.to_data(public_key_data_)) {
-        return false;
-    }
+    // set public key
+    ec_compressed point;
+    bc::secret_to_public(point, private_key_);
+    wallet::ec_public ec_pubkey(point, true);
+    auto&& public_key = ec_pubkey.encoded();
+    public_key_data_ = to_chunk(public_key);
 
     if (private_key_.empty() || public_key_data_.empty()) {
         return false;
     }
-
-    witness_slot_num_ = witness::get().get_slot_num(public_key_data_);
 
     return true;
 }

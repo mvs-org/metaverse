@@ -98,10 +98,14 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;
 
+    const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(header.number);
+
     unsigned int coinbase_count = 0;
     for (auto i : transactions) {
         if (i.is_coinbase()) {
-            if (i.outputs.size() > 1 || i.outputs[0].is_etp() == false) {
+            if ((!is_begin_of_epoch && i.outputs.size() != 1) ||
+                (is_begin_of_epoch && i.outputs.size() != 2) ||
+                (i.outputs[0].is_etp() == false)) {
                 return error::first_not_coinbase;
             }
             ++coinbase_count;
@@ -141,8 +145,8 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         if (coinbase_input_ops.size() != 3) {
             return error::witness_sign_invalid;
         }
-        auto endorse = operation::factory_from_data(coinbase_input_ops[1].data).data;
-        auto pubkey = operation::factory_from_data(coinbase_input_ops[2].data).data;
+        auto endorse = operation::factory_from_data(coinbase_input_ops[1].to_data()).data;
+        auto pubkey = operation::factory_from_data(coinbase_input_ops[2].to_data()).data;
         if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
             return error::witness_sign_invalid;
         }
@@ -156,7 +160,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         }
     }
 
-    if (consensus::witness::is_begin_of_epoch(header.number)) {
+    if (is_begin_of_epoch) {
         if (!consensus::witness::get().verify_vote_result(current_block_)) {
             return error::witness_vote_error;
         }
@@ -527,7 +531,7 @@ bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
         return false;
     }
 
-    const auto actual = operation::factory_from_data(actual_ops.front().data).data;
+    const auto actual = operation::factory_from_data(actual_ops.front().to_data()).data;
     script_number number(height);
     const auto expected = number.data();
     // Require that the coinbase script match the expected coinbase script.
