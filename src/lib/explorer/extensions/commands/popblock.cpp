@@ -35,6 +35,10 @@ namespace commands {
 console_result popblock::invoke (Json::Value& jv_output,
          libbitcoin::server::server_node& node)
 {
+    if (argument_.height == 0) {
+        throw argument_legality_exception("pop height should be greater than 0.");
+    }
+
     auto& blockchain = node.chain_impl();
     blockchain.set_sync_disabled(true);
 

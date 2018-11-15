@@ -251,9 +251,15 @@ static std::set<std::pair<uint64_t, std::string>> exception_blocks {
     {1258192, "d7d5d80c8cb760b794f156c36b519ad9b4b10b9dfcd4e123c8f54be3c71432d3"}
 };
 
-void organizer::replace_chain(uint64_t fork_index,
-    block_detail::list& orphan_chain)
+// Return a tuple <number of poped blocks, number of pushed blocks, current block height>
+std::tuple<uint64_t, uint64_t, uint64_t>
+organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
 {
+    auto ret = std::make_tuple<uint64_t, uint64_t, uint64_t>(0, 0, 0);
+    auto& num_of_poped_blocks = std::get<0>(ret);
+    auto& num_of_pushed_blocks = std::get<1>(ret);
+    auto& current_block_height = std::get<2>(ret);
+
     u256 orphan_work = 0;
 
     for (uint64_t orphan = 0; orphan < orphan_chain.size(); ++orphan)
@@ -287,7 +293,7 @@ void organizer::replace_chain(uint64_t fork_index,
                 if(orphan_chain.empty())
                 {
                     log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()";
-                    return;
+                    return ret;
                 }
 
                 // Stop summing work once we discover an invalid block
@@ -320,23 +326,27 @@ void organizer::replace_chain(uint64_t fork_index,
 
         log::debug(LOG_BLOCKCHAIN)
             << "Insufficient work to reorganize at [" << begin_index << "]" << "orphan_work:" << orphan_work << " main_work:" << main_work;
-        return;
+        return ret;
     }
 
     // Replace! Switch!
     block_detail::list released_blocks;
-    auto success = chain_.pop_from(released_blocks, begin_index);
+    auto pop_all_success = chain_.pop_from(released_blocks, begin_index);
 
-    if (!released_blocks.empty())
+    if (!released_blocks.empty()) {
+        num_of_poped_blocks = released_blocks.size();
+        current_block_height = released_blocks.front()->actual()->header.number - 1;
+        if (!pop_all_success) {
+            log::warning(LOG_BLOCKCHAIN)
+                << " not all blocks poped out successfully from " << begin_index
+                << ", only pop backward to " << current_block_height
+                << ", so stop replace chain.";
+            return ret;
+        }
         log::warning(LOG_BLOCKCHAIN)
             << " blockchain fork at height:" << released_blocks.front()->actual()->header.number
             << " begin_index:"  << encode_hash(released_blocks.front()->actual()->header.hash())
             << " size:"  << released_blocks.size();
-
-    // if pop blocks failed, stop replace
-    if (!success) {
-        log::warning(LOG_BLOCKCHAIN) << " pop_from begin_height:" << begin_index << "failed";
-        return;
     }
 
     // We add the arriving blocks first to the main chain because if
@@ -349,6 +359,7 @@ void organizer::replace_chain(uint64_t fork_index,
     // All arrival_blocks should be blocks from the pool.
     auto arrival_index = fork_index;
 
+    block_detail::list pushed_blocks;
     for (const auto arrival_block: orphan_chain)
     {
         orphan_pool_.remove(arrival_block);
@@ -362,17 +373,22 @@ void organizer::replace_chain(uint64_t fork_index,
             log::warning(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
                 << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
-                << "failed";
+                << " failed";
             // if push block failed, stop replace
-            return;
+            break;
         }
         else
         {
+            current_block_height = arrival_block->actual()->header.number;
+            pushed_blocks.push_back(arrival_block);
             log::debug(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
-                << " hash:"  << encode_hash(arrival_block->actual()->header.hash());
+                << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
+                << " succeed";
         }
     }
+
+    num_of_pushed_blocks = pushed_blocks.size();
 
     // Add the old blocks back to the pool (as processed with orphan height).
     for (const auto replaced_block: released_blocks)
@@ -390,7 +406,8 @@ void organizer::replace_chain(uint64_t fork_index,
         }
     }
 
-    notify_reorganize(fork_index, orphan_chain, released_blocks);
+    notify_reorganize(fork_index, pushed_blocks, released_blocks);
+    return ret;
 }
 
 void organizer::remove_processed(block_detail::ptr remove_block)

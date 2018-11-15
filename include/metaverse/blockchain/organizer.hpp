@@ -82,7 +82,8 @@ private:
     virtual code verify(uint64_t fork_index,
         const block_detail::list& orphan_chain, uint64_t orphan_index);
     void process(block_detail::ptr process_block);
-    void replace_chain(uint64_t fork_index, detail_list& orphan_chain);
+    /// Return a tuple <number of poped blocks, number of pushed blocks, current block height>
+    std::tuple<uint64_t, uint64_t, uint64_t> replace_chain(uint64_t fork_index, detail_list& orphan_chain);
     void remove_processed(block_detail::ptr remove_block);
     void clip_orphans(detail_list& orphan_chain, uint64_t orphan_index,
         const code& invalid_reason);

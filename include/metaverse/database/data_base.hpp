@@ -185,7 +185,7 @@ public:
     void push(const chain::block& block, uint64_t height);
 
     /// Throws if the chain is empty.
-    chain::block pop();
+    bool pop(chain::block& block);
 
     /* begin store asset info into  database */
 

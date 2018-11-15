@@ -301,7 +301,7 @@ bool block_chain_impl::pop_from(block_detail::list& out_blocks,
 
     // The fork is at the top of the chain, nothing to pop.
     if (height == top + 1)
-        return true;
+        return false;
 
     // The fork is disconnected from the chain, fail.
     if (height > top)
@@ -312,8 +312,12 @@ bool block_chain_impl::pop_from(block_detail::list& out_blocks,
 
     for (uint64_t index = top; index >= height; --index)
     {
-        const auto block = std::make_shared<block_detail>(database_.pop());
-        out_blocks.push_back(block);
+        chain::block block;
+        if (!database_.pop(block)) {
+            return false;
+        }
+        const auto sp_block = std::make_shared<block_detail>(std::move(block));
+        out_blocks.push_back(sp_block);
     }
 
     return true;
