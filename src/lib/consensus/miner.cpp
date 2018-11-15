@@ -631,7 +631,8 @@ miner::transaction_ptr miner::create_coinstake_tx(const wallet::payment_address&
         attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(info.value));
         bc::chain::output to_self(info.value, payment_script, attr);
         coinstake->outputs.push_back(to_self);
-        break;
+
+        return coinstake;
     }
 
     return nullptr;
@@ -640,6 +641,8 @@ miner::transaction_ptr miner::create_coinstake_tx(const wallet::payment_address&
 miner::block_ptr miner::create_new_block_pos(
     const std::string account, const std::string passwd, const wallet::payment_address& pay_address)
 {
+    log::info(LOG_HEADER) << " === create_new_block_pos ===";
+
     block_chain_impl& block_chain = node_.chain_impl();
     const string address = pay_address.encoded();
 
@@ -746,7 +749,7 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Log block
     auto json = explorer::config::json_helper(3).prop_tree(*pblock, true, true);
-    log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.asString();
+    log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.toStyledString();
 
     return pblock;
 }
