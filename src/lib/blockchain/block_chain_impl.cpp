@@ -40,6 +40,8 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/blockchain/account_security_strategy.hpp>
+#include <metaverse/consensus/libdevcore/BasicType.h>
+
 namespace libbitcoin {
 namespace blockchain {
 
@@ -249,6 +251,44 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
     }
 
     return true;
+}
+
+chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& header, bool is_staking)
+{
+    uint64_t height = header.number;
+    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 1)) {
+        --height;
+
+        chain::header prev_header;
+        if (!get_header(prev_header, height)) {
+            return nullptr;
+        }
+        
+        if (prev_header.is_proof_of_stake() == is_staking) {
+            auto pheader = std::shared_ptr<chain::header>();
+            *pheader = prev_header;
+            return pheader;
+        }
+    }
+
+    return nullptr;
+}
+
+u256 block_chain_impl::get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking)
+{
+    if (!is_staking) {
+        return HeaderAux::calculateDifficulty(header, prev_header);
+    }
+    else {
+        header::ptr last_header = get_last_block_header(prev_header, is_staking);
+        if (nullptr == last_header) {
+            // TODO
+        }
+
+        // TODO
+        auto difficulty = bigint(10);
+        return u256(std::min<bigint>(difficulty, std::numeric_limits<u256>::max()));;
+    }
 }
 
 // simple_chain (no locks, not thread safe).

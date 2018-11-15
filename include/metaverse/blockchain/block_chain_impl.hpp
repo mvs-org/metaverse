@@ -225,10 +225,12 @@ public:
     /// select pos utxo. target value
     virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, chain::output_info::list& stake_outputs);
 
+    chain::header::ptr get_last_block_header(const chain::header& header, bool is_staking);
+    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);
-  
+
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
 

@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <boost/thread.hpp>
-
+#include <metaverse/bitcoin.hpp>
 #include "metaverse/blockchain/transaction_pool.hpp"
 #include "metaverse/bitcoin/chain/block.hpp"
 #include "metaverse/bitcoin/chain/input.hpp"
@@ -42,8 +42,8 @@ class block_chain_impl;
 namespace libbitcoin {
 namespace consensus {
 
-BC_CONSTEXPR unsigned int min_tx_fee_per_kb = 1000;
-BC_CONSTEXPR unsigned int median_time_span = 11;
+BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
+BC_CONSTEXPR uint32_t median_time_span = 11;
 BC_CONSTEXPR uint64_t future_blocktime_fork_height = 1030000;
 
 extern int bucket_size;
@@ -107,17 +107,17 @@ private:
     void work(const wallet::payment_address pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_address);
     block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_address);
-    unsigned int get_adjust_time(uint64_t height) const;
-    unsigned int get_median_time_past(uint64_t height) const;
+    uint32_t get_adjust_time(uint64_t height) const;
+    uint32_t get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
     bool get_block_transactions(
         uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs, 
-        uint64_t& total_fee, unsigned int& total_tx_sig_length);
+        uint64_t& total_fee, uint32_t& total_tx_sig_length);
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height) const;
-    unsigned int get_tx_sign_length(transaction_ptr tx);
+    uint32_t get_tx_sign_length(transaction_ptr tx);
     void sleep(uint32_t interval);
 
 private:
@@ -131,7 +131,7 @@ private:
     wallet::payment_address pay_address_;
     const blockchain::settings& setting_;
 
-    bool isStaking_;
+    bool is_staking_;
     std::string account_;
     std::string passwd_;
 };

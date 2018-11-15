@@ -81,6 +81,11 @@ void block::reset()
     transactions.shrink_to_fit();
 }
 
+bool block::is_proof_of_stake()
+{
+    return header.is_proof_of_stake();
+}
+
 bool block::from_data_t(reader& source, bool with_transaction_count)
 {
     reset();

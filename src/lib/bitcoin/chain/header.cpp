@@ -126,6 +126,11 @@ bool header::is_valid() const
         (nonce != 0);
 }
 
+bool header::is_proof_of_stake()
+{
+    return version == block_version_pos;
+}
+
 void header::reset()
 {
     version = 0;

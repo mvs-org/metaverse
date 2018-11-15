@@ -87,7 +87,7 @@ public:
         )
         (
             "staking,s",
-            value<bool>(&option_.isStaking)->default_value(false),
+            value<bool>(&option_.isStaking)->default_value(false)->zero_tokens(),
             "Mining with PoS, default is false."
         );
 
