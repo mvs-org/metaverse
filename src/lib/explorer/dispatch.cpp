@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/explorer/dispatch.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <iostream>
 #include <string>
@@ -168,6 +169,7 @@ console_result dispatch_command(int argc, const char* argv[],
 
     if (command->category(ctgy_extension))
     {
+#ifndef PRIVATE_CHAIN
         // fixme. is_blockchain_sync has some problem.
         // if (command->category(ctgy_online) && node.is_blockchain_sync()) {
         if (command->category(ctgy_online) &&
@@ -178,7 +180,7 @@ console_result dispatch_command(int argc, const char* argv[],
                 throw block_sync_required_exception{"This command is unavailable because of the height < 610000."};
             }
         }
-
+#endif
         return static_cast<commands::command_extension*>(command.get())->invoke(jv_output, node);
     }
     else {

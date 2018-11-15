@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/message/network_address.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <boost/iostreams/stream.hpp>
 #include <metaverse/bitcoin/utility/container_sink.hpp>
@@ -295,6 +296,9 @@ bool network_address::is_local() const
 
 bool network_address::is_routable() const
 {
+#ifdef PRIVATE_CHAIN
+    return is_valid();
+#endif
     return is_valid() && !(is_RFC1918() || is_RFC3927() || is_RFC4862() || (is_RFC4193() && !is_tor()) || is_RFC4843() || is_local());
 }
 

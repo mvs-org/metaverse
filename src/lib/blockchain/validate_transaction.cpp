@@ -20,6 +20,7 @@
  */
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -1957,6 +1958,9 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx) const
 
 bool validate_transaction::is_nova_feature_activated(blockchain::block_chain_impl& chain)
 {
+#ifdef PRIVATE_CHAIN
+    return true;
+#endif
     if (chain.chain_settings().use_testnet_rules) {
         return true;
     }

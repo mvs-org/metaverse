@@ -1,4 +1,5 @@
 #include <metaverse/consensus/libdevcore/BasicType.h>
+#include <metaverse/macros_define.hpp>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -140,7 +141,11 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
 
 u256 HeaderAux::calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent)
 {
+#ifndef PRIVATE_CHAIN
     auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
+#else
+    auto minimumDifficulty = bigint(200000);
+#endif
     bigint target;
 
     // DO NOT MODIFY time_config in release
