@@ -226,7 +226,6 @@ public:
     virtual bool select_utxo_for_staking(const wallet::payment_address& pay_addres, chain::output_info::list& stake_outputs);
 
     chain::header::ptr get_last_block_header(const chain::header& header, bool is_staking);
-    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);
@@ -278,7 +277,7 @@ public:
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
-    
+
     std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);

@@ -148,7 +148,20 @@ bool MinerAux::verifySeal(libbitcoin::chain::header& _header, libbitcoin::chain:
 }
 
 
+bool MinerAux::check_kernel(chain::header& header, const chain::output_info& info, uint64_t height)
+{
+    return MinerAux::check_proof_of_stake(header, info, height);
+}
 
+bool MinerAux::check_proof_of_stake(chain::header& header, const chain::output_info& info, uint64_t height)
+{
+    u256& target = header.bits;
+    h256 pos = HeaderAux::hash_head_pos(header, info, height);
+
+    log::info(LOG_MINER) << "check_proof_of_stake: bits: " << target << ", header hash: " << pos;
+    // TODO
+    return true;
+}
 
 
 

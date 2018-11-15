@@ -6,6 +6,7 @@
 #include <metaverse/consensus/libdevcore/Log.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 #include <metaverse/consensus/libdevcore/FixedHash.h>
 #include <metaverse/consensus/libdevcore/Guards.h>
 namespace libbitcoin
@@ -26,7 +27,8 @@ public:
     static bool search(chain::header& header, std::function<bool (void)> is_exit);
     static uint64_t getRate(){ return get()->m_rate; }
 
-
+    static bool check_kernel(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
+    static bool check_proof_of_stake(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
 
 private:
     MinerAux() {m_rate = 0;}

@@ -37,6 +37,8 @@
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/explorer/json_helper.hpp>
 #include <metaverse/explorer/config/ec_private.hpp>
+#include <metaverse/explorer/config/script.hpp>
+#include <metaverse/explorer/config/hashtype.hpp>
 
 #define LOG_HEADER "consensus"
 using namespace std;
@@ -76,7 +78,7 @@ miner::miner(p2p_node& node)
     , is_staking_(false)
 {
     if (setting_.use_testnet_rules) {
-        bc::HeaderAux::set_as_testnet();
+        HeaderAux::set_as_testnet();
     }
 }
 
@@ -227,7 +229,8 @@ bool miner::script_hash_signature_operations_count(size_t &count, const chain::i
     }
 
     const auto& previous_tx_out = previous_tx.outputs[previous_output.index];
-    return blockchain::validate_block::script_hash_signature_operations_count(count, previous_tx_out.script, input.script);
+    return blockchain::validate_block::script_hash_signature_operations_count(
+        count, previous_tx_out.script, input.script);
 }
 
 bool miner::script_hash_signature_operations_count(
@@ -266,12 +269,12 @@ miner::block_ptr miner::create_genesis_block(bool is_mainnet)
 
     // init for testnet/mainnet
     if (!is_mainnet) {
-        bc::wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
+        wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
         tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
         pblock->header.timestamp = 1479881397;
     }
     else {
-        bc::wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
+        wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
         tx_new.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
         pblock->header.timestamp = 1486796400;
     }
@@ -596,44 +599,109 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.bits = block_chain.get_next_target_required(pblock->header, prev_header, false);
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
 
     return pblock;
 }
 
-miner::transaction_ptr miner::create_coinstake_tx(const wallet::payment_address& pay_address,
+u256 miner::get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+    header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
+
+    return HeaderAux::calculate_difficulty(header, last_header, is_staking);
+}
+
+bool miner::sign_coinstake_tx(
+    const ec_secret& private_key,
+    transaction_ptr coinstake, const chain::output& prev_output)
+{
+    chain::script ss;
+    explorer::config::script config_contract(prev_output.script);
+    const chain::script& contract = config_contract;
+
+    explorer::config::hashtype sign_type;
+    uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
+
+    // gen sign
+    endorsement endorse;
+    if (!chain::script::create_endorsement(endorse, private_key,
+        contract, *coinstake, 1, hash_type))
+    {
+        log::error(LOG_HEADER) <<  "sign_coinstake_tx: get_input_sign sign failure!";
+        return false;
+    }
+
+    // do script
+    wallet::ec_private ec_private_key(private_key, 0u, true);
+    auto&& public_key = ec_private_key.to_public();
+    data_chunk public_key_data;
+    public_key.to_data(public_key_data);
+
+    ss.operations.push_back({chain::opcode::special, endorse});
+    ss.operations.push_back({chain::opcode::special, public_key_data});
+
+    // if pre-output script is deposit tx.
+    if (contract.pattern() == chain::script_pattern::pay_key_hash_with_lock_height) {
+        uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+            contract.operations);
+        ss.operations.push_back({chain::opcode::special, script_number(lock_height).data()});
+    }
+
+    coinstake->inputs[0].script = ss;
+
+    return true;
+}
+
+miner::transaction_ptr miner::create_coinstake_tx(
+    const ec_secret& private_key,
+    const wallet::payment_address& pay_address,
     block_ptr pblock, const chain::output_info::list& output_infos)
 {
+    block_chain_impl& block_chain = node_.chain_impl();
     transaction_ptr coinstake = make_shared<message::transaction_message>();
     coinstake->version = transaction_version::first;
 
     for (const auto& info: output_infos) {
+        uint64_t utxo_height = 0;
+        chain::transaction utxo_tx;
+        if (!block_chain.get_transaction(info.point.hash, utxo_tx, utxo_height)) {
+            continue;
+        }
 
-        // TODO CheckKernel
+        BITCOIN_ASSERT(info.point.index < utxo_tx.outputs.size());
 
-        coinstake->inputs.clear();
-        coinstake->outputs.clear();
+        if (MinerAux::check_kernel(pblock->header, info, utxo_height)) {
+            coinstake->inputs.clear();
+            coinstake->outputs.clear();
 
-        // generate inputs
-        bc::chain::input input;
-        input.sequence = max_input_sequence;
-        input.previous_output.hash = info.point.hash;
-        input.previous_output.index = info.point.index;
+            // generate inputs
+            chain::input input;
+            input.sequence = max_input_sequence;
+            input.previous_output.hash = info.point.hash;
+            input.previous_output.index = info.point.index;
 
-        coinstake->inputs.push_back(input);
+            coinstake->inputs.push_back(input);
 
-        // generate outputs
-        bc::chain::output empty;
-        empty.attach_data.set_null();
-        coinstake->outputs.push_back(empty);
+            // generate outputs
+            bc::chain::output empty;
+            empty.attach_data.set_null();
+            coinstake->outputs.push_back(empty);
 
-        auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
-        auto payment_script = chain::script{ script_operation };
-        attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(info.value));
-        bc::chain::output to_self(info.value, payment_script, attr);
-        coinstake->outputs.push_back(to_self);
+            auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+            auto payment_script = chain::script{ script_operation };
+            attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(info.value));
+            chain::output to_self(info.value, payment_script, attr);
+            coinstake->outputs.push_back(to_self);
 
-        return coinstake;
+            // sign coinstake
+            chain::output utxo_output = utxo_tx.outputs.at(info.point.index);
+            if (!sign_coinstake_tx(private_key, coinstake, utxo_output)) {
+                continue;
+            }
+
+            return coinstake;
+        }
     }
 
     return nullptr;
@@ -645,8 +713,20 @@ miner::block_ptr miner::create_new_block_pos(
     log::info(LOG_HEADER) << " === create_new_block_pos ===";
 
     block_chain_impl& block_chain = node_.chain_impl();
-    const string address = pay_address.encoded();
 
+    // Get private key
+    const string address = pay_address.encoded();
+    auto acc_addr = block_chain.get_account_address(account, address);
+    if (!acc_addr) {
+        log::error(LOG_HEADER) << "PoS mining is not allowed. Cann't get address " << address
+            << " from account " << account;
+        return nullptr;
+    }
+
+    explorer::config::ec_private config_private_key(acc_addr->get_prv_key(passwd_)); // address private key
+    const ec_secret& private_key = config_private_key;
+
+    // Get last block
     uint64_t last_height = 0;
     header prev_header;
     if (!block_chain.get_last_height(last_height)
@@ -655,19 +735,19 @@ miner::block_ptr miner::create_new_block_pos(
         return nullptr;
     }
 
-    // check if PoS is eanbled at last_height
+    // Check if PoS is eanbled at last_height
     uint64_t block_height = last_height + 1;
     if (block_height < pos_enabled_height) {
         log::warning(LOG_HEADER) << "PoS is not allowed at block height:" << last_height;
     }
 
-    // check deposited stake
+    // Check deposited stake
     if (!block_chain.is_pos_capability(pay_address)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is deposited at address " << address;
         return nullptr;
     }
 
-    // check utxo stake
+    // Check utxo stake
     chain::output_info::list stake_outputs;
     block_chain.select_utxo_for_staking(pay_address, stake_outputs);
     if (stake_outputs.empty()) {
@@ -684,6 +764,9 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
 
+    pblock->header.timestamp = get_adjust_time(block_height);
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
+
     // Update transactoins
     //
     uint64_t total_fee = 0;
@@ -696,10 +779,11 @@ miner::block_ptr miner::create_new_block_pos(
     total_tx_sig_length += get_tx_sign_length(coinbase);
 
     // Create coinstake
-    transaction_ptr coinstake = create_coinstake_tx(pay_address, pblock, stake_outputs);
+    transaction_ptr coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
     if (nullptr == coinstake) {
         return nullptr;
     }
+
     total_tx_sig_length += get_tx_sign_length(coinstake);
 
     // Get txs
@@ -725,24 +809,11 @@ miner::block_ptr miner::create_new_block_pos(
         pblock->transactions.push_back(*i);
     }
 
-    uint32_t block_time = get_adjust_time(block_height);
-
     // Fill in header
-    pblock->header.timestamp = block_time;
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.bits = block_chain.get_next_target_required(pblock->header, prev_header, true);
 
-    // generate block signature
-    auto acc_addr = block_chain.get_account_address(account, address);
-    if (!acc_addr) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. Cann't get address " << address
-            << " from account " << account;
-        return nullptr;
-    }
-
-    bc::explorer::config::ec_private config_private_key(acc_addr->get_prv_key(passwd_)); // address private key
-    const ec_secret& private_key = config_private_key;
+    // Sign block
     if (!sign(pblock->blocksig, private_key, pblock->header.hash())) {
         log::error(LOG_HEADER) << "PoS mining failed. Cann't sign block with account " << account;
         return nullptr;
@@ -898,7 +969,7 @@ uint64_t miner::get_height() const
     return height;
 }
 
-bool miner::set_miner_payment_address(const bc::wallet::payment_address& address)
+bool miner::set_miner_payment_address(const wallet::payment_address& address)
 {
     if (address) {
         log::debug(LOG_HEADER) << "set_miner_payment_address[" << address.encoded() << "] success";

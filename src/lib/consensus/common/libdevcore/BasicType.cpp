@@ -7,7 +7,7 @@ using namespace libbitcoin;
 
 DEV_SIMPLE_EXCEPTION(GenesisBlockCannotBeCalculated);
 /*****************************/
-WorkPackage::WorkPackage(libbitcoin::chain::header& _bh):
+WorkPackage::WorkPackage(chain::header& _bh):
     boundary(HeaderAux::boundary(_bh)),
     headerHash(HeaderAux::hashHead(_bh)),
     seedHash(HeaderAux::seedHash(_bh))
@@ -27,6 +27,7 @@ LightAllocation::~LightAllocation()
 {
     ethash_light_delete(light);
 }
+
 Result LightAllocation::compute(h256& _headerHash, Nonce& _nonce)
 {
     ethash_return_value r = ethash_light_compute(light, *(ethash_h256_t*)_headerHash.data(), (uint64_t)(u64)_nonce);
@@ -60,8 +61,8 @@ FullAllocation::~FullAllocation()
 }
 /*****************************/
 
-HeaderAux* libbitcoin::HeaderAux::s_this = nullptr;
-bool libbitcoin::HeaderAux::is_testnet = false;
+HeaderAux* HeaderAux::s_this = nullptr;
+bool HeaderAux::is_testnet = false;
 
 
 HeaderAux* HeaderAux::get()
@@ -72,9 +73,9 @@ HeaderAux* HeaderAux::get()
 }
 
 
-h256 HeaderAux::seedHash(libbitcoin::chain::header& _bi)
+h256 HeaderAux::seedHash(chain::header& bi)
 {
-    unsigned _number = (unsigned) _bi.number;
+    unsigned _number = (unsigned) bi.number;
     unsigned epoch = _number / ETHASH_EPOCH_LENGTH;
     Guard l(get()->x_epochs);
     if (epoch >= get()->m_seedHashes.size())
@@ -118,17 +119,26 @@ uint64_t HeaderAux::number(h256& _seedHash)
     return epoch * ETHASH_EPOCH_LENGTH;
 }
 
-h256 HeaderAux::hashHead(libbitcoin::chain::header& _bi)
+h256 HeaderAux::hashHead(chain::header& bi)
 {
     h256 memo;
     RLPStream s;
-    s  << (bigint) _bi.version << (bigint)_bi.bits << (bigint)_bi.number << _bi.merkle
-        << _bi.previous_block_hash << (bigint) _bi.timestamp ;
+    s  << (bigint) bi.version << (bigint)bi.bits << (bigint)bi.number << bi.merkle
+        << bi.previous_block_hash << (bigint) bi.timestamp ;
     memo = sha3(s.out());
     return memo;
 }
 
-uint64_t HeaderAux::cacheSize(libbitcoin::chain::header& _header)
+h256 HeaderAux::hash_head_pos(chain::header& bi, const chain::output_info& info, uint64_t height)
+{
+    h256 memo;
+    RLPStream s;
+    s  << (bigint) bi.timestamp << (bigint)info.value << info.point.hash << (bigint) info.point.index;
+    memo = sha3(s.out());
+    return memo;
+}
+
+uint64_t HeaderAux::cacheSize(chain::header& _header)
 {
     return ethash_get_cachesize((uint64_t)_header.number);
 }
@@ -138,7 +148,9 @@ uint64_t HeaderAux::dataSize(uint64_t _blockNumber)
     return ethash_get_datasize(_blockNumber);
 }
 
-u256 HeaderAux::calculateDifficulty(const libbitcoin::chain::header& current, const libbitcoin::chain::header& parent)
+u256 HeaderAux::calculateDifficulty(
+    const chain::header& current,
+    const chain::header& parent)
 {
     /// test-private-chain
     auto minimumDifficulty = bigint(10);
@@ -156,6 +168,35 @@ u256 HeaderAux::calculateDifficulty(const libbitcoin::chain::header& current, co
     }
     else {
         target = parent.bits + (parent.bits/1024);
+    }
+
+    bigint result = std::max<bigint>(minimumDifficulty, target);
+    return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
+}
+
+u256 HeaderAux::calculate_difficulty(
+    const chain::header& current,
+    chain::header::ptr prev,
+    bool is_staking)
+{
+    if (!current.number) {
+        throw GenesisBlockCannotBeCalculated();
+    }
+
+    /// test-private-chain
+    auto minimumDifficulty = bigint(10);
+    // auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
+    bigint target(minimumDifficulty);
+
+    if (nullptr != prev) {
+        // DO NOT MODIFY time_config in release
+        static uint32_t time_config{24};
+        if (current.timestamp >= prev->timestamp + time_config) {
+            target = prev->bits - (prev->bits/1024);
+        }
+        else {
+            target = prev->bits + (prev->bits/1024);
+        }
     }
 
     bigint result = std::max<bigint>(minimumDifficulty, target);

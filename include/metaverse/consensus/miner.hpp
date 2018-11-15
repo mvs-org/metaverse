@@ -87,8 +87,14 @@ public:
         std::vector<transaction_ptr>& transactions);
     transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_address,
         uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);
-    transaction_ptr create_coinstake_tx(const wallet::payment_address& pay_address, 
+    transaction_ptr create_coinstake_tx(
+        const ec_secret& private_key,
+        const wallet::payment_address& pay_address,
         block_ptr pblock, const chain::output_info::list& stake_outputs);
+    bool sign_coinstake_tx(
+        const ec_secret& private_key,
+        transaction_ptr coinstake,
+        const chain::output& prev_output);
 
     block_ptr get_block(bool is_force_create_block = false);
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
@@ -111,7 +117,7 @@ private:
     uint32_t get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
     bool get_block_transactions(
-        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs, 
+        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
         uint64_t& total_fee, uint32_t& total_tx_sig_length);
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
@@ -119,6 +125,8 @@ private:
     bool is_stop_miner(uint64_t block_height) const;
     uint32_t get_tx_sign_length(transaction_ptr tx);
     void sleep(uint32_t interval);
+
+    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 
 private:
     p2p_node& node_;

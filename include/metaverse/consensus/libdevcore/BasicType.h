@@ -7,8 +7,9 @@
 #include <boost/throw_exception.hpp>
 #include "Exceptions.h"
 #include <metaverse/consensus/libethash/internal.h>
-#include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/consensus/libethash/ethash.h>
+#include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 
 
 namespace libbitcoin
@@ -18,15 +19,18 @@ class HeaderAux
 {
 public:
     static HeaderAux* get();
-    static h256 seedHash(libbitcoin::chain::header& _bi);
-    static h256 hashHead(libbitcoin::chain::header& _bi);
-    static h256 boundary(libbitcoin::chain::header& _bi) { auto d = _bi.bits; return d ? (h256)u256(((bigint(1) << 255)-bigint(1) +(bigint(1) << 255) ) / d) : h256(); }
-    static u256 calculateDifficulty(const libbitcoin::chain::header& bi, const libbitcoin::chain::header& parent);
+    static h256 seedHash(chain::header& _bi);
+    static h256 hashHead(chain::header& _bi);
+    static h256 boundary(chain::header& _bi) { auto d = _bi.bits; return d ? (h256)u256(((bigint(1) << 255)-bigint(1) +(bigint(1) << 255) ) / d) : h256(); }
+    static u256 calculateDifficulty(const chain::header& bi, const chain::header& parent);
     static uint64_t number(h256& _seedHash);
-    static uint64_t cacheSize(libbitcoin::chain::header& _header);
+    static uint64_t cacheSize(chain::header& _header);
     static uint64_t dataSize(uint64_t _blockNumber);
 
     static void set_as_testnet(){ is_testnet = true; }
+
+    static u256 calculate_difficulty(const chain::header& current, chain::header::ptr prev, bool is_staking=false);
+    static h256 hash_head_pos(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
 
 private:
     HeaderAux() {}
@@ -50,7 +54,7 @@ struct Result
 struct WorkPackage
 {
     WorkPackage() = default;
-    WorkPackage(libbitcoin::chain::header& _bh);
+    WorkPackage(chain::header& _bh);
     h256 boundary;
     h256 headerHash;///< When h256() means "pause until notified a new work package is available".
     h256 seedHash;

@@ -175,23 +175,23 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
             continue;
         }
 
-        if ((row.spend.hash == null_hash) 
+        if ((row.spend.hash == null_hash)
             && get_transaction(row.output.hash, tx_temp, tx_height)) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != pay_address.encoded()) {
                 continue;
             }
-            
-            if ( row.value >= MIN_POS_LOCK_VALUE && 
+
+            if ( row.value >= MIN_POS_LOCK_VALUE &&
                 chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
             {
                 // deposit utxo in block
                 uint64_t lock_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
 
-                // utxo deposit height > MIN_POS_LOCK_HEIGHT and MIN_POS_RADIO percent of height limited 
-                if (lock_height >= MIN_POS_LOCK_HEIGHT && 
+                // utxo deposit height > MIN_POS_LOCK_HEIGHT and MIN_POS_RADIO percent of height limited
+                if (lock_height >= MIN_POS_LOCK_HEIGHT &&
                     (row.output_height + lock_height * MIN_POS_RADIO) > height){
                     return true;
                 }
@@ -202,7 +202,7 @@ bool block_chain_impl::is_pos_capability(const wallet::payment_address& pay_addr
     return false;
 }
 
-bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pay_address, chain::output_info::list& stake_outputs) 
+bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pay_address, chain::output_info::list& stake_outputs)
 {
     auto&& rows = get_address_history(pay_address, false);
     uint64_t height = 0;
@@ -244,7 +244,7 @@ bool block_chain_impl::select_utxo_for_staking(const wallet::payment_address& pa
                 if ((row.output_height + coinbase_maturity) > height) {
                     continue;
                 }
-            } 
+            }
 
             stake_outputs.push_back( {row.output, row.value} );
         }
@@ -263,7 +263,7 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
         if (!get_header(prev_header, height)) {
             return nullptr;
         }
-        
+
         if (prev_header.is_proof_of_stake() == is_staking) {
             auto pheader = std::shared_ptr<chain::header>();
             *pheader = prev_header;
@@ -272,23 +272,6 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
     }
 
     return nullptr;
-}
-
-u256 block_chain_impl::get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking)
-{
-    if (!is_staking) {
-        return HeaderAux::calculateDifficulty(header, prev_header);
-    }
-    else {
-        header::ptr last_header = get_last_block_header(prev_header, is_staking);
-        if (nullptr == last_header) {
-            // TODO
-        }
-
-        // TODO
-        auto difficulty = bigint(10);
-        return u256(std::min<bigint>(difficulty, std::numeric_limits<u256>::max()));;
-    }
 }
 
 // simple_chain (no locks, not thread safe).
