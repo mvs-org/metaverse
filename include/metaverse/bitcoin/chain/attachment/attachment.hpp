@@ -55,6 +55,7 @@ using attachment = libbitcoin::chain::attachment;
 
 #define DID_ATTACH_VERIFY_VERSION       TYPE2UINT32(207)
 
+#define ATTACH_NULL_TYPE MAX_UINT32
 
 namespace libbitcoin {
 namespace chain {
@@ -108,6 +109,7 @@ public:
     void set_version(uint32_t version);
     uint32_t get_type() const;
     void set_type(uint32_t type);
+    void set_null();
 
     std::string get_to_did() const;
     void set_to_did(const std::string& did);

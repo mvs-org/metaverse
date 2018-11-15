@@ -66,6 +66,7 @@ public:
     void to_data_t(writer& sink) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
+    bool is_null() const;
     code check_attachment_address(bc::blockchain::block_chain_impl& chain) const;
     std::string get_script_address() const;
     void reset();

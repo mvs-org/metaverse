@@ -156,6 +156,11 @@ bool output::is_valid() const
         || attach_data.is_valid(); // added for asset issue/transfer
 }
 
+bool output::is_null() const
+{
+    return !is_valid();
+}
+
 std::string output::get_script_address() const
 {
     auto payment_address = wallet::payment_address::extract(script);

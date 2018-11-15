@@ -68,7 +68,8 @@ bool validate_block_impl::is_vaild_proof_of_stake(const chain::header& header) c
     else {
         static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
     }
-    return false;
+    //TODO 
+    return true;
 }
 
 u256 validate_block_impl::previous_block_bits() const

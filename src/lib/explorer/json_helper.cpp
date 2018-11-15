@@ -669,6 +669,9 @@ Json::Value json_helper::prop_list(bc::chain::attachment& attach_data)
         auto msg_info = boost::get<bc::chain::blockchain_message>(attach_data.get_attach());
         tree["content"] = msg_info.get_content();
     }
+    else if(attach_data.get_type() == ATTACH_NULL_TYPE){
+        tree["type"] = "null";
+    }
     else {
         tree["type"] = "unknown business";
         BITCOIN_ASSERT(false);

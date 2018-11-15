@@ -624,6 +624,7 @@ miner::transaction_ptr miner::create_coinstake_tx(const wallet::payment_address&
 
         // generate outputs
         bc::chain::output empty;
+        empty.attach_data.set_null();
         coinstake->outputs.push_back(empty);
 
         auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));

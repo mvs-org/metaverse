@@ -528,6 +528,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     uint64_t fees = 0;
     size_t total_sigops = 0;
     const auto count = transactions.size();
+    uint32_t version = current_block_.header.version;
     size_t coinage_reward_coinbase_index = 1;
     size_t get_coinage_reward_tx_count = 0;
 

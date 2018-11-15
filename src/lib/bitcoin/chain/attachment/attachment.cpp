@@ -202,6 +202,11 @@ void attachment::set_type(uint32_t type)
      this->type = type;
 }
 
+void attachment::set_null()
+{
+    this->type = ATTACH_NULL_TYPE;
+}
+
 std::string attachment::get_to_did() const
 {
     return todid;
