@@ -296,14 +296,14 @@ Json::Value json_helper::prop_list(const tx_output_type& tx_output)
     // TODO: this will eventually change due to privacy problems, see:
     // lists.dyne.org/lurker/message/20140812.214120.317490ae.en.html
 
-    if (!address)
+    if (!address && is_stealth_script(tx_output.script))
     {
-        tree["stealth"] = Json::objectValue;
         uint32_t stealth_prefix;
         ec_compressed ephemeral_key;
         if (to_stealth_prefix(stealth_prefix, tx_output.script) &&
             extract_ephemeral_key(ephemeral_key, tx_output.script))
         {
+            tree["stealth"] = Json::objectValue;
             tree["stealth"]["prefix"] += stealth_prefix;
             tree["stealth"]["ephemeral_public_key"] += ec_public(ephemeral_key);
         }

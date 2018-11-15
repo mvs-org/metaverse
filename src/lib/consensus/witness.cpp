@@ -170,12 +170,12 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     output.value = 0;
     auto& ops = output.script.operations;
 
-    ops.push_back({chain::opcode::raw_data, to_chunk("witness")});
+    ops.push_back({chain::opcode::special, to_chunk("witness")});
     for (const auto& witness : witness_list_) {
         ops.push_back({chain::opcode::special, witness});
     }
 
-    ops.push_back({chain::opcode::raw_data, to_chunk("candidate")});
+    ops.push_back({chain::opcode::special, to_chunk("candidate")});
     for (const auto& candidate : candidate_list_) {
         ops.push_back({chain::opcode::special, candidate});
     }
