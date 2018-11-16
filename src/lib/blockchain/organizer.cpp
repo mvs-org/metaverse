@@ -59,14 +59,23 @@ organizer::organizer(threadpool& pool, block_chain_impl& chain,
 
 void organizer::start()
 {
-    uint64_t height = 0;
-    if (!chain_.get_last_height(height)) {
-        log::info(LOG_BLOCKCHAIN) << "get last height failed";
-        return;
+    // update witness list
+    {
+        chain_.set_sync_disabled(true);
+        unique_lock lock(chain_.get_mutex());
+        uint64_t height = 0;
+        if (!chain_.get_last_height(height)) {
+            log::info(LOG_BLOCKCHAIN) << "get last height failed";
+            return;
+        }
+        log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
+        if (!consensus::witness::get().update_witness_list(height)) {
+            log::info(LOG_BLOCKCHAIN) << "update witness list failed at height " << height;
+            return;
+        }
+        log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+        chain_.set_sync_disabled(false);
     }
-    log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
-    consensus::witness::get().update_witness_list(height);
-    log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
 
     stopped_ = false;
     subscriber_->start();

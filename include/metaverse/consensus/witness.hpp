@@ -21,7 +21,7 @@
 #ifndef MVS_CONSENSUS_WITNESS_HPP
 #define MVS_CONSENSUS_WITNESS_HPP
 
-#include <set>
+#include <vector>
 #include <metaverse/bitcoin.hpp>
 
 // forward declaration
@@ -46,14 +46,15 @@ public:
     using p2p_node = libbitcoin::node::p2p_node;
     using settings = blockchain::settings;
     using public_key_t = data_chunk;
-    using witness_id = public_key_t;
+    using public_key_hex_t = data_chunk;
+    using witness_id = public_key_hex_t;
     using list = std::vector<witness_id>;
     using iterator = list::iterator;
     using const_iterator = list::const_iterator;
 
     static uint32_t pow_check_point_height;
     static uint64_t witness_enable_height;
-    static uint32_t witess_number;
+    static uint32_t witness_number;
     static uint32_t epoch_cycle_height;
     static uint32_t vote_maturity;
 
@@ -87,6 +88,12 @@ public:
     chain::block::ptr fetch_vote_result_block(uint64_t height);
 
     uint32_t get_slot_num(const witness_id& id) const;
+
+    static public_key_t witness_to_public_key(const witness_id& id);
+    static std::string witness_to_string(const witness_id& id);
+    static std::string endorse_to_string(const endorsement& endorse);
+    static witness_id to_witness_id(const public_key_t& public_key);
+    static std::string to_witness_id_str(const public_key_t& public_key);
 
     static bool is_witness_enabled(uint64_t height);
     static uint64_t get_height_in_epoch(uint64_t height);

@@ -322,7 +322,7 @@ uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet)
 {
     auto result = uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
     if (witness::is_begin_of_epoch(block_height)) {
-        result <<= 2; // more award to the vote result block miner
+        result <<= 1; // more award to the vote result block miner
     }
     return result;
 }
@@ -553,8 +553,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
     if (can_use_dpos) {
         // adjust block subsidy for dpos
-        block_subsidy = std::min(block_subsidy / witness::witess_number,
-            uint64_t(1.0 * block_subsidy * witness::witess_number / witness::pow_check_point_height));
+        block_subsidy = std::min(block_subsidy / witness::witness_number,
+            uint64_t(1.0 * block_subsidy * witness::witness_number / witness::pow_check_point_height));
     }
     coinbase_tx.outputs[0].value = total_fee + block_subsidy;
 
@@ -573,8 +573,8 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 #ifdef PRIVATE_CHAIN
         log::info(LOG_HEADER)
             << "create a dpos block with signatures at height " << pblock->header.number
-            << ", public_key is " << encode_base16(public_key_data_)
-            << ", signature is " << encode_base16(endorse)
+            << ", public_key is " << witness::to_witness_id_str(public_key_data_)
+            << ", signature is " << witness::endorse_to_string(endorse)
             << ", hash is " << encode_hash(prev_header.hash());
         if (!witness::verify_sign(endorse, public_key_data_, prev_header)) {
             log::error(LOG_HEADER) << "create witness signature failed";
@@ -914,7 +914,7 @@ bool miner::is_witness() const
     if (public_key_data_.empty()) {
         return false;
     }
-    return witness::get().is_witness(to_chunk(encode_base16(public_key_data_)));
+    return witness::get().is_witness(witness::to_witness_id(public_key_data_));
 }
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
@@ -943,7 +943,7 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
 
 #ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
-        << "miner set mining public key " << encode_base16(public_key_data_);
+        << "miner set mining public key " << witness::to_witness_id_str(public_key_data_);
 #endif
 
     return true;

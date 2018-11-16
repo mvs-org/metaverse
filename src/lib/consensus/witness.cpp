@@ -30,7 +30,7 @@ namespace consensus {
 
 uint32_t witness::pow_check_point_height = 100;
 uint64_t witness::witness_enable_height = 2000000;
-uint32_t witness::witess_number = 11;
+uint32_t witness::witness_number = 11;
 uint32_t witness::epoch_cycle_height = 10000;
 uint32_t witness::vote_maturity = 12;
 
@@ -57,7 +57,7 @@ void witness::init(p2p_node& node)
     if (instance_->setting_.use_testnet_rules) {
         witness::pow_check_point_height = 100;
         witness::witness_enable_height = 1000000;
-        witness::witess_number = 5;
+        witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
         witness::vote_maturity = 2;
     }
@@ -65,7 +65,7 @@ void witness::init(p2p_node& node)
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 10;
     witness::witness_enable_height = 10;
-    witness::witess_number = 3;
+    witness::witness_number = 3;
     witness::epoch_cycle_height = 20;
     witness::vote_maturity = 2;
 #endif
@@ -176,13 +176,13 @@ std::string witness::show_list() const
     std::string res;
     res += "witness : [";
     for (const auto& witness : witness_list_) {
-        res += encode_base16(witness) + "   ";
+        res += witness_to_string(witness) + "   ";
     }
     res += "] ";
 
     res += "candidate : [";
     for (const auto& candidate : candidate_list_) {
-        res += encode_base16(candidate) + "   ";
+        res += witness_to_string(candidate) + "   ";
     }
     res += "]";
     return res;
@@ -190,22 +190,22 @@ std::string witness::show_list() const
 
 chain::output witness::create_witness_vote_result(uint64_t height)
 {
-    calc_witness_list(height);
+    chain::output output;
+    output.value = 0;
+    if (!calc_witness_list(height)) {
+        return output;
+    }
 
     shared_lock lock(mutex_);
 
-    chain::output output;
-    output.value = 0;
     auto& ops = output.script.operations;
 
-    ops.push_back({chain::opcode::special, to_chunk("witness")});
     for (const auto& witness : witness_list_) {
-        ops.push_back({chain::opcode::special, witness});
+        ops.push_back({chain::opcode::special, witness_to_public_key(witness)});
     }
 
-    ops.push_back({chain::opcode::special, to_chunk("candidate")});
     for (const auto& candidate : candidate_list_) {
-        ops.push_back({chain::opcode::special, candidate});
+        ops.push_back({chain::opcode::special, witness_to_public_key(candidate)});
     }
 
     return output;
@@ -232,8 +232,11 @@ bool witness::calc_witness_list(uint64_t height)
     for (const auto& id : initial_witness_list) {
         witness_list_.emplace_back(to_chunk(id));
     }
-    return true;
 #endif
+
+    if (witness_list_.size() != witness_number) {
+        return false;
+    }
 
     return true;
 }
@@ -248,8 +251,13 @@ bool witness::verify_vote_result(const chain::block& block) const
         return false;
     }
     auto& ops = transactions.front().outputs.back().script.operations;
-    if (ops.size() < 2 + witess_number) {
+    if ((ops.size() < witness_number) || !chain::operation::is_push_only(ops)) {
         return false;
+    }
+    for (const auto& op : ops) {
+        if (!is_public_key(chain::operation::factory_from_data(op.to_data()).data)) {
+            return false;
+        }
     }
     return true;
 }
@@ -283,6 +291,9 @@ chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
 
 bool witness::update_witness_list(uint64_t height)
 {
+    if (!is_witness_enabled(height)) {
+        return true;
+    }
     auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
         return false;
@@ -302,14 +313,14 @@ bool witness::update_witness_list(const chain::block& block)
 
     const auto& transactions = block.transactions;
     auto& ops = transactions.front().outputs.back().script.operations;
-    BITCOIN_ASSERT_MSG(ops.size() >= 2 + witess_number, "wrong number of vote result.");
+    BITCOIN_ASSERT_MSG(ops.size() >= witness_number, "wrong number of vote result.");
 
     size_t i = 0;
-    for (++i; i <= witess_number; ++i) {
-        witness_list_.emplace_back(chain::operation::factory_from_data(ops[i].to_data()).data);
+    for (; i < witness_number; ++i) {
+        witness_list_.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
     }
-    for (++i; i < ops.size(); ++i) {
-        candidate_list_.emplace_back(chain::operation::factory_from_data(ops[i].to_data()).data);
+    for (; i < ops.size(); ++i) {
+        candidate_list_.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
     }
     return true;
 }
@@ -319,13 +330,40 @@ uint32_t witness::get_slot_num(const witness_id& id) const
     shared_lock lock(mutex_);
     auto pos = finds(witness_list_, id);
     if (pos != witness_list_.end()) {
-        return pos - witness_list_.cbegin();
+        return std::distance(witness_list_.cbegin(), pos);
     }
 #ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
-        << "witness get slot num failed for " << std::string(id.begin(), id.end());
+        << "get slot num failed for " << witness_to_string(id);
 #endif
     return max_uint32;
+}
+
+witness::public_key_t witness::witness_to_public_key(const witness_id& id)
+{
+    public_key_t public_key;
+    decode_base16(public_key, witness_to_string(id));
+    return public_key;
+}
+
+std::string witness::witness_to_string(const witness_id& id)
+{
+    return std::string(std::begin(id), std::end(id));
+}
+
+std::string witness::endorse_to_string(const endorsement& endorse)
+{
+    return encode_base16(endorse);
+}
+
+witness::witness_id witness::to_witness_id(const public_key_t& public_key)
+{
+    return to_chunk(encode_base16(public_key));
+}
+
+std::string witness::to_witness_id_str(const public_key_t& public_key)
+{
+    return encode_base16(public_key);
 }
 
 bool witness::sign(endorsement& out, const ec_secret& secret, const chain::header& h)
@@ -375,8 +413,8 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
 #ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER)
             << "verify witness signature failed at height " << (h.number + 1)
-            << ", public_key is " << encode_base16(public_key)
-            << ", signature is " << encode_base16(out)
+            << ", public_key is " << to_witness_id_str(public_key)
+            << ", signature is " << endorse_to_string(out)
             << ", hash is " << encode_hash(sighash);
 #endif
         return false;
@@ -388,28 +426,23 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
 bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const
 {
     shared_lock lock(mutex_);
-    auto witness_slot_num = get_slot_num(to_chunk(encode_base16(public_key)));
+    auto witness_slot_num = get_slot_num(to_witness_id(public_key));
     return verify_signer(witness_slot_num, block, prev_header);
 }
 
 bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const
 {
-    if (witness_slot_num >= witess_number) {
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER)
-            << "verify witness signer with slot num " << witness_slot_num
-            << " on height " << block.header.number;
-#endif
+    if (witness_slot_num >= witness_number) {
         return false;
     }
 
     const auto& header = block.header;
     auto block_height = header.number;
-    auto calced_slot_num = ((block_height - witness_enable_height) % witess_number);
+    auto calced_slot_num = ((block_height - witness_enable_height) % witness_number);
     if (calced_slot_num == witness_slot_num) {
         return true;
     }
-    if (((calced_slot_num + 1) % witess_number) == witness_slot_num) {
+    if (((calced_slot_num + 1) % witness_number) == witness_slot_num) {
         // for safty, the previous slot should not be mined by the next witnesses
         return false;
     }
