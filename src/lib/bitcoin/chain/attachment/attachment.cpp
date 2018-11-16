@@ -133,8 +133,8 @@ bool attachment::from_data_t(reader& source)
         result = boost::apply_visitor(visitor, attach);
     }
     else {
-        result = false;
-        reset();
+        // result = false;
+        // reset();
     }
 
     return result;
