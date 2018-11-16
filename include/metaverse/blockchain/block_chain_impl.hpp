@@ -157,6 +157,15 @@ public:
     void fetch_block_transaction_hashes(const hash_digest& hash,
         transaction_hashes_fetch_handler handler);
 
+    /// fetch hashes of transactions for a block, by block height.
+    void fetch_block_signature(uint64_t height,
+                               block_signature_fetch_handler handler);
+
+    /// fetch hashes of transactions for a block, by block hash.
+    void fetch_block_signature(const hash_digest& hash,
+                               block_signature_fetch_handler handler);
+
+
     /// fetch a block locator relative to the current top and threshold.
     void fetch_block_locator(block_locator_fetch_handler handler);
 

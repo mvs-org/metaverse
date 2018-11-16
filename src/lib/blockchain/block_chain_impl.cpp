@@ -978,6 +978,68 @@ void block_chain_impl::fetch_block_transaction_hashes(const hash_digest& hash,
     fetch_serial(do_fetch);
 }
 
+/// fetch hashes of transactions for a block, by block height.
+void block_chain_impl::fetch_block_signature(uint64_t height,
+                           block_signature_fetch_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, height, handler](size_t slock)
+    {
+        ec_signature sig;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(height);
+            if(result)
+            {
+                if (result.header().is_proof_of_stake() )
+                    sig = result.blocksig();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, sig) :
+               finish_fetch(slock, handler, error::not_found, sig);
+    };
+    fetch_serial(do_fetch);
+}
+
+/// fetch hashes of transactions for a block, by block hash.
+void block_chain_impl::fetch_block_signature(const hash_digest& hash,
+                           block_signature_fetch_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, hash, handler](size_t slock)
+    {
+        ec_signature sig;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(hash);
+            if(result)
+            {
+                if (result.header().is_proof_of_stake() )
+                    sig = result.blocksig();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, sig) :
+               finish_fetch(slock, handler, error::not_found, sig);
+    };
+    fetch_serial(do_fetch);
+}
+
 void block_chain_impl::fetch_block_height(const hash_digest& hash,
     block_height_fetch_handler handler)
 {
