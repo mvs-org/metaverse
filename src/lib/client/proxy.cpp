@@ -219,7 +219,7 @@ void proxy::address_fetch_unspent_outputs(error_handler on_error,
     history_handler parse_history = [on_reply, satoshi, algorithm](
         const chain::history::list& rows)
     {
-        chain::output_info::list unspent;
+        chain::output_point_info::list unspent;
         for(auto& row : rows)
             if (row.spend.hash == null_hash)
                 unspent.push_back({row.output, row.value});

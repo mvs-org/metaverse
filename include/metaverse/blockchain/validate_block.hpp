@@ -79,6 +79,7 @@ protected:
     virtual uint64_t actual_time_span(size_t interval) const = 0;
     virtual versions preceding_block_versions(size_t count) const = 0;
     virtual chain::header fetch_block(size_t fetch_height) const = 0;
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const = 0;
     virtual bool transaction_exists(const hash_digest& tx_hash) const = 0;
     virtual bool fetch_transaction(chain::transaction& tx, size_t& tx_height,
         const hash_digest& tx_hash) const = 0;
@@ -105,11 +106,11 @@ protected:
     u256 work_required(bool is_testnet) const;
     code check_coinbase(const uint32_t& version, const chain::transaction::list& txs) const;
 
+    virtual bool check_stake(const chain::block& block) const = 0;
+    virtual bool check_work(const chain::block& block) const = 0;
+
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
-    virtual bool is_vaild_proof_of_stake(const chain::header& header)const = 0;
-    virtual bool is_valid_proof_of_work(const chain::header& header)const = 0;
-    static bool is_valid_coinbase_height(size_t height,
-        const chain::block& block);
+    static bool is_valid_coinbase_height(size_t height, const chain::block& block);
     //static size_t legacy_sigops_count(const chain::transaction& tx);
     static size_t legacy_sigops_count(const chain::transaction::list& txs);
 

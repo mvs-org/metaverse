@@ -58,7 +58,7 @@ public:
     typedef std::vector<ptr> ptr_list;
 
     static uint64_t satoshi_fixed_size_without_transaction_count();
-    
+
     header();
     header(const header& other);
     header(uint32_t version, const hash_digest& previous_block_hash,
@@ -83,7 +83,8 @@ public:
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
 
-    bool is_proof_of_stake();
+    bool is_proof_of_stake() const;
+    bool is_proof_of_work() const;
 
     uint32_t version;
     hash_digest previous_block_hash;

@@ -69,8 +69,9 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
-    bool is_proof_of_stake();
-    
+    bool is_proof_of_stake() const;
+    bool is_proof_of_work() const;
+
     chain::header header;
     transaction::list transactions;
 

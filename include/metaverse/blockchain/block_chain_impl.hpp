@@ -230,7 +230,7 @@ public:
         const wallet::payment_address& pay_addres,
         chain::output_info::list& stake_outputs);
 
-    chain::header::ptr get_last_block_header(const chain::header& header, bool is_staking);
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
 
     inline hash_digest get_hash(const std::string& str);
     inline short_hash get_short_hash(const std::string& str);

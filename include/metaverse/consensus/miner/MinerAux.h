@@ -23,12 +23,12 @@ public:
     static void setMixHash(chain::header& _bi, h256& _v){_bi.mixhash = (FixedHash<32>::Arith)_v; }
     static LightType get_light(h256& _seedHash);
     static FullType get_full(h256& _seedHash);
-    static bool verifySeal(chain::header& header,chain::header& _parent);
     static bool search(chain::header& header, std::function<bool (void)> is_exit);
     static uint64_t getRate(){ return get()->m_rate; }
 
-    static bool check_kernel(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
-    static bool check_proof_of_stake(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
+    static bool verify_work(const chain::header& header, const chain::header::ptr parent);
+    static bool verify_stake(const chain::header& header, const chain::output_info& stake_output);
+    static bool check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output);
 
 private:
     MinerAux() {m_rate = 0;}

@@ -241,25 +241,34 @@ bool block_chain_impl::select_utxo_for_staking(
                 }
             }
 
-            stake_outputs.push_back( {row.output, row.value} );
+            stake_outputs.push_back( {output, row.output, tx_height} );
         }
     }
 
     return true;
 }
 
-chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& header, bool is_staking)
+chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
 {
-    uint64_t height = header.number;
+    uint64_t height = parent_header.number;
+    if (parent_header.is_proof_of_stake() == is_staking) {
+        log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+            << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        return std::make_shared<chain::header>(parent_header);
+    }
+
     while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 1)) {
         --height;
 
         chain::header prev_header;
         if (!get_header(prev_header, height)) {
+            log::warning("BLOCKCHAIN") << "Failed to get header at " << std::to_string(height);
             return nullptr;
         }
 
         if (prev_header.is_proof_of_stake() == is_staking) {
+            log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+                << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);
         }
     }

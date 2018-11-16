@@ -37,7 +37,7 @@ class BCB_API transaction_pool_index
 {
 public:
     typedef handle0 completion_handler;
-    typedef handle2<chain::spend_info::list, chain::output_info::list>
+    typedef handle2<chain::spend_info::list, chain::output_point_info::list>
         query_handler;
     typedef block_chain::history_fetch_handler fetch_handler;
 
@@ -64,20 +64,20 @@ public:
 
 private:
     typedef chain::spend_info spend_info;
-    typedef chain::output_info output_info;
+    typedef chain::output_point_info output_point_info;
     typedef chain::history_compact::list history_list;
     typedef wallet::payment_address payment_address;
     typedef std::unordered_multimap<payment_address, spend_info> spends_map;
-    typedef std::unordered_multimap<payment_address, output_info> outputs_map;
+    typedef std::unordered_multimap<payment_address, output_point_info> outputs_map;
 
     static bool exists(history_list& history, const spend_info& spend);
-    static bool exists(history_list& history, const output_info& output);
+    static bool exists(history_list& history, const output_point_info& output);
     static void add(history_list& history, const spend_info& spend);
-    static void add(history_list& history, const output_info& output);
+    static void add(history_list& history, const output_point_info& output);
     static void add(history_list& history, const spend_info::list& spends);
-    static void add(history_list& history, const output_info::list& outputs);
+    static void add(history_list& history, const output_point_info::list& outputs);
     static void index_history_fetched(const code& ec,
-        const spend_info::list& spends, const output_info::list& outputs,
+        const spend_info::list& spends, const output_point_info::list& outputs,
         const history_list& history, fetch_handler handler);
 
     void blockchain_history_fetched(const code& ec,

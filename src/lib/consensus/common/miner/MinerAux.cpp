@@ -117,52 +117,53 @@ bool MinerAux::search(libbitcoin::chain::header& header, std::function<bool (voi
     return ethashReturn.success;
 }
 
-bool MinerAux::verifySeal(libbitcoin::chain::header& _header, libbitcoin::chain::header& _parent)
+bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbitcoin::chain::header::ptr parent)
 {
     Result result;
-    h256 seedHash = HeaderAux::seedHash(_header);
-    h256 headerHash  = HeaderAux::hashHead(_header);
-    Nonce nonce = (Nonce)_header.nonce;
-    if( _header.bits != HeaderAux::calculateDifficulty(_header, _parent))
-    {
-        log::error(LOG_MINER) << _header.number<<" block , verify diffculty failed\n";
+    h256 seedHash = HeaderAux::seedHash(header);
+    h256 headerHash  = HeaderAux::hashHead(header);
+    Nonce nonce = (Nonce)header.nonce;
+    if (header.bits != HeaderAux::calculate_difficulty(header, parent, false)) {
+        log::error(LOG_MINER) << header.number<<" block , verify diffculty failed\n";
         return false;
     }
+
     DEV_GUARDED(get()->x_fulls)
-    if (FullType dag = get()->m_fulls[seedHash].lock())
-    {
+    if (FullType dag = get()->m_fulls[seedHash].lock()) {
         result = dag->compute(headerHash, nonce);
 
-        if(result.value <= HeaderAux::boundary(_header) && (result.mixHash).hex() == ((h256)_header.mixhash).hex())
-        {
-            //log::debug(LOG_MINER) << _header.number <<" block has been verified (Full)\n";
+        if (result.value <= HeaderAux::boundary(header)
+            && (result.mixHash).hex() == ((h256)header.mixhash).hex()) {
+            //log::debug(LOG_MINER) << header.number <<" block has been verified (Full)\n";
             return true;
         }
         return false;
     }
+
     result = get()->get_light(seedHash)->compute(headerHash, nonce);
-    if(result.value <= HeaderAux::boundary(_header) && (result.mixHash).hex() == ((h256)_header.mixhash).hex())
-    {
-        //log::debug(LOG_MINER) << _header.number <<" block has been verified (Light)\n";
+    if (result.value <= HeaderAux::boundary(header)
+        && (result.mixHash).hex() == ((h256)header.mixhash).hex()) {
+        //log::debug(LOG_MINER) << header.number <<" block has been verified (Light)\n";
         return true;
     }
-    log::error(LOG_MINER) << _header.number <<" block  verified failed !\n";
+
+    log::error(LOG_MINER) << header.number <<" block  verified failed !\n";
     return false;
 }
 
-bool MinerAux::check_kernel(chain::header& header, const chain::output_info& info, uint64_t height)
+bool MinerAux::verify_stake(const chain::header& header, const chain::output_info& stake_output)
 {
-    if (header.number + min_pos_confirm_height < height) {
+    if (header.number + min_pos_confirm_height < stake_output.height) {
         return false;
     }
 
-    return MinerAux::check_proof_of_stake(header, info, height);
+    return MinerAux::check_proof_of_stake(header, stake_output);
 }
 
-bool MinerAux::check_proof_of_stake(chain::header& header, const chain::output_info& info, uint64_t height)
+bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output)
 {
-    u256& target = header.bits;
-    h256 pos = HeaderAux::hash_head_pos(header, info, height);
+    const u256& target = header.bits;
+    h256 pos = HeaderAux::hash_head_pos(header, stake_output);
 
     log::info(LOG_MINER) << "check_proof_of_stake: bits: " << target << ", header hash: " << pos;
     // TODO

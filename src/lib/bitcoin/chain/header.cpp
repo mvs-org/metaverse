@@ -126,9 +126,14 @@ bool header::is_valid() const
         (nonce != 0);
 }
 
-bool header::is_proof_of_stake()
+bool header::is_proof_of_stake() const
 {
     return version == block_version_pos;
+}
+
+bool header::is_proof_of_work() const
+{
+    return version == block_version;
 }
 
 void header::reset()

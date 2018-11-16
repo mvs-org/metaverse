@@ -109,9 +109,9 @@ protected:
     friend class input;
 };
 
-struct BC_API output_info
+struct BC_API output_point_info
 {
-    typedef std::vector<output_info> list;
+    typedef std::vector<output_point_info> list;
 
     output_point point;
     uint64_t value;
@@ -123,10 +123,20 @@ struct BC_API points_info
     uint64_t change;
 };
 
+struct BC_API output_info
+{
+    typedef std::vector<output_info> list;
+
+    output data;
+    output_point point;
+    uint64_t height;
+};
 
 } // namespace chain
 } // namespace libbitcoin
 
 using output_point = libbitcoin::chain::output_point;
+using output_point_info = libbitcoin::chain::output_point_info;
+using output_info = libbitcoin::chain::output_info;
 
 #endif

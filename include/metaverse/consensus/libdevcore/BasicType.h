@@ -19,18 +19,18 @@ class HeaderAux
 {
 public:
     static HeaderAux* get();
-    static h256 seedHash(chain::header& _bi);
-    static h256 hashHead(chain::header& _bi);
-    static h256 boundary(chain::header& _bi) { auto d = _bi.bits; return d ? (h256)u256(((bigint(1) << 255)-bigint(1) +(bigint(1) << 255) ) / d) : h256(); }
-    static u256 calculateDifficulty(const chain::header& bi, const chain::header& parent);
-    static uint64_t number(h256& _seedHash);
-    static uint64_t cacheSize(chain::header& _header);
-    static uint64_t dataSize(uint64_t _blockNumber);
+    static h256 seedHash(const chain::header& bi);
+    static h256 hashHead(const chain::header& bi);
+    static h256 boundary(const chain::header& bi);
+
+    static uint64_t number(h256& seedHash);
+    static uint64_t cacheSize(const chain::header& header);
+    static uint64_t dataSize(uint64_t blockNumber);
 
     static void set_as_testnet(){ is_testnet = true; }
 
-    static u256 calculate_difficulty(const chain::header& current, chain::header::ptr prev, bool is_staking=false);
-    static h256 hash_head_pos(chain::header& header, const chain::output_info& preStateOutput, uint64_t height);
+    static u256 calculate_difficulty(const chain::header& current, const chain::header::ptr prev, bool is_staking=false);
+    static h256 hash_head_pos(const chain::header& header, const chain::output_info& stateOutput);
 
 private:
     HeaderAux() {}

@@ -608,7 +608,6 @@ u256 miner::get_next_target_required(const chain::header& header, const chain::h
 {
     block_chain_impl& block_chain = node_.chain_impl();
     header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
-
     return HeaderAux::calculate_difficulty(header, last_header, is_staking);
 }
 
@@ -656,32 +655,22 @@ bool miner::sign_coinstake_tx(
 miner::transaction_ptr miner::create_coinstake_tx(
     const ec_secret& private_key,
     const wallet::payment_address& pay_address,
-    block_ptr pblock, const chain::output_info::list& output_infos)
+    block_ptr pblock, const chain::output_info::list& stake_outputs)
 {
     block_chain_impl& block_chain = node_.chain_impl();
     transaction_ptr coinstake = make_shared<message::transaction_message>();
     coinstake->version = transaction_version::first;
 
-    for (const auto& info: output_infos) {
-        uint64_t utxo_height = 0;
-        chain::transaction utxo_tx;
-        if (!block_chain.get_transaction(info.point.hash, utxo_tx, utxo_height)) {
-            continue;
-        }
-
-        BITCOIN_ASSERT(info.point.index < utxo_tx.outputs.size());
-
-        if (MinerAux::check_kernel(pblock->header, info, utxo_height)) {
+    for (const auto& stake: stake_outputs) {
+        if (MinerAux::verify_stake(pblock->header, stake)) {
             coinstake->inputs.clear();
             coinstake->outputs.clear();
-
-            chain::output utxo_output = utxo_tx.outputs.at(info.point.index);
 
             // generate inputs
             chain::input input;
             input.sequence = max_input_sequence;
-            input.previous_output.hash = info.point.hash;
-            input.previous_output.index = info.point.index;
+            input.previous_output.hash = stake.point.hash;
+            input.previous_output.index = stake.point.index;
 
             coinstake->inputs.push_back(input);
 
@@ -692,13 +681,12 @@ miner::transaction_ptr miner::create_coinstake_tx(
 
             auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
             auto payment_script = chain::script{ script_operation };
-            attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(info.value));
-            chain::output to_self(info.value, payment_script, attr);
+            attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(stake.data.value));
+            chain::output to_self(stake.data.value, payment_script, attr);
             coinstake->outputs.push_back(to_self);
 
             // sign coinstake
-
-            if (!sign_coinstake_tx(private_key, coinstake, utxo_output)) {
+            if (!sign_coinstake_tx(private_key, coinstake, stake.data)) {
                 continue;
             }
 

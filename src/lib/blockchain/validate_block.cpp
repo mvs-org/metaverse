@@ -103,11 +103,11 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (header.version == block_version_pos && !is_vaild_proof_of_stake(header)){
+    if (current_block_.is_proof_of_stake() && !check_stake(current_block_)){
         return error::proof_of_stake;
     }
 
-    if (header.version == block_version && !is_valid_proof_of_work(header)) {
+    if (current_block_.is_proof_of_work() && !check_work(current_block_)) {
         return error::proof_of_work;
     }
 
@@ -148,7 +148,6 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     if( (ec = check_coinbase(header.version, transactions)) != error::success){
         return ec;
     }
-
 
     std::set<string> assets;
     std::set<string> asset_certs;
@@ -481,7 +480,10 @@ code validate_block::accept_block() const
 u256 validate_block::work_required(bool is_testnet) const
 {
     chain::header prev_header = fetch_block(height_ - 1);
-    return HeaderAux::calculateDifficulty(const_cast<chain::header&>(current_block_.header), prev_header);
+    header::ptr last_header = get_last_block_header(prev_header, current_block_.is_proof_of_stake());
+
+    return HeaderAux::calculate_difficulty(
+        current_block_.header, last_header, current_block_.is_proof_of_stake());
 }
 
 bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
