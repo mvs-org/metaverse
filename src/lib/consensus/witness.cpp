@@ -321,6 +321,10 @@ uint32_t witness::get_slot_num(const witness_id& id) const
     if (pos != witness_list_.end()) {
         return pos - witness_list_.cbegin();
     }
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "witness get slot num failed for " << std::string(id.begin(), id.end());
+#endif
     return max_uint32;
 }
 
@@ -340,10 +344,16 @@ bool witness::sign(endorsement& out, const ec_secret& secret, const chain::heade
 bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h)
 {
     if (public_key.empty()) {
+#ifdef PRIVATE_CHAIN
+        log::error(LOG_HEADER) << "verify witness sign failed, public key is empty";
+#endif
         return false;
     }
 
     if (out.back() != (h.number & 0xff)) {
+#ifdef PRIVATE_CHAIN
+        log::error(LOG_HEADER) << "verify witness sign failed, suffix wrong";
+#endif
         return false;
     }
 
@@ -353,24 +363,43 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     ec_signature signature;
 
     if (!parse_signature(signature, distinguished, true)) {
+#ifdef PRIVATE_CHAIN
+        log::error(LOG_HEADER) << "verify witness sign failed, parse_signature failed";
+#endif
         return false;
     }
 
     const auto sighash = h.hash();
 
-    return bc::verify_signature(public_key, sighash, signature);
+    if (!bc::verify_signature(public_key, sighash, signature)) {
+#ifdef PRIVATE_CHAIN
+        log::error(LOG_HEADER)
+            << "verify witness signature failed at height " << (h.number + 1)
+            << ", public_key is " << encode_base16(public_key)
+            << ", signature is " << encode_base16(out)
+            << ", hash is " << encode_hash(sighash);
+#endif
+        return false;
+    }
+
+    return true;
 }
 
 bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const
 {
     shared_lock lock(mutex_);
-    auto witness_slot_num = get_slot_num(public_key);
+    auto witness_slot_num = get_slot_num(to_chunk(encode_base16(public_key)));
     return verify_signer(witness_slot_num, block, prev_header);
 }
 
 bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const
 {
     if (witness_slot_num >= witess_number) {
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_HEADER)
+            << "verify witness signer with slot num " << witness_slot_num
+            << " on height " << block.header.number;
+#endif
         return false;
     }
 

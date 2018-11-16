@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/consensus/miner.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/blockchain/block_chain.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
@@ -37,7 +38,7 @@
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 
-#define LOG_HEADER "consensus"
+#define LOG_HEADER "Miner"
 using namespace std;
 
 namespace libbitcoin {
@@ -568,6 +569,19 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         auto& coinbase_input_ops = coinbase_tx.inputs[0].script.operations;
         coinbase_input_ops.push_back({ chain::opcode::special, endorse });
         coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_HEADER)
+            << "create a dpos block with signatures at height " << pblock->header.number
+            << ", public_key is " << encode_base16(public_key_data_)
+            << ", signature is " << encode_base16(endorse)
+            << ", hash is " << encode_hash(prev_header.hash());
+        if (!witness::verify_sign(endorse, public_key_data_, prev_header)) {
+            log::error(LOG_HEADER) << "create witness signature failed";
+            state_ = state::exit_;
+            return nullptr;
+        }
+#endif
     } else if (witness::is_begin_of_epoch(pblock->header.number)){
         auto&& vote_output = witness::get().create_witness_vote_result(pblock->header.number);
         if (vote_output.script.operations.empty()) {
@@ -900,27 +914,37 @@ bool miner::is_witness() const
     if (public_key_data_.empty()) {
         return false;
     }
-    return witness::get().is_witness(public_key_data_);
+    return witness::get().is_witness(to_chunk(encode_base16(public_key_data_)));
 }
 
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
 {
     // set private key
     if (!decode_base16(private_key_, prikey) ||
-        !bc::verify(private_key_)) {
+        !bc::verify(private_key_) ||
+        private_key_.empty()) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER) << "miner verify private key failed";
+#endif
         return false;
     }
 
-    // set public key
-    ec_compressed point;
-    bc::secret_to_public(point, private_key_);
-    wallet::ec_public ec_pubkey(point, true);
-    auto&& public_key = ec_pubkey.encoded();
-    public_key_data_ = to_chunk(public_key);
+    // set public key, ref. signrawtx
+    wallet::ec_private ec_private_key(private_key_, 0u, true);
+    auto&& public_key = ec_private_key.to_public();
+    public_key.to_data(public_key_data_);
 
-    if (private_key_.empty() || public_key_data_.empty()) {
+    if (public_key_data_.empty()) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER) << "miner set mining public key failed";
+#endif
         return false;
     }
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "miner set mining public key " << encode_base16(public_key_data_);
+#endif
 
     return true;
 }

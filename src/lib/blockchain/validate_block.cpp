@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/blockchain/validate_block.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <set>
 #include <algorithm>
@@ -152,6 +153,10 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
 
     if (header.version == chain::block_version_dpos) {
         if (coinbase_input_ops.size() != 3) {
+#ifdef PRIVATE_CHAIN
+            log::error(LOG_BLOCKCHAIN)
+                << "verify witness sign failed, coinbase ops size != 3";
+#endif
             return error::witness_sign_invalid;
         }
         auto endorse = operation::factory_from_data(coinbase_input_ops[1].to_data()).data;
