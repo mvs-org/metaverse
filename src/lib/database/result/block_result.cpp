@@ -86,7 +86,7 @@ ec_signature block_result::blocksig() const
     BITCOIN_ASSERT(slab_);
     const auto memory = REMAP_ADDRESS(slab_);
 
-    if (header().version != 2)
+    if (!header().is_proof_of_stake())
         return ec_signature();
 
     const auto offset = header_size + height_size + count_size;

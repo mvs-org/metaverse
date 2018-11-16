@@ -169,9 +169,7 @@ void block_database::store(const block& block, size_t height)
         for (const auto& tx: block.transactions)
             serial.write_hash(tx.hash());
 
-        if (block.header.version == 2){
-            //data_chunk sig;
-            //std::copy(block.blocksig.begin(), block.blocksig.end(), sig.begin());
+        if (block.header.is_proof_of_stake()){
             serial.write_data(block.blocksig);
         }
     };
