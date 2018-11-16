@@ -343,8 +343,9 @@ void validate_transaction::check_fees() const
 code validate_transaction::check_tx_connect_input() const
 {
     uint64_t fee = 0;
+    auto coin_stake = tx_->is_coinstake();
 
-    if (!tally_fees(blockchain_, *tx_, value_in_, fee)) {
+    if (!tally_fees(blockchain_, *tx_, value_in_, fee, coin_stake)) {
         return error::fees_out_of_range;
     }
 
@@ -1780,7 +1781,7 @@ bool validate_transaction::check_special_fees(bool is_testnet, const chain::tran
 }
 
 bool validate_transaction::tally_fees(blockchain::block_chain_impl& chain,
-    const transaction& tx, uint64_t value_in, uint64_t& total_fees)
+    const transaction& tx, uint64_t value_in, uint64_t& total_fees, bool is_coinstake)
 {
     const auto value_out = tx.total_output_value();
 
@@ -1788,7 +1789,12 @@ bool validate_transaction::tally_fees(blockchain::block_chain_impl& chain,
         return false;
 
     const auto fee = value_in - value_out;
-    if (fee < min_tx_fee) {
+
+    auto check_fee = [=]{
+        return is_coinstake ? fee == 0 : fee >= min_tx_fee;
+    };
+
+    if( !check_fee()){
         return false;
     }
 

@@ -260,9 +260,7 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
         }
 
         if (prev_header.is_proof_of_stake() == is_staking) {
-            auto pheader = std::shared_ptr<chain::header>();
-            *pheader = prev_header;
-            return pheader;
+            return std::make_shared<chain::header>(prev_header);
         }
     }
 

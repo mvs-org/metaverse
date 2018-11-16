@@ -531,12 +531,15 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     size_t total_sigops = 0;
     const auto count = transactions.size();
     uint32_t version = current_block_.header.version;
-    size_t coinage_reward_coinbase_index = 1;
+    size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
+
 
     ////////////// TODO: parallelize. //////////////
     for (size_t tx_index = 0; tx_index < count; ++tx_index)
     {
+        auto is_coinstake = false;
+
         uint64_t value_in = 0;
         const auto& tx = transactions[tx_index];
 
@@ -550,6 +553,12 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         // Count sigops for coinbase tx, but no other checks.
         if (tx.is_coinbase())
             continue;
+
+        if (version == block_version_pos){
+            if (tx_index == 1 && tx.is_coinstake()){
+                is_coinstake = true;
+            }
+        }
 
         for (auto& output : transactions[tx_index].outputs)
         {
@@ -574,20 +583,34 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
         RETURN_IF_STOPPED();
 
-        if (!validate_transaction::tally_fees(chain, tx, value_in, fees))
+        if (!validate_transaction::tally_fees(chain, tx, value_in, fees, is_coinstake))
         {
             err_tx = tx.hash();
             return error::fees_out_of_range;
         }
     }
 
-    if (get_coinage_reward_tx_count != coinage_reward_coinbase_index - 1) {
+    auto check_reward_count = [=] {
+        size_t coinage_reward_count = BC_MAX_SIZE;
+        switch (version){
+        case block_version:
+            coinage_reward_count = coinage_reward_coinbase_index - 1;
+            break;
+        case block_version_pos:
+            coinage_reward_count = coinage_reward_coinbase_index - 2;
+            break;
+        }
+        return coinage_reward_count == get_coinage_reward_tx_count;
+    };
+
+    if (!check_reward_count()) {
         return error::invalid_coinage_reward_coinbase;
     }
 
     RETURN_IF_STOPPED();
 
     const auto& coinbase = transactions.front();
+    //TODO: diff with pos
     const auto reward = coinbase.total_output_value();
     const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
