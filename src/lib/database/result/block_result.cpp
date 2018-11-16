@@ -81,5 +81,18 @@ hash_digest block_result::transaction_hash(size_t index) const
     return deserial.read_hash();
 }
 
+ec_signature block_result::blocksig() const
+{
+    BITCOIN_ASSERT(slab_);
+    const auto memory = REMAP_ADDRESS(slab_);
+
+    if (header().version != 2)
+        return ec_signature();
+
+    const auto offset = header_size + height_size + count_size;
+    const auto first = memory + offset + transaction_count() * hash_size;
+    auto deserial = make_deserializer_unsafe(first);
+    return deserial.read_bytes<sizeof(ec_signature)>();
+}
 } // namespace database
 } // namespace libbitcoin
