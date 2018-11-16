@@ -103,13 +103,13 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (header.version == 2 && !is_vaild_proof_of_stake(header)){
+    if (header.version == block_version_pos && !is_vaild_proof_of_stake(header)){
         return error::proof_of_stake;
     }
 
-    if(header.version == 1 && !is_valid_proof_of_work(header))
+    if (header.version == block_version && !is_valid_proof_of_work(header)) {
         return error::proof_of_work;
-
+    }
 
     RETURN_IF_STOPPED();
 

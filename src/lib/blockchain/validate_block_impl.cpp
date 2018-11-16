@@ -68,7 +68,9 @@ bool validate_block_impl::is_vaild_proof_of_stake(const chain::header& header) c
     else {
         static_cast<block_chain_impl&>(chain_).get_header(parent_header, header.number - 1);
     }
-    //TODO 
+
+    //TODO MinerAux::check_proof_of_stake
+    log::info(LOG_BLOCKCHAIN) << "is_vaild_proof_of_stake: TODO";
     return true;
 }
 

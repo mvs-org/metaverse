@@ -626,7 +626,7 @@ bool miner::sign_coinstake_tx(
     // gen sign
     endorsement endorse;
     if (!chain::script::create_endorsement(endorse, private_key,
-        contract, *coinstake, 1, hash_type))
+        contract, *coinstake, 0, hash_type))
     {
         log::error(LOG_HEADER) <<  "sign_coinstake_tx: get_input_sign sign failure!";
         return false;
@@ -675,6 +675,8 @@ miner::transaction_ptr miner::create_coinstake_tx(
             coinstake->inputs.clear();
             coinstake->outputs.clear();
 
+            chain::output utxo_output = utxo_tx.outputs.at(info.point.index);
+
             // generate inputs
             chain::input input;
             input.sequence = max_input_sequence;
@@ -695,7 +697,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
             coinstake->outputs.push_back(to_self);
 
             // sign coinstake
-            chain::output utxo_output = utxo_tx.outputs.at(info.point.index);
+
             if (!sign_coinstake_tx(private_key, coinstake, utxo_output)) {
                 continue;
             }
