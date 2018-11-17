@@ -456,13 +456,20 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
     if (calced_slot_num == witness_slot_num) {
         return true;
     }
-    if (((calced_slot_num + 1) % witness_number) == witness_slot_num) {
-        // for safty, the previous slot should not be mined by the next witnesses
+    // for safty, the missed  slot should not be mined by the adjacent witnesses
+    if (((calced_slot_num + 1) % witness_number == witness_slot_num) ||
+        ((witness_slot_num + 1) % witness_number == calced_slot_num)) {
         return false;
     }
-    static uint32_t time_config{24}; // same as HeaderAux::calculateDifficulty
-    if (header.timestamp > prev_header.timestamp + time_config*2) {
-        return true;
+    constexpr uint32_t too_long_seconds = 3;
+    if (header.timestamp > prev_header.timestamp + too_long_seconds) {
+        constexpr auto max_dpos_interval = std::chrono::seconds(3);
+        typedef std::chrono::system_clock wall_clock;
+        const auto now_time = wall_clock::now();
+        const auto prev_block_time = wall_clock::from_time_t(prev_header.timestamp);
+        if (now_time > prev_block_time + max_dpos_interval) {
+            return true;
+        }
     }
     return false;
 }

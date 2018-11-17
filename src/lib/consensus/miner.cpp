@@ -538,7 +538,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     pblock->header.number = current_block_height + 1;
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.previous_block_hash = prev_header.hash();
-    pblock->header.timestamp = get_adjust_time(pblock->header.number);
+    pblock->header.timestamp = std::max(get_adjust_time(pblock->header.number), prev_header.timestamp);
 
     bool can_use_dpos = false;
     if (get_accept_block_version() == chain::block_version_dpos ||
