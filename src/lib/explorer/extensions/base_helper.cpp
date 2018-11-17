@@ -729,9 +729,9 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                 // deposit utxo in block
                 uint64_t deposit_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                uint64_t expiration_height = row.output_height + deposit_height;
+                auto deposited_height = blockchain.calc_number_of_blocks(row.output_height, height);
 
-                if (expiration_height > height) {
+                if (deposit_height > deposited_height) {
                     auto&& output_hash = encode_hash(row.output.hash);
                     auto&& tx_hash = encode_hash(tx_temp.hash());
                     const auto match = [&tx_hash](const deposited_balance& balance) {
@@ -748,6 +748,7 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                         }
                     }
                     else {
+                        uint64_t expiration_height = height + deposit_height - deposited_height; // not accurate
                         deposited_balance deposited(address_str, tx_hash, deposit_height, expiration_height);
                         if (output_hash == tx_hash) {
                             deposited.balance = row.value;
@@ -797,14 +798,14 @@ void sync_fetchbalance(wallet::payment_address& address,
                 // deposit utxo in block
                 uint64_t lock_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if ((row.output_height + lock_height) > height) {
+                if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
                     // utxo already in block but deposit not expire
                     frozen_balance += row.value;
                 }
             }
             else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
                 // add not coinbase_maturity etp into frozen
-                if ((row.output_height + coinbase_maturity) > height) {
+                if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
                     frozen_balance += row.value;
                 }
             }
