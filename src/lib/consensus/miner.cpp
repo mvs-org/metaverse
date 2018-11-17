@@ -549,14 +549,14 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             return nullptr;
         }
     }
-    auto& coinbase_tx = pblock->transactions[0];
+    auto& coinbase_tx = pblock->transactions.front();
     uint64_t block_subsidy = calculate_block_subsidy(current_block_height + 1, setting_.use_testnet_rules);
     if (can_use_dpos) {
         // adjust block subsidy for dpos
         block_subsidy = std::min(block_subsidy / witness::witness_number,
             uint64_t(1.0 * block_subsidy * witness::witness_number / witness::pow_check_point_height));
     }
-    coinbase_tx.outputs[0].value = total_fee + block_subsidy;
+    coinbase_tx.outputs.front().value = total_fee + block_subsidy;
 
     if (can_use_dpos) {
         // add witness's signature to the previous block header
@@ -566,16 +566,16 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
             return nullptr;
         }
 
-        auto& coinbase_input_ops = coinbase_tx.inputs[0].script.operations;
+        auto& coinbase_script = coinbase_tx.inputs.front().script;
+        auto& coinbase_input_ops = coinbase_script.operations;
         coinbase_input_ops.push_back({ chain::opcode::special, endorse });
         coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
 
 #ifdef PRIVATE_CHAIN
         log::info(LOG_HEADER)
             << "create a dpos block with signatures at height " << pblock->header.number
-            << ", public_key is " << witness::to_witness_id_str(public_key_data_)
-            << ", signature is " << witness::endorse_to_string(endorse)
-            << ", hash is " << encode_hash(prev_header.hash());
+            << ", coinbase input script is "
+            << coinbase_script.to_string(chain::get_script_context());
         if (!witness::verify_sign(endorse, public_key_data_, prev_header)) {
             log::error(LOG_HEADER) << "create witness signature failed";
             state_ = state::exit_;

@@ -101,6 +101,7 @@ public:
 
     static bool is_begin_of_epoch(uint64_t height);
     static bool is_between_vote_maturity_interval(uint64_t height);
+    static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);

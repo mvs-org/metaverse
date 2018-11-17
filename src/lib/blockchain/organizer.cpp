@@ -238,8 +238,7 @@ void organizer::process(block_detail::ptr process_block)
             BITCOIN_ASSERT(ok);
             auto witness_list = consensus::witness::get().get_witness_list();
             auto candidate_list = consensus::witness::get().get_candidate_list();
-            if (consensus::witness::get_vote_result_height(fork_index) !=
-                consensus::witness::get_vote_result_height(current_block_height)) {
+            if (!consensus::witness::is_in_same_epoch(fork_index, current_block_height)) {
                 consensus::witness::get().update_witness_list(fork_index);
             }
 
@@ -254,8 +253,7 @@ void organizer::process(block_detail::ptr process_block)
                 consensus::witness::get().swap_candidate_list(candidate_list);
             } else if (need_reupdate) {
                 const auto& new_block_height = std::get<2>(ret);
-                if (consensus::witness::get_vote_result_height(fork_index) !=
-                    consensus::witness::get_vote_result_height(new_block_height)) {
+                if (!consensus::witness::is_in_same_epoch(fork_index, new_block_height)) {
                     consensus::witness::get().update_witness_list(new_block_height);
                 }
             }

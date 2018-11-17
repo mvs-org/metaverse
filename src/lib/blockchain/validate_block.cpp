@@ -99,18 +99,35 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;
 
-    const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(header.number);
+    const auto is_block_version_dpos = header.version == chain::block_version_dpos;
+    const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(height_);
 
     unsigned int coinbase_count = 0;
-    for (auto i : transactions) {
-        if (i.is_coinbase()) {
-            if ((!is_begin_of_epoch && i.outputs.size() != 1) ||
-                (is_begin_of_epoch && i.outputs.size() != 2) ||
-                (i.outputs[0].is_etp() == false)) {
-                return error::first_not_coinbase;
-            }
-            ++coinbase_count;
+    for (auto tx : transactions) {
+        if (!tx.is_coinbase()) {
+            break;
         }
+        RETURN_IF_STOPPED();
+        auto has_vote_result = coinbase_count == 0 && is_begin_of_epoch;
+        if ((!has_vote_result && tx.outputs.size() != 1) ||
+            (has_vote_result && tx.outputs.size() != 2) ||
+            (tx.outputs[0].is_etp() == false)) {
+            return error::first_not_coinbase;
+        }
+        const auto& coinbase_script = tx.inputs[0].script;
+        const auto coinbase_size = coinbase_script.serialized_size(false);
+        if ((coinbase_size < 2) ||
+            (!is_block_version_dpos && coinbase_size > 100) ||
+            (is_block_version_dpos && coinbase_size > 200)) {
+            return error::invalid_coinbase_script_size;
+        }
+        // Enforce rule that the coinbase starts with serialized height.
+        if (is_active(script_context::bip34_enabled) &&
+            !is_valid_coinbase_height(height_, current_block_)) {
+            return error::coinbase_height_mismatch;
+        }
+
+        ++coinbase_count;
     }
     if (coinbase_count == 0) {
         return error::first_not_coinbase;
@@ -124,41 +141,38 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
             return error::extra_coinbases;
     }
 
-    RETURN_IF_STOPPED();
-
-    // Enforce rule that the coinbase starts with serialized height.
-    if (is_active(script_context::bip34_enabled) &&
-        !is_valid_coinbase_height(height_, current_block_)) {
-        return error::coinbase_height_mismatch;
-    }
-
-    const auto& coinbase_script = transactions[0].inputs[0].script;
-    const auto& coinbase_input_ops = coinbase_script.operations;
-
-    const auto coinbase_size = coinbase_script.serialized_size(false);
-    if ((coinbase_size < 2) ||
-        (coinbase_script.operations.size() < 3 && coinbase_size > 100) ||
-        (coinbase_script.operations.size() >= 3 && coinbase_size > 200)) {
-        return error::invalid_coinbase_script_size;
-    }
-
     if (is_begin_of_epoch) {
+        RETURN_IF_STOPPED();
         if (!consensus::witness::get().update_witness_list(current_block_)) {
             log::debug(LOG_BLOCKCHAIN)
-                << "update witness list failed at " << header.number
+                << "update witness list failed at " << height_
                 << " block hash: " << encode_hash(header.hash());
             return error::witness_update_error;
         }
     }
 
-    if (header.version == chain::block_version_dpos) {
+    if (is_block_version_dpos) {
+        RETURN_IF_STOPPED();
+        const auto& coinbase_script = transactions.front().inputs.front().script;
+        auto coinbase_input_ops = coinbase_script.operations;
+
+        if (coinbase_input_ops.size() == 1) {
+            const auto& op_data = coinbase_input_ops.back().data;
+            chain::script eval_script;
+            if (eval_script.from_data(op_data, false, script::parse_mode::strict)) {
+                coinbase_input_ops = eval_script.operations;
+            }
+        }
+
         if (coinbase_input_ops.size() != 3) {
 #ifdef PRIVATE_CHAIN
             log::error(LOG_BLOCKCHAIN)
-                << "verify witness sign failed, coinbase ops size != 3";
+                << "verify witness sign script failed, coinbase script is "
+                << coinbase_script.to_string(chain::get_script_context());
 #endif
             return error::witness_sign_invalid;
         }
+
         auto endorse = operation::factory_from_data(coinbase_input_ops[1].to_data()).data;
         auto pubkey = operation::factory_from_data(coinbase_input_ops[2].to_data()).data;
         if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
@@ -528,11 +542,6 @@ bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
     const auto& actual_tx = block.transactions.front();
     const auto& actual_script = actual_tx.inputs.front().script;
     const auto& actual_ops = actual_script.operations;
-
-    if ((block.header.version == chain::block_version_pow && actual_ops.size() != 1) ||
-        (block.header.version == chain::block_version_dpos && actual_ops.size() != 3)) {
-        return false;
-    }
 
     const auto actual = operation::factory_from_data(actual_ops.front().to_data()).data;
     script_number number(height);

@@ -25,6 +25,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -44,8 +45,22 @@ console_result popblock::invoke (Json::Value& jv_output,
 
     // lock database writing while poping
     unique_lock lock(blockchain.get_mutex());
+
+    uint64_t old_height = 0;
+    if (!blockchain.get_last_height(old_height)) {
+        throw block_last_height_get_exception("get last height failed.");
+    }
+
     blockchain::block_detail::list released_blocks;
     blockchain.pop_from(released_blocks, argument_.height);
+
+    if (!released_blocks.empty()) {
+        uint64_t new_height = 0;
+        if (blockchain.get_last_height(new_height) &&
+            !consensus::witness::is_in_same_epoch(old_height, new_height)) {
+            consensus::witness::get().update_witness_list(new_height);
+        }
+    }
 
     blockchain.set_sync_disabled(false);
 

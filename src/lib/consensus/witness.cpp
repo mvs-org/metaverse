@@ -63,10 +63,10 @@ void witness::init(p2p_node& node)
     }
 
 #ifdef PRIVATE_CHAIN
-    witness::pow_check_point_height = 10;
+    witness::pow_check_point_height = 100;
     witness::witness_enable_height = 10;
     witness::witness_number = 3;
-    witness::epoch_cycle_height = 20;
+    witness::epoch_cycle_height = 100;
     witness::vote_maturity = 2;
 #endif
 }
@@ -235,6 +235,11 @@ bool witness::calc_witness_list(uint64_t height)
 #endif
 
     if (witness_list_.size() != witness_number) {
+#ifdef PRIVATE_CHAIN
+    log::error(LOG_HEADER)
+        << "calc witness list failed at height " << height
+        << ", result is " << show_list();
+#endif
         return false;
     }
 
@@ -296,6 +301,10 @@ bool witness::update_witness_list(uint64_t height)
     }
     auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "fetch vote result block failed at height " << height;
+#endif
         return false;
     }
     return update_witness_list(*sp_block);
@@ -304,6 +313,10 @@ bool witness::update_witness_list(uint64_t height)
 bool witness::update_witness_list(const chain::block& block)
 {
     if (!verify_vote_result(block)) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "verify vote result failed at height " << block.header.number;
+#endif
         return false;
     }
 
@@ -381,9 +394,10 @@ bool witness::sign(endorsement& out, const ec_secret& secret, const chain::heade
 
 bool witness::verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h)
 {
-    if (public_key.empty()) {
+    if (public_key.empty() || !is_public_key(public_key)) {
 #ifdef PRIVATE_CHAIN
-        log::error(LOG_HEADER) << "verify witness sign failed, public key is empty";
+        log::error(LOG_HEADER) << "verify witness sign failed, public key is wrong: "
+                               << to_witness_id_str(public_key);
 #endif
         return false;
     }
@@ -482,6 +496,11 @@ bool witness::is_begin_of_epoch(uint64_t height)
 bool witness::is_between_vote_maturity_interval(uint64_t height)
 {
     return is_witness_enabled(height) && get_height_in_epoch(height) <= vote_maturity;
+}
+
+bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
+{
+    return get_vote_result_height(height1) == get_vote_result_height(height2);
 }
 
 } // consensus
