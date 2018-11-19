@@ -33,6 +33,7 @@ uint64_t witness::witness_enable_height = 2000000;
 uint32_t witness::witness_number = 11;
 uint32_t witness::epoch_cycle_height = 10000;
 uint32_t witness::vote_maturity = 12;
+uint32_t witness::max_dpos_interval = 3;
 
 witness* witness::instance_ = nullptr;
 
@@ -60,14 +61,16 @@ void witness::init(p2p_node& node)
         witness::witness_number = 5;
         witness::epoch_cycle_height = 1000;
         witness::vote_maturity = 2;
+        witness::max_dpos_interval = 3;
     }
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
     witness::witness_enable_height = 10;
-    witness::witness_number = 3;
+    witness::witness_number = 11;
     witness::epoch_cycle_height = 100;
     witness::vote_maturity = 2;
+    witness::max_dpos_interval = 1;
 #endif
 }
 
@@ -221,12 +224,17 @@ bool witness::calc_witness_list(uint64_t height)
 
 #ifdef PRIVATE_CHAIN
     std::vector<std::string> initial_witness_list = {
-        // MFxC8nVTwJ7xpZDGEsv7B5h2SmohGGfjDd
-        "02a9b1c925f6fd140359d559299ba38c131dde6ad33b5fdd818cccfebdf66a4da3",
-        // MFvpy7WTJvZMnxeQDTjo3LQyuRnawhaQGA
+        "033b8ffd5f5b1ff1aed54cac72853056ffe66c4b6ce314f80352a97c75a7d62bc8",
         "0226515661e5ba01aa211048c7d34e1e6d577b7460de9582bfd8f5c70b81f07e87",
-        // MFdY9fXz91Jo9Cic6aJt7nMLQpS8HQv7Vs
-        "02cb2cdccfa8f31ffe8b486aa9e12858f8754b438d2001ff2a9bb72427b23e5dc0"
+        "0270e8ab22af412d698ae51b92764914918747d6e752539cba997b9585238167ed",
+        "026789edf6edceeed4d11d87ccb2bc0d626b1c407cd3a455bfb0bc250599caf912",
+        "034758025dd5885ccdcf01aaf4ad3af7e3b17306bcc6c141cb10cfd684fc8a9a3c",
+        "02a9b1c925f6fd140359d559299ba38c131dde6ad33b5fdd818cccfebdf66a4da3",
+        "03cb25bc68f807d09656103c1e9635f5c4ce5a34b4b08a11e783c2033c0330024d",
+        "02cb2cdccfa8f31ffe8b486aa9e12858f8754b438d2001ff2a9bb72427b23e5dc0",
+        "03d27296d98a84d2abe8879fd101252fb9ef30695f763591396406d1a12cb83921",
+        "0328ee9d3b3adc8c687d758f63a663e242005f1df7e18a484149af15a21f4addda",
+        "02f6bd99f7529420d45b8d1a16459e11d61b8ded7cf55d7654d43ebab7f307ba3b"
     };
 
     for (const auto& id : initial_witness_list) {
@@ -450,27 +458,30 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
         return false;
     }
 
-    const auto& header = block.header;
-    auto block_height = header.number;
+    const auto& curr_header = block.header;
+    auto block_height = curr_header.number;
     auto calced_slot_num = ((block_height - witness_enable_height) % witness_number);
+
     if (calced_slot_num == witness_slot_num) {
         return true;
     }
+
     // for safty, the missed  slot should not be mined by the adjacent witnesses
     if (((calced_slot_num + 1) % witness_number == witness_slot_num) ||
         ((witness_slot_num + 1) % witness_number == calced_slot_num)) {
         return false;
     }
-    constexpr uint32_t too_long_seconds = 3;
-    if (header.timestamp > prev_header.timestamp + too_long_seconds) {
-        constexpr auto max_dpos_interval = std::chrono::seconds(3);
+
+    // time related logic, compete
+    if (curr_header.timestamp > prev_header.timestamp + max_dpos_interval) {
         typedef std::chrono::system_clock wall_clock;
         const auto now_time = wall_clock::now();
         const auto prev_block_time = wall_clock::from_time_t(prev_header.timestamp);
-        if (now_time > prev_block_time + max_dpos_interval) {
+        if (now_time > prev_block_time + std::chrono::seconds(max_dpos_interval)) {
             return true;
         }
     }
+
     return false;
 }
 
@@ -502,7 +513,7 @@ bool witness::is_begin_of_epoch(uint64_t height)
 
 bool witness::is_between_vote_maturity_interval(uint64_t height)
 {
-    return is_witness_enabled(height) && get_height_in_epoch(height) <= vote_maturity;
+    return is_witness_enabled(height) && get_height_in_epoch(height) < vote_maturity;
 }
 
 bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)

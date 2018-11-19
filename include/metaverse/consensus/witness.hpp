@@ -57,6 +57,7 @@ public:
     static uint32_t witness_number;
     static uint32_t epoch_cycle_height;
     static uint32_t vote_maturity;
+    static uint32_t max_dpos_interval;
 
 public:
     ~witness();
