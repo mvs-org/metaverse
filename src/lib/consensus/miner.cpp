@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <functional>
 #include <system_error>
+#include <chrono>
+#include <ctime>
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
@@ -68,6 +70,18 @@ bool sort_by_priority(const transaction_priority& a, const transaction_priority&
     return a.get<0>() < b.get<0>();
 };
 } // end of anonymous namespace
+
+std::string timestamp_to_string(uint32_t timestamp)
+{
+    typedef std::chrono::system_clock wall_clock;
+    auto tp = wall_clock::from_time_t(timestamp);
+    std::time_t rawTime = std::chrono::system_clock::to_time_t(tp);
+
+    char buf[sizeof("yyyy-mm-dd hh:mm:ss")] = {'\0'};
+    if (std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&rawTime)) == 0)
+        buf[0] = '\0'; // empty if case strftime fails
+    return std::string(buf);
+}
 
 miner::miner(p2p_node& node)
     : node_(node)
@@ -608,7 +622,17 @@ u256 miner::get_next_target_required(const chain::header& header, const chain::h
 {
     block_chain_impl& block_chain = node_.chain_impl();
     header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
-    return HeaderAux::calculate_difficulty(header, last_header, is_staking);
+    header::ptr llast_header;
+
+    if (last_header && is_staking) {
+        auto height = last_header->number - 1;
+        chain::header prev_last_header;
+        if (block_chain.get_header(prev_last_header, height)) {
+            llast_header = block_chain.get_last_block_header(prev_last_header, is_staking);
+        }
+    }
+
+    return HeaderAux::calculate_difficulty(header, last_header, llast_header, is_staking);
 }
 
 bool miner::sign_coinstake_tx(
@@ -694,15 +718,12 @@ miner::transaction_ptr miner::create_coinstake_tx(
         }
     }
 
-    log::info(LOG_HEADER) << "Failed to create_coinstake_tx!";
     return nullptr;
 }
 
 miner::block_ptr miner::create_new_block_pos(
     const std::string account, const std::string passwd, const wallet::payment_address& pay_address)
 {
-    log::info(LOG_HEADER) << " === create_new_block_pos ===";
-
     block_chain_impl& block_chain = node_.chain_impl();
 
     // Get private key
@@ -814,7 +835,6 @@ miner::block_ptr miner::create_new_block_pos(
     // Log block
     // auto json = explorer::config::json_helper(3).prop_tree(*pblock, true, true);
     // log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.toStyledString();
-
     return pblock;
 }
 
@@ -902,7 +922,8 @@ void miner::work(const wallet::payment_address pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create new "
-                    << (is_staking_ ? "PoS" : "PoW") <<" block at heigth:" << height;
+                    << (is_staking_ ? "PoS" : "PoW") <<" block at heigth:" << height
+                    << ", time: " << timestamp_to_string(block->header.timestamp);
 
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {

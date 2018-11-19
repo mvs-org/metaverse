@@ -8,6 +8,7 @@
 #include "Exceptions.h"
 #include <metaverse/consensus/libethash/internal.h>
 #include <metaverse/consensus/libethash/ethash.h>
+#include <metaverse/bitcoin/math/uint256.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/bitcoin/chain/output_point.hpp>
 
@@ -29,14 +30,28 @@ public:
 
     static void set_as_testnet(){ is_testnet = true; }
 
-    static u256 calculate_difficulty(const chain::header& current, const chain::header::ptr prev, bool is_staking=false);
     static h256 hash_head_pos(const chain::header& header, const chain::output_info& stateOutput);
+
+    static u256 calculate_difficulty(
+        const chain::header& current,
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev,
+        bool is_staking=false);
+
+    static h256 uint_to_hash256(const uint256_t &a);
+    static uint256_t hash_to_uint56(const h256 &a);
 
 private:
     HeaderAux() {}
 
-    static u256 calculate_difficulty_pow(const chain::header& current, const chain::header::ptr prev);
-    static u256 calculate_difficulty_pos(const chain::header& current, const chain::header::ptr prev);
+    static u256 calculate_difficulty_pow(
+        const chain::header& current,
+        const chain::header::ptr prev);
+
+    static u256 calculate_difficulty_pos(
+        const chain::header& current,
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev);
 
 private:
     Mutex x_epochs;

@@ -479,11 +479,18 @@ code validate_block::accept_block() const
 
 u256 validate_block::work_required(bool is_testnet) const
 {
+    bool is_pos = current_block_.is_proof_of_stake();
     chain::header prev_header = fetch_block(height_ - 1);
-    header::ptr last_header = get_last_block_header(prev_header, current_block_.is_proof_of_stake());
+    header::ptr last_header = get_last_block_header(prev_header, is_pos);
+    header::ptr llast_header;
+    if (is_pos && last_header) {
+        auto height = last_header->number - 1;
+        chain::header prev_last_header = fetch_block(height);
+        llast_header = get_last_block_header(prev_last_header, is_pos);
+    }
 
     return HeaderAux::calculate_difficulty(
-        current_block_.header, last_header, current_block_.is_proof_of_stake());
+        current_block_.header, last_header, llast_header, is_pos);
 }
 
 bool validate_block::is_valid_coinbase_height(size_t height, const block& block)

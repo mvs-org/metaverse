@@ -194,7 +194,6 @@ bool block_chain_impl::select_utxo_for_staking(
 {
     auto&& rows = get_address_history(pay_address, false);
 
-
     chain::transaction tx_temp;
     uint64_t tx_height;
 
@@ -213,7 +212,15 @@ bool block_chain_impl::select_utxo_for_staking(
                 continue;
             }
 
+<<<<<<< 16da931c11619650463edb4ccacf1425ff7772ef
             if(!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height)){
+=======
+            if (row.value < min_pos_value){
+                continue;
+            }
+
+            if (row.output_height + min_pos_confirm_height > best_height) {
+>>>>>>> update calculate_difficulty_pos
                 continue;
             }
 
@@ -231,8 +238,8 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
 {
     uint64_t height = parent_header.number;
     if (parent_header.is_proof_of_stake() == is_staking) {
-        log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
-            << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
 
@@ -246,8 +253,8 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
         }
 
         if (prev_header.is_proof_of_stake() == is_staking) {
-            log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
-                << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+            // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);
         }
     }

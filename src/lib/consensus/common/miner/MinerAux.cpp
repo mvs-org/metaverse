@@ -17,6 +17,7 @@
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/utility/log.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/bitcoin/formats/base_16.hpp>
 
 using namespace libbitcoin;
 using namespace std;
@@ -34,7 +35,6 @@ MinerAux* MinerAux::get()
     std::call_once(flag, []{s_this = new MinerAux();});
     return s_this;
 }
-
 
 LightType MinerAux::get_light(h256& _seedHash)
 {
@@ -124,7 +124,7 @@ bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbit
     h256 seedHash = HeaderAux::seedHash(header);
     h256 headerHash  = HeaderAux::hashHead(header);
     Nonce nonce = (Nonce)header.nonce;
-    if (header.bits != HeaderAux::calculate_difficulty(header, parent, false)) {
+    if (header.bits != HeaderAux::calculate_difficulty(header, parent, nullptr, false)) {
         log::error(LOG_MINER) << header.number<<" block , verify diffculty failed\n";
         return false;
     }
@@ -163,12 +163,41 @@ bool MinerAux::verify_stake(const chain::header& header, const chain::output_inf
 
 bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output)
 {
-    const u256& target = header.bits;
-    h256 pos = HeaderAux::hash_head_pos(header, stake_output);
+    // Base target
+    uint32_t target_bits = (uint32_t)header.bits;
+    uint256_t target;
+    target.SetCompact(target_bits);
 
-    log::info(LOG_MINER) << "check_proof_of_stake: bits: " << target << ", header hash: " << pos;
-    // TODO
-    return true;
+    // Stake info
+    uint64_t amount = (stake_output.data.value / coin_price());
+    amount = (amount > 1 ? amount : 1);
+    uint64_t coin_age = header.number - stake_output.height;
+
+    // Calculate hash
+    auto format = boost::format("%1%%2%%3%")
+        % header.timestamp
+        % encode_hash(stake_output.point.hash)
+        % stake_output.point.index;
+    auto hash_pos = bitcoin_hash(to_chunk(format.str()));
+    h256 base_pos_hash = h256(encode_hash(hash_pos));
+    uint256_t pos = HeaderAux::hash_to_uint56(base_pos_hash);
+    pos /= amount;
+    //pos /= coin_age;
+
+    bool enable_log = false;
+    if (enable_log && pos <= target) {
+        h256 target_hash = HeaderAux::uint_to_hash256(target);
+        h256 pos_hash = HeaderAux::uint_to_hash256(pos);
+        log::info(LOG_MINER) << "check_proof_of_stake: "
+            << (pos <= target ? "True" : "False")
+            << "\n           bits: " << header.bits
+            << "\n         amount: " << amount << ", coin_age: " << coin_age
+            << "\n    target_hash: " << target_hash
+            << "\n  base_pos_hash: " << base_pos_hash
+            << "\n       pos_hash: " << pos_hash;
+    }
+
+    return pos <= target;
 }
 
 

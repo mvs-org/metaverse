@@ -189,16 +189,16 @@ chain::header::ptr validate_block_impl::get_last_block_header(const chain::heade
 {
     uint64_t height = parent_header.number;
     if (parent_header.is_proof_of_stake() == is_staking) {
-        log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-            << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
 
     while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 1)) {
         chain::header prev_header = fetch_block(--height);
         if (prev_header.is_proof_of_stake() == is_staking) {
-            log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
-                << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+            // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
             return std::make_shared<chain::header>(prev_header);
         }
     }
