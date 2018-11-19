@@ -166,7 +166,7 @@ bool block_chain_impl::check_pos_utxo_capability(const  uint64_t& height, const 
     }
 
     if (out_height + min_pos_confirm_height > height) {
-        continue;
+        return false;
     }
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
