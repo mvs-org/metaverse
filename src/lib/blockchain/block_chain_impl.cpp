@@ -212,15 +212,7 @@ bool block_chain_impl::select_utxo_for_staking(
                 continue;
             }
 
-<<<<<<< 16da931c11619650463edb4ccacf1425ff7772ef
-            if(!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height)){
-=======
-            if (row.value < min_pos_value){
-                continue;
-            }
-
-            if (row.output_height + min_pos_confirm_height > best_height) {
->>>>>>> update calculate_difficulty_pos
+            if (!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height)){
                 continue;
             }
 
@@ -230,9 +222,6 @@ bool block_chain_impl::select_utxo_for_staking(
 
     return true;
 }
-
-
-
 
 chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
 {
