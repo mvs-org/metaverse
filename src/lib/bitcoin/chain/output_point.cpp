@@ -62,7 +62,7 @@ output_point::output_point(hash_digest&& hash, uint32_t index)
 }
 
 output_point::output_point(const hash_digest& hash, uint32_t index)
-  : point(hash, index)
+  : point(hash, index), metadata{}
 {
 }
 
@@ -139,20 +139,6 @@ output_point output_point::factory(reader& source)
     output_point instance;
     instance.from_data(source);
     return instance;
-}
-
-// Validation.
-//-----------------------------------------------------------------------------
-
-// For tx pool validation height is that of the candidate block.
-bool output_point::is_mature(size_t height) const
-{
-    // Coinbase (null) inputs and those with non-coinbase prevouts are mature.
-    if (!metadata.coinbase || is_null())
-        return true;
-
-    // The (non-coinbase) input refers to a coinbase output, so validate depth.
-    return floor_subtract(height, metadata.height) >= coinbase_maturity;
 }
 
 } // namespace chain

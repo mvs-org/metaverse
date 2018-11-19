@@ -1621,6 +1621,7 @@ bool validate_transaction::check_consensus(const script& prevout_script,
 
     const auto valid = script::verify(current_input_script,
                                       previous_output_script, current_tx, input_index32, flags);
+    const auto result = valid;
 #endif
 
     if (!valid) {
@@ -1684,8 +1685,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
     }
 
     if (previous_tx.is_coinbase()) {
-        const auto height_difference = last_block_height_ - parent_height;
-        if (height_difference < coinbase_maturity) {
+        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_)) {
             return false;
         }
     }

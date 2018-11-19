@@ -749,26 +749,7 @@ bool validate_block::connect_input(size_t index_in_parent,
     const auto output_value = previous_tx_out.value;
     if (output_value > max_money())
     {
-        log::warning(LOG_BLOCKCHAIN) << "Output money exceeds 21 million.";
-        return false;
-    }
-
-    // Check coinbase maturity has been reached
-    if (previous_tx.is_coinbase())
-    {
-        BITCOIN_ASSERT(previous_height <= height_);
-        const auto height_difference = height_ - previous_height;
-        if (height_difference < coinbase_maturity)
-        {
-            log::warning(LOG_BLOCKCHAIN) << "Immature coinbase spend attempt.";
-            return false;
-        }
-    }
-
-    if (!validate_transaction::check_consensus(previous_tx_out.script,
-            current_tx, input_index, activations_))
-    {
-        log::warning(LOG_BLOCKCHAIN) << "Input script invalid consensus.";
+        log::warning(LOG_BLOCKCHAIN) << "Input money exceeds 21 million.";
         return false;
     }
 
