@@ -263,12 +263,6 @@ bool block::must_use_pow_consensus() const
     if (consensus::witness::is_between_vote_maturity_interval(header.number)) {
         return true;
     }
-#ifdef PRIVATE_CHAIN
-    if (header.number <= coinbase_maturity + 1) {
-        // only for testing, quickly generate spendable uxto
-        return false;
-    }
-#endif
     if (header.number % consensus::witness::pow_check_point_height == 0) {
         return true;
     }
@@ -280,12 +274,6 @@ bool block::can_use_dpos_consensus() const
     if (must_use_pow_consensus()) {
         return false;
     }
-#ifdef PRIVATE_CHAIN
-    if (header.number <= coinbase_maturity + 1) {
-        // only for testing, quickly generate spendable uxto
-        return true;
-    }
-#endif
     // only use DPOS to pack real txs, forbid block with only coinbase tx
     if (transactions.size() == 1) {
         return false;

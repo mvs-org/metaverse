@@ -19,9 +19,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/bitcoin/constants.hpp>
+#include <metaverse/macros_define.hpp>
 
 namespace libbitcoin {
+#ifndef PRIVATE_CHAIN
 uint32_t coinbase_maturity = 1000;
+#else
+uint32_t coinbase_maturity = 10;
+#endif
 
 hash_number max_target()
 {
