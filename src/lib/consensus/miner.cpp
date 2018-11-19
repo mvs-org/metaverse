@@ -812,8 +812,8 @@ miner::block_ptr miner::create_new_block_pos(
     }
 
     // Log block
-    auto json = explorer::config::json_helper(3).prop_tree(*pblock, true, true);
-    log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.toStyledString();
+    // auto json = explorer::config::json_helper(3).prop_tree(*pblock, true, true);
+    // log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.toStyledString();
 
     return pblock;
 }

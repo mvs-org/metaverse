@@ -13,6 +13,7 @@
 #include <metaverse/consensus/libdevcore/Log.h>
 #include <metaverse/consensus/libdevcore/SHA3.h>
 #include <metaverse/consensus/libdevcore/Exceptions.h>
+#include <metaverse/bitcoin/math/uint256.hpp>
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/bitcoin/utility/log.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>

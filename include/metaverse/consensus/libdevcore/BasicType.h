@@ -34,6 +34,11 @@ public:
 
 private:
     HeaderAux() {}
+
+    static u256 calculate_difficulty_pow(const chain::header& current, const chain::header::ptr prev);
+    static u256 calculate_difficulty_pos(const chain::header& current, const chain::header::ptr prev);
+
+private:
     Mutex x_epochs;
     h256s m_seedHashes;
     std::unordered_map<h256, unsigned> m_epochs;

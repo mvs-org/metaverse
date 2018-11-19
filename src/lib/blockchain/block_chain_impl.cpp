@@ -154,8 +154,6 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-
-
 bool block_chain_impl::check_pos_utxo_capability(const  uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height)
 {
     if(out_index >= tx.outputs.size()){
@@ -163,8 +161,12 @@ bool block_chain_impl::check_pos_utxo_capability(const  uint64_t& height, const 
     }
 
     const auto output = tx.outputs[out_index];
-    if (output.value < min_pos_value || out_height + min_pos_confirm_height > height){
+    if (output.value < min_pos_value){
         return false;
+    }
+
+    if (out_height + min_pos_confirm_height > height) {
+        continue;
     }
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
@@ -1554,7 +1556,7 @@ bool block_chain_impl::check_pos_capability(
     const wallet::payment_address& pay_address,
     bool wait_db)
 {
-    history::list rows; 
+    history::list rows;
 
     if(wait_db){
         rows = get_address_history(pay_address, false);

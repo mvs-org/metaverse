@@ -1,4 +1,7 @@
 #include <metaverse/consensus/libdevcore/BasicType.h>
+#include <metaverse/bitcoin/math/uint256.hpp>
+#include <metaverse/bitcoin/utility/random.hpp>
+#include "crypto/common.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -159,6 +162,16 @@ u256 HeaderAux::calculate_difficulty(
     const chain::header::ptr prev,
     bool is_staking)
 {
+    if (is_staking) {
+        return calculate_difficulty_pos(current, prev);
+    }
+    else {
+        return calculate_difficulty_pow(current, prev);
+    }
+}
+
+u256 HeaderAux::calculate_difficulty_pow(const chain::header& current, const chain::header::ptr prev)
+{
     if (!current.number) {
         throw GenesisBlockCannotBeCalculated();
     }
@@ -181,4 +194,75 @@ u256 HeaderAux::calculate_difficulty(
 
     bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
+}
+
+h256 uint_to_hash256(const uint256_t &a) {
+    h256 b;
+    auto& array = b.asArray();
+    for (int x = 0; x < a.size(); ++x) {
+        WriteLE32(array.begin() + x*4, *(a.begin() + x));
+    }
+    return b;
+}
+
+uint256_t hash_to_uint56(const h256 &a)
+{
+    uint256_t b;
+    auto& array = a.asArray();
+    for (int x = 0; x < b.size(); ++x) {
+        *(b.begin() + x) = ReadLE32(array.begin() + x*4);
+    }
+    return b;
+}
+
+u256 HeaderAux::calculate_difficulty_pos(const chain::header& current, const chain::header::ptr prev)
+{
+    h256 pos_limit_target = h256("000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    uint256_t nbits_limit_pos = hash_to_uint56(pos_limit_target);
+    uint32_t pos_target_timespan = 24;
+
+    uint32_t limit_target = nbits_limit_pos.GetCompact();
+    // if (nullptr == prev) {
+    //     return limit_target;
+    // }
+
+    // uint32_t last_pos_bit = (uint32_t)prev->bits;
+    // uint32_t last_pos_time = prev->timestamp;
+
+    uint32_t last_pos_bit = limit_target;
+    uint32_t last_pos_time = current.timestamp;
+    const auto random = pseudo_random(1, pos_target_timespan * 2);
+    const auto offset = static_cast<uint32_t>(random);
+    // TODO get from prev prev block
+    uint32_t llast_pos_time = last_pos_time - offset;
+
+    // Limit adjustment step
+    uint32_t actual_timespan = last_pos_time - llast_pos_time;
+    if (actual_timespan < pos_target_timespan / 4) {
+        actual_timespan = pos_target_timespan / 4;
+    }
+    if (actual_timespan > pos_target_timespan * 4) {
+        actual_timespan = pos_target_timespan * 4;
+    }
+
+    // Retarget
+    uint256_t new_target;
+    new_target.SetCompact(last_pos_bit);
+    new_target /= pos_target_timespan;
+    new_target *= actual_timespan;
+
+    log::info("calculate_difficulty") << "pos limit target: " << pos_limit_target;
+    log::info("calculate_difficulty") << "    limit target: " << uint_to_hash256(nbits_limit_pos);
+    log::info("calculate_difficulty") << "     prev target: " << uint_to_hash256(new_target);
+    if (new_target > nbits_limit_pos) {
+        new_target = nbits_limit_pos;
+    }
+
+    uint32_t value = new_target.GetCompact();
+    log::info("calculate_difficulty")
+        << "nbits_limit_pos: " << std::to_string(limit_target)
+        << "      last bits: " << std::to_string(last_pos_bit)
+        << "   current bits: " << std::to_string(value);
+
+    return u256(value);
 }
