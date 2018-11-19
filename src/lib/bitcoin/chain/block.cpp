@@ -118,8 +118,7 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
         reset();
 
     if (header.is_proof_of_stake()) {
-        const data_chunk&& sig = source.read_data(sizeof(blocksig));
-        std::copy(sig.begin(), sig.end(), blocksig.begin());
+        source.read_data(blocksig.data(), blocksig.size());
     }
     return result;
 }
@@ -133,10 +132,7 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
         tx.to_data(sink);
 
     if (header.is_proof_of_stake()){
-        data_chunk sig;
-        sig.reserve(blocksig.size());
-        std::copy(blocksig.begin(), blocksig.end(), sig.begin());
-        sink.write_data(sig);
+        sink.write_data(blocksig.data(), blocksig.size());
     }
 }
 
@@ -148,7 +144,7 @@ uint64_t block::serialized_size(bool with_transaction_count) const
         block_size += tx.serialized_size();
 
     if (header.is_proof_of_stake())
-        block_size += sizeof(blocksig);
+        block_size += blocksig.size();
 
     return block_size;
 }
