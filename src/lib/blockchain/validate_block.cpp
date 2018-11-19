@@ -630,25 +630,22 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
 bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const
 {
-    uint32_t version = current_block_.header.version;
 
-    if(version == block_version_pos){
-        const auto&  blocksig= current_block_.blocksig;
-        if(blocksig.empty() || !is_coin_stake(current_block_)){
-            return false;
-        }
+    if (!current_block_.header.is_proof_of_stake())
+        return false;
 
-        BITCOIN_ASSERT(current_block_.transactions.size() > 1);
-        const auto & coinstake_tx = current_block_.transactions[1];
-        const auto & head_hash = current_block_.header.hash();
-        const data_chunk& data = coinstake_tx.inputs[0].script.operations.back().data;
 
-        if(!verify_signature(data, head_hash, blocksig)){
-            return false;
-        }
+    const auto& blocksig = current_block_.blocksig;
+    if(blocksig.empty() || !is_coin_stake(current_block_)){
+        return false;
     }
 
-    return true;
+    BITCOIN_ASSERT(current_block_.transactions.size() > 1);
+    const auto & coinstake_tx = current_block_.transactions[1];
+    const auto & head_hash = current_block_.header.hash();
+    const data_chunk& data = coinstake_tx.inputs[0].script.operations.back().data;
+
+    return verify_signature(data, head_hash, blocksig);
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const
