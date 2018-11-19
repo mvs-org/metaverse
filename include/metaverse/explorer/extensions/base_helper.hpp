@@ -96,6 +96,7 @@ struct address_asset_record
     output_point output;
     chain::script script;
     uint32_t hd_index{0}; // only used for multisig tx
+    uint32_t sequence{max_input_sequence};
 };
 
 struct receiver_record
@@ -111,6 +112,7 @@ struct receiver_record
     utxo_attach_type type{utxo_attach_type::invalid};
     attachment attach_elem;  // used for MESSAGE_TYPE, used for information transfer etc.
     chain::input_point input_point{null_hash, max_uint32};
+    bool is_lock_seq_{false};
 
     receiver_record()
         : target()
@@ -121,20 +123,31 @@ struct receiver_record
         , type(utxo_attach_type::invalid)
         , attach_elem()
         , input_point{null_hash, max_uint32}
+        , is_lock_seq_(false)
+    {}
+
+    receiver_record(const std::string& target_, const std::string& symbol_,
+        uint64_t amount_, uint64_t asset_amount_,
+        utxo_attach_type type_, const attachment& attach_elem_, bool is_lock_seq)
+        : receiver_record(target_, symbol_, amount_, asset_amount_,
+            chain::asset_cert_ns::none, type_, attach_elem_,
+            chain::input_point(null_hash, max_uint32), is_lock_seq)
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_,
         utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
-        const chain::input_point& input_point_ = {null_hash, max_uint32})
+        const chain::input_point& input_point_ = {null_hash, max_uint32},
+        bool is_lock_seq = false)
         : receiver_record(target_, symbol_, amount_, asset_amount_,
-            chain::asset_cert_ns::none, type_, attach_elem_, input_point_)
+            chain::asset_cert_ns::none, type_, attach_elem_, input_point_, is_lock_seq)
     {}
 
     receiver_record(const std::string& target_, const std::string& symbol_,
         uint64_t amount_, uint64_t asset_amount_, asset_cert_type asset_cert_,
         utxo_attach_type type_, const attachment& attach_elem_ = attachment(),
-        const chain::input_point& input_point_ = {null_hash, max_uint32})
+        const chain::input_point& input_point_ = {null_hash, max_uint32},
+        bool is_lock_seq = false)
         : target(target_)
         , symbol(symbol_)
         , amount(amount_)
@@ -143,6 +156,7 @@ struct receiver_record
         , type(type_)
         , attach_elem(attach_elem_)
         , input_point(input_point_)
+        , is_lock_seq_(is_lock_seq)
     {}
 
     bool is_empty() const;
@@ -253,7 +267,7 @@ public:
         bc::blockchain::block_chain_impl& blockchain,
         receiver_record::list&& receiver_list, uint64_t fee,
         std::string&& symbol, std::string&& from, std::string&& change,
-        uint32_t locktime = 0)
+        uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence)
         : blockchain_{blockchain}
         , symbol_{std::move(symbol)}
         , from_{std::move(from)}
@@ -261,6 +275,7 @@ public:
         , payment_etp_{fee}
         , receiver_list_{std::move(receiver_list)}
         , locktime_(locktime)
+        , sequence_(sequence)
     {
     };
 
@@ -339,6 +354,7 @@ protected:
     std::vector<receiver_record>      receiver_list_;
     std::vector<address_asset_record> from_list_;
     uint32_t                          locktime_;
+    uint32_t                          sequence_;
 };
 
 class BCX_API base_transfer_helper : public base_transfer_common
@@ -350,10 +366,10 @@ public:
         uint64_t fee, 
         std::string&& symbol = std::string(""),
         std::string&& change = std::string(""), 
-        uint32_t locktime = 0)
+        uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence)
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), std::move(from),
-            std::move(change), locktime)
+            std::move(change), locktime, sequence)
         , cmd_{cmd}
         , name_{std::move(name)}
         , passwd_{std::move(passwd)}
@@ -496,6 +512,23 @@ public:
     {}
 
     ~sending_etp(){}
+};
+
+class BCX_API lock_sending : public base_transfer_helper
+{
+public:
+    lock_sending(command& cmd, bc::blockchain::block_chain_impl& blockchain,
+        std::string&& name, std::string&& passwd,
+        std::string&& from, receiver_record::list&& receiver_list,
+        std::string&& change, uint64_t fee, uint32_t sequence)
+        : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
+            std::move(from), std::move(receiver_list),
+            fee, "", std::move(change), 0, sequence)
+    {}
+
+    ~lock_sending(){}
+
+    chain::operation::stack get_script_operations(const receiver_record& record) const override;
 };
 
 class BCX_API sending_multisig_tx : public base_multisig_transfer_helper

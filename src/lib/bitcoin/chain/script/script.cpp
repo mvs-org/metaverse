@@ -120,6 +120,9 @@ script_pattern script::pattern() const
     if (operation::is_pay_key_hash_with_attenuation_model_pattern(operations))
         return script_pattern::pay_key_hash_with_attenuation_model;
 
+    if (operation::is_pay_key_hash_with_sequence_lock_pattern(operations))
+        return script_pattern::pay_key_hash_with_sequence_lock;
+
     return script_pattern::non_standard;
 }
 

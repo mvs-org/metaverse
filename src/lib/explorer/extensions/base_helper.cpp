@@ -440,6 +440,17 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
                             asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
                 }
+                else if (asset_amount
+                    && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                    uint64_t lock_sequence = chain::operation::
+                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                    // use any kind of blocks
+                    if (row.output_height + lock_sequence > height) {
+                        // utxo already in block but is locked with sequence and not mature
+                        locked_amount = asset_amount;
+                    }
+                }
+
                 if (iter == sh_asset_vec->end()) { // new item
                     sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
                 }
@@ -676,6 +687,16 @@ auto sync_fetch_asset_view(const std::string& symbol,
                             asset_amount, diff_height, attenuation_model_param);
                     locked_amount = asset_amount - available_amount;
                 }
+                else if (asset_amount
+                    && chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                    uint64_t lock_sequence = chain::operation::
+                        get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                    // use any kind of blocks
+                    if (tx_height + lock_sequence > height) {
+                        // utxo already in block but is locked with sequence and not mature
+                        locked_amount = asset_amount;
+                    }
+                }
 
                 sh_asset_vec->push_back({symbol, address, asset_amount, locked_amount});
             }
@@ -803,6 +824,15 @@ void sync_fetchbalance(wallet::payment_address& address,
                     frozen_balance += row.value;
                 }
             }
+            else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                uint64_t lock_sequence = chain::operation::
+                    get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+                // use any kind of blocks
+                if (row.output_height + lock_sequence > height) {
+                    // utxo already in block but is locked with sequence and not mature
+                    frozen_balance += row.value;
+                }
+            }
             else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
                 // add not coinbase_maturity etp into frozen
                 if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
@@ -855,7 +885,23 @@ bool base_transfer_common::get_spendable_output(
                 return false;
             }
         }
-    } else if (tx_temp.is_coinbase()) { // incase readd deposit
+    }
+    else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+        if (row.output_height == 0) {
+            // lock sequence utxo in transaction pool
+            return false;
+        }
+        else {
+            uint64_t lock_sequence = chain::operation::
+                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            // use any kind of blocks
+            if (row.output_height + lock_sequence > height) {
+                // utxo already in block but is locked with sequence and not mature
+                return false;
+            }
+        }
+    }
+    else if (tx_temp.is_coinbase()) { // incase readd deposit
         // coin base etp maturity etp check
         // coinbase_maturity etp check
         if ((row.output_height == 0) ||
@@ -1012,6 +1058,16 @@ void base_transfer_common::sync_fetchutxo(
 
         BITCOIN_ASSERT(asset_total_amount >= asset_amount);
 
+        auto lock_sequence = output.get_lock_sequence();
+
+        if (locktime_ > 0) {
+            // ref. is_locktime_conflict() [BIP65]
+            if (lock_sequence != max_input_sequence) {
+                continue;
+            }
+            lock_sequence = relative_locktime_disabled;
+        }
+
         // add to from list
         address_asset_record record;
 
@@ -1026,6 +1082,7 @@ void base_transfer_common::sync_fetchutxo(
         record.asset_cert = cert_type;
         record.output = row.output;
         record.type = get_utxo_attach_type(output);
+        record.sequence = lock_sequence;
 
         from_list_.push_back(record);
 
@@ -1381,14 +1438,7 @@ void base_transfer_common::populate_tx_inputs()
                 + std::to_string(tx_limit) + " inputs.";
             throw tx_validate_exception(response);
         }
-        
-        if (locktime_ > 0) {
-            input.sequence = bc::relative_locktime_disabled;
-        }
-        else {
-            input.sequence = max_input_sequence;
-        }
-        
+        input.sequence = fromeach.sequence;
         input.previous_output.hash = fromeach.output.hash;
         input.previous_output.index = fromeach.output.index;
         tx_.inputs.push_back(input);
@@ -2264,6 +2314,26 @@ attachment transferring_mit::populate_output_attachment(const receiver_record& r
     }
 
     return attach;
+}
+
+chain::operation::stack lock_sending::get_script_operations(const receiver_record& record) const
+{
+    if (record.is_lock_seq_) {
+        const wallet::payment_address payment(record.target);
+        if (!payment) {
+            throw toaddress_invalid_exception{"invalid target address"};
+        }
+
+        if (payment.version() == wallet::payment_address::mainnet_p2kh) {
+            const auto& hash = payment.hash();
+            return chain::operation::to_pay_key_hash_with_sequence_lock_pattern(hash, sequence_);
+        }
+        else {
+            throw toaddress_invalid_exception{"not supported target address " + record.target};
+        }
+    }
+
+    return base_transfer_helper::get_script_operations(record);
 }
 
 } //commands

@@ -100,6 +100,7 @@
 #include <metaverse/explorer/extensions/commands/signrawtx.hpp>
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
+#include <metaverse/explorer/extensions/commands/lock.hpp>
 
 
 namespace libbitcoin {
@@ -171,6 +172,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<sendmore>());
     func(make_shared<sendfrom>());
     func(make_shared<deposit>());
+    func(make_shared<lock>());
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
     func(make_shared<getaddressetp>());
@@ -321,6 +323,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<getaddressetp>();
     if (symbol == deposit::symbol())
         return make_shared<deposit>();
+    if (symbol == lock::symbol())
+        return make_shared<lock>();
     if (symbol == send::symbol() || symbol == "didsend")
         return make_shared<send>();
     if (symbol == sendmore::symbol() || symbol == "didsendmore")

@@ -384,6 +384,21 @@ bool operation::is_pay_key_hash_with_attenuation_model_pattern(const operation::
         && ops[7].code == opcode::checksig;
 }
 
+bool operation::is_pay_key_hash_with_sequence_lock_pattern(const operation::stack& ops)
+{
+    return ops.size() == 8
+        && ops[0].code == opcode::special
+        && ops[1].code == opcode::checksequenceverify
+        && ops[2].code == opcode::drop
+        && ops[3].code == opcode::dup
+        && ops[4].code == opcode::hash160
+        && ops[5].code == opcode::special
+        && ops[5].data.size() == short_hash_size
+        && ops[6].code == opcode::equalverify
+        && ops[7].code == opcode::checksig;
+}
+
+
 bool operation::is_sign_multisig_pattern(const operation::stack& ops)
 {
     if (ops.size() < 2 || !is_push_only(ops))
@@ -461,6 +476,12 @@ const data_chunk& operation::get_model_param_from_pay_key_hash_with_attenuation_
 const data_chunk& operation::get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops)
 {
     return ops[1].data;
+}
+
+uint32_t operation::get_lock_sequence_from_pay_key_hash_with_sequence_lock(const operation::stack& ops)
+{
+    CScriptNum num(ops[0].data, 1);
+    return static_cast<uint32_t>(num.getint64());
 }
 
 // pattern templates
@@ -588,6 +609,21 @@ operation::stack operation::to_pay_key_hash_with_attenuation_model_pattern(
         { opcode::pushdata2, to_chunk(model_param) },
         { opcode::special, input_point.to_data() },
         { opcode::checkattenuationverify, {} },
+        { opcode::dup, {} },
+        { opcode::hash160, {} },
+        { opcode::special, to_chunk(hash) },
+        { opcode::equalverify, {} },
+        { opcode::checksig, {} }
+    };
+}
+
+operation::stack operation::to_pay_key_hash_with_sequence_lock_pattern(const short_hash& hash, uint32_t sequence_lock)
+{
+    return operation::stack
+    {
+        { opcode::special, CScriptNum::serialize(sequence_lock) },
+        { opcode::checksequenceverify, {} },
+        { opcode::drop, {} },
         { opcode::dup, {} },
         { opcode::hash160, {} },
         { opcode::special, to_chunk(hash) },

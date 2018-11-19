@@ -96,6 +96,13 @@ enum class script_pattern
     /// Signature script: <sig> <pubkey>
     pay_key_hash_with_attenuation_model,
 
+    /// BIP112 check sequence
+    /// Pubkey script:
+    ///     <sequence> OP_CHECKSEQUENCEVERIFY DROP
+    ///     OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+    /// Signature script: <sig> <pubkey>
+    pay_key_hash_with_sequence_lock,
+
 };
 
 class BC_API operation
@@ -122,6 +129,7 @@ public:
     static bool is_pay_script_hash_pattern(const operation::stack& ops);
     static bool is_pay_blackhole_pattern(const operation::stack& ops);
     static bool is_pay_key_hash_with_attenuation_model_pattern(const operation::stack& ops);
+    static bool is_pay_key_hash_with_sequence_lock_pattern(const operation::stack& ops);
 
     /// signature script patterns (standard)
     static bool is_sign_multisig_pattern(const operation::stack& ops);
@@ -134,6 +142,7 @@ public:
     static uint64_t get_lock_height_from_pay_key_hash_with_lock_height(const operation::stack& ops);
     static const data_chunk& get_model_param_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
     static const data_chunk& get_input_point_from_pay_key_hash_with_attenuation_model(const operation::stack& ops);
+    static uint32_t get_lock_sequence_from_pay_key_hash_with_sequence_lock(const operation::stack& ops);
 
     /// stack factories
     static stack to_null_data_pattern(data_slice data);
@@ -148,6 +157,7 @@ public:
     static stack to_pay_blackhole_pattern(const short_hash& hash);
     static stack to_pay_key_hash_with_attenuation_model_pattern(
             const short_hash& hash, const std::string& model_param, const point& input_point);
+    static stack to_pay_key_hash_with_sequence_lock_pattern(const short_hash& hash, uint32_t sequence_lock);
 
     static operation from_raw_data(const data_chunk& data);
 
