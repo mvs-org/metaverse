@@ -130,6 +130,7 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
 
     if (header.is_proof_of_stake()){
         data_chunk sig;
+        sig.reserve(blocksig.size());
         std::copy(blocksig.begin(), blocksig.end(), sig.begin());
         sink.write_data(sig);
     }
