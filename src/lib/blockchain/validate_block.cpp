@@ -632,7 +632,7 @@ bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) 
 {
 
     if (!current_block_.header.is_proof_of_stake())
-        return false;
+        return true;
 
 
     const auto& blocksig = current_block_.blocksig;
