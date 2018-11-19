@@ -32,37 +32,37 @@ namespace chain {
 //-----------------------------------------------------------------------------
 
 output_point::output_point()
-  : point{}, metadata{}
+  : point{}
 {
 }
 
 output_point::output_point(point&& value)
-  : point(std::move(value)), metadata{}
+  : point(std::move(value))
 {
 }
 
 output_point::output_point(const point& value)
-  : point(value), metadata{}
+  : point(value)
 {
 }
 
 output_point::output_point(const output_point& other)
-  : point(other), metadata(other.metadata)
+  : point(other)
 {
 }
 
 output_point::output_point(output_point&& other)
-  : point(std::move(other)), metadata(std::move(other.metadata))
+  : point(std::move(other))
 {
 }
 
 output_point::output_point(hash_digest&& hash, uint32_t index)
-  : point({ std::move(hash), index }), metadata{}
+  : point({ std::move(hash), index })
 {
 }
 
 output_point::output_point(const hash_digest& hash, uint32_t index)
-  : point(hash, index), metadata{}
+  : point(hash, index)
 {
 }
 
@@ -86,14 +86,12 @@ output_point& output_point::operator=(const point& other)
 output_point& output_point::operator=(output_point&& other)
 {
     point::operator=(std::move(other));
-    metadata = std::move(other.metadata);
     return *this;
 }
 
 output_point& output_point::operator=(const output_point& other)
 {
     point::operator=(other);
-    metadata = other.metadata;
     return *this;
 }
 

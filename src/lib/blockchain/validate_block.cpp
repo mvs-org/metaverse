@@ -479,28 +479,6 @@ code validate_block::accept_block() const
 
     RETURN_IF_STOPPED();
 
-    //CHENHAO. future blocktime attack
-#if 0
-    if (header.number >= bc::consensus::future_blocktime_fork_height) {
-
-    } else {
-        if (header.timestamp <= median_time_past())
-            return error::timestamp_too_early;
-    }
-#endif
-
-
-    RETURN_IF_STOPPED();
-
-    // Txs should be final when included in a block.
-    for (const auto& tx : current_block_.transactions)
-    {
-        if (!tx.is_final(height_, header.timestamp))
-            return error::non_final_transaction;
-
-        RETURN_IF_STOPPED();
-    }
-
     // Ensure that the block passes checkpoints.
     // This is both DOS protection and performance optimization for sync.
     const auto block_hash = header.hash();
@@ -513,15 +491,6 @@ code validate_block::accept_block() const
     if (!is_valid_version())
         return error::old_version_block;
 
-    if (is_active(script_context::bip112_enabled)) {
-        for (const auto& tx : current_block_.transactions) {
-            if (tx.is_locked(height_, median_time_past())) {
-                return error::sequence_locked;
-            }
-
-            RETURN_IF_STOPPED();
-        }
-    }
     return error::success;
 }
 

@@ -36,30 +36,6 @@ class BC_API output_point
 {
 public:
 
-    // THIS IS FOR LIBRARY USE ONLY, DO NOT CREATE A DEPENDENCY ON IT.
-    struct validation
-    {
-        /// Must be false if confirmed is false.
-        /// output spender's tx->block is indexed or confirmed not above fork.
-        bool spent = false;
-
-        /// The output->tx is confirmed|indexed, fork point dependent.
-        bool confirmed = false;
-
-        /// The previous output is a coinbase (must verify spender maturity).
-        bool coinbase = false;
-
-        /// Prevout height is used for coinbase maturity and relative lock time.
-        size_t height = 0;
-
-        /// Median time past is used for relative lock time.
-        uint32_t median_time_past = 0;
-
-        /// The output cache contains the output referenced by the input point.
-        /// If the cache.value is not_found (default) the output is not found.
-        output cache;
-    };
-
     // Constructors.
     //-------------------------------------------------------------------------
 
@@ -94,12 +70,6 @@ public:
     static output_point factory(const data_chunk& data);
     static output_point factory(std::istream& stream);
     static output_point factory(reader& source);
-
-    // Validation.
-    //-------------------------------------------------------------------------
-
-    // THIS IS FOR LIBRARY USE ONLY, DO NOT CREATE A DEPENDENCY ON IT.
-    mutable validation metadata;
 
 protected:
     // So that input may call reset from its own.
