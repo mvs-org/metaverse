@@ -72,7 +72,8 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     const auto& stake_output_point = coinstake.inputs[0].previous_output;
     bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
 
-    if(!chain_.check_pos_capability(block.header.number ,pay_address, false)){
+    auto height = block.header.number-1;
+    if(!chain_.check_pos_capability(height ,pay_address, false)){
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check pos capability. height: "
             << std::to_string(block.header.number) << ", address=" << pay_address.encoded()
