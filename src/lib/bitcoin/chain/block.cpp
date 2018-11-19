@@ -40,25 +40,28 @@ block::block()
 }
 
 block::block(const block& other)
-  : block(other.header, other.transactions)
+  : block(other.header, other.transactions, other.blocksig)
 {
 }
 
 block::block(const chain::header& header,
-    const chain::transaction::list& transactions)
-  : header(header), transactions(transactions)
+    const chain::transaction::list& transactions,
+    const ec_signature& blocksig)
+  : header(header), transactions(transactions), blocksig(blocksig)
 {
 }
 
 block::block(block&& other)
   : block(std::forward<chain::header>(other.header),
-        std::forward<chain::transaction::list>(other.transactions))
+        std::forward<chain::transaction::list>(other.transactions),
+        std::forward<ec_signature>(other.blocksig))
 {
 }
 
-block::block(chain::header&& header, chain::transaction::list&& transactions)
+block::block(chain::header&& header, chain::transaction::list&& transactions, ec_signature&& blocksig)
   : header(std::forward<chain::header>(header)),
-    transactions(std::forward<chain::transaction::list>(transactions))
+    transactions(std::forward<chain::transaction::list>(transactions)),
+    blocksig(std::forward<ec_signature>(blocksig))
 {
 }
 
@@ -66,6 +69,7 @@ block& block::operator=(block&& other)
 {
     header = std::move(other.header);
     transactions = std::move(other.transactions);
+    blocksig = std::move(other.blocksig);
     return *this;
 }
 

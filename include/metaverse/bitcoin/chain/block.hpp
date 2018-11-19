@@ -54,11 +54,11 @@ public:
     block();
     block(const block& other);
     block(const chain::header& header,
-        const chain::transaction::list& transactions);
+        const chain::transaction::list& transactions, const ec_signature& blocksig={});
 
     block(block&& other);
     block(chain::header&& header,
-        chain::transaction::list&& transactions);
+        chain::transaction::list&& transactions, ec_signature&& blocksig={});
 
     /// This class is move assignable but not copy assignable.
     block& operator=(block&& other);
