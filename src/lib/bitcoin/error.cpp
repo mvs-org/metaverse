@@ -276,6 +276,9 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::coinstake_version_invalid:
             return "coinstake version invalid";
 
+        case error::cointstake_signature_invalid:
+            return "validate coinstake block signature failed";
+
         // unknown errors
         case error::unknown:
         default:

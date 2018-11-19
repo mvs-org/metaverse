@@ -106,7 +106,12 @@ protected:
     u256 work_required(bool is_testnet) const;
     code check_coinbase(const uint32_t& version, const chain::transaction::list& txs) const;
 
-    virtual bool check_stake(const chain::block& block) const = 0;
+    bool check_block_signature(blockchain::block_chain_impl& chain) const;
+
+    virtual bool verify_stake(const chain::block& block) const = 0;
+    virtual bool is_coin_stake(const chain::block& block) const = 0;
+
+
     virtual bool check_work(const chain::block& block) const = 0;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);

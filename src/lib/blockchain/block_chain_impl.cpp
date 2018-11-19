@@ -154,45 +154,35 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-bool block_chain_impl::check_pos_capability(
-    uint64_t best_height,
-    const wallet::payment_address& pay_address)
+
+
+bool block_chain_impl::check_pos_utxo_capability(const  uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height)
 {
-    auto&& rows = get_address_history(pay_address, false);
-    chain::transaction tx_temp;
-    uint64_t tx_height;
+    if(out_index >= tx.outputs.size()){
+        return false;
+    }
 
-    for(auto & row : rows)
-    {
-        if (row.output_height == 0) {
-            continue;
+    const auto output = tx.outputs[out_index];
+    if (output.value < min_pos_value || out_height + min_pos_confirm_height > height){
+        return false;
+    }
+
+    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
+        // deposit utxo in block
+        uint64_t lock_height = chain::operation::
+            get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+        if ((out_height + lock_height) > height){
+            return false;
         }
-
-        if ((row.spend.hash == null_hash)
-            && get_transaction(row.output.hash, tx_temp, tx_height)) {
-            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
-            auto output = tx_temp.outputs.at(row.output.index);
-            if (output.get_script_address() != pay_address.encoded()) {
-                continue;
-            }
-
-            if ( row.value >= min_pos_lock_value &&
-                chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
-            {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-
-                // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
-                if (lock_height >= min_pos_lock_height &&
-                    (row.output_height + lock_height * min_pos_lock_rate) > best_height){
-                    return true;
-                }
-            }
+    }
+    else if (tx.is_coinbase()){ // coin base etp maturity etp check
+        // add not coinbase_maturity etp into frozen
+        if ((out_height + coinbase_maturity) > height){
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool block_chain_impl::select_utxo_for_staking(
@@ -221,24 +211,8 @@ bool block_chain_impl::select_utxo_for_staking(
                 continue;
             }
 
-            if (row.value < min_pos_value || row.output_height + min_pos_confirm_height > best_height){
+            if(!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height)){
                 continue;
-            }
-
-            if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
-                // deposit utxo in block
-                uint64_t lock_height = chain::operation::
-                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-                if ((row.output_height + lock_height) > best_height) {
-                    // utxo already in block but deposit not expire
-                    continue;
-                }
-            }
-            else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
-                // add not coinbase_maturity etp into frozen
-                if ((row.output_height + coinbase_maturity) > best_height) {
-                    continue;
-                }
             }
 
             stake_outputs.push_back( {output, row.output, tx_height} );
@@ -247,6 +221,9 @@ bool block_chain_impl::select_utxo_for_staking(
 
     return true;
 }
+
+
+
 
 chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
 {
@@ -1570,6 +1547,62 @@ static history::list expand_history(history_compact::list& compact)
         });
     return result;
 }
+
+
+bool block_chain_impl::check_pos_capability(
+    uint64_t best_height,
+    const wallet::payment_address& pay_address,
+    bool wait_db)
+{
+    history::list rows; 
+
+    if(wait_db){
+        rows = get_address_history(pay_address, false);
+    }
+    else{
+        history_compact::list history = database_.history.get(pay_address.hash(), 0, 0);
+        rows = expand_history(history);
+    }
+
+
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+
+    for(auto & row : rows)
+    {
+        if (row.output_height == 0) {
+            continue;
+        }
+
+        if ((row.spend.hash == null_hash)
+            && get_transaction(row.output.hash, tx_temp, tx_height)) {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != pay_address.encoded()) {
+                continue;
+            }
+
+            if ( row.value >= min_pos_lock_value &&
+                chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
+            {
+                // deposit utxo in block
+                uint64_t lock_height = chain::operation::
+                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+
+                // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
+                if (lock_height >= min_pos_lock_height &&
+                    (row.output_height + lock_height * min_pos_lock_rate) > best_height){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 
 history::list block_chain_impl::get_address_history(const wallet::payment_address& addr, bool add_memory_pool)
 {

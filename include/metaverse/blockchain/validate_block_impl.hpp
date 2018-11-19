@@ -44,7 +44,9 @@ public:
         const config::checkpoint::list& checkpoints,
         stopped_callback stopped);
 
-    virtual bool check_stake(const chain::block& block) const;
+    virtual bool verify_stake(const chain::block& block) const;
+    virtual bool is_coin_stake(const chain::block& block) const;
+
     virtual bool check_work(const chain::block& block) const;
     virtual bool check_get_coinage_reward_transaction(
         const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;

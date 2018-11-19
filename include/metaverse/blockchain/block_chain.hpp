@@ -142,7 +142,8 @@ public:
 
     virtual bool check_pos_capability(
         uint64_t best_height,
-        const wallet::payment_address& pay_addres) = 0;
+        const wallet::payment_address& pay_addres,
+        bool wait_db = true) = 0;
     virtual bool select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,

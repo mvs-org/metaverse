@@ -103,7 +103,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (current_block_.is_proof_of_stake() && !check_stake(current_block_)){
+    if (current_block_.is_proof_of_stake() && !verify_stake(current_block_)){
         return error::proof_of_stake;
     }
 
@@ -536,6 +536,9 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
 
+    if(!check_block_signature(chain)){
+        return error::cointstake_signature_invalid;
+    }
 
     ////////////// TODO: parallelize. //////////////
     for (size_t tx_index = 0; tx_index < count; ++tx_index)
@@ -616,6 +619,29 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     const auto reward = coinbase.total_output_value();
     const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
+}
+
+bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const
+{
+    uint32_t version = current_block_.header.version;
+
+    if(version == block_version_pos){
+        const auto&  blocksig= current_block_.blocksig;
+        if(blocksig.empty() || !is_coin_stake(current_block_)){
+            return false;
+        }
+
+        BITCOIN_ASSERT(current_block_.transactions.size() > 1);
+        const auto & coinstake_tx = current_block_.transactions[1];
+        const auto & head_hash = current_block_.header.hash();
+        const data_chunk& data = coinstake_tx.inputs[0].script.operations.back().data;
+
+        if(!verify_signature(data, head_hash, blocksig)){
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const

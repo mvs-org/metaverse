@@ -183,6 +183,7 @@ enum error_code_t
     proof_of_stake, 
     tx_not_coinstake, 
     coinstake_version_invalid,
+    cointstake_signature_invalid
     
 };
 

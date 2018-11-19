@@ -231,13 +231,22 @@ public:
     /// must be have enough etp locked in the address
     virtual bool check_pos_capability(
         uint64_t best_height,
-        const wallet::payment_address& pay_addres);
+        const wallet::payment_address& pay_addres,
+        bool wait_db = true);
 
     /// select pos utxo. target value
     virtual bool select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
         chain::output_info::list& stake_outputs);
+
+
+    bool check_pos_utxo_capability(
+        const  uint64_t& height, 
+        const chain::transaction& tx, 
+        const uint32_t& out_index ,
+        const uint64_t& out_height
+    );
 
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
 
