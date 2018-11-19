@@ -204,7 +204,7 @@ void session_outbound::handle_channel_stop(const code& ec,
     connector::ptr connect, channel::ptr channel)
 {
     channel->invoke_protocol_start_handler(error::channel_stopped);
-    log::debug(LOG_NETWORK) << "channel stopped," << ec.message();
+    log::trace(LOG_NETWORK) << "channel stopped," << ec.message();
 
     const int counter = --outbound_counter;
 

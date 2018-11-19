@@ -132,7 +132,7 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
         return;
     }
 
-    log::debug(LOG_NETWORK)
+    log::trace(LOG_NETWORK)
         << "Connected manual channel [" << config::endpoint(hostname, port)
         << "] as [" << channel->authority() << "]";
 
