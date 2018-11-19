@@ -224,7 +224,7 @@ u256 HeaderAux::calculate_difficulty_pos(
     const chain::header::ptr pprev)
 {
     uint32_t pos_target_timespan = 24;
-    h256 pos_limit_target = h256("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    h256 pos_limit_target = h256("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     // h256 pos_limit_target = h256("000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff");
     uint256_t nbits_limit_pos = hash_to_uint56(pos_limit_target);
     uint32_t limit_target = nbits_limit_pos.GetCompact();
@@ -237,11 +237,11 @@ u256 HeaderAux::calculate_difficulty_pos(
     uint32_t last_timespan = prev->timestamp - pprev->timestamp;
 
     // Limit adjustment step
-    if (last_timespan < pos_target_timespan / 4) {
-        last_timespan = pos_target_timespan / 4;
+    if (last_timespan < pos_target_timespan / 2) {
+        last_timespan = pos_target_timespan / 2;
     }
-    if (last_timespan > pos_target_timespan * 4) {
-        last_timespan = pos_target_timespan * 4;
+    if (last_timespan > pos_target_timespan * 2) {
+        last_timespan = pos_target_timespan * 2;
     }
 
     // Retarget
@@ -258,9 +258,9 @@ u256 HeaderAux::calculate_difficulty_pos(
 
     // log::info("calculate_difficulty")
     //     << "\n   last_timespan: " << last_timespan << " s"
-    //     << "\n     limit nbits: " << std::to_string(limit_target)
-    //     << "\n       last bits: " << std::to_string(last_pos_bit)
-    //     << "\n    current bits: " << std::to_string(value);
+    //     << "\n     limit nbits: " << limit_target
+    //     << "\n       last bits: " << last_pos_bit
+    //     << "\n    current bits: " << value;
 
     return u256(value);
 }

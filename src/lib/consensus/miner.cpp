@@ -923,7 +923,8 @@ void miner::work(const wallet::payment_address pay_address)
 
                 log::info(LOG_HEADER) << "solo miner create new "
                     << (is_staking_ ? "PoS" : "PoW") <<" block at heigth:" << height
-                    << ", time: " << timestamp_to_string(block->header.timestamp);
+                    << ", time: " << timestamp_to_string(block->header.timestamp)
+                    << ", bits: " << block->header.bits;
 
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {
@@ -932,9 +933,12 @@ void miner::work(const wallet::payment_address pay_address)
                     break;
                 }
             }
-        }
 
-        sleep(500);
+            sleep(1000);
+        }
+        else {
+            sleep(10);
+        }
     }
 }
 

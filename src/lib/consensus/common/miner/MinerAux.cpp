@@ -185,7 +185,7 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
     //pos /= coin_age;
 
     bool enable_log = false;
-    if (enable_log && pos <= target) {
+    if (enable_log) {
         h256 target_hash = HeaderAux::uint_to_hash256(target);
         h256 pos_hash = HeaderAux::uint_to_hash256(pos);
         log::info(LOG_MINER) << "check_proof_of_stake: "
