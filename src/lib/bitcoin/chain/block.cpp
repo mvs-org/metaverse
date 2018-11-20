@@ -83,6 +83,7 @@ void block::reset()
     header.reset();
     transactions.clear();
     transactions.shrink_to_fit();
+    blocksig.fill(0);
 }
 
 bool block::is_proof_of_stake() const
