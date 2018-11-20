@@ -251,6 +251,9 @@ bool witness::calc_witness_list(uint64_t height)
         return false;
     }
 
+    auto random_fun = [](size_t i) {return pseudo_random(0, i);};
+    std::random_shuffle(witness_list_.begin(), witness_list_.end(), random_fun);
+
     return true;
 }
 

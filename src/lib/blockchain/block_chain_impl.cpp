@@ -2544,6 +2544,27 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, cha
         }
     }
 
+    // ensure a deadline by average block timestamp
+    if (version == chain::block_version_pow) {
+        chain::header to_header;
+        if (!get_header(to_header, to)) {
+            return 0;
+        }
+
+        chain::header from_header;
+        if (!get_header(from_header, from)) {
+            return 0;
+        }
+
+        constexpr uint32_t average_pow_block_time = 35;
+        uint64_t number_calced_by_timestamp =
+            (to_header.timestamp - from_header.timestamp) / average_pow_block_time;
+
+        if (number_calced_by_timestamp > number) {
+            return number_calced_by_timestamp;
+        }
+    }
+
     return number;
 }
 
