@@ -154,19 +154,22 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-bool block_chain_impl::check_pos_utxo_capability(const  uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height)
+bool block_chain_impl::check_pos_utxo_height_and_value(const uint64_t& out_height, const uint64_t& curr_height, const uint64_t& value)
+{
+    return (value >= min_pos_value) && (out_height + min_pos_confirm_height <= curr_height);
+}
+
+bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict)
 {
     if(out_index >= tx.outputs.size()){
         return false;
     }
 
     const auto output = tx.outputs[out_index];
-    if (output.value < min_pos_value){
-        return false;
-    }
 
-    if (out_height + min_pos_confirm_height > height) {
-        return false;
+    if (strict) {
+        if (!check_pos_utxo_height_and_value(out_height, height, output.value))
+            return false;
     }
 
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
@@ -212,7 +215,7 @@ bool block_chain_impl::select_utxo_for_staking(
                 continue;
             }
 
-            if (!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height)){
+            if (!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height, false)){
                 continue;
             }
 

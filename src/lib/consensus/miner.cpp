@@ -638,42 +638,43 @@ u256 miner::get_next_target_required(const chain::header& header, const chain::h
 
 bool miner::sign_coinstake_tx(
     const ec_secret& private_key,
-    transaction_ptr coinstake, const chain::output& prev_output)
+    transaction_ptr coinstake)
 {
     chain::script ss;
-    explorer::config::script config_contract(prev_output.script);
-    const chain::script& contract = config_contract;
+
 
     explorer::config::hashtype sign_type;
-    uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
+    const uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
-    // gen sign
-    endorsement endorse;
-    if (!chain::script::create_endorsement(endorse, private_key,
-        contract, *coinstake, 0, hash_type))
-    {
-        log::error(LOG_HEADER) <<  "sign_coinstake_tx: get_input_sign sign failure!";
-        return false;
+    for (auto i = 0; i < coinstake->inputs.size(); ++i) {
+        explorer::config::script config_contract(coinstake->inputs[i].script);
+        const chain::script& contract = config_contract;
+        // gen sign
+        endorsement endorse;
+        if (!chain::script::create_endorsement(endorse, private_key,
+                                               contract, *coinstake, i, hash_type)) {
+            log::error(LOG_HEADER) << "sign_coinstake_tx: get_input_sign sign failure!";
+            return false;
+        }
+
+        // do script
+        wallet::ec_private ec_private_key(private_key, 0u, true);
+        auto &&public_key = ec_private_key.to_public();
+        data_chunk public_key_data;
+        public_key.to_data(public_key_data);
+
+        ss.operations.push_back({chain::opcode::special, endorse});
+        ss.operations.push_back({chain::opcode::special, public_key_data});
+
+        // if pre-output script is deposit tx.
+        if (contract.pattern() == chain::script_pattern::pay_key_hash_with_lock_height) {
+            uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
+                    contract.operations);
+            ss.operations.push_back({chain::opcode::special, script_number(lock_height).data()});
+        }
+
+        coinstake->inputs[i].script = ss;
     }
-
-    // do script
-    wallet::ec_private ec_private_key(private_key, 0u, true);
-    auto&& public_key = ec_private_key.to_public();
-    data_chunk public_key_data;
-    public_key.to_data(public_key_data);
-
-    ss.operations.push_back({chain::opcode::special, endorse});
-    ss.operations.push_back({chain::opcode::special, public_key_data});
-
-    // if pre-output script is deposit tx.
-    if (contract.pattern() == chain::script_pattern::pay_key_hash_with_lock_height) {
-        uint64_t lock_height = chain::operation::get_lock_height_from_pay_key_hash_with_lock_height(
-            contract.operations);
-        ss.operations.push_back({chain::opcode::special, script_number(lock_height).data()});
-    }
-
-    coinstake->inputs[0].script = ss;
-
     return true;
 }
 
@@ -686,16 +687,27 @@ miner::transaction_ptr miner::create_coinstake_tx(
     transaction_ptr coinstake = make_shared<message::transaction_message>();
     coinstake->version = transaction_version::first;
 
+    uint64_t nCredit = 0;
     for (const auto& stake: stake_outputs) {
+
+        if (!block_chain_impl::check_pos_utxo_height_and_value(stake.height, pblock->header.number, stake.data.value)) {
+            continue;
+        }
+
         if (MinerAux::verify_stake(pblock->header, stake)) {
             coinstake->inputs.clear();
             coinstake->outputs.clear();
+
+            nCredit = stake.data.value;
 
             // generate inputs
             chain::input input;
             input.sequence = max_input_sequence;
             input.previous_output.hash = stake.point.hash;
             input.previous_output.index = stake.point.index;
+
+            // for sign
+            input.script = stake.data.script;
 
             coinstake->inputs.push_back(input);
 
@@ -704,22 +716,58 @@ miner::transaction_ptr miner::create_coinstake_tx(
             empty.attach_data.set_null();
             coinstake->outputs.push_back(empty);
 
-            auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
-            auto payment_script = chain::script{ script_operation };
-            attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(stake.data.value));
-            chain::output to_self(stake.data.value, payment_script, attr);
-            coinstake->outputs.push_back(to_self);
-
-            // sign coinstake
-            if (!sign_coinstake_tx(private_key, coinstake, stake.data)) {
-                continue;
-            }
-
-            return coinstake;
+            break;
         }
     }
 
-    return nullptr;
+    if (coinstake->inputs.empty())
+        return nullptr;
+
+    const uint64_t pos_split_limit = min_pos_value*2;
+
+    // Attempt to add more inputs
+    for (const auto& stake: stake_outputs) {
+        if ((stake.data.value >= min_pos_value) || (stake.data.value == 0))
+            continue;
+        if (nCredit >= pos_split_limit)
+            break;
+        if (coinstake->inputs.size() >= 10)
+            break;
+
+        chain::input input;
+        input.sequence = max_input_sequence;
+        input.previous_output.hash = stake.point.hash;
+        input.previous_output.index = stake.point.index;
+
+        // for sign
+        input.script = stake.data.script;
+
+        coinstake->inputs.push_back(input);
+        nCredit += stake.data.value;
+    }
+
+    auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    auto payment_script = chain::script{ script_operation };
+    attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(nCredit));
+    chain::output to_self(nCredit, payment_script, attr);
+    coinstake->outputs.push_back(to_self);
+
+    // split the output
+    if (nCredit >= pos_split_limit) {
+        coinstake->outputs.push_back(to_self);
+        coinstake->outputs[1].value /= 2;
+        coinstake->outputs[1].attach_data = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(coinstake->outputs[1].value));
+
+        coinstake->outputs[2].value = nCredit - coinstake->outputs[1].value;
+        coinstake->outputs[2].attach_data = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(coinstake->outputs[2].value));
+    }
+
+    // sign coinstake
+    if (!sign_coinstake_tx(private_key, coinstake)) {
+        return nullptr;
+    }
+
+    return coinstake;
 }
 
 miner::block_ptr miner::create_new_block_pos(

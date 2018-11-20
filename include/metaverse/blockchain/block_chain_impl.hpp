@@ -240,12 +240,14 @@ public:
         const wallet::payment_address& pay_addres,
         chain::output_info::list& stake_outputs);
 
+    static bool check_pos_utxo_height_and_value(const uint64_t& out_height, const uint64_t& curr_height, const uint64_t& value);
 
     bool check_pos_utxo_capability(
         const  uint64_t& height, 
         const chain::transaction& tx, 
         const uint32_t& out_index ,
-        const uint64_t& out_height
+        const uint64_t& out_height,
+        bool strict=true
     );
 
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;

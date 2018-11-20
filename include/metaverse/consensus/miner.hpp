@@ -93,8 +93,7 @@ public:
         block_ptr pblock, const chain::output_info::list& stake_outputs);
     bool sign_coinstake_tx(
         const ec_secret& private_key,
-        transaction_ptr coinstake,
-        const chain::output& prev_output);
+        transaction_ptr coinstake);
 
     block_ptr get_block(bool is_force_create_block = false);
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
