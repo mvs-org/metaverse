@@ -202,6 +202,8 @@ uint64_t transaction::serialized_size() const
 
 std::string transaction::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream value;
     value << "Transaction:\n"
         << "\tversion = " << version << "\n"

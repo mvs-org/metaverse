@@ -308,6 +308,8 @@ bool script::from_string(const std::string& human_readable)
 
 std::string script::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream value;
 
     for (auto it = operations.begin(); it != operations.end(); ++it)

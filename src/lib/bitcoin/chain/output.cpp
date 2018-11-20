@@ -238,6 +238,8 @@ uint64_t output::serialized_size() const
 
 std::string output::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream ss;
 
     ss << "\tvalue = " << value << "\n"

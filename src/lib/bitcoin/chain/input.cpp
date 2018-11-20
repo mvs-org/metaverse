@@ -132,6 +132,8 @@ uint64_t input::serialized_size() const
 
 std::string input::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream ss;
 
     ss << previous_output.to_string() << "\n"

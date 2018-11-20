@@ -199,6 +199,8 @@ uint64_t operation::serialized_size() const
 
 std::string operation::to_string(uint32_t flags) const
 {
+    flags = chain::get_script_context();
+
     std::ostringstream ss;
 
     if (data.empty())
