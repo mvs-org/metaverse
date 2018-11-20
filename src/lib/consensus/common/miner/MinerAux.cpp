@@ -174,30 +174,23 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
     uint64_t coin_age = header.number - stake_output.height;
 
     // Calculate hash
-    auto format = boost::format("%1%%2%%3%")
-        % header.timestamp
-        % encode_hash(stake_output.point.hash)
-        % stake_output.point.index;
-    auto hash_pos = bitcoin_hash(to_chunk(format.str()));
-    h256 base_pos_hash = h256(encode_hash(hash_pos));
+    h256 base_pos_hash = HeaderAux::hash_head_pos(header, stake_output);
     uint256_t pos(base_pos_hash.asBytes());
-    pos /= amount;
+    pos /= amount * 500;
     //pos /= coin_age;
 
+    bool succeed = (pos <= target);
     bool enable_log = false;
-    if (enable_log) {
-        h256 target_hash(target.GetCompact());
-        h256 pos_hash(pos.GetCompact());
+    if (enable_log && succeed) {
+        // h256 target_hash = HeaderAux::uint_to_hash256(target);
+        // h256 pos_hash = HeaderAux::uint_to_hash256(pos);
         log::info(LOG_MINER) << "check_proof_of_stake: "
-            << (pos <= target ? "True" : "False")
-            << "\n           bits: " << header.bits
-            << "\n         amount: " << amount << ", coin_age: " << coin_age
-            << "\n    target_hash: " << target_hash
-            << "\n  base_pos_hash: " << base_pos_hash
-            << "\n       pos_hash: " << pos_hash;
+            << (succeed ? "True" : "False")
+            << ", bits: " << header.bits
+            << ", amount: " << amount << ", coin_age: " << coin_age;
     }
 
-    return pos <= target;
+    return succeed;
 }
 
 

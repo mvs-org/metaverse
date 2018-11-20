@@ -31,6 +31,7 @@
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/config/hash160.hpp>
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
+#include <metaverse/bitcoin/utility/random.hpp>
 #include <metaverse/bitcoin/constants.hpp>
 #include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
@@ -776,8 +777,6 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.previous_block_hash = prev_header.hash();
     pblock->header.nonce = 0;
     pblock->header.mixhash = 0;
-
-    pblock->header.timestamp = get_adjust_time(block_height);
     pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
 
     // Update transactoins
@@ -792,7 +791,19 @@ miner::block_ptr miner::create_new_block_pos(
     total_tx_sig_length += get_tx_sign_length(coinbase);
 
     // Create coinstake
-    transaction_ptr coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
+    uint32_t start_time = get_adjust_time(block_height);
+    uint32_t block_time = start_time;
+    transaction_ptr coinstake(nullptr);
+
+    while (nullptr == coinstake && block_time < (start_time  + pos_target_timespan / 2)) {
+        pblock->header.timestamp = block_time;
+        coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
+
+        uint32_t sleep_time = 5 + pseudo_random(0, 5);
+        sleep(sleep_time);
+        block_time = get_adjust_time(block_height);
+    }
+
     if (nullptr == coinstake) {
         return nullptr;
     }
@@ -922,7 +933,7 @@ void miner::work(const wallet::payment_address pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create new "
-                    << (is_staking_ ? "PoS" : "PoW") <<" block at heigth:" << height
+                    << (is_staking_ ? "PoS" : "PoW") <<" block at heigth: " << height
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 

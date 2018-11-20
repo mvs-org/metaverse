@@ -1,5 +1,7 @@
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/bitcoin/utility/random.hpp>
+#include <metaverse/bitcoin/constants.hpp>
+#include <metaverse/bitcoin/formats/base_16.hpp>
 #include "crypto/common.h"
 #include <algorithm>
 #include <fstream>
@@ -141,10 +143,12 @@ h256 HeaderAux::hashHead(const chain::header& bi)
 
 h256 HeaderAux::hash_head_pos(const chain::header& bi, const chain::output_info& stake)
 {
-    h256 memo;
     RLPStream s;
-    s  << (bigint) bi.timestamp << (bigint)stake.data.value << stake.point.hash << (bigint) stake.point.index;
-    memo = sha3(s.out());
+    s << (bigint) bi.version << (bigint) bi.timestamp
+        << stake.point.hash << (bigint) stake.point.index;
+    // h256 memo = sha3(s.out());
+    auto hash_pos = bitcoin_hash(to_chunk(s.out()));
+    h256 memo = h256(encode_hash(hash_pos));
     return memo;
 }
 
@@ -198,47 +202,50 @@ u256 HeaderAux::calculate_difficulty_pow(const chain::header& current, const cha
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
+static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
+
 u256 HeaderAux::calculate_difficulty_pos(
     const chain::header& current,
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    uint32_t pos_target_timespan = 24;
-    h256 pos_limit_target = h256("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    h256 pos_limit_target = h256("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     // h256 pos_limit_target = h256("000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff");
     uint256_t nbits_limit_pos(pos_limit_target.asBytes());
     uint32_t limit_target = nbits_limit_pos.GetCompact();
 
     if (nullptr == prev || nullptr == pprev) {
-        return u256(limit_target);
+        return limit_target;
     }
 
     uint32_t last_pos_bit = (uint32_t)prev->bits;
-    uint32_t last_timespan = prev->timestamp - pprev->timestamp;
+    uint32_t actual_timespan = prev->timestamp - pprev->timestamp;
 
     // Limit adjustment step
-    if (last_timespan < pos_target_timespan / 2) {
-        last_timespan = pos_target_timespan / 2;
+    if (actual_timespan < pos_target_timespan / 10) {
+        actual_timespan = pos_target_timespan / 10;
     }
-    if (last_timespan > pos_target_timespan * 2) {
-        last_timespan = pos_target_timespan * 2;
+    if (actual_timespan > pos_target_timespan * 10) {
+        actual_timespan = pos_target_timespan * 10;
     }
 
     // Retarget
     uint256_t new_target;
     new_target.SetCompact(last_pos_bit);
-    new_target /= pos_target_timespan;
-    new_target *= last_timespan;
+    // new_target /= pos_target_timespan;
+    // new_target *= actual_timespan;
+
+    uint32_t interval = total_target_timespan / pos_target_timespan;
+    new_target /= ((interval + 1) * pos_target_timespan);
+    new_target *= ((interval - 1) * pos_target_timespan + actual_timespan + actual_timespan);
 
     new_target = std::min(new_target, nbits_limit_pos);
-
     uint32_t value = new_target.GetCompact();
 
-    // log::info("calculate_difficulty")
-    //     << "\n   last_timespan: " << last_timespan << " s"
-    //     << "\n     limit nbits: " << limit_target
-    //     << "\n       last bits: " << last_pos_bit
-    //     << "\n    current bits: " << value;
+    log::info("calculate_difficulty")
+        << " bits limit: " << limit_target
+        << ", actual_timespan: " << actual_timespan
+        << " s, bits: " << value;
 
     return u256(value);
 }
