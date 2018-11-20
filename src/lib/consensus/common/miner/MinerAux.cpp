@@ -180,14 +180,14 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
         % stake_output.point.index;
     auto hash_pos = bitcoin_hash(to_chunk(format.str()));
     h256 base_pos_hash = h256(encode_hash(hash_pos));
-    uint256_t pos = HeaderAux::hash_to_uint56(base_pos_hash);
+    uint256_t pos(base_pos_hash.asBytes());
     pos /= amount;
     //pos /= coin_age;
 
     bool enable_log = false;
     if (enable_log) {
-        h256 target_hash = HeaderAux::uint_to_hash256(target);
-        h256 pos_hash = HeaderAux::uint_to_hash256(pos);
+        h256 target_hash(target.GetCompact());
+        h256 pos_hash(pos.GetCompact());
         log::info(LOG_MINER) << "check_proof_of_stake: "
             << (pos <= target ? "True" : "False")
             << "\n           bits: " << header.bits

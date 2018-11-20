@@ -38,9 +38,6 @@ public:
         const chain::header::ptr pprev,
         bool is_staking=false);
 
-    static h256 uint_to_hash256(const uint256_t &a);
-    static uint256_t hash_to_uint56(const h256 &a);
-
 private:
     HeaderAux() {}
 

@@ -198,26 +198,6 @@ u256 HeaderAux::calculate_difficulty_pow(const chain::header& current, const cha
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
-h256 HeaderAux::uint_to_hash256(const uint256_t &a)
-{
-    h256 b;
-    auto& array = b.asArray();
-    for (int x = 0; x < a.size(); ++x) {
-        WriteLE32(array.begin() + x, *(a.begin() + x));
-    }
-    return b;
-}
-
-uint256_t HeaderAux::hash_to_uint56(const h256 &a)
-{
-    uint256_t b;
-    auto& array = a.asArray();
-    for (int x = 0; x < b.size(); ++x) {
-        *(b.begin() + x) = ReadLE32(array.begin() + x);
-    }
-    return b;
-}
-
 u256 HeaderAux::calculate_difficulty_pos(
     const chain::header& current,
     const chain::header::ptr prev,
@@ -226,11 +206,11 @@ u256 HeaderAux::calculate_difficulty_pos(
     uint32_t pos_target_timespan = 24;
     h256 pos_limit_target = h256("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     // h256 pos_limit_target = h256("000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    uint256_t nbits_limit_pos = hash_to_uint56(pos_limit_target);
+    uint256_t nbits_limit_pos(pos_limit_target.asBytes());
     uint32_t limit_target = nbits_limit_pos.GetCompact();
 
     if (nullptr == prev || nullptr == pprev) {
-        return limit_target;
+        return u256(limit_target);
     }
 
     uint32_t last_pos_bit = (uint32_t)prev->bits;
@@ -250,9 +230,7 @@ u256 HeaderAux::calculate_difficulty_pos(
     new_target /= pos_target_timespan;
     new_target *= last_timespan;
 
-    if (new_target > nbits_limit_pos) {
-        new_target = nbits_limit_pos;
-    }
+    new_target = std::min(new_target, nbits_limit_pos);
 
     uint32_t value = new_target.GetCompact();
 
