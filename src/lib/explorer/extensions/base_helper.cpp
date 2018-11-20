@@ -463,6 +463,67 @@ void sync_fetch_asset_balance(const std::string& address, bool sum_all,
     }
 }
 
+void sync_fetch_locked_balance(const std::string& address,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<locked_balance::list> sh_vec,
+    const std::string& asset_symbol,
+    uint64_t expiration)
+{
+    const bool is_asset = !asset_symbol.empty();
+    if (is_asset && wallet::symbol::is_forbidden(asset_symbol)) {
+        return;
+    }
+
+    auto&& rows = blockchain.get_address_history(wallet::payment_address(address));
+
+    chain::transaction tx_temp;
+    uint64_t tx_height = 0;
+
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+
+            if (is_asset != output.is_asset()) {
+                continue;
+            }
+
+            if (is_asset && asset_symbol != output.get_asset_symbol()) {
+                continue;
+            }
+
+            if (!operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                continue;
+            }
+
+            uint64_t lock_sequence = chain::operation::
+                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            // use any kind of blocks
+            if ((tx_height + lock_sequence <= height) ||
+                (expiration > height && tx_height + lock_sequence <= expiration)) {
+                continue;
+            }
+
+            uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
+            if (locked_value == 0) {
+                continue;
+            }
+
+            uint64_t locked_height = tx_height;
+            uint64_t expiration_height = tx_height + lock_sequence;
+            locked_balance locked{address, locked_value, locked_height, expiration_height};
+            sh_vec->emplace_back(locked);
+        }
+    }
+}
+
 void sync_fetch_asset_deposited_balance(const std::string& address,
     bc::blockchain::block_chain_impl& blockchain,
     std::shared_ptr<asset_deposited_balance::list> sh_asset_vec)

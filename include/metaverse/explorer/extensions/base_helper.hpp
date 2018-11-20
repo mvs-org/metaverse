@@ -169,6 +169,18 @@ struct balances {
     uint64_t frozen_balance;
 };
 
+struct locked_balance {
+    typedef std::vector<locked_balance> list;
+    std::string address;
+    uint64_t locked_value;
+    uint64_t locked_height;
+    uint64_t expiration_height;
+
+    bool operator< (const locked_balance& other) const {
+        return expiration_height < other.expiration_height;
+    }
+};
+
 struct deposited_balance {
     deposited_balance(const std::string& address_, const std::string& tx_hash_,
         uint64_t deposited_, uint64_t expiration_)
@@ -218,6 +230,11 @@ std::shared_ptr<asset_deposited_balance::list> sync_fetch_asset_deposited_view(
     const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain);
 
+void sync_fetch_locked_balance(const std::string& address,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<locked_balance::list> sp_vec,
+    const std::string& asset_symbol,
+    uint64_t expiration = 0);
 
 void sync_fetch_asset_cert_balance(const std::string& address, const std::string& symbol,
     bc::blockchain::block_chain_impl& blockchain,

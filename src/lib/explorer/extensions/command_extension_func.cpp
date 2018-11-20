@@ -101,6 +101,7 @@
 #include <metaverse/explorer/extensions/commands/didchangeaddress.hpp>
 #include <metaverse/explorer/extensions/commands/getdid.hpp>
 #include <metaverse/explorer/extensions/commands/lock.hpp>
+#include <metaverse/explorer/extensions/commands/getlocked.hpp>
 
 
 namespace libbitcoin {
@@ -176,6 +177,7 @@ void broadcast_extension(const function<void(shared_ptr<command>)> func, std::os
     func(make_shared<listbalances>());
     func(make_shared<getbalance>());
     func(make_shared<getaddressetp>());
+    func(make_shared<getlocked>());
 
     os <<"\r\n";
     // asset
@@ -325,6 +327,8 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<deposit>();
     if (symbol == lock::symbol())
         return make_shared<lock>();
+    if (symbol == getlocked::symbol())
+        return make_shared<getlocked>();
     if (symbol == send::symbol() || symbol == "didsend")
         return make_shared<send>();
     if (symbol == sendmore::symbol() || symbol == "didsendmore")

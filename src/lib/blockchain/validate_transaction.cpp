@@ -1686,6 +1686,9 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
 
     if (previous_tx.is_coinbase()) {
         if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_)) {
+            log::debug(LOG_BLOCKCHAIN)
+                << "coinbase not maturity from "
+                << parent_height << " to " << last_block_height_;
             return false;
         }
     }

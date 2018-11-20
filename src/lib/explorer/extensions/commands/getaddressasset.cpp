@@ -44,6 +44,7 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
 
     if (!option_.symbol.empty()) {
         // check asset symbol
+        blockchain.uppercase_symbol(option_.symbol);
         check_asset_symbol(option_.symbol);
     }
 

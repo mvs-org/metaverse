@@ -2545,9 +2545,9 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, cha
     }
 
     // ensure a deadline by average block timestamp
-    if (version == chain::block_version_pow) {
+    if (version == chain::block_version_pow && (to > from + 1)) {
         chain::header to_header;
-        if (!get_header(to_header, to)) {
+        if (!get_header(to_header, to - 1)) {
             return 0;
         }
 

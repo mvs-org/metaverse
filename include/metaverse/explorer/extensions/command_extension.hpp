@@ -33,6 +33,10 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+constexpr const char* DEFAULT_INVALID_ASSET_SYMBOL = "#(DEFAULT INVALID ASSET SYMBOL);";
+#define is_default_invalid_asset_symbol(s) ((s) == (DEFAULT_INVALID_ASSET_SYMBOL))
+
+
 struct prikey_amount
 {
     std::string first;
