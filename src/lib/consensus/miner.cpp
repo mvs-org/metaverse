@@ -690,7 +690,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
     uint64_t nCredit = 0;
     for (const auto& stake: stake_outputs) {
 
-        if (!block_chain_impl::check_pos_utxo_height_and_value(stake.height, pblock->header.number, stake.data.value)) {
+        if (!block_chain.check_pos_utxo_height_and_value(stake.height, pblock->header.number, stake.data.value)) {
             continue;
         }
 
@@ -701,20 +701,10 @@ miner::transaction_ptr miner::create_coinstake_tx(
             nCredit = stake.data.value;
 
             // generate inputs
-            chain::input input;
-            input.sequence = max_input_sequence;
-            input.previous_output.hash = stake.point.hash;
-            input.previous_output.index = stake.point.index;
-
-            // for sign
-            input.script = stake.data.script;
-
-            coinstake->inputs.push_back(input);
+            coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
 
             // generate outputs
-            bc::chain::output empty;
-            empty.attach_data.set_null();
-            coinstake->outputs.push_back(empty);
+            coinstake->outputs.emplace_back(0, chain::script(), ATTACH_NULL_TYPE);
 
             break;
         }
@@ -734,32 +724,25 @@ miner::transaction_ptr miner::create_coinstake_tx(
         if (coinstake->inputs.size() >= 10)
             break;
 
-        chain::input input;
-        input.sequence = max_input_sequence;
-        input.previous_output.hash = stake.point.hash;
-        input.previous_output.index = stake.point.index;
-
-        // for sign
-        input.script = stake.data.script;
-
-        coinstake->inputs.push_back(input);
+        coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
         nCredit += stake.data.value;
     }
 
     auto&& script_operation = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
-    auto payment_script = chain::script{ script_operation };
-    attachment attr = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(nCredit));
-    chain::output to_self(nCredit, payment_script, attr);
-    coinstake->outputs.push_back(to_self);
+    // auto payment_script = chain::script{script_operation};
+
+    coinstake->outputs.emplace_back(nCredit, chain::script{script_operation},
+        attachment(ETP_TYPE, 1, chain::etp(nCredit)));
 
     // split the output
     if (nCredit >= pos_split_limit) {
-        coinstake->outputs.push_back(to_self);
         coinstake->outputs[1].value /= 2;
-        coinstake->outputs[1].attach_data = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(coinstake->outputs[1].value));
+        coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(coinstake->outputs[1].value)};
 
-        coinstake->outputs[2].value = nCredit - coinstake->outputs[1].value;
-        coinstake->outputs[2].attach_data = attachment(ETP_TYPE, 1/*attach_version*/, chain::etp(coinstake->outputs[2].value));
+        auto value = nCredit - coinstake->outputs[1].value;
+        coinstake->outputs.emplace_back(value, chain::script{script_operation}, 
+            attachment(ETP_TYPE, 1, chain::etp(value)));
+
     }
 
     // sign coinstake

@@ -240,7 +240,13 @@ public:
         const wallet::payment_address& pay_addres,
         chain::output_info::list& stake_outputs);
 
-    static bool check_pos_utxo_height_and_value(const uint64_t& out_height, const uint64_t& curr_height, const uint64_t& value);
+    inline bool check_pos_utxo_height_and_value(
+        const uint64_t& out_height, 
+        const uint64_t& curr_height, 
+        const uint64_t& value) 
+    {
+        return (value >= min_pos_value) && (out_height + min_pos_confirm_height <= curr_height);
+    }
 
     bool check_pos_utxo_capability(
         const  uint64_t& height, 

@@ -154,10 +154,6 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
     organizer_.subscribe_reorganize(handler);
 }
 
-bool block_chain_impl::check_pos_utxo_height_and_value(const uint64_t& out_height, const uint64_t& curr_height, const uint64_t& value)
-{
-    return (value >= min_pos_value) && (out_height + min_pos_confirm_height <= curr_height);
-}
 
 bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict)
 {

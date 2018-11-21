@@ -87,6 +87,7 @@ public:
         > attachment_data_type;
 
     attachment();
+    attachment(uint32_t type);
 
     attachment(const std::string& from_did, const std::string& to_did);
 

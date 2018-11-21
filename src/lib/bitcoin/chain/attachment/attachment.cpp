@@ -34,6 +34,13 @@ attachment::attachment()
     reset();
 }
 
+attachment::attachment(uint32_t type)
+{
+    reset();
+    this->type = type;
+}
+
+
 attachment::attachment(const std::string& from_did, const std::string& to_did)
     : version(DID_ATTACH_VERIFY_VERSION)
     , type(0) //attachment_type::attach_none;
@@ -204,6 +211,7 @@ void attachment::set_type(uint32_t type)
 
 void attachment::set_null()
 {
+    reset();
     this->type = ATTACH_NULL_TYPE;
 }
 
