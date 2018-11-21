@@ -33,7 +33,7 @@ uint64_t witness::witness_enable_height = 2000000;
 uint32_t witness::witness_number = 11;
 uint32_t witness::epoch_cycle_height = 10000;
 uint32_t witness::vote_maturity = 12;
-uint32_t witness::max_dpos_interval = 3;
+uint32_t witness::max_dpos_interval = 3; // seconds
 
 witness* witness::instance_ = nullptr;
 
@@ -516,7 +516,18 @@ bool witness::is_begin_of_epoch(uint64_t height)
 
 bool witness::is_between_vote_maturity_interval(uint64_t height)
 {
-    return is_witness_enabled(height) && get_height_in_epoch(height) < vote_maturity;
+    if (!is_witness_enabled(height)) {
+        return false;
+    }
+    // [0 .. vote_maturity)
+    if (get_height_in_epoch(height) < vote_maturity) {
+        return true;
+    }
+    // [epoch_cycle_height-vote_maturity .. epoch_cycle_height)
+    if (epoch_cycle_height - get_height_in_epoch(height) <= vote_maturity) {
+        return true;
+    }
+    return false;
 }
 
 bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
