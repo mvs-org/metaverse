@@ -164,6 +164,9 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
 
             // check fees
             if (fee < min_tx_fee || !blockchain::validate_transaction::check_special_fees(setting_.use_testnet_rules, tx, fee)) {
+#ifdef MVS_DEBUG
+                log::debug(LOG_HEADER) << "check fees failed, delete_tx " << encode_hash(hash);
+#endif
                 i = transactions.erase(i);
                 // delete it from pool if not enough fee
                 node_.pool().delete_tx(hash);
@@ -175,6 +178,9 @@ bool miner::get_transaction(std::vector<transaction_ptr>& transactions,
                 // check double spending
                 for (const auto& input : tx.inputs) {
                     if (node_.chain_impl().get_spends_output(input.previous_output)) {
+#ifdef MVS_DEBUG
+                        log::debug(LOG_HEADER) << "check double spending failed, delete_tx " << encode_hash(hash);
+#endif
                         i = transactions.erase(i);
                         node_.pool().delete_tx(hash);
                         transaction_is_ok = false;

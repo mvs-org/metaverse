@@ -660,6 +660,12 @@ bool transaction_pool::delete_single(const hash_digest& tx_hash, const code& ec)
     it->handle_confirm(ec, it->tx);
     buffer_.erase(it);
 
+    if (ec) {
+        log::debug(LOG_BLOCKCHAIN)
+            << "delete_tx " << encode_hash(tx_hash)
+            << ", error code is " << ec.message();
+    }
+
     while (1) {
         const auto it = std::find_if(buffer_.begin(), buffer_.end(), matched);
 
