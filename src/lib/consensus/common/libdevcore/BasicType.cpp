@@ -172,18 +172,23 @@ u256 HeaderAux::calculate_difficulty(
         return calculate_difficulty_pos(current, prev, pprev);
     }
     else {
-        return calculate_difficulty_pow(current, prev);
+        return calculate_difficulty_pow(current, prev, pprev);
     }
 }
 
-u256 HeaderAux::calculate_difficulty_pow(const chain::header& current, const chain::header::ptr prev)
+static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
+
+u256 HeaderAux::calculate_difficulty_pow(
+    const chain::header& current,
+    const chain::header::ptr prev,
+    const chain::header::ptr pprev)
 {
     if (!current.number) {
         throw GenesisBlockCannotBeCalculated();
     }
 
     /// test-private-chain
-    auto minimumDifficulty = bigint(10);
+    auto minimumDifficulty = bigint(150 * 10000);
     // auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
     bigint target(minimumDifficulty);
 
@@ -198,11 +203,13 @@ u256 HeaderAux::calculate_difficulty_pow(const chain::header& current, const cha
         }
     }
 
-    bigint result = std::max<bigint>(minimumDifficulty, target);
+    bigint result(target);
+    if (target < 10) {
+        result = std::max<bigint>(minimumDifficulty, target);
+    }
+    // bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
-
-static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
 
 u256 HeaderAux::calculate_difficulty_pos(
     const chain::header& current,
@@ -215,7 +222,7 @@ u256 HeaderAux::calculate_difficulty_pos(
     uint32_t limit_target = nbits_limit_pos.GetCompact();
 
     if (nullptr == prev || nullptr == pprev) {
-        return limit_target;
+        return u256(limit_target);
     }
 
     uint32_t last_pos_bit = (uint32_t)prev->bits;

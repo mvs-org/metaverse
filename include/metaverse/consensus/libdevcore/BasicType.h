@@ -43,7 +43,8 @@ private:
 
     static u256 calculate_difficulty_pow(
         const chain::header& current,
-        const chain::header::ptr prev);
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev);
 
     static u256 calculate_difficulty_pos(
         const chain::header& current,

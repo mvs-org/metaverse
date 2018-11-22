@@ -182,8 +182,8 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
     bool succeed = (pos <= target);
     bool enable_log = false;
     if (enable_log && succeed) {
-        // h256 target_hash = HeaderAux::uint_to_hash256(target);
-        // h256 pos_hash = HeaderAux::uint_to_hash256(pos);
+        // h256 target_hash(target.GetCompact());
+        // h256 pos_hash(pos.GetCompact());
         log::info(LOG_MINER) << "check_proof_of_stake: "
             << (succeed ? "True" : "False")
             << ", bits: " << header.bits

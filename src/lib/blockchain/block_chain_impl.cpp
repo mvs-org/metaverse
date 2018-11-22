@@ -231,7 +231,7 @@ chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& 
         return std::make_shared<chain::header>(parent_header);
     }
 
-    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 1)) {
+    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
         --height;
 
         chain::header prev_header;
