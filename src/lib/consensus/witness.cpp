@@ -31,7 +31,6 @@ namespace consensus {
 uint32_t witness::pow_check_point_height = 100;
 uint64_t witness::witness_enable_height = 2000000;
 uint32_t witness::witness_number = 11;
-uint32_t witness::max_candidate_number = 20;
 uint32_t witness::epoch_cycle_height = 20000;
 uint32_t witness::register_witness_lock_height = 10000;
 uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
@@ -49,7 +48,6 @@ witness::witness(p2p_node& node)
     : node_(node)
     , setting_(node_.chain_impl().chain_settings())
     , witness_list_()
-    , candidate_list_()
     , mutex_()
 {
 }
@@ -67,22 +65,20 @@ void witness::init(p2p_node& node)
         witness::pow_check_point_height = 100;
         witness::witness_enable_height = 1000000;
         witness::witness_number = 5;
-        witness::max_candidate_number = 10;
         witness::epoch_cycle_height = 1000;
         witness::register_witness_lock_height = 500;
-        witness::witness_lock_threshold = 100*(1e8); // ETP bits
+        witness::witness_lock_threshold = 10*(1e8); // ETP bits
         witness::vote_maturity = 2;
         witness::max_dpos_interval = 3;
     }
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
-    witness::witness_enable_height = 10;
+    witness::witness_enable_height = 50;
     witness::witness_number = 11;
-    witness::max_candidate_number = 20;
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
-    witness::witness_lock_threshold = 10*(1e8); // ETP bits
+    witness::witness_lock_threshold = 1*(1e8); // ETP bits
     witness::vote_maturity = 2;
     witness::max_dpos_interval = 1;
 #endif
@@ -127,21 +123,10 @@ witness::list witness::get_witness_list() const
     return witness_list_;
 }
 
-witness::list witness::get_candidate_list() const
-{
-    shared_lock lock(mutex_);
-    return candidate_list_;
-}
-
 void witness::swap_witness_list(list& l)
 {
     unique_lock ulock(mutex_);
     witness_list_.swap(l);
-}
-
-void witness::swap_candidate_list(list& l)
-{
-    candidate_list_.swap(l);
 }
 
 bool witness::is_witness(const witness_id& id) const
@@ -153,10 +138,10 @@ bool witness::is_witness(const witness_id& id) const
 std::string witness::show_list() const
 {
     shared_lock lock(mutex_);
-    return show_list(witness_list_, candidate_list_);
+    return show_list(witness_list_);
 }
 
-std::string witness::show_list(const list& witness_list, const list& candidate_list)
+std::string witness::show_list(const list& witness_list)
 {
     std::string res;
     res += "witness : [";
@@ -164,12 +149,6 @@ std::string witness::show_list(const list& witness_list, const list& candidate_l
         res += witness_to_string(witness) + "   ";
     }
     res += "] ";
-
-    res += "candidate : [";
-    for (const auto& candidate : candidate_list) {
-        res += witness_to_string(candidate) + "   ";
-    }
-    res += "]";
     return res;
 }
 
@@ -184,13 +163,8 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     shared_lock lock(mutex_);
 
     auto& ops = output.script.operations;
-
     for (const auto& witness : witness_list_) {
         ops.push_back({chain::opcode::special, witness_to_public_key(witness)});
-    }
-
-    for (const auto& candidate : candidate_list_) {
-        ops.push_back({chain::opcode::special, witness_to_public_key(candidate)});
     }
 
     return output;
@@ -199,18 +173,15 @@ chain::output witness::create_witness_vote_result(uint64_t height)
 bool witness::calc_witness_list(uint64_t height)
 {
     list witness_list;
-    list candidate_list;
-    if (!calc_witness_list(witness_list, candidate_list, height)) {
+    if (!calc_witness_list(witness_list, height)) {
         return false;
     }
 
-    unique_lock ulock(mutex_);
-    witness_list_.swap(witness_list);
-    candidate_list_.swap(candidate_list);
+    swap_witness_list(witness_list);
     return true;
 }
 
-bool witness::calc_witness_list(list& witness_list, list& candidate_list, uint64_t height) const
+bool witness::calc_witness_list(list& witness_list, uint64_t height) const
 {
     if (!is_begin_of_epoch(height)) {
 #ifdef PRIVATE_CHAIN
@@ -220,7 +191,6 @@ bool witness::calc_witness_list(list& witness_list, list& candidate_list, uint64
     }
 
     witness_list.clear();
-    candidate_list.clear();
 
     auto& chain = const_cast<blockchain::block_chain_impl&>(node_.chain_impl());
     auto did_detail = chain.get_registered_did(witness::witness_registry_did);
@@ -261,12 +231,11 @@ bool witness::calc_witness_list(list& witness_list, list& candidate_list, uint64
         witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
 
-    if (witness_list.size() != witness_number ||
-        candidate_list.size() > max_candidate_number) {
+    if (witness_list.size() != witness_number) {
 #ifdef PRIVATE_CHAIN
     log::error(LOG_HEADER)
         << "calc witness list failed at height " << height
-        << ", result is " << show_list(witness_list, candidate_list);
+        << ", result is " << show_list(witness_list);
 #endif
         return false;
     }
@@ -277,7 +246,7 @@ bool witness::calc_witness_list(list& witness_list, list& candidate_list, uint64
     return true;
 }
 
-bool witness::verify_vote_result(const chain::block& block, list& witness_list, list& candidate_list, bool calc) const
+bool witness::verify_vote_result(const chain::block& block, list& witness_list, bool calc) const
 {
     const auto& transactions = block.transactions;
     if (transactions.size() != 1) {
@@ -296,12 +265,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
         }
     }
 
-    size_t i = 0;
-    for (; i < witness_number; ++i) {
+    for (size_t i = 0; i < witness_number; ++i) {
         witness_list.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
-    }
-    for (; i < ops.size(); ++i) {
-        candidate_list.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
     }
 
     if (!calc) {
@@ -309,18 +274,12 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
     }
 
     list calced_witness_list;
-    list calced_candidate_list;
-    if (!calc_witness_list(calced_witness_list, calced_candidate_list, block.header.number)) {
+    if (!calc_witness_list(calced_witness_list, block.header.number)) {
         return false;
     }
 
     if (std::set<witness_id>(witness_list.begin(), witness_list.end()) !=
         std::set<witness_id>(calced_witness_list.begin(), calced_witness_list.end())) {
-        return false;
-    }
-
-    if (std::set<witness_id>(candidate_list.begin(), candidate_list.end()) !=
-        std::set<witness_id>(calced_candidate_list.begin(), calced_candidate_list.end())) {
         return false;
     }
 
@@ -373,8 +332,7 @@ bool witness::update_witness_list(uint64_t height, bool calc)
 bool witness::update_witness_list(const chain::block& block, bool calc)
 {
     list witness_list;
-    list candidate_list;
-    if (!verify_vote_result(block, witness_list, candidate_list, calc)) {
+    if (!verify_vote_result(block, witness_list, calc)) {
 #ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
         << "verify vote result failed at height " << block.header.number;
@@ -382,10 +340,14 @@ bool witness::update_witness_list(const chain::block& block, bool calc)
         return false;
     }
 
-    unique_lock ulock(mutex_);
-    witness_list_.swap(witness_list);
-    candidate_list_.swap(candidate_list);
+    swap_witness_list(witness_list);
     return true;
+}
+
+const witness::witness_id& witness::get_witness(uint32_t slot) const
+{
+    shared_lock lock(mutex_);
+    return witness_list_.at(slot);
 }
 
 uint32_t witness::get_slot_num(const witness_id& id) const
@@ -514,7 +476,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
         return false;
     }
 
-    if (witness_list_.at(calced_slot_num) == to_chunk(stub_public_key)) {
+    if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
         return true;
     }
 
@@ -534,11 +496,6 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
 bool witness::is_witness_enabled(uint64_t height)
 {
     return height >= witness_enable_height;
-}
-
-bool witness::is_witness_prepared() const
-{
-    return !witness_list_.empty();
 }
 
 uint64_t witness::get_height_in_epoch(uint64_t height)

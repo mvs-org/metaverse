@@ -55,7 +55,6 @@ public:
     static uint32_t pow_check_point_height;
     static uint64_t witness_enable_height;
     static uint32_t witness_number;
-    static uint32_t max_candidate_number;
     static uint32_t epoch_cycle_height;
     static uint32_t register_witness_lock_height;
     static uint64_t witness_lock_threshold;
@@ -72,22 +71,20 @@ public:
     static witness& create(p2p_node& node);
     static witness& get();
 
-    bool is_witness_prepared() const;
+    const witness_id& get_witness(uint32_t slot) const;
 
     // return a copy list
     list get_witness_list() const;
-    list get_candidate_list() const;
     void swap_witness_list(list&);
-    void swap_candidate_list(list&);
 
     std::string show_list() const;
-    static std::string show_list(const list& witness_list, const list& candidate_list);
+    static std::string show_list(const list& witness_list);
 
     bool is_witness(const witness_id& id) const;
 
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
-    bool calc_witness_list(list& witness_list, list& candidate_list, uint64_t height) const;
+    bool calc_witness_list(list& witness_list, uint64_t height) const;
     bool update_witness_list(uint64_t height, bool calc=false);
     bool update_witness_list(const chain::block& block, bool calc=true);
     chain::output create_witness_vote_result(uint64_t height);
@@ -114,7 +111,7 @@ public:
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const;
     bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const;
-    bool verify_vote_result(const chain::block& block, list& witness_list, list& candidate_list, bool calc) const;
+    bool verify_vote_result(const chain::block& block, list& witness_list, bool calc) const;
 
 private:
     witness(p2p_node& node);
@@ -128,7 +125,6 @@ private:
     p2p_node& node_;
     const settings& setting_;
     list witness_list_;
-    list candidate_list_;
     mutable upgrade_mutex mutex_;
 };
 
