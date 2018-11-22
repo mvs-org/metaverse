@@ -43,10 +43,22 @@ namespace blockchain {
 
 typedef console_result operation_result;
 
+class block_chain_impl;
+
+// encap to safer write database
+class block_chain_writer {
+public:
+    block_chain_writer(block_chain_impl& chain);
+    ~block_chain_writer();
+private:
+    block_chain_impl& chain_;
+};
+
 /// The simple_chain interface portion of this class is not thread safe.
 class BCB_API block_chain_impl
   : public block_chain, public simple_chain
 {
+    friend class block_chain_writer;
 public:
     block_chain_impl(threadpool& pool,
         const blockchain::settings& chain_settings,

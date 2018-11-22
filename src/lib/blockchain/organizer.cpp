@@ -377,6 +377,9 @@ organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
         return ret;
     }
 
+    ////////////////// WRITE LOCKED ///////////////////////////////////
+    block_chain_writer locked_write(chain_);
+
     // Replace! Switch!
     block_detail::list released_blocks;
     auto pop_all_success = chain_.pop_from(released_blocks, begin_index);

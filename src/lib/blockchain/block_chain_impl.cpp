@@ -338,6 +338,17 @@ void block_chain_impl::stop_write()
     BITCOIN_ASSERT(result);
 }
 
+block_chain_writer::block_chain_writer(block_chain_impl& chain)
+    : chain_(chain)
+{
+    chain_.start_write();
+}
+
+block_chain_writer::~block_chain_writer()
+{
+    chain_.stop_write();
+}
+
 // This call is sequential, but we are preserving the callback model for now.
 void block_chain_impl::store(message::block_message::ptr block,
     block_store_handler handler)
@@ -375,12 +386,10 @@ void block_chain_impl::store(message::block_message::ptr block,
 void block_chain_impl::do_store(message::block_message::ptr block,
     block_store_handler handler)
 {
-    start_write();
-
-    // fail fast if the block is already stored...
+    // fail fast if the bloc`k is already stored...
     if (database_.blocks.get(block->header.hash()))
     {
-        stop_write(handler, error::duplicate, 0);
+        handler(error::duplicate, 0);
         return;
     }
 
@@ -389,15 +398,14 @@ void block_chain_impl::do_store(message::block_message::ptr block,
     // ...or if the block is already orphaned.
     if (!organizer_.add(detail))
     {
-        stop_write(handler, error::duplicate, 0);
+        handler(error::duplicate, 0);
         return;
     }
 
     // Otherwise organize the chain...
     organizer_.organize();
 
-    //...and then get the particular block's status.
-    stop_write(handler, detail->error(), detail->height());
+    handler(detail->error(), detail->height());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

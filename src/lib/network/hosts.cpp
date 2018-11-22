@@ -98,16 +98,12 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
 
 hosts::address::list hosts::copy()
 {
-    address::list copy;
     if (disabled_)
-        return copy;
+        return address::list();
 
     shared_lock lock{mutex_};
-    copy.reserve(buffer_.size());
-    for (auto& h : buffer_) {
-        copy.push_back(h);
-    }
-    return copy;
+
+    return address::list(std::begin(buffer_), std::end(buffer_));
 }
 
 void hosts::handle_timer(const code& ec)
