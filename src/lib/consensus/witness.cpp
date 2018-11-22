@@ -206,8 +206,8 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
             return r1.second > r2.second; // descend
         };
 
-    auto register_addresses = chain.get_register_witnesses(
-        did_detail->get_address(), height - epoch_cycle_height + 1);
+    auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
+    auto register_addresses = chain.get_register_witnesses(did_detail->get_address(), from_height);
 
     std::vector<locked_record_t> statistics;
     for (const auto& addr_pubkey : register_addresses) {
@@ -224,20 +224,11 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
 
     for (const auto& record : statistics) {
-        witness_list.emplace_back(std::move(record.first.second));
+        witness_list.emplace_back(to_witness_id(record.first.second));
     }
 
     if (witness_list.size() < witness_number) {
         witness_list.resize(witness_number, to_chunk(stub_public_key));
-    }
-
-    if (witness_list.size() != witness_number) {
-#ifdef PRIVATE_CHAIN
-    log::error(LOG_HEADER)
-        << "calc witness list failed at height " << height
-        << ", result is " << show_list(witness_list);
-#endif
-        return false;
     }
 
     auto random_fun = [](size_t i) {return pseudo_random(0, i);};
@@ -261,6 +252,10 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
     }
     for (const auto& op : ops) {
         if (!is_public_key(chain::operation::factory_from_data(op.to_data()).data)) {
+#ifdef PRIVATE_CHAIN
+            log::info(LOG_HEADER)
+                << "in verify_vote_result ops is not public key, height " << block.header.number;
+#endif
             return false;
         }
     }
@@ -275,11 +270,19 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
 
     list calced_witness_list;
     if (!calc_witness_list(calced_witness_list, block.header.number)) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "in verify_vote_result -> calc_witness_list failed, height " << block.header.number;
+#endif
         return false;
     }
 
     if (std::set<witness_id>(witness_list.begin(), witness_list.end()) !=
         std::set<witness_id>(calced_witness_list.begin(), calced_witness_list.end())) {
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "in verify_vote_result compare calc_witness_list result failed, height " << block.header.number;
+#endif
         return false;
     }
 

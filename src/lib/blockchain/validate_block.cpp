@@ -143,12 +143,14 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
 
     if (is_begin_of_epoch) {
         RETURN_IF_STOPPED();
+        log::debug(LOG_BLOCKCHAIN) << "begin to update_witness_list at height " << height_;
         if (!consensus::witness::get().update_witness_list(current_block_)) {
             log::debug(LOG_BLOCKCHAIN)
                 << "update witness list failed at " << height_
                 << " block hash: " << encode_hash(header.hash());
             return error::witness_update_error;
         }
+        log::debug(LOG_BLOCKCHAIN) << "end to update_witness_list at height " << height_;
     }
 
     if (is_block_version_dpos) {

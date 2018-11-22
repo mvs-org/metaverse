@@ -117,7 +117,7 @@ void session_manual::handle_connect(const code& ec, channel::ptr channel,
 
     if (ec)
     {
-        log::debug(LOG_NETWORK)
+        log::trace(LOG_NETWORK)
             << "Failure connecting [" << config::endpoint(hostname, port)
             << "] manually: " << ec.message();
 
