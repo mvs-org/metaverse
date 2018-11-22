@@ -55,9 +55,15 @@ public:
     static uint32_t pow_check_point_height;
     static uint64_t witness_enable_height;
     static uint32_t witness_number;
+    static uint32_t max_candidate_number;
     static uint32_t epoch_cycle_height;
+    static uint32_t register_witness_lock_height;
+    static uint64_t witness_lock_threshold;
     static uint32_t vote_maturity;
     static uint32_t max_dpos_interval;
+
+    static const uint32_t witness_register_fee;
+    static const std::string witness_registry_did;
 
 public:
     ~witness();
@@ -73,18 +79,17 @@ public:
     list get_candidate_list() const;
     void swap_witness_list(list&);
     void swap_candidate_list(list&);
+
     std::string show_list() const;
+    static std::string show_list(const list& witness_list, const list& candidate_list);
 
     bool is_witness(const witness_id& id) const;
 
-    // register as a candidate
-    bool register_witness(const witness_id& id);
-    bool unregister_witness(const witness_id& id);
-
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
-    bool update_witness_list(uint64_t height);
-    bool update_witness_list(const chain::block& block);
+    bool calc_witness_list(list& witness_list, list& candidate_list, uint64_t height) const;
+    bool update_witness_list(uint64_t height, bool calc=false);
+    bool update_witness_list(const chain::block& block, bool calc=true);
     chain::output create_witness_vote_result(uint64_t height);
     chain::block::ptr fetch_vote_result_block(uint64_t height);
 
@@ -109,7 +114,7 @@ public:
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const;
     bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const;
-    bool verify_vote_result(const chain::block& block) const;
+    bool verify_vote_result(const chain::block& block, list& witness_list, list& candidate_list, bool calc) const;
 
 private:
     witness(p2p_node& node);

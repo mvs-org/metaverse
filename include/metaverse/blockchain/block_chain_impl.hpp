@@ -218,8 +218,8 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
-    inline hash_digest get_hash(const std::string& str);
-    inline short_hash get_short_hash(const std::string& str);
+    inline hash_digest get_hash(const std::string& str) const;
+    inline short_hash get_short_hash(const std::string& str) const;
   
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
@@ -292,12 +292,12 @@ public:
         const std::string& account, const std::string& symbol="");
 
     // account did api
-    bool is_did_exist(const std::string& symbol);
+    bool is_did_exist(const std::string& symbol) const;
     uint64_t get_did_height(const std::string& symbol) const;
     bool is_address_registered_did(const std::string& address, uint64_t fork_index = max_uint64);
     bool is_account_owned_did(const std::string& account, const std::string& symbol);
     std::string get_did_from_address(const std::string& address, uint64_t fork_index = max_uint64);
-    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol);
+    std::shared_ptr<did_detail> get_registered_did(const std::string& symbol) const;
     std::shared_ptr<did_detail::list> get_registered_dids();
     std::shared_ptr<did_detail::list> get_account_dids(const std::string& account);
 
@@ -355,6 +355,12 @@ public:
     uint64_t calc_number_of_blocks(uint64_t from, uint64_t to,
         chain::block_version version = chain::block_version_pow) const;
 
+    std::pair<uint64_t, uint64_t> get_locked_balance(const std::string& address,
+        uint64_t expiration, const std::string& asset_symbol="") const;
+
+    std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
+        const std::string& addr, size_t from_height, const std::string& symbol="") const;
+
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
 
@@ -386,7 +392,7 @@ private:
     void fetch_serial(perform_read_functor perform_read);
     bool stopped() const;
 
-    std::string get_asset_symbol_from_business_data(const business_data& data);
+    std::string get_asset_symbol_from_business_data(const business_data& data) const;
 
 private:
     std::atomic<bool> stopped_;

@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/blockchain/organizer.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/blockchain/block.hpp>
 
 #include <boost/thread.hpp>
@@ -73,7 +74,12 @@ void organizer::start()
             log::info(LOG_BLOCKCHAIN) << "update witness list failed at height " << height;
             return;
         }
+        log::info(LOG_BLOCKCHAIN) << "update witness list succeed at height " << height;
+#ifdef PRIVATE_CHAIN
         log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+#else
+        log::debug(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+#endif
         chain_.set_sync_disabled(false);
     }
 

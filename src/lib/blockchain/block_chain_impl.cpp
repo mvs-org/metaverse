@@ -1030,13 +1030,13 @@ void block_chain_impl::fetch_stealth(const binary& filter, uint64_t from_height,
     fetch_serial(do_fetch);
 }
 
-inline hash_digest block_chain_impl::get_hash(const std::string& str)
+inline hash_digest block_chain_impl::get_hash(const std::string& str) const
 {
     data_chunk data(str.begin(), str.end());
     return sha256_hash(data);
 }
 
-inline short_hash block_chain_impl::get_short_hash(const std::string& str)
+inline short_hash block_chain_impl::get_short_hash(const std::string& str) const
 {
     data_chunk data(str.begin(), str.end());
     return ripemd160_hash(data);
@@ -1608,7 +1608,7 @@ uint64_t block_chain_impl::get_asset_volume(const std::string& asset)
     return database_.assets.get_asset_volume(asset);
 }
 
-std::string block_chain_impl::get_asset_symbol_from_business_data(const business_data& data)
+std::string block_chain_impl::get_asset_symbol_from_business_data(const business_data& data) const
 {
     std::string asset_symbol("");
     if (data.get_kind_value() == business_kind::asset_issue) {
@@ -1907,7 +1907,7 @@ std::shared_ptr<blockchain_asset::list> block_chain_impl::get_asset_register_out
 
 /* check did symbol exist or not
 */
-bool block_chain_impl::is_did_exist(const std::string& did_name)
+bool block_chain_impl::is_did_exist(const std::string& did_name) const
 {
     // find from blockchain database
     return get_registered_did(did_name) != nullptr;
@@ -1998,7 +1998,7 @@ std::shared_ptr<blockchain_did::list> block_chain_impl::get_did_history_addresse
     return database_.dids.get_history_dids(hash);
 }
 
-std::shared_ptr<did_detail> block_chain_impl::get_registered_did(const std::string& symbol)
+std::shared_ptr<did_detail> block_chain_impl::get_registered_did(const std::string& symbol) const
 {
     std::shared_ptr<did_detail> sp_did(nullptr);
     const auto hash = get_hash(symbol);
@@ -2566,6 +2566,152 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, cha
     }
 
     return number;
+}
+
+/// @return pair of <locked_balance, locked_weight>
+std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
+    const std::string& address, uint64_t expiration, const std::string& asset_symbol) const
+{
+    const bool is_asset = !asset_symbol.empty();
+    if (is_asset && wallet::symbol::is_forbidden(asset_symbol)) {
+        return std::make_pair(0, 0);
+    }
+
+    uint64_t locked_balance = 0;
+    uint64_t locked_weight = 0;
+    auto& rThis = const_cast<block_chain_impl&>(*this);
+
+    auto&& rows = rThis.get_address_history(wallet::payment_address(address));
+
+    chain::transaction tx_temp;
+    uint64_t tx_height = 0;
+
+    uint64_t height = 0;
+    get_last_height(height);
+
+    for (auto& row: rows)
+    {
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+            && rThis.get_transaction(row.output.hash, tx_temp, tx_height))
+        {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            const auto& output = tx_temp.outputs.at(row.output.index);
+
+            if (is_asset != output.is_asset()) {
+                continue;
+            }
+
+            if (is_asset && asset_symbol != output.get_asset_symbol()) {
+                continue;
+            }
+
+            if (!operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+                continue;
+            }
+
+            uint64_t lock_sequence = chain::operation::
+                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            // use any kind of blocks
+            if ((tx_height + lock_sequence <= height) ||
+                (expiration > height && tx_height + lock_sequence <= expiration)) {
+                continue;
+            }
+
+            uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
+            locked_balance += locked_value;
+            locked_weight += (tx_height + lock_sequence - height) * locked_value;
+        }
+    }
+    return std::make_pair(locked_balance, locked_weight);
+}
+
+/// how to register witness? just send (p2kh) exact witness::witness_register_fee ETP
+/// to DID witness::witness_registry_did, and from your DID as the source.
+/// @return vector of pair of <address, public_key>
+std::vector<std::pair<std::string, data_chunk>> block_chain_impl::get_register_witnesses(
+    const std::string& addr, size_t from_height, const std::string& symbol) const
+{
+    using addr_pubkey_pair_t = std::pair<std::string, data_chunk>;
+
+    const bool is_asset = !symbol.empty();
+    if (is_asset && wallet::symbol::is_forbidden(symbol)) {
+        return std::vector<addr_pubkey_pair_t>();
+    }
+
+    std::set<addr_pubkey_pair_t> witnesses;
+    auto sh_vec = database_.address_assets.get(addr, symbol, from_height, 0, 0, 0);
+
+    chain::transaction tx_temp;
+    uint64_t tx_height = 0;
+
+    uint64_t height = 0;
+    get_last_height(height);
+
+    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
+        if (iter->kind != point_kind::output) {
+            continue;
+        }
+        uint64_t amount = 0;
+        const auto& bussi_data = iter->data;
+        auto bussi_kind = bussi_data.get_kind_value();
+        if (!is_asset) {
+            // etp business process
+            if (bussi_kind == business_kind::etp) {
+                amount = iter->val_chk_sum.value;
+            }
+        }
+        else {
+            // asset business process
+            if (bussi_kind == business_kind::asset_transfer) {
+                auto transfer = boost::get<asset_transfer>(bussi_data.get_data());
+                if (symbol == transfer.get_symbol()) {
+                    amount = transfer.get_quantity();
+                }
+            }
+        }
+
+        if (amount != consensus::witness::witness_register_fee) {
+            continue;
+        }
+
+        if (!get_transaction(tx_temp, tx_height, iter->point.hash)) {
+            continue;
+        }
+
+        const auto& output = tx_temp.outputs.at(iter->point.index);
+        if (!operation::is_pay_key_hash_pattern(output.script.operations)) {
+            continue;
+        }
+
+        if (output.attach_data.get_to_did() != consensus::witness::witness_registry_did) {
+            continue;
+        }
+
+        const auto& from_did = output.attach_data.get_from_did();
+        if (from_did.empty()) {
+            continue;
+        }
+
+        auto did_detail = get_registered_did(from_did);
+        if (!did_detail) {
+            continue;
+        }
+
+        const auto& from_address = did_detail->get_address();
+        if (from_address.empty()) {
+            continue;
+        }
+
+        const auto& input_ops = tx_temp.inputs.front().script.operations;
+        if (input_ops.size() < 2 || !is_public_key(input_ops[1].data)) {
+            continue;
+        }
+
+        witnesses.insert(std::make_pair(from_address, input_ops[1].data));
+    }
+
+    return std::vector<addr_pubkey_pair_t>(witnesses.begin(), witnesses.end());
 }
 
 } // namespace blockchain
