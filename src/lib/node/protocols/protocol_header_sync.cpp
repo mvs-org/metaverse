@@ -106,7 +106,7 @@ void protocol_header_sync::send_get_headers(event_handler complete)
 
 void protocol_header_sync::handle_send(const code& ec, event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -121,7 +121,7 @@ void protocol_header_sync::handle_send(const code& ec, event_handler complete)
 bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
     event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)

@@ -117,7 +117,7 @@ void protocol_version::send_version(const message::version& self)
 bool protocol_version::handle_receive_version(const code& ec,
     version::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -144,7 +144,7 @@ bool protocol_version::handle_receive_version(const code& ec,
 
 bool protocol_version::handle_receive_verack(const code& ec, verack::ptr)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -163,7 +163,7 @@ bool protocol_version::handle_receive_verack(const code& ec, verack::ptr)
 
 void protocol_version::handle_version_sent(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -178,7 +178,7 @@ void protocol_version::handle_version_sent(const code& ec)
 
 void protocol_version::handle_verack_sent(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)

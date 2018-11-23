@@ -58,6 +58,9 @@ public:
 
     void invoke_protocol_start_handler(const code& ec);
 
+    virtual bool stopped(const code& ec) const;
+    using proxy::stopped;
+
 protected:
     virtual void handle_activity();
     virtual void handle_stopping();

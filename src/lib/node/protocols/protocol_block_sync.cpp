@@ -96,7 +96,7 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
 
 void protocol_block_sync::handle_send(const code& ec, event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -115,7 +115,7 @@ void protocol_block_sync::handle_send(const code& ec, event_handler complete)
 bool protocol_block_sync::handle_receive(const code& ec, block_ptr message,
     event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)

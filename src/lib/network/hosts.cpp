@@ -28,6 +28,7 @@
 #include <metaverse/bitcoin/utility/path.hpp>
 #include <metaverse/bitcoin/math/limits.hpp>
 #include <metaverse/network/settings.hpp>
+#include <metaverse/network/channel.hpp>
 
 namespace libbitcoin {
 namespace network {
@@ -45,6 +46,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
     , file_path_(default_data_path() / settings.hosts_file)
     , disabled_(settings.host_pool_capacity == 0)
     , pool_(pool)
+    , self_(settings.self)
 {
 }
 
@@ -419,6 +421,17 @@ code hosts::store(const address& host)
     if (!host.is_routable())
     {
         // We don't treat invalid address as an error, just log it.
+        return error::success;
+    }
+
+    // don't store self address
+    auto authority = config::authority{host};
+    if (authority == self_ || authority.port() == 0) {
+        return error::success;
+    }
+
+    // don't store blacklist and banned address
+    if (channel::blacklisted(host) || channel::manualbanned(host)) {
         return error::success;
     }
 

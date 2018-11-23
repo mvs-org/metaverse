@@ -81,7 +81,7 @@ void protocol_timer::reset_timer()
 
 void protocol_timer::handle_timer(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
     {
         return;
     }

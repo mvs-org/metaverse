@@ -90,7 +90,7 @@ void protocol_transaction_out::start()
 bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
     fee_filter_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -116,17 +116,13 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
     memory_pool_ptr)
 {
-    if (stopped()) {
-        return false;
-    }
-
-    if (ec) {
+    if (stopped(ec) || ec) {
         return false;
     }
 
     auto self = shared_from_this();
     pool_.fetch([this, self](const code& ec, const std::vector<transaction_ptr>& txs){
-        if (stopped() || ec) {
+        if (stopped(ec) || ec) {
             log::debug(LOG_NODE) << "pool fetch transaction failed," << ec.message();
             return;
         }
@@ -150,7 +146,7 @@ bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
 bool protocol_transaction_out::handle_receive_get_data(const code& ec,
     get_data_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -191,7 +187,7 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
 void protocol_transaction_out::send_transaction(const code& ec,
     const chain::transaction& transaction, const hash_digest& hash)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return;
 
     if (ec.value() == error::not_found)
@@ -226,7 +222,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
 bool protocol_transaction_out::handle_floated(const code& ec,
     const index_list& unconfirmed, transaction_ptr message)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return false;
 
     if (ec.value() == error::mock)

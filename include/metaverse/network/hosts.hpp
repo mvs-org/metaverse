@@ -104,6 +104,8 @@ private:
     const boost::filesystem::path file_path_;
     threadpool& pool_;
     deadline::ptr snap_timer_;
+
+    const config::authority& self_;
 };
 
 } // namespace network

@@ -43,9 +43,17 @@ protocol_events::protocol_events(p2p& network, channel::ptr channel,
 // Properties.
 // ----------------------------------------------------------------------------
 
-bool protocol_events::stopped()
+bool protocol_events::stopped() const
 {
     return !handler_.load();
+}
+
+bool protocol_events::stopped(const code& ec) const
+{
+    // The service stop code may also make its way into protocol handlers.
+    return stopped() ||
+        ec == error::channel_stopped ||
+        ec == error::service_stopped;
 }
 
 // Start.

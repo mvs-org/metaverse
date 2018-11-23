@@ -100,7 +100,7 @@ void protocol_block_out::start()
 bool protocol_block_out::handle_receive_send_headers(const code& ec,
     send_headers_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -137,7 +137,7 @@ size_t protocol_block_out::locator_limit() const
 bool protocol_block_out::handle_receive_get_headers(const code& ec,
     get_headers_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -197,7 +197,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     const header_list& headers)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -227,7 +227,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
 bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     get_blocks_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -270,7 +270,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
     const hash_list& hashes)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return;
 
     if (ec)
@@ -298,7 +298,7 @@ void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
 bool protocol_block_out::handle_receive_get_data(const code& ec,
     get_data_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
     {
         return false;
     }
@@ -331,7 +331,7 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
 void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
     const hash_digest& hash)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
     {
         return;
     }
@@ -363,7 +363,7 @@ void protocol_block_out::send_block(const code& ec, chain::block::ptr block,
 void protocol_block_out::send_merkle_block(const code& ec,
     merkle_block_ptr message, const hash_digest& hash)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return;
 
     if (ec.value() == error::not_found)
@@ -396,7 +396,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
 bool protocol_block_out::handle_reorganized(const code& ec, size_t fork_point,
     const block_ptr_list& incoming, const block_ptr_list& outgoing)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return false;
 
     if (ec.value() == error::mock)

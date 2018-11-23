@@ -103,7 +103,7 @@ void protocol_block_in::start()
 // This is fired by the callback (i.e. base timer and stop handler).
 void protocol_block_in::get_block_inventory(const code& ec)
 {
-    if (stopped())
+    if (stopped(ec))
     {
         blockchain_.fired();
         return;
@@ -165,7 +165,7 @@ void protocol_block_in::send_get_blocks(const hash_digest& from_hash, const hash
 void protocol_block_in::handle_fetch_block_locator(const code& ec,
     const hash_list& locator, const hash_digest& stop_hash)
 {
-    if (stopped() || ec.value() == error::service_stopped || locator.empty())
+    if (stopped(ec) || locator.empty())
         return;
 
     if (ec)
@@ -207,7 +207,7 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
 bool protocol_block_in::handle_receive_headers(const code& ec,
     headers_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -235,7 +235,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 bool protocol_block_in::handle_receive_inventory(const code& ec,
     inventory_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
     {
         return false;
     }
@@ -267,8 +267,7 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
 void protocol_block_in::handle_filter_orphans(const code& ec,
     get_data_ptr message)
 {
-    if (stopped() || ec.value() == error::service_stopped ||
-        message->inventories.empty())
+    if (stopped(ec) || message->inventories.empty())
         return;
 
     if (ec)
@@ -286,8 +285,7 @@ void protocol_block_in::handle_filter_orphans(const code& ec,
 
 void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
 {
-    if (stopped() || ec.value() == error::service_stopped ||
-        message->inventories.empty())
+    if (stopped(ec) || message->inventories.empty())
         return;
 
     if (ec)
@@ -312,7 +310,7 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
 bool protocol_block_in::handle_receive_not_found(const code& ec,
     message::not_found::ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -346,7 +344,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 
 bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
 
     if (ec)
@@ -380,7 +378,7 @@ bool protocol_block_in::handle_receive_block(const code& ec, block_ptr message)
 
 void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
 {
-    if (stopped() || ec.value() == error::service_stopped)
+    if (stopped(ec))
         return;
 
     // Ignore the block that we already have, a common result.
@@ -426,7 +424,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_ptr message)
 bool protocol_block_in::handle_reorganized(const code& ec, size_t fork_point,
     const block_ptr_list& incoming, const block_ptr_list& outgoing)
 {
-    if (stopped() || ec.value() == error::service_stopped || incoming.empty())
+    if (stopped(ec) || incoming.empty())
     {
         log::trace(LOG_NODE) << "protocol_block_in::handle_reorganized ," << stopped() << "," << ec.message() << "," << incoming.size();
         return false;
