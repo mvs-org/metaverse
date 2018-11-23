@@ -295,13 +295,13 @@ bool network_address::is_local() const
 
 bool network_address::is_routable() const
 {
+    /// test-private-chain
+    return true;
     return is_valid() && !(is_RFC1918() || is_RFC3927() || is_RFC4862() || (is_RFC4193() && !is_tor()) || is_RFC4843() || is_local());
 }
 
 bool network_address::is_ulticast() const
 {
-    /// test-private-chain
-    return true;
     return (is_ipv4() && (get_byte(3) & 0xF0) == 0xE0) || (get_byte(15) == 0xFF);
 }
 
