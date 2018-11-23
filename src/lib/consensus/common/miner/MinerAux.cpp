@@ -164,9 +164,7 @@ bool MinerAux::verify_stake(const chain::header& header, const chain::output_inf
 bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::output_info& stake_output)
 {
     // Base target
-    uint32_t target_bits = (uint32_t)header.bits;
-    uint256_t target;
-    target.SetCompact(target_bits);
+    h256 boundary = HeaderAux::boundary(header);
 
     // Stake info
     uint64_t amount = (stake_output.data.value / coin_price());
@@ -174,12 +172,11 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
     uint64_t coin_age = header.number - stake_output.height;
 
     // Calculate hash
-    h256 base_pos_hash = HeaderAux::hash_head_pos(header, stake_output);
-    uint256_t pos(base_pos_hash.asBytes());
-    pos /= amount * 500;
+    u256 pos = HeaderAux::hash_head_pos(header, stake_output);
+    pos /= u256(amount * 500);
     //pos /= coin_age;
 
-    bool succeed = (pos <= target);
+    bool succeed = (h256(pos) <= boundary);
     bool enable_log = false;
     if (enable_log && succeed) {
         // h256 target_hash(target.GetCompact());

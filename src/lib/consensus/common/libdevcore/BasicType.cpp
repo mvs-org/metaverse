@@ -178,8 +178,7 @@ u256 HeaderAux::calculate_difficulty(
 
 static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
 
-template<class T>
-void adjust_difficulty(uint32_t actual_timespan, T& result, bool is_staking=false)
+bigint adjust_difficulty(uint32_t actual_timespan, bigint & result)
 {
     // Limit adjustment step
     if (actual_timespan < pos_target_timespan / 10) {
@@ -192,17 +191,9 @@ void adjust_difficulty(uint32_t actual_timespan, T& result, bool is_staking=fals
     // Retarget
     uint32_t interval = total_target_timespan / pos_target_timespan;
 
-    if (is_staking) {
-        result /= ((interval + 1) * pos_target_timespan);
-        result *= ((interval - 1) * pos_target_timespan + actual_timespan + actual_timespan);
-
-        // result /= pos_target_timespan;
-        // result *= actual_timespan;
-    }
-    else {
-        result *= ((interval + 1) * pos_target_timespan);
-        result /= ((interval - 1) * pos_target_timespan + actual_timespan + actual_timespan);
-    }
+    result *= ((interval + 1) * pos_target_timespan);
+    result /= ((interval - 1) * pos_target_timespan + actual_timespan + actual_timespan);
+    return result;
 }
 
 u256 HeaderAux::calculate_difficulty_pow(
@@ -220,29 +211,10 @@ u256 HeaderAux::calculate_difficulty_pow(
     bigint target(minimumDifficulty);
 
     if (nullptr != prev) {
-
-        target = prev->bits;
+        target = prev->bits ;
         uint32_t actual_timespan = current.timestamp - prev->timestamp;
+        target =  adjust_difficulty(actual_timespan, target);
 
-        adjust_difficulty(actual_timespan, target, false);
-
-        // DO NOT MODIFY time_config in release
-        // static uint32_t time_config{24};
-
-        // // Limit adjustment step
-        // if (actual_timespan < time_config / 10) {
-        //     actual_timespan = time_config / 10;
-        // }
-        // if (actual_timespan > time_config * 10) {
-        //     actual_timespan = time_config * 10;
-        // }
-
-        // if (actual_timespan > time_config) {
-        //     target = prev->bits - (prev->bits/1024) * (actual_timespan / time_config);
-        // }
-        // else {
-        //     target = prev->bits + (prev->bits/1024);
-        // }
     }
 
     bigint result(target);
@@ -258,31 +230,25 @@ u256 HeaderAux::calculate_difficulty_pos(
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    h256 pos_limit_target = h256("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    // h256 pos_limit_target = h256("000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    uint256_t nbits_limit_pos(pos_limit_target.asBytes());
-    uint32_t limit_target = nbits_limit_pos.GetCompact();
+    // auto minimumDifficulty = bigint(0x1ffffffff);
+    auto minimumDifficulty = bigint(0x00000ffff);
 
     if (nullptr == prev || nullptr == pprev) {
-        return u256(limit_target);
+        return u256(minimumDifficulty);
     }
 
-    uint32_t last_pos_bit = (uint32_t)prev->bits;
+    bigint last_pos_bit = prev->bits;
     uint32_t actual_timespan = prev->timestamp - pprev->timestamp;
 
-    uint256_t new_target;
-    new_target.SetCompact(last_pos_bit);
-
     // Retarget
-    adjust_difficulty(actual_timespan, new_target, true);
+    last_pos_bit = adjust_difficulty(actual_timespan, last_pos_bit);
 
-    new_target = std::min(new_target, nbits_limit_pos);
-    uint32_t value = new_target.GetCompact();
+    auto new_target = std::max<bigint>(last_pos_bit, minimumDifficulty);
 
     log::info("calculate_difficulty")
-        << " bits limit: " << limit_target
+        << " bits limit: " << minimumDifficulty
         << ", actual_timespan: " << actual_timespan
-        << " s, bits: " << value;
+        << " s, bits: " << new_target;
 
-    return u256(value);
+    return u256(new_target);
 }

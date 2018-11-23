@@ -21,7 +21,7 @@
 #include <metaverse/bitcoin/constants.hpp>
 
 namespace libbitcoin {
-uint32_t coinbase_maturity = 1000;
+uint32_t coinbase_maturity = 10;
 
 hash_number max_target()
 {

@@ -97,7 +97,7 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
-BC_CONSTEXPR uint64_t pos_enabled_height        = 1000;
+BC_CONSTEXPR uint64_t pos_enabled_height        = 10;
 
 BC_CONSTEXPR uint64_t min_pos_lock_value        = 10*100000000ul;
 BC_CONSTEXPR uint64_t min_pos_lock_height       = 10000;
