@@ -88,6 +88,8 @@ private:
     iterator find(list& buffer, const address& host);
     void handle_timer(const code& ec);
 
+    bool store_cache(bool succeed_clear_buffer = false);
+
     // record the seed count
     const size_t seed_count;
     const size_t host_pool_capacity_;

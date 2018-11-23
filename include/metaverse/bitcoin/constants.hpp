@@ -99,12 +99,12 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 //-----------------------------------------------------------------------------
 BC_CONSTEXPR uint64_t pos_enabled_height        = 1000;
 
-BC_CONSTEXPR uint64_t min_pos_lock_value        = 500*100000000ul;
+BC_CONSTEXPR uint64_t min_pos_lock_value        = 10*100000000ul;
 BC_CONSTEXPR uint64_t min_pos_lock_height       = 10000;
 BC_CONSTEXPR double min_pos_lock_rate           = 0.8;
 
 BC_CONSTEXPR uint64_t min_pos_value             = 1*100000000ul;
-BC_CONSTEXPR uint64_t min_pos_confirm_height    = 500;
+BC_CONSTEXPR uint64_t min_pos_confirm_height    = 10;
 BC_CONSTEXPR uint32_t pos_target_timespan       = 24;
 
 // price

@@ -740,7 +740,7 @@ miner::transaction_ptr miner::create_coinstake_tx(
         coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(coinstake->outputs[1].value)};
 
         auto value = nCredit - coinstake->outputs[1].value;
-        coinstake->outputs.emplace_back(value, chain::script{script_operation}, 
+        coinstake->outputs.emplace_back(value, chain::script{script_operation},
             attachment(ETP_TYPE, 1, chain::etp(value)));
 
     }
@@ -789,6 +789,7 @@ miner::block_ptr miner::create_new_block_pos(
     // Check deposited stake
     if (!block_chain.check_pos_capability(last_height, pay_address)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is deposited at address " << address;
+        sleep(10 * 1000);
         return nullptr;
     }
 
@@ -797,6 +798,7 @@ miner::block_ptr miner::create_new_block_pos(
     block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs);
     if (stake_outputs.empty()) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is holded at address " << address;
+        sleep(10 * 1000);
         return nullptr;
     }
 
@@ -964,7 +966,7 @@ void miner::work(const wallet::payment_address pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create new "
-                    << (is_staking_ ? "PoS" : "PoW") <<" block at heigth: " << height
+                    << (is_staking_ ? "PoS" : "PoW") <<" block at height: " << height
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 
