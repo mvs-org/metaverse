@@ -254,7 +254,7 @@ bool executor::run()
 // Handle the completion of the start sequence and begin the run sequence.
 void executor::handle_started(const code& ec)
 {
-    if (ec)
+    if (ec && ec.value() != error::operation_failed)
     {
         log::error(LOG_SERVER) << format(BS_NODE_START_FAIL) % ec.message();
         stop(ec);
