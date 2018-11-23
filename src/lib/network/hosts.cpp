@@ -103,7 +103,23 @@ hosts::address::list hosts::copy()
 
     shared_lock lock{mutex_};
 
-    return address::list(std::begin(buffer_), std::end(buffer_));
+    if (stopped_ || buffer_.empty())
+        return address::list();
+
+    // not copy all, but just 10% ~ 20% , at least one
+    const auto out_count = std::max<size_t>(1,
+        std::min<size_t>(1000, buffer_.size()) / pseudo_random(5, 10));
+
+    const auto limit = buffer_.size();
+    auto index = pseudo_random(0, limit);
+
+    address::list copy(out_count);
+
+    for (size_t count = 0; count < out_count; ++count)
+        copy.push_back(buffer_[index++ % limit]);
+
+    pseudo_random::shuffle(copy);
+    return copy;
 }
 
 void hosts::handle_timer(const code& ec)
@@ -286,7 +302,8 @@ code hosts::clear()
     mutex_.unlock_upgrade_and_lock();
 
     if (!buffer_.empty()) {
-        backup_ = std::move( buffer_ );
+        backup_.swap(buffer_);
+        buffer_.clear();
     }
 
     mutex_.unlock();

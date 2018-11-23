@@ -231,8 +231,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
 
-    auto random_fun = [](size_t i) {return pseudo_random(0, i);};
-    std::random_shuffle(witness_list.begin(), witness_list.end(), random_fun);
+    pseudo_random::shuffle(witness_list);
 
     return true;
 }
