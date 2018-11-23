@@ -82,6 +82,11 @@ const settings& server_node::server_settings() const
     return configuration_.server;
 }
 
+bool server_node::is_use_testnet_rules() const
+{
+    return configuration_.use_testnet_rules;
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 

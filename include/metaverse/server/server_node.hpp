@@ -105,6 +105,8 @@ public:
     /// Get miner.
     virtual consensus::miner& miner();
 
+    virtual bool is_use_testnet_rules() const override;
+
     bool is_blockchain_sync() const { return under_blockchain_sync_.load(std::memory_order_relaxed); }
 
 private:

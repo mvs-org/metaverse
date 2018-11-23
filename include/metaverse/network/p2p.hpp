@@ -205,6 +205,8 @@ public:
     //restart the seeding session
     void restart_seeding(bool manual=false);
 
+    virtual bool is_use_testnet_rules() const {return false;}
+
 protected:
 
     /// Attach a session to the network, caller must start the session.

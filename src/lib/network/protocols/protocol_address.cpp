@@ -64,7 +64,7 @@ void protocol_address::start()
         network_address nt_address=settings.self.to_network_address();
 
         //for testnet don't filter local ip
-        if (settings.hosts_file == "hosts-test.cache") {
+        if (network_.is_use_testnet_rules()) {
             self_ = address({ { nt_address } });
             SEND2(self_, handle_send, _1, self_.command);
         }
@@ -83,7 +83,7 @@ void protocol_address::start()
         if (sp_out_address && (settings.self != *sp_out_address)) {
             const config::authority& out_address = *sp_out_address;
             network_address nt_address = out_address.to_network_address();
-            if (settings.hosts_file == "hosts-test.cache") {
+            if (network_.is_use_testnet_rules()) {
                 address self = address({ { nt_address } });
                 log::info("UPnP") << "send addresss " << out_address.to_string();
                 SEND2(self, handle_send, _1, self.command);

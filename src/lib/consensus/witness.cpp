@@ -82,6 +82,13 @@ void witness::init(p2p_node& node)
     witness::vote_maturity = 2;
     witness::max_dpos_interval = 1;
 #endif
+
+#ifdef PRIVATE_CHAIN
+    log::info("blockchain") << "running prinet";
+#else
+    log::info("blockchain")
+        << (!node.is_use_testnet_rules() ? "running mainnet" : "running testnet");
+#endif
 }
 
 witness& witness::create(p2p_node& node)
