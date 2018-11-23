@@ -113,7 +113,7 @@ hosts::address::list hosts::copy()
         std::min<size_t>(1000, buffer_.size()) / pseudo_random(5, 10));
 
     const auto limit = buffer_.size();
-    auto index = pseudo_random(0, limit);
+    auto index = pseudo_random(0, limit - 1);
 
     address::list copy(out_count);
 

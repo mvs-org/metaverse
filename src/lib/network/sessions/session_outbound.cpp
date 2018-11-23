@@ -75,10 +75,11 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     reseeding_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
 
     const auto connect = create_connector();
-    for (size_t peer = 0; peer < settings_.outbound_connections; ++peer)
-    {
-        log::debug(LOG_NETWORK) << "new connection";
-        new_connection(connect);
+    while (outbound_counter == 0 && !stopped()) { // loop until connected successfully
+        for (size_t peer = 0; peer < settings_.outbound_connections; ++peer) {
+            new_connection(connect);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     // This is the end of the start sequence.
@@ -165,7 +166,7 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     {
         log::trace(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
-        delay_new_connect(connect);
+        //delay_new_connect(connect);
         return;
     }
 
