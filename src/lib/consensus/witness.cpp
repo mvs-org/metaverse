@@ -216,6 +216,19 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
     auto register_addresses = chain.get_register_witnesses(did_detail->get_address(), from_height);
 
+    for (const auto& prev_witness_id : get_witness_list()) {
+        auto pub_key = witness_to_public_key(prev_witness_id);
+        if (std::find_if(register_addresses.begin(), register_addresses.end(),
+                [&pub_key](const addr_pubkey_pair_t& item){
+                    return item.second == pub_key;
+                }) != register_addresses.end()) {
+            continue;
+        }
+        auto pay_address = wallet::ec_public(pub_key).to_payment_address();
+        auto address = pay_address.encoded();
+        register_addresses.emplace_back(std::make_pair(address, pub_key));
+    }
+
     std::vector<locked_record_t> statistics;
     for (const auto& addr_pubkey : register_addresses) {
         auto locked_balance = chain.get_locked_balance(addr_pubkey.first, height + register_witness_lock_height);
