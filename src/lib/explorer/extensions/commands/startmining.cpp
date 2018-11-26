@@ -135,7 +135,7 @@ console_result startmining::invoke(Json::Value& jv_output,
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "
-            + str_addr + ", accept consensus " + chain::get_block_version(option_.consensus);
+            + str_addr + ", accept consensus " + option_.consensus;
         if (option_.number == 0) {
             jv_output = prompt;
         } else {

@@ -1052,7 +1052,7 @@ void miner::work(const wallet::payment_address& pay_address)
     log::info(LOG_HEADER)
         << "solo miner start with address: "
         << pay_address.encoded()
-        << ", accept consensus " + get_block_version(get_accept_block_version());
+        << ", accept consensus " + chain::get_block_version(get_accept_block_version());
 
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
@@ -1068,7 +1068,7 @@ void miner::work(const wallet::payment_address& pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create new block at height: " << height
-                    << ", version: " << get_block_version(block->header.version)
+                    << ", version: " << chain::get_block_version(block->header.version)
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 
