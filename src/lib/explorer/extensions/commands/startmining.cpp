@@ -49,7 +49,7 @@ console_result startmining::invoke(Json::Value& jv_output,
 
     auto str_addr = get_address(option_.address, blockchain);
     const auto is_use_pow = (option_.consensus == "pow");
-    const auto is_use_pos = (option_.consensus == "pos") || option_.isStaking;
+    const auto is_use_pos = (option_.consensus == "pos");
     const auto is_use_dpos = (option_.consensus == "dpos");
 
     if (!option_.address.empty() && str_addr.empty()) {
@@ -135,7 +135,7 @@ console_result startmining::invoke(Json::Value& jv_output,
     // start
     if (miner.start(addr, option_.number)){
         std::string prompt = "solo mining started at "
-            + str_addr + ", accept consensus " + option_.consensus;
+            + str_addr + ", accept consensus " + chain::get_block_version(option_.consensus);
         if (option_.number == 0) {
             jv_output = prompt;
         } else {

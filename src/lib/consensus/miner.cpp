@@ -1052,7 +1052,7 @@ void miner::work(const wallet::payment_address& pay_address)
     log::info(LOG_HEADER)
         << "solo miner start with address: "
         << pay_address.encoded()
-        << ", accept consensus " + std::to_string(get_accept_block_version());
+        << ", accept consensus " + get_block_version(get_accept_block_version());
 
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
@@ -1068,7 +1068,7 @@ void miner::work(const wallet::payment_address& pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create new block at height: " << height
-                    << ", version: " << std::to_string(block->header.version)
+                    << ", version: " << get_block_version(block->header.version)
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 
@@ -1126,7 +1126,7 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
 
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
-    if (get_accept_block_version() != chain::block_version_pow) {
+    if (get_accept_block_version() == chain::block_version_dpos) {
         if (private_key_.empty() || public_key_data_.empty()) {
             return false;
         }

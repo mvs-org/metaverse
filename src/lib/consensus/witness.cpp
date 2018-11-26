@@ -492,6 +492,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
         return true;
     }
 
+#if 0 // forbid substitution as it will disperse the chain exponentially!
     // for safty, the missed  slot should not be mined by the adjacent witnesses
     if (((calced_slot_num + 1) % witness_number == witness_slot_num) ||
         ((witness_slot_num + 1) % witness_number == calced_slot_num)) {
@@ -511,6 +512,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
             return true;
         }
     }
+#endif
 
     return false;
 }

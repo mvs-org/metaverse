@@ -89,11 +89,6 @@ public:
             "consensus,c",
             value<std::string>(&option_.consensus)->default_value("pow"),
             "Accept block with the specified consensus, eg. pow, pos, dpos, defaults to pow."
-        )
-        (
-            "staking,s",
-            value<bool>(&option_.isStaking)->default_value(false)->zero_tokens(),
-            "Mining with PoS, default is false."
         );
 
         return options;
@@ -115,7 +110,6 @@ public:
         std::string address;
         uint16_t number;
         std::string consensus;
-        bool isStaking;
     } option_;
 
 };

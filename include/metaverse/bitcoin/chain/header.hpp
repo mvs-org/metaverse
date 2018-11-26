@@ -58,6 +58,9 @@ enum block_version {
     block_version_max = 4
 };
 
+std::string get_block_version(block_version version);
+std::string get_block_version(uint32_t version);
+
 class BC_API header
     : public base_primary<header>
 {
