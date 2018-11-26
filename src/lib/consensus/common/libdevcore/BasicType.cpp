@@ -168,12 +168,13 @@ u256 HeaderAux::calculate_difficulty(
     const chain::header::ptr pprev,
     bool is_staking)
 {
-    if (is_staking) {
-        return calculate_difficulty_pos(current, prev, pprev);
-    }
-    else {
-        return calculate_difficulty_pow(current, prev, pprev);
-    }
+    return calculate_difficulty_pos(current, prev, pprev);
+    // if (is_staking) {
+    //     return calculate_difficulty_pos(current, prev, pprev);
+    // }
+    // else {
+    //     return calculate_difficulty_pow(current, prev, pprev);
+    // }
 }
 
 static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
@@ -214,13 +215,13 @@ u256 HeaderAux::calculate_difficulty_pow(
         target = prev->bits ;
         uint32_t actual_timespan = current.timestamp - prev->timestamp;
         target =  adjust_difficulty(actual_timespan, target);
-
     }
 
     bigint result(target);
     if (target < 10) {
         result = std::max<bigint>(minimumDifficulty, target);
     }
+
     // bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
@@ -237,18 +238,19 @@ u256 HeaderAux::calculate_difficulty_pos(
         return u256(minimumDifficulty);
     }
 
-    bigint last_pos_bit = prev->bits;
+    bigint prev_bits = prev->bits;
     uint32_t actual_timespan = prev->timestamp - pprev->timestamp;
 
     // Retarget
-    last_pos_bit = adjust_difficulty(actual_timespan, last_pos_bit);
+    prev_bits = adjust_difficulty(actual_timespan, prev_bits);
 
-    auto new_target = std::max<bigint>(last_pos_bit, minimumDifficulty);
+    auto result = std::max<bigint>(prev_bits, minimumDifficulty);
+    result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
     log::info("calculate_difficulty")
         << " bits limit: " << minimumDifficulty
         << ", actual_timespan: " << actual_timespan
-        << " s, bits: " << new_target;
+        << " s, bits: " << result;
 
-    return u256(new_target);
+    return u256(result);
 }

@@ -124,10 +124,6 @@ bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbit
     h256 seedHash = HeaderAux::seedHash(header);
     h256 headerHash  = HeaderAux::hashHead(header);
     Nonce nonce = (Nonce)header.nonce;
-    if (header.bits != HeaderAux::calculate_difficulty(header, parent, nullptr, false)) {
-        log::error(LOG_MINER) << header.number << " block , verify diffculty failed\n";
-        return false;
-    }
 
     DEV_GUARDED(get()->x_fulls)
     if (FullType dag = get()->m_fulls[seedHash].lock()) {

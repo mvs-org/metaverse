@@ -484,7 +484,7 @@ u256 validate_block::work_required(bool is_testnet) const
     chain::header prev_header = fetch_block(height_ - 1);
     header::ptr last_header = get_last_block_header(prev_header, is_pos);
     header::ptr llast_header;
-    if (is_pos && last_header) {
+    if (/*is_pos &&*/ last_header && last_header->number > 2) {
         auto height = last_header->number - 1;
         chain::header prev_last_header = fetch_block(height);
         llast_header = get_last_block_header(prev_last_header, is_pos);

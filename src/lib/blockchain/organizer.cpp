@@ -366,8 +366,8 @@ void organizer::replace_chain(uint64_t fork_index,
         {
             log::warning(LOG_BLOCKCHAIN)
                 << " push block height:" << arrival_block->actual()->header.number
-                << " hash:"  << encode_hash(arrival_block->actual()->header.hash())
-                << "failed";
+                << " hash:" << encode_hash(arrival_block->actual()->header.hash())
+                << " failed";
             // if push block failed, stop replace
             return;
         }

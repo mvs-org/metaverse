@@ -173,6 +173,9 @@ chain::header validate_block_impl::fetch_block(size_t fetch_height) const
 {
     if (fetch_height > fork_index_) {
         const auto fetch_index = fetch_height - fork_index_ - 1;
+        log::info(LOG_BLOCKCHAIN) << "fetch_block: " << fetch_height << ", fork_index: " << fork_index_
+            << ", fetch_index: " << fetch_index;
+
         BITCOIN_ASSERT(fetch_index <= orphan_index_);
         BITCOIN_ASSERT(orphan_index_ < orphan_chain_.size());
         return orphan_chain_[fetch_index]->actual()->header;
@@ -192,6 +195,8 @@ chain::header::ptr validate_block_impl::get_last_block_header(const chain::heade
         //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
         return std::make_shared<chain::header>(parent_header);
     }
+
+    log::info(LOG_BLOCKCHAIN) << "get_last_block_header: " << height;
 
     while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
         chain::header prev_header = fetch_block(--height);
