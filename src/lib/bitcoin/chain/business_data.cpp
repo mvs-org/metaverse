@@ -126,8 +126,8 @@ bool business_data::from_data_t(reader& source)
     }
     else
     {
-        result = false;
-        reset();
+        // result = false;
+        // reset();
     }
 
     return result;

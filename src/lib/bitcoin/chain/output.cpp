@@ -34,10 +34,13 @@ namespace libbitcoin {
 namespace chain {
 
 
-output::output(){}
+output::output()
+{
+    reset();
+}
 
 output::output(output&& other)
-: output(std::move(other.value), std::move(other.script),std::move(other.attach_data))
+: output(other.value, std::move(other.script), std::move(other.attach_data))
 {
 }
 output::output(const output& other)
@@ -151,6 +154,11 @@ bool output::is_valid() const
 {
     return (value != 0) || script.is_valid()
         || attach_data.is_valid(); // added for asset issue/transfer
+}
+
+bool output::is_null() const
+{
+    return !is_valid();
 }
 
 std::string output::get_script_address() const

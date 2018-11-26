@@ -134,7 +134,7 @@ void transaction_pool_index::do_add(const transaction& tx,
         if (address)
         {
             const output_point point{ tx_hash, index };
-            const output_info info{ point, output.value };
+            const output_point_info info{ point, output.value };
             outputs_map_.emplace(std::move(address), std::move(info));
         }
 
@@ -216,7 +216,7 @@ void transaction_pool_index::blockchain_history_fetched(const code& ec,
 }
 
 void transaction_pool_index::index_history_fetched(const code& ec,
-    const spend_info::list& spends, const output_info::list& outputs,
+    const spend_info::list& spends, const output_point_info::list& outputs,
     const history_list& history, fetch_handler handler)
 {
     if (ec)
@@ -255,7 +255,7 @@ void transaction_pool_index::do_fetch(const payment_address& address,
     // This is the end of the fetch_index_history sequence.
     handler(error::success,
         to_info_list<spend_info::list>(address, spends_map_),
-        to_info_list<output_info::list>(address, outputs_map_));
+        to_info_list<output_point_info::list>(address, outputs_map_));
 }
 
 // Static helpers
@@ -275,7 +275,7 @@ bool transaction_pool_index::exists(history_list& history,
 }
 
 bool transaction_pool_index::exists(history_list& history,
-    const output_info& output)
+    const output_point_info& output)
 {
     const auto match = [&output](const history_compact& row)
     {
@@ -298,7 +298,7 @@ void transaction_pool_index::add(history_list& history, const spend_info& spend)
     history.emplace_back(std::move(row));
 }
 
-void transaction_pool_index::add(history_list& history, const output_info& output)
+void transaction_pool_index::add(history_list& history, const output_point_info& output)
 {
     const history_compact row
     {
@@ -324,9 +324,9 @@ void transaction_pool_index::add(history_list& history,
 }
 
 void transaction_pool_index::add(history_list& history,
-    const output_info::list& outputs)
+    const output_point_info::list& outputs)
 {
-    const auto action = [&history](const output_info& output)
+    const auto action = [&history](const output_point_info& output)
     {
         if (!exists(history, output))
             add(history, output);

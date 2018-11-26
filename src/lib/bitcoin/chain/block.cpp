@@ -42,25 +42,28 @@ block::block()
 }
 
 block::block(const block& other)
-  : block(other.header, other.transactions)
+  : block(other.header, other.transactions, other.blocksig)
 {
 }
 
 block::block(const chain::header& header,
-    const chain::transaction::list& transactions)
-  : header(header), transactions(transactions)
+    const chain::transaction::list& transactions,
+    const ec_signature& blocksig)
+  : header(header), transactions(transactions), blocksig(blocksig)
 {
 }
 
 block::block(block&& other)
   : block(std::forward<chain::header>(other.header),
-        std::forward<chain::transaction::list>(other.transactions))
+        std::forward<chain::transaction::list>(other.transactions),
+        std::forward<ec_signature>(other.blocksig))
 {
 }
 
-block::block(chain::header&& header, chain::transaction::list&& transactions)
+block::block(chain::header&& header, chain::transaction::list&& transactions, ec_signature&& blocksig)
   : header(std::forward<chain::header>(header)),
-    transactions(std::forward<chain::transaction::list>(transactions))
+    transactions(std::forward<chain::transaction::list>(transactions)),
+    blocksig(std::forward<ec_signature>(blocksig))
 {
 }
 
@@ -68,6 +71,7 @@ block& block::operator=(block&& other)
 {
     header = std::move(other.header);
     transactions = std::move(other.transactions);
+    blocksig = std::move(other.blocksig);
     return *this;
 }
 
@@ -81,6 +85,17 @@ void block::reset()
     header.reset();
     transactions.clear();
     transactions.shrink_to_fit();
+    blocksig.fill(0);
+}
+
+bool block::is_proof_of_stake() const
+{
+    return header.is_proof_of_stake();
+}
+
+bool block::is_proof_of_work() const
+{
+    return header.is_proof_of_work();
 }
 
 bool block::from_data_t(reader& source, bool with_transaction_count)
@@ -105,6 +120,9 @@ bool block::from_data_t(reader& source, bool with_transaction_count)
     if (!result)
         reset();
 
+    if (header.is_proof_of_stake()) {
+        source.read_data(blocksig.data(), blocksig.size());
+    }
     return result;
 }
 
@@ -115,6 +133,10 @@ void block::to_data_t(writer& sink, bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         tx.to_data(sink);
+
+    if (header.is_proof_of_stake()){
+        sink.write_data(blocksig.data(), blocksig.size());
+    }
 }
 
 uint64_t block::serialized_size(bool with_transaction_count) const
@@ -123,6 +145,9 @@ uint64_t block::serialized_size(bool with_transaction_count) const
 
     for (const auto& tx: transactions)
         block_size += tx.serialized_size();
+
+    if (header.is_proof_of_stake())
+        block_size += blocksig.size();
 
     return block_size;
 }

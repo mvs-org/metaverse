@@ -133,7 +133,19 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         return error::first_not_coinbase;
     }
 
-    for (auto it = transactions.begin() + coinbase_count; it != transactions.end(); ++it)
+    unsigned int coinstake_count = 0;
+    if (header.version == block_version_pos) {
+        if (transactions.size() < 2 || !transactions[1].is_coinstake()) {
+            log::error(LOG_BLOCKCHAIN) << "Invalid coinstake! transactions: "
+                << std::to_string(transactions.size())
+                << " tx: " << (transactions.size() >= 2 ? transactions[1].to_string(1) : "null");
+            return error::tx_not_coinstake;
+        }
+
+        ++coinstake_count;
+    }
+
+    for (auto it = transactions.begin() + coinbase_count + coinstake_count; it != transactions.end(); ++it)
     {
         RETURN_IF_STOPPED();
 
@@ -200,8 +212,13 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (!is_valid_proof_of_work(header))
+    if (current_block_.is_proof_of_stake() && !verify_stake(current_block_)){
+        return error::proof_of_stake;
+    }
+
+    if (current_block_.is_proof_of_work() && !check_work(current_block_)) {
         return error::proof_of_work;
+    }
 
     if (header.version == chain::block_version_dpos && !current_block_.can_use_dpos_consensus())
         return error::block_version_not_match;
@@ -209,19 +226,20 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     RETURN_IF_STOPPED();
 
     //TO.FIX.CHENHAO.Reject
-    if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
-        // 校验未来区块时间攻击分叉点
-        bc::config::checkpoint::list blocktime_checkpoints;
-        blocktime_checkpoints.push_back({
-            "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
-            bc::consensus::future_blocktime_fork_height
-        });
+    // test-private-chain
+    // if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
+    //     // 校验未来区块时间攻击分叉点
+    //     bc::config::checkpoint::list blocktime_checkpoints;
+    //     blocktime_checkpoints.push_back({
+    //         "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
+    //         bc::consensus::future_blocktime_fork_height
+    //     });
 
-        const auto block_hash = header.hash();
-        if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
-            return error::checkpoints_failed;
-        }
-    }
+    //     const auto block_hash = header.hash();
+    //     if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
+    //         return error::checkpoints_failed;
+    //     }
+    // }
 
     chain::header prev_header = fetch_block(height_ - 1);
     if (current_block_.header.number >= bc::consensus::future_blocktime_fork_height) {
@@ -498,8 +516,18 @@ code validate_block::accept_block() const
 
 u256 validate_block::work_required(bool is_testnet) const
 {
+    bool is_pos = current_block_.is_proof_of_stake();
     chain::header prev_header = fetch_block(height_ - 1);
-    return HeaderAux::calculateDifficulty(const_cast<chain::header&>(current_block_.header), prev_header);
+    header::ptr last_header = get_last_block_header(prev_header, is_pos);
+    header::ptr llast_header;
+    if (is_pos && last_header) {
+        auto height = last_header->number - 1;
+        chain::header prev_last_header = fetch_block(height);
+        llast_header = get_last_block_header(prev_last_header, is_pos);
+    }
+
+    return HeaderAux::calculate_difficulty(
+        current_block_.header, last_header, llast_header, is_pos);
 }
 
 bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
@@ -545,12 +573,20 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     uint64_t fees = 0;
     size_t total_sigops = 0;
     const auto count = transactions.size();
-    size_t coinage_reward_coinbase_index = 1;
+    uint32_t version = current_block_.header.version;
+    bool is_pos = current_block_.header.is_proof_of_stake();
+    size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
+
+    if (!check_block_signature(chain)) {
+        return error::cointstake_signature_invalid;
+    }
 
     ////////////// TODO: parallelize. //////////////
     for (size_t tx_index = 0; tx_index < count; ++tx_index)
     {
+        auto is_coinstake = false;
+
         uint64_t value_in = 0;
         const auto& tx = transactions[tx_index];
 
@@ -564,6 +600,12 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         // Count sigops for coinbase tx, but no other checks.
         if (tx.is_coinbase())
             continue;
+
+        if (version == block_version_pos){
+            if (tx_index == 1 && tx.is_coinstake()){
+                is_coinstake = true;
+            }
+        }
 
         for (auto& output : transactions[tx_index].outputs)
         {
@@ -588,14 +630,27 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
         RETURN_IF_STOPPED();
 
-        if (!validate_transaction::tally_fees(chain, tx, value_in, fees))
+        if (!validate_transaction::tally_fees(chain, tx, value_in, fees, is_coinstake))
         {
             err_tx = tx.hash();
             return error::fees_out_of_range;
         }
     }
 
-    if (get_coinage_reward_tx_count != coinage_reward_coinbase_index - 1) {
+    auto check_reward_count = [=] {
+        size_t coinage_reward_count = BC_MAX_SIZE;
+        switch (version){
+        case block_version_pow:
+            coinage_reward_count = coinage_reward_coinbase_index - 1;
+            break;
+        case block_version_pos:
+            coinage_reward_count = coinage_reward_coinbase_index - 2;
+            break;
+        }
+        return coinage_reward_count == get_coinage_reward_tx_count;
+    };
+
+    if (!check_reward_count()) {
         return error::invalid_coinage_reward_coinbase;
     }
 
@@ -603,8 +658,27 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
     const auto& coinbase = transactions.front();
     const auto reward = coinbase.total_output_value();
-    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_) + fees;
+    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, is_pos) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
+}
+
+bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const
+{
+    if (!current_block_.header.is_proof_of_stake()) {
+        return true;
+    }
+
+    const auto& blocksig = current_block_.blocksig;
+    if (blocksig.empty() || !is_coin_stake(current_block_)){
+        return false;
+    }
+
+    BITCOIN_ASSERT(current_block_.transactions.size() > 1);
+    const auto & coinstake_tx = current_block_.transactions[1];
+    const auto & head_hash = current_block_.header.hash();
+    const data_chunk& data = coinstake_tx.inputs[0].script.operations.back().data;
+
+    return verify_signature(data, head_hash, blocksig);
 }
 
 bool validate_block::is_spent_duplicate(const transaction& tx) const

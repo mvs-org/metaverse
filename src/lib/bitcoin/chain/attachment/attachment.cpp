@@ -34,6 +34,13 @@ attachment::attachment()
     reset();
 }
 
+attachment::attachment(uint32_t type)
+{
+    reset();
+    this->type = type;
+}
+
+
 attachment::attachment(const std::string& from_did, const std::string& to_did)
     : version(DID_ATTACH_VERIFY_VERSION)
     , type(0) //attachment_type::attach_none;
@@ -133,8 +140,8 @@ bool attachment::from_data_t(reader& source)
         result = boost::apply_visitor(visitor, attach);
     }
     else {
-        result = false;
-        reset();
+        // result = false;
+        // reset();
     }
 
     return result;
@@ -200,6 +207,12 @@ uint32_t attachment::get_type() const
 void attachment::set_type(uint32_t type)
 {
      this->type = type;
+}
+
+void attachment::set_null()
+{
+    reset();
+    this->type = ATTACH_NULL_TYPE;
 }
 
 std::string attachment::get_to_did() const

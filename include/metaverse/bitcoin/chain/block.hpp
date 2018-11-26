@@ -54,11 +54,11 @@ public:
     block();
     block(const block& other);
     block(const chain::header& header,
-        const chain::transaction::list& transactions);
+        const chain::transaction::list& transactions, const ec_signature& blocksig={});
 
     block(block&& other);
     block(chain::header&& header,
-        chain::transaction::list&& transactions);
+        chain::transaction::list&& transactions, ec_signature&& blocksig={});
 
     /// This class is move assignable but not copy assignable.
     block& operator=(block&& other);
@@ -69,12 +69,16 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
+    bool is_proof_of_stake() const;
+    bool is_proof_of_work() const;
 
     chain::header header;
     transaction::list transactions;
 
     bool can_use_dpos_consensus() const;
     bool must_use_pow_consensus() const;
+
+    ec_signature blocksig; // pos block only
 };
 
 } // namespace chain

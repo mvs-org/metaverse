@@ -863,13 +863,15 @@ void sync_fetchbalance(wallet::payment_address& address,
     blockchain.get_last_height(height);
 
     for (auto& row: rows) {
-        if (row.output_height == 0) {
+        bool tx_ready = (row.spend.hash == null_hash)
+            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
+        // include genesis block whose height is zero.
+        if (row.output_height == 0 && tx_height != 0) {
             continue;
         }
 
         // spend unconfirmed (or no spend attempted)
-        if ((row.spend.hash == null_hash)
-                && blockchain.get_transaction(row.output.hash, tx_temp, tx_height)) {
+        if (tx_ready) {
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             auto output = tx_temp.outputs.at(row.output.index);
             if (output.get_script_address() != address.encoded()) {
@@ -906,8 +908,9 @@ void sync_fetchbalance(wallet::payment_address& address,
 
         total_received += row.value;
 
-        if ((row.spend.hash == null_hash || row.spend_height == 0))
+        if ((row.spend.hash == null_hash || row.spend_height == 0)) {
             confirmed_balance += row.value;
+        }
     }
 
     addr_balance.confirmed_balance = confirmed_balance;

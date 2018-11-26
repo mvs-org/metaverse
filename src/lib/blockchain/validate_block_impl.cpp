@@ -47,21 +47,81 @@ validate_block_impl::validate_block_impl(block_chain_impl& chain,
 {
 }
 
-bool validate_block_impl::is_valid_proof_of_work(const chain::header& header) const
+bool validate_block_impl::check_work(const chain::block& block) const
 {
-    chain::header parent_header;
-    if (orphan_index_ != 0) {
-        parent_header = orphan_chain_[orphan_index_ - 1]->actual()->header;
-    }
-    else {
-        chain_.get_header(parent_header, header.number - 1);
+    chain::header parent_header = fetch_block(block.header.number - 1);
+
+    if (block.header.version == chain::block_version_dpos) {
+        return block.header.bits == parent_header.bits;
     }
 
-    if (header.version == chain::block_version_dpos) {
-        return header.bits == parent_header.bits;
+    chain::header::ptr last_header = get_last_block_header(parent_header, block.is_proof_of_stake());
+    BITCOIN_ASSERT(nullptr != last_header);
+
+    return MinerAux::verify_work(block.header, last_header);
+}
+
+bool validate_block_impl::verify_stake(const chain::block& block) const
+{
+    // check stake txs
+    const auto& txs = block.transactions;
+    if(!is_coin_stake(block)){
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check stake, invalid coinstake. height: "
+            << std::to_string(block.header.number) << ", " << std::to_string(txs.size()) << " txs.";
+        return false;
     }
 
-    return MinerAux::verifySeal(const_cast<chain::header&>(header), parent_header);
+    // check stake
+    const auto& coinstake = txs[1];
+    const auto& stake_output_point = coinstake.inputs[0].previous_output;
+    bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
+
+    auto height = block.header.number-1;
+    if (!chain_.check_pos_capability(height ,pay_address, false)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check pos capability. height: "
+            << std::to_string(block.header.number) << ", address=" << pay_address.encoded()
+            << ", "<< std::to_string(txs.size()) << " txs.";
+        return false;
+    }
+
+    uint64_t utxo_height = 0;
+    chain::transaction utxo_tx;
+    if (!static_cast<block_chain_impl&>(chain_).get_transaction(
+        stake_output_point.hash, utxo_tx, utxo_height)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check stake, can not get stake transaction "
+            << encode_hash(stake_output_point.hash);
+        return false;
+    }
+
+    BITCOIN_ASSERT(stake_output_point.index < utxo_tx.outputs.size());
+
+    if (!chain_.check_pos_utxo_capability(
+        block.header.number, utxo_tx, stake_output_point.index, utxo_height)) {
+        log::error(LOG_BLOCKCHAIN)
+            << "Failed to check utxo capability, hash="<< encode_hash(stake_output_point.hash)
+            << ", index="<<stake_output_point.index
+            << ", utxo height="<<utxo_height;
+
+        return false;
+    }
+
+    auto stake_output = utxo_tx.outputs.at(stake_output_point.index);
+    chain::output_info stake_info = {stake_output, stake_output_point, utxo_height};
+
+    return MinerAux::verify_stake(block.header, stake_info);
+}
+
+bool validate_block_impl::is_coin_stake(const chain::block& block) const
+{
+    const auto& txs = block.transactions;
+    if (txs.size() < 2 || !txs[0].is_coinbase() || !txs[1].is_coinstake()) {
+        return false;
+    }
+
+    return true;
 }
 
 u256 validate_block_impl::previous_block_bits() const
@@ -128,6 +188,27 @@ chain::header validate_block_impl::fetch_block(size_t fetch_height) const
     DEBUG_ONLY(const auto result = ) chain_.get_header(out, fetch_height);
     BITCOIN_ASSERT(result);
     return out;
+}
+
+chain::header::ptr validate_block_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+{
+    uint64_t height = parent_header.number;
+    if (parent_header.is_proof_of_stake() == is_staking) {
+        // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        return std::make_shared<chain::header>(parent_header);
+    }
+
+    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+        chain::header prev_header = fetch_block(--height);
+        if (prev_header.is_proof_of_stake() == is_staking) {
+            // log::info(LOG_BLOCKCHAIN) << "validate_block_impl::get_last_block_header: prev: "
+            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+            return std::make_shared<chain::header>(prev_header);
+        }
+    }
+
+    return nullptr;
 }
 
 bool tx_after_fork(size_t tx_height, size_t fork_index)

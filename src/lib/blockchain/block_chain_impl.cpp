@@ -41,6 +41,7 @@
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/blockchain/account_security_strategy.hpp>
 #include <metaverse/consensus/witness.hpp>
+#include <metaverse/consensus/libdevcore/BasicType.h>
 
 namespace libbitcoin {
 namespace blockchain {
@@ -54,6 +55,7 @@ using namespace boost::interprocess;
 using namespace std::placeholders;
 using boost::filesystem::path;
 using string = std::string;
+
 
 block_chain_impl::block_chain_impl(threadpool& pool,
     const blockchain::settings& chain_settings,
@@ -151,6 +153,102 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
 {
     // Pass this through to the organizer, which issues the notifications.
     organizer_.subscribe_reorganize(handler);
+}
+
+
+bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict)
+{
+    if(out_index >= tx.outputs.size()){
+        return false;
+    }
+
+    const auto output = tx.outputs[out_index];
+
+    if (strict) {
+        if (!check_pos_utxo_height_and_value(out_height, height, output.value))
+            return false;
+    }
+
+    if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)){
+        // deposit utxo in block
+        uint64_t lock_height = chain::operation::
+            get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+        if ((out_height + lock_height) > height){
+            return false;
+        }
+    }
+    else if (tx.is_coinbase()){ // coin base etp maturity etp check
+        // add not coinbase_maturity etp into frozen
+        if ((out_height + coinbase_maturity) > height){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool block_chain_impl::select_utxo_for_staking(
+    uint64_t best_height,
+    const wallet::payment_address& pay_address,
+    chain::output_info::list& stake_outputs)
+{
+    auto&& rows = get_address_history(pay_address, false);
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+    for(auto & row : rows)
+    {
+        if (row.output_height == 0) {
+            continue;
+        }
+
+        // spend unconfirmed (or no spend attempted)
+        if ((row.spend.hash == null_hash)
+                && get_transaction(row.output.hash, tx_temp, tx_height)) {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != pay_address.encoded()) {
+                continue;
+            }
+
+            if (!check_pos_utxo_capability(best_height, tx_temp, row.output.index, row.output_height, false)){
+                continue;
+            }
+
+            stake_outputs.push_back( {output, row.output, tx_height} );
+        }
+    }
+
+    return true;
+}
+
+chain::header::ptr block_chain_impl::get_last_block_header(const chain::header& parent_header, bool is_staking) const
+{
+    uint64_t height = parent_header.number;
+    if (parent_header.is_proof_of_stake() == is_staking) {
+        // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+        //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+        return std::make_shared<chain::header>(parent_header);
+    }
+
+    while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
+        --height;
+
+        chain::header prev_header;
+        if (!get_header(prev_header, height)) {
+            log::warning("BLOCKCHAIN") << "Failed to get header at " << std::to_string(height);
+            return nullptr;
+        }
+
+        if (prev_header.is_proof_of_stake() == is_staking) {
+            // log::info("BLOCKCHAIN") << "get_last_block_header: prev: "
+            //     << std::to_string(parent_header.number) << ", last: " << std::to_string(height);
+            return std::make_shared<chain::header>(prev_header);
+        }
+    }
+
+    return nullptr;
 }
 
 // simple_chain (no locks, not thread safe).
@@ -867,6 +965,68 @@ void block_chain_impl::fetch_block_transaction_hashes(const hash_digest& hash,
     fetch_serial(do_fetch);
 }
 
+/// fetch hashes of transactions for a block, by block height.
+void block_chain_impl::fetch_block_signature(uint64_t height,
+                           block_signature_fetch_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, height, handler](size_t slock)
+    {
+        ec_signature sig;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(height);
+            if(result)
+            {
+                if (result.header().is_proof_of_stake() )
+                    sig = result.blocksig();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, sig) :
+               finish_fetch(slock, handler, error::not_found, sig);
+    };
+    fetch_serial(do_fetch);
+}
+
+/// fetch hashes of transactions for a block, by block hash.
+void block_chain_impl::fetch_block_signature(const hash_digest& hash,
+                           block_signature_fetch_handler handler)
+{
+    if (stopped())
+    {
+        handler(error::service_stopped, {});
+        return;
+    }
+
+    const auto do_fetch = [this, hash, handler](size_t slock)
+    {
+        ec_signature sig;
+        auto found = false;
+        {
+            const auto result = database_.blocks.get(hash);
+            if(result)
+            {
+                if (result.header().is_proof_of_stake() )
+                    sig = result.blocksig();
+                found = true;
+            }
+        }
+
+        return found ?
+               finish_fetch(slock, handler, error::success, sig) :
+               finish_fetch(slock, handler, error::not_found, sig);
+    };
+    fetch_serial(do_fetch);
+}
+
 void block_chain_impl::fetch_block_height(const hash_digest& hash,
     block_height_fetch_handler handler)
 {
@@ -1397,6 +1557,62 @@ static history::list expand_history(history_compact::list& compact)
         });
     return result;
 }
+
+
+bool block_chain_impl::check_pos_capability(
+    uint64_t best_height,
+    const wallet::payment_address& pay_address,
+    bool wait_db)
+{
+    history::list rows;
+
+    if(wait_db){
+        rows = get_address_history(pay_address, false);
+    }
+    else{
+        history_compact::list history = database_.history.get(pay_address.hash(), 0, 0);
+        rows = expand_history(history);
+    }
+
+
+
+    chain::transaction tx_temp;
+    uint64_t tx_height;
+
+
+    for(auto & row : rows)
+    {
+        if (row.output_height == 0) {
+            continue;
+        }
+
+        if ((row.spend.hash == null_hash)
+            && get_transaction(row.output.hash, tx_temp, tx_height)) {
+            BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+            auto output = tx_temp.outputs.at(row.output.index);
+            if (output.get_script_address() != pay_address.encoded()) {
+                continue;
+            }
+
+            if ( row.value >= min_pos_lock_value &&
+                chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
+            {
+                // deposit utxo in block
+                uint64_t lock_height = chain::operation::
+                    get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+
+                // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
+                if (lock_height >= min_pos_lock_height &&
+                    (row.output_height + lock_height * min_pos_lock_rate) > best_height){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 
 history::list block_chain_impl::get_address_history(const wallet::payment_address& addr, bool add_memory_pool)
 {

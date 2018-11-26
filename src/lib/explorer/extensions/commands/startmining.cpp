@@ -18,9 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
+#include <metaverse/macros_define.hpp>
+#include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
@@ -49,6 +49,8 @@ console_result startmining::invoke(Json::Value& jv_output,
 
     auto str_addr = get_address(option_.address, blockchain);
     const auto is_use_pow = (option_.consensus == "pow");
+    const auto is_use_pos = (option_.consensus == "pos") || option_.isStaking;
+    const auto is_use_dpos = (option_.consensus == "dpos");
 
     if (!option_.address.empty() && str_addr.empty()) {
         throw argument_legality_exception{"invalid mining did/address " + option_.address};
@@ -90,7 +92,7 @@ console_result startmining::invoke(Json::Value& jv_output,
             throw address_dismatch_account_exception{"target address does not match account. " + str_addr};
         }
 
-        if (!is_use_pow) {
+        if (is_use_dpos) {
             const std::string pubkey = sp_account_address->get_pub_key();
             const std::string prikey = sp_account_address->get_prv_key(auth_.auth);
             if (!miner.set_pub_and_pri_key(pubkey, prikey)) {
@@ -111,14 +113,23 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw argument_legality_exception{"script address parameter not allowed!"};
     }
 
+    miner.set_pos_params(is_use_pos, auth_.name, auth_.auth);
+
     if (is_use_pow) {
         miner.set_accept_block_version(chain::block_version_pow);
     }
-    else if (option_.consensus == "dpos") {
+    else if (is_use_pos) {
+        miner.set_accept_block_version(chain::block_version_pos);
+    }
+    else if (is_use_dpos) {
         miner.set_accept_block_version(chain::block_version_dpos);
     }
     else {
+#ifdef PRIVATE_CHAIN
         miner.set_accept_block_version(chain::block_version_any);
+#else
+        throw argument_legality_exception{"wrong consensus of block version!"};
+#endif
     }
 
     // start
@@ -130,7 +141,8 @@ console_result startmining::invoke(Json::Value& jv_output,
         } else {
             jv_output = prompt + ", try to mine " + std::to_string(option_.number) + " block(s).";
         }
-    } else {
+    }
+    else {
         throw unknown_error_exception{"solo mining startup got error"};
     }
 

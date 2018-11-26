@@ -277,6 +277,18 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
         case error::witness_update_error:
             return "witness update error";
 
+        case error::proof_of_stake:
+            return "proof of stake failed";
+
+        case error::tx_not_coinstake:
+            return "transaction of stake invalid";
+
+        case error::coinstake_version_invalid:
+            return "coinstake version invalid";
+
+        case error::cointstake_signature_invalid:
+            return "validate coinstake block signature failed";
+
         // unknown errors
         case error::unknown:
         default:

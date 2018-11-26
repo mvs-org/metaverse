@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <boost/thread.hpp>
-
+#include <metaverse/bitcoin.hpp>
 #include "metaverse/blockchain/transaction_pool.hpp"
 #include "metaverse/bitcoin/chain/block.hpp"
 #include "metaverse/bitcoin/chain/input.hpp"
@@ -42,9 +42,9 @@ class block_chain_impl;
 namespace libbitcoin {
 namespace consensus {
 
-BC_CONSTEXPR unsigned int min_tx_fee_per_kb = 1000;
-BC_CONSTEXPR unsigned int median_time_span = 11;
-BC_CONSTEXPR uint64_t future_blocktime_fork_height = 1030000;
+BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
+BC_CONSTEXPR uint32_t median_time_span = 11;
+BC_CONSTEXPR uint64_t future_blocktime_fork_height = 10;//test-private-chain 1030000;
 
 extern int bucket_size;
 extern std::vector<uint64_t> lock_heights;
@@ -76,6 +76,7 @@ public:
         exit_
     };
 
+    void set_pos_params(bool isStaking, const std::string& account, const std::string& passwd);
     bool start(const wallet::payment_address& pay_address, uint16_t number = 0);
     bool stop();
     static block_ptr create_genesis_block(bool is_mainnet);
@@ -83,8 +84,15 @@ public:
         std::vector<transaction_ptr>& transactions);
     bool script_hash_signature_operations_count(size_t &count, const chain::input& input,
         std::vector<transaction_ptr>& transactions);
-    transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_addres,
+    transaction_ptr create_coinbase_tx(const wallet::payment_address& pay_address,
         uint64_t value, uint64_t block_height, int lock_height, uint32_t reward_lock_time);
+    transaction_ptr create_coinstake_tx(
+        const ec_secret& private_key,
+        const wallet::payment_address& pay_address,
+        block_ptr pblock, const chain::output_info::list& stake_outputs);
+    bool sign_coinstake_tx(
+        const ec_secret& private_key,
+        transaction_ptr coinstake);
 
     block_ptr get_block(bool is_force_create_block = false);
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
@@ -95,7 +103,8 @@ public:
     bool get_block_header(chain::header& block_header, const std::string& para);
 
     static int get_lock_heights_index(uint64_t height);
-    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet);
+    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, bool is_pos);
+    static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 
     chain::block_version get_accept_block_version() const;
@@ -106,14 +115,22 @@ public:
 
 private:
     void work(const wallet::payment_address& pay_address);
-    block_ptr create_new_block(const wallet::payment_address& pay_addres);
-    unsigned int get_adjust_time(uint64_t height) const;
-    unsigned int get_median_time_past(uint64_t height) const;
+    block_ptr create_new_block(const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_address);
+    uint32_t get_adjust_time(uint64_t height) const;
+    uint32_t get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
+    bool get_block_transactions(
+        uint64_t last_height, std::vector<transaction_ptr>& txs, std::vector<transaction_ptr>& reward_txs,
+        uint64_t& total_fee, uint32_t& total_tx_sig_length);
     uint64_t store_block(block_ptr block);
     uint64_t get_height() const;
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height, block_ptr block) const;
+    uint32_t get_tx_sign_length(transaction_ptr tx);
+    void sleep(uint32_t interval);
+
+    u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 
 private:
     p2p_node& node_;
@@ -128,6 +145,10 @@ private:
     const blockchain::settings& setting_;
     data_chunk public_key_data_;
     ec_secret private_key_;
+
+    bool is_staking_;
+    std::string account_;
+    std::string passwd_;
 };
 
 }

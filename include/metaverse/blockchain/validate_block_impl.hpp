@@ -43,8 +43,13 @@ public:
         size_t height, const chain::block& block, bool testnet,
         const config::checkpoint::list& checkpoints,
         stopped_callback stopped);
-    virtual bool is_valid_proof_of_work(const chain::header& header) const;
-    virtual bool check_get_coinage_reward_transaction(const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
+
+    virtual bool verify_stake(const chain::block& block) const;
+    virtual bool is_coin_stake(const chain::block& block) const;
+
+    virtual bool check_work(const chain::block& block) const;
+    virtual bool check_get_coinage_reward_transaction(
+        const chain::transaction& coinage_reward_coinbase, const chain::output& output) const;
 
     virtual std::string get_did_from_address_consider_orphan_chain(const std::string& address, const std::string& did_symbol) const override;
     virtual bool is_did_match_address_in_orphan_chain(const std::string& symbol, const std::string& address) const override;
@@ -55,11 +60,13 @@ public:
 
     virtual size_t get_fork_index() const override { return fork_index_; }
     uint64_t median_time_past() const;
+
 protected:
     u256 previous_block_bits() const;
     uint64_t actual_time_span(size_t interval) const;
     versions preceding_block_versions(size_t maximum) const;
     chain::header fetch_block(size_t fetch_height) const;
+    chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
     bool fetch_transaction(chain::transaction& tx, size_t& tx_height,
         const hash_digest& tx_hash) const;
     bool is_output_spent(const chain::output_point& outpoint) const;

@@ -53,8 +53,9 @@ enum block_version {
     block_version_any = 0,
     block_version_min = 1,
     block_version_pow = 1,
-    block_version_dpos = 2,
-    block_version_max = 3
+    block_version_pos = 2,
+    block_version_dpos = 3,
+    block_version_max = 4
 };
 
 class BC_API header
@@ -66,7 +67,7 @@ public:
     typedef std::vector<ptr> ptr_list;
 
     static uint64_t satoshi_fixed_size_without_transaction_count();
-    
+
     header();
     header(const header& other);
     header(uint32_t version, const hash_digest& previous_block_hash,
@@ -90,6 +91,10 @@ public:
     bool is_valid() const;
     void reset();
     uint64_t serialized_size(bool with_transaction_count = true) const;
+
+    bool is_proof_of_stake() const;
+    bool is_proof_of_work() const;
+    bool is_proof_of_dpos() const;
 
     uint32_t version;
     hash_digest previous_block_hash;

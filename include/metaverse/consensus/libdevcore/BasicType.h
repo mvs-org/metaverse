@@ -7,8 +7,10 @@
 #include <boost/throw_exception.hpp>
 #include "Exceptions.h"
 #include <metaverse/consensus/libethash/internal.h>
-#include <metaverse/bitcoin/chain/header.hpp>
 #include <metaverse/consensus/libethash/ethash.h>
+#include <metaverse/bitcoin/math/uint256.hpp>
+#include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/bitcoin/chain/output_point.hpp>
 
 
 namespace libbitcoin
@@ -18,18 +20,38 @@ class HeaderAux
 {
 public:
     static HeaderAux* get();
-    static h256 seedHash(libbitcoin::chain::header& _bi);
-    static h256 hashHead(libbitcoin::chain::header& _bi);
-    static h256 boundary(libbitcoin::chain::header& _bi) { auto d = _bi.bits; return d ? (h256)u256(((bigint(1) << 255)-bigint(1) +(bigint(1) << 255) ) / d) : h256(); }
-    static u256 calculateDifficulty(libbitcoin::chain::header& _bi, libbitcoin::chain::header& _parent);
-    static uint64_t number(h256& _seedHash);
-    static uint64_t cacheSize(libbitcoin::chain::header& _header);
-    static uint64_t dataSize(uint64_t _blockNumber);
+    static h256 seedHash(const chain::header& bi);
+    static h256 hashHead(const chain::header& bi);
+    static h256 boundary(const chain::header& bi);
+
+    static uint64_t number(h256& seedHash);
+    static uint64_t cacheSize(const chain::header& header);
+    static uint64_t dataSize(uint64_t blockNumber);
 
     static void set_as_testnet(){ is_testnet = true; }
 
+    static h256 hash_head_pos(const chain::header& header, const chain::output_info& stateOutput);
+
+    static u256 calculate_difficulty(
+        const chain::header& current,
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev,
+        bool is_staking=false);
+
 private:
     HeaderAux() {}
+
+    static u256 calculate_difficulty_pow(
+        const chain::header& current,
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev);
+
+    static u256 calculate_difficulty_pos(
+        const chain::header& current,
+        const chain::header::ptr prev,
+        const chain::header::ptr pprev);
+
+private:
     Mutex x_epochs;
     h256s m_seedHashes;
     std::unordered_map<h256, unsigned> m_epochs;
@@ -50,7 +72,7 @@ struct Result
 struct WorkPackage
 {
     WorkPackage() = default;
-    WorkPackage(libbitcoin::chain::header& _bh);
+    WorkPackage(chain::header& _bh);
     h256 boundary;
     h256 headerHash;///< When h256() means "pause until notified a new work package is available".
     h256 seedHash;

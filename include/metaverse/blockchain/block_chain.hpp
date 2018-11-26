@@ -49,6 +49,7 @@ public:
     typedef handle1<hash_list> locator_block_hashes_fetch_handler;
     typedef handle1<chain::header::list> locator_block_headers_fetch_handler;
     typedef handle1<hash_list> transaction_hashes_fetch_handler;
+    typedef handle1<ec_signature> block_signature_fetch_handler;
     typedef handle1<uint64_t> block_height_fetch_handler;
     typedef handle1<uint64_t> last_height_fetch_handler;
     typedef handle1<chain::transaction> transaction_fetch_handler;
@@ -87,6 +88,12 @@ public:
         transaction_hashes_fetch_handler handler) = 0;
     virtual void fetch_block_transaction_hashes(const hash_digest& hash,
         transaction_hashes_fetch_handler handler) = 0;
+
+    virtual void fetch_block_signature(uint64_t height,
+                               block_signature_fetch_handler handler) = 0;
+
+    virtual void fetch_block_signature(const hash_digest& hash,
+                               block_signature_fetch_handler handler) = 0;
 
     virtual void fetch_block_locator(block_locator_fetch_handler handler) = 0;
 
@@ -132,6 +139,15 @@ public:
 
     virtual void fired() = 0; // used for removing out of date action
     virtual organizer& get_organizer() = 0;
+
+    virtual bool check_pos_capability(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        bool wait_db = true) = 0;
+    virtual bool select_utxo_for_staking(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        chain::output_info::list& outputs) = 0;
 };
 
 } // namespace blockchain

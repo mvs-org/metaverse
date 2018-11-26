@@ -168,6 +168,15 @@ public:
     void fetch_block_transaction_hashes(const hash_digest& hash,
         transaction_hashes_fetch_handler handler);
 
+    /// fetch hashes of transactions for a block, by block height.
+    void fetch_block_signature(uint64_t height,
+                               block_signature_fetch_handler handler);
+
+    /// fetch hashes of transactions for a block, by block hash.
+    void fetch_block_signature(const hash_digest& hash,
+                               block_signature_fetch_handler handler);
+
+
     /// fetch a block locator relative to the current top and threshold.
     void fetch_block_locator(block_locator_fetch_handler handler);
 
@@ -230,6 +239,36 @@ public:
     /// Subscribe to blockchain reorganizations.
     virtual void subscribe_reorganize(reorganize_handler handler);
 
+    /// must be have enough etp locked in the address
+    virtual bool check_pos_capability(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        bool wait_db = true);
+
+    /// select pos utxo. target value
+    virtual bool select_utxo_for_staking(
+        uint64_t best_height,
+        const wallet::payment_address& pay_addres,
+        chain::output_info::list& stake_outputs);
+
+    inline bool check_pos_utxo_height_and_value(
+        const uint64_t& out_height, 
+        const uint64_t& curr_height, 
+        const uint64_t& value) 
+    {
+        return (value >= min_pos_value) && (out_height + min_pos_confirm_height <= curr_height);
+    }
+
+    bool check_pos_utxo_capability(
+        const  uint64_t& height, 
+        const chain::transaction& tx, 
+        const uint32_t& out_index ,
+        const uint64_t& out_height,
+        bool strict=true
+    );
+
+    virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
+
     inline hash_digest get_hash(const std::string& str) const;
     inline short_hash get_short_hash(const std::string& str) const;
   
@@ -280,7 +319,7 @@ public:
     std::shared_ptr<business_address_asset::list> get_account_unissued_assets(const std::string& name);
     std::shared_ptr<asset_detail> get_account_unissued_asset(
         const std::string& name, const std::string& symbol);
-    
+
     std::shared_ptr<blockchain_asset::list> get_asset_register_output(const std::string& symbol);
     // cert api
     bool is_asset_cert_exist(const std::string& symbol, asset_cert_type cert_type);

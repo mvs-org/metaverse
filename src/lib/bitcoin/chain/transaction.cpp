@@ -255,6 +255,16 @@ bool transaction::is_coinbase() const
     return (inputs.size() == 1) && inputs[0].previous_output.is_null();
 }
 
+bool transaction::is_coinstake() const
+{
+    return (inputs.size() > 0)
+        && (!inputs[0].previous_output.is_null())
+        && (outputs.size() >= 2)
+        && (outputs[0].is_null()) //the coin stake transaction is marked with the first output empty
+        && (inputs[0].get_script_address() == outputs[1].get_script_address());
+
+}
+
 bool transaction::all_inputs_final() const
 {
     const auto finalized = [](const input& input)
