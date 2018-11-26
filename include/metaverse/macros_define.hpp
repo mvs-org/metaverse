@@ -4,6 +4,6 @@
 #ifndef MVS_TESTING_DEFINE_HPP
 #define MVS_TESTING_DEFINE_HPP
 
-//#define PRIVATE_CHAIN
+#define PRIVATE_CHAIN
 
 #endif

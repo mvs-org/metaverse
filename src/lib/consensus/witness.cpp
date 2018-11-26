@@ -74,7 +74,7 @@ void witness::init(p2p_node& node)
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
-    witness::witness_enable_height = 50;
+    witness::witness_enable_height = max_uint64;
     witness::witness_number = 11;
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
