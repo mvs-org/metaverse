@@ -193,8 +193,6 @@ chain::header::ptr validate_block_impl::get_last_block_header(const chain::heade
         return std::make_shared<chain::header>(parent_header);
     }
 
-    log::info(LOG_BLOCKCHAIN) << "get_last_block_header: " << height;
-
     while ((is_staking && height > pos_enabled_height) || (!is_staking && height > 2)) {
         chain::header prev_header = fetch_block(--height);
         if (prev_header.is_proof_of_stake() == is_staking) {
