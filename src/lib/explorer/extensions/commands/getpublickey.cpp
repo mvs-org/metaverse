@@ -25,6 +25,7 @@
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/bitcoin.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -36,48 +37,69 @@ console_result getpublickey::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address parameter!"};
 
-    auto addr = bc::wallet::payment_address(argument_.address);
-    if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
-        throw argument_legality_exception{"script address parameter not allowed!"};
+    bool is_pub_key{false};
+    std::string pub_key;
+    std::string address;
 
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr)
-        throw address_list_nullptr_exception{"nullptr for address list"};
-
-    // set random address
-    if (argument_.address.empty()) {
-        argument_.address = get_random_payment_address(pvaddr, blockchain);
+    data_chunk public_key_data;
+    if (decode_base16(public_key_data, argument_.address) &&
+        is_public_key(public_key_data)) {
+        is_pub_key = true;
+        pub_key = argument_.address;
+    }
+    else {
+        is_pub_key = false;
+        address = argument_.address;
     }
 
-    // get public key
-    std::string prv_key;
-    std::string pub_key;
-    auto found = false;
-    for (auto& each : *pvaddr){
-        if (each.get_address() == argument_.address) {
-            prv_key = each.get_prv_key(auth_.auth);
-            pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+    if (!is_pub_key) {
+        if (!address.empty() && !blockchain.is_valid_address(address))
+            throw address_invalid_exception{"invalid address parameter!"};
 
-            found = true;
-            break;
+        auto addr = bc::wallet::payment_address(address);
+        if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
+            throw argument_legality_exception{"script address parameter not allowed!"};
+
+        auto pvaddr = blockchain.get_account_addresses(auth_.name);
+        if(!pvaddr)
+            throw address_list_nullptr_exception{"nullptr for address list"};
+
+        // set random address
+        if (address.empty()) {
+            address = get_random_payment_address(pvaddr, blockchain);
+        }
+
+        // get public key
+        std::string prv_key;
+        auto found = false;
+        for (auto& each : *pvaddr){
+            if (each.get_address() == address) {
+                prv_key = each.get_prv_key(auth_.auth);
+                pub_key = ec_to_xxx_impl("ec-to-public", prv_key);
+
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            throw account_address_get_exception{pub_key};
         }
     }
-
-    if(!found) {
-        throw account_address_get_exception{pub_key};
+    else {
+        auto pay_address = wallet::ec_public(public_key_data).to_payment_address();
+        address = pay_address.encoded();
     }
 
     auto& root = jv_output;
     if (get_api_version() <= 2) {
         root["public-key"] = pub_key;
-        root["address"] = argument_.address;
+        root["address"] = address;
     }
     else {
         root["public_key"] = pub_key;
-        root["address"] = argument_.address;
+        root["address"] = address;
     }
 
     return console_result::okay;
