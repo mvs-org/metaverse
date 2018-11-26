@@ -640,9 +640,6 @@ bool miner::sign_coinstake_tx(
     const ec_secret& private_key,
     transaction_ptr coinstake)
 {
-    chain::script ss;
-
-
     explorer::config::hashtype sign_type;
     const uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
 
@@ -663,6 +660,7 @@ bool miner::sign_coinstake_tx(
         data_chunk public_key_data;
         public_key.to_data(public_key_data);
 
+        chain::script ss;
         ss.operations.push_back({chain::opcode::special, endorse});
         ss.operations.push_back({chain::opcode::special, public_key_data});
 

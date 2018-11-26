@@ -543,7 +543,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
 
-    if(!check_block_signature(chain)){
+    if (!check_block_signature(chain)) {
         return error::cointstake_signature_invalid;
     }
 
@@ -630,13 +630,12 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
 bool validate_block::check_block_signature(blockchain::block_chain_impl& chain) const
 {
-
-    if (!current_block_.header.is_proof_of_stake())
+    if (!current_block_.header.is_proof_of_stake()) {
         return true;
-
+    }
 
     const auto& blocksig = current_block_.blocksig;
-    if(blocksig.empty() || !is_coin_stake(current_block_)){
+    if (blocksig.empty() || !is_coin_stake(current_block_)){
         return false;
     }
 

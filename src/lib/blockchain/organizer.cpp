@@ -228,8 +228,10 @@ void organizer::process(block_detail::ptr process_block)
         }
         else
         {
-            orphan_pool_.add_pending_block(hash, orphan_chain.back());
-            log::warning(LOG_BLOCKCHAIN) << "push pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(orphan_chain.back()->actual()->header.hash());
+            bool added = orphan_pool_.add_pending_block(hash, orphan_chain.back());
+            if (added) {
+                log::warning(LOG_BLOCKCHAIN) << "push pendingblock hash:" << encode_hash(hash) << " process_block hash:" << encode_hash(orphan_chain.back()->actual()->header.hash());
+            }
         }
 
         // Don't mark all orphan_chain as processed here because there might be
