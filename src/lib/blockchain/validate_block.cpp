@@ -114,19 +114,20 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
     RETURN_IF_STOPPED();
 
     //TO.FIX.CHENHAO.Reject
-    if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
-        // 校验未来区块时间攻击分叉点
-        bc::config::checkpoint::list blocktime_checkpoints;
-        blocktime_checkpoints.push_back({
-            "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
-            bc::consensus::future_blocktime_fork_height
-        });
+    // test-private-chain
+    // if (current_block_.header.number == bc::consensus::future_blocktime_fork_height) {
+    //     // 校验未来区块时间攻击分叉点
+    //     bc::config::checkpoint::list blocktime_checkpoints;
+    //     blocktime_checkpoints.push_back({
+    //         "ed11a074ce80cbf82b5724bea0d74319dc6f180198fa1bbfb562bcbd50089e63",
+    //         bc::consensus::future_blocktime_fork_height
+    //     });
 
-        const auto block_hash = header.hash();
-        if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
-            return error::checkpoints_failed;
-        }
-    }
+    //     const auto block_hash = header.hash();
+    //     if (!config::checkpoint::validate(block_hash, current_block_.header.number, blocktime_checkpoints)) {
+    //         return error::checkpoints_failed;
+    //     }
+    // }
 
     if (current_block_.header.number >= bc::consensus::future_blocktime_fork_height) {
         // 未来区块时间攻击分叉，执行新规则检查
