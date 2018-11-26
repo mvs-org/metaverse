@@ -125,7 +125,7 @@ bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbit
     h256 headerHash  = HeaderAux::hashHead(header);
     Nonce nonce = (Nonce)header.nonce;
     if (header.bits != HeaderAux::calculate_difficulty(header, parent, nullptr, false)) {
-        log::error(LOG_MINER) << header.number<<" block , verify diffculty failed\n";
+        log::error(LOG_MINER) << header.number << " block , verify diffculty failed\n";
         return false;
     }
 
@@ -148,7 +148,7 @@ bool MinerAux::verify_work(const libbitcoin::chain::header& header, const libbit
         return true;
     }
 
-    log::error(LOG_MINER) << header.number <<" block  verified failed !\n";
+    log::error(LOG_MINER) << header.number << " block  verified failed !\n";
     return false;
 }
 
