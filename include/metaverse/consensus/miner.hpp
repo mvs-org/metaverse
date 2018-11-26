@@ -44,7 +44,7 @@ namespace consensus {
 
 BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
 BC_CONSTEXPR uint32_t median_time_span = 11;
-BC_CONSTEXPR uint64_t future_blocktime_fork_height = 1030000;
+BC_CONSTEXPR uint64_t future_blocktime_fork_height = 10;//test-private-chain 1030000;
 
 extern int bucket_size;
 extern std::vector<uint64_t> lock_heights;
@@ -104,7 +104,7 @@ public:
     bool get_block_header(chain::header& block_header, const std::string& para);
 
     static int get_lock_heights_index(uint64_t height);
-    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet);
+    static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, bool is_pos);
     static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
 

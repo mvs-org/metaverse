@@ -66,21 +66,19 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
         return false;
     }
 
-
     // check stake
     const auto& coinstake = txs[1];
     const auto& stake_output_point = coinstake.inputs[0].previous_output;
     bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
 
     auto height = block.header.number-1;
-    if(!chain_.check_pos_capability(height ,pay_address, false)){
+    if (!chain_.check_pos_capability(height ,pay_address, false)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check pos capability. height: "
             << std::to_string(block.header.number) << ", address=" << pay_address.encoded()
             << ", "<< std::to_string(txs.size()) << " txs.";
         return false;
     }
-
 
     uint64_t utxo_height = 0;
     chain::transaction utxo_tx;
@@ -94,12 +92,12 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
 
     BITCOIN_ASSERT(stake_output_point.index < utxo_tx.outputs.size());
 
-    if(!chain_.check_pos_utxo_capability(
-        block.header.number, utxo_tx, stake_output_point.index, utxo_height)){
+    if (!chain_.check_pos_utxo_capability(
+        block.header.number, utxo_tx, stake_output_point.index, utxo_height)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check utxo capability, hash="<< encode_hash(stake_output_point.hash)
             << ", index="<<stake_output_point.index
-            << ",utxo height="<<utxo_height;
+            << ", utxo height="<<utxo_height;
 
         return false;
     }
@@ -110,7 +108,6 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     return MinerAux::verify_stake(block.header, stake_info);
 }
 
-
 bool validate_block_impl::is_coin_stake(const chain::block& block) const
 {
     const auto& txs = block.transactions;
@@ -120,6 +117,7 @@ bool validate_block_impl::is_coin_stake(const chain::block& block) const
 
     return true;
 }
+
 u256 validate_block_impl::previous_block_bits() const
 {
     // Read block header (top - 1) and return bits

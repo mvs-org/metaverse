@@ -540,6 +540,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     size_t total_sigops = 0;
     const auto count = transactions.size();
     uint32_t version = current_block_.header.version;
+    bool is_pos = current_block_.header.is_proof_of_stake();
     size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
 
@@ -622,9 +623,8 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     RETURN_IF_STOPPED();
 
     const auto& coinbase = transactions.front();
-    //TODO: diff with pos
     const auto reward = coinbase.total_output_value();
-    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_) + fees;
+    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, is_pos) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
 }
 

@@ -349,8 +349,12 @@ int miner::get_lock_heights_index(uint64_t height)
     return ret;
 }
 
-uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet)
+uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, bool is_pos)
 {
+    if (is_pos) {
+        return calculate_block_subsidy_pos(block_height, is_testnet);
+    }
+
     return uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
 }
 
@@ -588,7 +592,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 
     // Update coinbase reward
     coinbase->outputs[0].value =
-        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules);
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, false);
 
     // Put coinbase first
     pblock->transactions.push_back(*coinbase);
@@ -846,7 +850,7 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Update coinbase reward
     coinbase->outputs[0].value =
-        total_fee + calculate_block_subsidy_pos(block_height, setting_.use_testnet_rules);
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, true);
 
     // Put coinbase first
     pblock->transactions.push_back(*coinbase);
