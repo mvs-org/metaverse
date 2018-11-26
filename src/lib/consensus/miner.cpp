@@ -724,7 +724,7 @@ u256 miner::get_next_target_required(const chain::header& header, const chain::h
     header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
     header::ptr llast_header;
 
-    if (last_header && is_staking) {
+    if (/*is_staking &&*/ last_header && last_header->number > 2) {
         auto height = last_header->number - 1;
         chain::header prev_last_header;
         if (block_chain.get_header(prev_last_header, height)) {
