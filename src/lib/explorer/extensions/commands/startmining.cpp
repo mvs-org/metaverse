@@ -23,6 +23,7 @@
 #include <metaverse/explorer/extensions/commands/startmining.hpp>
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -46,8 +47,12 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
 
-    auto str_addr = option_.address;
+    auto str_addr = get_address(option_.address, blockchain);
     const auto is_use_pow = (option_.consensus == "pow");
+
+    if (!option_.address.empty() && str_addr.empty()) {
+        throw argument_legality_exception{"invalid mining did/address " + option_.address};
+    }
 
     if (str_addr.empty()) {
         if (!is_use_pow) {

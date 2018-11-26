@@ -78,7 +78,7 @@ public:
         (
             "address,a",
             value<std::string>(&option_.address),
-            "The mining target address. Defaults to empty, means a new address will be generated."
+            "The mining target did/address. Defaults to empty, means a new address will be generated."
         )
         (
             "number,n",
