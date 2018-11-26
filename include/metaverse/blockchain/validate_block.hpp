@@ -107,7 +107,6 @@ protected:
     bool is_valid_time_stamp_new(uint32_t timestamp) const;
     bool check_time_stamp(uint32_t timestamp, const asio::seconds& window) const;
     u256 work_required(bool is_testnet) const;
-    code check_coinbase(const uint32_t& version, const chain::transaction::list& txs) const;
 
     bool check_block_signature(blockchain::block_chain_impl& chain) const;
 

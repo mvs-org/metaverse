@@ -99,7 +99,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;
 
-    const auto is_block_version_dpos = header.version == chain::block_version_dpos;
+    const auto is_block_version_dpos = header.is_proof_of_dpos();
     const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(height_);
 
     unsigned int coinbase_count = 0;
@@ -134,7 +134,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
     }
 
     unsigned int coinstake_count = 0;
-    if (header.version == block_version_pos) {
+    if (header.is_proof_of_stake()) {
         if (transactions.size() < 2 || !transactions[1].is_coinstake()) {
             log::error(LOG_BLOCKCHAIN) << "Invalid coinstake! transactions: "
                 << std::to_string(transactions.size())
@@ -212,16 +212,27 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     const auto& header = current_block_.header;
 
-    if (current_block_.is_proof_of_stake() && !verify_stake(current_block_)){
-        return error::proof_of_stake;
+    if (header.is_proof_of_stake()) {
+        if (!verify_stake(current_block_)) {
+            return error::proof_of_stake;
+        }
     }
-
-    if (current_block_.is_proof_of_work() && !check_work(current_block_)) {
-        return error::proof_of_work;
+    else if (header.is_proof_of_work()) {
+        if (!check_work(current_block_)) {
+            return error::proof_of_work;
+        }
     }
-
-    if (header.version == chain::block_version_dpos && !current_block_.can_use_dpos_consensus())
-        return error::block_version_not_match;
+    else if (header.is_proof_of_dpos()) {
+        if (!check_work(current_block_)) {
+            return error::proof_of_work;
+        }
+        if (!current_block_.can_use_dpos_consensus()) {
+            return error::block_version_not_match;
+        }
+    }
+    else {
+        return error::old_version_block;
+    }
 
     RETURN_IF_STOPPED();
 
@@ -494,7 +505,7 @@ size_t validate_block::legacy_sigops_count(const transaction::list& txs)
 code validate_block::accept_block() const
 {
     const auto& header = current_block_.header;
-    if (header.version != chain::block_version_dpos && header.bits != work_required(testnet_))
+    if (!header.is_proof_of_dpos() && header.bits != work_required(testnet_))
         return error::incorrect_proof_of_work;
 
     RETURN_IF_STOPPED();
@@ -575,7 +586,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
     const auto count = transactions.size();
     uint32_t version = current_block_.header.version;
     bool is_pos = current_block_.header.is_proof_of_stake();
-    size_t coinage_reward_coinbase_index = version == 1 ? 1 : 2;
+    size_t coinage_reward_coinbase_index = !is_pos ? 1 : 2;
     size_t get_coinage_reward_tx_count = 0;
 
     if (!check_block_signature(chain)) {
@@ -641,6 +652,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
         size_t coinage_reward_count = BC_MAX_SIZE;
         switch (version){
         case block_version_pow:
+        case block_version_dpos:
             coinage_reward_count = coinage_reward_coinbase_index - 1;
             break;
         case block_version_pos:

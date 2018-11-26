@@ -708,12 +708,10 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     }
     else {
         pblock->header.version = chain::block_version_pow;
-        pblock->header.bits = HeaderAux::calculate_difficulty(pblock->header,
-            std::make_shared<chain::header>(prev_header), nullptr, false);
+        pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
     }
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
 
     return pblock;
 }
@@ -926,7 +924,7 @@ miner::block_ptr miner::create_new_block_pos(
     transaction_ptr coinstake(nullptr);
 
     while (nullptr == coinstake && block_time < (start_time  + pos_target_timespan / 2)) {
-        pblock->header.timestamp = block_time;
+        pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
         coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
 
         uint32_t sleep_time = 5 + pseudo_random(0, 5);
@@ -1069,8 +1067,8 @@ void miner::work(const wallet::payment_address& pay_address)
                     continue;
                 }
 
-                log::info(LOG_HEADER) << "solo miner create new "
-                    << (is_staking_ ? "PoS" : "PoW") <<" block at height: " << height
+                log::info(LOG_HEADER) << "solo miner create new block at height: " << height
+                    << ", version: " << std::to_string(block->header.version)
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 
@@ -1100,7 +1098,8 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
         (block && latest_height >= block->header.number)) {
         return true;
     }
-    // if i can use pos, then exit this loop and create new block with dpos consensus next time
+#ifdef PRIVATE_CHAIN
+    // if i can use dpos, then exit this loop and create new block with dpos consensus next time
     if (get_accept_block_version() == chain::block_version_any &&
         block && !block->must_use_pow_consensus()) {
         boost::mutex mutex;
@@ -1121,6 +1120,7 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
             return true;
         }
     }
+#endif
     return false;
 }
 

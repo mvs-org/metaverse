@@ -98,6 +98,11 @@ bool block::is_proof_of_work() const
     return header.is_proof_of_work();
 }
 
+bool block::is_proof_of_dpos() const
+{
+    return header.is_proof_of_dpos();
+}
+
 bool block::from_data_t(reader& source, bool with_transaction_count)
 {
     reset();

@@ -51,7 +51,7 @@ bool validate_block_impl::check_work(const chain::block& block) const
 {
     chain::header parent_header = fetch_block(block.header.number - 1);
 
-    if (block.header.version == chain::block_version_dpos) {
+    if (block.is_proof_of_dpos()) {
         return block.header.bits == parent_header.bits;
     }
 
