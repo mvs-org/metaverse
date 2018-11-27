@@ -25,7 +25,7 @@ namespace libbitcoin {
 
 #ifndef PRIVATE_CHAIN
 
-const uint32_t coinbase_maturity = 1000;
+uint32_t coinbase_maturity = 1000;
 
 // PoS
 const uint64_t pos_enabled_height        = 10;
@@ -38,7 +38,7 @@ const uint32_t pos_target_timespan       = 24;
 
 #else //PRIVATE_CHAIN
  
-const uint32_t coinbase_maturity = 10;
+uint32_t coinbase_maturity = 10;
 
 // PoS
 const uint64_t pos_enabled_height        = 10;
