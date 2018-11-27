@@ -185,11 +185,13 @@ enum error_code_t
     witness_vote_error,
     witness_update_error,
 
-    proof_of_stake, 
-    tx_not_coinstake, 
+    proof_of_stake,
+    miss_coinstake,
+    illegal_coinstake,
+    extra_coinstakes,
     coinstake_version_invalid,
     cointstake_signature_invalid
-    
+
 };
 
 enum error_condition_t

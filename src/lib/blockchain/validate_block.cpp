@@ -102,18 +102,42 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
     const auto is_block_version_dpos = header.is_proof_of_dpos();
     const auto is_begin_of_epoch = consensus::witness::is_begin_of_epoch(height_);
 
-    unsigned int coinbase_count = 0;
-    for (auto tx : transactions) {
+    size_t coinbase_count = 0, coinstake_count = 0;
+    for (size_t index = 0; index < transactions.size(); ++index) {
+        RETURN_IF_STOPPED();
+
+        auto& tx = transactions[index];
+
+        if (tx.is_coinstake()) {
+            if (!header.is_proof_of_stake() || index != 1) {
+                log::error(LOG_BLOCKCHAIN) << "Illegal coinstake in block "
+                    << encode_hash(header.hash()) << ", with "
+                    << transactions.size() << " txs, current tx: " << tx.to_string(1);
+                return error::illegal_coinstake;
+            }
+
+            if (coinstake_count > 1) {
+                log::error(LOG_BLOCKCHAIN) << "Extra coinstake in block "
+                    << encode_hash(header.hash()) << ", with "
+                    << transactions.size() << " txs, current tx: " << tx.to_string(1);
+                return error::extra_coinstakes;
+            }
+
+            ++coinstake_count;
+            continue;
+        }
+
         if (!tx.is_coinbase()) {
             break;
         }
-        RETURN_IF_STOPPED();
+
         auto has_vote_result = coinbase_count == 0 && is_begin_of_epoch;
         if ((!has_vote_result && tx.outputs.size() != 1) ||
             (has_vote_result && tx.outputs.size() != 2) ||
             (tx.outputs[0].is_etp() == false)) {
             return error::first_not_coinbase;
         }
+
         const auto& coinbase_script = tx.inputs[0].script;
         const auto coinbase_size = coinbase_script.serialized_size(false);
         if ((coinbase_size < 2) ||
@@ -121,6 +145,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
             (is_block_version_dpos && coinbase_size > 200)) {
             return error::invalid_coinbase_script_size;
         }
+
         // Enforce rule that the coinbase starts with serialized height.
         if (is_active(script_context::bip34_enabled) &&
             !is_valid_coinbase_height(height_, current_block_)) {
@@ -129,28 +154,24 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
 
         ++coinbase_count;
     }
+
     if (coinbase_count == 0) {
         return error::first_not_coinbase;
     }
 
-    unsigned int coinstake_count = 0;
-    if (header.is_proof_of_stake()) {
-        if (transactions.size() < 2 || !transactions[1].is_coinstake()) {
-            log::error(LOG_BLOCKCHAIN) << "Invalid coinstake! transactions: "
-                << std::to_string(transactions.size())
-                << " tx: " << (transactions.size() >= 2 ? transactions[1].to_string(1) : "null");
-            return error::tx_not_coinstake;
-        }
-
-        ++coinstake_count;
+    if (header.is_proof_of_stake() && coinstake_count == 0) {
+        return error::miss_coinstake;
     }
 
-    for (auto it = transactions.begin() + coinbase_count + coinstake_count; it != transactions.end(); ++it)
-    {
+    auto iter_start = transactions.begin() + coinbase_count + coinstake_count;
+    for (auto it = iter_start; it != transactions.end(); ++it) {
         RETURN_IF_STOPPED();
 
-        if (it->is_coinbase())
+        if (it->is_coinbase() || it->is_coinstake()) {
+            log::error(LOG_BLOCKCHAIN) << "Illegal coinbase or coinstake in block: "
+                << encode_hash(header.hash()) << ", with " << transactions.size() << " txs.";
             return error::extra_coinbases;
+        }
     }
 
     if (is_begin_of_epoch) {

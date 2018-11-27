@@ -893,10 +893,13 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     transaction_ptr coinstake(nullptr);
 
     while (nullptr == coinstake && block_time < (start_time  + pos_target_timespan / 2)) {
-        pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
+        pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
         coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
+        if (coinstake) {
+            break;
+        }
 
-        uint32_t sleep_time = 5 + pseudo_random(0, 5);
+        uint32_t sleep_time = pseudo_random(100, 150);
         sleep_for_mseconds(sleep_time);
         block_time = get_adjust_time(block_height);
     }
@@ -1276,7 +1279,7 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
         !bc::verify(private_key_) ||
         private_key_.empty()) {
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER) << "miner verify private key failed";
+        log::info(LOG_HEADER) << "miner verify private key failed";
 #endif
         return false;
     }
@@ -1288,7 +1291,7 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
 
     if (public_key_data_.empty()) {
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER) << "miner set mining public key failed";
+        log::info(LOG_HEADER) << "miner set mining public key failed";
 #endif
         return false;
     }

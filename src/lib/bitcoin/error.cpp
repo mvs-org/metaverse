@@ -279,13 +279,14 @@ std::string error_category_impl::message(int ev) const BC_NOEXCEPT
 
         case error::proof_of_stake:
             return "proof of stake failed";
-
-        case error::tx_not_coinstake:
-            return "transaction of stake invalid";
-
+        case error::illegal_coinstake:
+            return "illegal coinstake";
+        case error::miss_coinstake:
+            return "miss coinstake";
+        case error::extra_coinstakes:
+            return "more than one coinstake";
         case error::coinstake_version_invalid:
             return "coinstake version invalid";
-
         case error::cointstake_signature_invalid:
             return "validate coinstake block signature failed";
 

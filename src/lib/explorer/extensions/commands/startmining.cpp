@@ -48,6 +48,7 @@ console_result startmining::invoke(Json::Value& jv_output,
     }
 
     auto str_addr = get_address(option_.address, blockchain);
+    boost::to_lower(option_.consensus);
     const auto is_use_pow = (option_.consensus == "pow");
     const auto is_use_pos = (option_.consensus == "pos");
     const auto is_use_dpos = (option_.consensus == "dpos");

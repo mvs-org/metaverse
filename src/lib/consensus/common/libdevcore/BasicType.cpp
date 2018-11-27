@@ -218,7 +218,7 @@ u256 HeaderAux::calculate_difficulty_pow(
     if (nullptr != prev) {
         target = prev->bits ;
         uint32_t actual_timespan = current.timestamp - prev->timestamp;
-        target =  adjust_difficulty(actual_timespan, target);
+        target = adjust_difficulty(actual_timespan, target);
     }
 
     bigint result(target);
