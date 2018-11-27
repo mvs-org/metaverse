@@ -55,10 +55,10 @@ protected:
     void delay_reseeding();
 
 private:
-    void new_connection(connector::ptr connect);
+    void new_connection(connector::ptr connect, bool reconnect=true);
     void handle_started(const code& ec, result_handler handler);
     void handle_connect(const code& ec, channel::ptr channel,
-        connector::ptr connect);
+        connector::ptr connect, bool reconnect=true);
 
     void handle_channel_stop(const code& ec, connector::ptr connect,
         channel::ptr channel);

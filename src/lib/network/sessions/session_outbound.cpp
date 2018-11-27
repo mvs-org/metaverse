@@ -75,11 +75,14 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     reseeding_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
 
     const auto connect = create_connector();
+
     while (outbound_counter == 0 && !stopped()) { // loop until connected successfully
-        for (size_t peer = 0; peer < settings_.outbound_connections; ++peer) {
-            new_connection(connect);
-        }
+        new_connection(connect, false);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+
+    for (size_t peer = 0; peer < settings_.outbound_connections; ++peer) {
+        new_connection(connect, true);
     }
 
     // This is the end of the start sequence.
@@ -89,7 +92,7 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
 // Connnect cycle.
 // ----------------------------------------------------------------------------
 
-void session_outbound::new_connection(connector::ptr connect)
+void session_outbound::new_connection(connector::ptr connect, bool reconnect)
 {
     if (stopped())
     {
@@ -97,7 +100,7 @@ void session_outbound::new_connection(connector::ptr connect)
             << "Suspended outbound connection.";
         return;
     }
-    this->connect(connect, BIND3(handle_connect, _1, _2, connect));
+    this->connect(connect, BIND4(handle_connect, _1, _2, connect, reconnect));
 }
 
 void session_outbound::delay_new_connect(connector::ptr connect)
@@ -110,7 +113,7 @@ void session_outbound::delay_new_connect(connector::ptr connect)
         pool_.service().post(
             std::bind(&session_outbound::new_connection,
                 shared_from_base<session_outbound>(),
-                connect));
+                connect, true));
     });
 }
 
@@ -154,7 +157,7 @@ void session_outbound::handle_reseeding()
 }
 
 void session_outbound::handle_connect(const code& ec, channel::ptr channel,
-    connector::ptr connect)
+    connector::ptr connect, bool reconnect)
 {
     if (channel && blacklisted(channel->authority())) {
         log::trace(LOG_NETWORK)
@@ -166,7 +169,9 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
     {
         log::trace(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
-        //delay_new_connect(connect);
+        if (reconnect) {
+            delay_new_connect(connect);
+        }
         return;
     }
 
