@@ -128,7 +128,7 @@ private:
     bool get_input_etp(const transaction&, const std::vector<transaction_ptr>&, uint64_t&, previous_out_map_t&) const ;
     bool is_stop_miner(uint64_t block_height, block_ptr block) const;
     uint32_t get_tx_sign_length(transaction_ptr tx);
-    void sleep(uint32_t interval);
+    void sleep_for_mseconds(uint32_t interval);
 
     u256 get_next_target_required(const chain::header& header, const chain::header& prev_header, bool is_staking);
 

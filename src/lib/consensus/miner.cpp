@@ -25,8 +25,8 @@
 #include <system_error>
 #include <chrono>
 #include <ctime>
-#include <boost/thread.hpp>
-#include <boost/chrono.hpp>
+//#include <boost/thread.hpp>
+//#include <boost/chrono.hpp>
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/witness.hpp>
@@ -853,7 +853,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     // Check deposited stake
     if (!block_chain.check_pos_capability(last_height, pay_address)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
-        sleep(10 * 1000);
+        sleep_for_mseconds(10 * 1000);
         return nullptr;
     }
 
@@ -862,7 +862,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs);
     if (stake_outputs.empty()) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
-        sleep(10 * 1000);
+        sleep_for_mseconds(10 * 1000);
         return nullptr;
     }
 
@@ -897,7 +897,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
         coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
 
         uint32_t sleep_time = 5 + pseudo_random(0, 5);
-        sleep(sleep_time);
+        sleep_for_mseconds(sleep_time);
         block_time = get_adjust_time(block_height);
     }
 
@@ -1009,10 +1009,10 @@ std::string to_string(_T const& _t)
     return o.str();
 }
 
-void miner::sleep(uint32_t interval)
+void miner::sleep_for_mseconds(uint32_t interval)
 {
     if ((get_accept_block_version() == chain::block_version_pos)) {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
 }
 
@@ -1032,7 +1032,7 @@ void miner::work(const wallet::payment_address& pay_address)
             if (can_store) {
                 boost::uint64_t height = store_block(block);
                 if (height == 0) {
-                    sleep(500);
+                    sleep_for_mseconds(500);
                     continue;
                 }
 
@@ -1049,10 +1049,10 @@ void miner::work(const wallet::payment_address& pay_address)
                 }
             }
 
-            sleep(1000);
+            sleep_for_mseconds(1000);
         }
         else {
-            sleep(10);
+            sleep_for_mseconds(10);
         }
     }
 }
