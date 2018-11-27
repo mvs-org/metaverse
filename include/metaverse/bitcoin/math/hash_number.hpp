@@ -33,26 +33,26 @@ namespace libbitcoin {
  * Used for block proof of works to calculate whether they reach
  * a certain target or which chain is longest.
  */
-class hash_number
+class BC_API hash_number
 {
 public:
-    BC_API hash_number();
-    BC_API hash_number(uint64_t value);
+    hash_number();
+    hash_number(uint64_t value);
     // Returns false if negative or overflowed.
-    BC_API bool set_compact(uint32_t compact);
-    BC_API uint32_t compact() const;
-    BC_API void set_hash(const hash_digest& hash);
-    BC_API hash_digest hash() const;
+    bool set_compact(uint32_t compact);
+    uint32_t compact() const;
+    void set_hash(const hash_digest& hash);
+    hash_digest hash() const;
 
-    BC_API const hash_number operator~() const;
+    const hash_number operator~() const;
 
     // int64_t resolves to this in Satoshi's GetNextWorkRequired()
-    BC_API hash_number& operator*=(uint32_t value);
-    BC_API hash_number& operator/=(uint32_t value);
-    BC_API hash_number& operator<<=(uint32_t shift);
+    hash_number& operator*=(uint32_t value);
+    hash_number& operator/=(uint32_t value);
+    hash_number& operator<<=(uint32_t shift);
 
-    BC_API hash_number& operator/=(const hash_number& number_b);
-    BC_API hash_number& operator+=(const hash_number& number_b);
+    hash_number& operator/=(const hash_number& number_b);
+    hash_number& operator+=(const hash_number& number_b);
 
 private:
     friend bool operator>(
@@ -70,19 +70,6 @@ private:
 
     uint256_t hash_;
 };
-
-BC_API bool operator>(
-    const hash_number& number_a, const hash_number& number_b);
-BC_API bool operator<=(
-    const hash_number& number_a, const hash_number& number_b);
-BC_API const hash_number operator<<(
-    const hash_number& number_a, int shift);
-BC_API const hash_number operator/(
-    const hash_number& number_a, const hash_number& number_b);
-BC_API const hash_number operator+(
-    const hash_number& number_a, const hash_number& number_b);
-BC_API bool operator==(
-    const hash_number& number, uint64_t value);
 
 } // namespace libbitcoin
 
