@@ -92,7 +92,7 @@ console_result startmining::invoke(Json::Value& jv_output,
             throw address_dismatch_account_exception{"target address does not match account. " + str_addr};
         }
 
-        if (is_use_dpos) {
+        if (is_use_dpos || is_use_pos) {
             const std::string pubkey = sp_account_address->get_pub_key();
             const std::string prikey = sp_account_address->get_prv_key(auth_.auth);
             if (!miner.set_pub_and_pri_key(pubkey, prikey)) {
@@ -112,8 +112,6 @@ console_result startmining::invoke(Json::Value& jv_output,
     if (addr.version() == bc::wallet::payment_address::mainnet_p2sh) { // for multisig address
         throw argument_legality_exception{"script address parameter not allowed!"};
     }
-
-    miner.set_pos_params(is_use_pos, auth_.name, auth_.auth);
 
     if (is_use_pow) {
         miner.set_accept_block_version(chain::block_version_pow);

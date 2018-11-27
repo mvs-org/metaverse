@@ -40,10 +40,6 @@
 #include <metaverse/blockchain/block_chain.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/node/p2p_node.hpp>
-#include <metaverse/explorer/json_helper.hpp>
-#include <metaverse/explorer/config/ec_private.hpp>
-#include <metaverse/explorer/config/script.hpp>
-#include <metaverse/explorer/config/hashtype.hpp>
 
 #define LOG_HEADER "Miner"
 using namespace std;
@@ -93,7 +89,6 @@ miner::miner(p2p_node& node)
     , new_block_limit_(0)
     , accept_block_version_(chain::block_version_pow)
     , setting_(node_.chain_impl().chain_settings())
-    , is_staking_(false)
 {
     if (setting_.use_testnet_rules) {
         HeaderAux::set_as_testnet();
@@ -103,19 +98,6 @@ miner::miner(p2p_node& node)
 miner::~miner()
 {
     stop();
-}
-
-void miner::set_pos_params(bool isStaking, const std::string& account, const std::string& passwd)
-{
-    is_staking_ = isStaking;
-    if (is_staking_) {
-        account_ = account;
-        passwd_ = passwd;
-    }
-    else {
-        account_ = "";
-        passwd_ = "";
-    }
 }
 
 bool miner::get_input_etp(const transaction& tx, const std::vector<transaction_ptr>& transactions,
@@ -591,8 +573,8 @@ bool miner::get_block_transactions(
 
 miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_address)
 {
-    if (is_staking_) {
-        return create_new_block_pos(account_, passwd_, pay_address);
+    if (get_accept_block_version() == chain::block_version_pos) {
+        return create_new_block_pos(pay_address);
     }
 
     block_ptr pblock;
@@ -737,12 +719,10 @@ bool miner::sign_coinstake_tx(
     const ec_secret& private_key,
     transaction_ptr coinstake)
 {
-    explorer::config::hashtype sign_type;
-    const uint8_t hash_type = (chain::signature_hash_algorithm)sign_type;
+    const uint8_t hash_type = chain::signature_hash_algorithm::all;
 
     for (size_t i = 0; i < coinstake->inputs.size(); ++i) {
-        explorer::config::script config_contract(coinstake->inputs[i].script);
-        const chain::script& contract = config_contract;
+        const chain::script& contract = coinstake->inputs[i].script;
         // gen sign
         endorsement endorse;
         if (!chain::script::create_endorsement(endorse, private_key,
@@ -848,22 +828,11 @@ miner::transaction_ptr miner::create_coinstake_tx(
     return coinstake;
 }
 
-miner::block_ptr miner::create_new_block_pos(
-    const std::string account, const std::string passwd, const wallet::payment_address& pay_address)
+miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_address)
 {
     block_chain_impl& block_chain = node_.chain_impl();
 
-    // Get private key
-    const string address = pay_address.encoded();
-    auto acc_addr = block_chain.get_account_address(account, address);
-    if (!acc_addr) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. Cann't get address " << address
-            << " from account " << account;
-        return nullptr;
-    }
-
-    explorer::config::ec_private config_private_key(acc_addr->get_prv_key(passwd_)); // address private key
-    const ec_secret& private_key = config_private_key;
+    const ec_secret& private_key= private_key_;
 
     // Get last block
     uint64_t last_height = 0;
@@ -883,21 +852,21 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Check deposited stake
     if (!block_chain.check_pos_capability(last_height, pay_address)) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is deposited at address " << address;
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
         sleep(10 * 1000);
         return nullptr;
     }
 
-    // Check utxo stake
+    // check utxo stake
     chain::output_info::list stake_outputs;
     block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs);
     if (stake_outputs.empty()) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. No enough stake is holded at address " << address;
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
         sleep(10 * 1000);
         return nullptr;
     }
 
-    // Create block
+    // create block
     //
     block_ptr pblock = make_shared<block>();
     pblock->header.version = chain::block_version_pos;  // pos
@@ -907,18 +876,18 @@ miner::block_ptr miner::create_new_block_pos(
     pblock->header.mixhash = 0;
     pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
 
-    // Update transactoins
+    // update transactoins
     //
     uint64_t total_fee = 0;
     uint32_t total_tx_sig_length = 0;
     vector<transaction_ptr> txs;
     vector<transaction_ptr> reward_txs;
 
-    // Create coinbase tx
+    // create coinbase tx
     transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
     total_tx_sig_length += get_tx_sign_length(coinbase);
 
-    // Create coinstake
+    // create coinstake
     uint32_t start_time = get_adjust_time(block_height);
     uint32_t block_time = start_time;
     transaction_ptr coinstake(nullptr);
@@ -967,7 +936,7 @@ miner::block_ptr miner::create_new_block_pos(
 
     // Sign block
     if (!sign(pblock->blocksig, private_key, pblock->header.hash())) {
-        log::error(LOG_HEADER) << "PoS mining failed. Cann't sign block with account " << account;
+        log::error(LOG_HEADER) << "PoS mining failed. cann't sign block.";
         return nullptr;
     }
 
@@ -1042,7 +1011,7 @@ std::string to_string(_T const& _t)
 
 void miner::sleep(uint32_t interval)
 {
-    if (is_staking_) {
+    if ((get_accept_block_version() == chain::block_version_pos)) {
         boost::this_thread::sleep_for(boost::chrono::milliseconds(interval));
     }
 }
@@ -1057,7 +1026,7 @@ void miner::work(const wallet::payment_address& pay_address)
     while (state_ != state::exit_) {
         block_ptr block = create_new_block(pay_address);
         if (block) {
-            bool can_store = is_staking_
+            bool can_store = (get_accept_block_version() == chain::block_version_pos)
                 || block->header.version == chain::block_version_dpos
                 || MinerAux::search(block->header, std::bind(&miner::is_stop_miner, this, block->header.number, block));
             if (can_store) {

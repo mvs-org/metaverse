@@ -116,7 +116,7 @@ public:
 private:
     void work(const wallet::payment_address& pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_address);
-    block_ptr create_new_block_pos(const std::string account, const std::string passwd, const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pos(const wallet::payment_address& pay_address);
     uint32_t get_adjust_time(uint64_t height) const;
     uint32_t get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;
@@ -145,10 +145,6 @@ private:
     const blockchain::settings& setting_;
     data_chunk public_key_data_;
     ec_secret private_key_;
-
-    bool is_staking_;
-    std::string account_;
-    std::string passwd_;
 };
 
 }
