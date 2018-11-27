@@ -1603,7 +1603,7 @@ bool block_chain_impl::check_pos_capability(
 
                 // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
                 if (lock_height >= min_pos_lock_height &&
-                    (row.output_height + lock_height * min_pos_lock_rate) > best_height){
+                    (row.output_height + lock_height - pos_disable_height) > best_height){
                     return true;
                 }
             }

@@ -95,15 +95,15 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
-extern uint64_t pos_enabled_height;
+extern const uint64_t pos_enabled_height;
 
-extern uint64_t min_pos_lock_value;
-extern uint64_t min_pos_lock_height;
-extern double min_pos_lock_rate;
+extern const uint64_t min_pos_lock_value;
+extern const uint64_t min_pos_lock_height;
+extern const uint64_t pos_disable_height;
 
-extern uint64_t min_pos_value;
-extern uint64_t min_pos_confirm_height;
-extern uint32_t pos_target_timespan;
+extern const uint64_t min_pos_value;
+extern const uint64_t min_pos_confirm_height;
+extern const uint32_t pos_target_timespan;
 
 
 // price
