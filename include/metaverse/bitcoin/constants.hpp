@@ -49,7 +49,7 @@ BC_CONSTEXPR uint8_t byte_bits = 8;
 
 // Consensus constants.
 BC_CONSTEXPR uint32_t reward_interval = 210000;
-extern uint32_t coinbase_maturity;
+extern const uint32_t coinbase_maturity;
 BC_CONSTEXPR uint32_t initial_block_reward = 50;
 BC_CONSTEXPR uint32_t max_work_bits = 0x1d00ffff;
 BC_CONSTEXPR uint32_t max_input_sequence = max_uint32;
