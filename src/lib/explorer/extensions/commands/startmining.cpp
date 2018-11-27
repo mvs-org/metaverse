@@ -98,7 +98,7 @@ console_result startmining::invoke(Json::Value& jv_output,
             if (!miner.set_pub_and_pri_key(pubkey, prikey)) {
                 throw address_invalid_exception{"invalid address parameter(wrong key)! " + str_addr};
             }
-            if (!miner.is_witness()) {
+            if (is_use_dpos && !miner.is_witness()) {
                 log::error("Mining")
                     << str_addr
                     << " is not a witness at height "
