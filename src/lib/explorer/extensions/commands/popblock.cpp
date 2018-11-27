@@ -54,7 +54,7 @@ console_result popblock::invoke (Json::Value& jv_output,
     blockchain::block_detail::list released_blocks;
     blockchain.pop_from(released_blocks, argument_.height);
 
-    if (!released_blocks.empty()) {
+    if (!released_blocks.empty() && consensus::witness::is_dpos_enabled()) {
         uint64_t new_height = 0;
         if (blockchain.get_last_height(new_height) &&
             !consensus::witness::is_in_same_epoch(old_height, new_height)) {

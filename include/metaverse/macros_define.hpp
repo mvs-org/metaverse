@@ -5,5 +5,6 @@
 #define MVS_TESTING_DEFINE_HPP
 
 #define PRIVATE_CHAIN
+//#define ENABLE_DPOS_CONSENSUS
 
 #endif

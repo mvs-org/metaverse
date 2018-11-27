@@ -74,7 +74,7 @@ void witness::init(p2p_node& node)
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
-    witness::witness_enable_height = max_uint64;
+    witness::witness_enable_height = 50;
     witness::witness_number = 11;
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
@@ -338,6 +338,8 @@ chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
 bool witness::update_witness_list(uint64_t height, bool calc)
 {
     if (!is_witness_enabled(height)) {
+        list empty;
+        swap_witness_list(empty);
         return true;
     }
     auto sp_block = fetch_vote_result_block(height);
@@ -517,9 +519,17 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
     return false;
 }
 
+bool witness::is_dpos_enabled()
+{
+#ifdef ENABLE_DPOS_CONSENSUS
+    return true;
+#endif
+    return false;
+}
+
 bool witness::is_witness_enabled(uint64_t height)
 {
-    return height >= witness_enable_height;
+    return is_dpos_enabled() && height >= witness_enable_height;
 }
 
 uint64_t witness::get_height_in_epoch(uint64_t height)

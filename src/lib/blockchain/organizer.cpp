@@ -60,26 +60,29 @@ organizer::organizer(threadpool& pool, block_chain_impl& chain,
 
 void organizer::start()
 {
-    // update witness list
-    {
+    if (consensus::witness::is_dpos_enabled()) {
         chain_.set_sync_disabled(true);
         unique_lock lock(chain_.get_mutex());
+
         uint64_t height = 0;
         if (!chain_.get_last_height(height)) {
             log::info(LOG_BLOCKCHAIN) << "get last height failed";
             return;
         }
-        log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
-        if (!consensus::witness::get().update_witness_list(height)) {
-            log::info(LOG_BLOCKCHAIN) << "update witness list failed at height " << height;
-            return;
-        }
-        log::info(LOG_BLOCKCHAIN) << "update witness list succeed at height " << height;
+
+        if (consensus::witness::is_witness_enabled(height)) {
+            log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
+            if (!consensus::witness::get().update_witness_list(height)) {
+                log::info(LOG_BLOCKCHAIN) << "update witness list failed at height " << height;
+                return;
+            }
+            log::info(LOG_BLOCKCHAIN) << "update witness list succeed at height " << height;
 #ifdef PRIVATE_CHAIN
-        log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+            log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
 #else
-        log::debug(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
+            log::debug(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
 #endif
+        }
         chain_.set_sync_disabled(false);
     }
 
@@ -239,27 +242,34 @@ void organizer::process(block_detail::ptr process_block)
         // Verify the blocks in the orphan chain.
         if (chain_.get_height(fork_index, hash))
         {
-            uint64_t current_block_height = 0;
-            DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
-            BITCOIN_ASSERT(ok);
-            auto witness_list = consensus::witness::get().get_witness_list();
-            if (!consensus::witness::is_in_same_epoch(fork_index, current_block_height)) {
-                consensus::witness::get().update_witness_list(fork_index);
-            }
+            if (consensus::witness::is_dpos_enabled()) {
+                uint64_t current_block_height = 0;
+                DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
+                BITCOIN_ASSERT(ok);
+                if (consensus::witness::is_witness_enabled(current_block_height)) {
+                    auto witness_list = consensus::witness::get().get_witness_list();
+                    if (!consensus::witness::is_in_same_epoch(fork_index, current_block_height)) {
+                        consensus::witness::get().update_witness_list(fork_index);
+                    }
 
-            auto ret = replace_chain(fork_index, orphan_chain);
+                    auto ret = replace_chain(fork_index, orphan_chain);
 
-            const auto& num_of_poped_blocks = std::get<0>(ret);
-            const auto& num_of_pushed_blocks = std::get<1>(ret);
-            const auto need_recovery = num_of_poped_blocks == 0 && num_of_pushed_blocks == 0;
-            const auto need_reupdate = num_of_poped_blocks != 0 && num_of_pushed_blocks == 0;
-            if (need_recovery) {
-                consensus::witness::get().swap_witness_list(witness_list);
-            } else if (need_reupdate) {
-                const auto& new_block_height = std::get<2>(ret);
-                if (!consensus::witness::is_in_same_epoch(fork_index, new_block_height)) {
-                    consensus::witness::get().update_witness_list(new_block_height);
+                    const auto& num_of_poped_blocks = std::get<0>(ret);
+                    const auto& num_of_pushed_blocks = std::get<1>(ret);
+                    const auto need_recovery = num_of_poped_blocks == 0 && num_of_pushed_blocks == 0;
+                    const auto need_reupdate = num_of_poped_blocks != 0 && num_of_pushed_blocks == 0;
+                    if (need_recovery) {
+                        consensus::witness::get().swap_witness_list(witness_list);
+                    } else if (need_reupdate) {
+                        const auto& new_block_height = std::get<2>(ret);
+                        if (!consensus::witness::is_in_same_epoch(fork_index, new_block_height)) {
+                            consensus::witness::get().update_witness_list(new_block_height);
+                        }
+                    }
                 }
+            }
+            else {
+                DEBUG_ONLY(auto ret =) replace_chain(fork_index, orphan_chain);
             }
 
             if(orphan_chain.empty() == false)

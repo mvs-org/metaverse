@@ -99,6 +99,7 @@ public:
     static std::string to_witness_id_str(const public_key_t& public_key);
 
     static bool is_witness_enabled(uint64_t height);
+    static bool is_dpos_enabled();
     static uint64_t get_height_in_epoch(uint64_t height);
     static uint64_t get_vote_result_height(uint64_t height);
 
