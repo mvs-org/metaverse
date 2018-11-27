@@ -2741,7 +2741,7 @@ void block_chain_impl::set_sync_disabled(bool b)
     sync_disabled_ = b;
 }
 
-uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, chain::block_version version) const
+uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) const
 {
     if (from >= to) {
         return 0;
@@ -2749,43 +2749,19 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, cha
 
     uint64_t number = to - from;
 
-    const auto witness_enable_height = consensus::witness::witness_enable_height;
-    // block before 'start' is all pow blocks
-    uint64_t start = std::min(to, std::max(from, witness_enable_height));
-    if (version != chain::block_version_pow) {
-        number -= (start - from);
-    }
-
-    if (start < to) {
-        chain::header out_header;
-        for (auto i = start; i < to; ++i) {
-            if (!get_header(out_header, i)) {
-                return 0;
+    // excludes dpos blocks
+    if (consensus::witness::is_dpos_enabled()) {
+        uint64_t start = std::max(from, consensus::witness::witness_enable_height);
+        if (start < to) {
+            chain::header out_header;
+            for (auto i = start; i < to; ++i) {
+                if (!get_header(out_header, i)) {
+                    return 0;
+                }
+                if (out_header.is_proof_of_dpos()) {
+                    --number;
+                }
             }
-            if (out_header.version != version) {
-                --number;
-            }
-        }
-    }
-
-    // ensure a deadline by average block timestamp
-    if (version == chain::block_version_pow && (to > from + 1)) {
-        chain::header to_header;
-        if (!get_header(to_header, to - 1)) {
-            return 0;
-        }
-
-        chain::header from_header;
-        if (!get_header(from_header, from)) {
-            return 0;
-        }
-
-        constexpr uint32_t average_pow_block_time = 35;
-        uint64_t number_calced_by_timestamp =
-            (to_header.timestamp - from_header.timestamp) / average_pow_block_time;
-
-        if (number_calced_by_timestamp > number) {
-            return number_calced_by_timestamp;
         }
     }
 

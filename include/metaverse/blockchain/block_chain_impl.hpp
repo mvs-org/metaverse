@@ -403,8 +403,7 @@ public:
     bool is_sync_disabled() const;
     void set_sync_disabled(bool b);
 
-    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to,
-        chain::block_version version = chain::block_version_pow) const;
+    uint64_t calc_number_of_blocks(uint64_t from, uint64_t to) const;
 
     std::pair<uint64_t, uint64_t> get_locked_balance(const std::string& address,
         uint64_t expiration, const std::string& asset_symbol="") const;
