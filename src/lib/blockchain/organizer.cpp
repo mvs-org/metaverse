@@ -166,8 +166,8 @@ code organizer::verify(uint64_t fork_point,
     const auto total_transactions = current_block->transactions.size();
 
     log::info(LOG_BLOCKCHAIN)
-        << "Block [" << height << "] version (" << get_block_version(current_block->header.version)
-        << ") verify (" << total_transactions
+        << get_block_version(current_block->header.version)
+        << " block [" << height << "] verify (" << total_transactions
         << ") txs and (" << total_inputs << ") inputs";
 
     // Time this for logging.
@@ -190,8 +190,8 @@ code organizer::verify(uint64_t fork_point,
     const auto verified = ec ? "unverified" : "verified";
 
     log::info(LOG_BLOCKCHAIN)
-        << "Block [" << height << "] version (" << get_block_version(current_block->header.version)
-        << ") " << verified << " in ("
+        << get_block_version(current_block->header.version)
+        << " block [" << height << "] verified in ("
         << seconds_per_block << ") secs or (" << ms_per_input << ") ms/input";
 
     return ec;

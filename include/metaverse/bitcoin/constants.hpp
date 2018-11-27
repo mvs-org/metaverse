@@ -92,17 +92,19 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
-BC_CONSTEXPR uint64_t pos_enabled_height        = 10;
+extern uint64_t pos_enabled_height;
 
-BC_CONSTEXPR uint64_t min_pos_lock_value        = 10*100000000ul;
-BC_CONSTEXPR uint64_t min_pos_lock_height       = 10000;
-BC_CONSTEXPR double min_pos_lock_rate           = 0.8;
+extern uint64_t min_pos_lock_value;
+extern uint64_t min_pos_lock_height;
+extern double min_pos_lock_rate;
 
-BC_CONSTEXPR uint64_t min_pos_value             = 1*100000000ul;
-BC_CONSTEXPR uint64_t min_pos_confirm_height    = 10;
-BC_CONSTEXPR uint32_t pos_target_timespan       = 24;
+extern uint64_t min_pos_value;
+extern uint64_t min_pos_confirm_height;
+extern uint32_t pos_target_timespan;
+
 
 // price
 //-----------------------------------------------------------------------------

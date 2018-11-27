@@ -263,16 +263,16 @@ std::string get_block_version(uint32_t version)
 {
     switch (version) {
     case block_version_any:
-        return "any";
+        return " Any";
     case block_version_pow:
-        return "pow";
+        return " PoW";
     case block_version_pos:
-        return "pos";
+        return " PoS";
     case block_version_dpos:
-        return "dpos";
+        return "DPoS";
     default:;
     }
-    return "unknown";
+    return "Unknown";
 }
 
 } // namspace chain

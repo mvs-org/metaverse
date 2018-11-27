@@ -899,6 +899,10 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
             break;
         }
 
+        if (is_stop_miner(block_height, pblock)) {
+            break;
+        }
+
         uint32_t sleep_time = pseudo_random(100, 150);
         sleep_for_mseconds(sleep_time);
         block_time = get_adjust_time(block_height);
@@ -1039,8 +1043,9 @@ void miner::work(const wallet::payment_address& pay_address)
                     continue;
                 }
 
-                log::info(LOG_HEADER) << "solo miner create new block at height: " << height
-                    << ", version: " << chain::get_block_version(block->header.version)
+                log::info(LOG_HEADER) << "solo miner create "
+                    << chain::get_block_version(block->header.version)
+                    << " block at height: " << height
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;
 
@@ -1055,7 +1060,7 @@ void miner::work(const wallet::payment_address& pay_address)
             sleep_for_mseconds(1000);
         }
         else {
-            sleep_for_mseconds(10);
+            sleep_for_mseconds(100);
         }
     }
 }
@@ -1065,11 +1070,13 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
     if (state_ == state::exit_) {
         return true;
     }
+
     auto latest_height = get_height();
     if ((latest_height > block_height) ||
         (block && latest_height >= block->header.number)) {
         return true;
     }
+
 #ifdef PRIVATE_CHAIN
     // if i can use dpos, then exit this loop and create new block with dpos consensus next time
     if (get_accept_block_version() == chain::block_version_any &&

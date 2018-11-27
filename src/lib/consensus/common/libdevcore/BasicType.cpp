@@ -252,8 +252,7 @@ u256 HeaderAux::calculate_difficulty_pos(
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
     log::info("calculate_difficulty")
-        << " bits limit: " << minimumDifficulty
-        << ", actual_timespan: " << actual_timespan
+        << ", last timespan: " << actual_timespan
         << " s, bits: " << result;
 
     return u256(result);
