@@ -83,7 +83,7 @@ public:
         (
             "address,a",
             value<std::string>(&argument_.address),
-            "The deposit target address."
+            "The deposit target did/address."
         )
         (
             "deposit,d",

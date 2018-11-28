@@ -35,8 +35,12 @@ console_result deposit::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-    if(!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address!"};
+
+    attachment attach;
+    auto addr = get_address(argument_.address, attach, false, blockchain);
+
+    if(!argument_.address.empty() && addr.empty())
+        throw address_invalid_exception{"invalid did/address! " + argument_.address};
 
     if (argument_.deposit != 7 && argument_.deposit != 30
         && argument_.deposit != 90 && argument_.deposit != 182
@@ -49,14 +53,13 @@ console_result deposit::invoke(Json::Value& jv_output,
     if(!pvaddr || pvaddr->empty())
         throw address_list_nullptr_exception{"nullptr for address list"};
 
-    auto addr = argument_.address;
-    if (addr.empty()) {
+    if (argument_.address.empty()) {
         addr = get_random_payment_address(pvaddr, blockchain);
     }
 
     // receiver
     std::vector<receiver_record> receiver{
-        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attachment()}
+        {addr, "", argument_.amount, 0, utxo_attach_type::deposit, attach}
     };
     auto deposit_helper = depositing_etp(*this, blockchain, std::move(auth_.name), std::move(auth_.auth),
             std::move(addr), std::move(receiver), argument_.deposit, argument_.fee);
