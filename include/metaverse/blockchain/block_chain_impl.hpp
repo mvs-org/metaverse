@@ -243,7 +243,7 @@ public:
     virtual bool check_pos_capability(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        bool wait_db = true);
+        bool need_sync_lock = true);
 
     /// select pos utxo. target value
     virtual bool select_utxo_for_staking(
@@ -252,16 +252,16 @@ public:
         chain::output_info::list& stake_outputs);
 
     inline bool check_pos_utxo_height_and_value(
-        const uint64_t& out_height, 
-        const uint64_t& curr_height, 
-        const uint64_t& value) 
+        const uint64_t& out_height,
+        const uint64_t& curr_height,
+        const uint64_t& value)
     {
-        return (value >= min_pos_value) && (out_height + min_pos_confirm_height <= curr_height);
+        return (value >= pos_stake_min_value) && (out_height + pos_stake_min_height <= curr_height);
     }
 
     bool check_pos_utxo_capability(
-        const  uint64_t& height, 
-        const chain::transaction& tx, 
+        const  uint64_t& height,
+        const chain::transaction& tx,
         const uint32_t& out_index ,
         const uint64_t& out_height,
         bool strict=true
@@ -271,7 +271,7 @@ public:
 
     inline hash_digest get_hash(const std::string& str) const;
     inline short_hash get_short_hash(const std::string& str) const;
-  
+
     std::shared_ptr<chain::transaction>  get_spends_output(const input_point& input);
 
 

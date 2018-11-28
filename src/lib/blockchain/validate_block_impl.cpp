@@ -68,7 +68,7 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     if(!is_coin_stake(block)){
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check stake, invalid coinstake. height: "
-            << std::to_string(block.header.number) << ", " << std::to_string(txs.size()) << " txs.";
+            << block.header.number << ", " << txs.size() << " txs.";
         return false;
     }
 
@@ -77,12 +77,12 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     const auto& stake_output_point = coinstake.inputs[0].previous_output;
     bc::wallet::payment_address pay_address(coinstake.inputs[0].get_script_address());
 
-    auto height = block.header.number-1;
-    if (!chain_.check_pos_capability(height ,pay_address, false)) {
+    auto height = block.header.number - 1;
+    if (!chain_.check_pos_capability(height, pay_address, false)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check pos capability. height: "
-            << std::to_string(block.header.number) << ", address=" << pay_address.encoded()
-            << ", "<< std::to_string(txs.size()) << " txs.";
+            << block.header.number << ", address=" << pay_address.encoded()
+            << ", "<< txs.size() << " txs.";
         return false;
     }
 
@@ -101,9 +101,9 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     if (!chain_.check_pos_utxo_capability(
         block.header.number, utxo_tx, stake_output_point.index, utxo_height)) {
         log::error(LOG_BLOCKCHAIN)
-            << "Failed to check utxo capability, hash="<< encode_hash(stake_output_point.hash)
-            << ", index="<<stake_output_point.index
-            << ", utxo height="<<utxo_height;
+            << "Failed to check utxo capability, hash=" << encode_hash(stake_output_point.hash)
+            << ", index=" << stake_output_point.index
+            << ", utxo height=" << utxo_height;
 
         return false;
     }
