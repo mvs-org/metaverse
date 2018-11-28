@@ -75,10 +75,14 @@ public:
 
     virtual size_t count() const;
     virtual code fetch(address& out, const config::authority::list& excluded_list);
+    virtual code fetch_seed(address& out, const config::authority::list& excluded_list);
+    virtual code store_seed(const address& host);
+    virtual code remove_seed(const address& host);
     virtual code remove(const address& host);
     virtual code store(const address& host);
     virtual void store(const address::list& hosts, result_handler handler);
     address::list copy();
+    address::list copy_seeds();
 
 private:
     typedef boost::circular_buffer<address> list;
@@ -98,6 +102,7 @@ private:
     list buffer_;
     list backup_;
     list inactive_;
+    address::list seeds_;
     std::atomic<bool> stopped_;
     mutable upgrade_mutex mutex_;
 

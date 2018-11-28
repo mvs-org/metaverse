@@ -138,6 +138,7 @@ protected:
     /// Properties.
     virtual void address_count(count_handler handler);
     virtual void fetch_address(host_handler handler);
+    virtual void fetch_seed_address(host_handler handler);
     virtual void connection_count(count_handler handler);
     virtual bool blacklisted(const authority& authority) const;
     virtual bool stopped() const;

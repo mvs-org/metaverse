@@ -49,9 +49,15 @@ console_result addnode::invoke(Json::Value& jv_output,
         jv_output = errcode.message();
         return console_result::okay;
     } else if (option_.operation == "list") {
+        Json::Value seeds_arr;
         Json::Value peers_arr;
         Json::Value banned_arr;
         Json::Value manual_banned_arr;
+
+        auto&& seeds = node.seed_address_list();
+        for (const auto& seed : seeds) {
+            seeds_arr.append(bc::config::authority(seed).to_string());
+        }
 
         auto&& peers = node.connections_ptr()->authority_list();
         for (const auto& authority : peers) {
@@ -72,6 +78,7 @@ console_result addnode::invoke(Json::Value& jv_output,
             manual_banned_arr.append(authority.to_string());
         }
 
+        jv_output["seeds"] = seeds_arr;
         jv_output["peers"] = peers_arr;
         jv_output["banned"] = banned_arr;
         jv_output["manual_banned"] = manual_banned_arr;

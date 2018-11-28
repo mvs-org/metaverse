@@ -85,6 +85,11 @@ void session::fetch_address(host_handler handler)
     network_.fetch_address(network_.authority_list(), handler);
 }
 
+void session::fetch_seed_address(host_handler handler)
+{
+    network_.fetch_seed_address(network_.authority_list(), handler);
+}
+
 // protected:
 void session::connection_count(count_handler handler)
 {

@@ -84,6 +84,19 @@ void session_batch::converge(const code& ec, channel::ptr channel,
 // ----------------------------------------------------------------------------
 
 // protected:
+void session_batch::connect_seed(connector::ptr connect, channel_handler handler)
+{
+    // synchronizer state.
+    const auto mutex = std::make_shared<upgrade_mutex>();
+    const auto counter = std::make_shared<atomic_counter>(0);
+    const auto singular = BIND5(converge, _1, _2, counter, mutex, handler);
+
+    for (uint32_t host = 0; host < batch_size_; ++host) {
+        new_connect(connect, counter, singular, true);
+    }
+}
+
+// protected:
 void session_batch::connect(connector::ptr connect, channel_handler handler)
 {
     // synchronizer state.
@@ -92,11 +105,11 @@ void session_batch::connect(connector::ptr connect, channel_handler handler)
     const auto singular = BIND5(converge, _1, _2, counter, mutex, handler);
 
     for (uint32_t host = 0; host < batch_size_; ++host)
-        new_connect(connect, counter, singular);
+        new_connect(connect, counter, singular, false);
 }
 
 void session_batch::new_connect(connector::ptr connect,
-    atomic_counter_ptr counter, channel_handler handler)
+    atomic_counter_ptr counter, channel_handler handler, bool only_seed)
 {
     if (stopped())
     {
@@ -107,7 +120,13 @@ void session_batch::new_connect(connector::ptr connect,
 
     if (counter->load() == batch_size_)
         return;
-    fetch_address(BIND5(start_connect, _1, _2, connect, counter, handler));
+
+    if (only_seed) {
+        fetch_seed_address(BIND5(start_connect, _1, _2, connect, counter, handler));
+    }
+    else {
+        fetch_address(BIND5(start_connect, _1, _2, connect, counter, handler));
+    }
 }
 
 void session_batch::start_connect(const code& ec, const authority& host,

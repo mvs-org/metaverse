@@ -423,9 +423,25 @@ void p2p::fetch_address(const config::authority::list& excluded_list, address_ha
     handler(hosts_->fetch(out, excluded_list), out);
 }
 
+void p2p::fetch_seed_address(const config::authority::list& excluded_list, address_handler handler)
+{
+    address out;
+    handler(hosts_->fetch_seed(out, excluded_list), out);
+}
+
 config::authority::list p2p::authority_list()
 {
     return connections_->authority_list();
+}
+
+void p2p::store_seed(const address& address, result_handler handler)
+{
+    handler(hosts_->store_seed(address));
+}
+
+void p2p::remove_seed(const address& address, result_handler handler)
+{
+    handler(hosts_->remove_seed(address));
 }
 
 void p2p::store(const address& address, result_handler handler)
@@ -452,6 +468,11 @@ void p2p::address_count(count_handler handler)
 p2p::address::list p2p::address_list()
 {
     return hosts_->copy();
+}
+
+p2p::address::list p2p::seed_address_list()
+{
+    return hosts_->copy_seeds();
 }
 
 connections::ptr p2p::connections_ptr()

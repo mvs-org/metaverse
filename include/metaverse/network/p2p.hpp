@@ -174,9 +174,14 @@ public:
 
     /// Get a randomly-selected address.
     virtual void fetch_address(const config::authority::list& excluded_list, address_handler handler);
+    virtual void fetch_seed_address(const config::authority::list& excluded_list, address_handler handler);
 
     ///Get authority of all connections
     config::authority::list authority_list();
+
+    /// Store an address.
+    void store_seed(const address& address, result_handler handler);
+    void remove_seed(const address& address, result_handler handler);
 
     /// Store an address.
     virtual void store(const address& address, result_handler handler);
@@ -191,6 +196,7 @@ public:
     virtual void address_count(count_handler handler);
 
     address::list address_list();
+    address::list seed_address_list();
 
     /// Get connection pool.
     virtual connections::ptr connections_ptr();

@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/network/hosts.hpp>
+#include <metaverse/macros_define.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -42,6 +43,7 @@ hosts::hosts(threadpool& pool, const settings& settings)
     , buffer_(host_pool_capacity_)
     , backup_(host_pool_capacity_)
     , inactive_(host_pool_capacity_ * 2)
+    , seeds_()
     , stopped_(true)
     , file_path_(default_data_path() / settings.hosts_file)
     , disabled_(settings.host_pool_capacity == 0)
@@ -75,6 +77,42 @@ size_t hosts::count() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
+code hosts::fetch_seed(address& out, const config::authority::list& excluded_list)
+{
+    if (disabled_) {
+        return error::not_found;
+    }
+
+    // Critical Section
+    ///////////////////////////////////////////////////////////////////////////
+    shared_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    if (seeds_.empty()) {
+        return error::not_found;
+    }
+
+    auto count = std::min(excluded_list.size()+1, seeds_.size());
+    for (auto i = 0u; i < count; ++i) {
+        // Randomly select an address from the buffer.
+        const auto random = pseudo_random(0, seeds_.size() - 1);
+        const auto index = static_cast<size_t>(random);
+        out = seeds_[index];
+        if (std::find(excluded_list.begin(), excluded_list.end(),
+                config::authority(out)) == excluded_list.end()) {
+            break;
+        }
+    }
+    if (!out.is_valid()) {
+        return error::not_found;
+    }
+    return error::success;
+    ///////////////////////////////////////////////////////////////////////////
+}
+
 code hosts::fetch(address& out, const config::authority::list& excluded_list)
 {
     if (disabled_) {
@@ -93,12 +131,31 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
         return error::not_found;
     }
 
-    // Randomly select an address from the buffer.
-    const auto random = pseudo_random(0, buffer_.size() - 1);
-    const auto index = static_cast<size_t>(random);
-    out = buffer_[index];
+    auto count = std::min(excluded_list.size()+1, buffer_.size());
+    for (auto i = 0u; i < count; ++i) {
+        // Randomly select an address from the buffer.
+        const auto random = pseudo_random(0, buffer_.size() - 1);
+        const auto index = static_cast<size_t>(random);
+        out = buffer_[index];
+        if (std::find(excluded_list.begin(), excluded_list.end(),
+                config::authority(out)) == excluded_list.end()) {
+            break;
+        }
+    }
+    if (!out.is_valid()) {
+        return error::not_found;
+    }
     return error::success;
     ///////////////////////////////////////////////////////////////////////////
+}
+
+hosts::address::list hosts::copy_seeds()
+{
+    if (disabled_)
+        return address::list();
+
+    shared_lock lock{mutex_};
+    return seeds_;
 }
 
 hosts::address::list hosts::copy()
@@ -146,7 +203,9 @@ bool hosts::store_cache(bool succeed_clear_buffer)
         for (const auto& entry : buffer_) {
             // TODO: create full space-delimited network_address serialization.
             // Use to/from string format as opposed to wire serialization.
-            file << config::authority(entry) << std::endl;
+            if (!(channel::blacklisted(entry) || channel::manualbanned(entry))) {
+                file << config::authority(entry) << std::endl;
+            }
         }
 
         if (succeed_clear_buffer) {
@@ -403,6 +462,79 @@ code hosts::remove(const address& host)
     return error::success;
 }
 
+code hosts::store_seed(const address& host)
+{
+    // don't store blacklist and banned address
+    if (channel::blacklisted(host) || channel::manualbanned(host)) {
+        return error::success;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    auto iter = std::find_if(seeds_.begin(), seeds_.end(),
+        [&host](const address& item){
+            return host.ip == item.ip && host.port == item.port;
+        });
+
+    if (iter == seeds_.end()) {
+        constexpr size_t max_seeds = 8;
+        constexpr size_t half_pos = max_seeds >> 1;
+        upgrade_to_unique_lock ulock(lock);
+        if (seeds_.size() == max_seeds) { // full
+            std::copy(seeds_.begin()+half_pos+1, seeds_.end(), seeds_.begin()+half_pos);
+            seeds_.back() = host;
+        }
+        else {
+            seeds_.push_back(host);
+        }
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_NETWORK) << "store seed " << config::authority(host).to_string();
+#endif
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    return error::success;
+}
+
+code hosts::remove_seed(const address& host)
+{
+    if (disabled_) {
+        return error::success;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return error::service_stopped;
+    }
+
+    auto iter = std::find_if(seeds_.begin(), seeds_.end(),
+        [&host](const address& item){
+            return host.ip == item.ip && host.port == item.port;
+        });
+
+    if (iter != seeds_.end()) {
+        upgrade_to_unique_lock ulock(lock);
+        seeds_.erase(iter);
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_NETWORK) << "remove seed " << config::authority(host).to_string();
+#endif
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    return error::success;
+}
+
 code hosts::store(const address& host)
 {
     if (disabled_) {
@@ -496,6 +628,10 @@ void hosts::store(const address::list& hosts, result_handler handler)
         if (!host.is_valid()) {
             log::debug(LOG_NETWORK)
                     << "Invalid host address from peer.";
+            continue;
+        }
+
+        if (channel::blacklisted(host) || channel::manualbanned(host)) {
             continue;
         }
 
