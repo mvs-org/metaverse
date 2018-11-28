@@ -182,7 +182,7 @@ bool session::stopped() const
 
 bool session::stopped(const code& ec) const
 {
-    return stopped() || ec == error::service_stopped;
+    return stopped() || ec.value() == error::service_stopped;
 }
 
 // Subscribe Stop sequence.

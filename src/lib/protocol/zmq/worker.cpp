@@ -102,6 +102,13 @@ bool worker::stopped()
     return stopped_;
 }
 
+bool worker::stopped(const code& ec)
+{
+    return stopped() ||
+        ec.value() == error::service_stopped ||
+        ec.value() == error::channel_stopped;
+}
+
 // Call from work when started (connected/bound) or failed to do so.
 bool worker::started(bool result)
 {

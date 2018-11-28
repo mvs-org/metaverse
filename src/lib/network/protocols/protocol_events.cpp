@@ -52,8 +52,8 @@ bool protocol_events::stopped(const code& ec) const
 {
     // The service stop code may also make its way into protocol handlers.
     return stopped() ||
-        ec == error::channel_stopped ||
-        ec == error::service_stopped;
+        ec.value() == error::channel_stopped ||
+        ec.value() == error::service_stopped;
 }
 
 // Start.

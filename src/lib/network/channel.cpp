@@ -143,8 +143,8 @@ void channel::handle_activity()
 bool channel::stopped(const code& ec) const
 {
     return proxy::stopped() ||
-        ec == error::channel_stopped ||
-        ec == error::service_stopped;
+        ec.value() == error::channel_stopped ||
+        ec.value() == error::service_stopped;
 }
 
 // Timers (these are inherent races, requiring stranding by stop only).
