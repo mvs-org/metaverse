@@ -494,36 +494,11 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
         return true;
     }
 
-#if 0 // forbid substitution as it will disperse the chain exponentially!
-    // for safty, the missed  slot should not be mined by the adjacent witnesses
-    if (((calced_slot_num + 1) % witness_number == witness_slot_num) ||
-        ((witness_slot_num + 1) % witness_number == calced_slot_num)) {
-        return false;
-    }
-
-    if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
-        return true;
-    }
-
-    // time related logic, compete
-    if (curr_header.timestamp > prev_header.timestamp + max_dpos_interval) {
-        typedef std::chrono::system_clock wall_clock;
-        const auto now_time = wall_clock::now();
-        const auto prev_block_time = wall_clock::from_time_t(prev_header.timestamp);
-        if (now_time > prev_block_time + std::chrono::seconds(max_dpos_interval)) {
-            return true;
-        }
-    }
-#endif
-
     return false;
 }
 
 bool witness::is_dpos_enabled()
 {
-#ifdef ENABLE_DPOS_CONSENSUS
-    return true;
-#endif
     return false;
 }
 

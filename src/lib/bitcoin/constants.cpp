@@ -28,7 +28,7 @@ namespace libbitcoin {
 uint32_t coinbase_maturity = 1000;
 
 // PoS
-const uint64_t pos_enabled_height        = 1800000;
+const uint64_t pos_enabled_height        = max_uint64;
 const uint32_t pos_coinstake_max_utxos   = 10;
 const uint64_t pos_lock_min_value        = 10000 * 100000000ul;
 const uint64_t pos_lock_min_height       = 100000;
