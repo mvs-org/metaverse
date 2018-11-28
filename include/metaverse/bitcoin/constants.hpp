@@ -97,13 +97,13 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 //-----------------------------------------------------------------------------
 extern const uint64_t pos_enabled_height;
 
-extern const uint64_t min_pos_lock_value;
-extern const uint64_t min_pos_lock_height;
-extern const uint64_t pos_disable_height;
+extern const uint64_t pos_lock_min_value;
+extern const uint64_t pos_lock_min_height;
+extern const uint64_t pos_lock_gap_height;
 
-extern const uint64_t min_pos_value;
-extern const uint64_t min_pos_confirm_height;
-extern const uint32_t pos_target_timespan;
+extern const uint64_t pos_stake_min_value;
+extern const uint64_t pos_stake_min_height;
+extern const uint32_t block_target_timespan;
 
 
 // price

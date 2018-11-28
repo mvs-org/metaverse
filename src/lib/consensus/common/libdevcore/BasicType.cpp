@@ -169,36 +169,15 @@ u256 HeaderAux::calculate_difficulty(
     const chain::header::ptr pprev,
     bool is_staking)
 {
-    return calculate_difficulty_pos(current, prev, pprev);
-    // if (is_staking) {
-    //     return calculate_difficulty_pos(current, prev, pprev);
-    // }
-    // else {
-    //     return calculate_difficulty_pow(current, prev, pprev);
-    // }
-}
-
-static const int64_t total_target_timespan = 11 * 24;  // 264 seconds
-
-bigint adjust_difficulty(uint32_t actual_timespan, bigint & result)
-{
-    // Limit adjustment step
-    if (actual_timespan < pos_target_timespan / 10) {
-        actual_timespan = pos_target_timespan / 10;
-    }
-    if (actual_timespan > pos_target_timespan * 10) {
-        actual_timespan = pos_target_timespan * 10;
+    if (current.number < pos_enabled_height) {
+        return calculate_difficulty_v1(current, prev, pprev);
     }
 
-    // Retarget
-    uint32_t interval = total_target_timespan / pos_target_timespan;
-
-    result *= ((interval + 1) * pos_target_timespan);
-    result /= ((interval - 1) * pos_target_timespan + actual_timespan + actual_timespan);
-    return result;
+    return calculate_difficulty_v2(current, prev, pprev);
 }
 
-u256 HeaderAux::calculate_difficulty_pow(
+// Do not modify this function! It's for backward compatibility.
+u256 HeaderAux::calculate_difficulty_v1(
     const chain::header& current,
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
@@ -210,33 +189,53 @@ u256 HeaderAux::calculate_difficulty_pow(
 #ifndef PRIVATE_CHAIN
     auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
 #else
-    auto minimumDifficulty = bigint(150 * 10000);
+    auto minimumDifficulty = bigint(1024 * 1024);
 #endif
 
     bigint target(minimumDifficulty);
 
-    if (nullptr != prev) {
-        target = prev->bits ;
-        uint32_t actual_timespan = current.timestamp - prev->timestamp;
-        target = adjust_difficulty(actual_timespan, target);
+    // DO NOT MODIFY time_config in release
+    static uint32_t time_config{24};
+    if (prev) {
+        if (current.timestamp >= prev->timestamp + time_config) {
+            target = prev->bits - (prev->bits/1024);
+        }
+        else {
+            target = prev->bits + (prev->bits/1024);
+        }
     }
 
-    bigint result(target);
-    if (target < 10) {
-        result = std::max<bigint>(minimumDifficulty, target);
-    }
-
-    // bigint result = std::max<bigint>(minimumDifficulty, target);
+    bigint result = std::max<bigint>(minimumDifficulty, target);
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
-u256 HeaderAux::calculate_difficulty_pos(
+bigint adjust_difficulty(uint32_t actual_timespan, bigint & result)
+{
+    // Limit adjustment step
+    if (actual_timespan < block_target_timespan / 10) {
+        actual_timespan = block_target_timespan / 10;
+    }
+    if (actual_timespan > block_target_timespan * 10) {
+        actual_timespan = block_target_timespan * 10;
+    }
+
+    // Retarget
+    const uint32_t interval = 12;
+    result *= ((interval + 1) * block_target_timespan);
+    result /= ((interval - 1) * block_target_timespan + actual_timespan + actual_timespan);
+    return result;
+}
+
+u256 HeaderAux::calculate_difficulty_v2(
     const chain::header& current,
     const chain::header::ptr prev,
     const chain::header::ptr pprev)
 {
-    // auto minimumDifficulty = bigint(0x1ffffffff);
-    auto minimumDifficulty = bigint(0x00000ffff);
+#ifndef PRIVATE_CHAIN
+    auto minimumDifficulty = is_testnet ? bigint(300000) : bigint(914572800);
+#else
+    auto minimumDifficulty = bigint(1024 * 1024);
+#endif
 
     if (nullptr == prev || nullptr == pprev) {
         return u256(minimumDifficulty);
@@ -252,8 +251,8 @@ u256 HeaderAux::calculate_difficulty_pos(
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
     log::info("calculate_difficulty")
-        << ", last timespan: " << actual_timespan
-        << " s, bits: " << result;
+        << "last " << chain::get_block_version(*prev)
+        << " timespan: " << actual_timespan << " s, bits: " << result;
 
     return u256(result);
 }

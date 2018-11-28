@@ -704,7 +704,7 @@ u256 miner::get_next_target_required(const chain::header& header, const chain::h
     header::ptr last_header = block_chain.get_last_block_header(prev_header, is_staking);
     header::ptr llast_header;
 
-    if (/*is_staking &&*/ last_header && last_header->number > 2) {
+    if (last_header && last_header->number > 2) {
         auto height = last_header->number - 1;
         chain::header prev_last_header;
         if (block_chain.get_header(prev_last_header, height)) {
@@ -788,11 +788,11 @@ miner::transaction_ptr miner::create_coinstake_tx(
     if (coinstake->inputs.empty())
         return nullptr;
 
-    const uint64_t pos_split_limit = min_pos_value*2;
+    const uint64_t pos_split_limit = pos_stake_min_value*2;
 
     // Attempt to add more inputs
     for (const auto& stake: stake_outputs) {
-        if ((stake.data.value >= min_pos_value) || (stake.data.value == 0))
+        if ((stake.data.value >= pos_stake_min_value) || (stake.data.value == 0))
             continue;
         if (nCredit >= pos_split_limit)
             break;
@@ -892,7 +892,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     uint32_t block_time = start_time;
     transaction_ptr coinstake(nullptr);
 
-    while (nullptr == coinstake && block_time < (start_time  + pos_target_timespan / 2)) {
+    while (nullptr == coinstake && block_time < (start_time  + block_target_timespan / 2)) {
         pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
         coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
         if (coinstake) {
@@ -1044,7 +1044,7 @@ void miner::work(const wallet::payment_address& pay_address)
                 }
 
                 log::info(LOG_HEADER) << "solo miner create "
-                    << chain::get_block_version(block->header.version)
+                    << chain::get_block_version(block->header)
                     << " block at height: " << height
                     << ", time: " << timestamp_to_string(block->header.timestamp)
                     << ", bits: " << block->header.bits;

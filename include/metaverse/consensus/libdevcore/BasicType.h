@@ -41,12 +41,12 @@ public:
 private:
     HeaderAux() {}
 
-    static u256 calculate_difficulty_pow(
+    static u256 calculate_difficulty_v1(
         const chain::header& current,
         const chain::header::ptr prev,
         const chain::header::ptr pprev);
 
-    static u256 calculate_difficulty_pos(
+    static u256 calculate_difficulty_v2(
         const chain::header& current,
         const chain::header::ptr prev,
         const chain::header::ptr pprev);

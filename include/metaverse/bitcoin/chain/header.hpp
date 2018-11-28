@@ -58,9 +58,6 @@ enum block_version {
     block_version_max = 4
 };
 
-std::string get_block_version(block_version version);
-std::string get_block_version(uint32_t version);
-
 class BC_API header
     : public base_primary<header>
 {
@@ -119,6 +116,11 @@ private:
 
 BC_API bool operator==(const header& left, const header& right);
 BC_API bool operator!=(const header& left, const header& right);
+
+
+std::string get_block_version(const header& header);
+std::string get_block_version(block_version version);
+std::string get_block_version(uint32_t version);
 
 } // namespace chain
 } // namespace libbitcoin

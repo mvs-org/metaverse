@@ -28,26 +28,26 @@ namespace libbitcoin {
 uint32_t coinbase_maturity = 1000;
 
 // PoS
-const uint64_t pos_enabled_height        = 10;
-const uint64_t min_pos_lock_value        = 10000 * 100000000ul;
-const uint64_t min_pos_lock_height       = 100000;
-const uint64_t pos_disable_height        = 10000;
-const uint64_t min_pos_value             = 10000 * 100000000ul;
-const uint64_t min_pos_confirm_height    = 2000;
-const uint32_t pos_target_timespan       = 24;
+const uint64_t pos_enabled_height        = 1800000;
+const uint64_t pos_lock_min_value        = 10000 * 100000000ul;
+const uint64_t pos_lock_min_height       = 100000;
+const uint64_t pos_lock_gap_height       = 10000;
+const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
+const uint64_t pos_stake_min_height      = 1000;
+const uint32_t block_target_timespan     = 28;
 
 #else //PRIVATE_CHAIN
- 
+
 uint32_t coinbase_maturity = 10;
 
 // PoS
-const uint64_t pos_enabled_height        = 10;
-const uint64_t min_pos_lock_value        = 10 * 100000000ul;
-const uint64_t min_pos_lock_height       = 100000;
-const uint64_t pos_disable_height        = 10000;
-const uint64_t min_pos_value             = 100 * 100000000ul;
-const uint64_t min_pos_confirm_height    = 100;
-const uint32_t pos_target_timespan       = 24;
+const uint64_t pos_enabled_height        = 200;
+const uint64_t pos_lock_min_value        = 10 * 100000000ul;
+const uint64_t pos_lock_min_height       = 100000;
+const uint64_t pos_lock_gap_height       = 10000;
+const uint64_t pos_stake_min_value       = 100 * 100000000ul;
+const uint64_t pos_stake_min_height      = 100;
+const uint32_t block_target_timespan     = 28;
 
 #endif //PRIVATE_CHAIN
 

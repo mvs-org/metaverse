@@ -254,6 +254,11 @@ bool operator!=(const header& left, const header& right)
     return !(left == right);
 }
 
+std::string get_block_version(const header& header)
+{
+    return get_block_version(header.version);
+}
+
 std::string get_block_version(block_version version)
 {
     return get_block_version((uint32_t)version);

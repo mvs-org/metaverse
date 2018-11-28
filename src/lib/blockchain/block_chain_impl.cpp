@@ -1558,30 +1558,25 @@ static history::list expand_history(history_compact::list& compact)
     return result;
 }
 
-
 bool block_chain_impl::check_pos_capability(
     uint64_t best_height,
     const wallet::payment_address& pay_address,
-    bool wait_db)
+    bool need_sync_lock)
 {
     history::list rows;
 
-    if(wait_db){
+    if (need_sync_lock) {
         rows = get_address_history(pay_address, false);
     }
-    else{
+    else {
         history_compact::list history = database_.history.get(pay_address.hash(), 0, 0);
         rows = expand_history(history);
     }
 
-
-
     chain::transaction tx_temp;
     uint64_t tx_height;
 
-
-    for(auto & row : rows)
-    {
+    for (auto & row : rows) {
         if (row.output_height == 0) {
             continue;
         }
@@ -1594,16 +1589,16 @@ bool block_chain_impl::check_pos_capability(
                 continue;
             }
 
-            if ( row.value >= min_pos_lock_value &&
+            if ( row.value >= pos_lock_min_value &&
                 chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
             {
                 // deposit utxo in block
                 uint64_t lock_height = chain::operation::
                     get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
 
-                // utxo deposit height > min_pos_lock_height and min_pos_lock_rate percent of height limited
-                if (lock_height >= min_pos_lock_height &&
-                    (row.output_height + lock_height - pos_disable_height) > best_height){
+                // utxo deposit height > pos_lock_min_height and min_pos_lock_rate percent of height limited
+                if (lock_height >= pos_lock_min_height &&
+                    (row.output_height + lock_height - pos_lock_gap_height) > best_height){
                     return true;
                 }
             }
@@ -1613,19 +1608,21 @@ bool block_chain_impl::check_pos_capability(
     return false;
 }
 
-
 history::list block_chain_impl::get_address_history(const wallet::payment_address& addr, bool add_memory_pool)
 {
     history_compact::list cmp_history;
     bool result = true;
     if (add_memory_pool) {
         result = get_history(addr, 0, 0, cmp_history);
-    } else {
+    }
+    else {
         result = fetch_history(addr, 0, 0, cmp_history);
     }
+
     if (result) {
         return expand_history(cmp_history);
     }
+
     return history::list();
 }
 
