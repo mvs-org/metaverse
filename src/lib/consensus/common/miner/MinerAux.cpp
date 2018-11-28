@@ -7,7 +7,7 @@
 #include <boost/detail/endian.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/throw_exception.hpp>
-
+#include <metaverse/macros_define.hpp>
 #include <metaverse/consensus/libethash/internal.h>
 #include <metaverse/consensus/libdevcore/Guards.h>
 #include <metaverse/consensus/libdevcore/Log.h>
@@ -173,7 +173,7 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
 
         // Calculate hash
         u256 pos = HeaderAux::hash_head_pos(header, stake_output);
-        pos /= u256(amount);
+        pos /= u256(amount * 10);
 
         succeed = (h256(pos) <= boundary);
     }
@@ -181,7 +181,7 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
 #ifdef PRIVATE_CHAIN
     if (header.transaction_count > 0) {
         uint64_t coin_age = header.number - stake_output.height;
-        log::info("check_proof_of_stake: ")
+        log::info("verify_stake")
             << (succeed ? "True" : "False")
             << ", stake amount: " << (uint64_t)(stake_output.data.value / coin_price())
             << " ETPs, coin_age: " << coin_age

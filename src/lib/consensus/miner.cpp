@@ -1064,7 +1064,7 @@ void miner::work(const wallet::payment_address& pay_address)
             sleep_for_mseconds(1000);
         }
         else {
-            sleep_for_mseconds(100);
+            sleep_for_mseconds(500);
         }
     }
 }

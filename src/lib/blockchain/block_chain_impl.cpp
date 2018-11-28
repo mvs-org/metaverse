@@ -33,6 +33,7 @@
 #include <metaverse/bitcoin.hpp>
 #include <metaverse/bitcoin/chain/attachment/asset/asset_cert.hpp>
 #include <metaverse/database.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/blockchain/block.hpp>
 #include <metaverse/blockchain/block_fetcher.hpp>
 #include <metaverse/blockchain/organizer.hpp>
