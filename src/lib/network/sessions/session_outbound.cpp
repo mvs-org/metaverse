@@ -34,7 +34,7 @@ namespace network {
 #define CLASS session_outbound
 
 using namespace std::placeholders;
-std::vector<deadline::ptr> connect_timer_list;
+static std::vector<deadline::ptr> connect_timer_list;
 
 session_outbound::session_outbound(p2p& network)
   : session_batch(network, true),
@@ -121,7 +121,9 @@ void session_outbound::new_connection(
 
 void session_outbound::delay_new_connect(connector::ptr connect, deadline::ptr connect_timer, bool only_seed)
 {
-    BITCOIN_ASSERT_MSG(connect_timer, "session_outbound::delay_new_connect with nullprt of timer");
+    if (!connect_timer) {
+        return;
+    }
     auto self = shared_from_this();
     connect_timer->start([this, self, connect, connect_timer, only_seed](const code& ec){
         if (ec || stopped()) {
@@ -240,6 +242,7 @@ void session_outbound::handle_channel_stop(
         for (auto connect_timer : connect_timer_list) {
             connect_timer->stop();
         }
+        connect_timer_list.clear();
         return;
     }
 
