@@ -34,6 +34,7 @@ namespace network {
 #define CLASS session_outbound
 
 using namespace std::placeholders;
+std::vector<deadline::ptr> connect_timer_list;
 
 session_outbound::session_outbound(p2p& network)
   : session_batch(network, true),
@@ -71,22 +72,27 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
     outbound_counter = 0;
     in_reseeding = false;
 
-    connect_timer_ = std::make_shared<deadline>(pool_, asio::seconds(2));
     reseeding_timer_ = std::make_shared<deadline>(pool_, asio::seconds(60));
 
     const auto connect = create_connector();
 
+    auto self = shared_from_this();
+    auto make_timer = [this, self]() -> deadline::ptr {
+        connect_timer_list.emplace_back(std::make_shared<deadline>(pool_, asio::seconds(2)));
+        return connect_timer_list.back();
+    };
+
     for (auto i = 0; i < 3; ++i) {
-        new_connection(connect, true, true); // connect seed first
+        new_connection(connect, make_timer(), true, true); // connect seed first
     }
 
     while (outbound_counter == 0 && !stopped()) { // loop until connected successfully
-        new_connection(connect, false, false);
+        new_connection(connect, nullptr, false, false);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     for (size_t peer = 0; peer < settings_.outbound_connections; ++peer) {
-        new_connection(connect, true, false);
+        new_connection(connect, make_timer(), true, false);
     }
 
     // This is the end of the start sequence.
@@ -96,7 +102,8 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
 // Connnect cycle.
 // ----------------------------------------------------------------------------
 
-void session_outbound::new_connection(connector::ptr connect, bool reconnect, bool only_seed)
+void session_outbound::new_connection(
+    connector::ptr connect, deadline::ptr connect_timer, bool reconnect, bool only_seed)
 {
     if (stopped())
     {
@@ -105,24 +112,25 @@ void session_outbound::new_connection(connector::ptr connect, bool reconnect, bo
         return;
     }
     if (only_seed) {
-        this->connect_seed(connect, BIND5(handle_connect, _1, _2, connect, reconnect, only_seed));
+        this->connect_seed(connect, BIND6(handle_connect, _1, _2, connect, connect_timer, reconnect, only_seed));
     }
     else {
-        this->connect(connect, BIND5(handle_connect, _1, _2, connect, reconnect, only_seed));
+        this->connect(connect, BIND6(handle_connect, _1, _2, connect, connect_timer, reconnect, only_seed));
     }
 }
 
-void session_outbound::delay_new_connect(connector::ptr connect, bool only_seed)
+void session_outbound::delay_new_connect(connector::ptr connect, deadline::ptr connect_timer, bool only_seed)
 {
+    BITCOIN_ASSERT_MSG(connect_timer, "session_outbound::delay_new_connect with nullprt of timer");
     auto self = shared_from_this();
-    connect_timer_->start([this, self, connect, only_seed](const code& ec){
+    connect_timer->start([this, self, connect, connect_timer, only_seed](const code& ec){
         if (ec || stopped()) {
             return;
         }
         pool_.service().post(
             std::bind(&session_outbound::new_connection,
                 shared_from_base<session_outbound>(),
-                connect, true, only_seed));
+                connect, connect_timer, true, only_seed));
     });
 }
 
@@ -166,7 +174,7 @@ void session_outbound::handle_reseeding()
 }
 
 void session_outbound::handle_connect(const code& ec, channel::ptr channel,
-    connector::ptr connect, bool reconnect, bool only_seed)
+    connector::ptr connect, deadline::ptr connect_timer, bool reconnect, bool only_seed)
 {
     if (channel && blacklisted(channel->authority())) {
         log::trace(LOG_NETWORK)
@@ -179,7 +187,7 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
         log::trace(LOG_NETWORK)
             << "Failure connecting outbound: " << ec.message();
         if (reconnect) {
-            delay_new_connect(connect, only_seed);
+            delay_new_connect(connect, connect_timer, only_seed);
         }
         return;
     }
@@ -190,7 +198,7 @@ void session_outbound::handle_connect(const code& ec, channel::ptr channel,
 
     register_channel(channel,
         BIND3(handle_channel_start, _1, connect, channel),
-        BIND4(handle_channel_stop, _1, connect, channel, only_seed));
+        BIND5(handle_channel_stop, _1, connect, channel, connect_timer, only_seed));
 }
 
 void session_outbound::handle_channel_start(const code& ec,
@@ -218,22 +226,24 @@ void session_outbound::attach_protocols(channel::ptr channel)
     attach<protocol_address>(channel)->do_subscribe()->start();
 }
 
-void session_outbound::handle_channel_stop(const code& ec,
-    connector::ptr connect, channel::ptr channel, bool only_seed)
+void session_outbound::handle_channel_stop(
+    const code& ec, connector::ptr connect, channel::ptr channel,
+    deadline::ptr connect_timer, bool only_seed)
 {
     channel->invoke_protocol_start_handler(error::channel_stopped);
     log::trace(LOG_NETWORK) << "channel stopped," << ec.message();
 
     const int counter = --outbound_counter;
 
-    if (stopped() || (ec.value() == error::service_stopped) ||
-        (channel && blacklisted(channel->authority()))) {
-        connect_timer_->stop();
+    if (stopped(ec)) {
         reseeding_timer_->stop();
+        for (auto connect_timer : connect_timer_list) {
+            connect_timer->stop();
+        }
         return;
     }
 
-    delay_new_connect(connect, only_seed);
+    delay_new_connect(connect, connect_timer, only_seed);
     //restart the seeding procedure with in 1 minutes when outbound session count reduce to 1.
     if (counter <= 1) {
         delay_reseeding();

@@ -50,18 +50,19 @@ public:
 protected:
     /// Override to attach specialized protocols upon channel start.
     virtual void attach_protocols(channel::ptr channel);
-    void delay_new_connect(connector::ptr connect, bool only_seed=false);
+    void delay_new_connect(connector::ptr connect, deadline::ptr connect_timer, bool only_seed=false);
 
     void delay_reseeding();
 
 private:
-    void new_connection(connector::ptr connect, bool reconnect=true, bool only_seed=false);
+    void new_connection(connector::ptr connect, deadline::ptr connect_timer, bool reconnect=true, bool only_seed=false);
     void handle_started(const code& ec, result_handler handler);
     void handle_connect(const code& ec, channel::ptr channel,
-        connector::ptr connect, bool reconnect=true, bool only_seed=false);
+        connector::ptr connect, deadline::ptr connect_timer,
+        bool reconnect=true, bool only_seed=false);
 
     void handle_channel_stop(const code& ec, connector::ptr connect,
-        channel::ptr channel, bool only_seed=false);
+        channel::ptr channel, deadline::ptr connect_timer, bool only_seed=false);
     void handle_channel_start(const code& ec, connector::ptr connect,
         channel::ptr channel);
 
@@ -71,7 +72,6 @@ private:
     std::atomic_bool in_reseeding; //to mark if the re-seeding timer is active
     p2p& network__;
 
-    deadline::ptr connect_timer_;
     deadline::ptr reseeding_timer_;
 };
 
