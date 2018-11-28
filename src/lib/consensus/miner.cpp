@@ -764,8 +764,8 @@ miner::transaction_ptr miner::create_coinstake_tx(
 
     uint64_t nCredit = 0;
     for (const auto& stake: stake_outputs) {
-
-        if (!block_chain.check_pos_utxo_height_and_value(stake.height, pblock->header.number, stake.data.value)) {
+        if (!block_chain.check_pos_utxo_height_and_value(
+            stake.height, pblock->header.number, stake.data.value)) {
             continue;
         }
 
@@ -788,16 +788,21 @@ miner::transaction_ptr miner::create_coinstake_tx(
     if (coinstake->inputs.empty())
         return nullptr;
 
-    const uint64_t pos_split_limit = pos_stake_min_value*2;
+    const uint64_t pos_split_limit = pos_stake_min_value * 2;
 
     // Attempt to add more inputs
     for (const auto& stake: stake_outputs) {
-        if ((stake.data.value >= pos_stake_min_value) || (stake.data.value == 0))
+        if (stake.data.value >= pos_stake_min_value) {
             continue;
-        if (nCredit >= pos_split_limit)
+        }
+
+        if (nCredit >= pos_split_limit) {
             break;
-        if (coinstake->inputs.size() >= 10)
+        }
+
+        if (coinstake->inputs.size() >= pos_coinstake_max_utxos) {
             break;
+        }
 
         coinstake->inputs.emplace_back(stake.point, stake.data.script, max_input_sequence);
         nCredit += stake.data.value;
@@ -811,13 +816,13 @@ miner::transaction_ptr miner::create_coinstake_tx(
 
     // split the output
     if (nCredit >= pos_split_limit) {
-        coinstake->outputs[1].value /= 2;
-        coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(coinstake->outputs[1].value)};
+        auto value = nCredit - pos_stake_min_value;
+        coinstake->outputs[1].value = value;
+        coinstake->outputs[1].attach_data = {ETP_TYPE, 1, chain::etp(value)};
 
-        auto value = nCredit - coinstake->outputs[1].value;
+        value = pos_stake_min_value;
         coinstake->outputs.emplace_back(value, chain::script{script_operation},
             attachment(ETP_TYPE, 1, chain::etp(value)));
-
     }
 
     // sign coinstake
@@ -859,8 +864,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
 
     // check utxo stake
     chain::output_info::list stake_outputs;
-    block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs);
-    if (stake_outputs.empty()) {
+    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;
@@ -1046,8 +1050,8 @@ void miner::work(const wallet::payment_address& pay_address)
                 log::info(LOG_HEADER) << "solo miner create "
                     << chain::get_block_version(block->header)
                     << " block at height: " << height
-                    << ", time: " << timestamp_to_string(block->header.timestamp)
-                    << ", bits: " << block->header.bits;
+                    << ", bits: " << block->header.bits
+                    << ", time: " << timestamp_to_string(block->header.timestamp);
 
                 ++new_block_number_;
                 if ((new_block_limit_ != 0) && (new_block_number_ >= new_block_limit_)) {

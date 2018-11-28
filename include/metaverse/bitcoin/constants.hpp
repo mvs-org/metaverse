@@ -96,6 +96,7 @@ BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
 extern const uint64_t pos_enabled_height;
+extern const uint32_t pos_coinstake_max_utxos;
 
 extern const uint64_t pos_lock_min_value;
 extern const uint64_t pos_lock_min_height;

@@ -250,9 +250,14 @@ u256 HeaderAux::calculate_difficulty_v2(
     auto result = std::max<bigint>(prev_bits, minimumDifficulty);
     result = std::min<bigint>(result, std::numeric_limits<u256>::max());
 
-    log::info("calculate_difficulty")
-        << "last " << chain::get_block_version(*prev)
-        << " timespan: " << actual_timespan << " s, bits: " << result;
+#ifdef PRIVATE_CHAIN
+    if (current.transaction_count > 0) {
+        log::info("difficulty")
+            << "last " << chain::get_block_version(*prev)
+            << " timespan: " << actual_timespan << " s, current height: "
+            << current.number << ", bits: " << result;
+    }
+#endif
 
     return u256(result);
 }
