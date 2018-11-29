@@ -145,9 +145,10 @@ h256 HeaderAux::hashHead(const chain::header& bi)
 h256 HeaderAux::hash_head_pos(const chain::header& bi, const chain::output_info& stake)
 {
     RLPStream s;
-    s << (bigint) bi.version << (bigint) bi.timestamp
+    s << (bigint) bi.version << (bigint)bi.number
+        << bi.previous_block_hash << (bigint) bi.timestamp
         << stake.point.hash << (bigint) stake.point.index;
-    // h256 memo = sha3(s.out());
+
     auto hash_pos = bitcoin_hash(to_chunk(s.out()));
     h256 memo = h256(encode_hash(hash_pos));
     return memo;
