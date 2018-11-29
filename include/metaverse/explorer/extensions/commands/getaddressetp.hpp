@@ -72,6 +72,11 @@ public:
             "deposited,d",
             value<bool>(&option_.deposited)->zero_tokens()->default_value(false),
             "If specified, then only get deposited etp. Default is not specified."
+        )
+        (
+            "utxo,u",
+            value<bool>(&option_.utxo)->zero_tokens()->default_value(false),
+            "If specified, list all utxos. Default is not specified."
         );
 
         return options;
@@ -92,6 +97,7 @@ public:
     struct option
     {
         bool deposited;
+        bool utxo;
     } option_;
 
 };

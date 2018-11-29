@@ -162,6 +162,15 @@ struct receiver_record
     bool is_empty() const;
 };
 
+struct utxo_balance {
+    typedef std::vector<utxo_balance> list;
+    std::string output_hash;
+    uint32_t output_index;
+    uint64_t output_height;
+    uint64_t unspent_balance;
+    uint64_t frozen_balance;
+};
+
 struct balances {
     uint64_t total_received;
     uint64_t confirmed_balance;
@@ -211,6 +220,9 @@ struct deposited_balance {
 // helper function
 void sync_fetchbalance(wallet::payment_address& address,
     bc::blockchain::block_chain_impl& blockchain, balances& addr_balance);
+
+void sync_fetchbalance(wallet::payment_address& address,
+    bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<utxo_balance::list> sh_vec);
 
 void sync_fetch_deposited_balance(wallet::payment_address& address,
     bc::blockchain::block_chain_impl& blockchain, std::shared_ptr<deposited_balance::list> sh_vec);

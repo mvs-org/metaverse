@@ -19,6 +19,7 @@
  */
 
 #include <metaverse/explorer/extensions/base_helper.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/explorer/dispatch.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
 #include <metaverse/consensus/libdevcore/SHA3.h>
@@ -917,6 +918,83 @@ void sync_fetchbalance(wallet::payment_address& address,
     addr_balance.total_received = total_received;
     addr_balance.unspent_balance = unspent_balance;
     addr_balance.frozen_balance = frozen_balance;
+}
+
+void sync_fetchbalance(wallet::payment_address& address,
+    bc::blockchain::block_chain_impl& blockchain,
+    std::shared_ptr<utxo_balance::list> sh_vec)
+{
+    auto&& rows = blockchain.get_address_history(address, false);
+
+    chain::transaction tx_temp;
+    uint64_t tx_height = 0;
+
+    uint64_t height = 0;
+    blockchain.get_last_height(height);
+
+    for (const auto& row: rows) {
+        uint64_t unspent_balance = 0;
+        uint64_t frozen_balance = 0;
+
+        if (row.value == 0) {
+            continue;
+        }
+
+        bool tx_ready = (row.spend.hash == null_hash)
+            && blockchain.get_transaction(row.output.hash, tx_temp, tx_height);
+        // include genesis block whose height is zero.
+        if (row.output_height == 0 && tx_height != 0) {
+            continue;
+        }
+
+        // spend unconfirmed (or no spend attempted)
+        if (!tx_ready) {
+            continue;
+        }
+
+        BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
+        auto output = tx_temp.outputs.at(row.output.index);
+        if (output.get_script_address() != address.encoded()) {
+            continue;
+        }
+
+        if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
+            // deposit utxo in block
+            uint64_t lock_height = chain::operation::
+                get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
+            if (lock_height > blockchain.calc_number_of_blocks(row.output_height, height)) {
+                // utxo already in block but deposit not expire
+                frozen_balance += row.value;
+            }
+        }
+        else if (chain::operation::is_pay_key_hash_with_sequence_lock_pattern(output.script.operations)) {
+            uint64_t lock_sequence = chain::operation::
+                get_lock_sequence_from_pay_key_hash_with_sequence_lock(output.script.operations);
+            // use any kind of blocks
+            if (row.output_height + lock_sequence > height) {
+                // utxo already in block but is locked with sequence and not mature
+                frozen_balance += row.value;
+            }
+        }
+        else if (tx_temp.is_coinbase()) { // coin base etp maturity etp check
+            // add not coinbase_maturity etp into frozen
+            if (coinbase_maturity > blockchain.calc_number_of_blocks(row.output_height, height)) {
+                frozen_balance += row.value;
+            }
+        }
+
+        unspent_balance += row.value;
+        sh_vec->emplace_back(utxo_balance{
+            encode_hash(row.output.hash), row.output.index,
+            row.output_height, unspent_balance, frozen_balance});
+    }
+
+    if (sh_vec->size() > 1) {
+        auto sort_by_amount_descend = [](const utxo_balance& b1, const utxo_balance& b2){
+            return b1.unspent_balance > b2.unspent_balance;
+        };
+        std::sort(sh_vec->begin(), sh_vec->end(), sort_by_amount_descend);
+    }
 }
 
 bool base_transfer_common::get_spendable_output(
