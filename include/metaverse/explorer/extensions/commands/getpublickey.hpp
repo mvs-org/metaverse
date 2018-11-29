@@ -78,7 +78,7 @@ public:
         (
             "ADDRESS",
             value<std::string>(&argument_.address)->required(),
-            "Address."
+            "Did/Address/Publickey."
         );
 
         return options;

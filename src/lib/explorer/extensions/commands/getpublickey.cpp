@@ -38,37 +38,35 @@ console_result getpublickey::invoke(Json::Value& jv_output,
     auto& blockchain = node.chain_impl();
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
-    bool is_pub_key{false};
     std::string pub_key;
     std::string address;
 
     data_chunk public_key_data;
     if (decode_base16(public_key_data, argument_.address) &&
         is_public_key(public_key_data)) {
-        is_pub_key = true;
         pub_key = argument_.address;
+        auto pay_address = wallet::ec_public(public_key_data).to_payment_address();
+        address = pay_address.encoded();
     }
     else {
-        is_pub_key = false;
-        address = argument_.address;
-    }
-
-    if (!is_pub_key) {
-        if (!address.empty() && !blockchain.is_valid_address(address))
-            throw address_invalid_exception{"invalid address parameter!"};
-
-        auto addr = bc::wallet::payment_address(address);
-        if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
-            throw argument_legality_exception{"script address parameter not allowed!"};
-
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if(!pvaddr)
             throw address_list_nullptr_exception{"nullptr for address list"};
 
-        // set random address
-        if (address.empty()) {
+        if (!argument_.address.empty()) {
+            address = get_address(argument_.address, blockchain);
+            if (address.empty()) {
+                throw address_invalid_exception{"invalid did/address parameter! " + argument_.address};
+            }
+        }
+        else {
+            // set random address
             address = get_random_payment_address(pvaddr, blockchain);
         }
+
+        auto addr = bc::wallet::payment_address(address);
+        if(addr.version() == bc::wallet::payment_address::mainnet_p2sh) // for multisig address
+            throw argument_legality_exception{"script address parameter not allowed!"};
 
         // get public key
         std::string prv_key;
@@ -83,13 +81,9 @@ console_result getpublickey::invoke(Json::Value& jv_output,
             }
         }
 
-        if(!found) {
-            throw account_address_get_exception{pub_key};
+        if (!found) {
+            throw address_dismatch_account_exception{"target did/address does not match account. " + argument_.address};
         }
-    }
-    else {
-        auto pay_address = wallet::ec_public(public_key_data).to_payment_address();
-        address = pay_address.encoded();
     }
 
     auto& root = jv_output;
