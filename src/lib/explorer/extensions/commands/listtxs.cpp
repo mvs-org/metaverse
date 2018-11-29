@@ -24,6 +24,7 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/explorer/extensions/base_helper.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -69,10 +70,10 @@ console_result listtxs::invoke(Json::Value& jv_output,
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl();
-    blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
     // address option check
-    if (!argument_.address.empty() && !blockchain.is_valid_address(argument_.address))
-        throw address_invalid_exception{"invalid address parameter!"};
+    auto addr = get_address(argument_.address, blockchain);
+    if(!argument_.address.empty() && addr.empty())
+        throw address_invalid_exception{"invalid did/address parameter! " + argument_.address};
     // height check
     if (option_.height.first()
             && option_.height.second()
@@ -98,6 +99,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
 
     // collect address
     if (argument_.address.empty()) {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
         auto pvaddr = blockchain.get_account_addresses(auth_.name);
         if (!pvaddr)
             throw address_invalid_exception{"nullptr for address list"};
@@ -106,7 +108,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
             sh_addr_vec->push_back(elem.get_address());
         }
     } else { // address exist in command
-        sh_addr_vec->push_back(argument_.address);
+        sh_addr_vec->push_back(addr);
     }
 
     // scan all addresses business record
