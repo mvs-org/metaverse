@@ -896,7 +896,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     uint32_t block_time = start_time;
     transaction_ptr coinstake(nullptr);
 
-    while (nullptr == coinstake && block_time < (start_time  + block_target_timespan / 2)) {
+    while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
         pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
         coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
         if (coinstake) {
@@ -907,7 +907,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
             break;
         }
 
-        uint32_t sleep_time = pseudo_random(100, 150);
+        uint32_t sleep_time = pseudo_random(200, 300);
         sleep_for_mseconds(sleep_time);
         block_time = get_adjust_time(block_height);
     }
@@ -1064,7 +1064,7 @@ void miner::work(const wallet::payment_address& pay_address)
             sleep_for_mseconds(1000);
         }
         else {
-            sleep_for_mseconds(500);
+            sleep_for_mseconds(300);
         }
     }
 }

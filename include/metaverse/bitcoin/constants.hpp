@@ -92,6 +92,9 @@ BC_CONSTEXPR uint32_t relative_locktime_mask = 0x000fffff;
  * 5 bits. */
 BC_CONSTEXPR size_t relative_locktime_seconds_shift = 5;
 
+// Future blocktime fork constants.
+//-----------------------------------------------------------------------------
+extern const uint64_t future_blocktime_fork_height;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
@@ -104,7 +107,7 @@ extern const uint64_t pos_lock_gap_height;
 
 extern const uint64_t pos_stake_min_value;
 extern const uint64_t pos_stake_min_height;
-extern const uint32_t block_target_timespan;
+extern const uint32_t block_timespan_window;
 
 
 // price

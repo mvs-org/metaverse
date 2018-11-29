@@ -26,6 +26,7 @@ namespace libbitcoin {
 #ifndef PRIVATE_CHAIN
 
 uint32_t coinbase_maturity = 1000;
+const uint64_t future_blocktime_fork_height = 1030000;
 
 // PoS
 const uint64_t pos_enabled_height        = max_uint64;
@@ -35,11 +36,12 @@ const uint64_t pos_lock_min_height       = 100000;
 const uint64_t pos_lock_gap_height       = 10000;
 const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
 const uint64_t pos_stake_min_height      = 1000;
-const uint32_t block_target_timespan     = 28;
+const uint32_t block_timespan_window     = 28;
 
 #else //PRIVATE_CHAIN
 
 uint32_t coinbase_maturity = 10;
+const uint64_t future_blocktime_fork_height = 10;
 
 // PoS
 const uint64_t pos_enabled_height        = 200;
@@ -49,7 +51,7 @@ const uint64_t pos_lock_min_height       = 100000;
 const uint64_t pos_lock_gap_height       = 10000;
 const uint64_t pos_stake_min_value       = 100 * 100000000ul;
 const uint64_t pos_stake_min_height      = 100;
-const uint32_t block_target_timespan     = 28;
+const uint32_t block_timespan_window     = 28;
 
 #endif //PRIVATE_CHAIN
 

@@ -44,7 +44,6 @@ namespace consensus {
 
 BC_CONSTEXPR uint32_t min_tx_fee_per_kb = 1000;
 BC_CONSTEXPR uint32_t median_time_span = 11;
-BC_CONSTEXPR uint64_t future_blocktime_fork_height = 10;//test-private-chain 1030000;
 
 extern int bucket_size;
 extern std::vector<uint64_t> lock_heights;

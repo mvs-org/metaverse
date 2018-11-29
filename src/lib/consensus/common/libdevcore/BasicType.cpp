@@ -213,17 +213,17 @@ u256 HeaderAux::calculate_difficulty_v1(
 bigint adjust_difficulty(uint32_t actual_timespan, bigint & result)
 {
     // Limit adjustment step
-    if (actual_timespan < block_target_timespan / 10) {
-        actual_timespan = block_target_timespan / 10;
+    if (actual_timespan < block_timespan_window / 10) {
+        actual_timespan = block_timespan_window / 10;
     }
-    if (actual_timespan > block_target_timespan * 10) {
-        actual_timespan = block_target_timespan * 10;
+    if (actual_timespan > block_timespan_window * 10) {
+        actual_timespan = block_timespan_window * 10;
     }
 
     // Retarget
     const uint32_t interval = 12;
-    result *= ((interval + 1) * block_target_timespan);
-    result /= ((interval - 1) * block_target_timespan + actual_timespan + actual_timespan);
+    result *= ((interval + 1) * block_timespan_window);
+    result /= ((interval - 1) * block_timespan_window + actual_timespan + actual_timespan);
     return result;
 }
 
