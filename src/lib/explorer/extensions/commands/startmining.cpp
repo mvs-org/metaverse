@@ -47,14 +47,14 @@ console_result startmining::invoke(Json::Value& jv_output,
         throw setting_required_exception{"Currently mining, please use command <stopmining> to stop the running mining."};
     }
 
-    auto str_addr = get_address(option_.address, blockchain);
     boost::to_lower(option_.consensus);
     const auto is_use_pow = (option_.consensus == "pow");
     const auto is_use_pos = (option_.consensus == "pos");
     const auto is_use_dpos = (option_.consensus == "dpos");
 
-    if (!option_.address.empty() && str_addr.empty()) {
-        throw argument_legality_exception{"invalid mining did/address " + option_.address};
+    std::string str_addr;
+    if (!option_.address.empty()) {
+        str_addr = get_address(option_.address, blockchain);
     }
 
     if (str_addr.empty()) {

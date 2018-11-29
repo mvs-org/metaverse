@@ -55,9 +55,6 @@ console_result getpublickey::invoke(Json::Value& jv_output,
 
         if (!argument_.address.empty()) {
             address = get_address(argument_.address, blockchain);
-            if (address.empty()) {
-                throw address_invalid_exception{"invalid did/address parameter! " + argument_.address};
-            }
         }
         else {
             // set random address

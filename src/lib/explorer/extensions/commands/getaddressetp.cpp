@@ -80,9 +80,6 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     auto&& address = get_address(argument_.address, blockchain);
-    if (address.empty()) {
-        throw address_invalid_exception{"invalid address!"};
-    }
 
     wallet::payment_address waddr(address);
 

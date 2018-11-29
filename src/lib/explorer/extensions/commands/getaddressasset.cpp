@@ -38,9 +38,6 @@ console_result getaddressasset::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     const auto address = get_address(argument_.address, blockchain);
-    if (address.empty()) {
-        throw address_invalid_exception{"invalid address!"};
-    }
 
     if (!option_.symbol.empty()) {
         // check asset symbol

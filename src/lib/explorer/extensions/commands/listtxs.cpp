@@ -70,10 +70,24 @@ console_result listtxs::invoke(Json::Value& jv_output,
 {
     using namespace libbitcoin::config; // for hash256
     auto& blockchain = node.chain_impl();
-    // address option check
-    auto addr = get_address(argument_.address, blockchain);
-    if(!argument_.address.empty() && addr.empty())
-        throw address_invalid_exception{"invalid did/address parameter! " + argument_.address};
+
+    auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
+
+    // collect address
+    if (argument_.address.empty()) {
+        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
+        auto pvaddr = blockchain.get_account_addresses(auth_.name);
+        if (!pvaddr)
+            throw address_invalid_exception{"nullptr for address list"};
+
+        for (auto& elem : *pvaddr) {
+            sh_addr_vec->push_back(elem.get_address());
+        }
+    } else { // address exist in command
+        auto addr = get_address(argument_.address, blockchain);
+        sh_addr_vec->push_back(addr);
+    }
+
     // height check
     if (option_.height.is_invalid()) {
         throw block_height_exception{"invalid height option! "
@@ -94,21 +108,6 @@ console_result listtxs::invoke(Json::Value& jv_output,
     };
 
     auto sh_txs = std::make_shared<std::vector<tx_block_info>>();
-    auto sh_addr_vec = std::make_shared<std::vector<std::string>>();
-
-    // collect address
-    if (argument_.address.empty()) {
-        blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
-        auto pvaddr = blockchain.get_account_addresses(auth_.name);
-        if (!pvaddr)
-            throw address_invalid_exception{"nullptr for address list"};
-
-        for (auto& elem : *pvaddr) {
-            sh_addr_vec->push_back(elem.get_address());
-        }
-    } else { // address exist in command
-        sh_addr_vec->push_back(addr);
-    }
 
     // scan all addresses business record
     for (auto& each : *sh_addr_vec) {

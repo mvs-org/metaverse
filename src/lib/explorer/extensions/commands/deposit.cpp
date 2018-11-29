@@ -37,24 +37,24 @@ console_result deposit::invoke(Json::Value& jv_output,
     blockchain.is_account_passwd_valid(auth_.name, auth_.auth);
 
     attachment attach;
-    auto addr = get_address(argument_.address, attach, false, blockchain);
+    std::string addr;
 
-    if(!argument_.address.empty() && addr.empty())
-        throw address_invalid_exception{"invalid did/address! " + argument_.address};
+    if (argument_.address.empty()) {
+        auto pvaddr = blockchain.get_account_addresses(auth_.name);
+        if(!pvaddr || pvaddr->empty())
+            throw address_list_nullptr_exception{"nullptr for address list"};
+
+        addr = get_random_payment_address(pvaddr, blockchain);
+    }
+    else {
+        addr = get_address(argument_.address, attach, false, blockchain);
+    }
 
     if (argument_.deposit != 7 && argument_.deposit != 30
         && argument_.deposit != 90 && argument_.deposit != 182
         && argument_.deposit != 365)
     {
         throw account_deposit_period_exception{"deposit must be one in [7, 30, 90, 182, 365]."};
-    }
-
-    auto pvaddr = blockchain.get_account_addresses(auth_.name);
-    if(!pvaddr || pvaddr->empty())
-        throw address_list_nullptr_exception{"nullptr for address list"};
-
-    if (argument_.address.empty()) {
-        addr = get_random_payment_address(pvaddr, blockchain);
     }
 
     // receiver

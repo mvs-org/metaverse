@@ -35,9 +35,6 @@ console_result getlocked::invoke(Json::Value& jv_output,
 {
     auto& blockchain = node.chain_impl();
     auto&& address = get_address(argument_.address, blockchain);
-    if (address.empty()) {
-        throw address_invalid_exception{"invalid address!"};
-    }
 
     bool is_asset = !is_default_invalid_asset_symbol(option_.asset_symbol);
     if (is_asset) {
