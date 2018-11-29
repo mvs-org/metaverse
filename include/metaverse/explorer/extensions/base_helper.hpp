@@ -279,6 +279,7 @@ asset_cert_type check_cert_type_name(const std::string& cert_type_name, bool all
 class BCX_API base_transfer_common
 {
 public:
+    using exclude_range_t = std::pair<uint64_t, uint64_t>;
     enum filter : uint8_t {
         FILTER_ETP = 1 << 0,
         FILTER_ASSET = 1 << 1,
@@ -296,7 +297,8 @@ public:
         bc::blockchain::block_chain_impl& blockchain,
         receiver_record::list&& receiver_list, uint64_t fee,
         std::string&& symbol, std::string&& from, std::string&& change,
-        uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence)
+        uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence,
+        exclude_range_t exclude_etp_range = {0, 0})
         : blockchain_{blockchain}
         , symbol_{std::move(symbol)}
         , from_{std::move(from)}
@@ -305,6 +307,7 @@ public:
         , receiver_list_{std::move(receiver_list)}
         , locktime_(locktime)
         , sequence_(sequence)
+        , exclude_etp_range_(exclude_etp_range)
     {
     };
 
@@ -384,6 +387,7 @@ protected:
     std::vector<address_asset_record> from_list_;
     uint32_t                          locktime_;
     uint32_t                          sequence_;
+    exclude_range_t                   exclude_etp_range_;
 };
 
 class BCX_API base_transfer_helper : public base_transfer_common
@@ -395,10 +399,12 @@ public:
         uint64_t fee, 
         std::string&& symbol = std::string(""),
         std::string&& change = std::string(""), 
-        uint32_t locktime = 0, uint32_t sequence = bc::max_input_sequence)
+        uint32_t locktime = 0,
+        uint32_t sequence = bc::max_input_sequence,
+        exclude_range_t exclude_etp_range = {0, 0})
         : base_transfer_common(blockchain, std::move(receiver_list), fee,
             std::move(symbol), std::move(from),
-            std::move(change), locktime, sequence)
+            std::move(change), locktime, sequence, exclude_etp_range)
         , cmd_{cmd}
         , name_{std::move(name)}
         , passwd_{std::move(passwd)}
@@ -534,10 +540,12 @@ public:
     sending_etp(command& cmd, bc::blockchain::block_chain_impl& blockchain,
         std::string&& name, std::string&& passwd,
         std::string&& from, receiver_record::list&& receiver_list,
-        std::string&& change, uint64_t fee, uint32_t locktime = 0)
+        std::string&& change, uint64_t fee, uint32_t locktime = 0,
+        exclude_range_t exclude_etp_range = {0, 0})
         : base_transfer_helper(cmd, blockchain, std::move(name), std::move(passwd),
             std::move(from), std::move(receiver_list), 
-            fee, "", std::move(change), locktime)
+            fee, "", std::move(change), locktime,
+            bc::max_input_sequence, exclude_etp_range)
     {}
 
     ~sending_etp(){}

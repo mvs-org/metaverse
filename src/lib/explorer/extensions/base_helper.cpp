@@ -1014,6 +1014,12 @@ bool base_transfer_common::get_spendable_output(
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
 
+    if (exclude_etp_range_ != exclude_range_t(0,0)) {
+        if (output.value >= exclude_etp_range_.first && output.value < exclude_etp_range_.second) {
+            return false;
+        }
+    }
+
     if (chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations)) {
         if (row.output_height == 0) {
             // deposit utxo in transaction pool

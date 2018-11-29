@@ -75,10 +75,9 @@ console_result listtxs::invoke(Json::Value& jv_output,
     if(!argument_.address.empty() && addr.empty())
         throw address_invalid_exception{"invalid did/address parameter! " + argument_.address};
     // height check
-    if (option_.height.first()
-            && option_.height.second()
-            && (option_.height.first() >= option_.height.second())) {
-        throw block_height_exception{"invalid height option!"};
+    if (option_.height.is_invalid()) {
+        throw block_height_exception{"invalid height option! "
+            + option_.height.encode_colon_delimited()};
     }
     // symbol check
     if (!argument_.symbol.empty()) {

@@ -38,7 +38,7 @@ public:
     static const char* symbol(){ return "sendmoreasset";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "sendmoreasset"; }
+    const char* description() override { return "sendmoreasset, alias as sendassetmore"; }
 
     arguments_metadata& load_arguments() override
     {

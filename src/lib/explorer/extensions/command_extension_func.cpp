@@ -361,7 +361,7 @@ shared_ptr<command> find_extension(const string& symbol)
         return make_shared<sendasset>();
     if (symbol == sendassetfrom::symbol() || symbol == "didsendassetfrom")
         return make_shared<sendassetfrom>();
-    if (symbol == sendmoreasset::symbol())
+    if (symbol == sendmoreasset::symbol() || symbol == "sendassetmore")
         return make_shared<sendmoreasset>();
     if (symbol == burn::symbol())
         return make_shared<burn>();

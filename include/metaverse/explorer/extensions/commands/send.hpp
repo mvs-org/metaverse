@@ -103,6 +103,11 @@ public:
             "Locktime. defaults to 0"
         )
         (
+            "exclude,e",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
+            "Exclude utxo whose value is between this range [begin:end)."
+        )
+        (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 etp bits"
@@ -128,13 +133,11 @@ public:
 
     struct option
     {
-        option():fee(10000), memo(""), change(""), locktime(0)
-        {};
-
         uint64_t fee;
         std::string memo;
         std::string change;
         uint32_t locktime;
+        colon_delimited2_item<uint64_t, uint64_t> exclude = {0, 0};
     } option_;
 
 };
