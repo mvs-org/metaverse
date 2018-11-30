@@ -31,8 +31,6 @@
 #include <metaverse/network/settings.hpp>
 #include <metaverse/network/channel.hpp>
 
-#define BOOST_CB_DISABLE_DEBUG
-
 namespace libbitcoin {
 namespace network {
 
@@ -112,8 +110,8 @@ code hosts::fetch(T& buffer, address& out, const config::authority::list& exclud
         return std::find(excluded_list.begin(), excluded_list.end(), auth) == excluded_list.end();
     };
 
-    std::vector<address> vec(buffer.size());
-    std::copy_if(buffer.begin(), buffer.end(), vec.begin(), match);
+    std::vector<address> vec;
+    std::copy_if(buffer.begin(), buffer.end(), std::back_inserter(vec), match);
 
     if (vec.empty()) {
         return error::not_found;
