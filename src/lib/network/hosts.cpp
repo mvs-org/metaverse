@@ -79,41 +79,16 @@ size_t hosts::count() const
 
 code hosts::fetch_seed(address& out, const config::authority::list& excluded_list)
 {
-    if (disabled_) {
-        return error::not_found;
-    }
-
-    // Critical Section
-    ///////////////////////////////////////////////////////////////////////////
-    shared_lock lock(mutex_);
-
-    if (stopped_) {
-        return error::service_stopped;
-    }
-
-    if (seeds_.empty()) {
-        return error::not_found;
-    }
-
-    auto count = std::min(excluded_list.size()+1, seeds_.size());
-    for (auto i = 0u; i < count; ++i) {
-        // Randomly select an address from the buffer.
-        const auto random = pseudo_random(0, seeds_.size() - 1);
-        const auto index = static_cast<size_t>(random);
-        out = seeds_[index];
-        if (std::find(excluded_list.begin(), excluded_list.end(),
-                config::authority(out)) == excluded_list.end()) {
-            break;
-        }
-    }
-    if (!out.is_valid()) {
-        return error::not_found;
-    }
-    return error::success;
-    ///////////////////////////////////////////////////////////////////////////
+    return fetch(seeds_, out, excluded_list);
 }
 
 code hosts::fetch(address& out, const config::authority::list& excluded_list)
+{
+    return fetch(buffer_, out, excluded_list);
+}
+
+template <typename T>
+code hosts::fetch(T& buffer, address& out, const config::authority::list& excluded_list)
 {
     if (disabled_) {
         return error::not_found;
@@ -127,27 +102,29 @@ code hosts::fetch(address& out, const config::authority::list& excluded_list)
         return error::service_stopped;
     }
 
-    if (buffer_.empty()) {
+    if (buffer.empty()) {
         return error::not_found;
     }
 
-    auto count = std::min(excluded_list.size()+1, buffer_.size());
-    for (auto i = 0u; i < count; ++i) {
-        // Randomly select an address from the buffer.
-        const auto random = pseudo_random(0, buffer_.size() - 1);
-        const auto index = static_cast<size_t>(random);
-        out = buffer_[index];
-        if (std::find(excluded_list.begin(), excluded_list.end(),
-                config::authority(out)) == excluded_list.end()) {
-            break;
-        }
-    }
-    if (!out.is_valid()) {
+    auto match = [&excluded_list](address& addr) {
+        auto auth = config::authority(addr);
+        return std::find(excluded_list.begin(), excluded_list.end(), auth) == excluded_list.end();
+    };
+
+    std::vector<address> vec(buffer.size());
+    std::copy_if(buffer.begin(), buffer.end(), vec.begin(), match);
+
+    if (vec.empty()) {
         return error::not_found;
     }
+
+    const auto index = pseudo_random(0, vec.size() - 1);
+    out = vec[static_cast<size_t>(index)];
+
     return error::success;
     ///////////////////////////////////////////////////////////////////////////
 }
+
 
 hosts::address::list hosts::copy_seeds()
 {
