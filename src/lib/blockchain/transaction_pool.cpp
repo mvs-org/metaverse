@@ -29,6 +29,8 @@
 #include <metaverse/blockchain/settings.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 
+#define BOOST_CB_DISABLE_DEBUG
+
 namespace libbitcoin {
 namespace blockchain {
 

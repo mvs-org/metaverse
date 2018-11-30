@@ -31,6 +31,8 @@
 #include <metaverse/network/settings.hpp>
 #include <metaverse/network/channel.hpp>
 
+#define BOOST_CB_DISABLE_DEBUG
+
 namespace libbitcoin {
 namespace network {
 
