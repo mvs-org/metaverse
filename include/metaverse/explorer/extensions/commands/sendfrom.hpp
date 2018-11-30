@@ -107,6 +107,16 @@ public:
             "The memo to descript transaction"
         )
         (
+            "locktime,x",
+            value<uint32_t>(&option_.locktime)->default_value(0),
+            "Locktime. defaults to 0"
+        )
+        (
+            "exclude,e",
+            value<colon_delimited2_item<uint64_t, uint64_t>>(&option_.exclude),
+            "Exclude utxo whose value is between this range [begin:end)."
+        )
+        (
             "fee,f",
             value<uint64_t>(&option_.fee)->default_value(10000),
             "Transaction fee. defaults to 10000 ETP bits"
@@ -124,8 +134,6 @@ public:
 
     struct argument
     {
-        argument():from(""), to(""), amount(0)
-        {};
         std::string from;
         std::string to;
         uint64_t amount;
@@ -133,12 +141,11 @@ public:
 
     struct option
     {
-        option():fee(10000), memo(""), change("")
-        {};
-
         uint64_t fee;
         std::string memo;
         std::string change;
+        uint32_t locktime;
+        colon_delimited2_item<uint64_t, uint64_t> exclude = {0, 0};
     } option_;
 
 };

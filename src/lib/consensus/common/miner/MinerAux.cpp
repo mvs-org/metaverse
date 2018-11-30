@@ -176,7 +176,6 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
         pos /= u256(amount * 10);
 
         succeed = (h256(pos) <= boundary);
-    }
 
 #ifdef PRIVATE_CHAIN
     if (header.transaction_count > 0) {
@@ -186,9 +185,13 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
             << ", stake amount: " << (uint64_t)(stake_output.data.value / coin_price())
             << " ETPs, coin_age: " << coin_age
             << ", height: " << header.number
-            << ", bits: " << header.bits;
+            << ", bits: " << header.bits
+            << ", pos: " << h256(pos)
+            << ", boundary: " << boundary;
     }
 #endif
+
+    }
 
     return succeed;
 }
