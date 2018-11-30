@@ -205,17 +205,19 @@ void hosts::handle_timer(const code& ec)
         return;
     }
 
-    // Critical Section
-    upgrade_lock lock(mutex_);
+    {
+        // Critical Section
+        upgrade_lock lock(mutex_);
 
-    if (stopped_) {
-        return;
-    }
+        if (stopped_) {
+            return;
+        }
 
-    upgrade_to_unique_lock unq_lock(lock);
+        upgrade_to_unique_lock unq_lock(lock);
 
-    if (!store_cache()) {
-        return;
+        if (!store_cache()) {
+            return;
+        }
     }
 
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
@@ -527,9 +529,11 @@ void hosts::store(const address::list& hosts, result_handler handler)
     }
 
     // Critical Section
-    upgrade_lock lock(mutex_);
+    mutex_.lock_upgrade();
 
     if (stopped_) {
+        mutex_.unlock_upgrade();
+
         handler(error::service_stopped);
         return;
     }
@@ -548,7 +552,7 @@ void hosts::store(const address::list& hosts, result_handler handler)
     const auto step = std::max(usable / accept, size_t(1));
     size_t accepted = 0;
 
-    upgrade_to_unique_lock unq_lock(lock);
+    mutex_.unlock_upgrade_and_lock();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     for (size_t index = 0; index < usable; index = ceiling_add(index, step)) {
@@ -578,6 +582,8 @@ void hosts::store(const address::list& hosts, result_handler handler)
             << ") host addresses from peer."
             << " inactive size is " << inactive_.size()
             << ", buffer size is " << buffer_.size();
+
+    mutex_.unlock();
 
     handler(error::success);
 }
