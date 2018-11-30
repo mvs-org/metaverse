@@ -205,14 +205,14 @@ void hosts::handle_timer(const code& ec)
         return;
     }
 
+    // Critical Section
+    upgrade_lock lock(mutex_);
+
+    if (stopped_) {
+        return;
+    }
+
     {
-        // Critical Section
-        upgrade_lock lock(mutex_);
-
-        if (stopped_) {
-            return;
-        }
-
         upgrade_to_unique_lock unq_lock(lock);
 
         if (!store_cache()) {
@@ -529,11 +529,9 @@ void hosts::store(const address::list& hosts, result_handler handler)
     }
 
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-
         handler(error::service_stopped);
         return;
     }
@@ -552,39 +550,40 @@ void hosts::store(const address::list& hosts, result_handler handler)
     const auto step = std::max(usable / accept, size_t(1));
     size_t accepted = 0;
 
-    mutex_.unlock_upgrade_and_lock();
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    {
+        upgrade_to_unique_lock unq_lock(lock);
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    for (size_t index = 0; index < usable; index = ceiling_add(index, step)) {
-        const auto& host = hosts[index];
+        for (size_t index = 0; index < usable; index = ceiling_add(index, step)) {
+            const auto& host = hosts[index];
 
-        // Do not treat invalid address as an error, just log it.
-        if (!host.is_valid()) {
-            log::debug(LOG_NETWORK)
-                    << "Invalid host address from peer.";
-            continue;
+            // Do not treat invalid address as an error, just log it.
+            if (!host.is_valid()) {
+                log::debug(LOG_NETWORK)
+                        << "Invalid host address from peer.";
+                continue;
+            }
+
+            if (channel::blacklisted(host) || channel::manualbanned(host)) {
+                continue;
+            }
+
+            // Do not allow duplicates in the host cache.
+            if (find(host) == buffer_.end()
+                    && find(inactive_, host) == inactive_.end()) {
+                ++accepted;
+                buffer_.push_back(host);
+            }
         }
 
-        if (channel::blacklisted(host) || channel::manualbanned(host)) {
-            continue;
-        }
-
-        // Do not allow duplicates in the host cache.
-        if (find(host) == buffer_.end()
-                && find(inactive_, host) == inactive_.end()) {
-            ++accepted;
-            buffer_.push_back(host);
-        }
+        log::debug(LOG_NETWORK)
+                << "Accepted (" << accepted << " of " << hosts.size()
+                << ") host addresses from peer."
+                << " inactive size is " << inactive_.size()
+                << ", buffer size is " << buffer_.size();
     }
 
-    log::debug(LOG_NETWORK)
-            << "Accepted (" << accepted << " of " << hosts.size()
-            << ") host addresses from peer."
-            << " inactive size is " << inactive_.size()
-            << ", buffer size is " << buffer_.size();
-
-    mutex_.unlock();
-
+    // Notice: don't unique lock this handler
     handler(error::success);
 }
 
