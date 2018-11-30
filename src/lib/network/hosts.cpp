@@ -97,7 +97,6 @@ code hosts::fetch(T& buffer, address& out, const config::authority::list& exclud
     }
 
     // Critical Section
-    ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(mutex_);
 
     if (stopped_) {
@@ -124,9 +123,7 @@ code hosts::fetch(T& buffer, address& out, const config::authority::list& exclud
     out = vec[static_cast<size_t>(index)];
 
     return error::success;
-    ///////////////////////////////////////////////////////////////////////////
 }
-
 
 hosts::address::list hosts::copy_seeds()
 {
@@ -210,21 +207,19 @@ void hosts::handle_timer(const code& ec)
         return;
     }
 
-    mutex_.lock_upgrade();
+    // Critical Section
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
         return;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     if (!store_cache()) {
-        mutex_.unlock();
         return;
     }
 
-    mutex_.unlock();
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
 }
 
@@ -235,17 +230,14 @@ code hosts::start()
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (!stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::operation_failed;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     snap_timer_ = std::make_shared<deadline>(pool_, asio::seconds(timer_interval));
     snap_timer_->start(std::bind(&hosts::handle_timer, shared_from_this(), std::placeholders::_1));
@@ -275,9 +267,6 @@ code hosts::start()
         }
     }
 
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
     if (file_error) {
         log::debug(LOG_NETWORK)
                 << "Failed to save hosts file.";
@@ -295,16 +284,13 @@ code hosts::stop()
     }
 
     // Critical Section
-    ///////////////////////////////////////////////////////////////////////////
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::success;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     // stop timer
     snap_timer_->stop();
@@ -313,12 +299,8 @@ code hosts::stop()
     stopped_ = true;
 
     if (!store_cache(true)) {
-        mutex_.unlock();
         return error::file_system;
     }
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
@@ -330,23 +312,18 @@ code hosts::clear()
     }
 
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::service_stopped;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     if (!buffer_.empty()) {
         std::swap(backup_, buffer_);
         buffer_.clear();
     }
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
@@ -357,15 +334,14 @@ code hosts::after_reseeding()
         return error::success;
     }
 
-    mutex_.lock_upgrade();
+    // Critical Section
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::service_stopped;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     //re-seeding failed and recover the buffer with backup one
     if (buffer_.size() <= seed_count) {
@@ -402,9 +378,6 @@ code hosts::after_reseeding()
     log::debug(LOG_NETWORK)
             << "Reseeding finished, buffer size: " << buffer_.size();
 
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
-
     return error::success;
 }
 
@@ -414,17 +387,14 @@ code hosts::remove(const address& host)
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::service_stopped;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     auto it = find(host);
     if (it != buffer_.end()) {
@@ -434,9 +404,6 @@ code hosts::remove(const address& host)
     if (find(inactive_, host) == inactive_.end()) {
         inactive_.push_back(host);
     }
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
@@ -448,7 +415,6 @@ code hosts::store_seed(const address& host)
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     upgrade_lock lock(mutex_);
 
@@ -464,7 +430,7 @@ code hosts::store_seed(const address& host)
     if (iter == seeds_.end()) {
         constexpr size_t max_seeds = 8;
         constexpr size_t half_pos = max_seeds >> 1;
-        upgrade_to_unique_lock ulock(lock);
+        upgrade_to_unique_lock unq_lock(lock);
         if (seeds_.size() == max_seeds) { // full
             std::copy(seeds_.begin()+half_pos+1, seeds_.end(), seeds_.begin()+half_pos);
             seeds_.back() = host;
@@ -477,8 +443,6 @@ code hosts::store_seed(const address& host)
 #endif
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-
     return error::success;
 }
 
@@ -488,7 +452,6 @@ code hosts::remove_seed(const address& host)
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     upgrade_lock lock(mutex_);
 
@@ -502,14 +465,13 @@ code hosts::remove_seed(const address& host)
         });
 
     if (iter != seeds_.end()) {
-        upgrade_to_unique_lock ulock(lock);
+        upgrade_to_unique_lock unq_lock(lock);
         seeds_.erase(iter);
+
 #ifdef PRIVATE_CHAIN
         log::info(LOG_NETWORK) << "remove seed " << config::authority(host).to_string();
 #endif
     }
-
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
@@ -536,17 +498,14 @@ code hosts::store(const address& host)
         return error::success;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     // Critical Section
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         return error::service_stopped;
     }
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
 
     if (find(host) == buffer_.end()) {
         buffer_.push_back(host);
@@ -556,9 +515,6 @@ code hosts::store(const address& host)
     if (iter != inactive_.end()) {
         inactive_.erase(iter);
     }
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     return error::success;
 }
@@ -573,12 +529,9 @@ void hosts::store(const address::list& hosts, result_handler handler)
     }
 
     // Critical Section
-    ///////////////////////////////////////////////////////////////////////////
-    mutex_.lock_upgrade();
+    upgrade_lock lock(mutex_);
 
     if (stopped_) {
-        mutex_.unlock_upgrade();
-        //---------------------------------------------------------------------
         handler(error::service_stopped);
         return;
     }
@@ -597,7 +550,7 @@ void hosts::store(const address::list& hosts, result_handler handler)
     const auto step = std::max(usable / accept, size_t(1));
     size_t accepted = 0;
 
-    mutex_.unlock_upgrade_and_lock();
+    upgrade_to_unique_lock unq_lock(lock);
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     for (size_t index = 0; index < usable; index = ceiling_add(index, step)) {
@@ -627,9 +580,6 @@ void hosts::store(const address::list& hosts, result_handler handler)
             << ") host addresses from peer."
             << " inactive size is " << inactive_.size()
             << ", buffer size is " << buffer_.size();
-
-    mutex_.unlock();
-    ///////////////////////////////////////////////////////////////////////////
 
     handler(error::success);
 }
