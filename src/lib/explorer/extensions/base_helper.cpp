@@ -1014,7 +1014,7 @@ bool base_transfer_common::get_spendable_output(
     BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
     output = tx_temp.outputs.at(row.output.index);
 
-    if (exclude_etp_range_ != exclude_range_t(0,0)) {
+    if (exclude_etp_range_.first < exclude_etp_range_.second) {
         if (output.value >= exclude_etp_range_.first && output.value < exclude_etp_range_.second) {
             return false;
         }
