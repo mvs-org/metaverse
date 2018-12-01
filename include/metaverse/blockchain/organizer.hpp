@@ -105,6 +105,8 @@ private:
     reorganize_subscriber::ptr subscriber_;
     std::unordered_map<hash_digest, uint64_t> fork_chain_last_block_hashes_;
     boost::mutex mutex_fork_chain_last_block_hashes_;
+
+    std::shared_ptr<std::thread> witness_updater_;
 };
 
 } // namespace blockchain
