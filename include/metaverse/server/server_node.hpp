@@ -65,6 +65,9 @@ public:
     /// Ensure all threads are coalesced.
     virtual ~server_node();
 
+    /// Invoke startup and seeding sequence, call from constructing thread.
+    void start(result_handler handler) override;
+
     // Properties.
     // ----------------------------------------------------------------------------
 

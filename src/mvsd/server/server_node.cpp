@@ -87,6 +87,25 @@ bool server_node::is_use_testnet_rules() const
     return configuration_.use_testnet_rules;
 }
 
+void server_node::start(result_handler handler)
+{
+    if (!stopped())
+    {
+        handler(error::operation_failed);
+        return;
+    }
+
+    p2p_node::start(handler);
+
+    if (!rest_server_->start() || !push_server_->start())
+    {
+        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
+        handler(error::operation_failed);
+        return;
+    }
+
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 
@@ -95,13 +114,6 @@ void server_node::run(result_handler handler)
     if (stopped())
     {
         handler(error::service_stopped);
-        return;
-    }
-
-    if (!rest_server_->start() || !push_server_->start())
-    {
-        log::error(LOG_SERVER) << "Http/Websocket server can not start.";
-        handler(error::operation_failed);
         return;
     }
 

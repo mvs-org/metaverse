@@ -326,6 +326,9 @@ bool block_chain_impl::get_difficulty(u256& out_difficulty,
 
 bool block_chain_impl::get_header(header& out_header, uint64_t height) const
 {
+    if (stopped())
+        return false;
+
     auto result = database_.blocks.get(height);
     if (!result)
         return false;
@@ -356,6 +359,9 @@ bool block_chain_impl::get_height(uint64_t& out_height,
 
 bool block_chain_impl::get_last_height(uint64_t& out_height) const
 {
+    if (stopped())
+        return false;
+
     size_t top;
     if (database_.blocks.top(top))
     {
