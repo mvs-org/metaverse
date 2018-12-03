@@ -831,7 +831,8 @@ void sync_fetch_deposited_balance(wallet::payment_address& address,
                         }
                     }
                     else {
-                        uint64_t expiration_height = height + deposit_height - deposited_height; // not accurate
+                        uint64_t expiration_height =
+                            blockchain.get_expiration_height(row.output_height, deposit_height);
                         deposited_balance deposited(address_str, tx_hash, deposit_height, expiration_height);
                         if (output_hash == tx_hash) {
                             deposited.balance = row.value;

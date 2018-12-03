@@ -2768,6 +2768,16 @@ void block_chain_impl::set_sync_disabled(bool b)
     sync_disabled_ = b;
 }
 
+uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_height) const
+{
+    uint64_t to = from + lock_height;
+    if (to > pos_enabled_height) {
+        auto blocks_after_pos_enabled = to - std::max(from, pos_enabled_height);
+        to += blocks_after_pos_enabled;
+    }
+    return to;
+}
+
 uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) const
 {
     if (from >= to) {
@@ -2777,8 +2787,8 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) con
     uint64_t number = to - from;
 
     if (to > pos_enabled_height) {
-        auto blocks_after_pos_enabled = to - pos_enabled_height;
-        number -= blocks_after_pos_enabled / 2;
+        auto blocks_after_pos_enabled = to - std::max(from, pos_enabled_height);
+        number -= (blocks_after_pos_enabled + 1) / 2;
     }
 
     // excludes dpos blocks
