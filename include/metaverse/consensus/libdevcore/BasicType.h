@@ -38,6 +38,8 @@ public:
         const chain::header::ptr pprev,
         bool is_staking=false);
 
+    static bigint adjust_difficulty(uint32_t actual_timespan, bigint & result);
+
 private:
     HeaderAux() {}
 

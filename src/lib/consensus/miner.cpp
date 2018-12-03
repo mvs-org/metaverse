@@ -40,6 +40,7 @@
 #include <metaverse/blockchain/block_chain.hpp>
 #include <metaverse/blockchain/block_chain_impl.hpp>
 #include <metaverse/node/p2p_node.hpp>
+#include <metaverse/macros_define.hpp>
 
 #define LOG_HEADER "Miner"
 using namespace std;
@@ -325,8 +326,12 @@ miner::transaction_ptr miner::create_coinbase_tx(
 
     return ptransaction;
 }
-
+#ifdef PRIVATE_CHAIN
+int bucket_size = 200;
+#else
 int bucket_size = 500000;
+#endif
+
 vector<uint64_t> lock_heights = {25200, 108000, 331200, 655200, 1314000};
 vector<uint64_t> coinage_rewards = {95890, 666666, 3200000, 8000000, 20000000};
 
@@ -346,12 +351,25 @@ uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, 
         return calculate_block_subsidy_pos(block_height, is_testnet);
     }
 
-    return uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
+    auto rate = block_height / bucket_size;
+    if(block_height > pos_enabled_height)
+    {
+        rate = pos_enabled_height / bucket_size;
+        auto period_left = pos_enabled_height % bucket_size;
+        auto period_right = (bucket_size - period_left) * 2;
+        auto period_end = pos_enabled_height + period_right;
+
+        if(block_height >= period_end){
+            rate = rate + 1 + (block_height - period_end) / (2 * bucket_size);
+        }
+    }
+
+    return uint64_t(3 * coin_price() * pow(0.95, rate));
 }
 
- uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
+uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
 {
-    auto result = uint64_t(3 * coin_price() * pow(0.95, block_height / bucket_size));
+    auto result = uint64_t(1 * coin_price());
     if (witness::is_begin_of_epoch(block_height)) {
         result <<= 1; // more award to the vote result block miner
     }

@@ -44,7 +44,8 @@ namespace network {
 struct address_compare{
     bool operator()(const libbitcoin::message::network_address& lhs, const libbitcoin::message::network_address& rhs) const
     {
-        return lhs.ip < rhs.ip ? true : (lhs.ip > rhs.ip ? false : lhs.port < rhs.port);
+        typedef std::tuple<message::ip_address, uint16_t> tup_cmp;
+        return tup_cmp(lhs.ip, lhs.port) < tup_cmp(rhs.ip, rhs.port);
     }
 };
 

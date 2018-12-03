@@ -44,7 +44,7 @@ uint32_t coinbase_maturity = 10;
 const uint64_t future_blocktime_fork_height = 10;
 
 // PoS
-const uint64_t pos_enabled_height        = 200;
+const uint64_t pos_enabled_height        = 350;
 const uint32_t pos_coinstake_max_utxos   = 10;
 const uint64_t pos_lock_min_value        = 10 * 100000000ul;
 const uint64_t pos_lock_min_height       = 100000;

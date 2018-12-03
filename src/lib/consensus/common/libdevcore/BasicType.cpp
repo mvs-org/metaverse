@@ -210,7 +210,7 @@ u256 HeaderAux::calculate_difficulty_v1(
     return u256(std::min<bigint>(result, std::numeric_limits<u256>::max()));
 }
 
-bigint adjust_difficulty(uint32_t actual_timespan, bigint & result)
+bigint HeaderAux::adjust_difficulty(uint32_t actual_timespan, bigint & result)
 {
     // Limit adjustment step
     if (actual_timespan < block_timespan_window / 10) {
