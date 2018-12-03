@@ -249,7 +249,8 @@ public:
     virtual bool select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        chain::output_info::list& stake_outputs);
+        chain::output_info::list& stake_outputs,
+        uint32_t max_count = max_uint32) override;
 
     inline bool check_pos_utxo_height_and_value(
         const uint64_t& out_height,

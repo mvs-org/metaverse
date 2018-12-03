@@ -864,7 +864,7 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
 
     // check utxo stake
     chain::output_info::list stake_outputs;
-    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs)) {
+    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
         log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
         sleep_for_mseconds(10 * 1000);
         return nullptr;

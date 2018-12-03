@@ -175,13 +175,13 @@ bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const c
         // deposit utxo in block
         uint64_t lock_height = chain::operation::
             get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-        if ((out_height + lock_height) > height){
+        if (lock_height > calc_number_of_blocks(out_height, height)) {
             return false;
         }
     }
     else if (tx.is_coinbase()){ // coin base etp maturity etp check
         // add not coinbase_maturity etp into frozen
-        if ((out_height + coinbase_maturity) > height){
+        if (coinbase_maturity > calc_number_of_blocks(out_height, height)) {
             return false;
         }
     }
@@ -192,7 +192,8 @@ bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const c
 bool block_chain_impl::select_utxo_for_staking(
     uint64_t best_height,
     const wallet::payment_address& pay_address,
-    chain::output_info::list& stake_outputs)
+    chain::output_info::list& stake_outputs,
+    uint32_t max_count)
 {
     bool result = false;
     auto&& rows = get_address_history(pay_address, false);
@@ -224,6 +225,9 @@ bool block_chain_impl::select_utxo_for_staking(
             if (satisfied) {
                 ++stake_utxos;
                 stake_outputs.push_back( {output, row.output, tx_height} );
+                if (stake_utxos >= max_count) {
+                    break;
+                }
             }
             else if (collect_utxos < pos_coinstake_max_utxos
                 && row.value < pos_stake_min_value) {
@@ -2771,6 +2775,11 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) con
     }
 
     uint64_t number = to - from;
+
+    if (to > pos_enabled_height) {
+        auto blocks_after_pos_enabled = to - pos_enabled_height;
+        number -= blocks_after_pos_enabled / 2;
+    }
 
     // excludes dpos blocks
     if (consensus::witness::is_dpos_enabled()) {

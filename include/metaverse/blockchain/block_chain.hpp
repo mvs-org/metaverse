@@ -147,7 +147,8 @@ public:
     virtual bool select_utxo_for_staking(
         uint64_t best_height,
         const wallet::payment_address& pay_addres,
-        chain::output_info::list& outputs) = 0;
+        chain::output_info::list& outputs,
+        uint32_t max_count = max_uint32) = 0;
 };
 
 } // namespace blockchain
