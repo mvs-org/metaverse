@@ -382,21 +382,13 @@ uint64_t miner::calculate_block_subsidy_pow(uint64_t block_height, bool is_testn
 
 uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
 {
-    auto result = uint64_t(1 * coin_price());
-    if (witness::is_begin_of_epoch(block_height)) {
-        result <<= 1; // more award to the vote result block miner
-    }
-    return result;
+    return coin_price(1);
 }
 
 uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)
 {
     auto result = calculate_block_subsidy_pow(block_height, is_testnet);
-    result = std::min(result / witness::witness_number,
-        uint64_t(1.0 * result * witness::witness_number / witness::pow_check_point_height));
-    if (witness::is_begin_of_epoch(block_height)) {
-        result <<= 1; // more award to the vote result block miner
-    }
+    result /= witness::witness_number;
     return result;
 }
 
