@@ -244,7 +244,7 @@ Json::Value json_helper::prop_list(const tx_input_type& tx_input)
         tree["previous_output"]["index"] = tx_input.previous_output.index;
         tree["sequence"] = tx_input.sequence;
     }
-    tree["script"] += script(tx_input.script).to_string();
+    tree["script"] += script(tx_input.script.to_data(false)).to_string();
     return tree;
 }
 Json::Value json_helper::prop_tree(const tx_input_type& tx_input)

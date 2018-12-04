@@ -667,31 +667,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     }
     coinbase_tx.outputs.front().value = total_fee + block_subsidy;
 
-    if (can_use_dpos) {
-        // add witness's signature to the previous block header
-        bc::endorsement endorse;
-        if (!witness::sign(endorse, private_key_, prev_header)) {
-            log::error(LOG_HEADER) << "witness sign failed in create_new_block";
-            return nullptr;
-        }
-
-        auto& coinbase_script = coinbase_tx.inputs.front().script;
-        auto& coinbase_input_ops = coinbase_script.operations;
-        coinbase_input_ops.push_back({ chain::opcode::special, endorse });
-        coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
-
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER)
-            << "create a dpos block with signatures at height " << pblock->header.number
-            << ", coinbase input script is "
-            << coinbase_script.to_string(chain::get_script_context());
-        if (!witness::verify_sign(endorse, public_key_data_, prev_header)) {
-            log::error(LOG_HEADER) << "create witness signature failed";
-            state_ = state::exit_;
-            return nullptr;
-        }
-#endif
-    } else if (witness::is_begin_of_epoch(pblock->header.number)){
+    if (witness::is_begin_of_epoch(pblock->header.number)) {
         auto&& vote_output = witness::get().create_witness_vote_result(pblock->header.number);
         if (vote_output.script.operations.empty()) {
             log::error(LOG_HEADER) << "create_witness_vote_result failed";
@@ -712,6 +688,27 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     }
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+
+    if (can_use_dpos) {
+        // add witness's signature to the current block header
+        bc::endorsement endorse;
+        if (!witness::sign(endorse, private_key_, pblock->header)) {
+            log::error(LOG_HEADER) << "witness sign failed in create_new_block";
+            return nullptr;
+        }
+
+        auto& coinbase_script = coinbase_tx.inputs.front().script;
+        auto& coinbase_input_ops = coinbase_script.operations;
+        coinbase_input_ops.push_back({ chain::opcode::special, endorse });
+        coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_HEADER)
+            << "create a DPoS block with signatures at height " << pblock->header.number
+            << ", coinbase input script is "
+            << coinbase_script.to_string(chain::get_script_context());
+#endif
+    }
 
     return pblock;
 }
@@ -969,9 +966,11 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
         return nullptr;
     }
 
-    // Log block
-    // auto json = explorer::config::json_helper(3).prop_tree(*pblock, true, true);
-    // log::info(LOG_HEADER) << " >> create_new_block_pos: " << json.toStyledString();
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "create a PoS block at height " << pblock->header.number
+        << ", header hash is " << encode_hash(pblock->header.hash());
+#endif
     return pblock;
 }
 

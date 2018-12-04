@@ -117,7 +117,7 @@ protected:
     virtual bool check_work(const chain::block& block) const = 0;
 
     static bool is_distinct_tx_set(const chain::transaction::list& txs);
-    static bool is_valid_coinbase_height(size_t height, const chain::block& block);
+    static bool is_valid_coinbase_height(size_t height, const chain::block& block, size_t index);
     //static size_t legacy_sigops_count(const chain::transaction& tx);
     static size_t legacy_sigops_count(const chain::transaction::list& txs);
 

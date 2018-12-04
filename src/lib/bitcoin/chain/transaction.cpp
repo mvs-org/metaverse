@@ -170,13 +170,22 @@ bool transaction::from_data_t(reader& source)
     return result;
 }
 
-void transaction::to_data_t(writer& sink) const
+void transaction::to_data_t(writer& sink, bool for_merkle) const
 {
     sink.write_4_bytes_little_endian(version);
     sink.write_variable_uint_little_endian(inputs.size());
 
-    for (const auto& input: inputs)
+    if (for_merkle && is_coinbase()) {
+        auto input = inputs[0];
+        operation::stack ops;
+        ops.swap(input.script.operations);
+        input.script.operations.emplace_back(operation::factory_from_data(ops.front().to_data()));
         input.to_data(sink);
+    }
+    else {
+        for (const auto& input: inputs)
+            input.to_data(sink);
+    }
 
     sink.write_variable_uint_little_endian(outputs.size());
 
@@ -231,7 +240,7 @@ hash_digest transaction::hash() const
     {
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         mutex_.unlock_upgrade_and_lock();
-        hash_.reset(new hash_digest(bitcoin_hash(to_data())));
+        hash_.reset(new hash_digest(bitcoin_hash(to_data(true))));
         mutex_.unlock_and_lock_upgrade();
         //---------------------------------------------------------------------
     }

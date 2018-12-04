@@ -249,6 +249,7 @@ void organizer::process(block_detail::ptr process_block)
         // Verify the blocks in the orphan chain.
         if (chain_.get_height(fork_index, hash))
         {
+            bool replace_chain_done = false;
             if (consensus::witness::is_dpos_enabled()) {
                 uint64_t current_block_height = 0;
                 DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
@@ -260,6 +261,7 @@ void organizer::process(block_detail::ptr process_block)
                     }
 
                     auto ret = replace_chain(fork_index, orphan_chain);
+                    replace_chain_done = true;
 
                     const auto& num_of_poped_blocks = std::get<0>(ret);
                     const auto& num_of_pushed_blocks = std::get<1>(ret);
@@ -275,7 +277,8 @@ void organizer::process(block_detail::ptr process_block)
                     }
                 }
             }
-            else {
+
+            if (!replace_chain_done) {
                 DEBUG_ONLY(auto ret =) replace_chain(fork_index, orphan_chain);
             }
 

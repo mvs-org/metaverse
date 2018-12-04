@@ -73,7 +73,7 @@ public:
     transaction& operator=(const transaction& other) /*= delete*/;
 
     bool from_data_t(reader& source);
-    void to_data_t(writer& sink) const;
+    void to_data_t(writer& sink, bool for_merkle=false) const;
     std::string to_string(uint32_t flags) const;
     bool is_valid() const;
     void reset();

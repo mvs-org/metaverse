@@ -138,18 +138,23 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
             return error::first_not_coinbase;
         }
 
-        const auto& coinbase_script = tx.inputs[0].script;
-        const auto coinbase_size = coinbase_script.serialized_size(false);
-        if ((coinbase_size < 2) ||
-            (!is_block_version_dpos && coinbase_size > 100) ||
-            (is_block_version_dpos && coinbase_size > 200)) {
-            return error::invalid_coinbase_script_size;
+        if (is_active(script_context::bip34_enabled)) {
+            // Enforce rule that the coinbase starts with serialized height.
+            if (!is_valid_coinbase_height(height_, current_block_, index)) {
+                return error::coinbase_height_mismatch;
+            }
         }
-
-        // Enforce rule that the coinbase starts with serialized height.
-        if (is_active(script_context::bip34_enabled) &&
-            !is_valid_coinbase_height(height_, current_block_)) {
-            return error::coinbase_height_mismatch;
+        else {
+            const auto& coinbase_script = tx.inputs[0].script;
+            const auto coinbase_size = coinbase_script.serialized_size(false);
+            const auto is_dpos_coinbase = is_block_version_dpos && index == 0;
+            constexpr uint32_t max_coinbase_size = 100;
+            constexpr uint32_t max_dpos_coinbase_size = 200;
+            if ((coinbase_size < 2) ||
+                (!is_dpos_coinbase && coinbase_size > max_coinbase_size) ||
+                (is_dpos_coinbase && coinbase_size > max_dpos_coinbase_size)) {
+                return error::invalid_coinbase_script_size;
+            }
         }
 
         ++coinbase_count;
@@ -210,7 +215,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
 
         auto endorse = operation::factory_from_data(coinbase_input_ops[1].to_data()).data;
         auto pubkey = operation::factory_from_data(coinbase_input_ops[2].to_data()).data;
-        if (!consensus::witness::verify_sign(endorse, pubkey, prev_header)) {
+        if (!consensus::witness::verify_sign(endorse, pubkey, header)) {
             return error::witness_sign_invalid;
         }
         if (!consensus::witness::get().verify_signer(pubkey, current_block_, prev_header)) {
@@ -572,23 +577,35 @@ u256 validate_block::work_required(bool is_testnet) const
         current_block_.header, last_header, llast_header, is_pos);
 }
 
-bool validate_block::is_valid_coinbase_height(size_t height, const block& block)
+bool validate_block::is_valid_coinbase_height(size_t height, const block& block, size_t index)
 {
     // There must be a transaction with an input.
-    if (block.transactions.empty() || block.transactions.front().inputs.empty()) {
+    if (block.transactions.size() < index + 1 || block.transactions[index].inputs.empty()) {
         return false;
     }
 
-    // Get the serialized coinbase input script as a byte vector.
-    const auto& actual_tx = block.transactions.front();
-    const auto& actual_script = actual_tx.inputs.front().script;
-    const auto& actual_ops = actual_script.operations;
+    const auto& actual_script = block.transactions[index].inputs.front().script;
 
-    const auto actual = operation::factory_from_data(actual_ops.front().to_data()).data;
-    script_number number(height);
-    const auto expected = number.data();
-    // Require that the coinbase script match the expected coinbase script.
-    return std::equal(expected.begin(), expected.end(), actual.begin());
+    const script_number number(height);
+    const auto height_data = number.data();
+
+    const auto is_dpos_coinbase = block.header.is_proof_of_dpos() && index == 0;
+    if (!is_dpos_coinbase) {
+        // Get the serialized coinbase input script as a byte vector.
+        const auto actual = actual_script.to_data(false);
+
+        // Create the expected script as a byte vector.
+        script expected_script;
+        expected_script.operations.push_back({ opcode::special, height_data });
+        const auto expected = expected_script.to_data(false);
+
+        // Require that the coinbase script match the expected coinbase script.
+        return std::equal(expected.begin(), expected.end(), actual.begin());
+    }
+
+    // Require that the height data is same
+    const auto actual_data = operation::factory_from_data(actual_script.operations.front().to_data()).data;
+    return std::equal(height_data.begin(), height_data.end(), actual_data.begin());
 }
 
 code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_impl& chain) const
