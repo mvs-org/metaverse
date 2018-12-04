@@ -124,11 +124,7 @@ console_result startmining::invoke(Json::Value& jv_output,
         miner.set_accept_block_version(chain::block_version_dpos);
     }
     else {
-#ifdef PRIVATE_CHAIN
-        miner.set_accept_block_version(chain::block_version_any);
-#else
         throw argument_legality_exception{"wrong consensus of block version!"};
-#endif
     }
 
     // start

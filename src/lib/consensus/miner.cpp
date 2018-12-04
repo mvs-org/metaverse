@@ -345,10 +345,14 @@ int miner::get_lock_heights_index(uint64_t height)
     return ret;
 }
 
-uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, bool is_pos)
+uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, uint32_t version)
 {
-    if (is_pos) {
+    if (version == chain::block_version_pos) {
         return calculate_block_subsidy_pos(block_height, is_testnet);
+    }
+
+    if (version == chain::block_version_dpos) {
+        return calculate_block_subsidy_dpos(block_height, is_testnet);
     }
 
     auto rate = block_height / bucket_size;
@@ -370,6 +374,17 @@ uint64_t miner::calculate_block_subsidy(uint64_t block_height, bool is_testnet, 
 uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testnet)
 {
     auto result = uint64_t(1 * coin_price());
+    if (witness::is_begin_of_epoch(block_height)) {
+        result <<= 1; // more award to the vote result block miner
+    }
+    return result;
+}
+
+uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)
+{
+    auto result = calculate_block_subsidy(block_height, is_testnet, chain::block_version_pow);
+    result = std::min(result / witness::witness_number,
+        uint64_t(1.0 * result * witness::witness_number / witness::pow_check_point_height));
     if (witness::is_begin_of_epoch(block_height)) {
         result <<= 1; // more award to the vote result block miner
     }
@@ -595,6 +610,10 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         return create_new_block_pos(pay_address);
     }
 
+    if (get_accept_block_version() == chain::block_version_dpos) {
+        return create_new_block_dpos(pay_address);
+    }
+
     block_ptr pblock;
     block_chain_impl& block_chain = node_.chain_impl();
 
@@ -624,7 +643,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
 
     // Update coinbase reward
     coinbase->outputs[0].value =
-        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, false);
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
     // Put coinbase first
     pblock->transactions.push_back(*coinbase);
@@ -649,26 +668,90 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
     pblock->header.previous_block_hash = prev_header.hash();
 
-    bool can_use_dpos = false;
-    if (get_accept_block_version() == chain::block_version_dpos ||
-        get_accept_block_version() == chain::block_version_any) {
-        can_use_dpos = pblock->can_use_dpos_consensus();
-        can_use_dpos &= witness::get().verify_signer(public_key_data_, *pblock);
-        if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
+    if (witness::is_begin_of_epoch(block_height)) {
+        auto&& vote_output = witness::get().create_witness_vote_result(block_height);
+        if (vote_output.script.operations.empty()) {
+            log::error(LOG_HEADER) << "create_witness_vote_result failed";
             return nullptr;
         }
+        coinbase->outputs.emplace_back(vote_output);
+        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
     }
-    auto& coinbase_tx = pblock->transactions.front();
-    uint64_t block_subsidy = calculate_block_subsidy(block_height, setting_.use_testnet_rules, false);
-    if (can_use_dpos) {
-        // adjust block subsidy for dpos
-        block_subsidy = std::min(block_subsidy / witness::witness_number,
-            uint64_t(1.0 * block_subsidy * witness::witness_number / witness::pow_check_point_height));
-    }
-    coinbase_tx.outputs.front().value = total_fee + block_subsidy;
 
-    if (witness::is_begin_of_epoch(pblock->header.number)) {
-        auto&& vote_output = witness::get().create_witness_vote_result(pblock->header.number);
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+    pblock->header.version = chain::block_version_pow;
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
+    pblock->header.transaction_count = pblock->transactions.size();
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+
+    return pblock;
+}
+
+miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay_address)
+{
+    block_ptr pblock;
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return pblock;
+    }
+    else {
+        pblock = make_shared<block>();
+    }
+
+    uint64_t block_height = last_height + 1;
+    uint32_t block_time = get_adjust_time(block_height);
+
+    // Fill in header
+    pblock->header.version = chain::block_version_dpos;
+    pblock->header.number = block_height;
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.timestamp = std::max(block_time, prev_header.timestamp);
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.bits = prev_header.bits;
+
+    // Create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    uint32_t total_tx_sig_length = get_tx_sign_length(coinbase);
+
+    uint64_t total_fee = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+
+    // Get txs
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase reward
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    bool can_use_dpos = pblock->can_use_dpos_consensus() &&
+        witness::get().verify_signer(public_key_data_, *pblock);
+    if (!can_use_dpos) {
+        return nullptr;
+    }
+
+    auto& coinbase_tx = pblock->transactions.front();
+    if (witness::is_begin_of_epoch(block_height)) {
+        auto&& vote_output = witness::get().create_witness_vote_result(block_height);
         if (vote_output.script.operations.empty()) {
             log::error(LOG_HEADER) << "create_witness_vote_result failed";
             return nullptr;
@@ -677,39 +760,161 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
         log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
     }
 
-    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-    if (can_use_dpos) {
-        pblock->header.version = chain::block_version_dpos;
-        pblock->header.bits = prev_header.bits;
-    }
-    else {
-        pblock->header.version = chain::block_version_pow;
-        pblock->header.bits = get_next_target_required(pblock->header, prev_header, false);
-    }
     pblock->header.transaction_count = pblock->transactions.size();
     pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
 
-    if (can_use_dpos) {
-        // add witness's signature to the current block header
-        bc::endorsement endorse;
-        if (!witness::sign(endorse, private_key_, pblock->header)) {
-            log::error(LOG_HEADER) << "witness sign failed in create_new_block";
-            return nullptr;
-        }
-
-        auto& coinbase_script = coinbase_tx.inputs.front().script;
-        auto& coinbase_input_ops = coinbase_script.operations;
-        coinbase_input_ops.push_back({ chain::opcode::special, endorse });
-        coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
-
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER)
-            << "create a DPoS block with signatures at height " << pblock->header.number
-            << ", coinbase input script is "
-            << coinbase_script.to_string(chain::get_script_context());
-#endif
+    // add witness's signature to the current block header
+    bc::endorsement endorse;
+    if (!witness::sign(endorse, private_key_, pblock->header)) {
+        log::error(LOG_HEADER) << "witness sign failed in create_new_block";
+        return nullptr;
     }
 
+    auto& coinbase_script = coinbase_tx.inputs.front().script;
+    auto& coinbase_input_ops = coinbase_script.operations;
+    coinbase_input_ops.push_back({ chain::opcode::special, endorse });
+    coinbase_input_ops.push_back({ chain::opcode::special, public_key_data_ });
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "create a DPoS block with signatures at height " << block_height
+        << ", coinbase input script is "
+        << coinbase_script.to_string(chain::get_script_context());
+#endif
+
+    return pblock;
+}
+
+miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_address)
+{
+    block_chain_impl& block_chain = node_.chain_impl();
+
+    // Get last block
+    uint64_t last_height = 0;
+    header prev_header;
+    if (!block_chain.get_last_height(last_height)
+            || !block_chain.get_header(prev_header, last_height)) {
+        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
+        return nullptr;
+    }
+
+    // Check if PoS is eanbled at last_height
+    uint64_t block_height = last_height + 1;
+    if (block_height < pos_enabled_height) {
+        log::warning(LOG_HEADER) << "PoS is not allowed at block height:" << last_height;
+        return nullptr;
+    }
+
+    // Check deposited stake
+    if (!block_chain.check_pos_capability(last_height, pay_address)) {
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
+        sleep_for_mseconds(10 * 1000);
+        return nullptr;
+    }
+
+    // check utxo stake
+    chain::output_info::list stake_outputs;
+    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
+        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
+        sleep_for_mseconds(10 * 1000);
+        return nullptr;
+    }
+
+    // create block
+    //
+    block_ptr pblock = make_shared<block>();
+    pblock->header.version = chain::block_version_pos;  // pos
+    pblock->header.number = block_height;
+    pblock->header.previous_block_hash = prev_header.hash();
+    pblock->header.nonce = 0;
+    pblock->header.mixhash = 0;
+    pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
+
+    // update transactoins
+    //
+    uint64_t total_fee = 0;
+    uint32_t total_tx_sig_length = 0;
+    vector<transaction_ptr> txs;
+    vector<transaction_ptr> reward_txs;
+
+    // create coinbase tx
+    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
+    if (witness::is_begin_of_epoch(block_height)) {
+        auto&& vote_output = witness::get().create_witness_vote_result(block_height);
+        if (vote_output.script.operations.empty()) {
+            log::error(LOG_HEADER) << "create_witness_vote_result failed";
+            return nullptr;
+        }
+        coinbase->outputs.emplace_back(vote_output);
+        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
+    }
+    total_tx_sig_length += get_tx_sign_length(coinbase);
+
+    // create coinstake
+    uint32_t start_time = get_adjust_time(block_height);
+    uint32_t block_time = start_time;
+    transaction_ptr coinstake(nullptr);
+
+    while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
+        pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
+        coinstake = create_coinstake_tx(private_key_, pay_address, pblock, stake_outputs);
+        if (coinstake) {
+            break;
+        }
+
+        if (is_stop_miner(block_height, pblock)) {
+            break;
+        }
+
+        uint32_t sleep_time = pseudo_random(200, 300);
+        sleep_for_mseconds(sleep_time);
+        block_time = get_adjust_time(block_height);
+    }
+
+    if (nullptr == coinstake) {
+        return nullptr;
+    }
+
+    total_tx_sig_length += get_tx_sign_length(coinstake);
+
+    // Get txs
+    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
+
+    // Update coinbase reward
+    coinbase->outputs[0].value =
+        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
+
+    // Put coinbase first
+    pblock->transactions.push_back(*coinbase);
+
+    // Put coinbase second
+    pblock->transactions.push_back(*coinstake);
+
+    // Put coinage reward_txs before txs.
+    for (auto i : reward_txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Put txs
+    for (auto i : txs) {
+        pblock->transactions.push_back(*i);
+    }
+
+    // Fill in header
+    pblock->header.transaction_count = pblock->transactions.size();
+    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
+
+    // Sign block
+    if (!sign(pblock->blocksig, private_key_, pblock->header.hash())) {
+        log::error(LOG_HEADER) << "PoS mining failed. cann't sign block.";
+        return nullptr;
+    }
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+        << "create a PoS block at height " << block_height
+        << ", header hash is " << encode_hash(pblock->header.hash());
+#endif
     return pblock;
 }
 
@@ -848,132 +1053,6 @@ miner::transaction_ptr miner::create_coinstake_tx(
     return coinstake;
 }
 
-miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_address)
-{
-    block_chain_impl& block_chain = node_.chain_impl();
-
-    const ec_secret& private_key= private_key_;
-
-    // Get last block
-    uint64_t last_height = 0;
-    header prev_header;
-    if (!block_chain.get_last_height(last_height)
-            || !block_chain.get_header(prev_header, last_height)) {
-        log::warning(LOG_HEADER) << "get_last_height or get_header fail. last_height:" << last_height;
-        return nullptr;
-    }
-
-    // Check if PoS is eanbled at last_height
-    uint64_t block_height = last_height + 1;
-    if (block_height < pos_enabled_height) {
-        log::warning(LOG_HEADER) << "PoS is not allowed at block height:" << last_height;
-        return nullptr;
-    }
-
-    // Check deposited stake
-    if (!block_chain.check_pos_capability(last_height, pay_address)) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is deposited at address " << pay_address;
-        sleep_for_mseconds(10 * 1000);
-        return nullptr;
-    }
-
-    // check utxo stake
-    chain::output_info::list stake_outputs;
-    if (!block_chain.select_utxo_for_staking(last_height, pay_address, stake_outputs, 1000)) {
-        log::error(LOG_HEADER) << "PoS mining is not allowed. no enough stake is holded at address " << pay_address;
-        sleep_for_mseconds(10 * 1000);
-        return nullptr;
-    }
-
-    // create block
-    //
-    block_ptr pblock = make_shared<block>();
-    pblock->header.version = chain::block_version_pos;  // pos
-    pblock->header.number = block_height;
-    pblock->header.previous_block_hash = prev_header.hash();
-    pblock->header.nonce = 0;
-    pblock->header.mixhash = 0;
-    pblock->header.bits = get_next_target_required(pblock->header, prev_header, true);
-
-    // update transactoins
-    //
-    uint64_t total_fee = 0;
-    uint32_t total_tx_sig_length = 0;
-    vector<transaction_ptr> txs;
-    vector<transaction_ptr> reward_txs;
-
-    // create coinbase tx
-    transaction_ptr coinbase = create_coinbase_tx(pay_address, 0, block_height, 0, 0);
-    total_tx_sig_length += get_tx_sign_length(coinbase);
-
-    // create coinstake
-    uint32_t start_time = get_adjust_time(block_height);
-    uint32_t block_time = start_time;
-    transaction_ptr coinstake(nullptr);
-
-    while (nullptr == coinstake && block_time < (start_time  + block_timespan_window / 2)) {
-        pblock->header.timestamp = std::max(block_time, prev_header.timestamp + 1);
-        coinstake = create_coinstake_tx(private_key, pay_address, pblock, stake_outputs);
-        if (coinstake) {
-            break;
-        }
-
-        if (is_stop_miner(block_height, pblock)) {
-            break;
-        }
-
-        uint32_t sleep_time = pseudo_random(200, 300);
-        sleep_for_mseconds(sleep_time);
-        block_time = get_adjust_time(block_height);
-    }
-
-    if (nullptr == coinstake) {
-        return nullptr;
-    }
-
-    total_tx_sig_length += get_tx_sign_length(coinstake);
-
-    // Get txs
-    get_block_transactions(last_height, txs, reward_txs, total_fee, total_tx_sig_length);
-
-    // Update coinbase reward
-    coinbase->outputs[0].value =
-        total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, true);
-
-    // Put coinbase first
-    pblock->transactions.push_back(*coinbase);
-
-    // Put coinbase second
-    pblock->transactions.push_back(*coinstake);
-
-    // Put coinage reward_txs before txs.
-    for (auto i : reward_txs) {
-        pblock->transactions.push_back(*i);
-    }
-
-    // Put txs
-    for (auto i : txs) {
-        pblock->transactions.push_back(*i);
-    }
-
-    // Fill in header
-    pblock->header.transaction_count = pblock->transactions.size();
-    pblock->header.merkle = pblock->generate_merkle_root(pblock->transactions);
-
-    // Sign block
-    if (!sign(pblock->blocksig, private_key, pblock->header.hash())) {
-        log::error(LOG_HEADER) << "PoS mining failed. cann't sign block.";
-        return nullptr;
-    }
-
-#ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "create a PoS block at height " << pblock->header.number
-        << ", header hash is " << encode_hash(pblock->header.hash());
-#endif
-    return pblock;
-}
-
 chain::block_version miner::get_accept_block_version() const
 {
     return accept_block_version_;
@@ -1098,29 +1177,6 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
         return true;
     }
 
-#ifdef PRIVATE_CHAIN
-    // if i can use dpos, then exit this loop and create new block with dpos consensus next time
-    if (get_accept_block_version() == chain::block_version_any &&
-        block && !block->must_use_pow_consensus()) {
-        boost::mutex mutex;
-        mutex.lock();
-        std::vector<transaction_ptr> transactions;
-        auto f = [&transactions, &mutex](const error_code& ec, const vector<transaction_ptr>& transactions_) -> void
-        {
-            if (error::success == ec.value()) {
-                transactions = transactions_;
-            }
-            mutex.unlock();
-        };
-        node_.pool().fetch(f);
-
-        boost::unique_lock<boost::mutex> lock(mutex);
-
-        if (!transactions.empty()) {
-            return true;
-        }
-    }
-#endif
     return false;
 }
 
