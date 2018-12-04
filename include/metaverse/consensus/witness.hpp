@@ -109,6 +109,9 @@ public:
     static bool is_between_vote_maturity_interval(uint64_t height);
     static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
+    bool add_witness_vote_result(chain::block& block);
+    bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
+
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);

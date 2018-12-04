@@ -103,6 +103,7 @@ public:
 
     static int get_lock_heights_index(uint64_t height);
     static uint64_t calculate_block_subsidy(uint64_t height, bool is_testnet, uint32_t version);
+    static uint64_t calculate_block_subsidy_pow(uint64_t height, bool is_testnet);
     static uint64_t calculate_block_subsidy_pos(uint64_t height, bool is_testnet);
     static uint64_t calculate_block_subsidy_dpos(uint64_t height, bool is_testnet);
     static uint64_t calculate_lockblock_reward(uint64_t lcok_heights, uint64_t num);
@@ -116,8 +117,10 @@ public:
 private:
     void work(const wallet::payment_address& pay_address);
     block_ptr create_new_block(const wallet::payment_address& pay_address);
+    block_ptr create_new_block_pow(const wallet::payment_address& pay_address);
     block_ptr create_new_block_pos(const wallet::payment_address& pay_address);
     block_ptr create_new_block_dpos(const wallet::payment_address& pay_address);
+
     uint32_t get_adjust_time(uint64_t height) const;
     uint32_t get_median_time_past(uint64_t height) const;
     bool get_transaction(std::vector<transaction_ptr>&, previous_out_map_t&, tx_fee_map_t&) const;

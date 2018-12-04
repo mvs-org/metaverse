@@ -177,6 +177,28 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     return output;
 }
 
+bool witness::add_witness_vote_result(chain::block& block)
+{
+    auto block_height = block.header.number;
+    auto& coinbase_tx = block.transactions.front();
+    return add_witness_vote_result(coinbase_tx, block_height);
+}
+
+bool witness::add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height)
+{
+    BITCOIN_ASSERT(coinbase_tx.is_coinbase());
+    if (witness::is_begin_of_epoch(block_height)) {
+        auto&& vote_output = witness::get().create_witness_vote_result(block_height);
+        if (vote_output.script.operations.empty()) {
+            log::error(LOG_HEADER) << "create_witness_vote_result failed";
+            return false;
+        }
+        coinbase_tx.outputs.emplace_back(vote_output);
+        log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
+    }
+    return true;
+}
+
 bool witness::calc_witness_list(uint64_t height)
 {
     list witness_list;

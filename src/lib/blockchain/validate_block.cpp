@@ -718,7 +718,7 @@ code validate_block::connect_block(hash_digest& err_tx, blockchain::block_chain_
 
     const auto& coinbase = transactions.front();
     const auto reward = coinbase.total_output_value();
-    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, is_pos) + fees;
+    const auto value = consensus::miner::calculate_block_subsidy(height_, testnet_, version) + fees;
     return reward > value ? error::coinbase_too_large : error::success;
 }
 
