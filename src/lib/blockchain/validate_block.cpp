@@ -218,7 +218,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         if (!consensus::witness::verify_sign(endorse, pubkey, header)) {
             return error::witness_sign_invalid;
         }
-        if (!consensus::witness::get().verify_signer(pubkey, current_block_, prev_header)) {
+        if (!consensus::witness::get().verify_signer(pubkey, current_block_)) {
             return error::witness_mismatch;
         }
     }

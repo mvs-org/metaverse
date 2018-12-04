@@ -653,7 +653,7 @@ miner::block_ptr miner::create_new_block(const wallet::payment_address& pay_addr
     if (get_accept_block_version() == chain::block_version_dpos ||
         get_accept_block_version() == chain::block_version_any) {
         can_use_dpos = pblock->can_use_dpos_consensus();
-        can_use_dpos &= witness::get().verify_signer(public_key_data_, *pblock, prev_header);
+        can_use_dpos &= witness::get().verify_signer(public_key_data_, *pblock);
         if (!can_use_dpos && get_accept_block_version() == chain::block_version_dpos) {
             return nullptr;
         }

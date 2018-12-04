@@ -91,6 +91,7 @@ public:
     chain::block::ptr fetch_vote_result_block(uint64_t height);
 
     uint32_t get_slot_num(const witness_id& id) const;
+    uint32_t calc_slot_num(const chain::block& block) const;
 
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_string(const witness_id& id);
@@ -102,6 +103,7 @@ public:
     static bool is_dpos_enabled();
     static uint64_t get_height_in_epoch(uint64_t height);
     static uint64_t get_vote_result_height(uint64_t height);
+    static uint64_t get_round_begin_height(uint64_t height);
 
     static bool is_begin_of_epoch(uint64_t height);
     static bool is_between_vote_maturity_interval(uint64_t height);
@@ -110,8 +112,8 @@ public:
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
-    bool verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const;
-    bool verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const;
+    bool verify_signer(const public_key_t& public_key, const chain::block& block) const;
+    bool verify_signer(uint32_t witness_slot_num, const chain::block& block) const;
     bool verify_vote_result(const chain::block& block, list& witness_list, bool calc) const;
 
 private:

@@ -30,7 +30,7 @@ namespace consensus {
 
 uint32_t witness::pow_check_point_height = 100;
 uint64_t witness::witness_enable_height = 2000000;
-uint32_t witness::witness_number = 11;
+uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 20000;
 uint32_t witness::register_witness_lock_height = 10000;
 uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
@@ -75,7 +75,7 @@ void witness::init(p2p_node& node)
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
     witness::witness_enable_height = 50;
-    witness::witness_number = 11;
+    witness::witness_number = 23;
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
     witness::witness_lock_threshold = 1*(1e8); // ETP bits
@@ -388,6 +388,50 @@ uint32_t witness::get_slot_num(const witness_id& id) const
     return max_uint32;
 }
 
+uint32_t witness::calc_slot_num(const chain::block& block) const
+{
+    auto block_height = block.header.number;
+    if (!is_witness_enabled(block_height)) {
+        return max_uint32;
+    }
+
+    auto calced_slot_num = ((block_height - witness_enable_height) % witness_number);
+    auto round_begin_height = get_round_begin_height(block_height);
+    if (is_begin_of_epoch(round_begin_height)) {
+        return calced_slot_num;
+    }
+
+    // remember latest calced offset to reuse it
+    static std::pair<uint64_t, uint32_t> height_offset = {0, 0};
+
+    uint32_t offset = 0;
+    if (round_begin_height == height_offset.first) {
+        offset = height_offset.second;
+    }
+    else {
+        auto hash_digest_to_uint = [](const auto& hash) {
+            uint32_t result = 0;
+            for (size_t i = 0; i < hash_size; i += 4) {
+                result ^= ((hash[i]<<24) + (hash[i+1]<<16) + (hash[i+2]<<8) + hash[i+3]);
+            }
+            return result;
+        };
+
+        chain::header header;
+        for (auto i = round_begin_height - witness_number; i < round_begin_height; ++i) {
+            if (!node_.chain_impl().get_header(header, i)) {
+                return max_uint32;
+            }
+            offset ^= hash_digest_to_uint(header.hash());
+        }
+
+        offset %= witness_number;
+        height_offset = std::make_pair(round_begin_height, offset);
+    }
+
+    return (calced_slot_num + offset) % witness_number;
+}
+
 witness::public_key_t witness::witness_to_public_key(const witness_id& id)
 {
     public_key_t public_key;
@@ -473,24 +517,24 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     return true;
 }
 
-bool witness::verify_signer(const public_key_t& public_key, const chain::block& block, const chain::header& prev_header) const
+bool witness::verify_signer(const public_key_t& public_key, const chain::block& block) const
 {
-    shared_lock lock(mutex_);
     auto witness_slot_num = get_slot_num(to_witness_id(public_key));
-    return verify_signer(witness_slot_num, block, prev_header);
+    return verify_signer(witness_slot_num, block);
 }
 
-bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block, const chain::header& prev_header) const
+bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block) const
 {
     if (witness_slot_num >= witness_number) {
         return false;
     }
 
-    const auto& curr_header = block.header;
-    auto block_height = curr_header.number;
-    auto calced_slot_num = ((block_height - witness_enable_height) % witness_number);
-
+    auto calced_slot_num = calc_slot_num(block);
     if (calced_slot_num == witness_slot_num) {
+        return true;
+    }
+
+    if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
         return true;
     }
 
@@ -542,6 +586,13 @@ bool witness::is_between_vote_maturity_interval(uint64_t height)
 bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
 {
     return get_vote_result_height(height1) == get_vote_result_height(height2);
+}
+
+uint64_t witness::get_round_begin_height(uint64_t height)
+{
+    return is_witness_enabled(height)
+        ? height - ((height - witness_enable_height) % witness_number)
+        : 0;
 }
 
 } // consensus
