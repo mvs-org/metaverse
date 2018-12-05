@@ -104,6 +104,12 @@ void server_node::start(result_handler handler)
         return;
     }
 
+    if (!consensus::witness::get().init_witness_list())
+    {
+        log::error(LOG_SERVER) << "init witness list failed.";
+        handler(error::witness_update_error);
+        return;
+    }
 }
 
 // Run sequence.

@@ -82,13 +82,6 @@ void witness::init(p2p_node& node)
     witness::vote_maturity = 2;
     witness::max_dpos_interval = 1;
 #endif
-
-#ifdef PRIVATE_CHAIN
-    log::info("blockchain") << "running prinet";
-#else
-    log::info("blockchain")
-        << (!node.is_use_testnet_rules() ? "running mainnet" : "running testnet");
-#endif
 }
 
 witness& witness::create(p2p_node& node)
@@ -387,6 +380,39 @@ bool witness::update_witness_list(const chain::block& block, bool calc)
     }
 
     swap_witness_list(witness_list);
+    return true;
+}
+
+bool witness::init_witness_list()
+{
+    if (!is_dpos_enabled()) {
+        return true;
+    }
+
+    auto& chain = node_.chain_impl();
+    chain.set_sync_disabled(true);
+    unique_lock lock(chain.get_mutex());
+
+    uint64_t height = 0;
+    if (!chain.get_last_height(height)) {
+        log::info(LOG_HEADER) << "get last height failed";
+        return false;
+    }
+
+    if (consensus::witness::is_witness_enabled(height)) {
+        if (!consensus::witness::get().update_witness_list(height)) {
+            log::info(LOG_HEADER) << "update witness list failed at height " << height;
+            return false;
+        }
+        log::info(LOG_HEADER) << "update witness list succeed at height " << height;
+#ifdef PRIVATE_CHAIN
+        log::info(LOG_HEADER) << consensus::witness::get().show_list();
+#else
+        log::debug(LOG_HEADER) << consensus::witness::get().show_list();
+#endif
+    }
+
+    chain.set_sync_disabled(false);
     return true;
 }
 

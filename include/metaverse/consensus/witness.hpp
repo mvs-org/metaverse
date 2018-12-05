@@ -85,6 +85,7 @@ public:
     // generate a new epoch witness list
     bool calc_witness_list(uint64_t height);
     bool calc_witness_list(list& witness_list, uint64_t height) const;
+    bool init_witness_list();
     bool update_witness_list(uint64_t height, bool calc=false);
     bool update_witness_list(const chain::block& block, bool calc=true);
     chain::output create_witness_vote_result(uint64_t height);

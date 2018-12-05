@@ -31,6 +31,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <metaverse/server.hpp>
+#include <metaverse/macros_define.hpp>
 #include <metaverse/bitcoin/utility/backtrace.hpp>
 #include <metaverse/bitcoin/utility/path.hpp>
 
@@ -231,6 +232,13 @@ bool executor::run()
 
     // Now that the directory is verified we can create the node for it.
     node_ = std::make_shared<server_node>(metadata_.configured);
+
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_SERVER) << "running prinet";
+#else
+    log::info(LOG_SERVER)
+        << (!node_->is_use_testnet_rules() ? "running mainnet" : "running testnet");
+#endif
 
     // The callback may be returned on the same thread.
     node_->start(

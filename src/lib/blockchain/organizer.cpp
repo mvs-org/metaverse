@@ -62,35 +62,6 @@ void organizer::start()
 {
     stopped_ = false;
     subscriber_->start();
-
-    if (consensus::witness::is_dpos_enabled()) {
-        chain_.set_sync_disabled(true);
-
-        // update witness in a new thread
-        witness_updater_ = std::make_shared<std::thread>([this]() {
-            unique_lock lock(chain_.get_mutex());
-            uint64_t height = 0;
-            if (!chain_.get_last_height(height)) {
-                log::info(LOG_BLOCKCHAIN) << "get last height failed";
-                return;
-            }
-
-            if (consensus::witness::is_witness_enabled(height)) {
-                log::info(LOG_BLOCKCHAIN) << "begin to update witness list at height " << height;
-                if (!consensus::witness::get().update_witness_list(height)) {
-                    log::info(LOG_BLOCKCHAIN) << "update witness list failed at height " << height;
-                    return;
-                }
-                log::info(LOG_BLOCKCHAIN) << "update witness list succeed at height " << height;
-#ifdef PRIVATE_CHAIN
-                log::info(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
-#else
-                log::debug(LOG_BLOCKCHAIN) << consensus::witness::get().show_list();
-#endif
-            }
-            chain_.set_sync_disabled(false);
-        });
-    }
 }
 
 void organizer::stop()
@@ -98,10 +69,6 @@ void organizer::stop()
     stopped_ = true;
     subscriber_->stop();
     subscriber_->invoke(error::service_stopped, 0, {}, {});
-    if (witness_updater_) {
-        witness_updater_->join();
-        witness_updater_.reset();
-    }
 }
 
 bool organizer::stopped()
