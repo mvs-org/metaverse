@@ -34,7 +34,6 @@ namespace network {
 #define CLASS session_outbound
 
 using namespace std::placeholders;
-static std::vector<deadline::ptr> connect_timer_list;
 
 session_outbound::session_outbound(p2p& network)
   : session_batch(network, true),
@@ -43,6 +42,17 @@ session_outbound::session_outbound(p2p& network)
 {
     outbound_counter = 0;
     in_reseeding = false;
+}
+
+session_outbound::~session_outbound()
+{
+    if (reseeding_timer_) {
+        reseeding_timer_->stop();
+    }
+    for (auto connect_timer : connect_timer_list_) {
+        connect_timer->stop();
+    }
+    connect_timer_list_.clear();
 }
 
 // Start sequence.
@@ -78,8 +88,8 @@ void session_outbound::handle_started(const code& ec, result_handler handler)
 
     auto self = shared_from_this();
     auto make_timer = [this, self]() -> deadline::ptr {
-        connect_timer_list.emplace_back(std::make_shared<deadline>(pool_, asio::seconds(2)));
-        return connect_timer_list.back();
+        connect_timer_list_.emplace_back(std::make_shared<deadline>(pool_, asio::seconds(2)));
+        return connect_timer_list_.back();
     };
 
     for (auto i = 0; i < 3; ++i) {
@@ -238,11 +248,6 @@ void session_outbound::handle_channel_stop(
     const int counter = --outbound_counter;
 
     if (stopped(ec)) {
-        reseeding_timer_->stop();
-        for (auto connect_timer : connect_timer_list) {
-            connect_timer->stop();
-        }
-        connect_timer_list.clear();
         return;
     }
 

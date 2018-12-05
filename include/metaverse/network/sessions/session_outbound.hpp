@@ -43,6 +43,7 @@ public:
 
     /// Construct an instance.
     session_outbound(p2p& network);
+    ~session_outbound();
 
     /// Start the session.
     void start(result_handler handler) override;
@@ -73,6 +74,7 @@ private:
     p2p& network__;
 
     deadline::ptr reseeding_timer_;
+    std::vector<deadline::ptr> connect_timer_list_;
 };
 
 } // namespace network

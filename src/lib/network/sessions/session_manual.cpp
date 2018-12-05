@@ -197,8 +197,7 @@ void session_manual::handle_channel_stop(const code& ec,
     log::trace(LOG_NETWORK)
         << "Manual channel stopped: " << ec.message();
 
-    if (stopped() || (ec.value() == error::service_stopped) ||
-        (channel && blacklisted(channel->authority()))) {
+    if (stopped(ec) || (channel && blacklisted(channel->authority()))) {
         connect_timer_->stop();
         return;
     }
