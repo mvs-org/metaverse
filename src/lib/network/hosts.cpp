@@ -321,7 +321,8 @@ code hosts::clear()
     upgrade_to_unique_lock unq_lock(lock);
 
     if (!buffer_.empty()) {
-        std::swap(backup_, buffer_);
+        backup_.clear();
+        std::copy(buffer_.begin(), buffer_.end(), std::back_inserter(backup_));
         buffer_.clear();
     }
 
