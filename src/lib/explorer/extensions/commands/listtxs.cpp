@@ -89,7 +89,7 @@ console_result listtxs::invoke(Json::Value& jv_output,
     }
 
     // height check
-    if (option_.height.is_invalid()) {
+    if (!option_.height.is_valid()) {
         throw block_height_exception{"invalid height option! "
             + option_.height.encode_colon_delimited()};
     }

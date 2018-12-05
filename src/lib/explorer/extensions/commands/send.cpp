@@ -46,7 +46,7 @@ console_result send::invoke(Json::Value& jv_output,
     }
 
     // exclude range check
-    if (option_.exclude.is_invalid()) {
+    if (!option_.exclude.is_valid()) {
         throw argument_legality_exception("invalid exclude option! "
             + option_.exclude.encode_colon_delimited());
     }

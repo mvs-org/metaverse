@@ -100,18 +100,15 @@ console_result getaddressetp::invoke(Json::Value& jv_output,
     }
     else {
         // range check
-        if (option_.range.is_invalid()) {
+        if (!option_.range.is_valid()) {
             throw argument_legality_exception("invalid range option! "
                 + option_.range.encode_colon_delimited());
         }
         auto utxo_balances = std::make_shared<utxo_balance::list>();
         sync_fetchbalance(waddr, blockchain, utxo_balances);
         for (const auto& balance : *utxo_balances) {
-            if (option_.range.first() < option_.range.second()) {
-                if (balance.unspent_balance >= option_.range.first() &&
-                    balance.unspent_balance < option_.range.second()) {
-                    balances.append(to_json_value(balance));
-                }
+            if (option_.range.is_in_range(balance.unspent_balance)) {
+                balances.append(to_json_value(balance));
             }
         }
     }

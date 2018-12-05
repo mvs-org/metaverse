@@ -127,12 +127,29 @@ public:
         return encode_colon_delimited(*this);
     }
 
-    bool is_invalid() const
+    bool is_default() const
     {
-        if (std::is_arithmetic<T1>::value && std::is_arithmetic<T2>::value) {
-            return (first_ != T1() || second_ != T2()) && first_ >= second_;
+        return first_ == T1() && second_ == T2();
+    }
+
+    template<typename T3>
+    bool is_in_range(T3 value, bool default_ok=true) const
+    {
+        if (std::is_arithmetic<T1>::value &&
+            std::is_arithmetic<T2>::value &&
+            std::is_arithmetic<T3>::value) {
+            return (default_ok && is_default()) || (first_ <= value && value < second_);
         }
         return false;
+    }
+
+    bool is_valid(bool default_ok=true) const
+    {
+        if (std::is_arithmetic<T1>::value &&
+            std::is_arithmetic<T2>::value) {
+            return (default_ok && is_default()) || (first_ < second_);
+        }
+        return true;
     }
 
     /**
