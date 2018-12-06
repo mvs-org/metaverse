@@ -87,6 +87,9 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         ec_compressed point;
         libbitcoin::secret_to_public(point, derive_private_key.secret());
 
+        log::info("Wallet") << "pri:" << pk << "pub:" << encode_base16(point);
+
+
         // Serialize to the original compression state.
         auto ep =  wallet::ec_public(point, true);
 
