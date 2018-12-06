@@ -19,9 +19,7 @@
  */
 #include <metaverse/consensus/fts.hpp>
 #include <metaverse/macros_define.hpp>
-#include <metaverse/node/p2p_node.hpp>
-#include <metaverse/blockchain/settings.hpp>
-#include <future>
+#include <ctime>
 #include <random>
 
 #define LOG_HEADER "FTS"
@@ -246,44 +244,22 @@ fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::list& stakeholders)
         return nullptr;
     }
 
-    typedef std::vector<fts_node::ptr> node_vec;
-    typedef std::shared_ptr<node_vec> node_vec_ptr;
-    node_vec_ptr merkle = std::make_shared<node_vec>();
-    for (auto holder : stakeholders) {
-        auto node_ptr = std::make_shared<fts_node>(holder);
-        merkle->push_back(node_ptr);
+    const size_t size = stakeholders.size();
+    std::vector<fts_node::ptr> tree(size * 2);
+
+    for (size_t i = 0; i < size; i++) {
+        auto& holder = stakeholders[i];
+        tree[size + i] = std::make_shared<fts_node>(holder);
     }
 
-    // While there is more than 1 hash in the list, keep looping...
-    while (merkle->size() > 1) {
-        // If number of hashes is odd, duplicate last hash in the list.
-        if (merkle->size() % 2 != 0) {
-            merkle->push_back(merkle->back());
-        }
-
-        // List size is now even.
-        BITCOIN_ASSERT(merkle->size() % 2 == 0);
-
-        // New hash list.
-        node_vec_ptr new_merkle = std::make_shared<node_vec>();
-
-        // Loop through hashes 2 at a time.
-        for (auto it = merkle->begin(); it != merkle->end(); it += 2) {
-            // Hash both of the hashes.
-            auto left = *it;
-            auto right = *(it + 1);
-            auto new_root = std::make_shared<fts_node>(left, right);
-
-            // Add this to the new list.
-            new_merkle->push_back(new_root);
-        }
-
-        // This is the new list.
-        merkle = new_merkle;
+    for (size_t i = size - 1; i > 0; i--) {
+        fts_node::ptr left = tree[i * 2];
+        fts_node::ptr right = tree[i * 2 + 1];
+        tree[i] = std::make_shared<fts_node>(left, right);
     }
 
-    // Finally we end up with a single item.
-    return *merkle->begin();
+    BITCOIN_ASSERT(tree.size() > 1);
+	return tree[1];
 }
 
 fts_node::ptr fts::select_by_fts(fts_node::ptr merkle_tree, uint32_t seed)
@@ -326,10 +302,12 @@ bool fts::verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& st
 
 void fts::test()
 {
+    const uint32_t seed = std::time(nullptr);
+
     fts_stake_holder::list stake_holders = {
-        {"MDdET3ybWc2cGEXXxBcjtXNCcmzJe48bhc", 3000000},
-        {"MQA3r2AVy9TLzoYwdyCmT2roCqTHVRk2Tj", 4000000},
-        {"MWLwUrmgdGGADJmQ9nsCSHDGz6BZd1aGhw", 6000000},
+        {"MDdET3ybWc2cGEXXxBcjtXNCcmzJe48bhc", 333000000},
+        {"MQA3r2AVy9TLzoYwdyCmT2roCqTHVRk2Tj", 331000000},
+        {"MWLwUrmgdGGADJmQ9nsCSHDGz6BZd1aGhw", 333000000},
         {"MUFhTGxWE2zciFYY4oQ4NJqNnz6u4Yi1dy", 8000000},
         {"MPgsYGbKfhLRptHLjHvNU2B2GumqTYSdmp", 9000000},
         {"MQibP3A6VNGqR5ZbKpkyKrU52zA8nQDZt8", 1000000},
@@ -358,12 +336,15 @@ void fts::test()
         {"MQBNSnNdgQjTcNVoJSLvoAAj29pr1MUJdL", 2200000},
         {"MADNw1zEFwxdCKpvozyjQAG6yXZ4C582pN", 1100000},
         {"M8vjBXDnisgjvAZCj9jVFnq4sxEqbBDxZ7", 45600000},
-        {"MBoLXcgSbmx1ubJgVYhDbEcqDdgprcjFN5", 45600000},
-        {"MP6S7vJp6EtWvRhneeLxSmo8fJrbQaXvcS", 45600000}};
+        {"MBoLXcgSbmx1ubJgVYhDbEcqDdgprcjFN5", 45300000},
+        {"MP6S7vJp6EtWvRhneeLxSmo8fJrbQaXvcS", 45200000}
+    };
+
+    log::info(LOG_HEADER) << "test: seed: " << seed << ", stake size: " << stake_holders.size();
 
     // first generation
     fts_node::ptr tree = fts::build_merkle_tree(stake_holders);
-    fts_node::ptr selected = fts::select_by_fts(tree, 100);
+    fts_node::ptr selected = fts::select_by_fts(tree, seed);
     log::info(LOG_HEADER)
         << "tree one: " << encode_hash(tree->hash()) << ", stake: " << tree->stake();
     log::info(LOG_HEADER)
@@ -376,7 +357,7 @@ void fts::test()
 
     // second generation
     fts_node::ptr tree2 = fts::build_merkle_tree(stake_holders);
-    fts_node::ptr selected2 = fts::select_by_fts(tree2, 100);
+    fts_node::ptr selected2 = fts::select_by_fts(tree2, seed);
     log::info(LOG_HEADER)
         << "tree two: " << encode_hash(tree2->hash()) << ", stake: " << tree2->stake();
     log::info(LOG_HEADER)
