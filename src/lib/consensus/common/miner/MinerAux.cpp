@@ -170,10 +170,11 @@ bool MinerAux::check_proof_of_stake(const chain::header& header, const chain::ou
         // Base target
         h256 boundary = HeaderAux::boundary(header);
         uint64_t amount = std::max<uint64_t>(1, (stake_output.data.value / coin_price()));
+        uint64_t stake = (uint64_t)(amount * pos_stake_factor);
 
         // Calculate hash
         u256 pos = HeaderAux::hash_head_pos(header, stake_output);
-        pos /= u256(amount * 10);
+        pos /= u256(stake);
 
         succeed = (h256(pos) <= boundary);
 

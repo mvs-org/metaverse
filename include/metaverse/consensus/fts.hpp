@@ -94,7 +94,7 @@ public:
     typedef std::shared_ptr<fts_node> ptr;
 
     fts_node(fts_node::ptr left, fts_node::ptr right);
-    fts_node(fts_stake_holder stakeholder);
+    fts_node(const fts_stake_holder& stakeholder);
 
     fts_node::ptr left() const;
     fts_node::ptr right() const;

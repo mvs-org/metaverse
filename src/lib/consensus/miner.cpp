@@ -30,6 +30,7 @@
 #include <metaverse/consensus/miner/MinerAux.h>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 #include <metaverse/consensus/witness.hpp>
+#include <metaverse/consensus/fts.hpp>
 #include <metaverse/bitcoin/chain/script/operation.hpp>
 #include <metaverse/bitcoin/config/hash160.hpp>
 #include <metaverse/bitcoin/wallet/ec_public.hpp>
@@ -1168,6 +1169,70 @@ bool miner::is_stop_miner(uint64_t block_height, block_ptr block) const
     return false;
 }
 
+void do_fts_test()
+{
+    fts_stake_holder::list stake_holders = {
+        { "MDdET3ybWc2cGEXXxBcjtXNCcmzJe48bhc", 3000000 },
+        { "MQA3r2AVy9TLzoYwdyCmT2roCqTHVRk2Tj", 4000000 },
+        { "MWLwUrmgdGGADJmQ9nsCSHDGz6BZd1aGhw", 6000000 },
+        { "MUFhTGxWE2zciFYY4oQ4NJqNnz6u4Yi1dy", 8000000 },
+        { "MPgsYGbKfhLRptHLjHvNU2B2GumqTYSdmp", 9000000 },
+        { "MQibP3A6VNGqR5ZbKpkyKrU52zA8nQDZt8", 1000000 },
+        { "MCwCVvrQ94fHg2hjY6JYEWiXwedUa6uxFF", 2000000 },
+        { "M8LZMA7vVCsWrWPsZdVy4Tac5WxrPKNZTh", 7000000 },
+        { "MV1VWVC7NiJ6BmZPXooiamZcp51SxMUFv3", 12000000 },
+        { "MAGjtX89zwjXtBTeKQc1tHSatWd2ivXm64", 26000000 },
+        { "MUMsvrkdm3yaJDBhYq9LT9UeynKhh1fhRd", 36000000 },
+        { "MVgazXx68NQfMb6Dm5Xbx7HqXxUoqt6Ab9", 28000000 },
+        { "MJuQPM6TuewrhPsmmAWab1qep2nw9fpU5X", 29000000 },
+        { "MQ4Ygm2nieCM6J1EkdaHjLNokRLBoG2SCT", 33000000 },
+        { "MLVC5FjVrx3MKt8UmuQxSVBQZa9uD4P4ZZ", 22300000 },
+        { "MCiggAFxy76WRRQQwrbSfc4oWZLMZiW2mE", 11200000 },
+        { "MJZLuKx6EeqggDB645kiwEkRwZ9qSfnqkY", 23600000 },
+        { "MPNT1Z8s8SkMh4kHSgxE2MdArMoAgHRN7o", 4900000 },
+        { "MHuLk8CKrPFB68WcQDb4o8JPVX8ZT3p7jq", 8900000 },
+        { "MBV6pQbHaRFUSGCo3oxUMy7w2dVDt2B9sN", 6700000 },
+        { "MGG7nhM6aKXzFQK4foWEsCE7UC79q3vCcs", 2200000 },
+        { "MHsukoRTNjuW6FyCAmyzNwwt2geWbYN1jh", 6800000 },
+        { "MFBv4HW8PBxY9Cz1TpqCA9aN5zWixqwvKy", 2700000 },
+        { "MNyvrdXC6CNjEpKu4nJgP35mT5f38nvpp4", 3700000 },
+        { "MVYAmc2RUfaGPFj4B8kLvEKv38DtZ2sGs9", 3800000 },
+        { "MUDPXwb3nAoPChrYWGeSBfTK4p8DVg5Laj", 5500000 },
+        { "MM7rqzepyqAMeZ4Vn7NBzAxsuR5SruLZZg", 4400000 },
+        { "MMQKQYrC4YA6EVn2DeKSvMiW5hgvBDTFQ6", 3300000 },
+        { "MQBNSnNdgQjTcNVoJSLvoAAj29pr1MUJdL", 2200000 },
+        { "MADNw1zEFwxdCKpvozyjQAG6yXZ4C582pN", 1100000 },
+        { "M8vjBXDnisgjvAZCj9jVFnq4sxEqbBDxZ7", 45600000 },
+        { "MBoLXcgSbmx1ubJgVYhDbEcqDdgprcjFN5", 45600000 },
+        { "MP6S7vJp6EtWvRhneeLxSmo8fJrbQaXvcS", 45600000 }
+    };
+
+    fts_node::ptr tree = fts::build_merkle_tree(stake_holders);
+    fts_node::ptr selected = fts::select_by_fts(tree, 100);
+    log::info(LOG_HEADER)
+        << "tree one: " << encode_hash(tree->hash()) << ", stake: " << tree->stake();
+    log::info(LOG_HEADER)
+        << "selected one: " << encode_hash(selected->hash()) << ", stake: " << selected->stake();
+
+    BITCOIN_ASSERT(selected->is_leaf());
+    auto holder = selected->stake_holder();
+    log::info(LOG_HEADER)
+        << "holder one: " << holder.address() << ", stake: " << holder.stake();
+
+
+    fts_node::ptr tree2 = fts::build_merkle_tree(stake_holders);
+    fts_node::ptr selected2 = fts::select_by_fts(tree2, 100);
+    log::info(LOG_HEADER)
+        << "tree two: " << encode_hash(tree2->hash()) << ", stake: " << tree2->stake();
+    log::info(LOG_HEADER)
+        << "selected two: " << encode_hash(selected2->hash()) << ", stake: " << selected2->stake();
+
+    BITCOIN_ASSERT(selected2->is_leaf());
+    auto holder2 = selected2->stake_holder();
+    log::info(LOG_HEADER)
+        << "holder two: " << holder2.address() << ", stake: " << holder2.stake();
+}
+
 bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
 {
     if (get_accept_block_version() == chain::block_version_dpos) {
@@ -1175,9 +1240,14 @@ bool miner::start(const wallet::payment_address& pay_address, uint16_t number)
             return false;
         }
     }
-    if (!thread_) {
-        new_block_limit_ = number;
-        thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));
+
+    // if (!thread_) {
+    //     new_block_limit_ = number;
+    //     thread_.reset(new boost::thread(bind(&miner::work, this, pay_address)));
+    // }
+
+    {
+        do_fts_test();
     }
     return true;
 }

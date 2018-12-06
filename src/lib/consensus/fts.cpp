@@ -191,7 +191,7 @@ fts_node::fts_node(fts_node::ptr left, fts_node::ptr right)
         << "\n       right: " << encode_hash(right->hash());
 }
 
-fts_node::fts_node(fts_stake_holder stakeholder)
+fts_node::fts_node(const fts_stake_holder& stakeholder)
     : left_(nullptr)
     , right_(nullptr)
     , stake_holder_(stakeholder)
@@ -234,7 +234,7 @@ uint64_t fts_node::stake() const
 
 bool fts_node::is_leaf() const
 {
-    return stake_holder_.is_empty();
+    return (left_ == nullptr && right_ == nullptr);
 }
 
 std::string fts_node::to_string() const
@@ -256,55 +256,56 @@ fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::list& stakeholders)
 
     typedef std::vector<fts_node::ptr> node_vec;
     typedef std::shared_ptr<node_vec> node_vec_ptr;
-    node_vec_ptr merkle = std::make_shared<node_vec>();
+    node_vec_ptr merkle = std::make_shared<node_vec>(stakeholders.size());
     for (auto holder : stakeholders) {
-        auto node_ptr = std::make_shared<fts_node>(holder);
+        fts_node node(holder);
+        auto node_ptr = std::make_shared<fts_node>(node);
         merkle->push_back(node_ptr);
     }
 
-    // log::info("build_merkle_tree")
-    //         << "stakeholders size: " << stakeholders.size();
-    // log::info("build_merkle_tree")
-    //         << "nodes size: " << merkle->size();
+    log::info("build_merkle_tree")
+            << "stakeholders size: " << stakeholders.size();
+    log::info("build_merkle_tree")
+            << "nodes size: " << merkle->size();
 
-    // for (auto it = merkle->begin(); it != merkle->end(); it ++) {
-    //     // Hash both of the hashes.
-    //     auto node = *it;
-    //     log::info("build_merkle_tree")
-    //         << "\n    node: " << node->to_string();
-    // }
-
-    // While there is more than 1 hash in the list, keep looping...
-    while (merkle->size() > 1) {
-        // If number of hashes is odd, duplicate last hash in the list.
-        if (merkle->size() % 2 != 0) {
-            merkle->push_back(merkle->back());
-        }
-
-        // List size is now even.
-        BITCOIN_ASSERT(merkle->size() % 2 == 0);
-
-        // New hash list.
-        node_vec_ptr new_merkle = std::make_shared<node_vec>();
-
-        // Loop through hashes 2 at a time.
-        for (auto it = merkle->begin(); it != merkle->end(); it += 2) {
-            // Hash both of the hashes.
-            auto left = *it;
-            auto right = *(it + 1);
-            log::info("build_merkle_tree")
-                << "\n    left: " << left->to_string()
-                << "\n   right: " << right->to_string();
-
-            auto new_root = std::make_shared<fts_node>(left, right);
-
-            // Add this to the new list.
-            new_merkle->push_back(new_root);
-        }
-
-        // This is the new list.
-        merkle = new_merkle;
+    for (auto it = merkle->begin(); it != merkle->end(); it ++) {
+        // Hash both of the hashes.
+        auto node = *it;
+        log::info("build_merkle_tree")
+            << "\n    node: " << node->to_string();
     }
+
+    // // While there is more than 1 hash in the list, keep looping...
+    // while (merkle->size() > 1) {
+    //     // If number of hashes is odd, duplicate last hash in the list.
+    //     if (merkle->size() % 2 != 0) {
+    //         merkle->push_back(merkle->back());
+    //     }
+
+    //     // List size is now even.
+    //     BITCOIN_ASSERT(merkle->size() % 2 == 0);
+
+    //     // New hash list.
+    //     node_vec_ptr new_merkle = std::make_shared<node_vec>();
+
+    //     // Loop through hashes 2 at a time.
+    //     for (auto it = merkle->begin(); it != merkle->end(); it += 2) {
+    //         // Hash both of the hashes.
+    //         auto left = *it;
+    //         auto right = *(it + 1);
+    //         log::info("build_merkle_tree")
+    //             << "\n    left: " << left->to_string()
+    //             << "\n   right: " << right->to_string();
+
+    //         auto new_root = std::make_shared<fts_node>(left, right);
+
+    //         // Add this to the new list.
+    //         new_merkle->push_back(new_root);
+    //     }
+
+    //     // This is the new list.
+    //     merkle = new_merkle;
+    // }
 
     // Finally we end up with a single item.
     return *merkle->begin();

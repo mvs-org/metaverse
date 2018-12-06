@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <metaverse/consensus/witness.hpp>
+#include <metaverse/consensus/fts.hpp>
 #include <metaverse/macros_define.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
