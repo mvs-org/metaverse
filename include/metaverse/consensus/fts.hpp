@@ -106,8 +106,7 @@ public:
 
     std::string to_string() const;
 
-  private:
-    fts_node::ptr left_;
+private : fts_node::ptr left_;
     fts_node::ptr right_;
     fts_stake_holder stake_holder_;
     hash_digest hash_;
@@ -119,9 +118,8 @@ public:
     static fts_node::ptr build_merkle_tree(const fts_stake_holder::list& stakeholders);
     static fts_node::ptr select_by_fts(fts_node::ptr merkle_tree, uint32_t seed);
     static bool verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& stake_hash);
-private:
 
-private:
+    static void test();
 };
 
 } // consensus

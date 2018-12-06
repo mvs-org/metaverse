@@ -185,10 +185,6 @@ fts_node::fts_node(fts_node::ptr left, fts_node::ptr right)
     , right_(right)
     , hash_(to_hash(left, right))
 {
-    log::info("fts_node")
-        << "\n >> new node: " << encode_hash(hash_)
-        << "\n        left: " << encode_hash(left_->hash())
-        << "\n       right: " << encode_hash(right->hash());
 }
 
 fts_node::fts_node(const fts_stake_holder& stakeholder)
@@ -197,10 +193,6 @@ fts_node::fts_node(const fts_stake_holder& stakeholder)
     , stake_holder_(stakeholder)
     , hash_(to_hash(stake_holder_))
 {
-    log::info("fts_node")
-            << "\n >> new node: " << encode_hash(hash_)
-            << "\n     address: " << stake_holder_.address()
-            << "\n       stake: " << stake_holder_.stake();
 }
 
 fts_node::ptr fts_node::left() const
@@ -256,56 +248,39 @@ fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::list& stakeholders)
 
     typedef std::vector<fts_node::ptr> node_vec;
     typedef std::shared_ptr<node_vec> node_vec_ptr;
-    node_vec_ptr merkle = std::make_shared<node_vec>(stakeholders.size());
+    node_vec_ptr merkle = std::make_shared<node_vec>();
     for (auto holder : stakeholders) {
-        fts_node node(holder);
-        auto node_ptr = std::make_shared<fts_node>(node);
+        auto node_ptr = std::make_shared<fts_node>(holder);
         merkle->push_back(node_ptr);
     }
 
-    log::info("build_merkle_tree")
-            << "stakeholders size: " << stakeholders.size();
-    log::info("build_merkle_tree")
-            << "nodes size: " << merkle->size();
+    // While there is more than 1 hash in the list, keep looping...
+    while (merkle->size() > 1) {
+        // If number of hashes is odd, duplicate last hash in the list.
+        if (merkle->size() % 2 != 0) {
+            merkle->push_back(merkle->back());
+        }
 
-    for (auto it = merkle->begin(); it != merkle->end(); it ++) {
-        // Hash both of the hashes.
-        auto node = *it;
-        log::info("build_merkle_tree")
-            << "\n    node: " << node->to_string();
+        // List size is now even.
+        BITCOIN_ASSERT(merkle->size() % 2 == 0);
+
+        // New hash list.
+        node_vec_ptr new_merkle = std::make_shared<node_vec>();
+
+        // Loop through hashes 2 at a time.
+        for (auto it = merkle->begin(); it != merkle->end(); it += 2) {
+            // Hash both of the hashes.
+            auto left = *it;
+            auto right = *(it + 1);
+            auto new_root = std::make_shared<fts_node>(left, right);
+
+            // Add this to the new list.
+            new_merkle->push_back(new_root);
+        }
+
+        // This is the new list.
+        merkle = new_merkle;
     }
-
-    // // While there is more than 1 hash in the list, keep looping...
-    // while (merkle->size() > 1) {
-    //     // If number of hashes is odd, duplicate last hash in the list.
-    //     if (merkle->size() % 2 != 0) {
-    //         merkle->push_back(merkle->back());
-    //     }
-
-    //     // List size is now even.
-    //     BITCOIN_ASSERT(merkle->size() % 2 == 0);
-
-    //     // New hash list.
-    //     node_vec_ptr new_merkle = std::make_shared<node_vec>();
-
-    //     // Loop through hashes 2 at a time.
-    //     for (auto it = merkle->begin(); it != merkle->end(); it += 2) {
-    //         // Hash both of the hashes.
-    //         auto left = *it;
-    //         auto right = *(it + 1);
-    //         log::info("build_merkle_tree")
-    //             << "\n    left: " << left->to_string()
-    //             << "\n   right: " << right->to_string();
-
-    //         auto new_root = std::make_shared<fts_node>(left, right);
-
-    //         // Add this to the new list.
-    //         new_merkle->push_back(new_root);
-    //     }
-
-    //     // This is the new list.
-    //     merkle = new_merkle;
-    // }
 
     // Finally we end up with a single item.
     return *merkle->begin();
@@ -347,6 +322,74 @@ bool fts::verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& st
     }
 
     return false;
+}
+
+void fts::test()
+{
+    fts_stake_holder::list stake_holders = {
+        {"MDdET3ybWc2cGEXXxBcjtXNCcmzJe48bhc", 3000000},
+        {"MQA3r2AVy9TLzoYwdyCmT2roCqTHVRk2Tj", 4000000},
+        {"MWLwUrmgdGGADJmQ9nsCSHDGz6BZd1aGhw", 6000000},
+        {"MUFhTGxWE2zciFYY4oQ4NJqNnz6u4Yi1dy", 8000000},
+        {"MPgsYGbKfhLRptHLjHvNU2B2GumqTYSdmp", 9000000},
+        {"MQibP3A6VNGqR5ZbKpkyKrU52zA8nQDZt8", 1000000},
+        {"MCwCVvrQ94fHg2hjY6JYEWiXwedUa6uxFF", 2000000},
+        {"M8LZMA7vVCsWrWPsZdVy4Tac5WxrPKNZTh", 7000000},
+        {"MV1VWVC7NiJ6BmZPXooiamZcp51SxMUFv3", 12000000},
+        {"MAGjtX89zwjXtBTeKQc1tHSatWd2ivXm64", 26000000},
+        {"MUMsvrkdm3yaJDBhYq9LT9UeynKhh1fhRd", 36000000},
+        {"MVgazXx68NQfMb6Dm5Xbx7HqXxUoqt6Ab9", 28000000},
+        {"MJuQPM6TuewrhPsmmAWab1qep2nw9fpU5X", 29000000},
+        {"MQ4Ygm2nieCM6J1EkdaHjLNokRLBoG2SCT", 33000000},
+        {"MLVC5FjVrx3MKt8UmuQxSVBQZa9uD4P4ZZ", 22300000},
+        {"MCiggAFxy76WRRQQwrbSfc4oWZLMZiW2mE", 11200000},
+        {"MJZLuKx6EeqggDB645kiwEkRwZ9qSfnqkY", 23600000},
+        {"MPNT1Z8s8SkMh4kHSgxE2MdArMoAgHRN7o", 4900000},
+        {"MHuLk8CKrPFB68WcQDb4o8JPVX8ZT3p7jq", 8900000},
+        {"MBV6pQbHaRFUSGCo3oxUMy7w2dVDt2B9sN", 6700000},
+        {"MGG7nhM6aKXzFQK4foWEsCE7UC79q3vCcs", 2200000},
+        {"MHsukoRTNjuW6FyCAmyzNwwt2geWbYN1jh", 6800000},
+        {"MFBv4HW8PBxY9Cz1TpqCA9aN5zWixqwvKy", 2700000},
+        {"MNyvrdXC6CNjEpKu4nJgP35mT5f38nvpp4", 3700000},
+        {"MVYAmc2RUfaGPFj4B8kLvEKv38DtZ2sGs9", 3800000},
+        {"MUDPXwb3nAoPChrYWGeSBfTK4p8DVg5Laj", 5500000},
+        {"MM7rqzepyqAMeZ4Vn7NBzAxsuR5SruLZZg", 4400000},
+        {"MMQKQYrC4YA6EVn2DeKSvMiW5hgvBDTFQ6", 3300000},
+        {"MQBNSnNdgQjTcNVoJSLvoAAj29pr1MUJdL", 2200000},
+        {"MADNw1zEFwxdCKpvozyjQAG6yXZ4C582pN", 1100000},
+        {"M8vjBXDnisgjvAZCj9jVFnq4sxEqbBDxZ7", 45600000},
+        {"MBoLXcgSbmx1ubJgVYhDbEcqDdgprcjFN5", 45600000},
+        {"MP6S7vJp6EtWvRhneeLxSmo8fJrbQaXvcS", 45600000}};
+
+    // first generation
+    fts_node::ptr tree = fts::build_merkle_tree(stake_holders);
+    fts_node::ptr selected = fts::select_by_fts(tree, 100);
+    log::info(LOG_HEADER)
+        << "tree one: " << encode_hash(tree->hash()) << ", stake: " << tree->stake();
+    log::info(LOG_HEADER)
+        << "selected one: " << encode_hash(selected->hash()) << ", stake: " << selected->stake();
+
+    BITCOIN_ASSERT(selected->is_leaf());
+    auto holder = selected->stake_holder();
+    log::info(LOG_HEADER)
+        << "holder one: " << holder.address() << ", stake: " << holder.stake();
+
+    // second generation
+    fts_node::ptr tree2 = fts::build_merkle_tree(stake_holders);
+    fts_node::ptr selected2 = fts::select_by_fts(tree2, 100);
+    log::info(LOG_HEADER)
+        << "tree two: " << encode_hash(tree2->hash()) << ", stake: " << tree2->stake();
+    log::info(LOG_HEADER)
+        << "selected two: " << encode_hash(selected2->hash()) << ", stake: " << selected2->stake();
+
+    BITCOIN_ASSERT(selected2->is_leaf());
+    auto holder2 = selected2->stake_holder();
+    log::info(LOG_HEADER)
+        << "holder two: " << holder2.address() << ", stake: " << holder2.stake();
+
+    // verify
+    BITCOIN_ASSERT(tree->hash() == tree2->hash());
+    BITCOIN_ASSERT(selected->hash() == selected2->hash());
 }
 
 
