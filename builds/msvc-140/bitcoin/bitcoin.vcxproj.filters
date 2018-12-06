@@ -581,6 +581,9 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output_point.cpp">
       <Filter>Source Files\chain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\math\ecvrf.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.hpp">
@@ -1152,6 +1155,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\base_primary.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\ecvrf.hpp">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
