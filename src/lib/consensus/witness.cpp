@@ -235,15 +235,13 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         return false;
     }
 
-    auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
-
     auto stakeholders = chain.get_register_witnesses_with_stake(
-        did_detail->get_address(), "", from_height, height + register_witness_lock_height);
+        did_detail->get_address(), "", 0, height + register_witness_lock_height);
     if (stakeholders == nullptr || stakeholders->empty()) {
         return false;
     }
 
-    if (stakeholders->size() < witness_number) {
+    if (stakeholders->size() <= witness_number) {
         for (const auto& stake_holder : *stakeholders) {
             witness_list.emplace_back(to_chunk(stake_holder->address()));
         }
