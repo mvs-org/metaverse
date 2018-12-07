@@ -1349,12 +1349,9 @@ bool miner::is_witness() const
 bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& prikey)
 {
     // set private key
-    if (!decode_base16(private_key_, prikey) ||
-        !bc::verify(private_key_) ||
-        private_key_.empty()) {
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER) << "miner verify private key failed";
-#endif
+    if (!decode_base16(private_key_, prikey)
+        || !bc::verify(private_key_) || private_key_.empty()) {
+        log::error(LOG_HEADER) << "miner verify private key failed";
         return false;
     }
 
@@ -1364,15 +1361,13 @@ bool miner::set_pub_and_pri_key(const std::string& pubkey, const std::string& pr
     public_key.to_data(public_key_data_);
 
     if (public_key_data_.empty()) {
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER) << "miner set mining public key failed";
-#endif
+        log::error(LOG_HEADER) << "miner set mining public key failed";
         return false;
     }
 
 #ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
-        << "miner set mining public key " << witness::to_witness_id_str(public_key_data_);
+        << "miner set mining public key " << encode_base16(public_key_data_);
 #endif
 
     return true;

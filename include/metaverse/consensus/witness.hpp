@@ -46,8 +46,7 @@ public:
     using p2p_node = libbitcoin::node::p2p_node;
     using settings = blockchain::settings;
     using public_key_t = data_chunk;
-    using public_key_hex_t = data_chunk;
-    using witness_id = public_key_hex_t;
+    using witness_id = data_chunk;
     using list = std::vector<witness_id>;
     using iterator = list::iterator;
     using const_iterator = list::const_iterator;
@@ -99,7 +98,7 @@ public:
     static std::string witness_to_string(const witness_id& id);
     static std::string endorse_to_string(const endorsement& endorse);
     static witness_id to_witness_id(const public_key_t& public_key);
-    static std::string to_witness_id_str(const public_key_t& public_key);
+    static std::string to_string(const public_key_t& public_key);
 
     static bool is_witness_enabled(uint64_t height);
     static bool is_dpos_enabled();

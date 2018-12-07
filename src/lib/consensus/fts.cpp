@@ -161,7 +161,7 @@ std::string fts_node::to_string() const
 // fts
 //==============================================================================
 
-hash_digest fts::to_hash(fts_node::ptr left, fts_node::ptr right)
+hash_digest fts::to_hash(const fts_node::ptr& left, const fts_node::ptr& right)
 {
     BITCOIN_ASSERT(left != nullptr);
     BITCOIN_ASSERT(right != nullptr);
@@ -180,7 +180,7 @@ hash_digest fts::to_hash(fts_node::ptr left, fts_node::ptr right)
     return bitcoin_hash(concat_data);
 }
 
-hash_digest fts::to_hash(const fts_stake_holder &stakeholder)
+hash_digest fts::to_hash(const fts_stake_holder& stakeholder)
 {
     // Join both address and stake.
     data_chunk concat_data;
@@ -261,7 +261,7 @@ fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::ptr_list& stake_hol
     return tree[1];
 }
 
-fts_node::ptr fts::select_by_fts(fts_node::ptr merkle_tree, uint32_t seed)
+fts_node::ptr fts::select_by_fts(const fts_node::ptr& merkle_tree, uint32_t seed)
 {
     if (merkle_tree == nullptr) {
         return nullptr;
@@ -289,7 +289,7 @@ fts_node::ptr fts::select_by_fts(fts_node::ptr merkle_tree, uint32_t seed)
     return node;
 }
 
-bool fts::verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& target_hash)
+bool fts::verify(const fts_node::ptr& merkle_tree, uint32_t seed, const hash_digest& target_hash)
 {
     if (merkle_tree == nullptr) {
         return false;

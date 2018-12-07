@@ -111,12 +111,12 @@ public:
         const fts_stake_holder::ptr_list& stakeholders);
 
     // select one item from FTS Merkle tree.
-    static fts_node::ptr select_by_fts(fts_node::ptr merkle_tree, uint32_t seed);
+    static fts_node::ptr select_by_fts(const fts_node::ptr& merkle_tree, uint32_t seed);
 
     // target_hash is mixed hash of merkle root and stake leaf node.
-    static bool verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& target_hash);
+    static bool verify(const fts_node::ptr& merkle_tree, uint32_t seed, const hash_digest& target_hash);
 
-    static hash_digest to_hash(fts_node::ptr left, fts_node::ptr right);
+    static hash_digest to_hash(const fts_node::ptr& left, const fts_node::ptr& right);
     static hash_digest to_hash(const fts_stake_holder& stakeholder);
 
     static void test();

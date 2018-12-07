@@ -489,7 +489,7 @@ witness::witness_id witness::to_witness_id(const public_key_t& public_key)
     return to_chunk(encode_base16(public_key));
 }
 
-std::string witness::to_witness_id_str(const public_key_t& public_key)
+std::string witness::to_string(const public_key_t& public_key)
 {
     return encode_base16(public_key);
 }
@@ -512,7 +512,7 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     if (public_key.empty() || !is_public_key(public_key)) {
 #ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER) << "verify witness sign failed, public key is wrong: "
-                               << to_witness_id_str(public_key);
+                               << to_string(public_key);
 #endif
         return false;
     }
@@ -542,7 +542,7 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
 #ifdef PRIVATE_CHAIN
         log::error(LOG_HEADER)
             << "verify witness signature failed at height " << (h.number + 1)
-            << ", public_key is " << to_witness_id_str(public_key)
+            << ", public_key is " << to_string(public_key)
             << ", signature is " << endorse_to_string(out)
             << ", hash is " << encode_hash(sighash);
 #endif
