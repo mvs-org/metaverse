@@ -28,38 +28,6 @@ namespace libbitcoin {
 namespace consensus {
 
 /**
- * A class containing an entry (hash, left_stake, right_stake) in a Merkle proof, where
- * "left_stake" is the number of coins in the left subtree, "right_stake" is the number
- * of coins the right subtree and "hash" is the Merkle hash
- * H(left hash | right hash | left_stake | right_stake).
- */
-class fts_proof_entry
-{
-public:
-    typedef std::vector<fts_proof_entry> list;
-    typedef std::shared_ptr<fts_proof_entry> ptr;
-
-    fts_proof_entry();
-    fts_proof_entry(const hash_digest& hash, uint64_t left_stake, uint64_t right_stake);
-    fts_proof_entry(const fts_proof_entry& other);
-
-    void set_hash(const hash_digest& hash);
-    void set_left_stake(const uint64_t& stake);
-    void set_right_stake(const uint64_t& stake);
-
-    hash_digest hash() const;
-    uint64_t left_stake() const;
-    uint64_t right_stake() const;
-
-    std::string to_string() const;
-
-private:
-    hash_digest hash_;
-    uint64_t left_stake_;
-    uint64_t right_stake_;
-};
-
-/**
  * A stakeholder in the Merkle tree. Each stakeholder has an address,
  * and controls an amount of coins.
  */
@@ -73,12 +41,13 @@ public:
     fts_stake_holder(const std::string& address, uint64_t stake);
     fts_stake_holder(const fts_stake_holder& other);
 
+    bool operator==(const fts_stake_holder& other) const;
+
     void set_stake(uint64_t stake);
     void set_address(const std::string& address);
 
     uint64_t stake() const;
     std::string address() const;
-    bool is_empty() const;
 
     std::string to_string() const;
 
@@ -87,6 +56,9 @@ public:
     uint64_t stake_;
 };
 
+/**
+ * Node of follow-the-satoshi merkle tree
+ */
 class fts_node
 {
 public:
@@ -112,12 +84,31 @@ private : fts_node::ptr left_;
     hash_digest hash_;
 };
 
+/**
+ * Follow-the-satoshi algorithm
+ * The edges the Merkle tree are labelled with the amount of coins in the left
+ * and right subtree respectively. Given a psuedo-random number generator,
+ * one can randomly select a stakeholder from the tree, weighted by the amount
+ * of coins they own, by traversing the tree down to a leaf node, containing one
+ * of the stakeholders. Each stakeholder controls a number of coins
+ * and a private key used to sign blocks.
+ */
 class fts
 {
 public:
+    // select count items from stakeholders.
+    static std::shared_ptr<fts_stake_holder::list> select_by_fts(
+        const fts_stake_holder::list& stakeholders,
+        uint32_t seed, uint32_t count);
+
     static fts_node::ptr build_merkle_tree(const fts_stake_holder::list& stakeholders);
     static fts_node::ptr select_by_fts(fts_node::ptr merkle_tree, uint32_t seed);
-    static bool verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& stake_hash);
+
+    // target_hash is mixed hash of merkle root and stake leaf node.
+    static bool verify(fts_node::ptr merkle_tree, uint32_t seed, const hash_digest& target_hash);
+
+    static hash_digest to_hash(fts_node::ptr left, fts_node::ptr right);
+    static hash_digest to_hash(const fts_stake_holder& stakeholder);
 
     static void test();
 };
