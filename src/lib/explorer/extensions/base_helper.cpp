@@ -517,7 +517,7 @@ void sync_fetch_locked_balance(const std::string& address,
                 continue;
             }
 
-            uint64_t locked_height = tx_height;
+            uint64_t locked_height = lock_sequence;
             uint64_t expiration_height = tx_height + lock_sequence;
             locked_balance locked{address, locked_value, locked_height, expiration_height};
             sh_vec->emplace_back(locked);

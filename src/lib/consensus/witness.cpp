@@ -46,7 +46,7 @@ static const std::string stub_public_key = "040000000000000000000000000000000000
 
 witness* witness::instance_ = nullptr;
 
-uint32_t hash_digest_to_uint(const auto& hash)
+uint32_t hash_digest_to_uint(const hash_digest& hash)
 {
     uint32_t result = 0;
     for (size_t i = 0; i < hash_size; i += 4) {
@@ -300,24 +300,20 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
         return false;
     }
 
-    list calced_witness_list;
-    if (!calc_witness_list(calced_witness_list, block.header.number)) {
+    if (!calc_witness_list(witness_list, block.header.number)) {
         log::debug(LOG_HEADER)
             << "in verify_vote_result -> calc_witness_list failed, height " << block.header.number;
         return false;
     }
 
     auto buff = chain::operation::factory_from_data(ops[0].to_data()).data;
-    if (buff.size() != 32) {
+    auto stored_mixhash = (h256::Arith)(h256((const uint8_t*)&buff[0], h256::ConstructFromPointer));
+    auto calced_mixhash = (h256)calc_mixhash(witness_list);
+    if (calced_mixhash != stored_mixhash) {
         log::debug(LOG_HEADER)
-            << "in verify_vote_result -> get mixhash failed, height " << block.header.number;
-        return false;
-    }
-    auto mixhash = (h256::Arith)(h256((const uint8_t*)&buff[0], h256::ConstructFromPointer));
-
-    if (calc_mixhash(witness_list) != (u256)mixhash) {
-        log::debug(LOG_HEADER)
-            << "in verify_vote_result -> verify mixhash failed, height " << block.header.number;
+            << "in verify_vote_result -> verify mixhash failed, height " << block.header.number
+            << ", stored_mixhash = " << stored_mixhash
+            << ", calced_mixhash = " << calced_mixhash;
         return false;
     }
 

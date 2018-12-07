@@ -54,6 +54,7 @@ console_result getlocked::invoke(Json::Value& jv_output,
         json_balance["address"] = balance.address;
         json_balance["locked_balance"] = balance.locked_value;
         json_balance["locked_height"] = balance.locked_height;
+        json_balance["lock_at_height"] = balance.expiration_height - balance.locked_height;
         json_balance["expiration_height"] = balance.expiration_height;
         if (is_asset) {
             json_balance["symbol"] = asset_symbol;
