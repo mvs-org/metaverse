@@ -87,8 +87,8 @@ public:
     bool calc_witness_list(uint64_t height);
     bool calc_witness_list(list& witness_list, uint64_t height) const;
     bool init_witness_list();
-    bool update_witness_list(uint64_t height, bool calc=false);
-    bool update_witness_list(const chain::block& block, bool calc=true);
+    bool update_witness_list(uint64_t height);
+    bool update_witness_list(const chain::block& block);
     chain::output create_witness_vote_result(uint64_t height);
     chain::block::ptr fetch_vote_result_block(uint64_t height);
 
@@ -119,7 +119,7 @@ public:
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
     bool verify_signer(const public_key_t& public_key, const chain::block& block) const;
     bool verify_signer(uint32_t witness_slot_num, const chain::block& block) const;
-    bool verify_vote_result(const chain::block& block, list& witness_list, bool calc) const;
+    bool verify_vote_result(const chain::block& block, list& witness_list) const;
 
     static u256 calc_mixhash(const list& witness_list);
 

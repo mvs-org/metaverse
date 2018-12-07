@@ -85,7 +85,7 @@ void witness::init(p2p_node& node)
 
 #ifdef PRIVATE_CHAIN
     witness::pow_check_point_height = 100;
-    witness::witness_enable_height = 50;
+    witness::witness_enable_height = 100;
     witness::witness_number = 23;
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
@@ -181,10 +181,6 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     auto mixhash = calc_mixhash(witness_list_);
     data_chunk chunk = to_chunk(h256(mixhash).asBytes());
     ops.push_back({chain::opcode::special, chunk});
-
-    for (const auto& witness : witness_list_) {
-        ops.push_back({chain::opcode::special, witness_to_public_key(witness)});
-    }
 
     return output;
 }
@@ -290,7 +286,7 @@ u256 witness::calc_mixhash(const list& witness_list)
     return mix_hash;
 }
 
-bool witness::verify_vote_result(const chain::block& block, list& witness_list, bool calc) const
+bool witness::verify_vote_result(const chain::block& block, list& witness_list) const
 {
     const auto& transactions = block.transactions;
     if (transactions.size() != 1) {
@@ -300,42 +296,28 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
         return false;
     }
     auto& ops = transactions.front().outputs.back().script.operations;
-    if ((ops.size() < witness_number) || !chain::operation::is_push_only(ops)) {
+    if ((ops.size() != 1) || !chain::operation::is_push_only(ops)) {
         return false;
-    }
-    for (size_t i = 1; i < ops.size(); ++i) {
-        if (!is_public_key(chain::operation::factory_from_data(ops[i].to_data()).data)) {
-#ifdef PRIVATE_CHAIN
-            log::info(LOG_HEADER)
-                << "in verify_vote_result ops is not public key, height " << block.header.number;
-#endif
-            return false;
-        }
-    }
-
-    for (size_t i = 1; i <= witness_number; ++i) {
-        witness_list.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
-    }
-
-    if (!calc) {
-        return true;
     }
 
     list calced_witness_list;
     if (!calc_witness_list(calced_witness_list, block.header.number)) {
-#ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "in verify_vote_result -> calc_witness_list failed, height " << block.header.number;
-#endif
+        log::debug(LOG_HEADER)
+            << "in verify_vote_result -> calc_witness_list failed, height " << block.header.number;
         return false;
     }
 
-    if (std::set<witness_id>(witness_list.begin(), witness_list.end()) !=
-        std::set<witness_id>(calced_witness_list.begin(), calced_witness_list.end())) {
-#ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "in verify_vote_result compare calc_witness_list result failed, height " << block.header.number;
-#endif
+    auto buff = chain::operation::factory_from_data(ops[0].to_data()).data;
+    if (buff.size() != 32) {
+        log::debug(LOG_HEADER)
+            << "in verify_vote_result -> get mixhash failed, height " << block.header.number;
+        return false;
+    }
+    auto mixhash = (h256::Arith)(h256((const uint8_t*)&buff[0], h256::ConstructFromPointer));
+
+    if (calc_mixhash(witness_list) != (u256)mixhash) {
+        log::debug(LOG_HEADER)
+            << "in verify_vote_result -> verify mixhash failed, height " << block.header.number;
         return false;
     }
 
@@ -369,7 +351,7 @@ chain::block::ptr witness::fetch_vote_result_block(uint64_t height)
     return sp_block;
 }
 
-bool witness::update_witness_list(uint64_t height, bool calc)
+bool witness::update_witness_list(uint64_t height)
 {
     if (!is_witness_enabled(height)) {
         list empty;
@@ -384,13 +366,13 @@ bool witness::update_witness_list(uint64_t height, bool calc)
 #endif
         return false;
     }
-    return update_witness_list(*sp_block, calc);
+    return update_witness_list(*sp_block);
 }
 
-bool witness::update_witness_list(const chain::block& block, bool calc)
+bool witness::update_witness_list(const chain::block& block)
 {
     list witness_list;
-    if (!verify_vote_result(block, witness_list, calc)) {
+    if (!verify_vote_result(block, witness_list)) {
 #ifdef PRIVATE_CHAIN
         log::info(LOG_HEADER)
             << "verify vote result failed at height " << block.header.number;
@@ -602,7 +584,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block
 
 bool witness::is_dpos_enabled()
 {
-    return false;
+    return true;
 }
 
 bool witness::is_witness_enabled(uint64_t height)
