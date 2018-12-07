@@ -2874,92 +2874,135 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
 /// how to register witness? just send (p2kh) exact witness::witness_register_fee ETP
 /// to DID witness::witness_registry_did, and from your DID as the source.
 /// @return vector of pair of <address, public_key>
+static std::pair<std::string, data_chunk>
+filter_witness(const block_chain_impl& chain, const business_record& buss, const std::string& symbol)
+{
+    std::pair<std::string, data_chunk> result;
+    if (buss.kind != point_kind::output) {
+        return result;
+    }
+    const bool is_asset = !symbol.empty();
+    uint64_t amount = 0;
+    const auto& bussi_data = buss.data;
+    auto bussi_kind = bussi_data.get_kind_value();
+    if (!is_asset) {
+        // etp business process
+        if (bussi_kind == business_kind::etp) {
+            amount = buss.val_chk_sum.value;
+        }
+    }
+    else {
+        // asset business process
+        if (bussi_kind == business_kind::asset_transfer) {
+            auto transfer = boost::get<asset_transfer>(bussi_data.get_data());
+            if (symbol == transfer.get_symbol()) {
+                amount = transfer.get_quantity();
+            }
+        }
+    }
+
+    if (amount != consensus::witness::witness_register_fee) {
+        return result;
+    }
+
+    chain::transaction tx_temp;
+    uint64_t tx_height = 0;
+    if (!chain.get_transaction(tx_temp, tx_height, buss.point.hash)) {
+        return result;
+    }
+
+    const auto& output = tx_temp.outputs.at(buss.point.index);
+    if (!operation::is_pay_key_hash_pattern(output.script.operations)) {
+        return result;
+    }
+
+    if (output.attach_data.get_to_did() != consensus::witness::witness_registry_did) {
+        return result;
+    }
+
+    const auto& from_did = output.attach_data.get_from_did();
+    if (from_did.empty()) {
+        return result;
+    }
+
+    auto did_detail = chain.get_registered_did(from_did);
+    if (!did_detail) {
+        return result;
+    }
+
+    const auto& from_address = did_detail->get_address();
+    if (from_address.empty()) {
+        return result;
+    }
+
+    const auto& input_ops = tx_temp.inputs.front().script.operations;
+    if (input_ops.size() < 2 || !is_public_key(input_ops[1].data)) {
+        return result;
+    }
+
+    return std::make_pair(from_address, input_ops[1].data);
+}
+
 std::vector<std::pair<std::string, data_chunk>> block_chain_impl::get_register_witnesses(
-    const std::string& addr, size_t from_height, const std::string& symbol) const
+    const std::string& addr, const std::string& symbol,
+    size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const
 {
     using addr_pubkey_pair_t = std::pair<std::string, data_chunk>;
-
     const bool is_asset = !symbol.empty();
     if (is_asset && wallet::symbol::is_forbidden(symbol)) {
         return std::vector<addr_pubkey_pair_t>();
     }
 
     std::set<addr_pubkey_pair_t> witnesses;
-    auto sh_vec = database_.address_assets.get(addr, symbol, from_height, 0, 0, 0);
-
-    chain::transaction tx_temp;
-    uint64_t tx_height = 0;
-
-    uint64_t height = 0;
-    get_last_height(height);
+    auto sh_vec = database_.address_assets.get(addr, symbol, start_height, end_height, limit, page_number);
 
     for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
-        if (witnesses.size() >= 2 * consensus::witness::max_candidate_count) {
-            break;
-        }
-        if (iter->kind != point_kind::output) {
+        auto addr_pubkey_pair = filter_witness(*this, *iter, symbol);
+        if (addr_pubkey_pair.first.empty()) {
             continue;
         }
-        uint64_t amount = 0;
-        const auto& bussi_data = iter->data;
-        auto bussi_kind = bussi_data.get_kind_value();
-        if (!is_asset) {
-            // etp business process
-            if (bussi_kind == business_kind::etp) {
-                amount = iter->val_chk_sum.value;
-            }
-        }
-        else {
-            // asset business process
-            if (bussi_kind == business_kind::asset_transfer) {
-                auto transfer = boost::get<asset_transfer>(bussi_data.get_data());
-                if (symbol == transfer.get_symbol()) {
-                    amount = transfer.get_quantity();
-                }
-            }
-        }
-
-        if (amount != consensus::witness::witness_register_fee) {
-            continue;
-        }
-
-        if (!get_transaction(tx_temp, tx_height, iter->point.hash)) {
-            continue;
-        }
-
-        const auto& output = tx_temp.outputs.at(iter->point.index);
-        if (!operation::is_pay_key_hash_pattern(output.script.operations)) {
-            continue;
-        }
-
-        if (output.attach_data.get_to_did() != consensus::witness::witness_registry_did) {
-            continue;
-        }
-
-        const auto& from_did = output.attach_data.get_from_did();
-        if (from_did.empty()) {
-            continue;
-        }
-
-        auto did_detail = get_registered_did(from_did);
-        if (!did_detail) {
-            continue;
-        }
-
-        const auto& from_address = did_detail->get_address();
-        if (from_address.empty()) {
-            continue;
-        }
-
-        const auto& input_ops = tx_temp.inputs.front().script.operations;
-        if (input_ops.size() < 2 || !is_public_key(input_ops[1].data)) {
-            continue;
-        }
-
-        witnesses.insert(std::make_pair(from_address, input_ops[1].data));
+        witnesses.insert(addr_pubkey_pair);
     }
 
     return std::vector<addr_pubkey_pair_t>(witnesses.begin(), witnesses.end());
+}
+
+/// stake holder is publickey and lockvalue pair
+consensus::fts_stake_holder::list block_chain_impl::get_register_witnesses_with_stake(
+    const std::string& addr, const std::string& symbol,
+    size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const
+{
+    consensus::fts_stake_holder::list stakeholders;
+
+    const bool is_asset = !symbol.empty();
+    if (is_asset && wallet::symbol::is_forbidden(symbol)) {
+        return stakeholders;
+    }
+
+    std::set<std::string> witnesses; // contains pubkey
+    auto sh_vec = database_.address_assets.get(addr, symbol, start_height, end_height, limit, page_number);
+
+    for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
+        if (stakeholders.size() >= 10*consensus::witness::max_candidate_count) {
+            break;
+        }
+        auto addr_pubkey_pair = filter_witness(*this, *iter, symbol);
+        if (addr_pubkey_pair.first.empty()) {
+            continue;
+        }
+        auto pubkey = encode_base16(addr_pubkey_pair.second);
+        if (witnesses.count(pubkey)) {
+            continue;
+        }
+        auto locked_balance = get_locked_balance(addr_pubkey_pair.first, end_height);
+        if (locked_balance.first < consensus::witness::witness_lock_threshold) {
+            continue;
+        }
+        witnesses.insert(pubkey);
+        stakeholders.emplace_back(pubkey, locked_balance.first);
+    }
+
+    return stakeholders;
 }
 
 } // namespace blockchain

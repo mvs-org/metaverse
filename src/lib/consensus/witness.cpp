@@ -235,29 +235,9 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
 
     auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
-    auto register_addresses = chain.get_register_witnesses(did_detail->get_address(), from_height);
 
-    for (const auto& prev_witness_id : get_witness_list()) {
-        auto pub_key = witness_to_public_key(prev_witness_id);
-        if (std::find_if(register_addresses.begin(), register_addresses.end(),
-                [&pub_key](const std::pair<std::string, public_key_t>& item){
-                    return item.second == pub_key;
-                }) != register_addresses.end()) {
-            continue;
-        }
-        auto pay_address = wallet::ec_public(pub_key).to_payment_address();
-        auto address = pay_address.encoded();
-        register_addresses.emplace_back(std::make_pair(address, pub_key));
-    }
-
-    fts_stake_holder::list stakeholders;
-    for (const auto& addr_pubkey : register_addresses) {
-        auto locked_balance = chain.get_locked_balance(addr_pubkey.first, height + register_witness_lock_height);
-        if (locked_balance.first < witness_lock_threshold) {
-            continue;
-        }
-        stakeholders.emplace_back(encode_base16(addr_pubkey.second), locked_balance.first);
-    }
+    fts_stake_holder::list stakeholders = chain.get_register_witnesses_with_stake(
+        did_detail->get_address(), "", from_height, height + register_witness_lock_height);
 
     std::sort(stakeholders.begin(), stakeholders.end(),
         [](const fts_stake_holder& h1, const fts_stake_holder& h2){

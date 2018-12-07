@@ -35,6 +35,7 @@
 #include <metaverse/blockchain/simple_chain.hpp>
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/bitcoin/chain/header.hpp>
+#include <metaverse/consensus/fts.hpp>
 
 #define  LOG_BLOCK_CHAIN_IMPL  "block_chain_impl"
 
@@ -411,7 +412,12 @@ public:
         uint64_t expiration, const std::string& asset_symbol="") const;
 
     std::vector<std::pair<std::string, data_chunk>> get_register_witnesses(
-        const std::string& addr, size_t from_height, const std::string& symbol="") const;
+        const std::string& addr, const std::string& symbol,
+        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
+
+    consensus::fts_stake_holder::list get_register_witnesses_with_stake(
+        const std::string& addr, const std::string& symbol,
+        size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 
 private:
     typedef std::function<bool(database::handle)> perform_read_functor;
