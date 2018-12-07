@@ -2862,7 +2862,10 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
 
             uint64_t locked_value = is_asset ? output.get_asset_amount() : row.value;
             locked_balance += locked_value;
-            locked_weight += (tx_height + lock_sequence - height) * locked_value;
+            auto weight = std::min<uint64_t>(
+                consensus::witness::epoch_cycle_height,
+                tx_height + lock_sequence - height);
+            locked_weight += locked_value * weight;
         }
     }
     return std::make_pair(locked_balance, locked_weight);
@@ -2891,6 +2894,9 @@ std::vector<std::pair<std::string, data_chunk>> block_chain_impl::get_register_w
     get_last_height(height);
 
     for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
+        if (witnesses.size() >= 2 * consensus::witness::max_candidate_count) {
+            break;
+        }
         if (iter->kind != point_kind::output) {
             continue;
         }

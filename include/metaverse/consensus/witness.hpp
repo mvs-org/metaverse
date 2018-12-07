@@ -61,6 +61,7 @@ public:
     static uint32_t vote_maturity;
     static uint32_t max_dpos_interval;
 
+    static const uint32_t max_candidate_count;
     static const uint32_t witness_register_fee;
     static const std::string witness_registry_did;
 

@@ -38,12 +38,22 @@ uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
 uint32_t witness::vote_maturity = 12;
 uint32_t witness::max_dpos_interval = 3; // seconds
 
-witness* witness::instance_ = nullptr;
-
+const uint32_t witness::max_candidate_count = 10000;
 const uint32_t witness::witness_register_fee = 123456789;
 const std::string witness::witness_registry_did = "witness_registry";
 
 static const std::string stub_public_key = "0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+witness* witness::instance_ = nullptr;
+
+uint32_t hash_digest_to_uint(const auto& hash)
+{
+    uint32_t result = 0;
+    for (size_t i = 0; i < hash_size; i += 4) {
+        result ^= ((hash[i]<<24) + (hash[i+1]<<16) + (hash[i+2]<<8) + hash[i+3]);
+    }
+    return result;
+};
 
 witness::witness(p2p_node& node)
     : node_(node)
@@ -83,6 +93,9 @@ void witness::init(p2p_node& node)
     witness::vote_maturity = 2;
     witness::max_dpos_interval = 1;
 #endif
+
+    BITCOIN_ASSERT(max_candidate_count >= witness_number);
+    BITCOIN_ASSERT(epoch_cycle_height >= vote_maturity);
 }
 
 witness& witness::create(p2p_node& node)
@@ -221,21 +234,13 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         return false;
     }
 
-    using addr_pubkey_pair_t = std::pair<std::string, public_key_t>;
-    using locked_balance_t = std::pair<uint64_t, uint64_t>;
-    using locked_record_t = std::pair<addr_pubkey_pair_t, locked_balance_t>;
-    auto cmp_locked_record =
-        [](const locked_record_t& r1, const locked_record_t& r2){
-            return r1.second > r2.second; // descend
-        };
-
     auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
     auto register_addresses = chain.get_register_witnesses(did_detail->get_address(), from_height);
 
     for (const auto& prev_witness_id : get_witness_list()) {
         auto pub_key = witness_to_public_key(prev_witness_id);
         if (std::find_if(register_addresses.begin(), register_addresses.end(),
-                [&pub_key](const addr_pubkey_pair_t& item){
+                [&pub_key](const std::pair<std::string, public_key_t>& item){
                     return item.second == pub_key;
                 }) != register_addresses.end()) {
             continue;
@@ -245,30 +250,47 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         register_addresses.emplace_back(std::make_pair(address, pub_key));
     }
 
-    std::vector<locked_record_t> statistics;
+    fts_stake_holder::list stakeholders;
     for (const auto& addr_pubkey : register_addresses) {
         auto locked_balance = chain.get_locked_balance(addr_pubkey.first, height + register_witness_lock_height);
         if (locked_balance.first < witness_lock_threshold) {
             continue;
         }
-        statistics.push_back(std::make_pair(addr_pubkey, locked_balance));
+        stakeholders.emplace_back(encode_base16(addr_pubkey.second), locked_balance.first);
     }
 
-    std::sort(statistics.begin(), statistics.end(), cmp_locked_record);
-    if (statistics.size() > witness_number) {
-        statistics.resize(witness_number);
-    }
+    std::sort(stakeholders.begin(), stakeholders.end(),
+        [](const fts_stake_holder& h1, const fts_stake_holder& h2){
+            return h1.stake() > h2.stake(); // descendly
+        });
 
-    for (const auto& record : statistics) {
-        witness_list.emplace_back(to_witness_id(record.first.second));
-    }
-
-    if (witness_list.size() < witness_number) {
+    if (stakeholders.size() < witness_number) {
+        for (const auto& stake_holder : stakeholders) {
+            witness_list.emplace_back(to_chunk(stake_holder.address()));
+        }
         witness_list.resize(witness_number, to_chunk(stub_public_key));
+    }
+    else {
+        if (stakeholders.size() > max_candidate_count) {
+            stakeholders.resize(max_candidate_count);
+        }
+
+        chain::header header;
+        if (!node_.chain_impl().get_header(header, height-1)) {
+            return false;
+        }
+
+        // pick witness_number candidates as witness randomly by fts
+        uint32_t seed = hash_digest_to_uint(header.hash());
+        auto selected_holders = fts::select_by_fts(stakeholders, seed, witness_number);
+        for (const auto& stake_holder : *selected_holders) {
+            witness_list.emplace_back(to_chunk(stake_holder.address()));
+        }
     }
 
     pseudo_random::shuffle(witness_list);
 
+    BITCOIN_ASSERT_MSG(witness_list.size() == witness_number, "calc_witness_list count mismatch");
     return true;
 }
 
@@ -458,14 +480,6 @@ uint32_t witness::calc_slot_num(const chain::block& block) const
         offset = height_offset.second;
     }
     else {
-        auto hash_digest_to_uint = [](const auto& hash) {
-            uint32_t result = 0;
-            for (size_t i = 0; i < hash_size; i += 4) {
-                result ^= ((hash[i]<<24) + (hash[i+1]<<16) + (hash[i+2]<<8) + hash[i+3]);
-            }
-            return result;
-        };
-
         chain::header header;
         for (auto i = round_begin_height - witness_number; i < round_begin_height; ++i) {
             if (!node_.chain_impl().get_header(header, i)) {
