@@ -415,7 +415,7 @@ public:
         const std::string& addr, const std::string& symbol,
         size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 
-    consensus::fts_stake_holder::list get_register_witnesses_with_stake(
+    std::shared_ptr<consensus::fts_stake_holder::ptr_list> get_register_witnesses_with_stake(
         const std::string& addr, const std::string& symbol,
         size_t start_height, size_t end_height=0, uint64_t limit=0, uint64_t page_number=0) const;
 

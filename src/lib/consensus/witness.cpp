@@ -236,23 +236,26 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
 
     auto from_height = (height > epoch_cycle_height) ? (height - epoch_cycle_height + 1) : 1;
 
-    fts_stake_holder::list stakeholders = chain.get_register_witnesses_with_stake(
+    auto stakeholders = chain.get_register_witnesses_with_stake(
         did_detail->get_address(), "", from_height, height + register_witness_lock_height);
+    if (stakeholders == nullptr || stakeholders->empty()) {
+        return false;
+    }
 
-    std::sort(stakeholders.begin(), stakeholders.end(),
-        [](const fts_stake_holder& h1, const fts_stake_holder& h2){
-            return h1.stake() > h2.stake(); // descendly
-        });
-
-    if (stakeholders.size() < witness_number) {
-        for (const auto& stake_holder : stakeholders) {
-            witness_list.emplace_back(to_chunk(stake_holder.address()));
+    if (stakeholders->size() < witness_number) {
+        for (const auto& stake_holder : *stakeholders) {
+            witness_list.emplace_back(to_chunk(stake_holder->address()));
         }
         witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
     else {
-        if (stakeholders.size() > max_candidate_count) {
-            stakeholders.resize(max_candidate_count);
+        std::sort(stakeholders->begin(), stakeholders->end(),
+            [](const fts_stake_holder::ptr& h1, const fts_stake_holder::ptr& h2){
+                return h1->stake() > h2->stake(); // descendly
+            });
+
+        if (stakeholders->size() > max_candidate_count) {
+            stakeholders->resize(max_candidate_count);
         }
 
         chain::header header;
@@ -262,9 +265,9 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
 
         // pick witness_number candidates as witness randomly by fts
         uint32_t seed = hash_digest_to_uint(header.hash());
-        auto selected_holders = fts::select_by_fts(stakeholders, seed, witness_number);
+        auto selected_holders = fts::select_by_fts(*stakeholders, seed, witness_number);
         for (const auto& stake_holder : *selected_holders) {
-            witness_list.emplace_back(to_chunk(stake_holder.address()));
+            witness_list.emplace_back(to_chunk(stake_holder->address()));
         }
     }
 

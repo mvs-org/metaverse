@@ -34,8 +34,9 @@ namespace consensus {
 class fts_stake_holder
 {
 public:
-    typedef std::vector<fts_stake_holder> list;
     typedef std::shared_ptr<fts_stake_holder> ptr;
+    typedef std::vector<fts_stake_holder> list;
+    typedef std::vector<ptr> ptr_list;
 
     fts_stake_holder();
     fts_stake_holder(const std::string& address, uint64_t stake);
@@ -51,6 +52,8 @@ public:
 
     std::string to_string() const;
 
+    static std::shared_ptr<ptr_list> convert(const list& stakeholders);
+
   private:
     std::string address_;
     uint64_t stake_;
@@ -65,12 +68,12 @@ public:
     typedef std::vector<fts_node> list;
     typedef std::shared_ptr<fts_node> ptr;
 
-    fts_node(fts_node::ptr left, fts_node::ptr right);
-    fts_node(const fts_stake_holder& stakeholder);
+    fts_node(const fts_node::ptr& left, const fts_node::ptr& right);
+    fts_node(const fts_stake_holder::ptr& stakeholder);
 
     fts_node::ptr left() const;
     fts_node::ptr right() const;
-    fts_stake_holder stake_holder() const;
+    fts_stake_holder::ptr stake_holder() const;
     hash_digest hash() const;
 
     uint64_t stake() const;
@@ -78,9 +81,10 @@ public:
 
     std::string to_string() const;
 
-private : fts_node::ptr left_;
+private :
+    fts_node::ptr left_;
     fts_node::ptr right_;
-    fts_stake_holder stake_holder_;
+    fts_stake_holder::ptr stake_holder_;
     hash_digest hash_;
 };
 
@@ -96,12 +100,17 @@ private : fts_node::ptr left_;
 class fts
 {
 public:
+
     // select count items from stakeholders.
-    static std::shared_ptr<fts_stake_holder::list> select_by_fts(
-        const fts_stake_holder::list& stakeholders,
+    static std::shared_ptr<fts_stake_holder::ptr_list> select_by_fts(
+        const fts_stake_holder::ptr_list& stakeholders,
         uint32_t seed, uint32_t count);
 
-    static fts_node::ptr build_merkle_tree(const fts_stake_holder::list& stakeholders);
+    // build FTS Merkle tree with stakeholders
+    static fts_node::ptr build_merkle_tree(
+        const fts_stake_holder::ptr_list& stakeholders);
+
+    // select one item from FTS Merkle tree.
     static fts_node::ptr select_by_fts(fts_node::ptr merkle_tree, uint32_t seed);
 
     // target_hash is mixed hash of merkle root and stake leaf node.

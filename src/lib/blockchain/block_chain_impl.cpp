@@ -2968,11 +2968,12 @@ std::vector<std::pair<std::string, data_chunk>> block_chain_impl::get_register_w
 }
 
 /// stake holder is publickey and lockvalue pair
-consensus::fts_stake_holder::list block_chain_impl::get_register_witnesses_with_stake(
+
+std::shared_ptr<consensus::fts_stake_holder::ptr_list> block_chain_impl::get_register_witnesses_with_stake(
     const std::string& addr, const std::string& symbol,
     size_t start_height, size_t end_height, uint64_t limit, uint64_t page_number) const
 {
-    consensus::fts_stake_holder::list stakeholders;
+    auto stakeholders = std::make_shared<consensus::fts_stake_holder::ptr_list>();
 
     const bool is_asset = !symbol.empty();
     if (is_asset && wallet::symbol::is_forbidden(symbol)) {
@@ -2983,23 +2984,28 @@ consensus::fts_stake_holder::list block_chain_impl::get_register_witnesses_with_
     auto sh_vec = database_.address_assets.get(addr, symbol, start_height, end_height, limit, page_number);
 
     for (auto iter = sh_vec->begin(); iter != sh_vec->end(); ++iter) {
-        if (stakeholders.size() >= 10*consensus::witness::max_candidate_count) {
+        if (stakeholders->size() >= 10 * consensus::witness::max_candidate_count) {
             break;
         }
+
         auto addr_pubkey_pair = filter_witness(*this, *iter, symbol);
         if (addr_pubkey_pair.first.empty()) {
             continue;
         }
+
         auto pubkey = encode_base16(addr_pubkey_pair.second);
         if (witnesses.count(pubkey)) {
             continue;
         }
+
         auto locked_balance = get_locked_balance(addr_pubkey_pair.first, end_height);
         if (locked_balance.first < consensus::witness::witness_lock_threshold) {
             continue;
         }
+
         witnesses.insert(pubkey);
-        stakeholders.emplace_back(pubkey, locked_balance.first);
+        auto item = std::make_shared<consensus::fts_stake_holder>(pubkey, locked_balance.first);
+        stakeholders->emplace_back(item);
     }
 
     return stakeholders;

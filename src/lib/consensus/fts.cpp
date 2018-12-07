@@ -21,6 +21,7 @@
 #include <metaverse/macros_define.hpp>
 #include <ctime>
 #include <random>
+#include <algorithm>
 
 #define LOG_HEADER "FTS"
 
@@ -80,24 +81,38 @@ std::string fts_stake_holder::to_string() const
     return ss.str();
 }
 
+std::shared_ptr<fts_stake_holder::ptr_list> fts_stake_holder::convert(const fts_stake_holder::list& stake_holders)
+{
+    auto temp = std::make_shared<fts_stake_holder::ptr_list>();
+    temp->resize(stake_holders.size());
+    size_t i = 0;
+    for (auto& holder : stake_holders) {
+        (*temp)[i++] = std::make_shared<fts_stake_holder>(holder);
+    }
+
+    return temp;
+}
 
 //==============================================================================
 // fts_node
 //==============================================================================
 
-fts_node::fts_node(fts_node::ptr left, fts_node::ptr right)
+fts_node::fts_node(const fts_node::ptr& left, const fts_node::ptr& right)
     : left_(left)
     , right_(right)
+    , stake_holder_(nullptr)
     , hash_(fts::to_hash(left, right))
 {
+    BITCOIN_ASSERT(left_ != nullptr && right_ != nullptr);
 }
 
-fts_node::fts_node(const fts_stake_holder& stakeholder)
+fts_node::fts_node(const fts_stake_holder::ptr& stakeholder)
     : left_(nullptr)
     , right_(nullptr)
     , stake_holder_(stakeholder)
-    , hash_(fts::to_hash(stake_holder_))
+    , hash_(fts::to_hash(*stake_holder_))
 {
+    BITCOIN_ASSERT(stake_holder_ != nullptr);
 }
 
 fts_node::ptr fts_node::left() const
@@ -110,7 +125,7 @@ fts_node::ptr fts_node::right() const
     return right_;
 }
 
-fts_stake_holder fts_node::stake_holder() const
+fts_stake_holder::ptr fts_node::stake_holder() const
 {
     return stake_holder_;
 }
@@ -123,7 +138,7 @@ hash_digest fts_node::hash() const
 uint64_t fts_node::stake() const
 {
     if (is_leaf()) {
-        return stake_holder_.stake();
+        return stake_holder_->stake();
     }
 
     return (left_->stake() + right_->stake());
@@ -179,42 +194,38 @@ hash_digest fts::to_hash(const fts_stake_holder &stakeholder)
     return bitcoin_hash(concat_data);
 }
 
-std::shared_ptr<fts_stake_holder::list> fts::select_by_fts(
-    const fts_stake_holder::list& stake_holders,
+std::shared_ptr<fts_stake_holder::ptr_list> fts::select_by_fts(
+    const fts_stake_holder::ptr_list& stake_holders,
     uint32_t seed, uint32_t count)
 {
-    auto result = std::make_shared<fts_stake_holder::list>();
-
     auto size = stake_holders.size();
     if (size == 0) {
-        return result;
+        return nullptr;
     }
+
+    auto temp = std::make_shared<fts_stake_holder::ptr_list>(stake_holders.size());
+    std::copy(stake_holders.begin(), stake_holders.end(), temp->begin());
 
     if (size <= count) {
-        for (auto& holder : stake_holders) {
-            result->push_back(holder);
-        }
-        return result;
+        return temp;
     }
 
-    fts_stake_holder::list temp(stake_holders);
+    auto result = std::make_shared<fts_stake_holder::ptr_list>();
 
-    while (result->size() < count && temp.size() > 1) {
-        auto root = fts::build_merkle_tree(temp);
+    while (result->size() < count && temp->size() > 1) {
+        auto root = fts::build_merkle_tree(*temp);
         BITCOIN_ASSERT(root != nullptr);
         auto choosen = fts::select_by_fts(root, seed);
         BITCOIN_ASSERT(choosen != nullptr && choosen->is_leaf());
 
         auto holder = choosen->stake_holder();
         result->push_back(holder);
-        std::remove(temp.begin(), temp.end(), holder);
-
-        log::info(LOG_HEADER) << "after remove: " << temp.size();
+        temp->erase(std::remove(temp->begin(), temp->end(), holder));
     }
 
     auto miss = count - result->size();
     if (miss > 0) {
-        for (auto& holder : stake_holders) {
+        for (auto& holder : *temp) {
             result->push_back(holder);
 
             if (--miss == 0) {
@@ -226,7 +237,7 @@ std::shared_ptr<fts_stake_holder::list> fts::select_by_fts(
     return result;
 }
 
-fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::list& stake_holders)
+fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::ptr_list& stake_holders)
 {
     if (stake_holders.empty()) {
         return nullptr;
@@ -247,7 +258,7 @@ fts_node::ptr fts::build_merkle_tree(const fts_stake_holder::list& stake_holders
     }
 
     BITCOIN_ASSERT(tree.size() > 1);
-	return tree[1];
+    return tree[1];
 }
 
 fts_node::ptr fts::select_by_fts(fts_node::ptr merkle_tree, uint32_t seed)
@@ -297,7 +308,7 @@ void fts::test()
 {
     const uint32_t seed = std::time(nullptr);
 
-    fts_stake_holder::list stake_holders = {
+    fts_stake_holder::list stake_data = {
         {"MDdET3ybWc2cGEXXxBcjtXNCcmzJe48bhc", 333000000},
         {"MQA3r2AVy9TLzoYwdyCmT2roCqTHVRk2Tj", 331000000},
         {"MWLwUrmgdGGADJmQ9nsCSHDGz6BZd1aGhw", 333000000},
@@ -333,13 +344,14 @@ void fts::test()
         {"MP6S7vJp6EtWvRhneeLxSmo8fJrbQaXvcS", 45200000}
     };
 
-    log::info(LOG_HEADER) << "test: seed: " << seed << ", stake size: " << stake_holders.size();
+    auto stake_holders = fts_stake_holder::convert(stake_data);
+    log::info(LOG_HEADER) << "test: seed: " << seed << ", stake size: " << stake_holders->size();
 
     if (false) {
         // select one item from stake_holders
 
         // first step
-        fts_node::ptr tree = fts::build_merkle_tree(stake_holders);
+        fts_node::ptr tree = fts::build_merkle_tree(*stake_holders);
         fts_node::ptr selected = fts::select_by_fts(tree, seed);
         log::info(LOG_HEADER)
             << "tree one: " << encode_hash(tree->hash()) << ", stake: " << tree->stake();
@@ -349,10 +361,10 @@ void fts::test()
         BITCOIN_ASSERT(selected->is_leaf());
         auto holder = selected->stake_holder();
         log::info(LOG_HEADER)
-            << "holder one: " << holder.address() << ", stake: " << holder.stake();
+            << "holder one: " << holder->address() << ", stake: " << holder->stake();
 
         // second step
-        fts_node::ptr tree2 = fts::build_merkle_tree(stake_holders);
+        fts_node::ptr tree2 = fts::build_merkle_tree(*stake_holders);
         fts_node::ptr selected2 = fts::select_by_fts(tree2, seed);
         log::info(LOG_HEADER)
             << "tree two: " << encode_hash(tree2->hash()) << ", stake: " << tree2->stake();
@@ -362,7 +374,7 @@ void fts::test()
         BITCOIN_ASSERT(selected2->is_leaf());
         auto holder2 = selected2->stake_holder();
         log::info(LOG_HEADER)
-            << "holder two: " << holder2.address() << ", stake: " << holder2.stake();
+            << "holder two: " << holder2->address() << ", stake: " << holder2->stake();
 
         // verify
         BITCOIN_ASSERT(tree->hash() == tree2->hash());
@@ -372,22 +384,24 @@ void fts::test()
     {
         // select N items from stake_holders
         std::srand(std::time(nullptr));
-        const size_t N = std::rand() % stake_holders.size() + 1;
+        const size_t N = 1 + std::rand() % (stake_holders->size() * 2);
 
         // first step
-        auto items = fts::select_by_fts(stake_holders, seed, N);
-        BITCOIN_ASSERT(items != nullptr && items->size() == N);
+        auto items = fts::select_by_fts(*stake_holders, seed, N);
+        BITCOIN_ASSERT(items != nullptr);
 
         // second step
-        auto check_items = fts::select_by_fts(stake_holders, seed, N);
-        BITCOIN_ASSERT(check_items != nullptr && check_items->size() == N);
+        auto check_items = fts::select_by_fts(*stake_holders, seed, N);
+        BITCOIN_ASSERT(check_items != nullptr);
 
         // verify
-        log::info(LOG_HEADER) << "choose " << N << " items, seed: "
-            << seed << ", stake size: " << stake_holders.size();
-        for (size_t i = 0; i < N; ++i) {
+        log::info(LOG_HEADER) << "choose " << items->size() << " items, seed: "
+            << seed << ", stake size: " << stake_holders->size()
+            << ", N: " << N;
+        BITCOIN_ASSERT(items->size() == check_items->size());
+        for (size_t i = 0; i < items->size(); ++i) {
             BITCOIN_ASSERT((*items)[i] == (*check_items)[i]);
-            log::info(LOG_HEADER) << "     item " << i << ": " << (*items)[i].to_string();
+            log::info(LOG_HEADER) << "     item " << i << ": " << (*items)[i]->to_string();
         }
     }
 }
