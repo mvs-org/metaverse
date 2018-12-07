@@ -121,6 +121,8 @@ public:
     bool verify_signer(uint32_t witness_slot_num, const chain::block& block) const;
     bool verify_vote_result(const chain::block& block, list& witness_list, bool calc) const;
 
+    static u256 calc_mixhash(const list& witness_list);
+
 private:
     witness(p2p_node& node);
     static void init(p2p_node& node);

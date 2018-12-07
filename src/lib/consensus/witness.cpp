@@ -177,6 +177,11 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     shared_lock lock(mutex_);
 
     auto& ops = output.script.operations;
+
+    auto mixhash = calc_mixhash(witness_list_);
+    data_chunk chunk = to_chunk(h256(mixhash).asBytes());
+    ops.push_back({chain::opcode::special, chunk});
+
     for (const auto& witness : witness_list_) {
         ops.push_back({chain::opcode::special, witness_to_public_key(witness)});
     }
@@ -249,12 +254,12 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
     else {
-        std::sort(stakeholders->begin(), stakeholders->end(),
-            [](const fts_stake_holder::ptr& h1, const fts_stake_holder::ptr& h2){
-                return h1->stake() > h2->stake(); // descendly
-            });
-
         if (stakeholders->size() > max_candidate_count) {
+            std::sort(stakeholders->begin(), stakeholders->end(),
+                [](const fts_stake_holder::ptr& h1, const fts_stake_holder::ptr& h2){
+                    return h1->stake() > h2->stake(); // descendly
+                });
+
             stakeholders->resize(max_candidate_count);
         }
 
@@ -271,10 +276,18 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         }
     }
 
-    pseudo_random::shuffle(witness_list);
-
     BITCOIN_ASSERT_MSG(witness_list.size() == witness_number, "calc_witness_list count mismatch");
     return true;
+}
+
+u256 witness::calc_mixhash(const list& witness_list)
+{
+    RLPStream s;
+    for (const auto& witness : witness_list) {
+        s << bitcoin_hash(witness);
+    }
+    auto mix_hash = sha3(s.out());
+    return mix_hash;
 }
 
 bool witness::verify_vote_result(const chain::block& block, list& witness_list, bool calc) const
@@ -290,8 +303,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
     if ((ops.size() < witness_number) || !chain::operation::is_push_only(ops)) {
         return false;
     }
-    for (const auto& op : ops) {
-        if (!is_public_key(chain::operation::factory_from_data(op.to_data()).data)) {
+    for (size_t i = 1; i < ops.size(); ++i) {
+        if (!is_public_key(chain::operation::factory_from_data(ops[i].to_data()).data)) {
 #ifdef PRIVATE_CHAIN
             log::info(LOG_HEADER)
                 << "in verify_vote_result ops is not public key, height " << block.header.number;
@@ -300,7 +313,7 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list, 
         }
     }
 
-    for (size_t i = 0; i < witness_number; ++i) {
+    for (size_t i = 1; i <= witness_number; ++i) {
         witness_list.emplace_back(to_witness_id(chain::operation::factory_from_data(ops[i].to_data()).data));
     }
 
@@ -366,8 +379,8 @@ bool witness::update_witness_list(uint64_t height, bool calc)
     auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "fetch vote result block failed at height " << height;
+        log::info(LOG_HEADER)
+            << "fetch vote result block failed at height " << height;
 #endif
         return false;
     }
@@ -379,8 +392,8 @@ bool witness::update_witness_list(const chain::block& block, bool calc)
     list witness_list;
     if (!verify_vote_result(block, witness_list, calc)) {
 #ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "verify vote result failed at height " << block.header.number;
+        log::info(LOG_HEADER)
+            << "verify vote result failed at height " << block.header.number;
 #endif
         return false;
     }
