@@ -99,6 +99,9 @@ void session::connection_count(count_handler handler)
 // protected:
 bool session::blacklisted(const authority& authority) const
 {
+    if (authority == settings_.self) {
+        return true;
+    }
     const auto& blocked = settings_.blacklists;
     // black through IP, does not care port.
     const auto it = std::find_if(blocked.begin(), blocked.end(),
