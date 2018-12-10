@@ -100,11 +100,8 @@ void witness::init(p2p_node& node)
 
 witness& witness::create(p2p_node& node)
 {
-    static unique_mutex umutex;
-    if (!instance_) {
-        scoped_lock l(umutex);
-        init(node);
-    }
+    static std::once_flag flag;
+    std::call_once(flag, &witness::init, std::ref(node));
     return *instance_;
 }
 

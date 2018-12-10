@@ -581,8 +581,8 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\chain\output_point.cpp">
       <Filter>Source Files\chain</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\lib\bitcoin\math\ecvrf.cpp">
-      <Filter>Source Files\math</Filter>
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\vrf_private.cpp">
+      <Filter>Source Files\wallet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1158,6 +1158,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\math\ecvrf.hpp">
       <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\vrf_private.hpp">
+      <Filter>Header Files\wallet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
