@@ -49,6 +49,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jsoncpp", "jsoncpp\jsoncpp.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cryptojs", "cryptojs\cryptojs.vcxproj", "{4E2B7608-BB5C-4D0E-AC0D-67910C65A6DA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sodium", "sodium\sodium.vcxproj", "{B383014A-74FB-4241-A98A-BE33B92E9EA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -155,6 +157,12 @@ Global
 		{4E2B7608-BB5C-4D0E-AC0D-67910C65A6DA}.Release|x64.Build.0 = Release|x64
 		{4E2B7608-BB5C-4D0E-AC0D-67910C65A6DA}.Release|x86.ActiveCfg = Release|Win32
 		{4E2B7608-BB5C-4D0E-AC0D-67910C65A6DA}.Release|x86.Build.0 = Release|Win32
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Debug|x64.ActiveCfg = Debug|x64
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Debug|x64.Build.0 = Debug|x64
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Debug|x86.ActiveCfg = Debug|x64
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Release|x64.ActiveCfg = Release|x64
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Release|x64.Build.0 = Release|x64
+		{B383014A-74FB-4241-A98A-BE33B92E9EA3}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

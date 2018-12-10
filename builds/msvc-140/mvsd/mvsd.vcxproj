@@ -190,6 +190,9 @@
     <ProjectReference Include="..\protocol\protocol.vcxproj">
       <Project>{06beb260-0a84-40d3-a0a1-16487e51a4bf}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sodium\sodium.vcxproj">
+      <Project>{b383014a-74fb-4241-a98a-be33b92e9ea3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Image Include="64bitmvs_favicon.ico" />

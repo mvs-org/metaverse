@@ -83,7 +83,6 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\math\secp256k1_initializer.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\math\stealth.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\math\uint256.cpp" />
-    <ClCompile Include="..\..\..\src\lib\bitcoin\math\ecvrf.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\address.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_message.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\message\block_transactions.cpp" />
@@ -166,6 +165,7 @@
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\select_outputs.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\stealth_address.cpp" />
     <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\uri.cpp" />
+    <ClCompile Include="..\..\..\src\lib\bitcoin\wallet\vrf_private.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\base_primary.hpp" />
@@ -339,6 +339,7 @@
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\stealth_address.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri.hpp" />
     <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\uri_reader.hpp" />
+    <ClInclude Include="..\..\..\include\metaverse\bitcoin\wallet\vrf_private.hpp" />
     <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\conditional_stack.hpp" />
     <ClInclude Include="..\..\..\src\lib\bitcoin\chain\script\evaluation_context.hpp" />
     <ClInclude Include="..\..\..\src\lib\bitcoin\math\external\aes256.h" />
@@ -380,6 +381,11 @@
     <None Include="..\..\..\include\metaverse\bitcoin\impl\utility\track.ipp" />
     <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_key.ipp" />
     <None Include="..\..\..\src\lib\bitcoin\wallet\parse_encrypted_keys\parse_encrypted_prefix.ipp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\sodium\sodium.vcxproj">
+      <Project>{b383014a-74fb-4241-a98a-be33b92e9ea3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{54C72203-A5A0-4714-8D0C-D51AA4AABAC8}</ProjectGuid>
@@ -430,7 +436,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ObjectFileName>$(IntDir)a\a%(RelativeDir)</ObjectFileName>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\..\zeromq-4.2.1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\contrib;..\..\..\contrib\sodium;..\..\..\..\zeromq-4.2.1\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -447,7 +453,7 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ObjectFileName>$(IntDir)a\a%(RelativeDir)</ObjectFileName>
-      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\..\zeromq-4.2.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;..\..\..\..\boost_1_63_0;..\..\..\..\secp256k1\include;..\..\..\src\lib\consensus\clone;..\..\..\..\zeromq-4.2.1\include;..\..\..\contrib;..\..\..\contrib\sodium</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
