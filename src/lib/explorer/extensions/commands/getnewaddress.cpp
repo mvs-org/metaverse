@@ -24,6 +24,8 @@
 #include <metaverse/explorer/extensions/command_extension_func.hpp>
 #include <metaverse/explorer/extensions/command_assistant.hpp>
 #include <metaverse/explorer/extensions/exception.hpp>
+#include <metaverse/bitcoin/wallet/vrf_private.hpp>
+#include <metaverse/macros_define.hpp>
 
 namespace libbitcoin {
 namespace explorer {
@@ -86,6 +88,37 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         // not store public key now
         ec_compressed point;
         libbitcoin::secret_to_public(point, derive_private_key.secret());
+
+
+#ifdef PRIVATE_CHAIN
+        wallet::vrf_private vrf_(derive_private_key.secret());
+
+        log::info("VRF") << "pri:" << vrf_.encoded()
+            << ", pub:" << encode_base16(vrf_.to_public());
+
+        data_chunk data{1,2,3,4,5,6,7,8,9,10};
+        wallet::vrf_proof proof;
+        wallet::vrf_hash result;
+        if(!vrf_.prove(proof, data) 
+            || !wallet::vrf_private::proof_to_hash(result, proof)){
+            log::error("Wallet")<<"generate prove failed!";
+        }
+
+        log::info("VRF") << "generate prove finish, msg:" << encode_base16(data) 
+            << ", proof:" << encode_base16(proof)
+            << ", result:" << encode_base16(result);
+
+        wallet::vrf_hash result1;
+        if(!wallet::vrf_private::verify(result1, proof, vrf_.to_public(), data)
+        || result != result1){
+            log::error("VRF")<< "verify failed!"
+                << ", result:"<< encode_base16(result)
+                << ", result1:"<< encode_base16(result1);
+        }
+        
+        log::error("Wallet")<<"ecvrf_verify success!"
+            << ", result1:" << encode_base16(result1);
+#endif
 
         // Serialize to the original compression state.
         auto ep =  wallet::ec_public(point, true);
