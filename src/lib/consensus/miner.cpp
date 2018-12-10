@@ -704,6 +704,12 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
 
+    if (!witness::get().verify_signer(public_key_data_, block_height)) {
+        // It is not my turn at current height.
+        sleep_for_mseconds(500, true);
+        return nullptr;
+    }
+
     // create block
     block_ptr pblock = make_shared<block>();
 
@@ -747,9 +753,7 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
         pblock->transactions.push_back(*i);
     }
 
-    bool can_use_dpos = pblock->can_use_dpos_consensus() &&
-        witness::get().verify_signer(public_key_data_, *pblock);
-    if (!can_use_dpos) {
+    if (!pblock->can_use_dpos_consensus()) {
         return nullptr;
     }
 
@@ -1104,9 +1108,9 @@ std::string to_string(_T const& _t)
     return o.str();
 }
 
-void miner::sleep_for_mseconds(uint32_t interval)
+void miner::sleep_for_mseconds(uint32_t interval, bool force)
 {
-    if ((get_accept_block_version() == chain::block_version_pos)) {
+    if (force || (get_accept_block_version() == chain::block_version_pos)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
 }

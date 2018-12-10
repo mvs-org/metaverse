@@ -89,10 +89,11 @@ public:
     bool update_witness_list(uint64_t height);
     bool update_witness_list(const chain::block& block);
     chain::output create_witness_vote_result(uint64_t height);
+    bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
     chain::block::ptr fetch_vote_result_block(uint64_t height);
 
     uint32_t get_slot_num(const witness_id& id) const;
-    uint32_t calc_slot_num(const chain::block& block) const;
+    uint32_t calc_slot_num(uint64_t height) const;
 
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_string(const witness_id& id);
@@ -110,14 +111,11 @@ public:
     static bool is_between_vote_maturity_interval(uint64_t height);
     static bool is_in_same_epoch(uint64_t height1, uint64_t height2);
 
-    bool add_witness_vote_result(chain::block& block);
-    bool add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height);
-
     // signature
     static bool sign(endorsement& out, const ec_secret& secret, const chain::header& h);
     static bool verify_sign(const endorsement& out, const public_key_t& public_key, const chain::header& h);
-    bool verify_signer(const public_key_t& public_key, const chain::block& block) const;
-    bool verify_signer(uint32_t witness_slot_num, const chain::block& block) const;
+    bool verify_signer(const public_key_t& public_key, uint64_t height) const;
+    bool verify_signer(uint32_t witness_slot_num, uint64_t height) const;
     bool verify_vote_result(const chain::block& block, list& witness_list) const;
 
     static u256 calc_mixhash(const list& witness_list);

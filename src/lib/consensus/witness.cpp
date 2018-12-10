@@ -158,9 +158,12 @@ std::string witness::show_list() const
 std::string witness::show_list(const list& witness_list)
 {
     std::string res;
-    res += "witness : [";
+    res += "witness : [\n";
     for (const auto& witness : witness_list) {
-        res += witness_to_string(witness) + "   ";
+        auto str = witness_to_string(witness);
+        if (str != stub_public_key) {
+            res += "\t" + witness_to_string(witness) + "\n";
+        }
     }
     res += "] ";
     return res;
@@ -185,25 +188,20 @@ chain::output witness::create_witness_vote_result(uint64_t height)
     return output;
 }
 
-bool witness::add_witness_vote_result(chain::block& block)
-{
-    auto block_height = block.header.number;
-    auto& coinbase_tx = block.transactions.front();
-    return add_witness_vote_result(coinbase_tx, block_height);
-}
-
 bool witness::add_witness_vote_result(chain::transaction& coinbase_tx, uint64_t block_height)
 {
     BITCOIN_ASSERT(coinbase_tx.is_coinbase());
     if (witness::is_begin_of_epoch(block_height)) {
-        auto&& vote_output = witness::get().create_witness_vote_result(block_height);
+        auto&& vote_output = create_witness_vote_result(block_height);
         if (vote_output.script.operations.empty()) {
             log::error(LOG_HEADER) << "create_witness_vote_result failed";
             return false;
         }
+
         coinbase_tx.outputs.emplace_back(vote_output);
         log::debug(LOG_HEADER) << "create_witness_vote_result complete. " << vote_output.to_string(1);
     }
+
     return true;
 }
 
@@ -248,6 +246,11 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
     else {
+        chain::header header;
+        if (!node_.chain_impl().get_header(header, height-1)) {
+            return false;
+        }
+
         if (stakeholders->size() > max_candidate_count) {
             std::sort(stakeholders->begin(), stakeholders->end(),
                 [](const fts_stake_holder::ptr& h1, const fts_stake_holder::ptr& h2){
@@ -255,11 +258,6 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
                 });
 
             stakeholders->resize(max_candidate_count);
-        }
-
-        chain::header header;
-        if (!node_.chain_impl().get_header(header, height-1)) {
-            return false;
         }
 
         // pick witness_number candidates as witness randomly by fts
@@ -287,13 +285,22 @@ u256 witness::calc_mixhash(const list& witness_list)
 bool witness::verify_vote_result(const chain::block& block, list& witness_list) const
 {
     const auto& transactions = block.transactions;
+
+    // check size of transactions
     if (transactions.size() != 1) {
         return false;
     }
-    if (transactions.front().outputs.size() != 2) {
+
+    auto& coinbase_tx = transactions.front();
+
+    // check size of outputs
+    if (coinbase_tx.outputs.size() != 2) {
         return false;
     }
-    auto& ops = transactions.front().outputs.back().script.operations;
+
+    auto& ops = coinbase_tx.outputs.back().script.operations;
+
+    // check operation of script where mixhash is stored.
     if ((ops.size() != 1) || !chain::operation::is_push_only(ops)) {
         return false;
     }
@@ -424,16 +431,12 @@ uint32_t witness::get_slot_num(const witness_id& id) const
     if (pos != witness_list_.end()) {
         return std::distance(witness_list_.cbegin(), pos);
     }
-#ifdef PRIVATE_CHAIN
-    log::info(LOG_HEADER)
-        << "get slot num failed for " << witness_to_string(id);
-#endif
+
     return max_uint32;
 }
 
-uint32_t witness::calc_slot_num(const chain::block& block) const
+uint32_t witness::calc_slot_num(uint64_t block_height) const
 {
-    auto block_height = block.header.number;
     if (!is_witness_enabled(block_height)) {
         return max_uint32;
     }
@@ -552,19 +555,19 @@ bool witness::verify_sign(const endorsement& out, const public_key_t& public_key
     return true;
 }
 
-bool witness::verify_signer(const public_key_t& public_key, const chain::block& block) const
+bool witness::verify_signer(const public_key_t& public_key, uint64_t height) const
 {
     auto witness_slot_num = get_slot_num(to_witness_id(public_key));
-    return verify_signer(witness_slot_num, block);
+    return verify_signer(witness_slot_num, height);
 }
 
-bool witness::verify_signer(uint32_t witness_slot_num, const chain::block& block) const
+bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
 {
     if (witness_slot_num >= witness_number) {
         return false;
     }
 
-    auto calced_slot_num = calc_slot_num(block);
+    auto calced_slot_num = calc_slot_num(height);
     if (calced_slot_num == witness_slot_num) {
         return true;
     }

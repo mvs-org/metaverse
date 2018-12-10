@@ -132,9 +132,10 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         }
 
         auto has_vote_result = coinbase_count == 0 && is_begin_of_epoch;
-        if ((!has_vote_result && tx.outputs.size() != 1) ||
-            (has_vote_result && tx.outputs.size() != 2) ||
-            (tx.outputs[0].is_etp() == false)) {
+        if ((!has_vote_result && tx.outputs.size() != 1)
+            || (has_vote_result && tx.outputs.size() != 2)
+            || (tx.outputs.size() < 1)
+            || (tx.outputs[0].is_etp() == false)) {
             return error::first_not_coinbase;
         }
 
@@ -218,7 +219,7 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         if (!consensus::witness::verify_sign(endorse, pubkey, header)) {
             return error::witness_sign_invalid;
         }
-        if (!consensus::witness::get().verify_signer(pubkey, current_block_)) {
+        if (!consensus::witness::get().verify_signer(pubkey, header.number)) {
             return error::witness_mismatch;
         }
     }

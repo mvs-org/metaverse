@@ -236,7 +236,8 @@ void organizer::process(block_detail::ptr process_block)
                     const auto need_reupdate = num_of_poped_blocks != 0 && num_of_pushed_blocks == 0;
                     if (need_recovery) {
                         consensus::witness::get().swap_witness_list(witness_list);
-                    } else if (need_reupdate) {
+                    }
+                    else if (need_reupdate) {
                         const auto& new_block_height = std::get<2>(ret);
                         if (!consensus::witness::is_in_same_epoch(fork_index, new_block_height)) {
                             consensus::witness::get().update_witness_list(new_block_height);

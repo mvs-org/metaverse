@@ -277,7 +277,7 @@ fts_node::ptr fts::select_by_fts(const fts_node::ptr& merkle_tree, uint32_t seed
         auto left = node->left();
         auto right = node->right();
         uint64_t r = urd(eng) % node->stake();
-        if (r <= left->stake()) {
+        if (r < left->stake()) {
             node = left;
         }
         else {

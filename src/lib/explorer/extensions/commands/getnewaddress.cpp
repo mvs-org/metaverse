@@ -54,7 +54,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     }
 
     Json::Value addresses;
-    
+
     std::vector<std::shared_ptr<account_address>> account_addresses;
     account_addresses.reserve(option_.count);
     const auto seed = wallet::decode_mnemonic(words);
@@ -87,9 +87,6 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         ec_compressed point;
         libbitcoin::secret_to_public(point, derive_private_key.secret());
 
-        log::info("Wallet") << "pri:" << pk << "pub:" << encode_base16(point);
-
-
         // Serialize to the original compression state.
         auto ep =  wallet::ec_public(point, true);
 
@@ -116,7 +113,7 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
     }
     else {
         if(addresses.isNull())
-            addresses.resize(0);  
+            addresses.resize(0);
         jv_output = addresses;
     }
 
