@@ -176,6 +176,9 @@
     <ClInclude Include="..\..\..\include\metaverse\consensus\witness.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\metaverse\consensus\fts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\lib\consensus\miner.cpp">
@@ -254,6 +257,9 @@
       <Filter>Source Files\consensus</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\lib\consensus\witness.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\lib\consensus\fts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
