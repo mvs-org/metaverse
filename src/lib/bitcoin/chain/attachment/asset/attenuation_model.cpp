@@ -873,6 +873,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
 {
     const transaction& tx = validate_tx.get_tx();
     const blockchain::block_chain_impl& chain = validate_tx.get_blockchain();
+    const blockchain::validate_block* validate_block = validate_tx.get_validate_block();
 
     if (tx.version < transaction_version::check_nova_feature) {
         return error::success;
@@ -954,7 +955,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
             return error::attenuation_model_param_error;
         }
 
-        auto curr_diff_height = chain.calc_number_of_blocks(iter->prev_blockheight_, current_blockheight);
+        auto curr_diff_height = chain.calc_number_of_blocks(iter->prev_blockheight_, current_blockheight, validate_block);
         auto real_diff_height = get_diff_height(prev_model_param, model_param);
 
         if (real_diff_height > curr_diff_height) {
@@ -990,7 +991,7 @@ code attenuation_model::check_model_param(const blockchain::validate_transaction
     // check the left is all spendable
     for (const auto& ext_input : vec_prev_input) {
         const auto& prev_model_param = ext_input.prev_output_.get_attenuation_model_param();
-        auto curr_diff_height = chain.calc_number_of_blocks(ext_input.prev_blockheight_, current_blockheight);
+        auto curr_diff_height = chain.calc_number_of_blocks(ext_input.prev_blockheight_, current_blockheight, validate_block);
         auto real_diff_height = get_diff_height(prev_model_param, data_chunk());
         if (real_diff_height > curr_diff_height) {
             log::debug(LOG_HEADER) << "check diff height failed for all spendable, "

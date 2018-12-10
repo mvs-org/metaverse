@@ -50,7 +50,7 @@ static constexpr uint32_t max_transaction_size = 1000000;
 
 validate_transaction::validate_transaction(block_chain& chain,
     const chain::transaction& tx, const validate_block& validate_block)
-    : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
+    : blockchain_(static_cast<block_chain_impl&>(chain)),
       tx_(std::make_shared<message::transaction_message>(tx)),
       pool_(nullptr),
       dispatch_(nullptr),
@@ -61,7 +61,7 @@ validate_transaction::validate_transaction(block_chain& chain,
 
 validate_transaction::validate_transaction(block_chain& chain,
     const chain::transaction& tx, const transaction_pool& pool, dispatcher& dispatch)
-    : blockchain_(static_cast<blockchain::block_chain_impl&>(chain)),
+    : blockchain_(static_cast<block_chain_impl&>(chain)),
       tx_(std::make_shared<message::transaction_message>(tx)),
       pool_(&pool),
       dispatch_(&dispatch),
@@ -80,14 +80,19 @@ const transaction& validate_transaction::get_tx() const
     return *tx_;
 }
 
-blockchain::block_chain_impl& validate_transaction::get_blockchain()
+block_chain_impl& validate_transaction::get_blockchain()
 {
     return blockchain_;
 }
 
-const blockchain::block_chain_impl& validate_transaction::get_blockchain() const
+const block_chain_impl& validate_transaction::get_blockchain() const
 {
     return blockchain_;
+}
+
+const validate_block* validate_transaction::get_validate_block() const
+{
+    return validate_block_;
 }
 
 void validate_transaction::start(validate_handler handler)
@@ -396,7 +401,7 @@ static bool check_same(std::string& dest, const std::string& src)
 code validate_transaction::check_secondaryissue_transaction() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& blockchain = blockchain_;
+    block_chain_impl& blockchain = blockchain_;
 
     bool is_asset_secondaryissue{false};
     for (auto& output : tx.outputs) {
@@ -549,7 +554,7 @@ code validate_transaction::check_secondaryissue_transaction() const
 code validate_transaction::check_asset_issue_transaction() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     bool is_asset_issue{false};
     for (auto& output : tx.outputs) {
@@ -699,7 +704,7 @@ code validate_transaction::check_asset_issue_transaction() const
 code validate_transaction::check_asset_cert_transaction() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     bool is_cert{false};
     for (auto& output : tx.outputs) {
@@ -854,7 +859,7 @@ code validate_transaction::check_asset_cert_transaction() const
 code validate_transaction::check_asset_mit_transaction() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     bool is_asset_mit{false};
     for (auto& output : tx.outputs) {
@@ -1052,7 +1057,7 @@ bool validate_transaction::check_address_registered_did(const std::string& addre
 code validate_transaction::check_did_transaction() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
     uint64_t fork_index = validate_block_ ? validate_block_->get_fork_index() : max_uint64;
 
     code ret = error::success;
@@ -1144,7 +1149,7 @@ code validate_transaction::check_did_transaction() const
 bool validate_transaction::connect_did_input(const did& info) const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     if (info.get_status() ==  DID_TRANSFERABLE_TYPE && tx.inputs.size() != 2) {
         return false;
@@ -1340,7 +1345,7 @@ code validate_transaction::check_transaction() const
     return ret;
 }
 
-uint64_t median_time_past(const uint64_t &height, const blockchain::block_chain_impl& chain)
+uint64_t median_time_past(const uint64_t &height, const block_chain_impl& chain)
 {
     const uint64_t median_time_past_blocks = 11;
     // Read last 11 (or height if height < 11) block times into array.
@@ -1362,7 +1367,7 @@ uint64_t median_time_past(const uint64_t &height, const blockchain::block_chain_
 
 code validate_transaction::check_final_tx() const
 {
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     uint64_t height = 0;
     uint64_t median_time_past_ = 0;
@@ -1381,7 +1386,7 @@ code validate_transaction::check_final_tx() const
 code validate_transaction::check_sequence_locks() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
     if (tx.version < relative_locktime_min_version || tx_->is_coinbase())
         return error::success;
 
@@ -1439,7 +1444,7 @@ code validate_transaction::check_sequence_locks() const
 code validate_transaction::check_transaction_basic() const
 {
     const chain::transaction& tx = *tx_;
-    blockchain::block_chain_impl& chain = blockchain_;
+    block_chain_impl& chain = blockchain_;
 
     if (tx.version >= transaction_version::max_version) {
         return error::transaction_version_error;
@@ -1557,7 +1562,7 @@ code validate_transaction::check_transaction_basic() const
                     continue;
 
                 uint64_t lock_height = chain::operation::get_lock_height_from_sign_key_hash_with_lock_height(input.script.operations);
-                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight)) {
+                if (lock_height > chain.calc_number_of_blocks(prev_output_blockheight, current_blockheight, validate_block_)) {
                     return error::invalid_input_script_lock_height;
                 }
             }
@@ -1686,7 +1691,7 @@ bool validate_transaction::connect_input( const transaction& previous_tx, size_t
     }
 
     if (previous_tx.is_coinbase()) {
-        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_)) {
+        if (coinbase_maturity > blockchain_.calc_number_of_blocks(parent_height, last_block_height_, validate_block_)) {
             log::debug(LOG_BLOCKCHAIN)
                 << "coinbase not maturity from "
                 << parent_height << " to " << last_block_height_;
@@ -1780,7 +1785,7 @@ bool validate_transaction::check_special_fees(bool is_testnet, const chain::tran
     return true;
 }
 
-bool validate_transaction::tally_fees(blockchain::block_chain_impl& chain,
+bool validate_transaction::tally_fees(block_chain_impl& chain,
     const transaction& tx, uint64_t value_in, uint64_t& total_fees, bool is_coinstake)
 {
     const auto value_out = tx.total_output_value();
@@ -1965,7 +1970,7 @@ bool validate_transaction::check_did_symbol_match(const transaction& tx) const
     return true;
 }
 
-bool validate_transaction::is_nova_feature_activated(blockchain::block_chain_impl& chain)
+bool validate_transaction::is_nova_feature_activated(block_chain_impl& chain)
 {
 #ifdef PRIVATE_CHAIN
     return true;

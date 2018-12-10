@@ -811,6 +811,12 @@ bool validate_block::get_transaction(const hash_digest& tx_hash,
     return fetch_transaction(prev_tx, prev_height, tx_hash);
 }
 
+bool validate_block::get_header(chain::header& out_header, uint64_t height) const
+{
+    out_header = fetch_block(height);
+    return true;
+}
+
 bool validate_block::connect_input(size_t index_in_parent,
                                    const transaction& current_tx, size_t input_index, uint64_t& value_in,
                                    size_t& total_sigops) const

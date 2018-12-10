@@ -77,7 +77,7 @@ public:
 
     bool connect_input(const chain::transaction& previous_tx, size_t parent_height);
 
-    static bool tally_fees(blockchain::block_chain_impl& chain,
+    static bool tally_fees(block_chain_impl& chain,
         const chain::transaction& tx, uint64_t value_in, uint64_t& fees, bool is_coinstake = false);
     static bool check_special_fees(bool is_testnet, const chain::transaction& tx, uint64_t fees);
 
@@ -90,14 +90,15 @@ public:
     //check input did match output did
     bool check_did_symbol_match(const transaction& tx) const;
 
-    static bool is_nova_feature_activated(blockchain::block_chain_impl& chain);
+    static bool is_nova_feature_activated(block_chain_impl& chain);
 
     bool get_previous_tx(chain::transaction& prev_tx, uint64_t& prev_height, const chain::input&) const;
 
     transaction& get_tx();
     const transaction& get_tx() const;
-    blockchain::block_chain_impl& get_blockchain();
-    const blockchain::block_chain_impl& get_blockchain() const;
+    block_chain_impl& get_blockchain();
+    const block_chain_impl& get_blockchain() const;
+    const validate_block* get_validate_block() const;
 
 private:
     code basic_checks() const;

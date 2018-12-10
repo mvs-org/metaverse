@@ -41,6 +41,7 @@
 #include <metaverse/blockchain/transaction_pool.hpp>
 #include <metaverse/blockchain/validate_transaction.hpp>
 #include <metaverse/blockchain/account_security_strategy.hpp>
+#include <metaverse/blockchain/validate_block.hpp>
 #include <metaverse/consensus/witness.hpp>
 #include <metaverse/consensus/libdevcore/BasicType.h>
 
@@ -157,7 +158,7 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
 }
 
 
-bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict)
+bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict, const validate_block* validate_block)
 {
     if (out_index >= tx.outputs.size()){
         return false;
@@ -175,13 +176,13 @@ bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const c
         // deposit utxo in block
         uint64_t lock_height = chain::operation::
             get_lock_height_from_pay_key_hash_with_lock_height(output.script.operations);
-        if (lock_height > calc_number_of_blocks(out_height, height)) {
+        if (lock_height > calc_number_of_blocks(out_height, height, validate_block)) {
             return false;
         }
     }
     else if (tx.is_coinbase()){ // coin base etp maturity etp check
         // add not coinbase_maturity etp into frozen
-        if (coinbase_maturity > calc_number_of_blocks(out_height, height)) {
+        if (coinbase_maturity > calc_number_of_blocks(out_height, height, validate_block)) {
             return false;
         }
     }
@@ -2778,7 +2779,7 @@ uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_he
     return to;
 }
 
-uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) const
+uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, const validate_block* validate_block) const
 {
     if (from >= to) {
         return 0;
@@ -2797,7 +2798,8 @@ uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to) con
         if (start < to) {
             chain::header out_header;
             for (auto i = start; i < to; ++i) {
-                if (!get_header(out_header, i)) {
+                if ((validate_block && !validate_block->get_header(out_header, i))
+                    || (!validate_block && !get_header(out_header, i))) {
                     return 0;
                 }
                 if (out_header.is_proof_of_dpos()) {

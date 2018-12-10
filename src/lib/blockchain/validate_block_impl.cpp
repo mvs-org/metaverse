@@ -99,7 +99,7 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
     BITCOIN_ASSERT(stake_output_point.index < utxo_tx.outputs.size());
 
     if (!chain_.check_pos_utxo_capability(
-        block.header.number, utxo_tx, stake_output_point.index, utxo_height)) {
+        block.header.number, utxo_tx, stake_output_point.index, utxo_height, true, this)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check utxo capability, hash=" << encode_hash(stake_output_point.hash)
             << ", index=" << stake_output_point.index
