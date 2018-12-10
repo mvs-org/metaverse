@@ -269,6 +269,12 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
 
     BITCOIN_ASSERT_MSG(witness_list.size() == witness_number, "calc_witness_list count mismatch");
+#ifdef PRIVATE_CHAIN
+    log::info(LOG_HEADER)
+#else
+    log::debug(LOG_HEADER)
+#endif
+        << "calc_witness_list at height " << height << ", " << show_list(witness_list);
     return true;
 }
 
@@ -295,6 +301,8 @@ bool witness::verify_vote_result(const chain::block& block, list& witness_list) 
 
     // check size of outputs
     if (coinbase_tx.outputs.size() != 2) {
+        log::debug(LOG_HEADER)
+            << "in verify_vote_result -> no extra output to store witness mixhash, height " << block.header.number;
         return false;
     }
 
@@ -407,11 +415,6 @@ bool witness::init_witness_list()
             return false;
         }
         log::info(LOG_HEADER) << "update witness list succeed at height " << height;
-#ifdef PRIVATE_CHAIN
-        log::info(LOG_HEADER) << consensus::witness::get().show_list();
-#else
-        log::debug(LOG_HEADER) << consensus::witness::get().show_list();
-#endif
     }
 
     chain.set_sync_disabled(false);
