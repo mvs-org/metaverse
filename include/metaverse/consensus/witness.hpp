@@ -58,7 +58,6 @@ public:
     static uint32_t register_witness_lock_height;
     static uint64_t witness_lock_threshold;
     static uint32_t vote_maturity;
-    static uint32_t max_dpos_interval;
 
     static const uint32_t max_candidate_count;
     static const uint32_t witness_register_fee;

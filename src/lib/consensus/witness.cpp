@@ -36,13 +36,10 @@ uint32_t witness::epoch_cycle_height = 20000;
 uint32_t witness::register_witness_lock_height = 10000;
 uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
 uint32_t witness::vote_maturity = 12;
-uint32_t witness::max_dpos_interval = 3; // seconds
 
 const uint32_t witness::max_candidate_count = 10000;
 const uint32_t witness::witness_register_fee = 123456789;
 const std::string witness::witness_registry_did = "witness_registry";
-
-static const std::string stub_public_key = "0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 witness* witness::instance_ = nullptr;
 
@@ -80,7 +77,6 @@ void witness::init(p2p_node& node)
         witness::register_witness_lock_height = 500;
         witness::witness_lock_threshold = 10*(1e8); // ETP bits
         witness::vote_maturity = 2;
-        witness::max_dpos_interval = 3;
     }
 
 #ifdef PRIVATE_CHAIN
@@ -91,7 +87,6 @@ void witness::init(p2p_node& node)
     witness::register_witness_lock_height = 50;
     witness::witness_lock_threshold = 1*(1e8); // ETP bits
     witness::vote_maturity = 2;
-    witness::max_dpos_interval = 1;
 #endif
 
     BITCOIN_ASSERT(max_candidate_count >= witness_number);
@@ -157,11 +152,7 @@ std::string witness::show_list(const list& witness_list)
     std::string res;
     res += "witness : [\n";
     for (const auto& witness : witness_list) {
-        auto str = witness_to_string(witness);
-        // if (str != stub_public_key)
-        {
-            res += "\t" + witness_to_string(witness) + "\n";
-        }
+        res += "\t" + witness_to_string(witness) + "\n";
     }
     res += "] ";
     return res;
@@ -250,7 +241,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
     else {
         chain::header header;
-        if (!node_.chain_impl().get_header(header, height-1)) {
+        if (!chain.get_header(header, height-1)) {
             return false;
         }
 
@@ -581,10 +572,6 @@ bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
         return true;
     }
 
-    // if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
-    //     return true;
-    // }
-
     return false;
 }
 
@@ -634,7 +621,19 @@ bool witness::is_between_vote_maturity_interval(uint64_t height)
 
 bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
 {
-    return get_vote_result_height(height1) == get_vote_result_height(height2);
+    auto r = std::minmax(height1, height2);
+    auto vote1 = get_vote_result_height(r.first);
+    auto vote2 = get_vote_result_height(r.second);
+
+    if (vote1 == vote2) {
+        return true;
+    }
+
+    if (vote2 == vote1 + epoch_cycle_height) {
+        return vote2 - r.first < vote_maturity;
+    }
+
+    return false;
 }
 
 uint64_t witness::get_round_begin_height(uint64_t height)
