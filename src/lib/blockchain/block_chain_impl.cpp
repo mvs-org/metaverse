@@ -158,7 +158,9 @@ void block_chain_impl::subscribe_reorganize(reorganize_handler handler)
 }
 
 
-bool block_chain_impl::check_pos_utxo_capability(const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index ,const uint64_t& out_height, bool strict, const validate_block* validate_block)
+bool block_chain_impl::check_pos_utxo_capability(
+    const uint64_t& height, const chain::transaction& tx, const uint32_t& out_index,
+    const uint64_t& out_height, bool strict, const validate_block* validate_block)
 {
     if (out_index >= tx.outputs.size()){
         return false;
@@ -1620,6 +1622,11 @@ bool block_chain_impl::check_pos_capability(
                 continue;
             }
 
+            // deposit tx must be maturity
+            if (tx_height + coinbase_maturity > best_height) {
+                continue;
+            }
+
             if ( row.value >= pos_lock_min_value &&
                 chain::operation::is_pay_key_hash_with_lock_height_pattern(output.script.operations))
             {
@@ -2779,7 +2786,8 @@ uint64_t block_chain_impl::get_expiration_height(uint64_t from, uint64_t lock_he
     return to;
 }
 
-uint64_t block_chain_impl::calc_number_of_blocks(uint64_t from, uint64_t to, const validate_block* validate_block) const
+uint64_t block_chain_impl::calc_number_of_blocks(
+    uint64_t from, uint64_t to, const validate_block* validate_block) const
 {
     if (from >= to) {
         return 0;

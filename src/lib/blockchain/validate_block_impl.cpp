@@ -88,8 +88,7 @@ bool validate_block_impl::verify_stake(const chain::block& block) const
 
     uint64_t utxo_height = 0;
     chain::transaction utxo_tx;
-    if (!static_cast<block_chain_impl&>(chain_).get_transaction(
-        stake_output_point.hash, utxo_tx, utxo_height)) {
+    if (fetch_transaction(utxo_tx, utxo_height, stake_output_point.hash)) {
         log::error(LOG_BLOCKCHAIN)
             << "Failed to check stake, can not get stake transaction "
             << encode_hash(stake_output_point.hash);
