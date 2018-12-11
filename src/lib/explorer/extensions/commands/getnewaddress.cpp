@@ -31,6 +31,36 @@ namespace libbitcoin {
 namespace explorer {
 namespace commands {
 
+void test_vrf(const bc::wallet::hd_private& private_key)
+{
+    wallet::vrf_private vrf_(private_key.secret());
+
+    log::info("VRF") << "pri:" << vrf_.encoded()
+        << ", pub:" << encode_base16(vrf_.to_public());
+
+    data_chunk data{1,2,3,4,5,6,7,8,9,10};
+    wallet::vrf_proof proof;
+    wallet::vrf_hash result;
+    if (!vrf_.prove(proof, data)
+        || !wallet::vrf_private::proof_to_hash(result, proof)) {
+        log::error("Wallet")<<"generate prove failed!";
+    }
+
+    log::info("VRF") << "generate prove finish, msg:" << encode_base16(data)
+        << ", proof:" << encode_base16(proof)
+        << ", result:" << encode_base16(result);
+
+    wallet::vrf_hash result1;
+    if (!wallet::vrf_private::verify(result1, proof, vrf_.to_public(), data)
+        || result != result1) {
+        log::error("VRF")<< "verify failed!"
+            << ", result:"<< encode_base16(result)
+            << ", result1:"<< encode_base16(result1);
+    }
+
+    log::info("Wallet")<<"ecvrf_verify success!"
+        << ", result1:" << encode_base16(result1);
+}
 
 /************************ getnewaddress *************************/
 
@@ -82,43 +112,17 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
 
         // Create the private key from hd_key and the public version.
         const auto derive_private_key = bc::wallet::hd_private(hk, prefixes);
-        auto pk = encode_base16(derive_private_key.secret());
 
+#ifdef PRIVATE_CHAIN
+        test_vrf(derive_private_key);
+#endif
+
+        auto pk = encode_base16(derive_private_key.secret());
         addr->set_prv_key(pk.c_str(), auth_.auth);
+
         // not store public key now
         ec_compressed point;
         libbitcoin::secret_to_public(point, derive_private_key.secret());
-
-
-#ifdef PRIVATE_CHAIN
-        wallet::vrf_private vrf_(derive_private_key.secret());
-
-        log::info("VRF") << "pri:" << vrf_.encoded()
-            << ", pub:" << encode_base16(vrf_.to_public());
-
-        data_chunk data{1,2,3,4,5,6,7,8,9,10};
-        wallet::vrf_proof proof;
-        wallet::vrf_hash result;
-        if(!vrf_.prove(proof, data) 
-            || !wallet::vrf_private::proof_to_hash(result, proof)){
-            log::error("Wallet")<<"generate prove failed!";
-        }
-
-        log::info("VRF") << "generate prove finish, msg:" << encode_base16(data) 
-            << ", proof:" << encode_base16(proof)
-            << ", result:" << encode_base16(result);
-
-        wallet::vrf_hash result1;
-        if(!wallet::vrf_private::verify(result1, proof, vrf_.to_public(), data)
-        || result != result1){
-            log::error("VRF")<< "verify failed!"
-                << ", result:"<< encode_base16(result)
-                << ", result1:"<< encode_base16(result1);
-        }
-        
-        log::error("Wallet")<<"ecvrf_verify success!"
-            << ", result1:" << encode_base16(result1);
-#endif
 
         // Serialize to the original compression state.
         auto ep =  wallet::ec_public(point, true);
@@ -145,8 +149,10 @@ console_result getnewaddress::invoke(Json::Value& jv_output,
         jv_output["addresses"] = addresses;
     }
     else {
-        if(addresses.isNull())
+        if (addresses.isNull()) {
             addresses.resize(0);
+        }
+
         jv_output = addresses;
     }
 

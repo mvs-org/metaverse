@@ -23,6 +23,8 @@
 
 namespace libbitcoin {
 
+const uint64_t pos_genesis_value        = 3000000 * 100000000ul;
+
 #ifndef PRIVATE_CHAIN
 
 uint32_t coinbase_maturity = 1000;
@@ -73,5 +75,15 @@ std::string get_developer_community_address(bool is_testnet)
     }
     return address;
 }
+
+std::string get_foundation_address(bool is_testnet)
+{
+    std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // foundation address for mainnet
+    if (is_testnet) {
+        address = "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms";         // foundation address for testnet
+    }
+    return address;
+}
+
 
 } // namespace libbitcoin

@@ -98,6 +98,8 @@ extern const uint64_t future_blocktime_fork_height;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
+extern const uint64_t pos_genesis_value;
+
 extern const uint64_t pos_enabled_height;
 extern const uint32_t pos_coinstake_max_utxos;
 
@@ -172,6 +174,8 @@ BC_CONSTEXPR message::network_address unspecified_network_address
 BC_API hash_number max_target();
 
 BC_API std::string get_developer_community_address(bool is_testnet);
+
+BC_API std::string get_foundation_address(bool is_testnet);
 
 } // namespace libbitcoin
 
