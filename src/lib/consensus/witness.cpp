@@ -36,7 +36,7 @@ uint32_t witness::witness_number = 23;
 uint32_t witness::epoch_cycle_height = 20000;
 uint32_t witness::register_witness_lock_height = 10000;
 uint64_t witness::witness_lock_threshold = 1000*(1e8); // ETP bits
-uint32_t witness::vote_maturity = 12;
+uint32_t witness::vote_maturity = 24;
 
 const uint32_t witness::max_candidate_count = 10000;
 const uint32_t witness::witness_register_fee = 123456789;
@@ -78,7 +78,7 @@ void witness::init(p2p_node& node)
         witness::epoch_cycle_height = 1000;
         witness::register_witness_lock_height = 500;
         witness::witness_lock_threshold = 10*(1e8); // ETP bits
-        witness::vote_maturity = 2;
+        witness::vote_maturity = 6;
     }
 
 #ifdef PRIVATE_CHAIN
@@ -88,7 +88,7 @@ void witness::init(p2p_node& node)
     witness::epoch_cycle_height = 100;
     witness::register_witness_lock_height = 50;
     witness::witness_lock_threshold = 1*(1e8); // ETP bits
-    witness::vote_maturity = 2;
+    witness::vote_maturity = 6;
 #endif
 
     BITCOIN_ASSERT(max_candidate_count >= witness_number);

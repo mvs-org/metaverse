@@ -2860,6 +2860,11 @@ std::pair<uint64_t, uint64_t> block_chain_impl::get_locked_balance(
         if ((row.spend.hash == null_hash)
             && rThis.get_transaction(row.output.hash, tx_temp, tx_height))
         {
+            // tx not maturity
+            if (tx_height + consensus::witness::vote_maturity > height) {
+                continue;
+            }
+
             BITCOIN_ASSERT(row.output.index < tx_temp.outputs.size());
             const auto& output = tx_temp.outputs.at(row.output.index);
 
