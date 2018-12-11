@@ -94,6 +94,7 @@ public:
 
     uint32_t get_slot_num(const witness_id& id) const;
     uint32_t calc_slot_num(uint64_t height) const;
+    size_t get_witness_number();
 
     static public_key_t witness_to_public_key(const witness_id& id);
     static std::string witness_to_string(const witness_id& id);

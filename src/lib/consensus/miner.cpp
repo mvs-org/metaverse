@@ -388,7 +388,7 @@ uint64_t miner::calculate_block_subsidy_pos(uint64_t block_height, bool is_testn
 uint64_t miner::calculate_block_subsidy_dpos(uint64_t block_height, bool is_testnet)
 {
     auto result = calculate_block_subsidy_pow(block_height, is_testnet);
-    result /= witness::witness_number;
+    result /= witness::get().get_witness_number();
     return result;
 }
 
@@ -703,6 +703,10 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
 
     uint64_t block_height = last_height + 1;
     uint32_t block_time = get_adjust_time(block_height);
+
+    if (is_stop_miner(block_height, nullptr)) {
+        return nullptr;
+    }
 
     if (!witness::get().verify_signer(public_key_data_, block_height)) {
         // It is not my turn at current height.

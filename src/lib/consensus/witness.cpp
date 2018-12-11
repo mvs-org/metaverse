@@ -158,12 +158,19 @@ std::string witness::show_list(const list& witness_list)
     res += "witness : [\n";
     for (const auto& witness : witness_list) {
         auto str = witness_to_string(witness);
-        if (str != stub_public_key) {
+        // if (str != stub_public_key)
+        {
             res += "\t" + witness_to_string(witness) + "\n";
         }
     }
     res += "] ";
     return res;
+}
+
+size_t witness::get_witness_number()
+{
+    shared_lock lock(mutex_);
+    return witness_list_.size();
 }
 
 chain::output witness::create_witness_vote_result(uint64_t height)
@@ -227,20 +234,19 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     auto& chain = const_cast<blockchain::block_chain_impl&>(node_.chain_impl());
     auto did_detail = chain.get_registered_did(witness::witness_registry_did);
     if (!did_detail) {
-        return false;
+        return true;
     }
 
     auto stakeholders = chain.get_register_witnesses_with_stake(
         did_detail->get_address(), "", 0, height + register_witness_lock_height);
     if (stakeholders == nullptr || stakeholders->empty()) {
-        return false;
+        return true;
     }
 
     if (stakeholders->size() <= witness_number) {
         for (const auto& stake_holder : *stakeholders) {
             witness_list.emplace_back(to_chunk(stake_holder->address()));
         }
-        witness_list.resize(witness_number, to_chunk(stub_public_key));
     }
     else {
         chain::header header;
@@ -265,7 +271,6 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
         }
     }
 
-    BITCOIN_ASSERT_MSG(witness_list.size() == witness_number, "calc_witness_list count mismatch");
 #ifdef PRIVATE_CHAIN
     log::info(LOG_HEADER)
 #else
@@ -278,6 +283,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
 u256 witness::calc_mixhash(const list& witness_list)
 {
     RLPStream s;
+    s << witness_list.size();
     for (const auto& witness : witness_list) {
         s << bitcoin_hash(witness);
     }
@@ -364,6 +370,7 @@ bool witness::update_witness_list(uint64_t height)
         swap_witness_list(empty);
         return true;
     }
+
     auto sp_block = fetch_vote_result_block(height);
     if (!sp_block) {
 #ifdef PRIVATE_CHAIN
@@ -437,11 +444,12 @@ uint32_t witness::get_slot_num(const witness_id& id) const
 
 uint32_t witness::calc_slot_num(uint64_t block_height) const
 {
-    if (!is_witness_enabled(block_height)) {
+    auto size = witness::get().get_witness_number();
+    if (!is_witness_enabled(block_height) || size == 0) {
         return max_uint32;
     }
 
-    auto calced_slot_num = ((block_height - witness_enable_height) % witness_number);
+    auto calced_slot_num = ((block_height - witness_enable_height) % size);
     auto round_begin_height = get_round_begin_height(block_height);
     if (is_begin_of_epoch(round_begin_height)) {
         return calced_slot_num;
@@ -456,18 +464,18 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
     }
     else {
         chain::header header;
-        for (auto i = round_begin_height - witness_number; i < round_begin_height; ++i) {
+        for (auto i = round_begin_height - size; i < round_begin_height; ++i) {
             if (!node_.chain_impl().get_header(header, i)) {
                 return max_uint32;
             }
             offset ^= hash_digest_to_uint(header.hash());
         }
 
-        offset %= witness_number;
+        offset %= size;
         height_offset = std::make_pair(round_begin_height, offset);
     }
 
-    return (calced_slot_num + offset) % witness_number;
+    return (calced_slot_num + offset) % size;
 }
 
 witness::public_key_t witness::witness_to_public_key(const witness_id& id)
@@ -563,7 +571,8 @@ bool witness::verify_signer(const public_key_t& public_key, uint64_t height) con
 
 bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
 {
-    if (witness_slot_num >= witness_number) {
+    auto size = witness::get().get_witness_number();
+    if (witness_slot_num >= size) {
         return false;
     }
 
@@ -572,9 +581,9 @@ bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
         return true;
     }
 
-    if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
-        return true;
-    }
+    // if (get_witness(calced_slot_num) == to_chunk(stub_public_key)) {
+    //     return true;
+    // }
 
     return false;
 }
@@ -610,10 +619,12 @@ bool witness::is_between_vote_maturity_interval(uint64_t height)
     if (!is_witness_enabled(height)) {
         return false;
     }
+
     // [0 .. vote_maturity)
     if (get_height_in_epoch(height) < vote_maturity) {
         return true;
     }
+
     // [epoch_cycle_height-vote_maturity .. epoch_cycle_height)
     if (epoch_cycle_height - get_height_in_epoch(height) <= vote_maturity) {
         return true;
@@ -628,8 +639,9 @@ bool witness::is_in_same_epoch(uint64_t height1, uint64_t height2)
 
 uint64_t witness::get_round_begin_height(uint64_t height)
 {
-    return is_witness_enabled(height)
-        ? height - ((height - witness_enable_height) % witness_number)
+    auto size = witness::get().get_witness_number();
+    return is_witness_enabled(height) && size > 0
+        ? height - ((height - witness_enable_height) % size)
         : 0;
 }
 

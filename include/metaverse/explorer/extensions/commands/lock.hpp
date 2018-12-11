@@ -35,7 +35,7 @@ public:
     static const char* symbol(){ return "lock";}
     const char* name() override { return symbol();}
     bool category(int bs) override { return (ex_online & bs ) == bs; }
-    const char* description() override { return "lock etp or asset to a targert did/address."; }
+    const char* description() override { return "lock etp or asset to a target did/address."; }
 
     arguments_metadata& load_arguments() override
     {
