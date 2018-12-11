@@ -22,6 +22,7 @@
 #include <metaverse/macros_define.hpp>
 #include <metaverse/node/p2p_node.hpp>
 #include <metaverse/blockchain/settings.hpp>
+#include <metaverse/blockchain/validate_block.hpp>
 #include <future>
 
 #define LOG_HEADER "Witness"
@@ -56,6 +57,7 @@ witness::witness(p2p_node& node)
     : node_(node)
     , setting_(node_.chain_impl().chain_settings())
     , witness_list_()
+    , validate_block_(nullptr)
     , mutex_()
 {
 }
@@ -241,7 +243,7 @@ bool witness::calc_witness_list(list& witness_list, uint64_t height) const
     }
     else {
         chain::header header;
-        if (!chain.get_header(header, height-1)) {
+        if (!get_header(header, height-1)) {
             return false;
         }
 
@@ -456,7 +458,7 @@ uint32_t witness::calc_slot_num(uint64_t block_height) const
     else {
         chain::header header;
         for (auto i = round_begin_height - size; i < round_begin_height; ++i) {
-            if (!node_.chain_impl().get_header(header, i)) {
+            if (!get_header(header, i)) {
                 return max_uint32;
             }
             offset ^= hash_digest_to_uint(header.hash());
@@ -642,6 +644,31 @@ uint64_t witness::get_round_begin_height(uint64_t height)
     return is_witness_enabled(height) && size > 0
         ? height - ((height - witness_enable_height) % size)
         : 0;
+}
+
+bool witness::get_header(chain::header& out_header, uint64_t height) const
+{
+    if (validate_block_) {
+        return validate_block_->get_header(out_header, height);
+    }
+    return node_.chain_impl().get_header(out_header, height);
+}
+
+void witness::set_validate_block(const validate_block* validate_block)
+{
+    validate_block_ = validate_block;
+}
+
+witness_with_validate_block_context::witness_with_validate_block_context(
+    witness& w, const validate_block* v)
+    : witness_(w)
+{
+    witness_.set_validate_block(v);
+}
+
+witness_with_validate_block_context::~witness_with_validate_block_context()
+{
+    witness_.set_validate_block(nullptr);
 }
 
 } // consensus

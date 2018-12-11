@@ -31,6 +31,7 @@ namespace libbitcoin {
     } // node
     namespace blockchain {
         class settings;
+        class validate_block;
     } // blockchain
     namespace wallet {
         class payment_address;
@@ -45,6 +46,8 @@ class witness
 public:
     using p2p_node = libbitcoin::node::p2p_node;
     using settings = blockchain::settings;
+    using validate_block = blockchain::validate_block;
+
     using public_key_t = data_chunk;
     using witness_id = data_chunk;
     using list = std::vector<witness_id>;
@@ -120,6 +123,9 @@ public:
 
     static u256 calc_mixhash(const list& witness_list);
 
+    void set_validate_block(const validate_block*);
+    bool get_header(chain::header& out_header, uint64_t height) const;
+
 private:
     witness(p2p_node& node);
     static void init(p2p_node& node);
@@ -132,7 +138,16 @@ private:
     p2p_node& node_;
     const settings& setting_;
     list witness_list_;
+    const validate_block* validate_block_;
     mutable upgrade_mutex mutex_;
+};
+
+struct witness_with_validate_block_context
+{
+    using validate_block = blockchain::validate_block;
+    witness& witness_;
+    witness_with_validate_block_context(witness& w, const validate_block* v);
+    ~witness_with_validate_block_context();
 };
 
 } // consensus

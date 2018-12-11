@@ -180,6 +180,12 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         }
     }
 
+    if (!consensus::witness::is_dpos_enabled()) {
+        return error::success;
+    }
+
+    consensus::witness_with_validate_block_context context(consensus::witness::get(), this);
+
     if (is_begin_of_epoch) {
         RETURN_IF_STOPPED();
         log::debug(LOG_BLOCKCHAIN) << "begin to update_witness_list at height " << height_;
