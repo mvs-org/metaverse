@@ -267,22 +267,16 @@ bool transaction::is_coinbase() const
 
 bool transaction::is_pos_genesis_tx(bool is_testnet) const
 {
-    if(!is_coinbase() || outputs.size() != 1){
+    if (!is_coinbase() || outputs.size() != 1) {
         return false;
     }
-    const auto & out = outputs[0];
-    chain::script script;
-    auto value = pos_genesis_reward * coin_price();
-    if (is_testnet) {
-        wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
-        script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
-    }
-    else {
-        wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
-        script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
-    }
 
-    return out.is_etp() && out.value == value && 
+    chain::script script;
+    wallet::payment_address pay_address(get_foundation_address(is_testnet));
+    script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+
+    const auto & out = outputs[0];
+    return out.is_etp() && out.value == pos_genesis_reward &&
         out.script.operations == script.operations;
 }
 

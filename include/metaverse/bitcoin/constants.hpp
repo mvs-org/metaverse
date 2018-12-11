@@ -98,8 +98,6 @@ extern const uint64_t future_blocktime_fork_height;
 
 // Relative PoS constants.
 //-----------------------------------------------------------------------------
-extern const uint64_t pos_genesis_value;
-
 extern const uint64_t pos_enabled_height;
 extern const uint32_t pos_coinstake_max_utxos;
 

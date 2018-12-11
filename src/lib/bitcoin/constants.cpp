@@ -23,7 +23,7 @@
 
 namespace libbitcoin {
 
-const uint64_t pos_genesis_value        = 3000000 * 100000000ul;
+const uint64_t pos_genesis_reward        = 50000000 * 100000000ul;
 
 #ifndef PRIVATE_CHAIN
 
@@ -40,7 +40,7 @@ const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
 const uint64_t pos_stake_min_height      = 1000;
 const double   pos_stake_factor          = 1;
 const uint32_t block_timespan_window     = 28;
-const uint64_t pos_genesis_reward        = 50000000;
+
 #else //PRIVATE_CHAIN
 
 uint32_t coinbase_maturity = 10;
@@ -56,7 +56,6 @@ const uint64_t pos_stake_min_value       = 100 * 100000000ul;
 const uint64_t pos_stake_min_height      = 100;
 const double   pos_stake_factor          = 10;
 const uint32_t block_timespan_window     = 28;
-const uint64_t pos_genesis_reward        = 50000000;
 
 #endif //PRIVATE_CHAIN
 
@@ -80,7 +79,7 @@ std::string get_foundation_address(bool is_testnet)
 {
     std::string address("MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3");  // foundation address for mainnet
     if (is_testnet) {
-        address = "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms";         // foundation address for testnet
+        address = "tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm";         // foundation address for testnet
     }
     return address;
 }

@@ -868,6 +868,13 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
 
     total_tx_sig_length += get_tx_sign_length(coinstake);
 
+    // create pos genesis tx
+    transaction_ptr genesis_tx(nullptr);
+    if (!block_chain.pos_exist_before(block_height)) {
+        genesis_tx = create_pos_genesis_tx(block_height, block_time);
+        total_tx_sig_length += get_tx_sign_length(genesis_tx);
+    }
+
     // Get txs
     uint64_t total_fee = 0;
     vector<transaction_ptr> txs;
@@ -889,33 +896,10 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     // Put coinstake second
     pblock->transactions.push_back(*coinstake);
 
-    //Put POS GENESIS TX
-    if(block_chain.check_pos_genesis(block_height))
-    {
-        string text = "start pos for the first time!";
-        transaction genesis_tx;
-
-        genesis_tx.inputs.resize(1);
-        genesis_tx.inputs[0].previous_output = output_point(null_hash, max_uint32);
-        genesis_tx.inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
-        genesis_tx.outputs.resize(1);
-
-        // init for testnet/mainnet
-        if (setting_.use_testnet_rules)
-        {
-            wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
-            genesis_tx.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
-        }
-        else
-        {
-            wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
-            genesis_tx.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
-        }
-        genesis_tx.outputs[0].value = pos_genesis_reward * coin_price();
-        
-        pblock->transactions.push_back(genesis_tx);
+    // Put pos genesis tx third
+    if (nullptr != genesis_tx) {
+        pblock->transactions.push_back(*genesis_tx);
     }
-
 
     // Put coinage reward_txs before txs.
     for (auto i : reward_txs) {
@@ -998,6 +982,25 @@ bool miner::sign_coinstake_tx(
         coinstake->inputs[i].script = ss;
     }
     return true;
+}
+
+miner::transaction_ptr miner::create_pos_genesis_tx(uint64_t block_height, uint32_t block_time)
+{
+    auto& fmt = boost::format("MVS start POS at %1%") % timestamp_to_string(block_time);
+    const string text(fmt.str());
+
+    transaction_ptr genesis_tx = make_shared<message::transaction_message>();
+
+    genesis_tx->inputs.resize(1);
+    genesis_tx->inputs[0].previous_output = output_point(null_hash, max_uint32);
+    genesis_tx->inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
+
+    genesis_tx->outputs.resize(1);
+    wallet::payment_address pay_address(get_foundation_address(setting_.use_testnet_rules));
+    genesis_tx->outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(pay_address));
+    genesis_tx->outputs[0].value = pos_genesis_reward;
+
+    return genesis_tx;
 }
 
 miner::transaction_ptr miner::create_coinstake_tx(

@@ -192,17 +192,17 @@ bool block_chain_impl::check_pos_utxo_capability(
     return true;
 }
 
-bool block_chain_impl::check_pos_genesis(const uint64_t& height)
+bool block_chain_impl::pos_exist_before(const uint64_t& height)
 {
     auto pos = pos_enabled_height;
-    while ( pos++ < height)
-    {
+    while (pos++ < height) {
         chain::header header;
         if (get_header(header, pos) && header.is_proof_of_stake()) {
-            return false;
+            return true;
         }
     }
-    return true;
+
+    return false;
 }
 
 bool block_chain_impl::select_utxo_for_staking(

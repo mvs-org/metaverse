@@ -141,9 +141,8 @@ code validate_block::check_coinbase(const chain::header& prev_header, bool check
 
         if (is_active(script_context::bip34_enabled)) {
             //check pos genesis tx
-            if(check_genesis_tx && index == 2) {
-
-                if(!tx.is_pos_genesis_tx(testnet_)){
+            if (check_genesis_tx && index == 2) {
+                if (!tx.is_pos_genesis_tx(testnet_)) {
                     return error::check_pos_genesis_error;
                 }
             }
@@ -318,7 +317,7 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    bool check_genesis_tx = header.is_proof_of_stake() && chain.check_pos_genesis(header.number);
+    bool check_genesis_tx = header.is_proof_of_stake() && !chain.pos_exist_before(header.number);
     auto ec = check_coinbase(prev_header, check_genesis_tx);
     if (ec) {
         return ec;

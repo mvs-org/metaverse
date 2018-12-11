@@ -92,6 +92,7 @@ public:
     bool sign_coinstake_tx(
         const ec_secret& private_key,
         transaction_ptr coinstake);
+    transaction_ptr create_pos_genesis_tx(uint64_t block_height, uint32_t block_time);
 
     block_ptr get_block(bool is_force_create_block = false);
     bool get_work(std::string& seed_hash, std::string& header_hash, std::string& boundary);
