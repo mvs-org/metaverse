@@ -289,6 +289,15 @@ static std::set<std::pair<uint64_t, std::string>> exception_blocks {
     {1258192, "d7d5d80c8cb760b794f156c36b519ad9b4b10b9dfcd4e123c8f54be3c71432d3"}
 };
 
+static u256 get_orphan_difficulty_without_verify(const block_detail::list& orphan_chain)
+{
+    u256 orphan_work = 0;
+    for (auto& block : orphan_chain) {
+        orphan_work += block_work(block->actual()->header.bits);
+    }
+    return orphan_work;
+}
+
 // Return a tuple <number of poped blocks, number of pushed blocks, current block height>
 std::tuple<uint64_t, uint64_t, uint64_t>
 organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
@@ -298,64 +307,97 @@ organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
     auto& num_of_pushed_blocks = std::get<1>(ret);
     auto& current_block_height = std::get<2>(ret);
 
-    u256 orphan_work = 0;
+    DEBUG_ONLY(auto ok =) chain_.get_last_height(current_block_height);
+    BITCOIN_ASSERT(ok);
 
-    for (uint64_t orphan = 0; orphan < orphan_chain.size(); ++orphan)
-    {
-        // This verifies the block at orphan_chain[orphan]->actual()
-        if(!orphan_chain[orphan]->get_is_checked_work_proof())
-        {
-            const auto ec = verify(fork_index, orphan_chain, orphan);
-            if (ec)
-            {
-                // If invalid block info is also set for the block.
-                if (ec.value() != error::service_stopped)
-                {
-                    const auto& header = orphan_chain[orphan]->actual()->header;
-                    const auto block_hash = encode_hash(header.hash());
-
-                    if (exception_blocks.count(std::make_pair(header.number, block_hash)))
-                    {
-                        orphan_chain[orphan]->set_is_checked_work_proof(true);
-                        const auto& orphan_block = orphan_chain[orphan]->actual();
-                        orphan_work += block_work(orphan_block->header.bits);
-                        continue;
-                    }
-
-                    log::warning(LOG_BLOCKCHAIN)
-                        << "Invalid block [" << block_hash << "] " << ec.message();
-                }
-
-                // Block is invalid, clip the orphans.
-                clip_orphans(orphan_chain, orphan, ec);
-                if(orphan_chain.empty())
-                {
-                    log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()";
-                    return ret;
-                }
-
-                // Stop summing work once we discover an invalid block
-                break;
-            }
-            else
-            {
-                orphan_chain[orphan]->set_is_checked_work_proof(true);
-            }
-        }
-
-        const auto& orphan_block = orphan_chain[orphan]->actual();
-        orphan_work += block_work(orphan_block->header.bits);
-    }
-
-    // All remaining blocks in orphan_chain should all be valid now
-    // Compare the difficulty of the 2 forks (original and orphan)
     const auto begin_index = fork_index + 1;
 
     u256 main_work;
     DEBUG_ONLY(auto result =) chain_.get_difficulty(main_work, begin_index);
     BITCOIN_ASSERT(result);
 
-    delete_fork_chain_hash(orphan_chain[orphan_chain.size() - 1]->actual()->header.previous_block_hash);
+    u256 orphan_work = get_orphan_difficulty_without_verify(orphan_chain);
+
+    if (orphan_work > main_work) {
+        // reset and recalc with verify
+        orphan_work = 0;
+        static std::pair<hash_digest, uint32_t> failed_orphan = std::make_pair(null_hash, 0);
+        for (uint64_t orphan = 0; orphan < orphan_chain.size(); ++orphan)
+        {
+            // This verifies the block at orphan_chain[orphan]->actual()
+            if(!orphan_chain[orphan]->get_is_checked_work_proof())
+            {
+                const auto ec = verify(fork_index, orphan_chain, orphan);
+                if (ec)
+                {
+                    // If invalid block info is also set for the block.
+                    if (ec.value() != error::service_stopped)
+                    {
+                        const auto& header = orphan_chain[orphan]->actual()->header;
+                        const auto block_hash = encode_hash(header.hash());
+
+                        if (exception_blocks.count(std::make_pair(header.number, block_hash)))
+                        {
+                            orphan_chain[orphan]->set_is_checked_work_proof(true);
+                            const auto& orphan_block = orphan_chain[orphan]->actual();
+                            orphan_work += block_work(orphan_block->header.bits);
+                            continue;
+                        }
+
+                        if (header.hash() != failed_orphan.first) {
+                            failed_orphan = std::make_pair(header.hash(), 1);
+                        }
+                        else {
+                            ++failed_orphan.second;
+                            constexpr uint32_t too_many_fails = 100;
+                            constexpr uint32_t max_pop_gaps = 1000;
+                            if (failed_orphan.second >= too_many_fails
+                                && fork_index + max_pop_gaps > current_block_height) {
+                                failed_orphan = std::make_pair(null_hash, 0); // reset
+                                // force pop blocks, verify again later(keep syncing).
+                                block_chain_writer locked_write(chain_);
+                                block_detail::list released_blocks;
+                                chain_.pop_from(released_blocks, begin_index);
+                                if (!released_blocks.empty()) {
+                                    log::warning(LOG_BLOCKCHAIN)
+                                        << "force pop block from " << begin_index
+                                        << ", verify again orphan block " << block_hash;
+                                    num_of_poped_blocks = released_blocks.size();
+                                    current_block_height = released_blocks.front()->actual()->header.number - 1;
+                                }
+                                return ret;
+                            }
+                        }
+
+                        log::warning(LOG_BLOCKCHAIN)
+                            << "Invalid block [" << block_hash << "] " << ec.message();
+                    }
+
+                    // Block is invalid, clip the orphans.
+                    clip_orphans(orphan_chain, orphan, ec);
+                    if(orphan_chain.empty())
+                    {
+                        log::warning(LOG_BLOCKCHAIN) << "orphan_chain.empty()";
+                        return ret;
+                    }
+
+                    // Stop summing work once we discover an invalid block
+                    break;
+                }
+                else
+                {
+                    orphan_chain[orphan]->set_is_checked_work_proof(true);
+                }
+            }
+
+            const auto& orphan_block = orphan_chain[orphan]->actual();
+            orphan_work += block_work(orphan_block->header.bits);
+        }
+    }
+
+    // All remaining blocks in orphan_chain should all be valid now
+    // Compare the difficulty of the 2 forks (original and orphan)
+    delete_fork_chain_hash(orphan_chain.back()->actual()->header.previous_block_hash);
     if (orphan_work <= main_work)
     {
         if(orphan_chain.size() % node::locator_cap  == 0)
@@ -363,7 +405,8 @@ organizer::replace_chain(uint64_t fork_index, block_detail::list& orphan_chain)
         add_fork_chain_hash(orphan_chain.back()->actual()->header.hash());
 
         log::debug(LOG_BLOCKCHAIN)
-            << "Insufficient work to reorganize at [" << begin_index << "]" << "orphan_work:" << orphan_work << " main_work:" << main_work;
+            << "Insufficient work to reorganize at [" << begin_index << "]"
+            << "orphan_work:" << orphan_work << " main_work:" << main_work;
         return ret;
     }
 
