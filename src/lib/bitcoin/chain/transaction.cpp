@@ -32,6 +32,7 @@
 #include <metaverse/bitcoin/utility/container_source.hpp>
 #include <metaverse/bitcoin/utility/istream_reader.hpp>
 #include <metaverse/bitcoin/utility/ostream_writer.hpp>
+#include <metaverse/consensus/witness.hpp>
 
 namespace libbitcoin {
 namespace chain {
@@ -175,7 +176,7 @@ void transaction::to_data_t(writer& sink, bool for_merkle) const
     sink.write_4_bytes_little_endian(version);
     sink.write_variable_uint_little_endian(inputs.size());
 
-    if (for_merkle && is_coinbase()) {
+    if (for_merkle && consensus::witness::is_dpos_enabled() && is_coinbase()) {
         auto input = inputs[0];
         operation::stack ops;
         ops.swap(input.script.operations);

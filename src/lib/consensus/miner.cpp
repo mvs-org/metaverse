@@ -664,7 +664,8 @@ miner::block_ptr miner::create_new_block_pow(const wallet::payment_address& pay_
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
         return nullptr;
     }
 
@@ -740,7 +741,8 @@ miner::block_ptr miner::create_new_block_dpos(const wallet::payment_address& pay
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
         return nullptr;
     }
 
@@ -876,7 +878,8 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     coinbase->outputs[0].value =
         total_fee + calculate_block_subsidy(block_height, setting_.use_testnet_rules, pblock->header.version);
 
-    if (!witness::get().add_witness_vote_result(*coinbase, block_height)) {
+    if (witness::is_begin_of_epoch(block_height)
+        && !witness::get().add_witness_vote_result(*coinbase, block_height)) {
         return nullptr;
     }
 

@@ -579,7 +579,7 @@ bool witness::verify_signer(uint32_t witness_slot_num, uint64_t height) const
 
 bool witness::is_dpos_enabled()
 {
-    return true;
+    return false;
 }
 
 bool witness::is_witness_enabled(uint64_t height)
