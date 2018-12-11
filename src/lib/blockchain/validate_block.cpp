@@ -94,7 +94,7 @@ bool validate_block::stopped() const
     return stop_callback_();
 }
 
-code validate_block::check_coinbase(const chain::header& prev_header) const
+code validate_block::check_coinbase(const chain::header& prev_header, bool check_genesis_tx) const
 {
     const auto& header = current_block_.header;
     const auto& transactions = current_block_.transactions;
@@ -140,8 +140,15 @@ code validate_block::check_coinbase(const chain::header& prev_header) const
         }
 
         if (is_active(script_context::bip34_enabled)) {
+            //check pos genesis tx
+            if(check_genesis_tx && index == 2) {
+
+                if(!tx.is_pos_genesis_tx(testnet_)){
+                    return error::check_pos_genesis_error;
+                }
+            }
             // Enforce rule that the coinbase starts with serialized height.
-            if (!is_valid_coinbase_height(height_, current_block_, index)) {
+            else if (!is_valid_coinbase_height(height_, current_block_, index)) {
                 return error::coinbase_height_mismatch;
             }
         }
@@ -311,7 +318,8 @@ code validate_block::check_block(blockchain::block_chain_impl& chain) const
 
     RETURN_IF_STOPPED();
 
-    auto ec = check_coinbase(prev_header);
+    bool check_genesis_tx = header.is_proof_of_stake() && chain.check_pos_genesis(header.number);
+    auto ec = check_coinbase(prev_header, check_genesis_tx);
     if (ec) {
         return ec;
     }

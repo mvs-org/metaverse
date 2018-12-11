@@ -632,5 +632,11 @@ operation::stack operation::to_pay_key_hash_with_sequence_lock_pattern(const sho
     };
 }
 
+
+bool operation::operator==(const operation& other) const
+{
+    return code == other.code && data == other.data;
+}
+
 } // namspace chain
 } // namspace libbitcoin

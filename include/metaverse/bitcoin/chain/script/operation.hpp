@@ -172,6 +172,8 @@ public:
     void reset();
     uint64_t serialized_size() const;
 
+    bool operator==(const operation& other) const;
+
     opcode code;
     data_chunk data;
 

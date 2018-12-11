@@ -36,9 +36,9 @@ const uint64_t pos_lock_min_height       = 100000;
 const uint64_t pos_lock_gap_height       = 10000;
 const uint64_t pos_stake_min_value       = 10000 * 100000000ul;
 const uint64_t pos_stake_min_height      = 1000;
-const double pos_stake_factor            = 1;
+const double   pos_stake_factor          = 1;
 const uint32_t block_timespan_window     = 28;
-
+const uint64_t pos_genesis_reward        = 50000000;
 #else //PRIVATE_CHAIN
 
 uint32_t coinbase_maturity = 10;
@@ -52,8 +52,9 @@ const uint64_t pos_lock_min_height       = 100000;
 const uint64_t pos_lock_gap_height       = 10000;
 const uint64_t pos_stake_min_value       = 100 * 100000000ul;
 const uint64_t pos_stake_min_height      = 100;
-const double pos_stake_factor            = 10;
+const double   pos_stake_factor          = 10;
 const uint32_t block_timespan_window     = 28;
+const uint64_t pos_genesis_reward        = 50000000;
 
 #endif //PRIVATE_CHAIN
 

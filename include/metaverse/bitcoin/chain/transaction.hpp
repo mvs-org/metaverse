@@ -82,6 +82,7 @@ public:
     // sighash_type is used by OP_CHECKSIG
     hash_digest hash(uint32_t sighash_type) const;
     bool is_coinbase() const;
+    bool is_pos_genesis_tx(bool is_testnet) const;
     bool is_coinstake() const;
     bool is_final(uint64_t block_height, uint32_t block_time) const;
     bool is_locked(size_t block_height, uint32_t median_time_past) const;

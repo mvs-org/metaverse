@@ -271,6 +271,8 @@ public:
         const validate_block* validate_block=nullptr
     );
 
+    bool check_pos_genesis(const uint64_t& height);
+
     virtual chain::header::ptr get_last_block_header(const chain::header& parent_header, bool is_staking) const;
 
     inline hash_digest get_hash(const std::string& str) const;

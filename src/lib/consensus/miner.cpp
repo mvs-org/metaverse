@@ -889,6 +889,34 @@ miner::block_ptr miner::create_new_block_pos(const wallet::payment_address& pay_
     // Put coinstake second
     pblock->transactions.push_back(*coinstake);
 
+    //Put POS GENESIS TX
+    if(block_chain.check_pos_genesis(block_height))
+    {
+        string text = "start pos for the first time!";
+        transaction genesis_tx;
+
+        genesis_tx.inputs.resize(1);
+        genesis_tx.inputs[0].previous_output = output_point(null_hash, max_uint32);
+        genesis_tx.inputs[0].script.operations = {{chain::opcode::raw_data, {text.begin(), text.end()}}};
+        genesis_tx.outputs.resize(1);
+
+        // init for testnet/mainnet
+        if (setting_.use_testnet_rules)
+        {
+            wallet::payment_address testnet_genesis_address("tPd41bKLJGf1C5RRvaiV2mytqZB6WfM1vR");
+            genesis_tx.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(testnet_genesis_address));
+        }
+        else
+        {
+            wallet::payment_address genesis_address("MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve");
+            genesis_tx.outputs[0].script.operations = chain::operation::to_pay_key_hash_pattern(short_hash(genesis_address));
+        }
+        genesis_tx.outputs[0].value = pos_genesis_reward * coin_price();
+        
+        pblock->transactions.push_back(genesis_tx);
+    }
+
+
     // Put coinage reward_txs before txs.
     for (auto i : reward_txs) {
         pblock->transactions.push_back(*i);

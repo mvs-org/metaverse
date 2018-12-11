@@ -190,7 +190,8 @@ enum error_code_t
     illegal_coinstake,
     extra_coinstakes,
     coinstake_version_invalid,
-    cointstake_signature_invalid
+    cointstake_signature_invalid,
+    check_pos_genesis_error
 
 };
 
